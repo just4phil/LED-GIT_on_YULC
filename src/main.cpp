@@ -18,18 +18,6 @@
 //#include "yellowsmiley24.h"
 //#include "bluesmiley24.h"
 
-//------ fuer midi-in via library --------
-#include <MIDI.h>  // Add Midi Library
-//Create an instance of the library with default name, serial port and settings
-//midi::SerialMIDI<SerialPort, _Settings>::SerialMIDI [mit SerialPort=HardwareSerial, _Settings=midi::DefaultSerialSettings]
-//MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
-HardwareSerial myHardwareSerial(0);
-MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
-
-// gpio 43 and 44 are the serial pins (they should not conflict with the serial monitor) 
-//If you need other pins or information, in the documentation I explained everything (I hope) 
-//https://aaelectronics-docs.com/documentation/yulc/yulc.html
-
 
 //=============================
 //#define USELEDMATRIXCONFIG
@@ -39,6 +27,155 @@ MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
 	#include "neomatrix_config.h"
 #else
 	FastLED_NeoMatrix* matrix;
+#endif
+//===============================
+
+
+//#define CHECKLIPOVOLTAGE	// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+
+
+
+//=============================
+#define THIS_IS_THE_MIDI_PROXY	// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
+//=============================
+
+#ifdef THIS_IS_THE_MIDI_PROXY
+	#include <BLEDevice.h>
+	#include <BLEServer.h>
+	#include <BLEUtils.h>
+	#include <BLE2902.h>
+
+	//------ fuer midi-in via library --------
+	#include <MIDI.h>  // Add Midi Library
+	//Create an instance of the library with default name, serial port and settings
+	//midi::SerialMIDI<SerialPort, _Settings>::SerialMIDI [mit SerialPort=HardwareSerial, _Settings=midi::DefaultSerialSettings]
+	//MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+	HardwareSerial myHardwareSerial(0);
+	MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
+
+	// gpio 43 and 44 are the serial pins (they should not conflict with the serial monitor) 
+	//If you need other pins or information, in the documentation I explained everything (I hope) 
+	//https://aaelectronics-docs.com/documentation/yulc/yulc.html
+
+	#define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
+	#define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+
+	static const int defaultSongIDforBroadcast = -1;
+	volatile int songIDforBroadcast = defaultSongIDforBroadcast;
+
+	BLEServer *pServer = NULL;
+	BLECharacteristic *pCharacteristic = NULL;
+	bool deviceConnected = false;
+	bool oldDeviceConnected = false;
+
+	class MyServerCallbacks : public BLEServerCallbacks {
+		void onConnect(BLEServer *pServer) {
+			deviceConnected = true;
+			BLEDevice::startAdvertising();
+		};
+
+		void onDisconnect(BLEServer *pServer) {
+			deviceConnected = false;
+		}
+	};
+#else
+	#include "BLEDevice.h"
+
+	static BLEUUID serviceUUID("204916ff-8db3-4368-bab9-e1f6e1ad653c");
+	static BLEUUID charUUID("f2e030f2-8c2b-46b6-bbab-5cf9dd837962");
+
+	static boolean doConnect = false;
+	static boolean connected = false;
+	static boolean doScan = false;
+	static BLERemoteCharacteristic *pRemoteCharacteristic;
+	static BLEAdvertisedDevice *myDevice;
+
+	static const int defaultSongIDfromMidiIn = -1;
+	volatile int songIDfromMidiIn = defaultSongIDfromMidiIn;
+
+	static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
+		songIDfromMidiIn = word( pData[0], pData[1]);
+	}
+
+	class MyClientCallback : public BLEClientCallbacks {
+		void onConnect(BLEClient *pclient) {}
+
+		void onDisconnect(BLEClient *pclient) {
+			connected = false;
+			Serial.println("onDisconnect");
+		}
+	};
+
+	bool connectToServer() {
+		Serial.print("Forming a connection to ");
+		Serial.println(myDevice->getAddress().toString().c_str());
+
+		BLEClient *pClient = BLEDevice::createClient();
+		Serial.println(" - Created client");
+
+		pClient->setClientCallbacks(new MyClientCallback());
+
+		// Connect to the remove BLE Server.
+		pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
+		Serial.println(" - Connected to server");
+		pClient->setMTU(517);  //set client to request maximum MTU from server (default is 23 otherwise)
+
+		// Obtain a reference to the service we are after in the remote BLE server.
+		BLERemoteService *pRemoteService = pClient->getService(serviceUUID);
+		if (pRemoteService == nullptr) {
+			Serial.print("Failed to find our service UUID: ");
+			Serial.println(serviceUUID.toString().c_str());
+			pClient->disconnect();
+			return false;
+		}
+		Serial.println(" - Found our service");
+
+		// Obtain a reference to the characteristic in the service of the remote BLE server.
+		pRemoteCharacteristic = pRemoteService->getCharacteristic(charUUID);
+		if (pRemoteCharacteristic == nullptr) {
+			Serial.print("Failed to find our characteristic UUID: ");
+			Serial.println(charUUID.toString().c_str());
+			pClient->disconnect();
+			return false;
+		}
+		Serial.println(" - Found our characteristic");
+
+		// Read the value of the characteristic.
+		if (pRemoteCharacteristic->canRead()) {
+			std::string value = pRemoteCharacteristic->readValue();
+			Serial.print("The characteristic value was: ");
+			Serial.println(value.c_str());
+		}
+
+		if (pRemoteCharacteristic->canNotify()) {
+			pRemoteCharacteristic->registerForNotify(notifyCallback);
+		}
+
+		connected = true;
+		return true;
+	}
+	/**
+	 * Scan for BLE servers and find the first one that advertises the service we are looking for.
+	 */
+	class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
+		/**
+		 * Called for each advertising BLE server.
+		 */
+		void onResult(BLEAdvertisedDevice advertisedDevice) {
+			Serial.print("BLE Advertised Device found: ");
+			Serial.println(advertisedDevice.toString().c_str());
+
+			// We have found a device, let us now see if it contains the service we are looking for.
+			if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
+
+			BLEDevice::getScan()->stop();
+			myDevice = new BLEAdvertisedDevice(advertisedDevice);
+			doConnect = true;
+			doScan = true;
+
+			}  // Found our server
+		}  // onResult
+	};  // MyAdvertisedDeviceCallbacks
 #endif
 //===============================
 
@@ -3296,20 +3433,19 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart) {
 	progMatrixVertical(durationMillis, nextPart, 100);
 }
 
-void progGoTo(byte nextPart) {
-
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = 0;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-	}
-}
+// void progGoTo(byte nextPart) {
+// 	//--- standard-part um dauer und naechstes programm zu speichern ----
+// 	if (!nextChangeMillisAlreadyCalculated) {
+// 		nextChangeMillis = 0;
+// 		nextSongPart = nextPart;
+// 		nextChangeMillisAlreadyCalculated = true;
+// 	}
+// }
 
 // TODO: Fix progCLED -> brauchen wir die beiden variablen unten noch?
 //=== progCLED =====================
-uint8_t progCLED_hue;
-int16_t progCLED_counter;
+// uint8_t progCLED_hue;
+// int16_t progCLED_counter;
 
 
 void switchToPart(byte part) {
@@ -3323,8 +3459,8 @@ void switchToPart(byte part) {
 
 	//--- initializeValues ---
 	progBlingBlingColoring_rounds = 0;
-	progCLED_hue = 0;
-	progCLED_counter = 0;
+	// progCLED_hue = 0;
+	// progCLED_counter = 0;
 
 	flag_switchToNextSongPart = false;
 	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
@@ -3356,43 +3492,26 @@ void switchToSong(byte song) {
 	switchToPart(0);
 }
 
-// MidiDatenAuswerten is the function that will be called by the Midi Library
-// when a Continuous Controller message is received.
-// It will be passed bytes for Channel, Controller Number, and Value
-// It checks if the controller number is within the 22 to 27 range
-void MidiDatenAuswerten(byte channel, byte number, byte value) {
-
-	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-	// if (DEBUG) {
-	// 	Serial.print(channel);
-	// 	Serial.print("\t");
-	// 	Serial.print(number);
-	// 	Serial.print("\t");
-	// 	Serial.println(value);
-	// }
-
-	// with midi byte 22 the song can be changed!
-	if (number == 22 && value > 0) {
+#ifdef THIS_IS_THE_MIDI_PROXY
+	// MidiDatenAuswerten is the function that will be called by the Midi Library
+	// when a Continuous Controller message is received.
+	// It will be passed bytes for Channel, Controller Number, and Value
+	// It checks if the controller number is within the 22 to 27 range
+	void MidiDatenAuswerten(byte channel, byte number, byte value) {
 
 		// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-		// if (DEBUG) {
-		// 	Serial.print("midi command to switch to song: ");
-		// 	Serial.println(value);
-		// }
 
-		switchToSong(value);
+		// with midi byte 22 the song can be changed!
+		if (number == 22 && value > 0) {
+			songIDforBroadcast = value;	// for broadcasting to listeners
+			switchToSong(value);
+		}
+		// with midi byte 23 the songpart can be changed!
+		else if (number == 23 && value >= 0) {
+			switchToPart(value);
+		}
 	}
-	// with midi byte 23 the songpart can be changed!
-	else if (number == 23 && value >= 0) {
-		// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-		// if (DEBUG) {
-		// 	Serial.print("midi command to switch to part: ");
-		// 	Serial.println(value);
-		// }
-
-		switchToPart(value);
-	}
-}
+#endif
 //====================================================
 
 const static char wordFeels[] = { "Feels" };
@@ -6552,6 +6671,7 @@ int readings[numReadings];      // the readings from the input
 int readIndex = 0;                       // the index of the current reading
 int total = 0;                             // the running total
 float average = 0;                       // the average
+//--------------------------------------------------
 
 void setup() {
  
@@ -6561,11 +6681,61 @@ void setup() {
 	//-- turn wifi and BT off ---------- TODO: brauche ich das wirklich? -> includes raus!?
  	WiFi.disconnect(true);
   	WiFi.mode(WIFI_OFF);
-	esp_err_t esp_bluedroid_disable(void);
-	esp_bluedroid_deinit();
+	//esp_err_t esp_bluedroid_disable(void);
+	//esp_bluedroid_deinit();
 	//----------------
 	
-	//--- Initialize rotary encoder
+//=== MIDI PROXY AUFSETZEN =====
+#ifdef THIS_IS_THE_MIDI_PROXY
+
+	BLEDevice::init("ESP32");	// Create the BLE Device
+	// Create the BLE Server
+	pServer = BLEDevice::createServer();
+	pServer->setCallbacks(new MyServerCallbacks());
+
+	BLEService *pService = pServer->createService(SERVICE_UUID);	  // Create the BLE Service
+
+	pCharacteristic = pService->createCharacteristic(		// Create a BLE Characteristic
+		CHARACTERISTIC_UUID,
+		BLECharacteristic::PROPERTY_READ | 
+		BLECharacteristic::PROPERTY_WRITE | 
+		BLECharacteristic::PROPERTY_NOTIFY | 
+		BLECharacteristic::PROPERTY_INDICATE
+	);
+
+	// https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+	// Create a BLE Descriptor
+	pCharacteristic->addDescriptor(new BLE2902());
+
+	// Start the service
+	pService->start();
+
+	// Start advertising
+	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+	pAdvertising->addServiceUUID(SERVICE_UUID);
+	pAdvertising->setScanResponse(false);
+	pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+	BLEDevice::startAdvertising();
+	Serial.println("Waiting a client connection to notify...");
+
+#else
+	//---- Dies ist der MIDI Empfänger ----
+	Serial.println("Starting Arduino BLE Client application...");
+	BLEDevice::init("");
+
+	// Retrieve a Scanner and set the callback we want to use to be informed when we
+	// have detected a new device.  Specify that we want active scanning and start the
+	// scan to run for 5 seconds.
+	BLEScan *pBLEScan = BLEDevice::getScan();
+	pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+	pBLEScan->setInterval(1349);
+	pBLEScan->setWindow(449);
+	pBLEScan->setActiveScan(true);
+	pBLEScan->start(5, false);
+#endif
+
+
+	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
 	rotaryEncoder->setup(readEncoderISR);
 	rotaryEncoder->setAcceleration(0);
@@ -6620,6 +6790,7 @@ void setup() {
     timerAlarmWrite(Timer0_Cfg, 2000, true); // Interrupt alle 2 ms
     timerAlarmEnable(Timer0_Cfg);
 
+#ifdef THIS_IS_THE_MIDI_PROXY
 	//---- MIDI ----------------
 	MIDI.begin(10); // Initialize the Midi Library.
 	// OMNI sets it to listen to all channels.. MIDI.begin(2) would set it
@@ -6627,7 +6798,9 @@ void setup() {
 	MIDI.setHandleControlChange(MidiDatenAuswerten); // This command tells the MIDI Library
 	// the function you want to call when a Continuous Controller command
 	// is received. In this case it's "MyCCFunction".
+#endif
 
+#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
 	//--- LIPO Safer ----------
 	adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(ADC1_CHANNEL_4,ADC_ATTEN_DB_0);
@@ -6644,13 +6817,9 @@ void setup() {
 	average = 0;                       // the average
 	for (int i = 0; i < numReadings; i++) {
 		readings[i] = analogRead(LIPO_PIN);
-		//readings[i] = adc1_get_raw(ADC1_CHANNEL_4);
-		
-		// Serial.print(i);
-		// Serial.print(": ");
-		// Serial.println(readings[i]);
 	}	
-	
+#endif
+
 	//------- activate MOSFETs on YULC ----------------------------
   	pinMode(47, OUTPUT);      // switch on MOSFET for channel 1
   	digitalWrite(47, HIGH);   // switch on MOSFET for channel 1
@@ -6686,9 +6855,6 @@ void setup() {
 
 float voltage;
 
-//volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
-//volatile boolean overrideLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
-
 void loop() {
 
 	if (OneSecondHasPast) {
@@ -6698,7 +6864,10 @@ void loop() {
 	//---- check voltage as lipo safer ------
 	if (secondsForVoltage >= SECONDSFORVOLTAGE) {
 
+
+#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
 		readings[readIndex] = analogRead(LIPO_PIN);
+
   		// calculate the average:
 		total = 0;
 		for (int i = 0; i < numReadings; i++) {
@@ -6706,10 +6875,10 @@ void loop() {
 		}
 		average = (float)(total / numReadings);
 		voltage = average / 297.4f; // 258.1 bei adc: 2,7V @ 13.0V Input
-		// if (DEBUG) {
-		// 	Serial.print("voltage: ");
-		// 	Serial.println(voltage);	
-		// }
+		if (DEBUG) {
+			Serial.print("voltage: ");
+			Serial.println(voltage);	
+		}
 		
 		if (voltage < 10.5f) {
 			if (!LIPOvoltageIsLOW) {
@@ -6726,14 +6895,87 @@ void loop() {
 		readIndex = readIndex + 1;
 		if (readIndex >= numReadings) readIndex = 0;
 
+#else
+	//====== JUST 4 TESTING !!! -> TODO: DEACTIVATE =======
+	LIPOvoltageIsLOW = false; // JUST 4 TESTING !!! -> TODO: DEACTIVATE ---------------------------------------------------------
+	//====================================
+#endif
+
 		secondsForVoltage = 0;
 	}
 
+
 	rotary_loop();
+
+
+//=== MIDI PROXY AUFSETZEN =====
+#ifdef THIS_IS_THE_MIDI_PROXY
+
 
 	//--- midi immer checken, auch wenn voltage low, damit ja trotzdem marker LEDs setzen kann
 	MIDI.read(); // Continuously check if Midi data has been received.
 	//========================================
+
+
+  // notify changed value
+  if (songIDforBroadcast != defaultSongIDforBroadcast) {
+	if (deviceConnected) {
+		uint8_t byteArray[2];
+		byteArray[0] = highByte(songIDforBroadcast);
+		byteArray[1] = lowByte(songIDforBroadcast);
+		pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+		pCharacteristic->notify();
+		songIDforBroadcast = defaultSongIDforBroadcast;
+	}
+  }
+  // disconnecting
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(100);                   // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising();  // restart advertising
+    if (DEBUG) Serial.println("start advertising");
+    oldDeviceConnected = deviceConnected;
+  }
+  // connecting
+  if (deviceConnected && !oldDeviceConnected) {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+  }
+
+#else
+
+	// If the flag "doConnect" is true then we have scanned for and found the desired
+	// BLE Server with which we wish to connect.  Now we connect to it.  Once we are
+	// connected we set the connected flag to be true.
+	if (doConnect == true) {
+		if (connectToServer()) {
+			if (DEBUG) Serial.println("We are now connected to the BLE Server.");
+		} 
+		else {
+			if (DEBUG) Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+		}
+		doConnect = false;
+	}
+
+	// If we are connected to a peer BLE Server, update the characteristic each time we are reached
+	// with the current time since boot.
+	if (connected) {   
+		
+		if (songIDfromMidiIn != defaultSongIDfromMidiIn) {
+
+			if (DEBUG) Serial.print("received songID: ");
+			if (DEBUG) Serial.println(songIDfromMidiIn);
+
+			switchToSong(songIDfromMidiIn);
+			songIDfromMidiIn = defaultSongIDfromMidiIn;
+		}
+	} 
+	else if (doScan) {
+		if (DEBUG) Serial.println("Scanning for 10 seconds ...");
+		BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+	}
+
+#endif
+
 
 	if (flag_switchToNextSongPart) {
 		switchToPart(nextSongPart);
@@ -6876,12 +7118,12 @@ void loop() {
 				if (warnLEDsLipoLow) {
 					warnLEDsLipoLow = false;
 					leds[52] = CRGB(0, 0, 0);
-					leds[76] = CRGB(0, 0, 0);
+					leds[72] = CRGB(0, 0, 0);
 				}
 				else {
 					warnLEDsLipoLow = true;
 					leds[52] = CRGB(255, 0, 0);
-					leds[74] = CRGB(255, 0, 0);
+					leds[72] = CRGB(255, 0, 0);
 				}
 				FastLED.show();
 			}
