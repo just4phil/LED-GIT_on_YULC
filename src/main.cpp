@@ -62,6 +62,7 @@
 
 	static const int defaultSongIDforBroadcast = -1;
 	volatile int songIDforBroadcast = defaultSongIDforBroadcast;
+	volatile bool LEDgitsHaveBeenSynced = false;
 
 	BLEServer *pServer = NULL;
 	BLECharacteristic *pCharacteristic = NULL;
@@ -168,11 +169,10 @@
 			// We have found a device, let us now see if it contains the service we are looking for.
 			if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
 
-			BLEDevice::getScan()->stop();
-			myDevice = new BLEAdvertisedDevice(advertisedDevice);
-			doConnect = true;
-			doScan = true;
-
+				BLEDevice::getScan()->stop();
+				myDevice = new BLEAdvertisedDevice(advertisedDevice);
+				doConnect = true;
+				doScan = true;
 			}  // Found our server
 		}  // onResult
 	};  // MyAdvertisedDeviceCallbacks
@@ -6673,6 +6673,17 @@ int total = 0;                             // the running total
 float average = 0;                       // the average
 //--------------------------------------------------
 
+
+	// TaskHandle_t Task1;
+
+	// static void Task1code( void * parameter) {
+	// 	for(;;) {
+	// 		//Code for task 1 - infinite loop
+			
+	// 	}
+	// }
+
+
 void setup() {
  
  	Serial.begin(115200);
@@ -6732,6 +6743,17 @@ void setup() {
 	pBLEScan->setWindow(449);
 	pBLEScan->setActiveScan(true);
 	pBLEScan->start(5, false);
+
+		//--------------------------------
+	//   xTaskCreatePinnedToCore(
+	// 	  Task1code, /* Function to implement the task */
+	// 	  "Task1", /* Name of the task */
+	// 	  10000,  /* Stack size in words */
+	// 	  NULL,  /* Task input parameter */
+	// 	  0,  /* Priority of the task */
+	// 	  &Task1,  /* Task handle. */
+	// 	  0); /* Core where the task should run */
+
 #endif
 
 
@@ -6855,6 +6877,25 @@ void setup() {
 
 float voltage;
 
+void sendSongIDtoListeners(int id) {
+
+	uint8_t byteArray[2];
+	byteArray[0] = highByte(id);
+	byteArray[1] = lowByte(id);
+	pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+	pCharacteristic->notify();
+
+	// // with midi byte 22 the song can be changed!
+	// if (number == 22 && value > 0) {
+	// 	songIDforBroadcast = value;	// for broadcasting to listeners
+	// 	switchToSong(value);
+	// }
+	// // with midi byte 23 the songpart can be changed!
+	// else if (number == 23 && value >= 0) {
+	// 	switchToPart(value);
+	// }
+}
+
 void loop() {
 
 	if (OneSecondHasPast) {
@@ -6934,10 +6975,22 @@ void loop() {
     pServer->startAdvertising();  // restart advertising
     if (DEBUG) Serial.println("start advertising");
     oldDeviceConnected = deviceConnected;
+	
+	LEDgitsHaveBeenSynced = false;
   }
   // connecting
   if (deviceConnected && !oldDeviceConnected) {
     // do stuff here on connecting
+	if (!LEDgitsHaveBeenSynced) {
+		//----send actual songID
+		uint8_t byteArray[2];
+		byteArray[0] = highByte(songID);
+		byteArray[1] = lowByte(songID);
+		pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+		pCharacteristic->notify();
+
+		LEDgitsHaveBeenSynced = true;
+	}
     oldDeviceConnected = deviceConnected;
   }
 
@@ -6971,6 +7024,7 @@ void loop() {
 	} 
 	else if (doScan) {
 		if (DEBUG) Serial.println("Scanning for 10 seconds ...");
+		// TODO: put scan on core0
 		BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
 	}
 
