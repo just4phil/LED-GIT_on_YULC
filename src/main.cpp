@@ -18,6 +18,7 @@
 //#include "yellowsmiley24.h"
 //#include "bluesmiley24.h"
 
+const static boolean DEBUG = true;
 
 //=============================
 //#define USELEDMATRIXCONFIG
@@ -35,7 +36,7 @@
 
 
 
-//=============================
+//============================= 
 #define THIS_IS_THE_MIDI_PROXY	// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
 //=============================
 
@@ -60,9 +61,11 @@
 	#define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
 	#define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
 
-	static const int defaultSongIDforBroadcast = -1;
-	volatile int songIDforBroadcast = defaultSongIDforBroadcast;
+	volatile bool newMidiValuesToBroadcast = true;
+	volatile byte midiInCC = 0;
+	volatile byte midiInValue = 0;
 	volatile bool LEDgitsHaveBeenSynced = false;
+	volatile bool syncProgWithNextChange = false;
 
 	BLEServer *pServer = NULL;
 	BLECharacteristic *pCharacteristic = NULL;
@@ -73,10 +76,13 @@
 		void onConnect(BLEServer *pServer) {
 			deviceConnected = true;
 			BLEDevice::startAdvertising();
+			if (DEBUG) Serial.println("device connected -> startAdvertising()");
 		};
 
 		void onDisconnect(BLEServer *pServer) {
 			deviceConnected = false;
+			LEDgitsHaveBeenSynced = false;
+			if (DEBUG) Serial.println("device DISconnected!");
 		}
 	};
 #else
@@ -91,15 +97,21 @@
 	static BLERemoteCharacteristic *pRemoteCharacteristic;
 	static BLEAdvertisedDevice *myDevice;
 
-	static const int defaultSongIDfromMidiIn = -1;
-	volatile int songIDfromMidiIn = defaultSongIDfromMidiIn;
+	volatile bool newMidiValuesReceivedFromProxy = false;
+	volatile byte newMidiCCfromProxy = 0;
+	volatile byte newMidiValueFromProxy = 0;
 
 	static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
-		songIDfromMidiIn = word( pData[0], pData[1]);
+		//songIDfromMidiIn = word( pData[0], pData[1]);
+		newMidiCCfromProxy = pData[0];
+		newMidiValueFromProxy = pData[1];
+		newMidiValuesReceivedFromProxy = true;
 	}
 
 	class MyClientCallback : public BLEClientCallbacks {
-		void onConnect(BLEClient *pclient) {}
+		void onConnect(BLEClient *pclient) {
+			Serial.println("onConnect");
+		}
 
 		void onDisconnect(BLEClient *pclient) {
 			connected = false;
@@ -216,7 +228,6 @@ const static int outlinePath7[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 1
 const static int outlinePath8[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 189, 188, 187, 186, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
 const static int outlinePath9[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 166, 167, 168, 169, 170, 157, 156, 147, 146, 137, 136, 127 };
 
-const static boolean DEBUG = true;
 
 //--- boolean LEDGITBOARD -> für board oder für lichstreifen kompilieren?
 // false: es wird für die LED-STRIPE-Git kompiliert
@@ -270,7 +281,7 @@ volatile boolean flag_switchToNextSongPart = false;
 //volatile boolean flag_update_display = true;	 // TODO: kann wohl wieder raus ...nur fuer oled display
 volatile boolean nextChangeMillisAlreadyCalculated = false;
 volatile byte nextSongPart = 0;
-volatile byte prog = 0;
+volatile byte prog = 0;							// the actual song-part
 volatile boolean HalfSecondHasPast = false;
 volatile boolean OneSecondHasPast = false;
 volatile boolean warnLEDsLipoLow = false;
@@ -3502,15 +3513,35 @@ void switchToSong(byte song) {
 		// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
 
 		// with midi byte 22 the song can be changed!
-		if (number == 22 && value > 0) {
-			songIDforBroadcast = value;	// for broadcasting to listeners
+		if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
 			switchToSong(value);
 		}
 		// with midi byte 23 the songpart can be changed!
 		else if (number == 23 && value >= 0) {
 			switchToPart(value);
 		}
+		//--- set vlaues for broadcasting to listeners
+		newMidiValuesToBroadcast = true;	
+		midiInCC = number;
+		midiInValue = value;
 	}
+
+#else
+
+	void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
+
+		// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
+
+		// with midi byte 22 the song can be changed!
+		if (ccIn == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
+			switchToSong(value);
+		}
+		// with midi byte 23 the songpart can be changed!
+		else if (ccIn == 23 && value >= 0) {
+			switchToPart(value);
+		}
+	}
+
 #endif
 //====================================================
 
@@ -6727,6 +6758,7 @@ void setup() {
 	pAdvertising->setScanResponse(false);
 	pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
 	BLEDevice::startAdvertising();
+	
 	Serial.println("Waiting a client connection to notify...");
 
 #else
@@ -6877,24 +6909,15 @@ void setup() {
 
 float voltage;
 
-void sendSongIDtoListeners(int id) {
-
-	uint8_t byteArray[2];
-	byteArray[0] = highByte(id);
-	byteArray[1] = lowByte(id);
-	pCharacteristic->setValue((uint8_t *)&byteArray, 2);
-	pCharacteristic->notify();
-
-	// // with midi byte 22 the song can be changed!
-	// if (number == 22 && value > 0) {
-	// 	songIDforBroadcast = value;	// for broadcasting to listeners
-	// 	switchToSong(value);
-	// }
-	// // with midi byte 23 the songpart can be changed!
-	// else if (number == 23 && value >= 0) {
-	// 	switchToPart(value);
-	// }
+#ifdef THIS_IS_THE_MIDI_PROXY
+void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
+		uint8_t byteArray[2];
+		byteArray[0] = midiInCC;
+		byteArray[1] = midiInValue;
+		pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+		pCharacteristic->notify();
 }
+#endif
 
 void loop() {
 
@@ -6959,15 +6982,15 @@ void loop() {
 
 
   // notify changed value
-  if (songIDforBroadcast != defaultSongIDforBroadcast) {
+  if (newMidiValuesToBroadcast) {
 	if (deviceConnected) {
-		uint8_t byteArray[2];
-		byteArray[0] = highByte(songIDforBroadcast);
-		byteArray[1] = lowByte(songIDforBroadcast);
-		pCharacteristic->setValue((uint8_t *)&byteArray, 2);
-		pCharacteristic->notify();
-		songIDforBroadcast = defaultSongIDforBroadcast;
+		if (DEBUG) Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners");
+		sendValuepairToListeners(midiInCC, midiInValue);
+		LEDgitsHaveBeenSynced = true;
 	}
+	else LEDgitsHaveBeenSynced = false;
+
+	newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
   }
   // disconnecting
   if (!deviceConnected && oldDeviceConnected) {
@@ -6981,14 +7004,14 @@ void loop() {
   // connecting
   if (deviceConnected && !oldDeviceConnected) {
     // do stuff here on connecting
-	if (!LEDgitsHaveBeenSynced) {
-		//----send actual songID
-		uint8_t byteArray[2];
-		byteArray[0] = highByte(songID);
-		byteArray[1] = lowByte(songID);
-		pCharacteristic->setValue((uint8_t *)&byteArray, 2);
-		pCharacteristic->notify();
+	if (DEBUG) Serial.println("deviceConnected && !oldDeviceConnected");
 
+	if (!LEDgitsHaveBeenSynced) {
+		if (DEBUG) Serial.println("sendValuepairToListeners");
+		//----send actual songID
+		sendValuepairToListeners(22, songID);
+		//sendValuepairToListeners(23, prog); -> sync prog with next pro change!!
+		syncProgWithNextChange = true;
 		LEDgitsHaveBeenSynced = true;
 	}
     oldDeviceConnected = deviceConnected;
@@ -7009,17 +7032,20 @@ void loop() {
 		doConnect = false;
 	}
 
-	// If we are connected to a peer BLE Server, update the characteristic each time we are reached
-	// with the current time since boot.
+	// If we are connected to a peer BLE Server
 	if (connected) {   
 		
-		if (songIDfromMidiIn != defaultSongIDfromMidiIn) {
+		if (newMidiValuesReceivedFromProxy) {
 
-			if (DEBUG) Serial.print("received songID: ");
-			if (DEBUG) Serial.println(songIDfromMidiIn);
+			if (DEBUG) {
+				Serial.print("received values from proxy -> cc: ");
+				Serial.print(newMidiCCfromProxy);
+				Serial.print(" - value: ");
+				Serial.println(newMidiValueFromProxy);
+			}
 
-			switchToSong(songIDfromMidiIn);
-			songIDfromMidiIn = defaultSongIDfromMidiIn;
+			MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
+			newMidiValuesReceivedFromProxy = false;
 		}
 	} 
 	else if (doScan) {
@@ -7032,6 +7058,14 @@ void loop() {
 
 
 	if (flag_switchToNextSongPart) {
+
+#ifdef THIS_IS_THE_MIDI_PROXY
+		if (syncProgWithNextChange) {
+			sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
+			syncProgWithNextChange = false;
+		}
+#endif
+
 		switchToPart(nextSongPart);
 	}
 	
