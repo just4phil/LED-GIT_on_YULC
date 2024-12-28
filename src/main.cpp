@@ -26,9 +26,9 @@ const static boolean DEBUG = true;
 #endif
 //===============================
 
-#define RINASBASS	// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs!
+#define RINASBASS	// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs! -> else: Andres GIT
 
-//#define CHECKLIPOVOLTAGE	// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+#define CHECKLIPOVOLTAGE	// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 
 //============================= 
 #define THIS_IS_THE_MIDI_PROXY	// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
@@ -206,7 +206,7 @@ int BRIGHTNESS				= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative
 CRGB leds[NUMMATRIX];
 //=============================================
 
-int progWhiteGoingBright_brightness = BRIGHTNESS;
+//int progWhiteGoingBright_brightness = BRIGHTNESS;
 
 // paths for progOutlinePath
 const static int outlinePath1[] = { 30, 31, 29, 28, 27, 26, 36, 42, 43, 44, 45, 46, 25, 9, 8, 0, 1, 2, 4, 3, 16, 17, 56, 57, 91, 92, 101, 102, 111, 112, 121, 122, 162, 193, 229, 230, 262, 263, 274, 275, 276, 277, 270, 269, 254, 239, 240, 241, 242, 243, 244, 253, 252, 251, 250, 249, 211, 210, 176, 177, 178, 179, 175, 161, 152, 151, 142, 141, 132, 131, 77, 72, 73, 74, 75, 76, 37, 31 };
@@ -414,89 +414,89 @@ void IRAM_ATTR readEncoderISR(){
 #define anz_LEDs_BASS 155
 #define anz_LEDs_GITBOARD 278
 
-		#ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
+#ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
 
-			#define anz_LEDs		anz_LEDs_BASS
+	#define anz_LEDs		anz_LEDs_BASS
 
-			#define Bund_min	 	43
-			#define Bund_max	 	58
+	#define Bund_min	 	43
+	#define Bund_max	 	58
 
-			#define ESaite_E_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
-			#define ESaite_F_tief	 	55	// F/Bb: 55
-			#define ESaite_Fis_tief	 	54	// F#/B: 54
-			#define ESaite_G_tief 		53	// G/C: 53
-			#define ESaite_Gis_tief	 	52	// G#/C#: 52
-			#define ESaite_A	 		51	// A/D: 51
-			#define ESaite_Bb		 	50	// Bb/D#: 50
-			#define ESaite_B		 	49	// B/E: 49
-			#define ESaite_C			48	// C/F: 48
-			#define ESaite_Cis		 	47	// C#/F#: 47
-			#define ESaite_D	 		46	// D/G: 46
-			#define ESaite_Dis		 	45	// D#/G#: 45
-			#define ESaite_E_hoch 		44	// E/A: 44 (hohe Oktave)
-			#define ESaite_F_hoch 		43	// F/Bb: 43 (hohe Oktave)
-			#define ESaite_Fis_hoch 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
-			#define ESaite_G_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+	#define ESaite_E_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F_tief	 	55	// F/Bb: 55
+	#define ESaite_Fis_tief	 	54	// F#/B: 54
+	#define ESaite_G_tief 		53	// G/C: 53
+	#define ESaite_Gis_tief	 	52	// G#/C#: 52
+	#define ESaite_A	 		51	// A/D: 51
+	#define ESaite_Bb		 	50	// Bb/D#: 50
+	#define ESaite_B		 	49	// B/E: 49
+	#define ESaite_C			48	// C/F: 48
+	#define ESaite_Cis		 	47	// C#/F#: 47
+	#define ESaite_D	 		46	// D/G: 46
+	#define ESaite_Dis		 	45	// D#/G#: 45
+	#define ESaite_E_hoch 		44	// E/A: 44 (hohe Oktave)
+	#define ESaite_F_hoch 		43	// F/Bb: 43 (hohe Oktave)
+	#define ESaite_Fis_hoch 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+	#define ESaite_G_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 
-			#define ASaite_A_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
-			#define ASaite_Bb_tief	 	55	// F/Bb: 55
-			#define ASaite_B_tief	 	54	// F#/B: 54
-			#define ASaite_C_tief 		53	// G/C: 53
-			#define ASaite_Cis_tief	 	52	// G#/C#: 52
-			#define ASaite_D	 		51	// A/D: 51
-			#define ASaite_Dis		 	50	// Bb/D#: 50
-			#define ASaite_E		 	49	// B/E: 49
-			#define ASaite_F	 		48	// C/F: 48
-			#define ASaite_Fis		 	47	// C#/F#: 47
-			#define ASaite_G	 		46	// D/G: 46
-			#define ASaite_Gis		 	45	// D#/G#: 45
-			#define ASaite_A_hoch 		44	// E/A: 44 (hohe Oktave)
-			#define ASaite_Bb_hoch 		43	// F/Bb: 43 (hohe Oktave)
-			#define ASaite_B_hoch	 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
-			#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
-		
-		#else	//----------------- NUR FÜR ANDRES GITARRE -------------------
+	#define ASaite_A_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb_tief	 	55	// F/Bb: 55
+	#define ASaite_B_tief	 	54	// F#/B: 54
+	#define ASaite_C_tief 		53	// G/C: 53
+	#define ASaite_Cis_tief	 	52	// G#/C#: 52
+	#define ASaite_D	 		51	// A/D: 51
+	#define ASaite_Dis		 	50	// Bb/D#: 50
+	#define ASaite_E		 	49	// B/E: 49
+	#define ASaite_F	 		48	// C/F: 48
+	#define ASaite_Fis		 	47	// C#/F#: 47
+	#define ASaite_G	 		46	// D/G: 46
+	#define ASaite_Gis		 	45	// D#/G#: 45
+	#define ASaite_A_hoch 		44	// E/A: 44 (hohe Oktave)
+	#define ASaite_Bb_hoch 		43	// F/Bb: 43 (hohe Oktave)
+	#define ASaite_B_hoch	 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+	#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 
-			#define anz_LEDs		anz_LEDs_GIT
+#else	//----------------- NUR FÜR ANDRES GITARRE -------------------
 
-			#define Bund_min	 	50
-			#define Bund_max	 	75
+	#define anz_LEDs		anz_LEDs_GIT
 
-			#define ESaite_E_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
-			#define ESaite_F_tief	 	69	// F/Bb: 55
-			#define ESaite_Fis_tief	 	67	// F#/B: 54
-			#define ESaite_G_tief 		65	// G/C: 53
-			#define ESaite_Gis_tief	 	63	// G#/C#: 52
-			#define ESaite_A	 		62	// A/D: 51
-			#define ESaite_Bb		 	61	// Bb/D#: 50
-			#define ESaite_B		 	60	// B/E: 49
-			#define ESaite_C			59	// C/F: 48
-			#define ESaite_Cis		 	58	// C#/F#: 47
-			#define ESaite_D	 		57	// D/G: 46
-			#define ESaite_Dis		 	56	// D#/G#: 45
-			#define ESaite_E_hoch 		55	// E/A: 44 (hohe Oktave)
-			#define ESaite_F_hoch 		54	// F/Bb: 43 (hohe Oktave)
-			#define ESaite_Fis_hoch 	53	// F#/B: 42 (hohe Oktave)
-			#define ESaite_G_hoch	 	52	// G/C: 41 (hohe Oktave)
+	#define Bund_min	 	50
+	#define Bund_max	 	75
 
-			#define ASaite_A_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
-			#define ASaite_Bb_tief	 	69	// F/Bb: 55
-			#define ASaite_B_tief	 	67	// F#/B: 54
-			#define ASaite_C_tief 		65	// G/C: 53
-			#define ASaite_Cis_tief	 	63	// G#/C#: 52
-			#define ASaite_D	 		62	// A/D: 51
-			#define ASaite_Dis		 	61	// Bb/D#: 50
-			#define ASaite_E		 	60	// B/E: 49
-			#define ASaite_F	 		59	// C/F: 48
-			#define ASaite_Fis		 	58	// C#/F#: 47
-			#define ASaite_G	 		57	// D/G: 46
-			#define ASaite_Gis		 	56	// D#/G#: 45
-			#define ASaite_A_hoch 		55	// E/A: 44 (hohe Oktave)
-			#define ASaite_Bb_hoch 		54	// F/Bb: 43 (hohe Oktave)
-			#define ASaite_B_hoch	 	53	// F#/B: 42 (hohe Oktave)
-			#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
+	#define ESaite_E_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F_tief	 	69	// F/Bb: 55
+	#define ESaite_Fis_tief	 	67	// F#/B: 54
+	#define ESaite_G_tief 		65	// G/C: 53
+	#define ESaite_Gis_tief	 	63	// G#/C#: 52
+	#define ESaite_A	 		62	// A/D: 51
+	#define ESaite_Bb		 	61	// Bb/D#: 50
+	#define ESaite_B		 	60	// B/E: 49
+	#define ESaite_C			59	// C/F: 48
+	#define ESaite_Cis		 	58	// C#/F#: 47
+	#define ESaite_D	 		57	// D/G: 46
+	#define ESaite_Dis		 	56	// D#/G#: 45
+	#define ESaite_E_hoch 		55	// E/A: 44 (hohe Oktave)
+	#define ESaite_F_hoch 		54	// F/Bb: 43 (hohe Oktave)
+	#define ESaite_Fis_hoch 	53	// F#/B: 42 (hohe Oktave)
+	#define ESaite_G_hoch	 	52	// G/C: 41 (hohe Oktave)
 
-		#endif
+	#define ASaite_A_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb_tief	 	69	// F/Bb: 55
+	#define ASaite_B_tief	 	67	// F#/B: 54
+	#define ASaite_C_tief 		65	// G/C: 53
+	#define ASaite_Cis_tief	 	63	// G#/C#: 52
+	#define ASaite_D	 		62	// A/D: 51
+	#define ASaite_Dis		 	61	// Bb/D#: 50
+	#define ASaite_E		 	60	// B/E: 49
+	#define ASaite_F	 		59	// C/F: 48
+	#define ASaite_Fis		 	58	// C#/F#: 47
+	#define ASaite_G	 		57	// D/G: 46
+	#define ASaite_Gis		 	56	// D#/G#: 45
+	#define ASaite_A_hoch 		55	// E/A: 44 (hohe Oktave)
+	#define ASaite_Bb_hoch 		54	// F/Bb: 43 (hohe Oktave)
+	#define ASaite_B_hoch	 	53	// F#/B: 42 (hohe Oktave)
+	#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
+
+#endif
 
 int helligkeit;
 
@@ -638,6 +638,411 @@ static const uint16_t PROGMEM	// TODO Checken ob dies auf dem ESP32 geht
 
 
 #if defined(defLEDGITBOARD)
+
+	//============================================================================= war frueher mal in LEDMatrix.h
+	//========== Andres remapping function für das LED-GIT-BOARD =================
+	//============================================================================
+	const int MISSING_LED = 300;
+	uint16_t myRemapFn(uint16_t x, uint16_t y) {
+
+		switch (y) {
+		case 0:
+			switch (x) {
+			case 4: return 2;
+			case 5: return 1;
+			case 6: return 0;
+			default: return MISSING_LED;
+			}
+			break;
+		case 1:
+			switch (x) {
+			case 2: return 3;
+			case 3: return 4;
+			case 4: return 5;
+			case 5: return 6;
+			case 6: return 7;
+			case 7: return 8;
+			default: return MISSING_LED;
+			}
+			break;
+		case 2:
+			switch (x) {
+			case 1: return 16;
+			case 2: return 15;
+			case 3: return 14;
+			case 4: return 13;
+			case 5: return 12;
+			case 6: return 11;
+			case 7: return 10;
+			case 8: return 9;
+			case 16: return 26;
+			case 17: return 27;
+			case 18: return 28;
+			case 19: return 29;
+			default: return MISSING_LED;
+			}
+			break;
+		case 3:
+			switch (x) {
+			case 1: return 17;
+			case 2: return 18;
+			case 3: return 19;
+			case 4: return 20;
+			case 5: return 21;
+			case 6: return 22;
+			case 7: return 23;
+			case 8: return 24;
+			case 9: return 25;
+			case 15: return 36;
+			case 16: return 35;
+			case 17: return 34;
+			case 18: return 33;
+			case 19: return 32;
+			case 20: return 31;
+			case 21: return 30;
+			default: return MISSING_LED;
+			}
+			break;
+		case 4:
+			switch (x) {
+			case 0: return 56;
+			case 1: return 55;
+			case 2: return 54;
+			case 3: return 53;
+			case 4: return 52;
+			case 5: return 51;
+			case 6: return 50;
+			case 7: return 49;
+			case 8: return 48;
+			case 9: return 47;
+			case 10: return 46;
+			case 11: return 45;
+			case 12: return 44;
+			case 13: return 43;
+			case 14: return 42;
+			case 15: return 41;
+			case 16: return 40;
+			case 17: return 39;
+			case 18: return 38;
+			case 19: return 37;
+			default: return MISSING_LED;
+			}
+			break;
+		case 5:
+			switch (x) {
+			case 0: return 57;
+			case 1: return 58;
+			case 2: return 59;
+			case 3: return 60;
+			case 4: return 61;
+			case 5: return 62;
+			case 6: return 63;
+			case 7: return 64;
+			case 8: return 65;
+			case 9: return 66;
+			case 10: return 67;
+			case 11: return 68;
+			case 12: return 69;
+			case 13: return 70;
+			case 14: return 71;
+			case 15: return 72;
+			case 16: return 73;
+			case 17: return 74;
+			case 18: return 75;
+			case 19: return 76;
+			default: return MISSING_LED;
+			}
+			break;
+		case 6:
+			switch (x) {
+			case 0: return 91;
+			case 1: return 90;
+			case 2: return 89;
+			case 3: return 88;
+			case 4: return 87;
+			case 5: return 86;
+			case 6: return 85;
+			case 7: return 84;
+			case 8: return 83;
+			case 9: return 82;
+			case 10: return 81;
+			case 11: return 80;
+			case 12: return 79;
+			case 13: return 78;
+			case 14: return 77;
+			default: return MISSING_LED;
+			}
+			break;
+		case 7:
+			switch (x) {
+			case 0: return 92;
+			case 1: return 93;
+			case 2: return 94;
+			case 3: return 95;
+			case 4: return 96;
+			case 10: return 127;
+			case 11: return 128;
+			case 12: return 129;
+			case 13: return 130;
+			case 14: return 131;
+			default: return MISSING_LED;
+			}
+			break;
+		case 8:
+			switch (x) {
+			case 0: return 101;
+			case 1: return 100;
+			case 2: return 99;
+			case 3: return 98;
+			case 4: return 97;
+			case 10: return 136;
+			case 11: return 135;
+			case 12: return 134;
+			case 13: return 133;
+			case 14: return 132;
+			default: return MISSING_LED;
+			}
+			break;
+		case 9:
+			switch (x) {
+			case 0: return 102;
+			case 1: return 103;
+			case 2: return 104;
+			case 3: return 105;
+			case 4: return 106;
+			case 10: return 137;
+			case 11: return 138;
+			case 12: return 139;
+			case 13: return 140;
+			case 14: return 141;
+			default: return MISSING_LED;
+			}
+			break;
+		case 10:
+			switch (x) {
+			case 0: return 111;
+			case 1: return 110;
+			case 2: return 109;
+			case 3: return 108;
+			case 4: return 107;
+			case 10: return 146;
+			case 11: return 145;
+			case 12: return 144;
+			case 13: return 143;
+			case 14: return 142;
+			default: return MISSING_LED;
+			}
+			break;
+		case 11:
+			switch (x) {
+			case 0: return 112;
+			case 1: return 113;
+			case 2: return 114;
+			case 3: return 115;
+			case 4: return 116;
+			case 10: return 147;
+			case 11: return 148;
+			case 12: return 149;
+			case 13: return 150;
+			case 14: return 151;
+			default: return MISSING_LED;
+			}
+			break;
+		case 12:
+			switch (x) {
+			case 0: return 121;
+			case 1: return 120;
+			case 2: return 119;
+			case 3: return 118;
+			case 4: return 117;
+			case 10: return 156;
+			case 11: return 155;
+			case 12: return 154;
+			case 13: return 153;
+			case 14: return 152;
+			default: return MISSING_LED;
+			}
+			break;
+		case 13:
+			switch (x) {
+			case 0: return 122;
+			case 1: return 123;
+			case 2: return 124;
+			case 3: return 125;
+			case 4: return 126;
+			case 10: return 157;
+			case 11: return 158;
+			case 12: return 159;
+			case 13: return 160;
+			case 14: return 161;
+			default: return MISSING_LED;
+			}
+			break;
+		case 14:
+			switch (x) {
+			case 1: return 162;
+			case 2: return 163;
+			case 3: return 164;
+			case 4: return 165;
+			case 5: return 166;
+			case 6: return 167;
+			case 7: return 168;
+			case 8: return 169;
+			case 9: return 170;
+			case 10: return 171;
+			case 11: return 172;
+			case 12: return 173;
+			case 13: return 174;
+			case 14: return 175;
+			default: return MISSING_LED;
+			}
+			break;
+		case 15:
+			switch (x) {
+			case 2: return 192;
+			case 3: return 191;
+			case 4: return 190;
+			case 5: return 189;
+			case 6: return 188;
+			case 7: return 187;
+			case 8: return 186;
+			case 9: return 185;
+			case 10: return 184;
+			case 11: return 183;
+			case 12: return 182;
+			case 13: return 181;
+			case 14: return 180;
+			case 15: return 179;
+			case 16: return 178;
+			case 17: return 177;
+			case 18: return 176;
+			default: return MISSING_LED;
+			}
+			break;
+		case 16:
+			switch (x) {
+			case 1: return 193;
+			case 2: return 194;
+			case 3: return 195;
+			case 4: return 196;
+			case 5: return 197;
+			case 6: return 198;
+			case 7: return 199;
+			case 8: return 200;
+			case 9: return 201;
+			case 10: return 202;
+			case 11: return 203;
+			case 12: return 204;
+			case 13: return 205;
+			case 14: return 206;
+			case 15: return 207;
+			case 16: return 208;
+			case 17: return 209;
+			case 18: return 210;
+			default: return MISSING_LED;
+			}
+			break;
+		case 17:
+			switch (x) {
+			case 1: return 229;
+			case 2: return 228;
+			case 3: return 227;
+			case 4: return 226;
+			case 5: return 225;
+			case 6: return 224;
+			case 7: return 223;
+			case 8: return 222;
+			case 9: return 221;
+			case 10: return 220;
+			case 11: return 219;
+			case 12: return 218;
+			case 13: return 217;
+			case 14: return 216;
+			case 15: return 215;
+			case 16: return 214;
+			case 17: return 213;
+			case 18: return 212;
+			case 19: return 211;
+			default: return MISSING_LED;
+			}
+			break;
+		case 18:
+			switch (x) {
+			case 1: return 230;
+			case 2: return 231;
+			case 3: return 232;
+			case 4: return 233;
+			case 5: return 234;
+			case 6: return 235;
+			case 7: return 236;
+			case 8: return 237;
+			case 9: return 238;
+			case 10: return 239;
+			case 11: return 240;
+			case 12: return 241;
+			case 13: return 242;
+			case 14: return 243;
+			case 15: return 244;
+			case 16: return 245;
+			case 17: return 246;
+			case 18: return 247;
+			case 19: return 248;
+			case 20: return 249;
+			default: return MISSING_LED;
+			}
+			break;
+		case 19:
+			switch (x) {
+			case 1: return 262;
+			case 2: return 261;
+			case 3: return 260;
+			case 4: return 259;
+			case 5: return 258;
+			case 6: return 257;
+			case 7: return 256;
+			case 8: return 255;
+			case 9: return 254;
+			case 16: return 253;
+			case 17: return 252;
+			case 18: return 251;
+			case 19: return 250;
+			default: return MISSING_LED;
+			}
+			break;
+		case 20:
+			switch (x) {
+			case 2: return 263;
+			case 3: return 264;
+			case 4: return 265;
+			case 5: return 266;
+			case 6: return 267;
+			case 7: return 268;
+			case 8: return 269;
+			default: return MISSING_LED;
+			}
+			break;
+		case 21:
+			switch (x) {
+			case 3: return 274;
+			case 4: return 273;
+			case 5: return 272;
+			case 6: return 271;
+			case 7: return 270;
+			default: return MISSING_LED;
+			}
+			break;
+		case 22:
+			switch (x) {
+			case 4: return 275;
+			case 5: return 276;
+			case 6: return 277;
+			default: return MISSING_LED;
+			}
+			break;
+		}
+		return MISSING_LED;	// not neccessary but to avoid error
+	}
+
 	RGB_bmp[][64] = {
 	// 00: blue, blue/red, red, red/green, green, green/blue, blue, white
 	{	
@@ -1192,412 +1597,6 @@ void display_panOrBounceBitmap(uint8_t bitmapSize) {
 		}
 		delay(10);
 	}
-}
-
-
-
-//============================================================================= war frueher mal in LEDMatrix.h
- //========== Andres remapping function für das LED-GIT-BOARD =================
- //============================================================================
-const int MISSING_LED = 300;
-uint16_t myRemapFn(uint16_t x, uint16_t y) {
-
-    switch (y) {
-    case 0:
-        switch (x) {
-        case 4: return 2;
-        case 5: return 1;
-        case 6: return 0;
-        default: return MISSING_LED;
-        }
-        break;
-    case 1:
-        switch (x) {
-        case 2: return 3;
-        case 3: return 4;
-        case 4: return 5;
-        case 5: return 6;
-        case 6: return 7;
-        case 7: return 8;
-        default: return MISSING_LED;
-        }
-        break;
-    case 2:
-        switch (x) {
-        case 1: return 16;
-        case 2: return 15;
-        case 3: return 14;
-        case 4: return 13;
-        case 5: return 12;
-        case 6: return 11;
-        case 7: return 10;
-        case 8: return 9;
-        case 16: return 26;
-        case 17: return 27;
-        case 18: return 28;
-        case 19: return 29;
-        default: return MISSING_LED;
-        }
-        break;
-    case 3:
-        switch (x) {
-        case 1: return 17;
-        case 2: return 18;
-        case 3: return 19;
-        case 4: return 20;
-        case 5: return 21;
-        case 6: return 22;
-        case 7: return 23;
-        case 8: return 24;
-        case 9: return 25;
-        case 15: return 36;
-        case 16: return 35;
-        case 17: return 34;
-        case 18: return 33;
-        case 19: return 32;
-        case 20: return 31;
-        case 21: return 30;
-        default: return MISSING_LED;
-        }
-        break;
-    case 4:
-        switch (x) {
-        case 0: return 56;
-        case 1: return 55;
-        case 2: return 54;
-        case 3: return 53;
-        case 4: return 52;
-        case 5: return 51;
-        case 6: return 50;
-        case 7: return 49;
-        case 8: return 48;
-        case 9: return 47;
-        case 10: return 46;
-        case 11: return 45;
-        case 12: return 44;
-        case 13: return 43;
-        case 14: return 42;
-        case 15: return 41;
-        case 16: return 40;
-        case 17: return 39;
-        case 18: return 38;
-        case 19: return 37;
-        default: return MISSING_LED;
-        }
-        break;
-    case 5:
-        switch (x) {
-        case 0: return 57;
-        case 1: return 58;
-        case 2: return 59;
-        case 3: return 60;
-        case 4: return 61;
-        case 5: return 62;
-        case 6: return 63;
-        case 7: return 64;
-        case 8: return 65;
-        case 9: return 66;
-        case 10: return 67;
-        case 11: return 68;
-        case 12: return 69;
-        case 13: return 70;
-        case 14: return 71;
-        case 15: return 72;
-        case 16: return 73;
-        case 17: return 74;
-        case 18: return 75;
-        case 19: return 76;
-        default: return MISSING_LED;
-        }
-        break;
-    case 6:
-        switch (x) {
-        case 0: return 91;
-        case 1: return 90;
-        case 2: return 89;
-        case 3: return 88;
-        case 4: return 87;
-        case 5: return 86;
-        case 6: return 85;
-        case 7: return 84;
-        case 8: return 83;
-        case 9: return 82;
-        case 10: return 81;
-        case 11: return 80;
-        case 12: return 79;
-        case 13: return 78;
-        case 14: return 77;
-        default: return MISSING_LED;
-        }
-        break;
-    case 7:
-        switch (x) {
-        case 0: return 92;
-        case 1: return 93;
-        case 2: return 94;
-        case 3: return 95;
-        case 4: return 96;
-        case 10: return 127;
-        case 11: return 128;
-        case 12: return 129;
-        case 13: return 130;
-        case 14: return 131;
-        default: return MISSING_LED;
-        }
-        break;
-    case 8:
-        switch (x) {
-        case 0: return 101;
-        case 1: return 100;
-        case 2: return 99;
-        case 3: return 98;
-        case 4: return 97;
-        case 10: return 136;
-        case 11: return 135;
-        case 12: return 134;
-        case 13: return 133;
-        case 14: return 132;
-        default: return MISSING_LED;
-        }
-        break;
-    case 9:
-        switch (x) {
-        case 0: return 102;
-        case 1: return 103;
-        case 2: return 104;
-        case 3: return 105;
-        case 4: return 106;
-        case 10: return 137;
-        case 11: return 138;
-        case 12: return 139;
-        case 13: return 140;
-        case 14: return 141;
-        default: return MISSING_LED;
-        }
-        break;
-    case 10:
-        switch (x) {
-        case 0: return 111;
-        case 1: return 110;
-        case 2: return 109;
-        case 3: return 108;
-        case 4: return 107;
-        case 10: return 146;
-        case 11: return 145;
-        case 12: return 144;
-        case 13: return 143;
-        case 14: return 142;
-        default: return MISSING_LED;
-        }
-        break;
-    case 11:
-        switch (x) {
-        case 0: return 112;
-        case 1: return 113;
-        case 2: return 114;
-        case 3: return 115;
-        case 4: return 116;
-        case 10: return 147;
-        case 11: return 148;
-        case 12: return 149;
-        case 13: return 150;
-        case 14: return 151;
-        default: return MISSING_LED;
-        }
-        break;
-    case 12:
-        switch (x) {
-        case 0: return 121;
-        case 1: return 120;
-        case 2: return 119;
-        case 3: return 118;
-        case 4: return 117;
-        case 10: return 156;
-        case 11: return 155;
-        case 12: return 154;
-        case 13: return 153;
-        case 14: return 152;
-        default: return MISSING_LED;
-        }
-        break;
-    case 13:
-        switch (x) {
-        case 0: return 122;
-        case 1: return 123;
-        case 2: return 124;
-        case 3: return 125;
-        case 4: return 126;
-        case 10: return 157;
-        case 11: return 158;
-        case 12: return 159;
-        case 13: return 160;
-        case 14: return 161;
-        default: return MISSING_LED;
-        }
-        break;
-    case 14:
-        switch (x) {
-        case 1: return 162;
-        case 2: return 163;
-        case 3: return 164;
-        case 4: return 165;
-        case 5: return 166;
-        case 6: return 167;
-        case 7: return 168;
-        case 8: return 169;
-        case 9: return 170;
-        case 10: return 171;
-        case 11: return 172;
-        case 12: return 173;
-        case 13: return 174;
-        case 14: return 175;
-        default: return MISSING_LED;
-        }
-        break;
-    case 15:
-        switch (x) {
-        case 2: return 192;
-        case 3: return 191;
-        case 4: return 190;
-        case 5: return 189;
-        case 6: return 188;
-        case 7: return 187;
-        case 8: return 186;
-        case 9: return 185;
-        case 10: return 184;
-        case 11: return 183;
-        case 12: return 182;
-        case 13: return 181;
-        case 14: return 180;
-        case 15: return 179;
-        case 16: return 178;
-        case 17: return 177;
-        case 18: return 176;
-        default: return MISSING_LED;
-        }
-        break;
-    case 16:
-        switch (x) {
-        case 1: return 193;
-        case 2: return 194;
-        case 3: return 195;
-        case 4: return 196;
-        case 5: return 197;
-        case 6: return 198;
-        case 7: return 199;
-        case 8: return 200;
-        case 9: return 201;
-        case 10: return 202;
-        case 11: return 203;
-        case 12: return 204;
-        case 13: return 205;
-        case 14: return 206;
-        case 15: return 207;
-        case 16: return 208;
-        case 17: return 209;
-        case 18: return 210;
-        default: return MISSING_LED;
-        }
-        break;
-    case 17:
-        switch (x) {
-        case 1: return 229;
-        case 2: return 228;
-        case 3: return 227;
-        case 4: return 226;
-        case 5: return 225;
-        case 6: return 224;
-        case 7: return 223;
-        case 8: return 222;
-        case 9: return 221;
-        case 10: return 220;
-        case 11: return 219;
-        case 12: return 218;
-        case 13: return 217;
-        case 14: return 216;
-        case 15: return 215;
-        case 16: return 214;
-        case 17: return 213;
-        case 18: return 212;
-        case 19: return 211;
-        default: return MISSING_LED;
-        }
-        break;
-    case 18:
-        switch (x) {
-        case 1: return 230;
-        case 2: return 231;
-        case 3: return 232;
-        case 4: return 233;
-        case 5: return 234;
-        case 6: return 235;
-        case 7: return 236;
-        case 8: return 237;
-        case 9: return 238;
-        case 10: return 239;
-        case 11: return 240;
-        case 12: return 241;
-        case 13: return 242;
-        case 14: return 243;
-        case 15: return 244;
-        case 16: return 245;
-        case 17: return 246;
-        case 18: return 247;
-        case 19: return 248;
-        case 20: return 249;
-        default: return MISSING_LED;
-        }
-        break;
-    case 19:
-        switch (x) {
-        case 1: return 262;
-        case 2: return 261;
-        case 3: return 260;
-        case 4: return 259;
-        case 5: return 258;
-        case 6: return 257;
-        case 7: return 256;
-        case 8: return 255;
-        case 9: return 254;
-        case 16: return 253;
-        case 17: return 252;
-        case 18: return 251;
-        case 19: return 250;
-        default: return MISSING_LED;
-        }
-        break;
-    case 20:
-        switch (x) {
-        case 2: return 263;
-        case 3: return 264;
-        case 4: return 265;
-        case 5: return 266;
-        case 6: return 267;
-        case 7: return 268;
-        case 8: return 269;
-        default: return MISSING_LED;
-        }
-        break;
-    case 21:
-        switch (x) {
-        case 3: return 274;
-        case 4: return 273;
-        case 5: return 272;
-        case 6: return 271;
-        case 7: return 270;
-        default: return MISSING_LED;
-        }
-        break;
-    case 22:
-        switch (x) {
-        case 4: return 275;
-        case 5: return 276;
-        case 6: return 277;
-        default: return MISSING_LED;
-        }
-        break;
-    }
-    return MISSING_LED;	// not neccessary but to avoid error
 }
 
 
@@ -6863,9 +6862,11 @@ void setup() {
 	matrix->setBrightness(BRIGHTNESS);
     	matrix->setTextWrap(false);
 
-    	if (LEDGITBOARD) {
+	#ifdef LEDGITBOARD
+    //if (LEDGITBOARD) {
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
-	}
+	//}
+	#endif
 
 	//------ Setup Palette
 	currentPalette = RainbowColors_p;
