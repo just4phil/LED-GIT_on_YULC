@@ -5,18 +5,13 @@
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 #include <WiFiType.h>		// to turn WIFI off
 #include <WiFi.h>			// to turn WIFI off
-#include <esp_bt_main.h>	// to turn BT off
+//#include <esp_bt_main.h>	// to turn BT off
 #include <Adafruit_I2CDevice.h>	
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>	// FastLED_NeoMatrix example for single NeoPixel Shield. By Marc MERLIN <marc_soft@merlins.org> Contains code (c) Adafruit, license BSD
 #include <FastLED.h>
-//#include "TeensyTimerTool.h"	// fuer timer / interrupts via library
-//using namespace TeensyTimerTool;
 #include "smileytongue24.h"
-// Choose your prefered pixmap
-//#include "heart24.h"
-//#include "yellowsmiley24.h"
-//#include "bluesmiley24.h"
+
 
 const static boolean DEBUG = true;
 
@@ -31,10 +26,9 @@ const static boolean DEBUG = true;
 #endif
 //===============================
 
+#define RINASBASS	// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs!
 
 //#define CHECKLIPOVOLTAGE	// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
-
-
 
 //============================= 
 #define THIS_IS_THE_MIDI_PROXY	// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
@@ -191,10 +185,8 @@ const static boolean DEBUG = true;
 #endif
 //===============================
 
-#define DATA_PIN_1            1 	// yulc channel 1
-#define DATA_PIN_2            2 	// yulc channel 2
-//#define MIDI_RX_PIN         43 	//on ESP32-S3: SOC_RX0 = 20 / RX1 = 15 // YULC: GPIO 43
-//#define TEST_PIN_D7         6 // internal LED -> TODO: raus
+#define DATA_PIN_1          1 	// yulc channel 1
+#define DATA_PIN_2          2 	// yulc channel 2
 #define LIPO_PIN            4 
 #define SECONDSFORVOLTAGE	1
 #define mw					22	// TODO: ausmerzen
@@ -210,7 +202,6 @@ int BRIGHTNESS				= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
-#define anz_LEDs			193 //fuer die stripe-git // git-board hat: 278
 
 CRGB leds[NUMMATRIX];
 //=============================================
@@ -253,11 +244,6 @@ int col2;
 #define green2 		255	//byte green2;
 #define center_x 	10	//byte center_x;
 #define center_y 	10	//byte center_y;
-
-// byte incomingMidiByte;
-// byte midiStatusByte;
-// byte midiDataByte1;
-// byte midiDataByte2;
 
 int adc_value = 0;
 float adc_voltage = 0.0;
@@ -424,49 +410,125 @@ void IRAM_ATTR readEncoderISR(){
 } 
 //======================================================
 
+#define anz_LEDs_GIT 193
+#define anz_LEDs_BASS 155
+#define anz_LEDs_GITBOARD 278
 
+		#ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
 
-//==================================
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
+			#define anz_LEDs		anz_LEDs_BASS
+
+			#define Bund_min	 	43
+			#define Bund_max	 	58
+
+			#define ESaite_E_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
+			#define ESaite_F_tief	 	55	// F/Bb: 55
+			#define ESaite_Fis_tief	 	54	// F#/B: 54
+			#define ESaite_G_tief 		53	// G/C: 53
+			#define ESaite_Gis_tief	 	52	// G#/C#: 52
+			#define ESaite_A	 		51	// A/D: 51
+			#define ESaite_Bb		 	50	// Bb/D#: 50
+			#define ESaite_B		 	49	// B/E: 49
+			#define ESaite_C			48	// C/F: 48
+			#define ESaite_Cis		 	47	// C#/F#: 47
+			#define ESaite_D	 		46	// D/G: 46
+			#define ESaite_Dis		 	45	// D#/G#: 45
+			#define ESaite_E_hoch 		44	// E/A: 44 (hohe Oktave)
+			#define ESaite_F_hoch 		43	// F/Bb: 43 (hohe Oktave)
+			#define ESaite_Fis_hoch 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+			#define ESaite_G_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+
+			#define ASaite_A_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
+			#define ASaite_Bb_tief	 	55	// F/Bb: 55
+			#define ASaite_B_tief	 	54	// F#/B: 54
+			#define ASaite_C_tief 		53	// G/C: 53
+			#define ASaite_Cis_tief	 	52	// G#/C#: 52
+			#define ASaite_D	 		51	// A/D: 51
+			#define ASaite_Dis		 	50	// Bb/D#: 50
+			#define ASaite_E		 	49	// B/E: 49
+			#define ASaite_F	 		48	// C/F: 48
+			#define ASaite_Fis		 	47	// C#/F#: 47
+			#define ASaite_G	 		46	// D/G: 46
+			#define ASaite_Gis		 	45	// D#/G#: 45
+			#define ASaite_A_hoch 		44	// E/A: 44 (hohe Oktave)
+			#define ASaite_Bb_hoch 		43	// F/Bb: 43 (hohe Oktave)
+			#define ASaite_B_hoch	 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+			#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
+		
+		#else	//----------------- NUR FÜR ANDRES GITARRE -------------------
+
+			#define anz_LEDs		anz_LEDs_GIT
+
+			#define Bund_min	 	50
+			#define Bund_max	 	75
+
+			#define ESaite_E_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
+			#define ESaite_F_tief	 	69	// F/Bb: 55
+			#define ESaite_Fis_tief	 	67	// F#/B: 54
+			#define ESaite_G_tief 		65	// G/C: 53
+			#define ESaite_Gis_tief	 	63	// G#/C#: 52
+			#define ESaite_A	 		62	// A/D: 51
+			#define ESaite_Bb		 	61	// Bb/D#: 50
+			#define ESaite_B		 	60	// B/E: 49
+			#define ESaite_C			59	// C/F: 48
+			#define ESaite_Cis		 	58	// C#/F#: 47
+			#define ESaite_D	 		57	// D/G: 46
+			#define ESaite_Dis		 	56	// D#/G#: 45
+			#define ESaite_E_hoch 		55	// E/A: 44 (hohe Oktave)
+			#define ESaite_F_hoch 		54	// F/Bb: 43 (hohe Oktave)
+			#define ESaite_Fis_hoch 	53	// F#/B: 42 (hohe Oktave)
+			#define ESaite_G_hoch	 	52	// G/C: 41 (hohe Oktave)
+
+			#define ASaite_A_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
+			#define ASaite_Bb_tief	 	69	// F/Bb: 55
+			#define ASaite_B_tief	 	67	// F#/B: 54
+			#define ASaite_C_tief 		65	// G/C: 53
+			#define ASaite_Cis_tief	 	63	// G#/C#: 52
+			#define ASaite_D	 		62	// A/D: 51
+			#define ASaite_Dis		 	61	// Bb/D#: 50
+			#define ASaite_E		 	60	// B/E: 49
+			#define ASaite_F	 		59	// C/F: 48
+			#define ASaite_Fis		 	58	// C#/F#: 47
+			#define ASaite_G	 		57	// D/G: 46
+			#define ASaite_Gis		 	56	// D#/G#: 45
+			#define ASaite_A_hoch 		55	// E/A: 44 (hohe Oktave)
+			#define ASaite_Bb_hoch 		54	// F/Bb: 43 (hohe Oktave)
+			#define ASaite_B_hoch	 	53	// F#/B: 42 (hohe Oktave)
+			#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
+
+		#endif
 
 int helligkeit;
 
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 void turnOffGitBlindingLEDs() {
 	
-	if (BRIGHTNESS >= 0 && BRIGHTNESS <20) helligkeit = 255;
-	else if (BRIGHTNESS >= 20 && BRIGHTNESS <60) helligkeit = 40;
-	else if (BRIGHTNESS >= 60 && BRIGHTNESS <100) helligkeit = 25;
-	else if (BRIGHTNESS >= 100 && BRIGHTNESS <140) helligkeit = 20;
-	else if (BRIGHTNESS >= 140 && BRIGHTNESS <180) helligkeit = 15;
-	else if (BRIGHTNESS >= 180 && BRIGHTNESS <210) helligkeit = 10;
-	else if (BRIGHTNESS >= 210 && BRIGHTNESS <255) helligkeit = 5;
-
 	if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
 		
 		//turnOffGitBlindingLEDs
-		for (int i = 50; i < 75; i++) {
+		for (int i = Bund_min; i < Bund_max; i++) {
 			leds[i] = CRGB(0, 0, 0); //BLACK
 		}
 
-		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
+		if (BRIGHTNESS >= 0 && BRIGHTNESS <20) helligkeit = 255;
+		else if (BRIGHTNESS >= 20 && BRIGHTNESS <60) helligkeit = 40;
+		else if (BRIGHTNESS >= 60 && BRIGHTNESS <100) helligkeit = 25;
+		else if (BRIGHTNESS >= 100 && BRIGHTNESS <140) helligkeit = 20;
+		else if (BRIGHTNESS >= 140 && BRIGHTNESS <180) helligkeit = 15;
+		else if (BRIGHTNESS >= 180 && BRIGHTNESS <210) helligkeit = 10;
+		else if (BRIGHTNESS >= 210 && BRIGHTNESS <255) helligkeit = 5;
 
+		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
 		// turn on special MarkerLEDs for the songs
-		if (markerLED1 > 50 && markerLED1 < 75) leds[markerLED1] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED2 > 50 && markerLED2 < 75) leds[markerLED2] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED3 > 50 && markerLED3 < 75) leds[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED4 > 50 && markerLED4 < 75) leds[markerLED4] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED5 > 50 && markerLED5 < 75) leds[markerLED5] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED1 > Bund_min-1 && markerLED1 < Bund_max) leds[markerLED1] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED2 > Bund_min-1 && markerLED2 < Bund_max) leds[markerLED2] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED3 > Bund_min-1 && markerLED3 < Bund_max) leds[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED4 > Bund_min-1 && markerLED4 < Bund_max) leds[markerLED4] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED5 > Bund_min-1 && markerLED5 < Bund_max) leds[markerLED5] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 
 		// turn on generel MarkerLEDs
-		//leds[72] = CRGB::Blue;
-		leds[55] = CRGB(0, 0, helligkeit);	//CRGB::Blue;
-		leds[62] = CRGB(0, 0, helligkeit);	//CRGB::Blue;
+		leds[ESaite_E_hoch] = CRGB(0, 0, helligkeit);	//CRGB::Blue;
+		leds[ESaite_A] 		= CRGB(0, 0, helligkeit);	//CRGB::Blue;
 	}
 }
 
@@ -1719,7 +1781,6 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 		else if (progBlingBlingColoring_rounds == 3) r = getRandomColorValue();
 	}
 }
-
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange) {
 	progBlingBlingColoring(durationMillis, nextPart, msForColorChange, 20);
 }
@@ -1765,7 +1826,6 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 		FastLED.show();
 	}
 }
-
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart) {
 	progFastBlingBling(durationMillis, anzahl, nextPart, 0, 0, 0);
 }
@@ -1815,73 +1875,6 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 		}
 	}
 }
-
-// only for ampere testing
-// void progWhiteGoingBright(unsigned int durationMillis, byte nextPart, unsigned int del) {
-// 	//--- standard-part um dauer und naechstes programm zu speichern ----
-// 	if (!nextChangeMillisAlreadyCalculated) {
-// 		FastLED.clear(true);
-// 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-// 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
-// 		nextChangeMillis = durationMillis;
-// 		nextSongPart = nextPart;
-// 		nextChangeMillisAlreadyCalculated = true;
-// 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
-// 	}
-// 	//---------------------------------------------------------------------
-// 	if (millisCounterTimer >= del) {	// ersatz für delay()
-// 		millisCounterTimer = 0;
-// 		progWhiteGoingBright_brightness = progWhiteGoingBright_brightness + 5;
-// 		if (progWhiteGoingBright_brightness > 255) progWhiteGoingBright_brightness = BRIGHTNESS;
-// 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-// 			FastLED.setBrightness(progWhiteGoingBright_brightness);
-// 			FastLED.showColor(CRGB(255, 255, 255));
-// 		}
-// 	}
-// }
-
-
-// TODO: scheint mir mit den 5000 millis buggy zu sein!?
-// void progFullColorsWithFading(unsigned int durationMillis, byte nextPart) {
-// 	//--- standard-part um dauer und naechstes programm zu speichern ----
-// 	if (!nextChangeMillisAlreadyCalculated) {
-// 		FastLED.clear(true);
-// 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-// 		//nextChangeMillis = round((float)durationMillis / (float)2.25f);	// TODO: diesen wert eurieren und anpassen!!
-// 		nextChangeMillis = durationMillis;
-// 		nextSongPart = nextPart;
-// 		nextChangeMillisAlreadyCalculated = true;
-// 		//millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
-// 	}
-// 	//---------------------------------------------------------------------
-// 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-// 		if (millisCounterTimer >= 5000) {	// ersatz für delay()
-// 			millisCounterTimer = 0;
-// 			byte lastRed = r;
-// 			byte lastGreen = g;
-// 			byte lastBlue = b;
-// 			r = getRandomColorValue();
-// 			g = getRandomColorValue();
-// 			b = getRandomColorValue();
-// 			int diff_r = r - lastRed;
-// 			int diff_g = g - lastGreen;
-// 			int diff_b = b - lastBlue;
-// 			for (int i = 0; i < abs(diff_r); i++) {
-// 				if (diff_r < 0) FastLED.showColor(CRGB(lastRed - i, lastGreen, lastBlue));
-// 				else FastLED.showColor(CRGB(lastRed + i, lastGreen, lastBlue));
-// 			}
-// 			for (int i = 0; i < abs(diff_g); i++) {
-// 				if (diff_g < 0) FastLED.showColor(CRGB(r, lastGreen - i, lastBlue));
-// 				else FastLED.showColor(CRGB(r, lastGreen + i, lastBlue));
-// 			}
-// 			for (int i = 0; i < abs(diff_b); i++) {
-// 				if (diff_b < 0) FastLED.showColor(CRGB(r, g, lastBlue - i));
-// 				else FastLED.showColor(CRGB(r, g, lastBlue + i));
-// 			}
-// 		}
-// 		FastLED.showColor(CRGB(r, g, b));
-// 	}
-// }
 
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue) {
 
@@ -2415,7 +2408,6 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 		}
 	}
 }
-
 void progOutline(unsigned int durationMillis, byte nextPart) {
 	progOutline(durationMillis, nextPart, 0);
 }
@@ -3444,21 +3436,6 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart) {
 	progMatrixVertical(durationMillis, nextPart, 100);
 }
 
-// void progGoTo(byte nextPart) {
-// 	//--- standard-part um dauer und naechstes programm zu speichern ----
-// 	if (!nextChangeMillisAlreadyCalculated) {
-// 		nextChangeMillis = 0;
-// 		nextSongPart = nextPart;
-// 		nextChangeMillisAlreadyCalculated = true;
-// 	}
-// }
-
-// TODO: Fix progCLED -> brauchen wir die beiden variablen unten noch?
-//=== progCLED =====================
-// uint8_t progCLED_hue;
-// int16_t progCLED_counter;
-
-
 void switchToPart(byte part) {
 
 	prog = part;
@@ -3962,17 +3939,14 @@ void TakeOnMe() {	// TODO
 		progStrobo(6235, 65, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 	case 65: //letzter durchgang	6230
-		markerLED4 = 67;	// nächsten bund schon mal präventiv anzeigen 
+		markerLED4 = ESaite_Fis_tief; // 67;	// nächsten bund schon mal präventiv anzeigen 
 		progFastBlingBling(6230, 6, 70);
 		break;
 	case 70: //BRIDGE	18705
-			// markerLED1 = 62;	
-			// markerLED2 = 65;
-			// markerLED3 = 60;
-			markerLED1 = 69;	
-			markerLED2 = 0;
-			markerLED3 = 0;
-			markerLED4 = 67;		
+		markerLED1 = ESaite_F_tief; //69;	
+		markerLED2 = 0;
+		markerLED3 = 0;
+		markerLED4 = ESaite_Fis_tief; // 67;		
 		progPalette(18705, 9, 75);	// rot weiss blau
 		break;
 	case 75: //SOLO SYNTH	6230
@@ -4187,11 +4161,10 @@ void UseSomebody() {
 		break;
 
 	case 30://bridge		13913
-		markerLED1 = 62; // D (wird aber eh mit blau überschrieben)
-		markerLED2 = 67; // F#
-		markerLED3 = 60; // B		
-		markerLED4 = 59; // C erst fuer den naechsten Part, aber gut zur Orientierung		
-		//progMovingLines(13913, 35);
+		markerLED1 = ASaite_D; //62; // D (wird aber eh mit blau überschrieben)
+		markerLED2 = ASaite_B_tief; //67; // F#
+		markerLED3 = ESaite_B; //60; // B		
+		markerLED4 = ESaite_C; //59; // C erst fuer den naechsten Part, aber gut zur Orientierung		
 		progPalette(13913, 4, 35);	// paletteID -> 0 - 10
 		break;
 
@@ -6220,11 +6193,6 @@ void Kids() { // TODO
 
 	case 40: // verse 2b	15000
 		progRandomLines(15000, 45, 510, false);
-		//progPalette(15000, 3, 45);
-		//progStrobo(15000, 45, 65, 255, 255, 255);
-		//progFullColors(15000, 45, 455);
-		//progStern(15000, 515, 45, 20); 
-		//progMatrixHorizontal(15000, 45, 70);
 		break;	
 
 	case 45: // chorus 2	15000
@@ -6511,146 +6479,159 @@ void setMarkerLEDs(byte songID) {
 	
 	FastLED.setBrightness(BRIGHTNESS); // zur sicherheit for jedem loop neu auf default setzen. ggf. kann einzelner fx das überschreiben
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
+//    E-Saite			   A-Saite			GITARRE			BASS
+//====================================================================================
+// ESaite_E_tief	 	ASaite_A_tief		71		E/A 	56 (leere / tiefe Saiten)
+// ESaite_F_tief	 	ASaite_Bb_tief		69		F/Bb 	55
+// ESaite_Fis_tief	 	ASaite_B_tief		67		F#/B 	54
+// ESaite_G_tief 		ASaite_C_tief		65		G/C 	53
+// ESaite_Gis_tief	 	ASaite_Cis_tief 	63		G#/C# 	52
+// ESaite_A	 			ASaite_D			62		A/D 	51
+// ESaite_Bb		 	ASaite_Dis			61		Bb/D# 	50
+// ESaite_B		 		ASaite_E			60		B/E 	49
+// ESaite_C				ASaite_F			59		C/F 	48
+// ESaite_Cis		 	ASaite_Fis			58		C#/F# 	47
+// ESaite_D	 			ASaite_G			57		D/G 	46
+// ESaite_Dis		 	ASaite_Gis			56		D#/G# 	45
+// ESaite_E_hoch 		ASaite_A_hoch		55		E/A 	44 (hohe Oktave)
+// ESaite_F_hoch 		ASaite_Bb_hoch		54		F/Bb 	43 (hohe Oktave)
+// ESaite_Fis_hoch 		ASaite_B_hoch		53		F#/B 	42 (hohe Oktave)
+// ESaite_G_hoch	 	ASaite_C_hoch		52		G/C 	41 (hohe Oktave)
+//====================================================================================
 
 	switch (songID) {
 	case 0: //defaultLoop();
 		// DO NOTHING !!
 		break;
 	case 1: //PhysicalTrailer();
-		markerLED1 = 62; 
-		markerLED2 = 69;
-		markerLED3 = 65;
-		markerLED4 = 59;
+		markerLED1 = ESaite_A; //62; 
+		markerLED2 = ESaite_F_tief; //69;
+		markerLED3 = ESaite_G_tief; //65;
+		markerLED4 = ESaite_C; //59;
 		break;
 	case 2://Physical();
-		markerLED1 = 62; 
-		markerLED2 = 69;
-		markerLED3 = 65;
-		markerLED4 = 59;
+		markerLED1 = ESaite_A; //62; 
+		markerLED2 = ESaite_F_tief; //69;
+		markerLED3 = ESaite_G_tief; //65;
+		markerLED4 = ESaite_C; //59;
 		break;
 	case 3://	TakeOnMe();
-		markerLED1 = 62;	
-		markerLED2 = 65;
-		markerLED3 = 60;
+		markerLED1 = ESaite_A; //62;	
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ESaite_B; //60;
 		break;
 	case 4://Pokerface();
-		markerLED1 = 63;
-		markerLED2 = 67;
-		markerLED3 = 60;
-		markerLED4 = 58;			
+		markerLED1 = ESaite_Gis_tief; //63;
+		markerLED2 = ESaite_Fis_tief; //67;
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ESaite_Cis; //58;			
 		break;
 	case 5://UseSomebody();
-		markerLED1 = 59;
-		markerLED2 = 65;
-		markerLED3 = 69;			
+		markerLED1 = ESaite_C; //59;
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ESaite_F_tief; //69;			
 		break;
 	case 6://NoRoots();
-		markerLED1 = 67;
-		markerLED2 = 60;
-		markerLED3 = 65;
-		markerLED4 = 71;			
+		markerLED1 = ESaite_Fis_tief; //67;
+		markerLED2 = ESaite_B; //60;
+		markerLED3 = ESaite_G_tief; //65;
+		markerLED4 = ESaite_E_tief; //71;			
 		break;
 	case 7://Firework();
-		markerLED1 = 61; // Bb
-		markerLED2 = 65; // G/C
-		markerLED3 = 69; // F/Bb
-		markerLED4 = 59; // C/F			
+		markerLED1 = ESaite_Bb; //61; // Bb
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ESaite_F_tief; //69;	
+		markerLED4 = ASaite_F; //59; // C/F			
 		break;
 	case 8://DancingOnMyOwn();
-		markerLED1 = 60;	
-		markerLED2 = 67;
-		markerLED3 = 58;			
+		markerLED1 = ESaite_B; //60;	
+		markerLED2 = ESaite_Fis_tief; //67;
+		markerLED3 = ESaite_Cis; //58;		
 		break;
 	case 9://SetFire();
-		markerLED1 = 65;
-		markerLED2 = 61;
-		markerLED3 = 69;
-		markerLED4 = 59;			
+		markerLED1 = ESaite_G_tief; //65;
+		markerLED2 = ESaite_Bb; //61;
+		markerLED3 = ESaite_F_tief; //69;
+		markerLED4 = ASaite_F; //59;			
 		break;
 	case 10://BloodyMary();
-		markerLED1 = 61;
-		markerLED2 = 60;
-		markerLED3 = 63;
-		markerLED4 = 67;
-		markerLED5 = 56;			
+		markerLED1 = ESaite_Bb; //61;
+		markerLED2 = ESaite_B; //60;
+		markerLED3 = ESaite_Gis_tief; //63;
+		markerLED4 = ESaite_Fis_tief; //67;
+		markerLED5 = ESaite_Dis; //56;			
 		break;
 	case 11://Titanium();
-		markerLED1 = 65;	
-		markerLED2 = 57;
-		markerLED3 = 67;
-		markerLED4 = 60;			
+		markerLED1 = ESaite_G_tief; //65;	
+		markerLED2 = ESaite_D; //57;
+		markerLED3 = ESaite_Fis_tief; //67;
+		markerLED4 = ESaite_B; //60;			
 		break;
 	case 12://SuchAshame();
-		markerLED1 = 67;
-		markerLED2 = 65;
-		markerLED3 = 60;
-		markerLED4 = 63;			
+		markerLED1 = ESaite_Fis_tief; //67;
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ESaite_Gis_tief; //63;			
 		break;
 	case 13://InTheDark();
-		markerLED1 = 67;	
-		markerLED2 = 63;
-		markerLED3 = 58;
-		markerLED4 = 60;			
+		markerLED1 = ESaite_Fis_tief; //67;	
+		markerLED2 = ESaite_Gis_tief; //63;	
+		markerLED3 = ESaite_Cis; //58;	
+		markerLED4 = ESaite_B; //60;			
 		break;
 	case 14://Shivers();
-		markerLED1 = 61;
-		markerLED2 = 65;
-		markerLED3 = 59;
-		markerLED4 = 69;			
+		markerLED1 = ESaite_Bb; //61;
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ASaite_F; //59;
+		markerLED4 = ESaite_F_tief; //69;			
 		break;
 	case 15://Abcdefu();
-		markerLED1 = 63;
-		markerLED2 = 67;
-		markerLED4 = 58;			
+		markerLED1 = ESaite_Gis_tief; //63;	
+		markerLED2 = ESaite_Fis_tief; //67;	
+		markerLED4 = ESaite_Cis; //58;				
 		break;
 	case 16://enjoyTheSilence();
-		markerLED1 = 69;	
-		markerLED2 = 63;
-		markerLED3 = 59;
-		markerLED4 = 56;			
+		markerLED1 = ESaite_F_tief; //69;	
+		markerLED2 = ESaite_Gis_tief; //63;	
+		markerLED3 = ASaite_F; //59;
+		markerLED4 = ESaite_Dis; //56;			
 		break;
 	case 17://sober();
-		markerLED1 = 63;	
-		markerLED2 = 60;
-		markerLED3 = 67;
-		//markerLED4 = 67;			
+		markerLED1 = ESaite_Gis_tief; //63;		
+		markerLED2 = ESaite_B; //60;
+		markerLED3 = ESaite_Fis_tief; //67;	
+		//markerLED4 = ESaite_Fis_tief; //67;			
 		break;
 	case 18://prisoner();
-		markerLED1 = 63;	
-		markerLED2 = 67;
-		markerLED3 = 60;
-		markerLED4 = 56;			
+		markerLED1 = ESaite_Gis_tief; //63;		
+		markerLED2 = ESaite_Fis_tief; //67;	
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ESaite_Dis; //56;			
 		break;
 	case 19://Hotncold();
-		markerLED1 = 67;
-		markerLED2 = 63;
-		markerLED3 = 60;
-		markerLED4 = 55;			
+		markerLED1 = ESaite_Fis_tief; //67;	
+		markerLED2 = ESaite_Gis_tief; //63;	
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ESaite_E_hoch; //55;		
 		break;
 	case 20://Kids();
-		markerLED1 = 67;
-		markerLED2 = 62;
-		markerLED3 = 60;
-		markerLED4 = 55;
+		markerLED1 = ESaite_Fis_tief; //67;	
+		markerLED2 = ESaite_A; //62;	
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ESaite_E_hoch; //55;
 		break;
 	case 21://Tell it to my Heart
-		markerLED1 = 69;	
-		markerLED2 = 65;
-		markerLED3 = 60;
-		markerLED4 = 59;
-		markerLED5 = 57;			
+		markerLED1 = ESaite_F_tief; //69;	
+		markerLED2 = ESaite_G_tief; //65;
+		markerLED3 = ESaite_B; //60;
+		markerLED4 = ASaite_F; //59;
+		markerLED5 = ESaite_D; //57;			
 		break;
 	case 24://enjoyTheSilenceINTRO();
-		markerLED1 = 69;	
-		markerLED2 = 63;
-		markerLED3 = 59;
-		markerLED4 = 56;			
+		markerLED1 = ESaite_F_tief; //69;
+		markerLED2 = ESaite_Gis_tief; //63;	
+		markerLED3 = ASaite_F; //59;
+		markerLED4 = ESaite_Dis; //56;		
 		break;
 
 	case 100://STARTUP();
@@ -6703,17 +6684,6 @@ int readIndex = 0;                       // the index of the current reading
 int total = 0;                             // the running total
 float average = 0;                       // the average
 //--------------------------------------------------
-
-
-	// TaskHandle_t Task1;
-
-	// static void Task1code( void * parameter) {
-	// 	for(;;) {
-	// 		//Code for task 1 - infinite loop
-			
-	// 	}
-	// }
-
 
 void setup() {
  
