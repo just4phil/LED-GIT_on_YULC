@@ -34,6 +34,8 @@ const static boolean DEBUG = true;
 #define THIS_IS_THE_MIDI_PROXY	// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
 //=============================
 
+uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
+
 #ifdef THIS_IS_THE_MIDI_PROXY
 	#include <BLEDevice.h>
 	#include <BLEServer.h>
@@ -70,13 +72,15 @@ const static boolean DEBUG = true;
 		void onConnect(BLEServer *pServer) {
 			deviceConnected = true;
 			BLEDevice::startAdvertising();
-			if (DEBUG) Serial.println("device connected -> startAdvertising()");
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("device connected -> startAdvertising() // clients connected: " + String(anzahl_BLE_devices));
 		};
 
 		void onDisconnect(BLEServer *pServer) {
 			deviceConnected = false;
 			LEDgitsHaveBeenSynced = false;
-			if (DEBUG) Serial.println("device DISconnected!");
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("device DISconnected! - clients connected: " + String(anzahl_BLE_devices));
 		}
 	};
 #else
@@ -264,7 +268,6 @@ volatile unsigned int millisCounterForSeconds = 0;
 volatile unsigned int nextChangeMillis = 100000;		// start value = 10 sec
 volatile boolean flag_processFastLED = false;
 volatile boolean flag_switchToNextSongPart = false;
-//volatile boolean flag_update_display = true;	 // TODO: kann wohl wieder raus ...nur fuer oled display
 volatile boolean nextChangeMillisAlreadyCalculated = false;
 volatile byte nextSongPart = 0;
 volatile byte prog = 0;							// the actual song-part
@@ -310,7 +313,6 @@ VCC                    any microcontroler output pin - but set also ROTARY_ENCOD
                         in this example pin 25
 
 */
-
 #define ROTARY_ENCODER_A_PIN 37 //6
 #define ROTARY_ENCODER_B_PIN 36 //5
 #define ROTARY_ENCODER_BUTTON_PIN 38 //4
@@ -6696,67 +6698,56 @@ void setup() {
 	//esp_bluedroid_deinit();
 	//----------------
 	
-//=== MIDI PROXY AUFSETZEN =====
-#ifdef THIS_IS_THE_MIDI_PROXY
+	//=== MIDI PROXY AUFSETZEN =====
+	#ifdef THIS_IS_THE_MIDI_PROXY
 
-	BLEDevice::init("ESP32");	// Create the BLE Device
-	// Create the BLE Server
-	pServer = BLEDevice::createServer();
-	pServer->setCallbacks(new MyServerCallbacks());
+		BLEDevice::init("ESP32");	// Create the BLE Device
+		// Create the BLE Server
+		pServer = BLEDevice::createServer();
+		pServer->setCallbacks(new MyServerCallbacks());
 
-	BLEService *pService = pServer->createService(SERVICE_UUID);	  // Create the BLE Service
+		BLEService *pService = pServer->createService(SERVICE_UUID);	  // Create the BLE Service
 
-	pCharacteristic = pService->createCharacteristic(		// Create a BLE Characteristic
-		CHARACTERISTIC_UUID,
-		BLECharacteristic::PROPERTY_READ | 
-		BLECharacteristic::PROPERTY_WRITE | 
-		BLECharacteristic::PROPERTY_NOTIFY | 
-		BLECharacteristic::PROPERTY_INDICATE
-	);
+		pCharacteristic = pService->createCharacteristic(		// Create a BLE Characteristic
+			CHARACTERISTIC_UUID,
+			BLECharacteristic::PROPERTY_READ | 
+			BLECharacteristic::PROPERTY_WRITE | 
+			BLECharacteristic::PROPERTY_NOTIFY | 
+			BLECharacteristic::PROPERTY_INDICATE
+		);
 
-	// https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
-	// Create a BLE Descriptor
-	pCharacteristic->addDescriptor(new BLE2902());
+		// https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
+		// Create a BLE Descriptor
+		pCharacteristic->addDescriptor(new BLE2902());
 
-	// Start the service
-	pService->start();
+		// Start the service
+		pService->start();
 
-	// Start advertising
-	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-	pAdvertising->addServiceUUID(SERVICE_UUID);
-	pAdvertising->setScanResponse(false);
-	pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-	BLEDevice::startAdvertising();
-	
-	Serial.println("Waiting a client connection to notify...");
+		// Start advertising
+		BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+		pAdvertising->addServiceUUID(SERVICE_UUID);
+		pAdvertising->setScanResponse(false);
+		pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+		BLEDevice::startAdvertising();
+		
+		Serial.println("Waiting a client connection to notify...");
 
-#else
-	//---- Dies ist der MIDI Empfänger ----
-	Serial.println("Starting Arduino BLE Client application...");
-	BLEDevice::init("");
+	#else
+		//---- Dies ist der MIDI Empfänger ----
+		Serial.println("Starting Arduino BLE Client application...");
+		BLEDevice::init("");
 
-	// Retrieve a Scanner and set the callback we want to use to be informed when we
-	// have detected a new device.  Specify that we want active scanning and start the
-	// scan to run for 5 seconds.
-	BLEScan *pBLEScan = BLEDevice::getScan();
-	pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-	pBLEScan->setInterval(1349);
-	pBLEScan->setWindow(449);
-	pBLEScan->setActiveScan(true);
-	pBLEScan->start(5, false);
+		// Retrieve a Scanner and set the callback we want to use to be informed when we
+		// have detected a new device.  Specify that we want active scanning and start the
+		// scan to run for 5 seconds.
+		BLEScan *pBLEScan = BLEDevice::getScan();
+		pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+		pBLEScan->setInterval(1349);
+		pBLEScan->setWindow(449);
+		pBLEScan->setActiveScan(true);
+		pBLEScan->start(5, false);
 
-		//--------------------------------
-	//   xTaskCreatePinnedToCore(
-	// 	  Task1code, /* Function to implement the task */
-	// 	  "Task1", /* Name of the task */
-	// 	  10000,  /* Stack size in words */
-	// 	  NULL,  /* Task input parameter */
-	// 	  0,  /* Priority of the task */
-	// 	  &Task1,  /* Task handle. */
-	// 	  0); /* Core where the task should run */
-
-#endif
-
+	#endif
 
 	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
@@ -6784,23 +6775,23 @@ void setup() {
 	// Internally AiEsp32RotaryEncoderNumberSelector will do the math and 
 	// set the most apropriate acceleration, min and max values for you
 
-  // use setRange to set parameters
-  // use setValue for a default/initial value
-  // and finally read the value with getValue
-		
+	// use setRange to set parameters
+	// use setValue for a default/initial value
+	// and finally read the value with getValue
+			
 	numberSelector.attachEncoder(rotaryEncoder);
-  /*
-  numberSelector.setRange parameters:
-      float minValue,                set minimum value for example -12.0
-      float maxValue,                set maximum value for example 31.5
-      float step,                    set step increment, default 1, can be smaller steps like 0.5 or 10
-      bool cycleValues,              set true only if you want going to miminum value after maximum 
-      unsigned int decimals = 0      precision - how many decimal places you want, default is 0
+	/*
+	numberSelector.setRange parameters:
+		float minValue,                set minimum value for example -12.0
+		float maxValue,                set maximum value for example 31.5
+		float step,                    set step increment, default 1, can be smaller steps like 0.5 or 10
+		bool cycleValues,              set true only if you want going to miminum value after maximum 
+		unsigned int decimals = 0      precision - how many decimal places you want, default is 0
 
-  numberSelector.setValue - sets initial value    
-  */
-  numberSelector.setRange(255, 2, -1, false, 0);
-  numberSelector.setValue(DEFAULT_BRIGHTNESS);
+	numberSelector.setValue - sets initial value    
+	*/
+	numberSelector.setRange(255, 2, -1, false, 0);
+	numberSelector.setValue(DEFAULT_BRIGHTNESS);
 	//---------------------------------
 
 	//--- interrupt-timer fuer callback
@@ -6896,146 +6887,147 @@ void loop() {
 		secondsForVoltage++;	// count seconds for voltage lipo safer 
 		OneSecondHasPast = false;
 	}
+
 	//---- check voltage as lipo safer ------
 	if (secondsForVoltage >= SECONDSFORVOLTAGE) {
 
+		#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
+			readings[readIndex] = analogRead(LIPO_PIN);
 
-#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
-		readings[readIndex] = analogRead(LIPO_PIN);
-
-  		// calculate the average:
-		total = 0;
-		for (int i = 0; i < numReadings; i++) {
-			total = total + readings[i];
-		}
-		average = (float)(total / numReadings);
-		voltage = average / 297.4f; // 258.1 bei adc: 2,7V @ 13.0V Input
-		if (DEBUG) {
-			Serial.print("voltage: ");
-			Serial.println(voltage);	
-		}
-		
-		if (voltage < 10.5f) {
-			if (!LIPOvoltageIsLOW) {
-				LIPOvoltageIsLOW = true;
-				if (DEBUG) Serial.println("LIPOvoltageIsLOW: TRUE");
+			// calculate the average:
+			total = 0;
+			for (int i = 0; i < numReadings; i++) {
+				total = total + readings[i];
 			}
-		}
-		else {
-			if (LIPOvoltageIsLOW) {
-				LIPOvoltageIsLOW = false;
-				if (DEBUG) Serial.println("LIPOvoltageIsLOW: FALSE");
+			average = (float)(total / numReadings);
+			voltage = average / 297.4f; // 258.1 bei adc: 2,7V @ 13.0V Input
+			// if (DEBUG) {
+				// 	Serial.print("voltage: ");
+				// 	Serial.println(voltage);	
+				// }
+				
+			if (voltage < 10.5f) {
+				if (!LIPOvoltageIsLOW) {
+					LIPOvoltageIsLOW = true;
+					if (DEBUG) Serial.println("LIPOvoltageIsLOW: TRUE");
+				}
 			}
-		}
-		readIndex = readIndex + 1;
-		if (readIndex >= numReadings) readIndex = 0;
+			else {
+				if (LIPOvoltageIsLOW) {
+					LIPOvoltageIsLOW = false;
+					if (DEBUG) Serial.println("LIPOvoltageIsLOW: FALSE");
+				}
+			}
+			readIndex = readIndex + 1;
+			if (readIndex >= numReadings) readIndex = 0;
 
-#else
-	//====== JUST 4 TESTING !!! -> TODO: DEACTIVATE =======
-	LIPOvoltageIsLOW = false; // JUST 4 TESTING !!! -> TODO: DEACTIVATE ---------------------------------------------------------
-	//====================================
-#endif
+		#else
+			//====== JUST 4 TESTING !!! -> TODO: DEACTIVATE =======
+			LIPOvoltageIsLOW = false; // JUST 4 TESTING !!! -> TODO: DEACTIVATE ---------------------------------------------------------
+			//====================================
+		#endif	
 
 		secondsForVoltage = 0;
 	}
 
-
 	rotary_loop();
 
+	//=== MIDI PROXY AUFSETZEN =====
+	#ifdef THIS_IS_THE_MIDI_PROXY
 
-//=== MIDI PROXY AUFSETZEN =====
-#ifdef THIS_IS_THE_MIDI_PROXY
+		//--- midi immer checken, auch wenn voltage low, damit ja trotzdem marker LEDs setzen kann
+		MIDI.read(); // Continuously check if Midi data has been received.
+		//========================================
 
-
-	//--- midi immer checken, auch wenn voltage low, damit ja trotzdem marker LEDs setzen kann
-	MIDI.read(); // Continuously check if Midi data has been received.
-	//========================================
-
-
-  // notify changed value
-  if (newMidiValuesToBroadcast) {
-	if (deviceConnected) {
-		if (DEBUG) Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners");
-		sendValuepairToListeners(midiInCC, midiInValue);
-		LEDgitsHaveBeenSynced = true;
-	}
-	else LEDgitsHaveBeenSynced = false;
-
-	newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
-  }
-  // disconnecting
-  if (!deviceConnected && oldDeviceConnected) {
-    delay(100);                   // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising();  // restart advertising
-    if (DEBUG) Serial.println("start advertising");
-    oldDeviceConnected = deviceConnected;
-	
-	LEDgitsHaveBeenSynced = false;
-  }
-  // connecting
-  if (deviceConnected && !oldDeviceConnected) {
-    // do stuff here on connecting
-	if (DEBUG) Serial.println("deviceConnected && !oldDeviceConnected");
-
-	if (!LEDgitsHaveBeenSynced) {
-		if (DEBUG) Serial.println("sendValuepairToListeners");
-		//----send actual songID
-		sendValuepairToListeners(22, songID);
-		//sendValuepairToListeners(23, prog); -> sync prog with next pro change!!
-		syncProgWithNextChange = true;
-		LEDgitsHaveBeenSynced = true;
-	}
-    oldDeviceConnected = deviceConnected;
-  }
-
-#else
-
-	// If the flag "doConnect" is true then we have scanned for and found the desired
-	// BLE Server with which we wish to connect.  Now we connect to it.  Once we are
-	// connected we set the connected flag to be true.
-	if (doConnect == true) {
-		if (connectToServer()) {
-			if (DEBUG) Serial.println("We are now connected to the BLE Server.");
-		} 
-		else {
-			if (DEBUG) Serial.println("We have failed to connect to the server; there is nothing more we will do.");
-		}
-		doConnect = false;
-	}
-
-	// If we are connected to a peer BLE Server
-	if (connected) {   
-		
-		if (newMidiValuesReceivedFromProxy) {
-
-			if (DEBUG) {
-				Serial.print("received values from proxy -> cc: ");
-				Serial.print(newMidiCCfromProxy);
-				Serial.print(" - value: ");
-				Serial.println(newMidiValueFromProxy);
+		// notify changed value
+		if (newMidiValuesToBroadcast) {
+			if (deviceConnected) {
+				if (DEBUG) Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners");
+				sendValuepairToListeners(midiInCC, midiInValue);
+				LEDgitsHaveBeenSynced = true;
 			}
+			else LEDgitsHaveBeenSynced = false;
 
-			MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
-			newMidiValuesReceivedFromProxy = false;
+			newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
 		}
-	} 
-	else if (doScan) {
-		if (DEBUG) Serial.println("Scanning for 10 seconds ...");
-		// TODO: put scan on core0
-		BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
-	}
+		// disconnecting
+		if (!deviceConnected && oldDeviceConnected) {
+			delay(100);                   // give the bluetooth stack the chance to get things ready
+			pServer->startAdvertising();  // restart advertising
+			if (DEBUG) Serial.println("start advertising");
+			oldDeviceConnected = deviceConnected;
+			
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("clients connected: " + String(anzahl_BLE_devices));
 
-#endif
+			LEDgitsHaveBeenSynced = false;
+		}
+		// connecting
+		if (deviceConnected && !oldDeviceConnected) {
+			// do stuff here on connecting
+			if (DEBUG) Serial.println("deviceConnected && !oldDeviceConnected");
 
+			if (!LEDgitsHaveBeenSynced) {
+				if (DEBUG) Serial.println("sendValuepairToListeners");
+				//----send actual songID
+				sendValuepairToListeners(22, songID);
+				sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
+				syncProgWithNextChange = true;
+				LEDgitsHaveBeenSynced = true;
+			}
+			oldDeviceConnected = deviceConnected;
+
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("clients connected: " + String(anzahl_BLE_devices));
+		}
+
+	#else
+
+		// If the flag "doConnect" is true then we have scanned for and found the desired
+		// BLE Server with which we wish to connect.  Now we connect to it.  Once we are
+		// connected we set the connected flag to be true.
+		if (doConnect == true) {
+			if (connectToServer()) {
+				if (DEBUG) Serial.println("We are now connected to the BLE Server.");
+			} 
+			else {
+				if (DEBUG) Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+			}
+			doConnect = false;
+		}
+
+		// If we are connected to a peer BLE Server
+		if (connected) {   
+			
+			if (newMidiValuesReceivedFromProxy) {
+
+				if (DEBUG) {
+					Serial.print("received values from proxy -> cc: ");
+					Serial.print(newMidiCCfromProxy);
+					Serial.print(" - value: ");
+					Serial.println(newMidiValueFromProxy);
+				}
+
+				MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
+				newMidiValuesReceivedFromProxy = false;
+			}
+		} 
+		else if (doScan) {
+			if (DEBUG) Serial.println("Scanning for 10 seconds ...");
+			// TODO: put scan on core0
+			BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+		}
+
+	#endif
 
 	if (flag_switchToNextSongPart) {
 
-#ifdef THIS_IS_THE_MIDI_PROXY
-		if (syncProgWithNextChange) {
-			sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
-			syncProgWithNextChange = false;
-		}
-#endif
+		#ifdef THIS_IS_THE_MIDI_PROXY
+				if (syncProgWithNextChange) {
+					sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
+					syncProgWithNextChange = false;
+				}
+		#endif
 
 		switchToPart(nextSongPart);
 	}
