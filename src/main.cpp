@@ -65,19 +65,24 @@ uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 
 	BLEServer *pServer = NULL;
 	BLECharacteristic *pCharacteristic = NULL;
-	bool deviceConnected = false;
-	bool oldDeviceConnected = false;
+	//bool deviceConnected = false;
+	//bool oldDeviceConnected = false;
+
+	bool aDeviceConnected = false;
+	bool aDeviceDISconnected = false;
 
 	class MyServerCallbacks : public BLEServerCallbacks {
 		void onConnect(BLEServer *pServer) {
-			deviceConnected = true;
+			//deviceConnected = true;
+			aDeviceConnected = true;
 			BLEDevice::startAdvertising();
 			anzahl_BLE_devices = pServer->getConnectedCount();
 			if (DEBUG) Serial.println("device connected -> startAdvertising() // clients connected: " + String(anzahl_BLE_devices));
 		};
 
 		void onDisconnect(BLEServer *pServer) {
-			deviceConnected = false;
+			//deviceConnected = false;
+			aDeviceDISconnected = true;
 			LEDgitsHaveBeenSynced = false;
 			anzahl_BLE_devices = pServer->getConnectedCount();
 			if (DEBUG) Serial.println("device DISconnected! - clients connected: " + String(anzahl_BLE_devices));
@@ -6939,47 +6944,70 @@ void loop() {
 		MIDI.read(); // Continuously check if Midi data has been received.
 		//========================================
 
-		// notify changed value
-		if (newMidiValuesToBroadcast) {
-			if (deviceConnected) {
-				if (DEBUG) Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners");
-				sendValuepairToListeners(midiInCC, midiInValue);
-				LEDgitsHaveBeenSynced = true;
-			}
-			else LEDgitsHaveBeenSynced = false;
+		if (aDeviceConnected) {
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("new client! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+			aDeviceConnected = false;
+			LEDgitsHaveBeenSynced = false;
 
-			newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
+			pServer->startAdvertising();  // restart advertising
 		}
-		// disconnecting
-		if (!deviceConnected && oldDeviceConnected) {
+
+		if (aDeviceDISconnected) {
+			anzahl_BLE_devices = pServer->getConnectedCount();
+			if (DEBUG) Serial.println("lost client! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+			aDeviceDISconnected = false;
+
 			delay(100);                   // give the bluetooth stack the chance to get things ready
 			pServer->startAdvertising();  // restart advertising
 			if (DEBUG) Serial.println("start advertising");
-			oldDeviceConnected = deviceConnected;
-			
-			anzahl_BLE_devices = pServer->getConnectedCount();
-			if (DEBUG) Serial.println("clients connected: " + String(anzahl_BLE_devices));
-
 			LEDgitsHaveBeenSynced = false;
 		}
-		// connecting
-		if (deviceConnected && !oldDeviceConnected) {
-			// do stuff here on connecting
-			if (DEBUG) Serial.println("deviceConnected && !oldDeviceConnected");
 
-			if (!LEDgitsHaveBeenSynced) {
-				if (DEBUG) Serial.println("sendValuepairToListeners");
-				//----send actual songID
-				sendValuepairToListeners(22, songID);
-				sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
-				syncProgWithNextChange = true;
+		// notify changed value
+		if (newMidiValuesToBroadcast) {
+			//if (deviceConnected) {
+				if (DEBUG) Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners");
+				sendValuepairToListeners(midiInCC, midiInValue);
 				LEDgitsHaveBeenSynced = true;
-			}
-			oldDeviceConnected = deviceConnected;
+			//}
+			//else LEDgitsHaveBeenSynced = false;
 
-			anzahl_BLE_devices = pServer->getConnectedCount();
-			if (DEBUG) Serial.println("clients connected: " + String(anzahl_BLE_devices));
+			newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
 		}
+
+		if (!LEDgitsHaveBeenSynced) {
+			if (DEBUG) Serial.println("sendValuepairToListeners");
+			//----send actual songID
+			sendValuepairToListeners(22, songID);
+			//sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
+			syncProgWithNextChange = true;
+			LEDgitsHaveBeenSynced = true;
+		}
+
+		// disconnecting
+		// if (!deviceConnected && oldDeviceConnected) {
+		// 	delay(100);                   // give the bluetooth stack the chance to get things ready
+		// 	pServer->startAdvertising();  // restart advertising
+		// 	if (DEBUG) Serial.println("start advertising");
+		// 	oldDeviceConnected = deviceConnected;
+		// 	LEDgitsHaveBeenSynced = false;
+		// }
+		// connecting
+		// if (deviceConnected && !oldDeviceConnected) {
+		// 	// do stuff here on connecting
+		// 	if (DEBUG) Serial.println("deviceConnected && !oldDeviceConnected");
+
+		// 	if (!LEDgitsHaveBeenSynced) {
+		// 		if (DEBUG) Serial.println("sendValuepairToListeners");
+		// 		//----send actual songID
+		// 		sendValuepairToListeners(22, songID);
+		// 		//sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
+		// 		syncProgWithNextChange = true;
+		// 		LEDgitsHaveBeenSynced = true;
+		// 	}
+		// 	oldDeviceConnected = deviceConnected;
+		// }
 
 	#else
 
