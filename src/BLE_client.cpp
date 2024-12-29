@@ -30,6 +30,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         // We have found a device, let us now see if it contains the service we are looking for.
         if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
             // Found our server
+            Serial.print("BLE: Found our server!");
             BLEDevice::getScan()->stop();
             myDevice = new BLEAdvertisedDevice(advertisedDevice);
             doConnect = true;	// WARUM HIER TRUE??
@@ -39,7 +40,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 };  // MyAdvertisedDeviceCallbacks
 
 void BLE_client_initialize() { 
-    Serial.println("Starting Arduino BLE Client application...");
+    Serial.println("Starting BLE Client ...");
     BLEDevice::init("");
 
     // Retrieve a Scanner and set the callback we want to use to be informed when we
@@ -63,7 +64,6 @@ class MyClientCallback : public BLEClientCallbacks {
     void onConnect(BLEClient *pclient) {
         Serial.println("onConnect");
     }
-
     void onDisconnect(BLEClient *pclient) {
         connected = false;
         Serial.println("onDisconnect");
@@ -134,36 +134,36 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 }
 
 void BLE_client_Loop() {
-        // If the flag "doConnect" is true then we have scanned for and found the desired
-		// BLE Server with which we wish to connect.  Now we connect to it.  Once we are
-		// connected we set the connected flag to be true.
-		if (doConnect == true) {
-			if (connectToServer()) {
-				Serial.println("We are now connected to the BLE Server.");
-			} 
-			else {
-				Serial.println("We have failed to connect to the server; there is nothing more we will do.");
-			}
-			doConnect = false;
-		}
+    // If the flag "doConnect" is true then we have scanned for and found the desired
+    // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
+    // connected we set the connected flag to be true.
+    if (doConnect == true) {
+        if (connectToServer()) {
+            Serial.println("We are now connected to the BLE Server.");
+        } 
+        else {
+            Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+        }
+        doConnect = false;
+    }
 
-		// If we are connected to a peer BLE Server
-		if (connected) {   
-			
-			if (newMidiValuesReceivedFromProxy) {
+    // If we are connected to a peer BLE Server
+    if (connected) {   
+        
+        if (newMidiValuesReceivedFromProxy) {
 
-                Serial.print("received values from proxy -> cc: ");
-                Serial.print(newMidiCCfromProxy);
-                Serial.print(" - value: ");
-                Serial.println(newMidiValueFromProxy);
+            Serial.print("received values from proxy -> cc: ");
+            Serial.print(newMidiCCfromProxy);
+            Serial.print(" - value: ");
+            Serial.println(newMidiValueFromProxy);
 
-				MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
-				newMidiValuesReceivedFromProxy = false;
-			}
-		} 
-		else if (doScan) {
-			Serial.println("Scanning for 10 seconds ...");
-			// TODO: put scan on core0
-			BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
-		}
+            MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
+            newMidiValuesReceivedFromProxy = false;
+        }
+    } 
+    else if (doScan) {
+        Serial.println("Scanning for 10 seconds ...");
+        // TODO: put scan on core0
+        BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+    }
 }
