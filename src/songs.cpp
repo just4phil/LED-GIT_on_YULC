@@ -1,7 +1,8 @@
 #include <FastLED.h>
+#include "definitions.h"
+#include "markerLEDs.h"
 #include "functions.h"
 #include "FXprograms.h"
-#include "definitions.h"
 #include "matrixFunctions.h"
 //----------------------------
 
@@ -10,85 +11,10 @@ extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
-//----------------------------
-// extern int helligkeit;
-// extern int BRIGHTNESS;
 extern const boolean LEDGITBOARD;
-// extern CRGB leds[NUMMATRIX];
-// extern volatile boolean LEDsTurnedOff;
-// extern volatile unsigned int nextChangeMillis;
-// extern volatile byte nextSongPart;
-// extern volatile boolean nextChangeMillisAlreadyCalculated;
-// extern const uint8_t mono_bmp[][8];
-// extern const uint16_t RGB_bmp[][64];
-// //---------------------------------------------------------------------
 extern byte songID; // 0 -> default loop
- 
-// extern byte red2;
-// extern byte blue2;
-// extern int col1;
-// extern int col2;
-
-// int adc_value = 0;
-// float adc_voltage = 0.0;
-// float in_voltage = 0.0;
-// float ref_voltage = 3.3;
-// float R1 = 22000.0;
-// float R2 = 4700.0;
-// float voltageSmooth = 0.0;
-
-// extern boolean progStroboIsBlack;
-// byte secondsForVoltage = 0;
-
-// extern volatile unsigned int millisToReduceCPUSpeed;
-// extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-// volatile unsigned int millisCounterForProgChange = 0;		// achtung!! -> kann nur bis 65.536 zaehlen!!
-// volatile unsigned int millisCounterForHalfSecond = 0;
-// volatile unsigned int millisCounterForSeconds = 0;
-// volatile unsigned int nextChangeMillis = 100000;		// start value = 10 sec
-// volatile boolean flag_processFastLED = false;
-// volatile boolean flag_switchToNextSongPart = false;
-// volatile boolean nextChangeMillisAlreadyCalculated = false;
-// volatile byte nextSongPart = 0;
 extern volatile byte prog;							// the actual song-part
-// volatile boolean HalfSecondHasPast = false;
-// volatile boolean OneSecondHasPast = false;
-// volatile boolean warnLEDsLipoLow = false;
-
-// volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push
-// volatile boolean LEDsTurnedOff = false;	// übergeordnetes FLAG
-// volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
-// volatile boolean ignoreLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
-
-// unsigned int lastLEDchange = millis();
-// int ledState = LOW;             // ledState used to set the LED --TODO: nur test mit interner LED
-
-// extern int zaehler;
-// extern int progMatrixZaehler;
-// extern int progScrollTextZaehler;
-// extern int progScrollEnde;
-// extern boolean scannerGoesBack;
-// extern int stage;
-
-// extern byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
-// extern byte r;
-// extern byte g;
-// extern byte b;
-
-// //---- array für voltage mittelwert
-// const int numReadings = 30;      // array length
-// int readings[numReadings];      // the readings from the input
-// int readIndex = 0;                       // the index of the current reading
-// int total = 0;                             // the running total
-// float average = 0;                       // the average
-// float voltage;
-//--------------------------------------------------
-
-// extern CRGBPalette16 currentPalette;
-// extern TBlendType    currentBlending;
-//---------------------------------------------------------------------
-
-
+//----------------------------
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
 

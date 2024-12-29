@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <FastLED_NeoMatrix.h>
+#include "markerLEDs.h"
 #include "colors.h"
 #include "definitions.h"
 #include "functions.h"
@@ -16,9 +17,57 @@ extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int nextChangeMillis;
 extern volatile byte nextSongPart;
 extern volatile boolean nextChangeMillisAlreadyCalculated;
-extern const uint8_t mono_bmp[][8];
-extern const uint16_t RGB_bmp[][64];
 extern const boolean LEDGITBOARD;
+
+static const uint8_t PROGMEM mono_bmp[][8] = {
+{   // 0: checkered 1
+	B10101010,
+	B01010101,
+	B10101010,
+	B01010101,
+	B10101010,
+	B01010101,
+	B10101010,
+	B01010101,
+		},
+{   // 1: checkered 2
+	B01010101,
+	B10101010,
+	B01010101,
+	B10101010,
+	B01010101,
+	B10101010,
+	B01010101,
+	B10101010,
+		},
+{   // 2: smiley
+	B00111100,
+	B01000010,
+	B10100101,
+	B10000001,
+	B10100101,
+	B10011001,
+	B01000010,
+	B00111100 },
+{   // 3: neutral
+	B00111100,
+	B01000010,
+	B10100101,
+	B10000001,
+	B10111101,
+	B10000001,
+	B01000010,
+	B00111100 },
+{   // 4; frowny
+	B00111100,
+	B01000010,
+	B10100101,
+	B10000001,
+	B10011001,
+	B10100101,
+	B01000010,
+	B00111100 },
+};
 
 #if defined(defLEDGITBOARD)
 
@@ -425,8 +474,18 @@ extern const boolean LEDGITBOARD;
 		}
 		return MISSING_LED;	// not neccessary but to avoid error
 	}
+//--------------------------------
 
-	const uint16_t RGB_bmp[][64] = {
+	// TODO Checken ob dies auf dem ESP32 geht
+// These bitmaps were written for a backend that only supported
+// 4 bits per color with Blue/Green/Red ordering while neomatrix
+// uses native 565 color mapping as RGB.  
+// I'm leaving the arrays as is because it's easier to read
+// which color is what when separated on a 4bit boundary
+// The demo code will modify the arrays at runtime to be compatible
+// with the neomatrix color ordering and bit depth.
+
+	static const uint16_t PROGMEM RGB_bmp[][64] = {
 	// 00: blue, blue/red, red, red/green, green, green/blue, blue, white
 	{	
   0x100, 0x200, 0x300, 0x400, 0x600, 0x800, 0xA00, 0xF00,
@@ -539,7 +598,17 @@ extern const boolean LEDGITBOARD;
 0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, },
 };
 #else
-	const uint16_t RGB_bmp[][64] = {
+
+// TODO Checken ob dies auf dem ESP32 geht
+// These bitmaps were written for a backend that only supported
+// 4 bits per color with Blue/Green/Red ordering while neomatrix
+// uses native 565 color mapping as RGB.  
+// I'm leaving the arrays as is because it's easier to read
+// which color is what when separated on a 4bit boundary
+// The demo code will modify the arrays at runtime to be compatible
+// with the neomatrix color ordering and bit depth.
+
+	static const uint16_t PROGMEM RGB_bmp[][64] = {
 	// 00: blue, blue/red, red, red/green, green, green/blue, blue, white
 	{	
   0x100, 0x200, 0x300, 0x400, 0x600, 0x800, 0xA00, 0xF00,

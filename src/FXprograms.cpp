@@ -1,86 +1,51 @@
 #include <Arduino.h>
 #include <FastLED.h>
+#include "markerLEDs.h"
 #include "functions.h"
 #include "definitions.h"
 #include "colors.h"
 //---------------------------------------------------------------------
-extern const boolean LEDGITBOARD = false;
-//extern const boolean LEDGITBOARD;			// geht aus irgendeinem Grund nicht -> FXprograms.cpp.o:(.literal._Z14progFullColorsjhj+0x0): undefined reference to `LEDGITBOARD'
 
+//extern const boolean LEDGITBOARD;			// geht aus irgendeinem Grund nicht -> FXprograms.cpp.o:(.literal._Z14progFullColorsjhj+0x0): undefined reference to `LEDGITBOARD'
+extern const boolean LEDGITBOARD = false;
+extern byte songID; // 0 -> default loop
 extern byte markerLED1;
 extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
-extern int helligkeit;
 extern int BRIGHTNESS;
-extern CRGB leds[NUMMATRIX];
 extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int nextChangeMillis;
 extern volatile byte nextSongPart;
 extern volatile boolean nextChangeMillisAlreadyCalculated;
 extern const uint8_t mono_bmp[][8];
 extern const uint16_t RGB_bmp[][64];
-//---------------------------------------------------------------------
-extern byte songID; // 0 -> default loop
- 
-extern byte red2;
-extern byte blue2;
-extern int col1;
-extern int col2;
-
-// int adc_value = 0;
-// float adc_voltage = 0.0;
-// float in_voltage = 0.0;
-// float ref_voltage = 3.3;
-// float R1 = 22000.0;
-// float R2 = 4700.0;
-// float voltageSmooth = 0.0;
-
-extern boolean progStroboIsBlack;
-// byte secondsForVoltage = 0;
-
 extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-// volatile unsigned int millisCounterForProgChange = 0;		// achtung!! -> kann nur bis 65.536 zaehlen!!
-// volatile unsigned int millisCounterForHalfSecond = 0;
-// volatile unsigned int millisCounterForSeconds = 0;
-// volatile unsigned int nextChangeMillis = 100000;		// start value = 10 sec
-// volatile boolean flag_processFastLED = false;
-// volatile boolean flag_switchToNextSongPart = false;
-// volatile boolean nextChangeMillisAlreadyCalculated = false;
-// volatile byte nextSongPart = 0;
-// volatile byte prog = 0;							// the actual song-part
-// volatile boolean HalfSecondHasPast = false;
-// volatile boolean OneSecondHasPast = false;
-// volatile boolean warnLEDsLipoLow = false;
-
-// volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push
-// volatile boolean LEDsTurnedOff = false;	// übergeordnetes FLAG
-// volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
-// volatile boolean ignoreLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
-
-// unsigned int lastLEDchange = millis();
-// int ledState = LOW;             // ledState used to set the LED --TODO: nur test mit interner LED
-
-extern int zaehler;
-extern int progMatrixZaehler;
-extern int progScrollTextZaehler;
-extern int progScrollEnde;
-extern boolean scannerGoesBack;
-extern int stage;
-
-extern byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
-extern byte r;
-extern byte g;
-extern byte b;
-
-extern int progBlingBlingColoring_rounds;
-
+extern CRGB leds[NUMMATRIX];
 extern CRGBPalette16 currentPalette;
 extern TBlendType    currentBlending;
-
 extern FastLED_NeoMatrix* matrix;
+//---------------------------------------------------------------------
+
+byte red2;
+byte blue2;
+int col1;
+int col2;
+byte r;
+byte g;
+byte b;
+int helligkeit;
+int zaehler = 0;
+int progMatrixZaehler = 0;
+int progScrollTextZaehler = MATRIX_WIDTH + 1;
+int progScrollEnde;
+boolean scannerGoesBack = false;
+int stage = 0;
+int progBlingBlingColoring_rounds = 0;
+boolean progStroboIsBlack = false;	// for strobo
+byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
 
 //==================================================================
 //=========== FX programs ==========================================

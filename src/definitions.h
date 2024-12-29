@@ -1,5 +1,9 @@
 #include <FastLED_NeoMatrix.h>
 
+//====== DEFINES ========================================================================
+#define RINASBASS					// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs! -> else: Andres GIT
+//---------------------------------------------------------------------------------------
+
 #define DATA_PIN_1          1 	// yulc channel 1
 #define DATA_PIN_2          2 	// yulc channel 2
 #define LIPO_PIN            4 
@@ -17,22 +21,21 @@
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
 
-#define green2 		255	//byte green2;
-#define center_x 	10	//byte center_x;
-#define center_y 	10	//byte center_y;
-
+#define green2 				255	//byte green2;
+#define center_x 			10	//byte center_x;
+#define center_y 			10	//byte center_y;
 //----------------------------
 
-#define anz_LEDs_GIT 193
-#define anz_LEDs_BASS 155
-#define anz_LEDs_GITBOARD 278
+#define anz_LEDs_GIT 		193
+#define anz_LEDs_BASS 		155
+#define anz_LEDs_GITBOARD 	278
 
 #ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
 
-	#define anz_LEDs		anz_LEDs_BASS
+	#define anz_LEDs			anz_LEDs_BASS
 
-	#define Bund_min	 	43
-	#define Bund_max	 	58
+	#define Bund_min	 		43
+	#define Bund_max	 		58
 
 	#define ESaite_E_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
 	#define ESaite_F_tief	 	55	// F/Bb: 55
@@ -70,10 +73,10 @@
 
 #else	//----------------- NUR FÜR ANDRES GITARRE -------------------
 
-	#define anz_LEDs		anz_LEDs_GIT
+	#define anz_LEDs			anz_LEDs_GIT
 
-	#define Bund_min	 	50
-	#define Bund_max	 	75
+	#define Bund_min	 		50
+	#define Bund_max	 		75
 
 	#define ESaite_E_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
 	#define ESaite_F_tief	 	69	// F/Bb: 55
