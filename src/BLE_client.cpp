@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "BLEDevice.h"
 #include "functions.h"
+//----------------------------
 
 static BLEUUID serviceUUID("204916ff-8db3-4368-bab9-e1f6e1ad653c");
 static BLEUUID charUUID("f2e030f2-8c2b-46b6-bbab-5cf9dd837962");
@@ -10,10 +11,47 @@ static boolean connected = false;
 static boolean doScan = false;		// BESSER AUF TRUE?!--------------
 static BLERemoteCharacteristic *pRemoteCharacteristic;
 static BLEAdvertisedDevice *myDevice;
-
 volatile bool newMidiValuesReceivedFromProxy = false;
 volatile byte newMidiCCfromProxy = 0;
 volatile byte newMidiValueFromProxy = 0;
+//----------------------------
+
+/**
+ * Scan for BLE servers and find the first one that advertises the service we are looking for.
+ */
+class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
+    /**
+     * Called for each advertising BLE server.
+     */
+    void onResult(BLEAdvertisedDevice advertisedDevice) {
+        Serial.print("BLE Advertised Device found: ");
+        Serial.println(advertisedDevice.toString().c_str());
+
+        // We have found a device, let us now see if it contains the service we are looking for.
+        if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
+            // Found our server
+            BLEDevice::getScan()->stop();
+            myDevice = new BLEAdvertisedDevice(advertisedDevice);
+            doConnect = true;	// WARUM HIER TRUE??
+            doScan = true;		// WARUM HIER TRUE??
+        }  
+    }  // onResult
+};  // MyAdvertisedDeviceCallbacks
+
+void BLE_client_initialize() { 
+    Serial.println("Starting Arduino BLE Client application...");
+    BLEDevice::init("");
+
+    // Retrieve a Scanner and set the callback we want to use to be informed when we
+    // have detected a new device.  Specify that we want active scanning and start the
+    // scan to run for 5 seconds.
+    BLEScan *pBLEScan = BLEDevice::getScan();
+    pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+    pBLEScan->setInterval(1349);
+    pBLEScan->setWindow(449);
+    pBLEScan->setActiveScan(true);
+    pBLEScan->start(5, false);
+}
 
 static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
     newMidiCCfromProxy = pData[0];
@@ -80,27 +118,6 @@ bool connectToServer() {
     connected = true;
     return true;
 }
-/**
- * Scan for BLE servers and find the first one that advertises the service we are looking for.
- */
-class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
-    /**
-     * Called for each advertising BLE server.
-     */
-    void onResult(BLEAdvertisedDevice advertisedDevice) {
-        Serial.print("BLE Advertised Device found: ");
-        Serial.println(advertisedDevice.toString().c_str());
-
-        // We have found a device, let us now see if it contains the service we are looking for.
-        if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
-            // Found our server
-            BLEDevice::getScan()->stop();
-            myDevice = new BLEAdvertisedDevice(advertisedDevice);
-            doConnect = true;	// WARUM HIER TRUE??
-            doScan = true;		// WARUM HIER TRUE??
-        }  
-    }  // onResult
-};  // MyAdvertisedDeviceCallbacks
 
 void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
@@ -114,4 +131,39 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
     else if (ccIn == 23 && value >= 0) {
         switchToPart(value);
     }
+}
+
+void BLE_client_Loop() {
+        // If the flag "doConnect" is true then we have scanned for and found the desired
+		// BLE Server with which we wish to connect.  Now we connect to it.  Once we are
+		// connected we set the connected flag to be true.
+		if (doConnect == true) {
+			if (connectToServer()) {
+				Serial.println("We are now connected to the BLE Server.");
+			} 
+			else {
+				Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+			}
+			doConnect = false;
+		}
+
+		// If we are connected to a peer BLE Server
+		if (connected) {   
+			
+			if (newMidiValuesReceivedFromProxy) {
+
+                Serial.print("received values from proxy -> cc: ");
+                Serial.print(newMidiCCfromProxy);
+                Serial.print(" - value: ");
+                Serial.println(newMidiValueFromProxy);
+
+				MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
+				newMidiValuesReceivedFromProxy = false;
+			}
+		} 
+		else if (doScan) {
+			Serial.println("Scanning for 10 seconds ...");
+			// TODO: put scan on core0
+			BLEDevice::getScan()->start(10);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+		}
 }
