@@ -13,28 +13,26 @@ extern CRGB leds[NUMMATRIX];
 //-----------------------
 
 void setMarkerLEDs(byte songID) {
-	
-	FastLED.setBrightness(BRIGHTNESS); // zur sicherheit for jedem loop neu auf default setzen. ggf. kann einzelner fx das überschreiben
 
-//    E-Saite			   A-Saite			GITARRE			BASS
-//====================================================================================
-// ESaite_E_tief	 	ASaite_A_tief		71		E/A 	56 (leere / tiefe Saiten)
-// ESaite_F_tief	 	ASaite_Bb_tief		69		F/Bb 	55
-// ESaite_Fis_tief	 	ASaite_B_tief		67		F#/B 	54
-// ESaite_G_tief 		ASaite_C_tief		65		G/C 	53
-// ESaite_Gis_tief	 	ASaite_Cis_tief 	63		G#/C# 	52
-// ESaite_A	 			ASaite_D			62		A/D 	51
-// ESaite_Bb		 	ASaite_Dis			61		Bb/D# 	50
-// ESaite_B		 		ASaite_E			60		B/E 	49
-// ESaite_C				ASaite_F			59		C/F 	48
-// ESaite_Cis		 	ASaite_Fis			58		C#/F# 	47
-// ESaite_D	 			ASaite_G			57		D/G 	46
-// ESaite_Dis		 	ASaite_Gis			56		D#/G# 	45
-// ESaite_E_hoch 		ASaite_A_hoch		55		E/A 	44 (hohe Oktave)
-// ESaite_F_hoch 		ASaite_Bb_hoch		54		F/Bb 	43 (hohe Oktave)
-// ESaite_Fis_hoch 		ASaite_B_hoch		53		F#/B 	42 (hohe Oktave)
-// ESaite_G_hoch	 	ASaite_C_hoch		52		G/C 	41 (hohe Oktave)
-//====================================================================================
+	//    E-Saite			   A-Saite			GITARRE			BASS
+	//====================================================================================
+	// ESaite_E_tief	 	ASaite_A_tief		71		E/A 	56 (leere / tiefe Saiten)
+	// ESaite_F_tief	 	ASaite_Bb_tief		69		F/Bb 	55
+	// ESaite_Fis_tief	 	ASaite_B_tief		67		F#/B 	54
+	// ESaite_G_tief 		ASaite_C_tief		65		G/C 	53
+	// ESaite_Gis_tief	 	ASaite_Cis_tief 	63		G#/C# 	52
+	// ESaite_A	 			ASaite_D			62		A/D 	51
+	// ESaite_Bb		 	ASaite_Dis			61		Bb/D# 	50
+	// ESaite_B		 		ASaite_E			60		B/E 	49
+	// ESaite_C				ASaite_F			59		C/F 	48
+	// ESaite_Cis		 	ASaite_Fis			58		C#/F# 	47
+	// ESaite_D	 			ASaite_G			57		D/G 	46
+	// ESaite_Dis		 	ASaite_Gis			56		D#/G# 	45
+	// ESaite_E_hoch 		ASaite_A_hoch		55		E/A 	44 (hohe Oktave)
+	// ESaite_F_hoch 		ASaite_Bb_hoch		54		F/Bb 	43 (hohe Oktave)
+	// ESaite_Fis_hoch 		ASaite_B_hoch		53		F#/B 	42 (hohe Oktave)
+	// ESaite_G_hoch	 	ASaite_C_hoch		52		G/C 	41 (hohe Oktave)
+	//====================================================================================
 
 	switch (songID) {
 	case 0: //defaultLoop();
@@ -179,11 +177,10 @@ void setMarkerLEDs(byte songID) {
 		// DO NOTHING !!
 		break;
 	}
-	//flag_processFastLED = false; // flag hier NICHT setzen, damit die LEDs ggf. auch noch durchlaufen
 }
 
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-void turnOffGitBlindingLEDs() {
+void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	
 	if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
 		

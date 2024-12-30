@@ -824,7 +824,7 @@ void display_rgbBitmap(uint8_t bmp_num) {
 		matrix->show();
 
 		if (LEDGITBOARD == false) {
-			turnOffGitBlindingLEDs(); // funktioniert alleine so nicht gut ...zusaetzlich die bitmap editieren und schwarz setzen
+			gitBlindingLEDs_OFF_MarkerLEDs_ON(); // funktioniert alleine so nicht gut ...zusaetzlich die bitmap editieren und schwarz setzen
 			FastLED.show();
 		}
 	}

@@ -3,4 +3,4 @@
 //-----------------------
 
 void setMarkerLEDs(byte songID);
-void turnOffGitBlindingLEDs();
+void gitBlindingLEDs_OFF_MarkerLEDs_ON();

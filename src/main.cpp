@@ -2,8 +2,8 @@
 
 //====== DEFINES ========================================================================
 // ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
-//#define THIS_IS_THE_MIDI_PROXY		// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
-//#define CHECKLIPOVOLTAGE				// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+#define THIS_IS_THE_MIDI_PROXY		// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
+#define CHECKLIPOVOLTAGE				// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //---------------------------------------------------------------------------------------
 //#define USELEDMATRIXCONFIG
 // ACHTUNG: immer beide eintraege aendern:
@@ -13,13 +13,10 @@ const static boolean LEDGITBOARD = false; // ACHTUNG: GEDOPPELT IN FXprogramms.c
 
 #include <Adafruit_I2CDevice.h>	
 #include <Adafruit_GFX.h>
-#include <FastLED_NeoMatrix.h>	// FastLED_NeoMatrix example for single NeoPixel Shield. By Marc MERLIN <marc_soft@merlins.org> Contains code (c) Adafruit, license BSD
+#include <FastLED_NeoMatrix.h>	// Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays. requires FastLED and Adafruit_GFX libraries as well as this base class library ..  / By Marc MERLIN <marc_soft@merlins.org>
 #include <FastLED.h>
-#include <driver/adc.h>
 #include <WiFiType.h>		// to turn WIFI off
 #include <WiFi.h>			// to turn WIFI off
-
-#include "esp_adc_cal.h"
 #include "AiEsp32RotaryEncoder.h"
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 #include "smileytongue24.h"
@@ -29,8 +26,9 @@ const static boolean LEDGITBOARD = false; // ACHTUNG: GEDOPPELT IN FXprogramms.c
 #include "functions.h" 			// randomColorValues // switchToSong // switchToPart
 #include "matrixFunctions.h"
 #include "FXprograms.h"
-#include "markerLEDs.h"			// setMarkerLEDs // turnOffGitBlindingLEDs
+#include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
 #include "rotaryEncoder.h"
+#include "lipoVoltageCheck.h"
 #include "songs.h"
 //=============================
 
@@ -48,25 +46,6 @@ byte markerLED3 = 0;
 byte markerLED4 = 0;
 byte markerLED5 = 0;
 
-//--- lipo safer ----------
-byte secondsForVoltage = 0; 
-int adc_value = 0;
-float adc_voltage = 0.0;
-float in_voltage = 0.0;
-float ref_voltage = 3.3;
-float R1 = 22000.0;
-float R2 = 4700.0;
-float voltageSmooth = 0.0;
-
-//--- array für voltage mittelwert ---
-const int numReadings = 30;      		// array length
-int readings[numReadings];      		// the readings from the input
-int readIndex = 0;                      // the index of the current reading
-int total = 0;                          // the running total
-float average = 0;                      // the average
-float voltage;
-
-//--------------------
 volatile unsigned int millisToReduceCPUSpeed = 0;
 volatile unsigned int millisCounterTimer = 0;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 volatile unsigned int millisCounterForProgChange = 0;		// achtung!! -> kann nur bis 65.536 zaehlen!!
@@ -80,6 +59,7 @@ volatile boolean HalfSecondHasPast = false;
 volatile boolean OneSecondHasPast = false;
 volatile boolean warnLEDsLipoLow = false;
 volatile bool syncProgWithNextChange = false;
+byte secondsForVoltage = 0; // for lipo safer 
 
 //--------------------
 AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
@@ -90,11 +70,7 @@ volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned o
 volatile boolean ignoreLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
 
 unsigned int lastLEDchange = millis();
-int ledState = LOW;             // ledState used to set the LED --TODO: nur test mit interner LED
-
-//--------------------------------------------------
-CRGBPalette16 currentPalette;
-TBlendType    currentBlending;
+int ledState = LOW;             // ledState used to set the LED
 //===========================================
 
 #ifdef USELEDMATRIXCONFIG
@@ -110,10 +86,10 @@ TBlendType    currentBlending;
 	#include "BLE_client.h"
 #endif
 
-//==== timer-interrupt every 2 ms so that fastLED can process uninterrupted (takes about ?? ms) ====
+//==== Callback for timer-interrupt so that fastLED can process uninterrupted 
+#define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
 hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable
-#define INCREMENT	2	//5	 process FastLED-loops only every 5 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
-void IRAM_ATTR Timer0_ISR_callback() {	// TODO: timer könnte raus für eine exakte ms-genaue messung
+void IRAM_ATTR Timer0_ISR_callback() {	
     millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
     millisCounterForHalfSecond = millisCounterForHalfSecond + INCREMENT;
 	millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
@@ -156,7 +132,6 @@ void setup() {
 	rotary_initialize();	
 
 	//--- interrupt-timer fuer callback --------
-	//t1.begin(callback, 2ms); // !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
 	Timer0_Cfg = timerBegin(0, 80, true);	// divider/prescaler = 80
 	// APB_CLK = 80 MHz = 80.000.000 Hz
 	// 1 ms = TimerTicks * 80 (Prescaler) / 80.000.000 Hz
@@ -166,24 +141,8 @@ void setup() {
     timerAlarmEnable(Timer0_Cfg);
 
 	//--- voltage lipo safer ----------
-	#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
-		//--- LIPO Safer ----------
-		adc1_config_width(ADC_WIDTH_BIT_12);
-		adc1_config_channel_atten(ADC1_CHANNEL_4,ADC_ATTEN_DB_0);
-		esp_err_t status = adc_vref_to_gpio(ADC_UNIT_1, (gpio_num_t)25);
-		if (status == ESP_OK) {
-			printf("v_ref routed to GPIO\n");
-		} else {
-			printf("failed to route v_ref\n");
-		}
-		pinMode(LIPO_PIN, INPUT);
-		//---- array für voltage mittelwert
-		readIndex = 0;                       // the index of the current reading
-		total = 0;                             // the running total
-		average = 0;                       // the average
-		for (int i = 0; i < numReadings; i++) {
-			readings[i] = analogRead(LIPO_PIN);
-		}	
+	#ifdef CHECKLIPOVOLTAGE	// -> TODO: ACTIVATE -------------------------------		
+		lipoVoltageCheck_initialize();
 	#endif
 
 	//------- activate MOSFETs on YULC ----------------------------
@@ -209,11 +168,10 @@ void setup() {
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
 	#endif
 
-	//------ Setup Palette
-	currentPalette = RainbowColors_p;
-	currentBlending = LINEARBLEND;
-	//-----------------
+	//--- Setup Palette ---
+	setupCurrentPalette();
 	
+	//--- lets get started :) ---
 	switchToSong(0);  //100 // TODO: set back to 0 !!!! // 100 ist der "startup" mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 	//switchToPart(0); // only 4 testing!!!
 }
@@ -228,43 +186,12 @@ void loop() {
 
 	//---- check voltage as lipo safer ------
 	if (secondsForVoltage >= SECONDSFORVOLTAGE) {
-
-		#ifdef CHECKLIPOVOLTAGE	// JUST 4 TESTING !!! -> TODO: ACTIVATE ---------------------------------------------------------
-			readings[readIndex] = analogRead(LIPO_PIN);
-
-			// calculate the average:
-			total = 0;
-			for (int i = 0; i < numReadings; i++) {
-				total = total + readings[i];
-			}
-			average = (float)(total / numReadings);
-			voltage = average / 297.4f; // 258.1 bei adc: 2,7V @ 13.0V Input
-			// if (DEBUG) {
-				// 	Serial.print("voltage: ");
-				// 	Serial.println(voltage);	
-				// }
-				
-			if (voltage < 10.5f) {
-				if (!LIPOvoltageIsLOW) {
-					LIPOvoltageIsLOW = true;
-					if (DEBUG) Serial.println("LIPOvoltageIsLOW: TRUE");
-				}
-			}
-			else {
-				if (LIPOvoltageIsLOW) {
-					LIPOvoltageIsLOW = false;
-					if (DEBUG) Serial.println("LIPOvoltageIsLOW: FALSE");
-				}
-			}
-			readIndex = readIndex + 1;
-			if (readIndex >= numReadings) readIndex = 0;
-
+		#ifdef CHECKLIPOVOLTAGE	
+			lipoVoltageCheck_loop();	// -> TODO: ACTIVATE -------------------
 		#else
-			//====== JUST 4 TESTING !!! -> TODO: DEACTIVATE =======
-			LIPOvoltageIsLOW = false; // JUST 4 TESTING !!! -> TODO: DEACTIVATE ---------------------------------------------------------
+			LIPOvoltageIsLOW = false; 	// JUST 4 TESTING !!! -> TODO: DEACTIVATE -----------
 			//====================================
 		#endif	
-
 		secondsForVoltage = 0;
 	}
 
@@ -278,18 +205,15 @@ void loop() {
 	#endif
 
 	if (flag_switchToNextSongPart) {
-
 		#ifdef THIS_IS_THE_MIDI_PROXY
-				if (syncProgWithNextChange) {
-					sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
-					syncProgWithNextChange = false;
-				}
+			if (syncProgWithNextChange) {
+				sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
+				syncProgWithNextChange = false;
+			}
 		#endif
-
 		switchToPart(nextSongPart);
 	}
 	
-	//===================================
 	//--- check if LEDs should be on ----
 	if (LIPOvoltageIsLOW) {
 		LEDsTurnedOff = true;
@@ -302,7 +226,6 @@ void loop() {
 			LEDsTurnedOff = false;
 		}
 	}
-
 	if (LIPOvoltageIsLOW && ignoreLIPOsafer) {
 		if (encoderButtonPushedLEDsOFF) {
 			LEDsTurnedOff = true;
@@ -311,23 +234,15 @@ void loop() {
 			LEDsTurnedOff = false;
 		}
 	}
-		
 	if (LIPOvoltageIsLOW && !ignoreLIPOsafer) LEDsTurnedOff = true;
-	//=================================
 
-	// falls LEDs aus sind dann hier alle löschen und nur die MarkerLEDs setzen
+	//--- falls LEDs aus sind dann hier alle löschen und nur die MarkerLEDs setzen
 	if (LEDsTurnedOff) FastLED.clear();	// LEDs off durch rotary encoder button push
-
-	//--- erstmal markerLEDs setzen, bevor gecheckt wird ob genug voltage für die LEDs da ist --
-	// if (flag_processFastLED) {	// LED loop only in certain time-slots to make ms-counter more accurate
-	// 	setMarkerLEDs(songID);
-	// }
-	//=========================================
 
 	//=== ab hier wird nur alle 2 ms ausgefuehrt ======
 	if (flag_processFastLED) {	// LED loop only in certain time-slots to make ms-counter more accurate
 
-		setMarkerLEDs(songID);
+		setMarkerLEDs(songID);	// legt nur die Variablen fest ...keine FastLED aktionen
 
 		FastLED.setBrightness(BRIGHTNESS); // zur sicherheit for jedem loop neu auf default setzen. ggf. kann einzelner fx das überschreiben
 
@@ -413,19 +328,16 @@ void loop() {
 		}
 
 		if (LEDsTurnedOff) {	// wenn LEDs aus sind (for rotary encoder button push)
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();	// MarkerLEDs zeigen
 		}
-
+		//----immmer warn-LEDs blinken lassen, wenn lipovoltage LOW ---
 		if (LIPOvoltageIsLOW) {
-			//turnOffGitBlindingLEDs
-			//for (int i = 50; i < 75; i++) leds[i] = CRGB(0, 0, 0); //BLACK
 			if (HalfSecondHasPast) {
 				HalfSecondHasPast = false;
-				//Serial.println("HalfSecondHasPast");
 				if (warnLEDsLipoLow) {
 					warnLEDsLipoLow = false;
-					leds[52] = CRGB(0, 0, 0);
+					leds[52] = CRGB(0, 0, 0);	// TODO: LED-Nr. flexibilisieren für Bass und Git
 					leds[72] = CRGB(0, 0, 0);
 				}
 				else {
@@ -437,6 +349,7 @@ void loop() {
 			}
 		}
 
+		//====== We are done :) =====
 		flag_processFastLED = false;
 	}
 }

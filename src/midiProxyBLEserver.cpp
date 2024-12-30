@@ -35,16 +35,17 @@ bool aDeviceDISconnected = false;
 
 class MyServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer *pServer) {
-        Serial.println("device connected -> startAdvertising()");
-        BLEDevice::startAdvertising();
+        // Serial.println("device connected -> startAdvertising()");
+        // BLEDevice::startAdvertising();
         aDeviceConnected = true;
+        // LEDgitsHaveBeenSynced = false;
     };
 
     void onDisconnect(BLEServer *pServer) {
-        Serial.println("device DISconnected!");
-        BLEDevice::startAdvertising();
+        // Serial.println("device DISconnected!");
+        // BLEDevice::startAdvertising();
         aDeviceDISconnected = true;
-        LEDgitsHaveBeenSynced = false;
+        // LEDgitsHaveBeenSynced = false;
     }
 };
 
@@ -128,22 +129,24 @@ void midiProxy_midiLoop() {
 
     if (aDeviceConnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();
-        Serial.println("clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
-        aDeviceConnected = false;
-        LEDgitsHaveBeenSynced = false;
+        Serial.println("CONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+        // delay(100);                   // give the bluetooth stack the chance to get things ready
+        // pServer->startAdvertising();  // restart advertising        
+        BLEDevice::startAdvertising();
 
-        //pServer->startAdvertising();  // restart advertising
+        LEDgitsHaveBeenSynced = false;
+        aDeviceConnected = false;
     }
 
     if (aDeviceDISconnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();
-        Serial.println("clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
-        aDeviceDISconnected = false;
-
+        Serial.println("DISCONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
         // delay(100);                   // give the bluetooth stack the chance to get things ready
-        // pServer->startAdvertising();  // restart advertising
-        // if (DEBUG) Serial.println("start advertising");
+        // pServer->startAdvertising();  // restart advertising        
+        BLEDevice::startAdvertising();
+
         LEDgitsHaveBeenSynced = false;
+        aDeviceDISconnected = false;
     }
 
     // notify changed value

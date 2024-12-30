@@ -4,9 +4,6 @@
 //=========== FX programs ==========================================
 //==================================================================
 
-
-// int progBlingBlingColoring_rounds = 0;
-// int zaehlerWortArray;
 // const TProgmemPalette16 myRedWhiteBluePalette_p =
 // {
 // 	CRGB::Red,
@@ -61,7 +58,7 @@
 // };
 
 // CRGB getMatrixColor(int index);
-
+//------------------------------------------------------------------
 
 // wird zB fuer ProgDisplayRGB benutzt
 void setDurationAndNextPart(unsigned int durationMillis, byte nextPart);
@@ -114,6 +111,8 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart);
 void progWordArray(String words[], int anzWords, int msPerWord, unsigned int durationMillis, int col, byte nextPart);
 
 void progBlinkText(String words, unsigned int durationMillis, int col, byte nextPart);
+
+void setupCurrentPalette();
 
 // This function fills the palette with totally random colors.
 void SetupTotallyRandomPalette();

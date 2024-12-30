@@ -24,8 +24,6 @@ extern const uint16_t RGB_bmp[][64];
 extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 extern CRGB leds[NUMMATRIX];
-extern CRGBPalette16 currentPalette;
-extern TBlendType    currentBlending;
 extern FastLED_NeoMatrix* matrix;
 //---------------------------------------------------------------------
 
@@ -46,6 +44,8 @@ int stage = 0;
 int progBlingBlingColoring_rounds = 0;
 boolean progStroboIsBlack = false;	// for strobo
 byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
+CRGBPalette16 currentPalette;
+TBlendType    currentBlending;
 
 //==================================================================
 //=========== FX programs ==========================================
@@ -153,7 +153,7 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 			// delete 1 pixel sometimes
 			if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
 
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -210,7 +210,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 		for (int i = 0; i < actualAnzahlLEDs; i++) {
 			leds[random(0, anz_LEDs)] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); //LED_RED_HIGH;
 		}
-		turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}
 }
@@ -257,7 +257,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 				for (int i = 0; i < anz_LEDs; i++) {
 					leds[i] = CRGB(r, g, b);
 				}
-				turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 				FastLED.show();
 			}
 		}
@@ -294,7 +294,7 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 					for (int i = 0; i < anz_LEDs; i++) {
 						leds[i] = CRGB(red, green, blue);
 					}
-					turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+					gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 					FastLED.show();
 				}
 			}
@@ -310,7 +310,7 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 					for (int i = 0; i < anz_LEDs; i++) {
 						leds[i] = CRGB(0, 0, 0);
 					}
-					turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+					gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 					FastLED.show();
 				}
 			} 
@@ -364,7 +364,7 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 		}
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -417,7 +417,7 @@ void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsig
 			matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
 			matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
 		
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -444,7 +444,7 @@ void progBlack(unsigned int durationMillis, byte nextPart) {
 	//---------------------------------------------------------------------
 
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-		turnOffGitBlindingLEDs();
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
 		FastLED.show();
 	}
 }
@@ -478,7 +478,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 			matrix->fillCircle(random(0, 21), random(0, 22), random(3, 10), col1);
 		
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -521,7 +521,7 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 			matrix->drawLine(x1, 0, x2, 22, col1);
 			matrix->drawLine(x1 + 1, 0, x2 + 1, 22, col1);
 		
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -612,7 +612,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 		}
 
 		if (!LEDsTurnedOff) {
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 	}
@@ -712,7 +712,7 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 			}
 		}
 		if (!LEDsTurnedOff) {
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 
@@ -787,7 +787,7 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				break;
 			}
 		if (!LEDsTurnedOff) {
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 
@@ -908,7 +908,7 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 			matrix->print(words);
 
 			if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
-				turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 				FastLED.show();
 			}
 			else {
@@ -965,7 +965,7 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart) {
 			matrix->print("s");
 
 			if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
-				turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 				FastLED.show();
 			}
 			else {
@@ -1053,6 +1053,12 @@ void progBlinkText(String words, unsigned int durationMillis, int col, byte next
 			delay(60);
 		}
 	}
+}
+
+//------ Setup Palette ------
+void setupCurrentPalette() {
+	currentPalette = RainbowColors_p;
+	currentBlending = LINEARBLEND;
 }
 
 // This function fills the palette with totally random colors.
@@ -1229,7 +1235,7 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) 
 	FillLEDsFromPaletteColors(zaehler);	// hier wird schon intern LEDsTurnedOff abgefragt
 
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-		turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}
 }
@@ -1544,7 +1550,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 		//--------------------------
 
 		if (!LEDsTurnedOff) {
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 
@@ -1805,7 +1811,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		//--------------------------
 
 		if (!LEDsTurnedOff) {
-			turnOffGitBlindingLEDs();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
 
