@@ -2,8 +2,8 @@
 
 //====== DEFINES ========================================================================
 // ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
-#define THIS_IS_THE_MIDI_PROXY		// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
-#define CHECKLIPOVOLTAGE				// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+//#define THIS_IS_THE_MIDI_PROXY		// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
+//#define CHECKLIPOVOLTAGE				// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //---------------------------------------------------------------------------------------
 //#define USELEDMATRIXCONFIG
 // ACHTUNG: immer beide eintraege aendern:
