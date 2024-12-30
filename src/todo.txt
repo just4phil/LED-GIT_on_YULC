@@ -1,3 +1,13 @@
+
+
+TODOs:
+=======
+- nach onDisconnect (server ist weg) geht der client zwar wieder zum scannen über ...aber es kommt keine neue verbindung zustande
+
+
+===================
+
+
 #include <Arduino.h>
 #include "BLEDevice.h"
 #include "functions.h"
@@ -6,14 +16,12 @@
 static BLEUUID serviceUUID("204916ff-8db3-4368-bab9-e1f6e1ad653c");
 static BLEUUID charUUID("f2e030f2-8c2b-46b6-bbab-5cf9dd837962");
 
-TaskHandle_t Task_scan;
-
 BLEScan *pBLEScan;
-static BLERemoteCharacteristic *pRemoteCharacteristic;
-static BLEAdvertisedDevice *myDevice;
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean isScanning = false;	// True if scan started or false if there was an error.
+static BLERemoteCharacteristic *pRemoteCharacteristic;
+static BLEAdvertisedDevice *myDevice;
 volatile bool newMidiValuesReceivedFromProxy = false;
 volatile byte newMidiCCfromProxy = 0;
 volatile byte newMidiValueFromProxy = 0;
@@ -34,11 +42,11 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         if (advertisedDevice.haveServiceUUID() && advertisedDevice.isAdvertisingService(serviceUUID)) {
             // Found our server
             Serial.print("BLE: Found our server!");
-            pBLEScan->stop();
+            BLEDevice::getScan()->stop();
             myDevice = new BLEAdvertisedDevice(advertisedDevice);
             doConnect = true;	// scan erfolgreich ... jetzt verbinden zum service
         }  
-    } 
+    }  
 }; 
 
 void OnScanResults(BLEScanResults scanResults) {
@@ -46,31 +54,29 @@ void OnScanResults(BLEScanResults scanResults) {
     isScanning = false;
  }
 
-void scan_in_background(void *pvParameters) {
-    Serial.print("scan_in_background -> Scanning for BLE devices ...");
-    Serial.print(" - core: ");
-    Serial.println(xPortGetCoreID());
-    isScanning = BLEDevice::getScan()->start(10, &OnScanResults, true);
-}
+void initialize_Device() {
+    Serial.println("Starting BLE Client ...");
+    BLEDevice::init("");    
+} 
 
-void BLE_client_initialize() { 
-
-    Serial.print("Starting BLE Client ...");
-    Serial.print(" - core: ");
-    Serial.println(xPortGetCoreID());
-
-    BLEDevice::init("");
+void set_values() {
     pBLEScan = BLEDevice::getScan();
     pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
     pBLEScan->setInterval(1349);
-    pBLEScan->setWindow(449);       // less or equal setInterval value
-    pBLEScan->setActiveScan(true);  //active scan uses more power, but get results faster
+    pBLEScan->setWindow(449);
+    pBLEScan->setActiveScan(true);
+} 
 
-    //create a task that executes the Task0code() function, with priority 1 and executed on core 0
-    //xTaskCreatePinnedToCore(Task_initialScan, "initialScan", 10000, NULL, 1, &initialScan, 0);
-    //xTaskCreate(scan_in_background, "scan_in_background", 2048, NULL, 1, &Task_scan);
+void scan() {
+    pBLEScan->start(10, &OnScanResults, true);
+    isScanning = true;
+} 
 
-    isScanning = BLEDevice::getScan()->start(10, &OnScanResults, true);
+void BLE_client_initialize() { 
+
+    initialize_Device();
+    set_values();
+    scan();
 }
 
 static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
@@ -86,13 +92,13 @@ class MyClientCallback : public BLEClientCallbacks {
     void onDisconnect(BLEClient *pclient) {
         connected = false;
         Serial.println("onDisconnect");
+        // Re-initialise BLE Scan
+        set_values();   // TODO: eigentlich quatsch .... ganz unten müsste reichen
+        scan();
     }
 };
 
 bool connectToServer() {
-    // Serial.print("connectToServer - running on core ");
-    // Serial.println(xPortGetCoreID());
-
     Serial.print("Forming a connection to ");
     Serial.println(myDevice->getAddress().toString().c_str());
 
@@ -104,7 +110,7 @@ bool connectToServer() {
     // Connect to the remove BLE Server.
     pClient->connect(myDevice);  // if you pass BLEAdvertisedDevice instead of address, it will be recognized type of peer device address (public or private)
     Serial.println(" - Connected to server");
-    pClient->setMTU(23);  //517 - set client to request maximum MTU from server (default is 23 otherwise)
+    pClient->setMTU(517);  //set client to request maximum MTU from server (default is 23 otherwise)
 
     // Obtain a reference to the service we are after in the remote BLE server.
     BLERemoteService *pRemoteService = pClient->getService(serviceUUID);
@@ -173,8 +179,6 @@ void BLE_client_Loop() {
     if (connected) {   
         
         if (newMidiValuesReceivedFromProxy) {
-            // Serial.print("newMidiValuesReceivedFromProxy - running on core ");
-            // Serial.println(xPortGetCoreID());
 
             Serial.print("received values from proxy -> cc: ");
             Serial.print(newMidiCCfromProxy);
@@ -185,11 +189,13 @@ void BLE_client_Loop() {
             newMidiValuesReceivedFromProxy = false;
         }
     } 
-    
-    else { //if (doScan) {
-        Serial.println("re-scan -> Scanning for BLE devices ...");
-        // TODO: put scan on core0
-        //xTaskCreatePinnedToCore(Task_reScan, "reScan", 10000, NULL, 1, &reScan, 0);
-        //xTaskCreate(scan_in_background, "scan_in_background", 2048, NULL, 1, &Task_scan);
+    else {     
+        if (!isScanning) {
+            Serial.println("Scanning for 10 seconds ...");
+            set_values();   // TODO: eigentlich quatsch .... ganz unten müsste reichen
+            scan();
+            // BLEDevice::getScan()->start(10, &OnScanResults, true);
+            // isScanning = true;
+        }
     }
 }

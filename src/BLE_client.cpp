@@ -6,6 +6,7 @@
 static BLEUUID serviceUUID("204916ff-8db3-4368-bab9-e1f6e1ad653c");
 static BLEUUID charUUID("f2e030f2-8c2b-46b6-bbab-5cf9dd837962");
 
+BLEScan *pBLEScan;
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean isScanning = false;	// True if scan started or false if there was an error.
@@ -34,6 +35,8 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
             BLEDevice::getScan()->stop();
             myDevice = new BLEAdvertisedDevice(advertisedDevice);
             doConnect = true;	// scan erfolgreich ... jetzt verbinden zum service
+
+            isScanning = false;
         }  
     }  
 }; 
@@ -43,20 +46,28 @@ void OnScanResults(BLEScanResults scanResults) {
     isScanning = false;
  }
 
-void BLE_client_initialize() { 
+void initialize_Device() {
     Serial.println("Starting BLE Client ...");
-    BLEDevice::init("");
+    BLEDevice::init("");    
+} 
 
-    // Retrieve a Scanner and set the callback we want to use to be informed when we
-    // have detected a new device.  Specify that we want active scanning and start the
-    // scan to run for 5 seconds.
-    BLEScan *pBLEScan = BLEDevice::getScan();
+void set_values() {
+    pBLEScan = BLEDevice::getScan();
     pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
     pBLEScan->setInterval(1349);
     pBLEScan->setWindow(449);
     pBLEScan->setActiveScan(true);
-    isScanning = pBLEScan->start(10, &OnScanResults, true);
+} 
+
+void scan() {
+    pBLEScan->start(10, &OnScanResults, true);
     isScanning = true;
+} 
+
+void BLE_client_initialize() { 
+    initialize_Device();
+    set_values();
+    scan();
 }
 
 static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
@@ -71,7 +82,6 @@ class MyClientCallback : public BLEClientCallbacks {
     }
     void onDisconnect(BLEClient *pclient) {
         connected = false;
-        BLE_client_initialize(); // Re-initialise BLE Scan
         Serial.println("onDisconnect");
     }
 };
@@ -167,11 +177,11 @@ void BLE_client_Loop() {
             newMidiValuesReceivedFromProxy = false;
         }
     } 
-    else {     
-        if (!isScanning) {
-            Serial.println("Scanning for 10 seconds ...");
-            BLEDevice::getScan()->start(10, &OnScanResults, true);
-            isScanning = true;
-        }
+     
+    if (!connected && !isScanning) {
+        Serial.println("Scanning for 10 seconds ...");
+        set_values();   // TODO: eigentlich quatsch .... ganz unten müsste reichen
+        scan();
     }
+    
 }
