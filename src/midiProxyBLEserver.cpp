@@ -4,7 +4,6 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include "functions.h"
-#include <MIDI.h>  // Add Midi Library
 //---------------------------
 
 #define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
@@ -15,12 +14,6 @@ extern byte songID;
 extern volatile bool syncProgWithNextChange;
 
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
-
-//Create an instance of the library with default name, serial port and settings
-//midi::SerialMIDI<SerialPort, _Settings>::SerialMIDI [mit SerialPort=HardwareSerial, _Settings=midi::DefaultSerialSettings]
-//MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
-HardwareSerial myHardwareSerial(0);
-MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
 
 volatile bool newMidiValuesToBroadcast = true;
 volatile byte midiInCC = 0;
@@ -82,38 +75,6 @@ void midiProxy_initialize_BLE() {
     Serial.println("Waiting a client connection to notify...");
 }
 
-// MidiDatenAuswerten is the function that will be called by the Midi Library
-// when a Continuous Controller message is received.
-// It will be passed bytes for Channel, Controller Number, and Value
-// It checks if the controller number is within the 22 to 27 range
-void MidiDatenAuswerten(byte channel, byte number, byte value) {
-
-    // hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-
-    // with midi byte 22 the song can be changed!
-    if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
-        switchToSong(value);
-    }
-    // with midi byte 23 the songpart can be changed!
-    else if (number == 23 && value >= 0) {
-        switchToPart(value);
-    }
-    //--- set vlaues for broadcasting to listeners
-    newMidiValuesToBroadcast = true;	
-    midiInCC = number;
-    midiInValue = value;
-}
-
-void midiProxy_initialize_midi() {
-	//---- MIDI ----------------
-	MIDI.begin(10); // Initialize the Midi Library.
-	// OMNI sets it to listen to all channels.. MIDI.begin(2) would set it
-	// to respond to notes on channel 2 only.
-	MIDI.setHandleControlChange(MidiDatenAuswerten); // This command tells the MIDI Library
-	// the function you want to call when a Continuous Controller command
-	// is received. In this case it's "MyCCFunction".
-}
-
 void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
     uint8_t byteArray[2];
     byteArray[0] = midiInCC;
@@ -123,9 +84,6 @@ void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
 }
 
 void midiProxy_midiLoop() {
-    //--- midi immer checken, auch wenn voltage low, damit ja trotzdem marker LEDs setzen kann
-    MIDI.read(); // Continuously check if Midi data has been received.
-    //========================================
 
     if (aDeviceConnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();

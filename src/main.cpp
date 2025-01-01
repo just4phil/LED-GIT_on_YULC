@@ -2,8 +2,12 @@
 
 //====== DEFINES ========================================================================
 // ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
-//#define THIS_IS_THE_MIDI_PROXY		// auskommentieren, wenn nur ein Client ohne WIDI CORE installiert werden soll
-//#define CHECKLIPOVOLTAGE				// auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+//wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!
+#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist
+//#define IS_MIDI_PROXY		//wenn IS_MIDI_PROXY deaktiviert ist, dann haben wir einfach nur einen midi empfänger
+	// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //---------------------------------------------------------------------------------------
 //#define USELEDMATRIXCONFIG
 // ACHTUNG: immer beide eintraege aendern:
@@ -79,12 +83,19 @@ int ledState = LOW;             // ledState used to set the LED
 #else
 	FastLED_NeoMatrix* matrix;
 #endif
+//----------------------------------
 
-#ifdef THIS_IS_THE_MIDI_PROXY
-	#include "midiProxyBLEserver.h"
+#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+	#include "midi_in.h"
+
+	#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+		#include "midiProxyBLEserver.h"
+
+	#endif
 #else
-	#include "BLE_client.h"
+	#include "BLE_client.h"			// entweder midi in ODER BLE Client!
 #endif
+
 
 //==== Callback for timer-interrupt so that fastLED can process uninterrupted 
 #define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
@@ -120,16 +131,22 @@ void setup() {
   	WiFi.mode(WIFI_OFF);
 	//----------------
 	
-	//=== MIDI PROXY AUFSETZEN =====
-	#ifdef THIS_IS_THE_MIDI_PROXY
-		midiProxy_initialize_BLE();
-		midiProxy_initialize_midi();
+	//=== MIDI / PROXY / CLIENT initialisieren =====
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+
+		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			midiProxy_initialize_BLE();
+		#endif
+
+		midi_initialize();
 	#else
 		BLE_client_initialize();
 	#endif
 	
 	//--- rotary encoder ---------
-	rotary_initialize();	
+	#ifdef HAS_ROTARY_ENCODER
+		rotary_initialize();
+	#endif
 
 	//--- interrupt-timer fuer callback --------
 	Timer0_Cfg = timerBegin(0, 80, true);	// divider/prescaler = 80
@@ -141,7 +158,7 @@ void setup() {
     timerAlarmEnable(Timer0_Cfg);
 
 	//--- voltage lipo safer ----------
-	#ifdef CHECKLIPOVOLTAGE	// -> TODO: ACTIVATE -------------------------------		
+	#ifdef HAS_LIPOVOLTAGE_CHECK	
 		lipoVoltageCheck_initialize();
 	#endif
 
@@ -186,8 +203,8 @@ void loop() {
 
 	//---- check voltage as lipo safer ------
 	if (secondsForVoltage >= SECONDSFORVOLTAGE) {
-		#ifdef CHECKLIPOVOLTAGE	
-			lipoVoltageCheck_loop();	// -> TODO: ACTIVATE -------------------
+		#ifdef HAS_LIPOVOLTAGE_CHECK	
+			lipoVoltageCheck_loop();
 		#else
 			LIPOvoltageIsLOW = false; 	// JUST 4 TESTING !!! -> TODO: DEACTIVATE -----------
 			//====================================
@@ -195,22 +212,31 @@ void loop() {
 		secondsForVoltage = 0;
 	}
 
-	rotary_loop();
+	#ifdef HAS_ROTARY_ENCODER
+		rotary_loop();
+	#endif
 
-	//=== MIDI PROXY AUFSETZEN =====
-	#ifdef THIS_IS_THE_MIDI_PROXY
-		midiProxy_midiLoop();
+	//=== MIDI / PROXY / CLIENT loop =====
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+		midi_loop();
+
+		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			midiProxy_midiLoop();
+		#endif
 	#else
 		BLE_client_Loop();
 	#endif
 
 	if (flag_switchToNextSongPart) {
-		#ifdef THIS_IS_THE_MIDI_PROXY
-			if (syncProgWithNextChange) {
-				sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
-				syncProgWithNextChange = false;
-			}
+		#ifdef HAS_MIDI_IN
+			#ifdef IS_MIDI_PROXY
+				if (syncProgWithNextChange) {
+					sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
+					syncProgWithNextChange = false;
+				}
+			#endif
 		#endif
+
 		switchToPart(nextSongPart);
 	}
 	
