@@ -2,8 +2,10 @@
 
 TODOs:
 =======
+- es können sich zwar beide clients connecten, aber nur einer bekommt midi-updates!?
+    aber bei gleichzeitigem einschalten der 2 clients klappt es !
 - nach onDisconnect (server ist weg) geht der client zwar wieder zum scannen über ...aber es kommt keine neue verbindung zustande
-
+- ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
 
 ===================
 

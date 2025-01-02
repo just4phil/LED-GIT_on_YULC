@@ -15,9 +15,10 @@ extern volatile bool syncProgWithNextChange;
 
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 
-volatile bool newMidiValuesToBroadcast = true;
-volatile byte midiInCC = 0;
-volatile byte midiInValue = 0;
+extern volatile bool newMidiValuesToBroadcast;
+extern volatile byte midiInCC;
+extern volatile byte midiInValue;
+
 volatile bool LEDgitsHaveBeenSynced = false;
 
 BLEServer *pServer = NULL;

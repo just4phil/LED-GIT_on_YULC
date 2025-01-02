@@ -2,9 +2,16 @@
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 //---------------------------------
 
-#define ROTARY_ENCODER_A_PIN 37 //6
-#define ROTARY_ENCODER_B_PIN 36 //5
-#define ROTARY_ENCODER_BUTTON_PIN 38 //4
+#ifdef firstYulcPrototype
+    #define ROTARY_ENCODER_BUTTON_PIN   38 // SW
+    #define ROTARY_ENCODER_B_PIN        36 // CLK
+    #define ROTARY_ENCODER_A_PIN        37 // DT
+#else
+    #define ROTARY_ENCODER_BUTTON_PIN   4 // SW
+    #define ROTARY_ENCODER_B_PIN        5 // CLK
+    #define ROTARY_ENCODER_A_PIN        6 // DT
+#endif
+
 #define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 #define ROTARY_ENCODER_STEPS 4
 //---------------------------------

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "definitions.h"
 #include "functions.h"
 #include <MIDI.h>  // Add Midi Library
 //---------------------------
@@ -10,9 +11,9 @@ HardwareSerial myHardwareSerial(0);
 MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
 
 #ifdef IS_MIDI_PROXY
-    extern volatile bool newMidiValuesToBroadcast = true;
-    extern volatile byte midiInCC = 0;
-    extern volatile byte midiInValue = 0;
+    volatile bool newMidiValuesToBroadcast = true;
+    volatile byte midiInCC = 0;
+    volatile byte midiInValue = 0;
 #endif
 
 // MidiDatenAuswerten is the function that will be called by the Midi Library
