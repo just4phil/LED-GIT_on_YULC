@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include "BLEDevice.h"
 #include "functions.h"
+#include "definitions.h"
 //----------------------------
 
-static BLEUUID serviceUUID("204916ff-8db3-4368-bab9-e1f6e1ad653c");
-static BLEUUID charUUID("f2e030f2-8c2b-46b6-bbab-5cf9dd837962");
+static BLEUUID serviceUUID(SERVICE_UUID);
+static BLEUUID charUUID(CHARACTERISTIC_UUID);
 
 BLEScan *pBLEScan;
 static boolean doConnect = false;

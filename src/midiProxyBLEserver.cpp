@@ -4,10 +4,7 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include "functions.h"
-//---------------------------
-
-#define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
-#define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+#include "definitions.h"
 //---------------------------
 
 extern byte songID;
@@ -44,7 +41,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 };
 
 void midiProxy_initialize_BLE() {
-    BLEDevice::init("ESP32");	// Create the BLE Device
+    BLEDevice::init("midi-proxy");	// Create the BLE Device
     // Create the BLE Server
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());

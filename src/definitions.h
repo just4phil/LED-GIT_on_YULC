@@ -35,6 +35,11 @@
 #define anz_LEDs_BASS 		155
 #define anz_LEDs_GITBOARD 	278
 
+//------ BLE ----------------
+#define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
+#define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+//---------------------------
+
 #ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
 
 	#define anz_LEDs			anz_LEDs_BASS
