@@ -8,7 +8,17 @@ TODOs:
 - ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
 
 ===================
-
+    // //==================================================== 
+    // // 03.01.2025:
+    // // Test, ob man sich ein ESP32 BLE Client zum widi master (central) verbinden kann.
+    // // => klappt ohne probleme mit den korrekten IDs.
+    // // aber:
+    // // 1. unklar wie man die midi-bytes korrekt auf die midi message mappt
+    // // 2. wenn sich die LED-git verbindet, ist der widi master für den ESP32 nicht mehr erreichbar!
+    // // => insofern ohne echtes pairing und aufnahme in die group dann nicht nutzbar
+    // // ...man könnte noch testen ob sich mehrere / gemixte geräte verbinden können, wenn es keine Group gibt...
+    // //====================================================
+    
 
 #include <Arduino.h>
 #include "BLEDevice.h"

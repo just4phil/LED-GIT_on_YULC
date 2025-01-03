@@ -1,14 +1,7 @@
 #include <Arduino.h>
 
-// //====== DEFINES ========================================================================
-// // ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
-// //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!
-// #define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist
-// #define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-// #define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-// #define firstYulcPrototype 	// first one has different pins
-// //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
-// //---------------------------------------------------------------------------------------
+//====== DEFINES ========================================================================
+// ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
 //#define USELEDMATRIXCONFIG
 // ACHTUNG: immer beide eintraege aendern:
 #define defLEDSTRIPEGIT	// defLEDGITBOARD oder defLEDSTRIPEGIT

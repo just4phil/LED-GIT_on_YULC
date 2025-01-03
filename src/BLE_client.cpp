@@ -4,8 +4,12 @@
 #include "definitions.h"
 //----------------------------
 
-static BLEUUID serviceUUID(SERVICE_UUID);
-static BLEUUID charUUID(CHARACTERISTIC_UUID);
+static BLEUUID serviceUUID(SERVICE_UUID);       // verbindung zum midi proxy
+static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
+
+//--- testweise verbindung zum widi master (central) --------------
+// static BLEUUID serviceUUID("03b80e5a-ede8-4b33-a751-6ce34ec4c700");
+// static BLEUUID charUUID("7772e5db-3868-4112-a1a9-f2669d106bf3");
 
 BLEScan *pBLEScan;
 static boolean doConnect = false;
@@ -72,6 +76,31 @@ void BLE_client_initialize() {
 }
 
 static void notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, uint8_t *pData, size_t length, bool isNotify) {
+    
+    // //===== TEST 03.01.2025: =============================
+    // // Test, ob man sich ein ESP32 BLE Client zum widi master (central) verbinden kann.
+    // // => klappt ohne probleme mit den korrekten IDs.
+    // // aber:
+    // // 1. unklar wie man die midi-bytes korrekt auf die midi message mappt
+    // // 2. wenn sich die LED-git verbindet, ist der widi master für den ESP32 nicht mehr erreichbar!
+    // // => insofern ohne echtes pairing und aufnahme in die group dann nicht nutzbar
+    // // ...man könnte noch testen ob sich mehrere / gemixte geräte verbinden können, wenn es keine Group gibt...
+    // //====================================================
+    // unsigned char byte1 = *pData;
+    // *pData++;
+    // unsigned char byte2 = *pData;
+    // *pData++;
+    // unsigned char byte3 = *pData;
+    // Serial.print("notifyCallback - length: ");
+    //     Serial.println(length);
+    // Serial.print("notifyCallback - received data: byte1: ");
+    //     Serial.println(byte1);
+    // Serial.print("notifyCallback - received data: byte2: ");
+    //     Serial.println(byte2);
+    // Serial.print("notifyCallback - received data: byte3: ");
+    //     Serial.println(byte3);
+    // //====================================================
+
     newMidiCCfromProxy = pData[0];
     newMidiValueFromProxy = pData[1];
     newMidiValuesReceivedFromProxy = true;
