@@ -101,11 +101,12 @@ void defaultLoop()  {
 		break;
 
 	case 40: // OK
-		progFastBlingBling(6000, 8, 45); //20s -> 3:13
+		progPalette(16000, 9, 45);
 		break;
 
 	case 45: 
-		progOutline(6000, 50);
+		//progOutline(6000, 50);
+		progRandomLines(16000, 50, 500, true);
 		break;
 
 	case 50: 
@@ -113,7 +114,7 @@ void defaultLoop()  {
 		break;
 
 	case 55:
-		progRandomLines(16000, 100, 500, true);
+		progFastBlingBling(6000, 8, 100); //20s -> 3:13
 		break;
 		
 	case 100:

@@ -82,11 +82,10 @@ int ledState = LOW;             // ledState used to set the LED
 	#include "midi_in.h"
 
 	#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-		#include "midiProxyBLEserver.h"
-
+		#include "midiProxyBLEserver_nimBLE.h"
 	#endif
 #else
-	#include "BLE_client.h"			// entweder midi in ODER BLE Client!
+	#include "BLE_client_nimBLE.h"
 #endif
 
 
@@ -224,7 +223,7 @@ void loop() {
 		#ifdef HAS_MIDI_IN
 			#ifdef IS_MIDI_PROXY
 				if (syncProgWithNextChange) {
-					sendValuepairToListeners(23, nextSongPart); //-> sync client LED-gits to prog change!!
+					sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
 					syncProgWithNextChange = false;
 				}
 			#endif

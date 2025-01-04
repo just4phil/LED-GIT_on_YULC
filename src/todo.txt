@@ -2,10 +2,26 @@
 
 TODOs:
 =======
-- es können sich zwar beide clients connecten, aber nur einer bekommt midi-updates!?
-    aber bei gleichzeitigem einschalten der 2 clients klappt es !
-- nach onDisconnect (server ist weg) geht der client zwar wieder zum scannen über ...aber es kommt keine neue verbindung zustande
+
+- nach outline ist helligkeit wieder hoch!?
+	und dann muss man rotary erst hoch drehen bevor runter drehen wieder geht?
+
+- ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
+    - am ende waren beide clients ziemlich weit raus aus dem sync!
+    - timing geht dann irgendwie flöten! ...als würden parts übersprungen !?!?
+    => wenn ich das nicht fixen kann, dann doch besser sofortiger sync zum server!!
+    
+- DONE! - wenn ein song gestartet wurde (midi in) und alles in sync ist und dann der server offline geht und wieder kommt .... erfolgt KEIN sync
+    - bei normalem programm ohne song geht es
+- DONE! -  1. server an, 2. rinas git an, 3. anderen client an .. -> dann geht rinasbass auch wieder auf start von song 0 / part 0 !!!!!!!
+    - auch bei disconnect vom anderen client geht rinasbass wieder auf part0 von song0
+    => es bekommen ALLE clients einen sync auf den song  inkl. part=0 !!
+        bei connect immer!
+        bei disconnect MANCHMAL!?
+- DONE! - evtl. client-seitig nur dann einen gitSync annehmen, wenn aktuell song 0 (default) läuft? wenn > 0 dann wird nur midi in angenommen
+    dafür müsste der client aber zw. gitSync und midi-in unterscheiden können!
 - ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
+
 
 ===================
     // //==================================================== 

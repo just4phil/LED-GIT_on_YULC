@@ -129,7 +129,7 @@ void switchToPart(byte part) {
 	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
 	// if (DEBUG) {
 	// 	Serial.print("switched to part: ");
-	// 	Serial.println(part);
+	 	Serial.println(part);
 	// }
 }
 
