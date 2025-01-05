@@ -67,7 +67,6 @@ void defaultLoop()  {
 		}
 		else {
 			progBlingBlingColoring(10000, 5, 5000);
-			//progMovingLines(60000, 5);
 		}
 		break;
 
@@ -1868,12 +1867,12 @@ void Abcdefu() {
 			progScrollText("Abcdefu by Gayle", 19500, 90, getRandomColor(), 2);
 		}
 		else { // pause
-			progBlack(0, 2);
-		}
+			progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
+		} 
 		break;
 	
 	case 2: // intro
-		progBlingBlingColoring(24545, 4, 3000);
+		progBlingBlingColoring(23545, 4, 3000);
 		//progPalette(17180, 6, 4);
 		break;
 

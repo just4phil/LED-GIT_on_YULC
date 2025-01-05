@@ -114,7 +114,7 @@ void midiProxy_initialize_BLE() {
     NimBLEDevice::init("midi-proxy");
     pServer = NimBLEDevice::createServer();
     /** Optional: set the transmit power */
-    NimBLEDevice::setPower(3); /** 3dbm */
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
     pService = pServer->createService(SERVICE_UUID);
     pServer->setCallbacks(&serverCallbacks);
 
@@ -176,7 +176,7 @@ void midiProxy_midiLoop() {
             sendValuepairToListeners(24, songID); // 22 -> change song / 23 -> change part / 24 -> sync gits!
             //sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
             syncProgWithNextChange = true;
-            Serial.println("sendValuepairToListeners");
+            Serial.println("syncLEDgits -> sendValuepairToListeners");
         //}
         syncLEDgits = false;
     } 

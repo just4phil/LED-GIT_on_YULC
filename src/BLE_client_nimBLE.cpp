@@ -102,7 +102,7 @@ void initialize_Device() {
     Serial.println("Starting BLE Client ...");
     NimBLEDevice::init("midi-client");    
     /** Optional: set the transmit power */
-    NimBLEDevice::setPower(3); /** 3dbm */
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
 } 
 
 void set_values() {
@@ -241,7 +241,7 @@ bool connectToServer() {
          *  connections. Timeout should be a multiple of the interval, minimum is 100ms.
          *  Min interval: 12 * 1.25ms = 15, Max interval: 12 * 1.25ms = 15, 0 latency, 150 * 10ms = 1500ms timeout
          */
-        pClient->setConnectionParams(12, 12, 0, 150);
+        pClient->setConnectionParams(12, 12, 0, 300); //300 * 10ms = 3000ms timeout ///(12, 12, 0, 150); 150 * 10ms = 1500ms timeout
 
         /** Set how long we are willing to wait for the connection to complete (milliseconds), default is 30000. */
         pClient->setConnectTimeout(5 * 1000);
