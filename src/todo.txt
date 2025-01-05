@@ -3,6 +3,10 @@
 TODOs:
 =======
 
+- idee: short press auf rotary -> sync leds! (long press = LEDs on/off)
+    - clients sync from server 
+    - server sync from client?
+    
 - testen: nach outline / strobe / fastbling ist helligkeit wieder hoch!?
 	und dann muss man rotary erst hoch drehen bevor runter drehen wieder geht?
 
