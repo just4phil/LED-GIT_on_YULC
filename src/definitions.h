@@ -22,7 +22,7 @@
 #define mh					23	// TODO: ausmerzen
 #define MATRIX_WIDTH       	22
 #define MATRIX_HEIGHT      	23
-#define DEFAULT_BRIGHTNESS	125
+#define DEFAULT_BRIGHTNESS	64	//125
 
 #define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
 #define MATRIX_SIZE         (MATRIX_WIDTH * MATRIX_HEIGHT)
@@ -128,4 +128,3 @@
 	#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
 
 #endif
-

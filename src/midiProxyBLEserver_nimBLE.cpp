@@ -88,24 +88,31 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 
 /** Handler class for characteristic actions */
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
-    // void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-    //     Serial.printf("%s : onRead(), value: %s\n",
-    //            pCharacteristic->getUUID().toString().c_str(),
-    //            pCharacteristic->getValue().c_str());
-    // }
-    // void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-    // }
-    // /**
-    //  *  The value returned in code is the NimBLE host return code.
-    //  */
-    // void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
-    //     Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
-    // }
+    void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+        Serial.printf("%s : onRead(), value: %s\n",
+               pCharacteristic->getUUID().toString().c_str(),
+               pCharacteristic->getValue().c_str());
+    }
+    
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+        //std::string value = pCharacteristic->getValue();
+        Serial.println("onWrite(): -> syncLEDgits");
+        
+        // we received an onWrite event from a client that needs a sync
+        syncLEDgits = true;
+    }
+
+    /**
+     *  The value returned in code is the NimBLE host return code.
+     */
+    void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
+        Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
+    }
 
     /** Peer subscribed to notifications/indications */
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
         Serial.printf("a client subscribed to notifications");
-        syncLEDgits = true; 
+        //syncLEDgits = true; // sync here for auto-sync
     }
 } chrCallbacks;
 
@@ -120,10 +127,10 @@ void midiProxy_initialize_BLE() {
 
     pCharacteristic = pService->createCharacteristic(		// Create a BLE Characteristic
         CHARACTERISTIC_UUID,
-        // NIMBLE_PROPERTY::READ | 
-        // NIMBLE_PROPERTY::WRITE | 
-        NIMBLE_PROPERTY::NOTIFY // | 
-        // NIMBLE_PROPERTY::INDICATE
+        NIMBLE_PROPERTY::READ | 
+        NIMBLE_PROPERTY::WRITE | 
+        NIMBLE_PROPERTY::NOTIFY 
+        // | NIMBLE_PROPERTY::INDICATE
     );
     pCharacteristic->setCallbacks(&chrCallbacks);
     pService->start();
