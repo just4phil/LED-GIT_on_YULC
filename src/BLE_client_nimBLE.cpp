@@ -329,26 +329,10 @@ bool connectToServer() {
 
 void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
-    // // with midi byte 22 the song can be changed!
-    // if (ccIn == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
-    //     switchToSong(value);
-    // }
-    // // with midi byte 23 the songpart can be changed!
-    // else if (ccIn == 23 && value >= 0) {
-    //     switchToPart(value);
-    // }
-    // // with midi byte 24 -> sync gits!
-    // else if (ccIn == 24 && value >= 0) {
-    //     switchToPart(value);
-    // }
-
-    Serial.print("BLE-client: MidiDatenVomProxyAuswerten -> ccIn: ") + String(ccIn);
-    Serial.println(" / value: ") + String(value);
-
     if (value >= 0) {
         switch (ccIn) {
             case 22:    // change song by midi
-                Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
+                //Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
                 switchToSong(value);
                 break;
 
@@ -400,10 +384,10 @@ void BLE_client_Loop() {
         
         if (newMidiValuesReceivedFromProxy) {
 
-            Serial.print("newMidiValuesReceivedFromProxy -> cc: ");
-            Serial.print(newMidiCCfromProxy);
-            Serial.print(" - value: ");
-            Serial.println(newMidiValueFromProxy);
+            // Serial.print("newMidiValuesReceivedFromProxy -> cc: ");
+            // Serial.print(newMidiCCfromProxy);
+            // Serial.print(" - value: ");
+            // Serial.println(newMidiValueFromProxy);
 
             MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
             newMidiValuesReceivedFromProxy = false;
@@ -412,7 +396,7 @@ void BLE_client_Loop() {
 
     if (needLEDsync) {
         needLEDsync = false;
-        Serial.println("needLEDsync");
+        // Serial.println("needLEDsync");
 
         //--- here the client pulls data from server via READ ---        
         if (pChr != NULL) {
@@ -427,9 +411,7 @@ void BLE_client_Loop() {
 
                 if (value.length() == sizeof(SongAndPart)) {
                     memcpy(&receivedData, value.data(), sizeof(SongAndPart));
-                    Serial.printf("read characterisitc - Song: %d, Part: %d\n", 
-                        receivedData.songID, 
-                        receivedData.part);
+                    // Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
                     switchToSongAndPart(receivedData.songID, receivedData.part);
                     waitForLEDsync = true;
                 }
