@@ -129,7 +129,7 @@ void switchToPart(byte part) {
 	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
 	// if (DEBUG) {
 	// 	Serial.print("switched to part: ");
-	 	Serial.println(part);
+	// 	Serial.println(part);
 	// }
 }
 
@@ -153,4 +153,19 @@ void switchToSong(byte song) {
 	//--- start song ----
 	songID = song;
 	switchToPart(0);
+}
+
+//--- For emidiate SYNC ---
+void switchToSongAndPart(byte song, byte part) {
+	
+	//---- reset markerLEDs
+	markerLED1 = 0;
+	markerLED2 = 0;
+	markerLED3 = 0;
+	markerLED4 = 0;
+	markerLED5 = 0;
+
+	//--- start song ----
+	songID = song;
+	switchToPart(part);
 }

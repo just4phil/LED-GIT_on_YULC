@@ -17,4 +17,5 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 };
 void midiProxy_initialize_BLE();
 void sendValuepairToListeners(byte midiInCC, byte midiInValue);
+void setSongAndPartIDforLEDsync(byte songID, byte part);
 void midiProxy_midiLoop();

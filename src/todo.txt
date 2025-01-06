@@ -3,6 +3,13 @@
 TODOs:
 =======
 
+server: long button click 
+    will ich dann sync bekommen oder will ich sync der clients erzwingen?
+
+- midi_in -> channel abfrage chn 10 einbauen / testen
+
+- special nbotify vom server "call for sync" -> dann write der daten
+
 - testen: nach outline / strobe / fastbling ist helligkeit wieder hoch!?
 	und dann muss man rotary erst hoch drehen bevor runter drehen wieder geht?
 

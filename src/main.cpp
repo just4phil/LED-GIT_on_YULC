@@ -183,6 +183,13 @@ void setup() {
 	//--- lets get started :) ---
 	switchToSong(0);  //100 // TODO: set back to 0 !!!! // 100 ist der "startup" mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 	//switchToPart(0); // only 4 testing!!!
+	
+	#ifdef HAS_MIDI_IN	
+		#ifdef IS_MIDI_PROXY
+			//--- proxy: set Value for clients who ants to sync ..
+			setSongAndPartIDforLEDsync(0, 0);
+		#endif
+	#endif
 }
 //====================================================
 
@@ -222,6 +229,9 @@ void loop() {
 	if (flag_switchToNextSongPart) {
 		#ifdef HAS_MIDI_IN
 			#ifdef IS_MIDI_PROXY
+				//--- proxy: set Value for clients who wants to sync ..
+				setSongAndPartIDforLEDsync(songID, nextSongPart);
+
 				if (syncProgWithNextChange) {
 					sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
 					syncProgWithNextChange = false;
