@@ -5,6 +5,10 @@
 //----------------------------
 
 extern byte songID;
+extern volatile byte prog;
+extern boolean needLEDsync; // in main
+extern boolean waitForLEDsync; // in main
+//-------------------------------------------
 
 static BLEUUID serviceUUID(SERVICE_UUID);       // verbindung zum midi proxy
 static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
@@ -12,16 +16,14 @@ static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 //--- testweise verbindung zum widi master (central) --------------
 // static BLEUUID serviceUUID("03b80e5a-ede8-4b33-a751-6ce34ec4c700");
 // static BLEUUID charUUID("7772e5db-3868-4112-a1a9-f2669d106bf3");
+//-------------------------------------------
 
 //BLEScan *pBLEScan;
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean isScanning = false;	// True if scan started or false if there was an error.
 boolean justSubscribed = false;
-boolean needLEDsync = false;
-boolean waitForLEDsync = false;
-//static BLERemoteCharacteristic *pRemoteCharacteristic;
-//static BLEAdvertisedDevice *myDevice;
+boolean informServerOnNextProgChange = false;
 static const NimBLEAdvertisedDevice* advDevice;
 NimBLEScan* pBLEScan;
 volatile bool newMidiValuesReceivedFromProxy = false;
@@ -32,7 +34,7 @@ static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time.
 //----------------------------
     /** Now we can read/write/subscribe the characteristics of the services we are interested in */
     NimBLERemoteService*        pSvc = nullptr;
-    NimBLERemoteCharacteristic* pChr = nullptr;
+    NimBLERemoteCharacteristic *pChr = nullptr;
     //NimBLERemoteDescriptor*     pDsc = nullptr;
 //=================================================================
 
@@ -123,7 +125,7 @@ void scan() {
     pBLEScan->start(scanTimeMs, false, true); // duration, not a continuation of last scan, restart to get all devices again.
     printf("Scanning...\n");
     isScanning = true;
-} 
+}
 
 void BLE_client_initialize() { 
     initialize_Device();
@@ -357,6 +359,28 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
                     }
                 //}
                 break;
+
+            case 26:    // the server requests a sync; value doesnt matter
+                SongAndPart songAndPart;
+                songAndPart.songID = songID;
+                songAndPart.part = prog;
+                if (pChr != NULL) {
+                    pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+                }
+                informServerOnNextProgChange = true;
+                break;                      
+        }
+    }
+}
+
+void informServerOnNextChange(byte nextPart) {
+    if (informServerOnNextProgChange) {
+        informServerOnNextProgChange = false;
+        SongAndPart songAndPart;
+        songAndPart.songID = songID;
+        songAndPart.part = nextPart;
+        if (pChr != NULL) {
+            pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
         }
     }
 }
@@ -405,7 +429,7 @@ void BLE_client_Loop() {
                 //Serial.println("needLEDsync - pChr->canRead() - OK");
                 
                 // Auslesen der Daten
-                std::string value = pChr->readValue();
+                std::string value = pChr->readValue();  
                 //std::string value = pChr->getValue(); // readValue ist sicherer!?
                 SongAndPart receivedData;
 

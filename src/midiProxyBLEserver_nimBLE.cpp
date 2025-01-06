@@ -9,6 +9,9 @@ extern volatile bool syncProgWithNextChange;
 extern volatile bool newMidiValuesToBroadcast;
 extern volatile byte midiInCC;
 extern volatile byte midiInValue;
+extern boolean needLEDsync; // in main
+extern boolean waitForLEDsync; // in main
+//-------------------------------------------
 
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 volatile bool syncLEDgits = false;
@@ -86,9 +89,21 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     }
     
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-        //std::string value = pCharacteristic->getValue();
-        Serial.println("onWrite(): ...do nothing...");
-        //pCharacteristic->setValue(0);   // reset the value ...not really important      
+        //Serial.println("onWrite(): server reads incoming data");
+        // Auslesen der Daten
+        std::string value = pCharacteristic->getValue();
+        SongAndPart receivedData;
+        if (value.length() == sizeof(SongAndPart)) {
+            memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+            //Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+            //Serial.println("server sync request -> onWrite() -> switchToSongAndPart");
+            switchToSongAndPart(receivedData.songID, receivedData.part);
+            waitForLEDsync = true;  // wohl eher gar nicht nötig/gebraucht
+        }
+        else {
+            // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge
+            Serial.println("server onWrite() -> read values -> Something went wrong!");
+        }
     }
 
     /**
@@ -181,8 +196,14 @@ void midiProxy_midiLoop() {
             sendValuepairToListeners(24, songID); // 22 -> change song / 23 -> change part / 24 -> sync gits!
             //sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
             syncProgWithNextChange = true;
-            Serial.println("syncLEDgits -> sendValuepairToListeners");
+            //Serial.println("syncLEDgits -> sendValuepairToListeners");
         //}
         syncLEDgits = false;
     } 
+
+    if (needLEDsync) {
+        needLEDsync = false;
+        //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
+        sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
+    }        
 }

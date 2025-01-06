@@ -35,6 +35,8 @@ int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative va
 byte songID = 0; // 0 -> default loop
 volatile byte nextSongPart = 0;
 volatile byte prog = 0;	
+boolean needLEDsync = false;
+boolean waitForLEDsync = false;
 
 //--- marker LEDs --- dienen zum markieren der buende, die fuer den jeweiligen song relevant sind
 byte markerLED1 = 0;
@@ -237,6 +239,8 @@ void loop() {
 					syncProgWithNextChange = false;
 				}
 			#endif
+		#else
+			informServerOnNextChange(nextSongPart);
 		#endif
 
 		switchToPart(nextSongPart);
