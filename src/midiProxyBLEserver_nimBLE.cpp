@@ -136,6 +136,8 @@ void midiProxy_initialize_BLE() {
 }
 
 void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
+    Serial.print("server: sendValuepairToListeners: ccIn:" + String(midiInCC));
+    Serial.println(" - value: " + String(midiInValue));
     uint8_t byteArray[2];
     byteArray[0] = midiInCC;
     byteArray[1] = midiInValue;
@@ -149,8 +151,8 @@ void setSongAndPartIDforLEDsync(byte songID, byte part) {
     songAndPart.part = part;
     pCharacteristic->setValue((uint8_t*)&songAndPart, sizeof(songAndPart));
 
-    Serial.print("setValue: song: " + String(songID));
-    Serial.println(" - part: " + String(part));
+    // Serial.print("setValue: song: " + String(songID));
+    // Serial.println(" - part: " + String(part));
 }
 
 void midiProxy_midiLoop() {
@@ -171,10 +173,15 @@ void midiProxy_midiLoop() {
 
     // notify changed value
     if (newMidiValuesToBroadcast) {
+
+        Serial.println("server: newMidiValuesToBroadcast!");
+        // Serial.println("midiInCC: " + String(midiInCC));
+        // Serial.println("midiInValue: " + String(midiInValue));
+
         //if (anzahl_BLE_devices > 0) {
             sendValuepairToListeners(midiInCC, midiInValue);
             //syncLEDgits = false; // brauchen wir hier nicht
-            Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners, " + String(midiInCC) + " / " + String(midiInValue));
+            //Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners, " + String(midiInCC) + " / " + String(midiInValue));
         //}
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }

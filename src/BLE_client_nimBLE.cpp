@@ -294,15 +294,16 @@ bool connectToServer() {
             //     // pClient->disconnect();
             //     // return false;
             // }
-            if (pChr->canRead()) {
-                //Serial.printf("The value of: %s is now: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
-            }
+            // if (pChr->canRead()) {
+            //     //Serial.printf("The value of: %s is now: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
+            // }
         }
 
         if (pChr->canNotify()) {
             if (!pChr->subscribe(true, notifyCallback)) {
-                pClient->disconnect();
-                return false;
+                Serial.println("BLE-Client: subscribe to notifications FAILED!");
+                // pClient->disconnect();
+                // return false;
             }
             else { // subscribe successful
                 justSubscribed = true;
@@ -341,9 +342,13 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
     //     switchToPart(value);
     // }
 
+    Serial.print("BLE-client: MidiDatenVomProxyAuswerten -> ccIn: ") + String(ccIn);
+    Serial.println(" / value: ") + String(value);
+
     if (value >= 0) {
         switch (ccIn) {
             case 22:    // change song by midi
+                Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
                 switchToSong(value);
                 break;
 

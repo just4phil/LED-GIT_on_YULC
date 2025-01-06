@@ -23,6 +23,7 @@
             newMidiValuesToBroadcast = false;	
             midiInCC = number;
             midiInValue = value;
+            Serial.println("server: midi IN -> setBroadcastValues: DONE!");
         }
     #endif
 //#endif
