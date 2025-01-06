@@ -1,12 +1,12 @@
 #include <FastLED_NeoMatrix.h>
 
 //====== DEFINES ========================================================================
-//#define RINASBASS			// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs! -> else: Andres GIT
+#define RINASBASS			// aktivieren, wenn Rinas Bass verwendet wird... sind dann andere MarkerLEDs! -> else: Andres GIT
 
-#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+//	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 #define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 
 //---------------------------------------------------------------------------------------
 #ifdef RINASBASS
@@ -22,7 +22,7 @@
 #define mh					23	// TODO: ausmerzen
 #define MATRIX_WIDTH       	22
 #define MATRIX_HEIGHT      	23
-#define DEFAULT_BRIGHTNESS	125
+#define DEFAULT_BRIGHTNESS	64	//125
 
 #define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
 #define MATRIX_SIZE         (MATRIX_WIDTH * MATRIX_HEIGHT)
@@ -128,4 +128,3 @@
 	#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
 
 #endif
-

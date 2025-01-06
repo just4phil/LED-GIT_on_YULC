@@ -35,6 +35,8 @@ int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative va
 byte songID = 0; // 0 -> default loop
 volatile byte nextSongPart = 0;
 volatile byte prog = 0;	
+boolean needLEDsync = false;
+boolean waitForLEDsync = false;
 
 //--- marker LEDs --- dienen zum markieren der buende, die fuer den jeweiligen song relevant sind
 byte markerLED1 = 0;
@@ -183,6 +185,13 @@ void setup() {
 	//--- lets get started :) ---
 	switchToSong(0);  //100 // TODO: set back to 0 !!!! // 100 ist der "startup" mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 	//switchToPart(0); // only 4 testing!!!
+	
+	#ifdef HAS_MIDI_IN	
+		#ifdef IS_MIDI_PROXY
+			//--- proxy: set Value for clients who ants to sync ..
+			setSongAndPartIDforLEDsync(0, 0);
+		#endif
+	#endif
 }
 //====================================================
 
@@ -222,11 +231,16 @@ void loop() {
 	if (flag_switchToNextSongPart) {
 		#ifdef HAS_MIDI_IN
 			#ifdef IS_MIDI_PROXY
+				//--- proxy: set Value for clients who wants to sync ..
+				setSongAndPartIDforLEDsync(songID, nextSongPart);
+
 				if (syncProgWithNextChange) {
 					sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
 					syncProgWithNextChange = false;
 				}
 			#endif
+		#else
+			informServerOnNextChange(nextSongPart);
 		#endif
 
 		switchToPart(nextSongPart);

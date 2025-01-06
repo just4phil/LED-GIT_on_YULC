@@ -5,6 +5,10 @@
 //----------------------------
 
 extern byte songID;
+extern volatile byte prog;
+extern boolean needLEDsync; // in main
+extern boolean waitForLEDsync; // in main
+//-------------------------------------------
 
 static BLEUUID serviceUUID(SERVICE_UUID);       // verbindung zum midi proxy
 static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
@@ -12,14 +16,14 @@ static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 //--- testweise verbindung zum widi master (central) --------------
 // static BLEUUID serviceUUID("03b80e5a-ede8-4b33-a751-6ce34ec4c700");
 // static BLEUUID charUUID("7772e5db-3868-4112-a1a9-f2669d106bf3");
+//-------------------------------------------
 
 //BLEScan *pBLEScan;
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean isScanning = false;	// True if scan started or false if there was an error.
 boolean justSubscribed = false;
-//static BLERemoteCharacteristic *pRemoteCharacteristic;
-//static BLEAdvertisedDevice *myDevice;
+boolean informServerOnNextProgChange = false;
 static const NimBLEAdvertisedDevice* advDevice;
 NimBLEScan* pBLEScan;
 volatile bool newMidiValuesReceivedFromProxy = false;
@@ -28,6 +32,11 @@ volatile byte newMidiValueFromProxy = 0;
 
 static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time.
 //----------------------------
+    /** Now we can read/write/subscribe the characteristics of the services we are interested in */
+    NimBLERemoteService*        pSvc = nullptr;
+    NimBLERemoteCharacteristic *pChr = nullptr;
+    //NimBLERemoteDescriptor*     pDsc = nullptr;
+//=================================================================
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
@@ -116,7 +125,7 @@ void scan() {
     pBLEScan->start(scanTimeMs, false, true); // duration, not a continuation of last scan, restart to get all devices again.
     printf("Scanning...\n");
     isScanning = true;
-} 
+}
 
 void BLE_client_initialize() { 
     initialize_Device();
@@ -264,8 +273,8 @@ bool connectToServer() {
     Serial.printf("Connected to: %s RSSI: %d\n", pClient->getPeerAddress().toString().c_str(), pClient->getRssi());
 
     /** Now we can read/write/subscribe the characteristics of the services we are interested in */
-    NimBLERemoteService*        pSvc = nullptr;
-    NimBLERemoteCharacteristic* pChr = nullptr;
+    // NimBLERemoteService*        pSvc = nullptr;
+    // NimBLERemoteCharacteristic* pChr = nullptr;
     //NimBLERemoteDescriptor*     pDsc = nullptr;
 
     pSvc = pClient->getService(SERVICE_UUID);
@@ -274,26 +283,29 @@ bool connectToServer() {
     }
 
     if (pChr) {
-        // if (pChr->canRead()) {
-        //     Serial.printf("%s Value: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
-        // }
+        if (pChr->canRead()) {
+            //Serial.printf("%s Value: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
+        }
 
-        // if (pChr->canWrite()) {
-        //     if (pChr->writeValue("Tasty")) {
-        //         Serial.printf("Wrote new value to: %s\n", pChr->getUUID().toString().c_str());
-        //     } else {
-        //         pClient->disconnect();
-        //         return false;
-        //     }
-        //     if (pChr->canRead()) {
-        //         Serial.printf("The value of: %s is now: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
-        //     }
-        // }
+        if (pChr->canWrite()) {
+            // if (pChr->writeValue("Tasty")) {
+            //     Serial.printf("Wrote new value to: %s\n", pChr->getUUID().toString().c_str());
+            // } 
+            // else {
+            //     Serial.println("BLE-Client: Connect to Server: Write didnt work!");
+            //     // pClient->disconnect();
+            //     // return false;
+            // }
+            // if (pChr->canRead()) {
+            //     //Serial.printf("The value of: %s is now: %s\n", pChr->getUUID().toString().c_str(), pChr->readValue().c_str());
+            // }
+        }
 
         if (pChr->canNotify()) {
             if (!pChr->subscribe(true, notifyCallback)) {
-                pClient->disconnect();
-                return false;
+                Serial.println("BLE-Client: subscribe to notifications FAILED!");
+                // pClient->disconnect();
+                // return false;
             }
             else { // subscribe successful
                 justSubscribed = true;
@@ -319,22 +331,10 @@ bool connectToServer() {
 
 void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
-    // // with midi byte 22 the song can be changed!
-    // if (ccIn == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
-    //     switchToSong(value);
-    // }
-    // // with midi byte 23 the songpart can be changed!
-    // else if (ccIn == 23 && value >= 0) {
-    //     switchToPart(value);
-    // }
-    // // with midi byte 24 -> sync gits!
-    // else if (ccIn == 24 && value >= 0) {
-    //     switchToPart(value);
-    // }
-
     if (value >= 0) {
         switch (ccIn) {
             case 22:    // change song by midi
+                //Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
                 switchToSong(value);
                 break;
 
@@ -344,18 +344,43 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
             case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
                 if (songID == 0) {
-                    if (justSubscribed) {
+                    if (justSubscribed | waitForLEDsync) {
                         switchToSong(value); // only switch if the client jetzt subscribed to the server notification
                         justSubscribed = false;
+                        waitForLEDsync = false;
                     }
                 }
                 break;
             
             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
                 //if (songID == 0) {    // macht hier keinen Sinn da das ja nach dem sync der songID passiert
-                    switchToPart(value);
+                    if (justSubscribed | waitForLEDsync) {  // TESTEN !!!--------------------------------
+                        switchToPart(value);
+                    }
                 //}
                 break;
+
+            case 26:    // the server requests a sync; value doesnt matter
+                SongAndPart songAndPart;
+                songAndPart.songID = songID;
+                songAndPart.part = prog;
+                if (pChr != NULL) {
+                    pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+                }
+                informServerOnNextProgChange = true;
+                break;                      
+        }
+    }
+}
+
+void informServerOnNextChange(byte nextPart) {
+    if (informServerOnNextProgChange) {
+        informServerOnNextProgChange = false;
+        SongAndPart songAndPart;
+        songAndPart.songID = songID;
+        songAndPart.part = nextPart;
+        if (pChr != NULL) {
+            pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
         }
     }
 }
@@ -383,18 +408,60 @@ void BLE_client_Loop() {
         
         if (newMidiValuesReceivedFromProxy) {
 
-            Serial.print("received values from proxy -> cc: ");
-            Serial.print(newMidiCCfromProxy);
-            Serial.print(" - value: ");
-            Serial.println(newMidiValueFromProxy);
+            // Serial.print("newMidiValuesReceivedFromProxy -> cc: ");
+            // Serial.print(newMidiCCfromProxy);
+            // Serial.print(" - value: ");
+            // Serial.println(newMidiValueFromProxy);
 
             MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
             newMidiValuesReceivedFromProxy = false;
         }
     } 
 
-    // if (!connected && !isScanning) {
-    //     set_values();   // TODO: eigentlich quatsch .... ganz unten müsste reichen
-    //     scan();
-    // }
+    if (needLEDsync) {
+        needLEDsync = false;
+        // Serial.println("needLEDsync");
+
+        //--- here the client pulls data from server via READ ---        
+        if (pChr != NULL) {
+            //Serial.println("needLEDsync - pChr != NULL - OK");
+            if (pChr->canRead()) {
+                //Serial.println("needLEDsync - pChr->canRead() - OK");
+                
+                // Auslesen der Daten
+                std::string value = pChr->readValue();  
+                //std::string value = pChr->getValue(); // readValue ist sicherer!?
+                SongAndPart receivedData;
+
+                if (value.length() == sizeof(SongAndPart)) {
+                    memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+                    // Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                    switchToSongAndPart(receivedData.songID, receivedData.part);
+                    waitForLEDsync = true;
+                }
+                else {
+                    // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge
+                    Serial.println("Something went wrong!");
+                }
+            } 
+            else {
+                Serial.println("needLEDsync FAILED! - could not write value to server!");
+            }
+        }        
+
+        //--- here the client informs the server to send sync-data.....
+        // if (pChr != NULL) {
+        //     Serial.println("pChr != NULL - OK");
+        //     if (pChr->canWrite()) {
+        //         Serial.println("pChr->canWrite() - OK");
+        //         if (pChr->writeValue(1)) {
+        //             Serial.println("needLEDsync OK - succesfull Wrote value 1 to server");
+        //             waitForLEDsync = true;
+        //         } 
+        //         else {
+        //             Serial.println("needLEDsync FAILED! - could not write value to server!");
+        //         }
+        //     }
+        // }
+    }
 }

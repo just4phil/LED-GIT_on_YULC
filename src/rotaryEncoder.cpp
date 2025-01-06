@@ -8,6 +8,7 @@
 extern int BRIGHTNESS;
 extern volatile boolean encoderButtonPushedLEDsOFF;	// for rotary encoder button push
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
+extern boolean needLEDsync;
 extern AiEsp32RotaryEncoder *rotaryEncoder;
 extern AiEsp32RotaryEncoderNumberSelector numberSelector;
 //---------------------------------
@@ -68,29 +69,30 @@ void rotary_initialize() {
 }
 
 void on_button_short_click() {
+	// if (encoderButtonPushedLEDsOFF) {
+	// 	encoderButtonPushedLEDsOFF = false;
+	// }
+	// else {
+	// 	encoderButtonPushedLEDsOFF = true;	// for rotary encoder button push
+	// }
+
+	needLEDsync = true;
+} 
+
+void on_button_long_click() {
+	// if (ignoreLIPOsafer) {
+	// 	ignoreLIPOsafer = false;
+	// }
+	// else {
+	// 	ignoreLIPOsafer = true;	
+	// }
+
 	if (encoderButtonPushedLEDsOFF) {
 		encoderButtonPushedLEDsOFF = false;
 	}
 	else {
 		encoderButtonPushedLEDsOFF = true;	// for rotary encoder button push
 	}
-	// if (DEBUG) {
-	// 	Serial.print("encoderButtonPushedLEDsOFF: ");
-	// 	Serial.println(encoderButtonPushedLEDsOFF);
-	// }
-} 
-
-void on_button_long_click() {
-	if (ignoreLIPOsafer) {
-		ignoreLIPOsafer = false;
-	}
-	else {
-		ignoreLIPOsafer = true;	
-	}
-	// if (DEBUG) {
-	// 	Serial.print("ignoreLIPOsafer: ");
-	// 	Serial.println(ignoreLIPOsafer);
-	// }
 } 
 
 void rotary_onButtonClick() {

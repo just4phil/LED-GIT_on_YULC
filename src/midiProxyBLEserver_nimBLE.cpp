@@ -9,6 +9,9 @@ extern volatile bool syncProgWithNextChange;
 extern volatile bool newMidiValuesToBroadcast;
 extern volatile byte midiInCC;
 extern volatile byte midiInValue;
+extern boolean needLEDsync; // in main
+extern boolean waitForLEDsync; // in main
+//-------------------------------------------
 
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 volatile bool syncLEDgits = false;
@@ -21,20 +24,7 @@ NimBLEService *pService;
 NimBLECharacteristic *pCharacteristic;
 NimBLEAdvertising *pAdvertising;
 
-// class MyServerCallbacks : public BLEServerCallbacks {
-//     void onConnect(BLEServer *pServer) {
-//         // Serial.println("device connected -> startAdvertising()");
-//         // BLEDevice::startAdvertising();
-//         aDeviceConnected = true;
-//         // LEDgitsHaveBeenSynced = false;
-//     };
-//     void onDisconnect(BLEServer *pServer) {
-//         // Serial.println("device DISconnected!");
-//         // BLEDevice::startAdvertising();
-//         aDeviceDISconnected = true;
-//         // LEDgitsHaveBeenSynced = false;
-//     }
-// };
+SongAndPart songAndPart;
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
@@ -88,24 +78,45 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 
 /** Handler class for characteristic actions */
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
-    // void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-    //     Serial.printf("%s : onRead(), value: %s\n",
-    //            pCharacteristic->getUUID().toString().c_str(),
-    //            pCharacteristic->getValue().c_str());
-    // }
-    // void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-    // }
-    // /**
-    //  *  The value returned in code is the NimBLE host return code.
-    //  */
-    // void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
-    //     Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
-    // }
+    void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+        // Serial.printf("%s : onRead(), value: %s\n",
+        //        pCharacteristic->getUUID().toString().c_str(),
+        //        pCharacteristic->getValue().c_str());
+        
+        //a client reads our song/part data -> mnow send a notify on next prog change to sync time!
+        //syncLEDgits = true;     // wäre hier falsch, da der client song/part bereits geholt hat
+        syncProgWithNextChange = true; // sync time on next prog change
+    }
+    
+    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+        //Serial.println("onWrite(): server reads incoming data");
+        // Auslesen der Daten
+        std::string value = pCharacteristic->getValue();
+        SongAndPart receivedData;
+        if (value.length() == sizeof(SongAndPart)) {
+            memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+            //Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+            //Serial.println("server sync request -> onWrite() -> switchToSongAndPart");
+            switchToSongAndPart(receivedData.songID, receivedData.part);
+            waitForLEDsync = true;  // wohl eher gar nicht nötig/gebraucht
+        }
+        else {
+            // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge
+            Serial.println("server onWrite() -> read values -> Something went wrong!");
+        }
+    }
+
+    /**
+     *  The value returned in code is the NimBLE host return code.
+     */
+    void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
+        Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
+    }
 
     /** Peer subscribed to notifications/indications */
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
         Serial.printf("a client subscribed to notifications");
-        syncLEDgits = true; 
+        //syncLEDgits = true; // sync here for auto-sync
     }
 } chrCallbacks;
 
@@ -115,16 +126,18 @@ void midiProxy_initialize_BLE() {
     pServer = NimBLEDevice::createServer();
     /** Optional: set the transmit power */
     NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
+    NimBLEDevice::setMTU(23);
     pService = pServer->createService(SERVICE_UUID);
     pServer->setCallbacks(&serverCallbacks);
 
     pCharacteristic = pService->createCharacteristic(		// Create a BLE Characteristic
         CHARACTERISTIC_UUID,
-        // NIMBLE_PROPERTY::READ | 
-        // NIMBLE_PROPERTY::WRITE | 
-        NIMBLE_PROPERTY::NOTIFY // | 
-        // NIMBLE_PROPERTY::INDICATE
+        NIMBLE_PROPERTY::READ | 
+        NIMBLE_PROPERTY::WRITE | 
+        NIMBLE_PROPERTY::NOTIFY 
+        // | NIMBLE_PROPERTY::INDICATE
     );
+    //pCharacteristic->setMaxLength(sizeof(SongAndPart));
     pCharacteristic->setCallbacks(&chrCallbacks);
     pService->start();
     
@@ -145,6 +158,13 @@ void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
     pCharacteristic->notify();
 }
 
+void setSongAndPartIDforLEDsync(byte songID, byte part) {
+
+    songAndPart.songID = songID;
+    songAndPart.part = part;
+    pCharacteristic->setValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+}
+
 void midiProxy_midiLoop() {
 
     if (aDeviceConnected) {
@@ -163,10 +183,10 @@ void midiProxy_midiLoop() {
 
     // notify changed value
     if (newMidiValuesToBroadcast) {
+
         //if (anzahl_BLE_devices > 0) {
             sendValuepairToListeners(midiInCC, midiInValue);
-            syncLEDgits = false;
-            Serial.println("newMidiValuesToBroadcast -> sendValuepairToListeners, " + String(midiInCC) + " / " + String(midiInValue));
+            //syncLEDgits = false; // brauchen wir hier nicht
         //}
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }
@@ -176,8 +196,14 @@ void midiProxy_midiLoop() {
             sendValuepairToListeners(24, songID); // 22 -> change song / 23 -> change part / 24 -> sync gits!
             //sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
             syncProgWithNextChange = true;
-            Serial.println("syncLEDgits -> sendValuepairToListeners");
+            //Serial.println("syncLEDgits -> sendValuepairToListeners");
         //}
         syncLEDgits = false;
     } 
+
+    if (needLEDsync) {
+        needLEDsync = false;
+        //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
+        sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
+    }        
 }
