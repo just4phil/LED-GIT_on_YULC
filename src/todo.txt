@@ -2,6 +2,7 @@
 
 TODOs:
 =======
+- ignoreLIPOsafer raus
 - ledBOARD: programme am anfang fixen wegen scrolltest länge ....
 
 - generell:

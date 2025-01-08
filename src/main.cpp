@@ -1,36 +1,54 @@
-#include <Arduino.h>
-#include "definitions.h" 
-
 //====== DEFINES ========================================================================
 // ACHTUNG: ALLE EINSTELLUNGEN NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
 //========================================================================================
 
+#include <Arduino.h>
+#include "definitions.h" 
 #include <Adafruit_I2CDevice.h>	
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>	// Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays. requires FastLED and Adafruit_GFX libraries as well as this base class library ..  / By Marc MERLIN <marc_soft@merlins.org>
 #include <FastLED.h>
-#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-	#include <WiFiType.h>		// to turn WIFI off
-	#include <WiFi.h>			// to turn WIFI off
-	#include "AiEsp32RotaryEncoder.h"
-	#include "AiEsp32RotaryEncoderNumberSelector.h"
-#endif
+//------
 #include "smileytongue24.h"
-
 #include "definitions.h"
 #include "colors.h"
 #include "functions.h" 			// randomColorValues // switchToSong // switchToPart
 #include "matrixFunctions.h"
 #include "FXprograms.h"
 #include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
-#include "rotaryEncoder.h"
-#include "lipoVoltageCheck.h"
 #include "songs.h"
+//=============================
+
+#ifdef USE_ESP32
+	#pragma message "incl. wifi"
+	#include <WiFiType.h>		// to turn WIFI off
+	#include <WiFi.h>			// to turn WIFI off
+#endif
+//=============================
+
+#ifdef HAS_ROTARY_ENCODER
+	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+		#pragma message "incl. rotary enc. on ESP32"
+		#include "rotaryEncoder.h"
+		#include "AiEsp32RotaryEncoder.h"
+		#include "AiEsp32RotaryEncoderNumberSelector.h"
+	
+	#elif defined(USE_TEENSY)
+		//muss das hier leer bleiben damit der compiler durchläuft!?
+	#endif
+#endif
+//=============================
+
+#ifdef HAS_LIPOVOLTAGE_CHECK	
+	#pragma message "incl. lipoVoltageCheck"
+	#include "lipoVoltageCheck.h"
+#endif
 //=============================
 
 FastLED_NeoMatrix* matrix;
 
 #ifdef LEDMATRIX
+	#pragma message "incl. LEDMATRIX"
 	#include "neomatrix_config.h"
 	boolean LEDGITBOARD = true;
 	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
@@ -71,16 +89,10 @@ volatile bool syncProgWithNextChange = false;
 byte secondsForVoltage = 0; // for lipo safer 
 
 //--------------------
-#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-	#ifdef HAS_ROTARY_ENCODER
-		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
-		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
-		volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push
-	#endif
-#endif
-volatile boolean LEDsTurnedOff = false;	// übergeordnetes FLAG
+volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
+volatile boolean LEDsTurnedOff = false;		// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
-volatile boolean ignoreLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
+volatile boolean ignoreLIPOsafer = false;	// KANN RAUS!  when true -> leds will not be turned off when lipo voltage is low
 
 unsigned int lastLEDchange = millis();
 int ledState = LOW;             // ledState used to set the LED
@@ -88,13 +100,21 @@ int ledState = LOW;             // ledState used to set the LED
 
 #ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 
+	#ifdef HAS_ROTARY_ENCODER
+		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
+	#endif
+
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+		#pragma message "incl. midi_in on ESP32"
 		#include "midi_in.h"
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			#pragma message "incl. midi BLE PROXY"
 			#include "midiProxyBLEserver_nimBLE.h"
 		#endif
 	#else
+		#pragma message "incl. midi BLE CLIENT"
 		#include "BLE_client_nimBLE.h"
 	#endif
 
@@ -120,14 +140,40 @@ int ledState = LOW;             // ledState used to set the LED
 		}
 		if (millisCounterForProgChange >= nextChangeMillis) flag_switchToNextSongPart = true;
 	}
+#endif
 //------------------------------
 
-#elif defined(USE_TEENSY)
+#ifdef USE_TEENSY
 
+	#ifdef HAS_ROTARY_ENCODER
+		// LEER -> TODO
+	#endif
+
+	#pragma message "incl. TeensyTimerTool"
 	#include "TeensyTimerTool.h"	// fuer timer / interrupts via library
 	using namespace TeensyTimerTool;
+	PeriodicTimer t1;
+	#define INCREMENT	5
+
+	void callback() { 
+		millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
+		millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
+		millisCounterForProgChange = millisCounterForProgChange + INCREMENT;
+		millisToReduceCPUSpeed = millisToReduceCPUSpeed + INCREMENT;
+
+		flag_processFastLED = true;	// process FastLED-loops only every 25 ms (fast-led takes approx. 18 ms!!)
+
+		// test zur messung der timing-praezision
+		if (millisCounterForSeconds >= 1000) {
+			millisCounterForSeconds = 0;
+			OneSecondHasPast = true;
+		}
+
+		if (millisCounterForProgChange >= nextChangeMillis) switchToPart(nextSongPart);
+	}
 
 	#ifdef HAS_MIDI_IN	
+		#pragma message "incl. midi_in on TEENSY"
 		#include "midi_in.h"
 	#endif
 #endif
@@ -146,12 +192,30 @@ void setup() {
 		WiFi.disconnect(true);
 		WiFi.mode(WIFI_OFF);
 
+		//--- interrupt-timer fuer callback --------
+		Timer0_Cfg = timerBegin(0, 80, true);	// divider/prescaler = 80
+		// APB_CLK = 80 MHz = 80.000.000 Hz
+		// 1 ms = TimerTicks * 80 (Prescaler) / 80.000.000 Hz
+		// TimerTicks = 1000
+		timerAttachInterrupt(Timer0_Cfg, &Timer0_ISR_callback, true);
+		timerAlarmWrite(Timer0_Cfg, 2000, true); // Interrupt alle 2 ms
+		timerAlarmEnable(Timer0_Cfg);
+
+		//------- activate MOSFETs on YULC ----------------------------
+		pinMode(47, OUTPUT);      // switch on MOSFET for channel 1
+		digitalWrite(47, HIGH);   // switch on MOSFET for channel 1
+		pinMode(21, OUTPUT);    // switch on MOSFET for channel 2
+		digitalWrite(21, HIGH); // switch on MOSFET for channel 2
 
 	#elif defined(USE_TEENSY)
 
+		//--- Development LEDs setup -------
+		pinMode(LED1_PIN, 1); 	// OUTPUT = 1
+		pinMode(LED2_PIN, 1); 
+		pinMode(LED3_PIN, 1); 
+
 		//--- interrupt-timer fuer callback
 		t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
-		
 
 	#endif
 	//----------------
@@ -173,33 +237,25 @@ void setup() {
 		rotary_initialize();
 	#endif
 
-	//--- interrupt-timer fuer callback --------
-	Timer0_Cfg = timerBegin(0, 80, true);	// divider/prescaler = 80
-	// APB_CLK = 80 MHz = 80.000.000 Hz
-	// 1 ms = TimerTicks * 80 (Prescaler) / 80.000.000 Hz
-	// TimerTicks = 1000
-    timerAttachInterrupt(Timer0_Cfg, &Timer0_ISR_callback, true);
-    timerAlarmWrite(Timer0_Cfg, 2000, true); // Interrupt alle 2 ms
-    timerAlarmEnable(Timer0_Cfg);
-
 	//--- voltage lipo safer ----------
 	#ifdef HAS_LIPOVOLTAGE_CHECK	
 		lipoVoltageCheck_initialize();
 	#endif
 
-	//------- activate MOSFETs on YULC ----------------------------
-  	pinMode(47, OUTPUT);      // switch on MOSFET for channel 1
-  	digitalWrite(47, HIGH);   // switch on MOSFET for channel 1
-  	pinMode(21, OUTPUT);    // switch on MOSFET for channel 2
-  	digitalWrite(21, HIGH); // switch on MOSFET for channel 2
-
 	//---- Define matrix width and height. --------
 	matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 
-	//----- initialize LEDs ---------
-	FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
-	//---use both yulc outputs:
-	FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+
+		//----- initialize LEDs ---------
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		//---use both yulc outputs:
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+
+	#elif defined(USE_TEENSY)
+	
+		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+	#endif
 
 	//NEOPIXEL	//WS2812B
 	matrix->begin();

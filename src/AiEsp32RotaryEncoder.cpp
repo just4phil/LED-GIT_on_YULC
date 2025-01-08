@@ -1,7 +1,6 @@
 // based on https://github.com/marcmerlin/IoTuz code - extracted and modified Encoder code
 //
 //
-
 #if defined(ESP8266)
 #else
 #include "esp_log.h"

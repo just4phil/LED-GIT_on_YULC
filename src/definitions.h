@@ -1,37 +1,50 @@
-//#pragma once
+#pragma once
 #include <FastLED_NeoMatrix.h>
 
 //====== DEFINES ========================================================================
 //
-//--- HARDWARE --- activate ONLY ONE of these options: -------
-//#define USE_ESP32
-#define USE_TEENSY
+//--- HARDWARE ---> choose via menu!!
+//#define USE_ESP32 (YULC)
+//#define USE_TEENSY
 //
 //--- LED-DEVICE --- activate ONLY ONE of these options: -------
 //#define RINASBASS
-//#define ANDRESGIT
-#define LEDMATRIX // activate this for the LEDgitBOARD
+#define ANDRESGIT
+//#define LEDMATRIX // activate this for the LEDgitBOARD
 //
 //--- FEATURES -----------------
 #define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
-#ifdef USE_TEENSY
-	#undef IS_MIDI_PROXY
-	#undef HAS_ROTARY_ENCODER
-#endif
 
 #ifdef RINASBASS
 	#define firstYulcPrototype 	// first one has different pins
+	#pragma message "RINASBASS is on firstYulcPrototype"
 #endif
 //---------------------------------------------------------------------------------------
 
-#define DATA_PIN_1          1 	// yulc channel 1
-#define DATA_PIN_2          2 	// yulc channel 2
-#define LIPO_PIN            4 
+#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+	#pragma message "USE ESP32"
+	#define DATA_PIN_1          1 	// yulc channel 1
+	#define DATA_PIN_2          2 	// yulc channel 2
+	#define LIPO_PIN            4 
+
+#elif defined(USE_TEENSY)
+	#pragma message "USE TEENSY"
+	#undef IS_MIDI_PROXY
+	#undef HAS_ROTARY_ENCODER
+
+	#define DATA_PIN            9 // auf teensy++2 -> 12 (C2)
+	#define MIDI_RX_PIN         0  // auf teensy++2 -> 2 (D2)
+	#define LED1_PIN            14
+	#define LED2_PIN            15
+	#define LED3_PIN            16
+	#define LIPO_PIN            19 // auf teensy++2 -> 40 (F2)
+#endif
+
 #define SECONDSFORVOLTAGE	1
 #define MATRIX_WIDTH       	22
 #define MATRIX_HEIGHT      	23

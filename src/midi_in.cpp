@@ -7,9 +7,13 @@
 //Create an instance of the library with default name, serial port and settings
 //midi::SerialMIDI<SerialPort, _Settings>::SerialMIDI [mit SerialPort=HardwareSerial, _Settings=midi::DefaultSerialSettings]
 //MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
-HardwareSerial myHardwareSerial(0);
-MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
-
+#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+    HardwareSerial myHardwareSerial(0);
+    MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
+    
+#elif defined(USE_TEENSY)
+    MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+#endif
 
 volatile bool newMidiValuesToBroadcast = false;
 volatile byte midiInCC = 0;
