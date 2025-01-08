@@ -1,7 +1,10 @@
+#include "definitions.h"
+
+#ifdef USE_ESP32
+//--------------------------------
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 #include "functions.h"
-#include "definitions.h"
 //---------------------------
 
 extern byte songID;
@@ -207,3 +210,6 @@ void midiProxy_midiLoop() {
         sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
     }        
 }
+
+//-------
+#endif

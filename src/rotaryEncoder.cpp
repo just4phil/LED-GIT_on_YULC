@@ -1,7 +1,10 @@
+#include "definitions.h"
+
+#ifdef USE_ESP32
+//--------------------------------
 #include "AiEsp32RotaryEncoder.h"
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 #include <FastLED.h>
-#include "definitions.h"
 //---------------------------------
 
 //extern const boolean DEBUG;
@@ -149,3 +152,6 @@ void rotary_loop() {
   }
 	rotary_onButtonClick();
 } 
+
+//------------
+#endif

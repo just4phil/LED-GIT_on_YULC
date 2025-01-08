@@ -1,3 +1,8 @@
+#include "definitions.h"
+
+#ifdef USE_ESP32
+//--------------------------------
+
 #pragma once
 
 #include <Arduino.h>
@@ -89,3 +94,6 @@ public:
         return value;
     }
 };
+//--------------------
+
+#endif

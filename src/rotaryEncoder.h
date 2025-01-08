@@ -1,3 +1,8 @@
+#include "definitions.h"
+
+#ifdef USE_ESP32
+//--------------------------------
+
 #include "AiEsp32RotaryEncoder.h"
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 //---------------------------------
@@ -23,3 +28,5 @@ void on_button_long_click();
 void rotary_onButtonClick();
 void rotary_loop();
 
+//-------------------
+#endif

@@ -18,32 +18,53 @@
 #include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
 #include "songs.h"
 //=============================
-
-#ifdef USE_ESP32
-	#pragma message "incl. wifi"
-	#include <WiFiType.h>		// to turn WIFI off
-	#include <WiFi.h>			// to turn WIFI off
-#endif
-//=============================
-
-#ifdef HAS_ROTARY_ENCODER
-	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-		#pragma message "incl. rotary enc. on ESP32"
-		#include "rotaryEncoder.h"
-		#include "AiEsp32RotaryEncoder.h"
-		#include "AiEsp32RotaryEncoderNumberSelector.h"
-	
-	#elif defined(USE_TEENSY)
-		//muss das hier leer bleiben damit der compiler durchläuft!?
-	#endif
-#endif
-//=============================
-
 #ifdef HAS_LIPOVOLTAGE_CHECK	
 	#pragma message "incl. lipoVoltageCheck"
 	#include "lipoVoltageCheck.h"
 #endif
 //=============================
+
+#ifdef USE_ESP32
+	#pragma message "incl. wifi"
+	#include <WiFiType.h>		// to turn WIFI off
+	#include <WiFi.h>			// to turn WIFI off
+
+	#ifdef HAS_ROTARY_ENCODER
+		#pragma message "incl. rotary enc. on ESP32"
+		#include "rotaryEncoder.h"
+		#include "AiEsp32RotaryEncoder.h"
+		#include "AiEsp32RotaryEncoderNumberSelector.h"
+		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
+	#endif
+
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+		#pragma message "incl. midi_in on ESP32"
+		#include "midi_in.h"
+
+		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			#pragma message "incl. midi BLE PROXY"
+			#include "midiProxyBLEserver_nimBLE.h"
+		#endif
+	#else
+		#pragma message "incl. midi BLE CLIENT"
+		#include "BLE_client_nimBLE.h"
+	#endif
+#endif
+//=============================
+
+#ifdef USE_TEENSY
+
+	// #ifdef HAS_ROTARY_ENCODER
+		
+	// #endif
+
+	#ifdef HAS_MIDI_IN	
+		#pragma message "incl. midi_in on TEENSY"
+		#include "midi_in.h"
+	#endif
+#endif
+//===================================
 
 FastLED_NeoMatrix* matrix;
 
@@ -100,24 +121,6 @@ int ledState = LOW;             // ledState used to set the LED
 
 #ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 
-	#ifdef HAS_ROTARY_ENCODER
-		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
-		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
-	#endif
-
-	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
-		#pragma message "incl. midi_in on ESP32"
-		#include "midi_in.h"
-
-		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			#pragma message "incl. midi BLE PROXY"
-			#include "midiProxyBLEserver_nimBLE.h"
-		#endif
-	#else
-		#pragma message "incl. midi BLE CLIENT"
-		#include "BLE_client_nimBLE.h"
-	#endif
-
 	//==== Callback for timer-interrupt so that fastLED can process uninterrupted 
 	#define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
 	hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable
@@ -145,15 +148,12 @@ int ledState = LOW;             // ledState used to set the LED
 
 #ifdef USE_TEENSY
 
-	#ifdef HAS_ROTARY_ENCODER
-		// LEER -> TODO
-	#endif
-
-	#pragma message "incl. TeensyTimerTool"
-	#include "TeensyTimerTool.h"	// fuer timer / interrupts via library
-	using namespace TeensyTimerTool;
-	PeriodicTimer t1;
-	#define INCREMENT	5
+	// #pragma message "incl. TeensyTimerTool"
+	// #include "TeensyTimerTool.h"	// fuer timer / interrupts via library
+	// using namespace TeensyTimerTool;
+	// PeriodicTimer t1;
+	#define INCREMENT	2	//5
+	IntervalTimer myTimer;
 
 	void callback() { 
 		millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
@@ -171,11 +171,6 @@ int ledState = LOW;             // ledState used to set the LED
 
 		if (millisCounterForProgChange >= nextChangeMillis) switchToPart(nextSongPart);
 	}
-
-	#ifdef HAS_MIDI_IN	
-		#pragma message "incl. midi_in on TEENSY"
-		#include "midi_in.h"
-	#endif
 #endif
 
 
@@ -207,7 +202,9 @@ void setup() {
 		pinMode(21, OUTPUT);    // switch on MOSFET for channel 2
 		digitalWrite(21, HIGH); // switch on MOSFET for channel 2
 
-	#elif defined(USE_TEENSY)
+	#endif
+	
+	#ifdef USE_TEENSY
 
 		//--- Development LEDs setup -------
 		pinMode(LED1_PIN, 1); 	// OUTPUT = 1
@@ -215,10 +212,11 @@ void setup() {
 		pinMode(LED3_PIN, 1); 
 
 		//--- interrupt-timer fuer callback
-		t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
+		//t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
+
+		myTimer.begin(callback, INCREMENT);  // timer callback every 
 
 	#endif
-	//----------------
 	
 	//=== MIDI / PROXY / CLIENT initialisieren =====
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!

@@ -1,3 +1,9 @@
+
+#include "definitions.h"
+
+#ifdef USE_ESP32
+//--------------------------------
+
 // AiEsp32RotaryEncoder.h
 // based on https://github.com/marcmerlin/IoTuz code - extracted and modified Encoder code
 
@@ -102,4 +108,7 @@ public:
 	bool isEncoderButtonClicked(unsigned long maximumWaitMilliseconds = 300);
 	bool isEncoderButtonDown();
 };
+#endif
+//------------------------
+
 #endif

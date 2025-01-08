@@ -31,8 +31,10 @@
 	#define DATA_PIN_1          1 	// yulc channel 1
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
+	#define DEFAULT_BRIGHTNESS	64	//125
+#endif
 
-#elif defined(USE_TEENSY)
+#ifdef USE_TEENSY
 	#pragma message "USE TEENSY"
 	#undef IS_MIDI_PROXY
 	#undef HAS_ROTARY_ENCODER
@@ -43,6 +45,7 @@
 	#define LED2_PIN            15
 	#define LED3_PIN            16
 	#define LIPO_PIN            19 // auf teensy++2 -> 40 (F2)
+	#define DEFAULT_BRIGHTNESS	32	// solange der stromversorgung nicht ausrecihend ist
 #endif
 
 #define SECONDSFORVOLTAGE	1
@@ -50,7 +53,6 @@
 #define MATRIX_HEIGHT      	23
 #define mw					MATRIX_WIDTH	// TODO: ausmerzen
 #define mh					MATRIX_HEIGHT	// TODO: ausmerzen
-#define DEFAULT_BRIGHTNESS	64	//125
 
 #define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
 #define MATRIX_SIZE         MATRIX_WIDTH * MATRIX_HEIGHT
