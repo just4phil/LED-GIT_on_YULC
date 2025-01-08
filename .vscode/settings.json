@@ -9,5 +9,15 @@
         "IDF_CCACHE_ENABLE": "1",
         "ESP_ROM_ELF_DIR": "C:\\Users\\andre\\.espressif\\tools\\esp-rom-elfs\\20240305/"
     },
-    "idf.gitPathWin": "C:\\Users\\andre\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe"
+    "idf.gitPathWin": "C:\\Users\\andre\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
+    "files.associations": {
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp"
+    }
 }

@@ -1,9 +1,13 @@
-#pragma once
+//#pragma once
 #include <FastLED_NeoMatrix.h>
 
 //====== DEFINES ========================================================================
 //
 //--- HARDWARE --- activate ONLY ONE of these options: -------
+//#define USE_ESP32
+#define USE_TEENSY
+//
+//--- LED-DEVICE --- activate ONLY ONE of these options: -------
 //#define RINASBASS
 //#define ANDRESGIT
 #define LEDMATRIX // activate this for the LEDgitBOARD
@@ -15,6 +19,10 @@
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
+#ifdef USE_TEENSY
+	#undef IS_MIDI_PROXY
+	#undef HAS_ROTARY_ENCODER
+#endif
 
 #ifdef RINASBASS
 	#define firstYulcPrototype 	// first one has different pins

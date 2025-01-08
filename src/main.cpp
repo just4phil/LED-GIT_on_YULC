@@ -9,10 +9,12 @@
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>	// Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays. requires FastLED and Adafruit_GFX libraries as well as this base class library ..  / By Marc MERLIN <marc_soft@merlins.org>
 #include <FastLED.h>
-#include <WiFiType.h>		// to turn WIFI off
-#include <WiFi.h>			// to turn WIFI off
-#include "AiEsp32RotaryEncoder.h"
-#include "AiEsp32RotaryEncoderNumberSelector.h"
+#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+	#include <WiFiType.h>		// to turn WIFI off
+	#include <WiFi.h>			// to turn WIFI off
+	#include "AiEsp32RotaryEncoder.h"
+	#include "AiEsp32RotaryEncoderNumberSelector.h"
+#endif
 #include "smileytongue24.h"
 
 #include "definitions.h"
@@ -69,9 +71,13 @@ volatile bool syncProgWithNextChange = false;
 byte secondsForVoltage = 0; // for lipo safer 
 
 //--------------------
-AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
-AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
-volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push
+#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+	#ifdef HAS_ROTARY_ENCODER
+		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
+		volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push
+	#endif
+#endif
 volatile boolean LEDsTurnedOff = false;	// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
 volatile boolean ignoreLIPOsafer = false;	// when true -> leds will not be turned off when lipo voltage is low
@@ -80,40 +86,53 @@ unsigned int lastLEDchange = millis();
 int ledState = LOW;             // ledState used to set the LED
 //===========================================
 
+#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 
-#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
-	#include "midi_in.h"
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+		#include "midi_in.h"
 
-	#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-		#include "midiProxyBLEserver_nimBLE.h"
+		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			#include "midiProxyBLEserver_nimBLE.h"
+		#endif
+	#else
+		#include "BLE_client_nimBLE.h"
 	#endif
-#else
-	#include "BLE_client_nimBLE.h"
+
+	//==== Callback for timer-interrupt so that fastLED can process uninterrupted 
+	#define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
+	hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable
+	void IRAM_ATTR Timer0_ISR_callback() {	
+		millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
+		millisCounterForHalfSecond = millisCounterForHalfSecond + INCREMENT;
+		millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
+		millisCounterForProgChange = millisCounterForProgChange + INCREMENT;
+		millisToReduceCPUSpeed = millisToReduceCPUSpeed + INCREMENT;
+
+		flag_processFastLED = true;	// process FastLED-loops
+
+		if (millisCounterForHalfSecond >= 500) {
+			millisCounterForHalfSecond = 0;
+			HalfSecondHasPast = true;
+		}
+		if (millisCounterForSeconds >= 1000) {
+			millisCounterForSeconds = 0;
+			OneSecondHasPast = true;
+		}
+		if (millisCounterForProgChange >= nextChangeMillis) flag_switchToNextSongPart = true;
+	}
+//------------------------------
+
+#elif defined(USE_TEENSY)
+
+	#include "TeensyTimerTool.h"	// fuer timer / interrupts via library
+	using namespace TeensyTimerTool;
+
+	#ifdef HAS_MIDI_IN	
+		#include "midi_in.h"
+	#endif
 #endif
 
 
-//==== Callback for timer-interrupt so that fastLED can process uninterrupted 
-#define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
-hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable
-void IRAM_ATTR Timer0_ISR_callback() {	
-    millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-    millisCounterForHalfSecond = millisCounterForHalfSecond + INCREMENT;
-	millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
-    millisCounterForProgChange = millisCounterForProgChange + INCREMENT;
-	millisToReduceCPUSpeed = millisToReduceCPUSpeed + INCREMENT;
-
-    flag_processFastLED = true;	// process FastLED-loops
-
-    if (millisCounterForHalfSecond >= 500) {
-		millisCounterForHalfSecond = 0;
-        HalfSecondHasPast = true;
-    }
-    if (millisCounterForSeconds >= 1000) {
-        millisCounterForSeconds = 0;
-        OneSecondHasPast = true;
-    }
-	if (millisCounterForProgChange >= nextChangeMillis) flag_switchToNextSongPart = true;
-}
 //--------------------------------------------------
 
 void setup() {
@@ -121,9 +140,20 @@ void setup() {
  	Serial.begin(115200);
 	delay(500);	// Time for serial port to work?
 
-	//-- turn wifi off ---------- TODO: brauche ich das wirklich? -> includes raus!?
- 	WiFi.disconnect(true);
-  	WiFi.mode(WIFI_OFF);
+	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+
+		//-- turn wifi off ---------- TODO: brauche ich das wirklich? -> includes raus!?
+		WiFi.disconnect(true);
+		WiFi.mode(WIFI_OFF);
+
+
+	#elif defined(USE_TEENSY)
+
+		//--- interrupt-timer fuer callback
+		t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
+		
+
+	#endif
 	//----------------
 	
 	//=== MIDI / PROXY / CLIENT initialisieren =====
