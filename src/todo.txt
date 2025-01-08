@@ -2,9 +2,10 @@
 
 TODOs:
 =======
-- ledBOARD TODO: - dunkle LEDs sind nach einiger Zeit wieder hell!!
-- testen: nach outline / strobe / fastbling ist helligkeit wieder hoch!?
-	und dann muss man rotary erst hoch drehen bevor runter drehen wieder geht?
+- ledBOARD: programme am anfang fixen wegen scrolltest länge ....
+
+- generell:
+    - yulc und teensy4 in eine codebase
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
     - am ende waren beide clients ziemlich weit raus aus dem sync!

@@ -205,8 +205,8 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 		//---- jetzt LEDs ausgeben
 		FastLED.clear();
-		BRIGHTNESS = 255;
-		FastLED.setBrightness(BRIGHTNESS); //128 //255	// brightness erhöhen...aber nicht zu hoch!
+		//BRIGHTNESS = 255;	// nicht BRIGHTNESS überschreiben, sondern besser direkt setzen
+		FastLED.setBrightness(255); //brightness erhöhen...aber nicht zu hoch!
 
 		//set random pixel to defined color
 		for (int i = 0; i < actualAnzahlLEDs; i++) {

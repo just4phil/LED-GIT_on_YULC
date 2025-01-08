@@ -19,8 +19,6 @@
 #ifdef RINASBASS
 	#define firstYulcPrototype 	// first one has different pins
 #endif
-
-
 //---------------------------------------------------------------------------------------
 
 #define DATA_PIN_1          1 	// yulc channel 1
@@ -54,7 +52,7 @@
 #define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
 //---------------------------
 
-#ifdef LEDMATRIX
+#ifdef LEDMATRIX	//--------- NUR FÜR LEDGITBOARD ---------------
 	#define anz_LEDs			anz_LEDs_GITBOARD
 	#define Bund_min	 		0
 	#define Bund_max	 		0
@@ -94,7 +92,7 @@
 	#define ASaite_C_hoch	 	0	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!	
 #endif
 
-#ifdef RINASBASS //---------- NUR FÜR RINAS BASS GITARRE ---------------
+#ifdef RINASBASS	//--------- NUR FÜR RINAS BASS GITARRE ---------------
 
 	#define anz_LEDs			anz_LEDs_BASS
 
@@ -136,7 +134,7 @@
 	#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 #endif
 
-#ifdef ANDRESGIT	//----------------- NUR FÜR ANDRES GITARRE -------------------
+#ifdef ANDRESGIT	//--------- NUR FÜR ANDRES GITARRE -------------------
 
 	#define anz_LEDs			anz_LEDs_GIT
 

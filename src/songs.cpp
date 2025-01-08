@@ -72,6 +72,7 @@ void defaultLoop()  {
 
 	case 5:
 		progMatrixHorizontal(16000, 10, 80);
+		//progFastBlingBling(6000, 8, 10); //20s -> 3:13
 		break;
 
 	case 10:
