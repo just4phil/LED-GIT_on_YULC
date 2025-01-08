@@ -2,11 +2,7 @@
 
 TODOs:
 =======
-
-- idee: short press auf rotary -> sync leds! (long press = LEDs on/off)
-    - clients sync from server 
-    - server sync from client?
-    
+- ledBOARD TODO: - dunkle LEDs sind nach einiger Zeit wieder hell!!
 - testen: nach outline / strobe / fastbling ist helligkeit wieder hoch!?
 	und dann muss man rotary erst hoch drehen bevor runter drehen wieder geht?
 
@@ -14,21 +10,13 @@ TODOs:
     - am ende waren beide clients ziemlich weit raus aus dem sync!
     - timing geht dann irgendwie flöten! ...als würden parts übersprungen !?!?
     => wenn ich das nicht fixen kann, dann doch besser sofortiger sync zum server!!
-    
-- DONE! - wenn ein song gestartet wurde (midi in) und alles in sync ist und dann der server offline geht und wieder kommt .... erfolgt KEIN sync
-    - bei normalem programm ohne song geht es
-- DONE! -  1. server an, 2. rinas git an, 3. anderen client an .. -> dann geht rinasbass auch wieder auf start von song 0 / part 0 !!!!!!!
-    - auch bei disconnect vom anderen client geht rinasbass wieder auf part0 von song0
-    => es bekommen ALLE clients einen sync auf den song  inkl. part=0 !!
-        bei connect immer!
-        bei disconnect MANCHMAL!?
-- DONE! - evtl. client-seitig nur dann einen gitSync annehmen, wenn aktuell song 0 (default) läuft? wenn > 0 dann wird nur midi in angenommen
-    dafür müsste der client aber zw. gitSync und midi-in unterscheiden können!
+
 - ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
 
-- muss es max. power sein?
-    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
-- client timeout -> sind 3000ms besser als 1500ms?
+- battery life optimieren
+    - max. power wieder runter -> NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
+    - client timeout -> sind 3000ms besser als 1500ms?
+    - advertising nur einmal pro sekunde?
 
 ============================================================
 

@@ -6,12 +6,12 @@
 #include "matrixFunctions.h"
 //----------------------------
 
+extern boolean LEDGITBOARD;	// defined in definitions.h
 extern byte markerLED1;
 extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
-extern const boolean LEDGITBOARD;
 extern byte songID; // 0 -> default loop
 extern volatile byte prog;							// the actual song-part
 //----------------------------

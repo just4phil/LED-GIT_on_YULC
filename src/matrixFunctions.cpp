@@ -5,19 +5,15 @@
 #include "definitions.h"
 #include "functions.h"
 #include "smileytongue24.h"
+//--------------------------------------
 
-#ifdef USELEDMATRIXCONFIG
-	#define LEDMATRIX
-	#include "neomatrix_config.h"
-#else
-	extern FastLED_NeoMatrix* matrix;
-#endif
-
+extern FastLED_NeoMatrix* matrix;
 extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int nextChangeMillis;
 extern volatile byte nextSongPart;
 extern volatile boolean nextChangeMillisAlreadyCalculated;
-extern const boolean LEDGITBOARD;
+//extern const boolean LEDGITBOARD;
+extern boolean LEDGITBOARD;	// defined in definitions.h
 
 static const uint8_t PROGMEM mono_bmp[][8] = {
 {   // 0: checkered 1
@@ -69,7 +65,7 @@ static const uint8_t PROGMEM mono_bmp[][8] = {
 	B00111100 },
 };
 
-#if defined(defLEDGITBOARD)
+#if defined(LEDMATRIX)
 
 	//============================================================================= war frueher mal in LEDMatrix.h
 	//========== Andres remapping function für das LED-GIT-BOARD =================

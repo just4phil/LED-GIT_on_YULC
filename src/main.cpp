@@ -1,11 +1,8 @@
 #include <Arduino.h>
+#include "definitions.h" 
 
 //====== DEFINES ========================================================================
-// ANDRESGIT / RINASBASS => ACHTUNG: NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
-//#define USELEDMATRIXCONFIG
-// ACHTUNG: immer beide eintraege aendern:
-#define defLEDSTRIPEGIT	// defLEDGITBOARD oder defLEDSTRIPEGIT
-const static boolean LEDGITBOARD = false; // ACHTUNG: GEDOPPELT IN FXprogramms.cpp VORHANDEN!! -> AUCH DORT ÄNDERN!!!! // false: es wird für die LED-STRIPE-Git kompiliert
+// ACHTUNG: ALLE EINSTELLUNGEN NUR IN DEFINITIONS.H ZU ÄNDERN: #define RINASBASS 
 //========================================================================================
 
 #include <Adafruit_I2CDevice.h>	
@@ -18,7 +15,7 @@ const static boolean LEDGITBOARD = false; // ACHTUNG: GEDOPPELT IN FXprogramms.c
 #include "AiEsp32RotaryEncoderNumberSelector.h"
 #include "smileytongue24.h"
 
-#include "definitions.h"		// order matters? .... defines first?
+#include "definitions.h"
 #include "colors.h"
 #include "functions.h" 			// randomColorValues // switchToSong // switchToPart
 #include "matrixFunctions.h"
@@ -28,6 +25,17 @@ const static boolean LEDGITBOARD = false; // ACHTUNG: GEDOPPELT IN FXprogramms.c
 #include "lipoVoltageCheck.h"
 #include "songs.h"
 //=============================
+
+FastLED_NeoMatrix* matrix;
+
+#ifdef LEDMATRIX
+	#include "neomatrix_config.h"
+	boolean LEDGITBOARD = true;
+	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
+#else
+	boolean LEDGITBOARD = false;
+#endif
+//----------------------------------
 
 const static boolean DEBUG = true;
 CRGB leds[NUMMATRIX];
@@ -72,13 +80,6 @@ unsigned int lastLEDchange = millis();
 int ledState = LOW;             // ledState used to set the LED
 //===========================================
 
-#ifdef USELEDMATRIXCONFIG
-	#define LEDMATRIX
-	#include "neomatrix_config.h"
-#else
-	FastLED_NeoMatrix* matrix;
-#endif
-//----------------------------------
 
 #ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
 	#include "midi_in.h"
@@ -175,7 +176,7 @@ void setup() {
 	matrix->setBrightness(BRIGHTNESS);
 	matrix->setTextWrap(false);
 
-	#ifdef LEDGITBOARD
+	#ifdef LEDMATRIX
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
 	#endif
 

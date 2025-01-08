@@ -7,7 +7,9 @@
 //---------------------------------------------------------------------
 
 //extern const boolean LEDGITBOARD;			// geht aus irgendeinem Grund nicht -> FXprograms.cpp.o:(.literal._Z14progFullColorsjhj+0x0): undefined reference to `LEDGITBOARD'
-extern const boolean LEDGITBOARD = false;
+//extern const boolean LEDGITBOARD = false;
+extern boolean LEDGITBOARD;	// defined in definitions.h
+
 extern byte songID; // 0 -> default loop
 extern byte markerLED1;
 extern byte markerLED2;

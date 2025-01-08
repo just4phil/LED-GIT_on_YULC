@@ -10,7 +10,8 @@ extern byte markerLED4;
 extern byte markerLED5;
 extern int helligkeit;
 extern int BRIGHTNESS;
-extern const boolean LEDGITBOARD;
+//extern const boolean LEDGITBOARD;
+extern boolean LEDGITBOARD;	// defined in definitions.h
 extern CRGB leds[NUMMATRIX];
 extern byte songID; // 0 -> default loop
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet

@@ -1,5 +1,6 @@
 #ifndef neomatrix_config_h
 #define neomatrix_config_h
+#include "definitions.h"    // VON ANDRE EINGEFÜGT!!
 
 /* There are 2 major backends
 1) SmartMatrix (via SmartMatrix::GFX)
@@ -119,7 +120,7 @@ uint32_t tft_spi_speed;
 // https://github.com/marcmerlin/LEDMatrix/commit/597ce703e924d45b2e676d6558c4c74a8ebc6991
 // or https://github.com/Jorgen-VikingGod/LEDMatrix/commit/a11e74c8cd5b933021b6e15eb067280a52691449
 // zero copy/no malloc code to work.
-#include <LEDMatrix.h>
+    #include <LEDMatrix.h>
 #endif
 
 
@@ -133,19 +134,19 @@ uint32_t tft_spi_speed;
 #include <FastLED_NeoMatrix.h>
 #define FASTLED_NEOMATRIX
 
-// ANDRE: MEINE ANGABEN!!!!
+//======== ANDRE: MEINE ANGABEN!!!! ====================================
 
-const uint8_t MATRIXPIN = 9 // auf teensy++2 -> 12 (C2)
-uint8_t matrix_brightness = 15;
+const uint8_t MATRIXPIN = 9; // auf teensy++2 -> 12 (C2)
+uint8_t matrix_brightness = DEFAULT_BRIGHTNESS; //15;
 // Used by LEDMatrix
-const uint16_t MATRIX_TILE_WIDTH = 22; // width of EACH NEOPIXEL MATRIX (not total display)
-const uint16_t MATRIX_TILE_HEIGHT = 23; // height of each matrix
+const uint16_t MATRIX_TILE_WIDTH = MATRIX_WIDTH; //22; // width of EACH NEOPIXEL MATRIX (not total display)
+const uint16_t MATRIX_TILE_HEIGHT = MATRIX_HEIGHT; //23; // height of each matrix
 const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
 const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
 
 // Used by NeoMatrix
-const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
-const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
+//const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
+//const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
 
 CRGB* matrixleds;
 #ifdef LEDMATRIX
@@ -187,8 +188,9 @@ cLEDMatrix<MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, VERTICAL_ZIGZAG_MATRIX> ledmat
 //    NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT +
 //    NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
 
-FastLED_NeoMatrix* matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, 
-    NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+extern FastLED_NeoMatrix* matrix;   //ANDRE: defined in main
+//matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+//=> ANDRE: braucht man hier wohl gar nicht....reicht in main/setup :)
 
 //----------------------------------------------------------------------------
 #elif defined(M32BY8X3)
@@ -713,10 +715,10 @@ FastLED_RPIRGBPanel_GFX* matrix = new FastLED_RPIRGBPanel_GFX(matrixleds, mw, mh
 //============================================================================
 
 // Compat for some other demos
-const uint32_t NUMMATRIX = mw * mh;
+//const uint32_t NUMMATRIX = mw * mh;
 const uint32_t NUM_LEDS = NUMMATRIX;
-const uint16_t MATRIX_HEIGHT = mh;
-const uint16_t MATRIX_WIDTH = mw;
+//const uint16_t MATRIX_HEIGHT = mh;
+//const uint16_t MATRIX_WIDTH = mw;
 
 // Compat with SmartMatrix code that uses those variables
 // (but don't redefine for SmartMatrix backend)
