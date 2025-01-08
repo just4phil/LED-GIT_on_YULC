@@ -214,7 +214,7 @@ void setup() {
 		//--- interrupt-timer fuer callback
 		//t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
 
-		myTimer.begin(callback, INCREMENT);  // timer callback every 
+		myTimer.begin(callback, 2000);  // timer callback every 
 
 	#endif
 	
