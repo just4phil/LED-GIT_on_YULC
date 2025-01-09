@@ -63,57 +63,89 @@ void defaultLoop()  {
 	case 0:
 		
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 19500, 90, getRandomColor(), 5);
+			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlingBlingColoring(15000, 5, 5000);
+			progBlingBlingColoring(30000, 5, 4000);
 		}
 		break;
 
-	case 5:
-		progMatrixHorizontal(16000, 10, 80);
-		//progFastBlingBling(6000, 8, 10); //20s -> 3:13
+	case 2:	// nur für ledgitboard
+		progBlingBlingColoring(10500, 5, 4000);
 		break;
 
-	case 10:
-		progStern(16000, 15, 20);
+	case 5: // OK
+		progPalette(10000, 0, 10);//full rainbow hell, fade
+		break;
+	case 10: // OK
+		progPalette(10000, 11, 15);// grüen-weiss mit fade
 		break;
 
-	case 15: // OK
-		progPalette(16000, 10, 20);
-		//progCLED(10000, 4);	// matrix colors
+	case 15:
+		progMatrixHorizontal(16000, 20, 80);
 		break;
 
 	case 20: // OK
-		progMatrixScanner(16000, 25, 25);
+		progPalette(10000, 1, 25);//rainbow schnell ohne fade
 		break;
-
 	case 25: // OK
-		progFullColors(16000, 30, 600);
+		progPalette(10000, 10, 30);// blau weiss rot mit fade
 		break;
 
 	case 30:
-		progMovingLines(16000, 35);
+		progStern(16000, 500, 35, 20);
 		break;
 
 	case 35: // OK
-		progCircles(16000, 40, 600, false);
+		progPalette(10000, 2, 40);//rainbow fast mit fade
 		break;
-
 	case 40: // OK
-		progPalette(16000, 9, 45);
+		progPalette(10000, 9, 45);// blau weiss rot OHNE fade
 		break;
 
-	case 45: 
-		//progOutline(6000, 50);
-		progRandomLines(16000, 50, 500, true);
+	case 45: // OK
+		progMatrixScanner(16000, 50, 25);
 		break;
 
-	case 50: 
-		progPalette(16000, 3, 55);
+	case 50: // OK
+		progPalette(10000, 3, 55);	//lila-grün mit fade
+		break;
+	case 55: // OK
+		progPalette(10000, 8, 60);//rainbow-ish
 		break;
 
-	case 55:
+	case 60: // OK
+		progFullColors(16000, 65, 600);
+		break;
+	
+	case 65: // OK
+		progPalette(10000, 4, 70);//rainbow fast lowlight
+		break;
+	case 70: // OK
+		progPalette(10000, 7, 75);// blau-weiss mit fade
+		break;
+
+	case 75:
+		progMovingLines(16000, 80);
+		break;
+
+	case 80: // OK
+		progPalette(10000, 5, 85);// weiss ohne fade
+		break;
+
+	case 85: // OK
+		progCircles(16000, 90, 600, false);
+		break;
+
+	case 90: 
+		progRandomLines(16000, 95, 500, true);
+		break;
+
+	case 95: // OK
+		progPalette(10000, 6, 98);//weiss mit fade
+		break;
+
+	case 98:
 		progFastBlingBling(6000, 8, 100); //20s -> 3:13
 		break;
 		
@@ -1440,29 +1472,21 @@ void InTheDark() {	// fertig: 16.09.2023
 // #14 Shivers();
 void Shivers() { // fertig: TODO
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 61;
-	// markerLED2 = 65;
-	// markerLED3 = 59;
-	// markerLED4 = 69;
-
  	switch (prog) { 
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Shivers by Ed Sheeran", 19500, 90, getRandomColor(), 4);
+			progScrollText("Shivers by Ed Sheeran", 20000, 90, getRandomColor(), 3);
 		}
 		else {
 			progBlack(6590, 4);
 		}
 		break;
 	
+	case 3: //nur für ledgitboard!
+		progBlingBlingColoring(15680, 12, 5000);
+		break;
+
 	case 4: //intro		14545
 		progBlingBlingColoring(29090, 12, 5000);
 		break;
@@ -1568,28 +1592,21 @@ void Shivers() { // fertig: TODO
 // #15 Abcdefu -> FERTIG: 25.08.2023
 void Abcdefu() {
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 63;
-	// markerLED2 = 67;
-	// markerLED4 = 58;
-
  	switch (prog) { 
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Abcdefu by Gayle", 19500, 90, getRandomColor(), 2);
+			progBlack(5000, 1);
 		}
 		else { // pause
 			progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
 		} 
 		break;
 	
+	case 1:
+		progScrollText("Abcdefu by Gayle", 19545, 90, getRandomColor(), 4);
+		break;
+
 	case 2: // intro
 		progBlingBlingColoring(23545, 4, 3000);
 		//progPalette(17180, 6, 4);
@@ -1672,22 +1689,29 @@ void Abcdefu() {
 //#24 -> FERTIG: 22.03.2024
 void enjoyTheSilenceINTRO() {
 
-	// markerLED1 = 69;	
-	// markerLED2 = 63;
-	// markerLED3 = 59;
-	// markerLED4 = 56;
-
 	switch (prog) {
 
 	case 0:
-		progBlack(65840, 100);
+		if (LEDGITBOARD) {
+			progBlack(46998, 5);
+		}
+		else {
+			progBlack(32920, 10);
+		}
+		break;
+
+	case 5:
+		progScrollText("Enjoy the silence by Depeche Mode", 18842, 90, getRandomColor(), 100);
+		break;
+
+	case 10:
+		progBlack(32920, 100);
 		break;
 
 	case 100:
 		FastLED.clear();
 	
 		// switch to the real song ENJOY
-
 		//switchToSong(16);	// we dont use this, because it turns off the MarkerLEDs
 
 		//--- start song ----// we go there directly
@@ -1700,27 +1724,16 @@ void enjoyTheSilenceINTRO() {
 //#16 -> FERTIG: 25.08.2023
 void enjoyTheSilence() {
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 69;	
-	// markerLED2 = 63;
-	// markerLED3 = 59;
-	// markerLED4 = 56;
-
 	switch (prog) {
 
 	case 0://text	21500
-		if (LEDGITBOARD) {
-			progScrollText("Enjoy the silence by Depeche Mode", 21500, 90, getRandomColor(), 5);
-		}
-		else {
-			progBlack(7170, 2);
-		}
+		// if (LEDGITBOARD) {
+		// 	progScrollText("Enjoy the silence by Depeche Mode", 21500, 90, getRandomColor(), 5);
+		// }
+		// else {
+		// 	progBlack(7170, 2);
+		// }
+		progBlack(7170, 2);
 		break;
 
 
@@ -1850,23 +1863,11 @@ void enjoyTheSilence() {
 //#18 -> ok: 5.3.22
 void prisoner() {
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 63;	
-	// markerLED2 = 67;
-	// markerLED3 = 60;
-	// markerLED4 = 56;
-
 	switch (prog) {
 
 	case 0: //black	3525
 		if (LEDGITBOARD) {
-			progBlack(5390, 2);
+			progScrollText("Prisoner by Miley Cyrus ", 22265, 90, getRandomColor(), 6);
 		}
 		else {
 			progBlack(7265, 2);
@@ -1874,16 +1875,10 @@ void prisoner() {
 		break;
 
 	case 2: //  text	15925
-		if (LEDGITBOARD) {
-			progScrollText("Prisoner by Miley Cyrus ", 14065, 90, getRandomColor(), 4);
-		}
-		else {
-			//progMatrixHorizontal(14065, 4);
-			progPalette(15000, 6, 6);
-		}	
+		progPalette(15000, 6, 6);
 		break;
 
-	case 4: // black	2825
+	case 4: // wird nicht verwendet !!!!!
 		progBlack(2810, 6);
 		break;
 
@@ -1990,19 +1985,7 @@ void prisoner() {
 }
 
 // #19 Not n Cold();
-void Hotncold() { // fertig: TODO
-
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 67;
-	// markerLED2 = 63;
-	// markerLED3 = 60;
-	// markerLED4 = 55;
+void Hotncold() { 
 
  	switch (prog) { 
 
@@ -2113,24 +2096,21 @@ void Hotncold() { // fertig: TODO
 // #20 Kids();
 void Kids() { // TODO
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
  	switch (prog) { 
 
 	case 0:// pause	6795
 		if (LEDGITBOARD) {
-			progScrollText("Kids", 19500, 90, getRandomColor(), 5);
+			progScrollText("Kids by MGMT", 12690, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlack(6562, 5); // 6562, da um 235 ms verschoben damit strobo nicht offbeat ist
+			progBlack(6562, 5); // 6562, da um 235 ms verschoben da mit strobo nicht offbeat ist
 		}
 		break;
 	
+	case 2: //nur für ledgitboard
+		progStrobo(9107, 10, 470, getRandomColor(), getRandomColor(), getRandomColor());
+		break;
+
 	case 5: //synth intro	15000
 		// 15235, da um 235 ms verschoben damit strobo nicht offbeat ist
 		progStrobo(15235, 10, 470, getRandomColor(), getRandomColor(), getRandomColor());
@@ -2229,18 +2209,11 @@ void Kids() { // TODO
 // #21 Tellittomyheart();
 void Tellittomyheart() { // TODO
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
  	switch (prog) { 
 
 	case 0:// pause	7375
 		if (LEDGITBOARD) {
-			progScrollText("Tellittomyheart", 19500, 90, getRandomColor(), 5);
+			progScrollText("Tell it to my heart by Taylor Dayne", 23645, 90, getRandomColor(), 10);
 		}
 		else {
 			progBlack(7375, 5);
