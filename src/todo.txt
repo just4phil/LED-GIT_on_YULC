@@ -1,7 +1,12 @@
 
 
 TODOs:
-=======
+======
+
+ESP32:
+-  wenn ANDRESGIT + HAS_ROTARY_ENCODER -> keine LEDs!!!
+=> HAS_ROTARY_ENCODER macht probleme
+
 - ignoreLIPOsafer raus
 - ledBOARD: programme am anfang fixen wegen scrolltest länge ....
 
