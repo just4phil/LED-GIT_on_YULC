@@ -51,7 +51,9 @@ void lipoVoltageCheck_initialize() {
             readings[i] = analogRead(LIPO_PIN);
         }	
 
-    #elif defined(USE_TEENSY)
+    #endif
+
+    #ifdef USE_TEENSY
 
     	//--- LIPO Safer ----------
         adc_value = analogRead(LIPO_PIN);     
@@ -92,7 +94,9 @@ void lipoVoltageCheck_loop() {
         readIndex = readIndex + 1;
         if (readIndex >= numReadings) readIndex = 0;
     
-    #elif defined(USE_TEENSY)
+    #endif
+
+    #ifdef USE_TEENSY
 
 		adc_value = analogRead(LIPO_PIN);     
 		voltageSmooth = 0.7 * voltageSmooth + 0.3 * map(adc_value, 0, 440, 0, 90); // 440 entspricht 9,0 Volt

@@ -2,7 +2,6 @@
 
 TODOs:
 ======
-
 - ignoreLIPOsafer raus
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?

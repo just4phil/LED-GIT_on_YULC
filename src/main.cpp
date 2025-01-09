@@ -141,12 +141,17 @@ void setup() {
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			midiProxy_initialize_BLE();
+			
+			#ifdef USE_ESP32
+				midiProxy_initialize_BLE();
+			#endif
 		#endif
 
 		midi_initialize();
 	#else
-		BLE_client_initialize();
+		#ifdef USE_ESP32
+			BLE_client_initialize();
+		#endif
 	#endif
 	
 	//--- rotary encoder ---------
@@ -225,10 +230,14 @@ void loop() {
 		midi_loop();
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			midiProxy_midiLoop();
+			#ifdef USE_ESP32
+				midiProxy_midiLoop();
+			#endif
 		#endif
 	#else
-		BLE_client_Loop();
+		#ifdef USE_ESP32
+			BLE_client_Loop();
+		#endif
 	#endif
 
 	if (flag_switchToNextSongPart) {
@@ -243,7 +252,9 @@ void loop() {
 				}
 			#endif
 		#else
-			informServerOnNextChange(nextSongPart);
+			#ifdef USE_ESP32
+				informServerOnNextChange(nextSongPart);
+			#endif
 		#endif
 
 		switchToPart(nextSongPart);
