@@ -1,8 +1,3 @@
-#include "definitions.h"
-
-#ifdef USE_ESP32
-//--------------------------------
-
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 
@@ -24,5 +19,3 @@ void midiProxy_initialize_BLE();
 void sendValuepairToListeners(byte midiInCC, byte midiInValue);
 void setSongAndPartIDforLEDsync(byte songID, byte part);
 void midiProxy_midiLoop();
-//------------
-#endif

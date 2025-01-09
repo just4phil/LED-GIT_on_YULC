@@ -17,35 +17,29 @@
 #include "FXprograms.h"
 #include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
 #include "songs.h"
+#include "TimerFunctions.h"		// includes setup variables and callback for timer ---
 //=============================
+
 #ifdef HAS_LIPOVOLTAGE_CHECK	
-	#pragma message "incl. lipoVoltageCheck"
 	#include "lipoVoltageCheck.h"
 #endif
 //=============================
 
 #ifdef USE_ESP32
-	#pragma message "incl. wifi"
 	#include <WiFiType.h>		// to turn WIFI off
 	#include <WiFi.h>			// to turn WIFI off
 
 	#ifdef HAS_ROTARY_ENCODER
-		#pragma message "incl. rotary enc. on ESP32"
 		#include "rotaryEncoder.h"
-		//#include "AiEsp32RotaryEncoder.h"
-		//#include "AiEsp32RotaryEncoderNumberSelector.h"
 	#endif
 
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
-		#pragma message "incl. midi_in on ESP32"
 		#include "midi_in.h"
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			#pragma message "incl. midi BLE PROXY"
 			#include "midiProxyBLEserver_nimBLE.h"
 		#endif
 	#else
-		#pragma message "incl. midi BLE CLIENT"
 		#include "BLE_client_nimBLE.h"
 	#endif
 #endif
@@ -58,7 +52,6 @@
 	// #endif
 
 	#ifdef HAS_MIDI_IN	
-		#pragma message "incl. midi_in on TEENSY"
 		#include "midi_in.h"
 	#endif
 #endif
@@ -67,7 +60,6 @@
 FastLED_NeoMatrix* matrix;
 
 #ifdef LEDMATRIX
-	#pragma message "incl. LEDMATRIX"
 	#include "neomatrix_config.h"
 	boolean LEDGITBOARD = true;
 	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
@@ -76,7 +68,7 @@ FastLED_NeoMatrix* matrix;
 #endif
 //----------------------------------
 
-const static boolean DEBUG = true;
+const static boolean DEBUG = false;
 CRGB leds[NUMMATRIX];
 int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative value to not overload a USB power supply (500mA) for 12x12 pixels.
 byte songID = 0; // 0 -> default loop
@@ -91,7 +83,7 @@ byte markerLED2 = 0;
 byte markerLED3 = 0;
 byte markerLED4 = 0;
 byte markerLED5 = 0;
-
+//--------------------
 volatile unsigned int millisToReduceCPUSpeed = 0;
 volatile unsigned int millisCounterTimer = 0;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 volatile unsigned int millisCounterForProgChange = 0;		// achtung!! -> kann nur bis 65.536 zaehlen!!
@@ -106,73 +98,16 @@ volatile boolean OneSecondHasPast = false;
 volatile boolean warnLEDsLipoLow = false;
 volatile bool syncProgWithNextChange = false;
 byte secondsForVoltage = 0; // for lipo safer 
-
 //--------------------
 volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
 volatile boolean LEDsTurnedOff = false;		// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
 volatile boolean ignoreLIPOsafer = false;	// KANN RAUS!  when true -> leds will not be turned off when lipo voltage is low
-
+//--------------------
 unsigned int lastLEDchange = millis();
 int ledState = LOW;             // ledState used to set the LED
 //===========================================
 
-#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-
-	//==== Callback for timer-interrupt so that fastLED can process uninterrupted 
-	#define INCREMENT	2	// process FastLED-loops only every 2 ms 	//  => !!!! IMMER AUCH IN SETUP DEN CALLBACK AUFRUF ANPASSEN !!!!!
-	hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable
-	void IRAM_ATTR Timer0_ISR_callback() {	
-		millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-		millisCounterForHalfSecond = millisCounterForHalfSecond + INCREMENT;
-		millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
-		millisCounterForProgChange = millisCounterForProgChange + INCREMENT;
-		millisToReduceCPUSpeed = millisToReduceCPUSpeed + INCREMENT;
-
-		flag_processFastLED = true;	// process FastLED-loops
-
-		if (millisCounterForHalfSecond >= 500) {
-			millisCounterForHalfSecond = 0;
-			HalfSecondHasPast = true;
-		}
-		if (millisCounterForSeconds >= 1000) {
-			millisCounterForSeconds = 0;
-			OneSecondHasPast = true;
-		}
-		if (millisCounterForProgChange >= nextChangeMillis) flag_switchToNextSongPart = true;
-	}
-#endif
-//------------------------------
-
-#ifdef USE_TEENSY
-
-	// #pragma message "incl. TeensyTimerTool"
-	// #include "TeensyTimerTool.h"	// fuer timer / interrupts via library
-	// using namespace TeensyTimerTool;
-	// PeriodicTimer t1;
-	#define INCREMENT	2	//5
-	IntervalTimer myTimer;
-
-	void callback() { 
-		millisCounterTimer = millisCounterTimer + INCREMENT;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-		millisCounterForSeconds = millisCounterForSeconds + INCREMENT;
-		millisCounterForProgChange = millisCounterForProgChange + INCREMENT;
-		millisToReduceCPUSpeed = millisToReduceCPUSpeed + INCREMENT;
-
-		flag_processFastLED = true;	// process FastLED-loops only every 25 ms (fast-led takes approx. 18 ms!!)
-
-		// test zur messung der timing-praezision
-		if (millisCounterForSeconds >= 1000) {
-			millisCounterForSeconds = 0;
-			OneSecondHasPast = true;
-		}
-
-		if (millisCounterForProgChange >= nextChangeMillis) switchToPart(nextSongPart);
-	}
-#endif
-
-
-//--------------------------------------------------
 
 void setup() {
 
@@ -185,21 +120,11 @@ void setup() {
 		WiFi.disconnect(true);
 		WiFi.mode(WIFI_OFF);
 
-		//--- interrupt-timer fuer callback --------
-		Timer0_Cfg = timerBegin(0, 80, true);	// divider/prescaler = 80
-		// APB_CLK = 80 MHz = 80.000.000 Hz
-		// 1 ms = TimerTicks * 80 (Prescaler) / 80.000.000 Hz
-		// TimerTicks = 1000
-		timerAttachInterrupt(Timer0_Cfg, &Timer0_ISR_callback, true);
-		timerAlarmWrite(Timer0_Cfg, 2000, true); // Interrupt alle 2 ms
-		timerAlarmEnable(Timer0_Cfg);
-
 		//------- activate MOSFETs on YULC ----------------------------
 		pinMode(47, OUTPUT);      // switch on MOSFET for channel 1
 		digitalWrite(47, HIGH);   // switch on MOSFET for channel 1
 		pinMode(21, OUTPUT);    // switch on MOSFET for channel 2
 		digitalWrite(21, HIGH); // switch on MOSFET for channel 2
-
 	#endif
 	
 	#ifdef USE_TEENSY
@@ -208,14 +133,10 @@ void setup() {
 		pinMode(LED1_PIN, 1); 	// OUTPUT = 1
 		pinMode(LED2_PIN, 1); 
 		pinMode(LED3_PIN, 1); 
-
-		//--- interrupt-timer fuer callback
-		//t1.begin(callback, 5ms); // 25 ms => !!!! IMMER AUCH define INCREMENT ANPASSEN !!!!!
-
-		myTimer.begin(callback, 2000);  // timer callback every 
-
 	#endif
 	
+	timer_begin();
+
 	//=== MIDI / PROXY / CLIENT initialisieren =====
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
 
@@ -242,14 +163,13 @@ void setup() {
 	matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 
 	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-
 		//----- initialize LEDs ---------
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+	#endif
 
-	#elif defined(USE_TEENSY)
-	
+	#ifdef USE_TEENSY
 		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 	#endif
 

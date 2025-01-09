@@ -4,14 +4,9 @@ TODOs:
 ======
 
 ESP32:
--  wenn ANDRESGIT + HAS_ROTARY_ENCODER -> keine LEDs!!!
-=> HAS_ROTARY_ENCODER macht probleme
 
 - ignoreLIPOsafer raus
 - ledBOARD: programme am anfang fixen wegen scrolltest länge ....
-
-- generell:
-    - yulc und teensy4 in eine codebase
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
     - am ende waren beide clients ziemlich weit raus aus dem sync!
@@ -19,6 +14,8 @@ ESP32:
     => wenn ich das nicht fixen kann, dann doch besser sofortiger sync zum server!!
 
 - ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
+
+- midi_in -> channel abfrage chn 10 einbauen / testen
 
 - battery life optimieren
     - max. power wieder runter -> NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power

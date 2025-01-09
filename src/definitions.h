@@ -8,22 +8,21 @@
 // USE_TEENSY		wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate ONLY ONE of these options: -------
-//#define RINASBASS	// COM17
+#define RINASBASS	// COM17
 //#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+//#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
 //--- FEATURES -----------------
-#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+//	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 #define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
 
 #ifdef RINASBASS
 	#define firstYulcPrototype 	// first one has different pins
-	#pragma message "RINASBASS is on firstYulcPrototype"
 #endif
 //---------------------------------------------------------------------------------------
 
