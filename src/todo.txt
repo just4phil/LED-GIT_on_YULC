@@ -3,10 +3,7 @@
 TODOs:
 ======
 
-ESP32:
-
 - ignoreLIPOsafer raus
-- ledBOARD: programme am anfang fixen wegen scrolltest länge ....
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
     - am ende waren beide clients ziemlich weit raus aus dem sync!

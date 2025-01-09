@@ -7,8 +7,8 @@ void PhysicalTrailer();
 void Physical();
 // #3 - TakeOnMe
 void TakeOnMe();
-//#4 pokerface FERTIG: 25.08.2023
-void Pokerface();
+//#4 leer
+
 //#5 -> FERTIG: 25.08.2023
 void UseSomebody();
 //#6 -> FERTIG: 25.08.2023
@@ -18,8 +18,8 @@ void NoRoots();
 void Firework();
 // #8 DancingOnMyOwn();
 void DancingOnMyOwn();
-//#9 -> FERTIG: 25.08.2023
-void SetFire();
+//#9 leer
+
 // #10 BloodyMary();
 void BloodyMary();
 //#11 -> FERTIG: 25.08.2023
@@ -34,11 +34,11 @@ void Shivers();
 void Abcdefu();
 //#16 -> FERTIG: 25.08.2023
 void enjoyTheSilence();
-//#17 -> FERTIG: 25.08.2023 (ende checken...blieb auf blingColoring -> jetzt besser?)
-void sober();
+//#17 leer
+
 //#18 -> ok: 5.3.22
 void prisoner();
-// #19 Not n Cold();
+// #19 Hot n Cold();
 void Hotncold();
 // #20 Kids();
 void Kids();
@@ -46,4 +46,3 @@ void Kids();
 void Tellittomyheart();
 // #24
 void enjoyTheSilenceINTRO();
-void TEMPLATE();

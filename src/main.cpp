@@ -311,7 +311,7 @@ void loop() {
 			DancingOnMyOwn();
 			break;
 		case 9:
-			SetFire();
+			//SetFire();
 			break;
 		case 10:
 			BloodyMary();
@@ -335,7 +335,7 @@ void loop() {
 			enjoyTheSilence();
 			break;
 		case 17:
-			sober();
+			//sober();
 			break;
 		case 18:
 			prisoner();
