@@ -12,9 +12,11 @@ extern int BRIGHTNESS;
 extern volatile boolean encoderButtonPushedLEDsOFF;	// for rotary encoder button push
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
 extern boolean needLEDsync;
-extern AiEsp32RotaryEncoder *rotaryEncoder;
-extern AiEsp32RotaryEncoderNumberSelector numberSelector;
+//extern AiEsp32RotaryEncoder *rotaryEncoder;
+//extern AiEsp32RotaryEncoderNumberSelector numberSelector;
 //---------------------------------
+AiEsp32RotaryEncoder *rotaryEncoder;
+AiEsp32RotaryEncoderNumberSelector numberSelector;
 
 //paramaters for button
 unsigned int shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
@@ -26,7 +28,11 @@ void IRAM_ATTR readEncoderISR() {    // Function required for interupts
 } 
 
 void rotary_initialize() {
-    //--- Initialize rotary encoder --------------
+    
+	rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+	numberSelector = AiEsp32RotaryEncoderNumberSelector();
+
+	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
 	rotaryEncoder->setup(readEncoderISR);
 	rotaryEncoder->setAcceleration(0);

@@ -16,7 +16,7 @@
 //--- FEATURES -----------------
 #define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
@@ -35,8 +35,8 @@
 #endif
 
 #ifdef USE_TEENSY
-	#undef IS_MIDI_PROXY
-	#undef HAS_ROTARY_ENCODER
+	#undef IS_MIDI_PROXY		// TEENSY kann kein midi proxy sein, da kein BT BLE
+	#undef HAS_ROTARY_ENCODER	// TEENSY hat keinen rotary encoder
 
 	#define DATA_PIN            9 // auf teensy++2 -> 12 (C2)
 	#define MIDI_RX_PIN         0  // auf teensy++2 -> 2 (D2)
@@ -46,6 +46,18 @@
 	#define LIPO_PIN            19 // auf teensy++2 -> 40 (F2)
 	#define DEFAULT_BRIGHTNESS	32	// solange der stromversorgung nicht ausrecihend ist
 #endif
+
+#ifdef firstYulcPrototype
+    #define ROTARY_ENCODER_BUTTON_PIN   38 // SW
+    #define ROTARY_ENCODER_B_PIN        36 // CLK
+    #define ROTARY_ENCODER_A_PIN        37 // DT
+#else
+    #define ROTARY_ENCODER_BUTTON_PIN   4 // SW
+    #define ROTARY_ENCODER_B_PIN        5 // CLK
+    #define ROTARY_ENCODER_A_PIN        6 // DT
+#endif
+#define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
+#define ROTARY_ENCODER_STEPS 4
 
 #define SECONDSFORVOLTAGE	1
 #define MATRIX_WIDTH       	22

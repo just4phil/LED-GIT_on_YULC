@@ -32,10 +32,8 @@
 	#ifdef HAS_ROTARY_ENCODER
 		#pragma message "incl. rotary enc. on ESP32"
 		#include "rotaryEncoder.h"
-		#include "AiEsp32RotaryEncoder.h"
-		#include "AiEsp32RotaryEncoderNumberSelector.h"
-		AiEsp32RotaryEncoder *rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
-		AiEsp32RotaryEncoderNumberSelector numberSelector = AiEsp32RotaryEncoderNumberSelector();
+		//#include "AiEsp32RotaryEncoder.h"
+		//#include "AiEsp32RotaryEncoderNumberSelector.h"
 	#endif
 
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
