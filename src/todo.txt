@@ -1,5 +1,33 @@
 
 
+teensy compile problem:
+...
+Compiling .pio\build\teensy40\lib6c5\FastLED\wiring.cpp.o
+Compiling .pio\build\teensy40\src\AiEsp32RotaryEncoder.cpp.o
+Compiling .pio\build\teensy40\src\AiEsp32RotaryEncoderNumberSelector.cpp.o
+Compiling .pio\build\teensy40\src\BLE_client_nimBLE.cpp.o
+src\AiEsp32RotaryEncoder.cpp:6:10: fatal error: esp_log.h: No such file or directory
+...
+
+    6 | #include "esp_log.h"
+      |          ^~~~~~~~~~~
+compilation terminated.
+*** [.pio\build\teensy40\src\AiEsp32RotaryEncoder.cpp.o] Error 1
+src\BLE_client_nimBLE.cpp:3:10: fatal error: NimBLEDevice.h: No such file or directory
+
+
+    3 | #include <NimBLEDevice.h>
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+*** [.pio\build\teensy40\src\BLE_client_nimBLE.cpp.o] Error 1
+
+
+
+
+
+
+
+
 TODOs:
 ======
 - ignoreLIPOsafer raus

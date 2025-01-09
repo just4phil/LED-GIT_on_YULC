@@ -48,7 +48,6 @@
 #ifdef USE_TEENSY
 
 	// #ifdef HAS_ROTARY_ENCODER
-		
 	// #endif
 
 	#ifdef HAS_MIDI_IN	
