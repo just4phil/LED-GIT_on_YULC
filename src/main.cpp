@@ -111,10 +111,9 @@ int ledState = LOW;             // ledState used to set the LED
 void setup() {
 
  	Serial.begin(115200);
-	delay(500);	// Time for serial port to work?
+	delay(250);	// 500 Time for serial port to work
 
-	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-
+	#ifdef USE_ESP32	
 		//-- turn wifi off ---------- TODO: brauche ich das wirklich? -> includes raus!?
 		WiFi.disconnect(true);
 		WiFi.mode(WIFI_OFF);
@@ -127,7 +126,6 @@ void setup() {
 	#endif
 	
 	#ifdef USE_TEENSY
-
 		//--- Development LEDs setup -------
 		pinMode(LED1_PIN, 1); 	// OUTPUT = 1
 		pinMode(LED2_PIN, 1); 
@@ -155,7 +153,9 @@ void setup() {
 	
 	//--- rotary encoder ---------
 	#ifdef HAS_ROTARY_ENCODER
-		rotary_initialize();
+		#ifdef USE_ESP32
+			rotary_initialize();
+		#endif
 	#endif
 
 	//--- voltage lipo safer ----------
@@ -221,7 +221,9 @@ void loop() {
 	}
 
 	#ifdef HAS_ROTARY_ENCODER
-		rotary_loop();
+		#ifdef USE_ESP32
+			rotary_loop();
+		#endif
 	#endif
 
 	//=== MIDI / PROXY / CLIENT loop =====

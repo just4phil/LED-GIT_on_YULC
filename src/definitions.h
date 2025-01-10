@@ -37,13 +37,13 @@
 	#undef IS_MIDI_PROXY		// TEENSY kann kein midi proxy sein, da kein BT BLE
 	#undef HAS_ROTARY_ENCODER	// TEENSY hat keinen rotary encoder
 
-	#define DATA_PIN            9 // auf teensy++2 -> 12 (C2)
-	#define MIDI_RX_PIN         0  // auf teensy++2 -> 2 (D2)
+	#define DATA_PIN            9 
+	#define MIDI_RX_PIN         0  
 	#define LED1_PIN            14
 	#define LED2_PIN            15
 	#define LED3_PIN            16
-	#define LIPO_PIN            19 // auf teensy++2 -> 40 (F2)
-	#define DEFAULT_BRIGHTNESS	32	// solange der stromversorgung nicht ausrecihend ist
+	#define LIPO_PIN            19 
+	#define DEFAULT_BRIGHTNESS	32	// solange der stromversorgung nicht ausreichend ist
 #endif
 
 #ifdef firstYulcPrototype
