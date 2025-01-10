@@ -1,3 +1,5 @@
+#ifdef USE_ESP32
+//----------------------------
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 
@@ -23,3 +25,5 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 void MidiDatenVomProxyAuswerten(byte ccIn, byte value);
 void informServerOnNextChange(byte nextPart);
 void BLE_client_Loop();
+//----------
+#endif

@@ -1,3 +1,5 @@
+#ifdef USE_ESP32
+//----------------------------
 #include <Arduino.h>
 #include "definitions.h"
 #include <NimBLEDevice.h>
@@ -466,3 +468,5 @@ void BLE_client_Loop() {
         // }
     }
 }
+//-------------------
+#endif

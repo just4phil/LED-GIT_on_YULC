@@ -1,3 +1,5 @@
+#ifdef USE_ESP32
+//----------------------------
 #include "definitions.h"
 #include <Arduino.h>
 #include <NimBLEDevice.h>
@@ -208,3 +210,5 @@ void midiProxy_midiLoop() {
     }        
 }
 
+//--------------
+#endif

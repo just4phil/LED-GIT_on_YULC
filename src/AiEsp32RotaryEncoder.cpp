@@ -1,3 +1,6 @@
+#ifdef USE_ESP32
+//----------------------------
+
 // based on https://github.com/marcmerlin/IoTuz code - extracted and modified Encoder code
 //
 //
@@ -350,3 +353,5 @@ bool AiEsp32RotaryEncoder::isEncoderButtonDown()
 {
 	return digitalRead(encoderButtonPin) ? false : true;
 }
+//-----------
+#endif
