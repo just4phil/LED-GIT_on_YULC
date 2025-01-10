@@ -6,8 +6,8 @@
 #include "definitions.h" 
 #include <Adafruit_I2CDevice.h>	
 #include <Adafruit_GFX.h>
-#include <FastLED_NeoMatrix.h>	// Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays. requires FastLED and Adafruit_GFX libraries as well as this base class library ..  / By Marc MERLIN <marc_soft@merlins.org>
 #include <FastLED.h>
+#include <FastLED_NeoMatrix.h>	// Adafruit_GFX and FastLED-compatible library for NeoPixel matrices and grids. Controls single and tiled NeoPixel displays. requires FastLED and Adafruit_GFX libraries as well as this base class library ..  / By Marc MERLIN <marc_soft@merlins.org>
 //------
 #include "smileytongue24.h"
 #include "definitions.h"

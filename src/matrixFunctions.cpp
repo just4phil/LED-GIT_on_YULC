@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <FastLED.h>
 #include <FastLED_NeoMatrix.h>
 #include "markerLEDs.h"
 #include "colors.h"

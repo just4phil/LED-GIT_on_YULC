@@ -1,4 +1,5 @@
 #include "definitions.h"
+#include <FastLED.h>
 //-----------------------
 
 extern byte markerLED1;
