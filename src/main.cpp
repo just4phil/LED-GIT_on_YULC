@@ -139,23 +139,17 @@ void setup() {
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
 			
-			#ifdef USE_ESP32
-				midiProxy_initialize_BLE();
-			#endif
+			midiProxy_initialize_BLE();
 		#endif
 
 		midi_initialize();
 	#else
-		#ifdef USE_ESP32
-			BLE_client_initialize();
-		#endif
+		BLE_client_initialize();
 	#endif
 	
 	//--- rotary encoder ---------
 	#ifdef HAS_ROTARY_ENCODER
-		#ifdef USE_ESP32
-			rotary_initialize();
-		#endif
+		rotary_initialize();
 	#endif
 
 	//--- voltage lipo safer ----------
@@ -221,9 +215,7 @@ void loop() {
 	}
 
 	#ifdef HAS_ROTARY_ENCODER
-		#ifdef USE_ESP32
-			rotary_loop();
-		#endif
+		rotary_loop();
 	#endif
 
 	//=== MIDI / PROXY / CLIENT loop =====
@@ -231,14 +223,10 @@ void loop() {
 		midi_loop();
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			#ifdef USE_ESP32
-				midiProxy_midiLoop();
-			#endif
+			midiProxy_midiLoop();
 		#endif
 	#else
-		#ifdef USE_ESP32
-			BLE_client_Loop();
-		#endif
+		BLE_client_Loop();
 	#endif
 
 	if (flag_switchToNextSongPart) {
@@ -253,9 +241,7 @@ void loop() {
 				}
 			#endif
 		#else
-			#ifdef USE_ESP32
-				informServerOnNextChange(nextSongPart);
-			#endif
+			informServerOnNextChange(nextSongPart);	// BT BLE Client: sync LEDs to server on request
 		#endif
 
 		switchToPart(nextSongPart);
