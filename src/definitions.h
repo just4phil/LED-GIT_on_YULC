@@ -7,24 +7,56 @@
 // USE_ESP32 (YULC)	wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //#define USE_ESP32 //USE_TEENSY		// wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
-//--- LED-DEVICE --- activate ONLY ONE of these options: -------
+//--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
-#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-//#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
-//--- FEATURES -----------------
-#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+//--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
+//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+//	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
-
+//--- Klassen // ODER FEATURES OBEN NUTZEN!! -------------
 #ifdef RINASBASS
-	#define firstYulcPrototype 	// first one has different pins
+	// is BT BLE Client
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+		#undef HAS_MIDI_IN		// NO MIDI IN
+		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
+#endif
+
+#ifdef ANDRESGIT
+	// on old TEENSY board
+	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
+		#undef HAS_LIPOVOLTAGE_CHECK // NO ROTARY
+#endif
+
+#ifdef LEDMATRIX
+	#define HAS_MIDI_IN		// with widi master
+	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+		#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
+#endif
+
+#ifdef BLE_MIDI_PROXY // aktuell bei VADDER
+	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+		#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
 #endif
 //---------------------------------------------------------------------------------------
+
+//---- lieber mal separat stehen lassen, falls ich die klassen oben nicht nutze
+#ifdef RINASBASS	
+	#define firstYulcPrototype 	// first one has different pins
+#endif
+//------------------------------------
 
 #ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 	#define DATA_PIN_1          1 	// yulc channel 1
@@ -80,9 +112,21 @@
 #define anz_LEDs_BASS 		155
 #define anz_LEDs_GITBOARD 	278
 
-//------ BLE ---------------- 
-#define SERVICE_UUID        "204916ff-8db3-4368-bab9-e1f6e1ad653c"
-#define CHARACTERISTIC_UUID "f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+// TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
+
+//------ BLE SERVER 1 and his CLIENTS -------------- 
+#define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
+#define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+#define CLIENT_ADDRESS_YULC1 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
+#define CLIENT_ADDRESS_YULC2	"aa:aa:aa:aa:aa:aa"	// TODO
+#define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
+
+//------ BLE SERVER 2 and his CLIENTS -------------- 
+// #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
+// #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
+// #define CLIENT_ADDRESS_YULC1 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
+// #define CLIENT_ADDRESS_YULC2	"aa:aa:aa:aa:aa:aa"	// TODO
+// #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
 
 #ifdef LEDMATRIX	//--------- NUR FÜR LEDGITBOARD ---------------
