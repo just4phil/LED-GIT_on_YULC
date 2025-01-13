@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 
+bool is_address_in_array(const char *address);
 class ServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo);
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason);

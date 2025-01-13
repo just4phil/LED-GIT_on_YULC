@@ -15,6 +15,14 @@ extern boolean needLEDsync; // in main
 extern boolean waitForLEDsync; // in main
 //-------------------------------------------
 
+const char* client_addresses[] = {
+    CLIENT_ADDRESS_YULC1,
+    CLIENT_ADDRESS_YULC2,
+    CLIENT_ADDRESS_YULC3
+};
+// Größe des Arrays ermitteln
+const size_t client_address_count = sizeof(client_addresses) / sizeof(client_addresses[0]);
+
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 volatile bool syncLEDgits = false;
 
@@ -27,6 +35,16 @@ NimBLECharacteristic *pCharacteristic;
 NimBLEAdvertising *pAdvertising;
 
 SongAndPart songAndPart;
+
+// Funktion, um zu prüfen, ob eine Adresse erlaubt ist
+bool is_address_in_array(const char* address) {
+    for (size_t i = 0; i < client_address_count; i++) {
+        if (strcmp(client_addresses[i], address) == 0) {
+            return true; // Adresse gefunden
+        }
+    }
+    return false; // Adresse nicht gefunden
+}
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
@@ -42,7 +60,17 @@ class ServerCallbacks : public NimBLEServerCallbacks {
          *  Timeout: 10 millisecond increments.
          */
         //pServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 18);
-        aDeviceConnected = true;
+
+        std::string clientAddress = connInfo.getAddress().toString();
+        // Prüfen, ob die Adresse erlaubt ist
+        if (!is_address_in_array(clientAddress.c_str())) {
+            Serial.printf("Verbindung von %s nicht erlaubt, wird beendet.\n", clientAddress.c_str());
+            pServer->disconnect(connInfo.getConnHandle()); // Verbindung beenden
+        } else {
+            Serial.printf("Verbindung von %s erlaubt.\n", clientAddress.c_str());
+            aDeviceConnected = true;
+        }
+
         NimBLEDevice::startAdvertising(); // wichtig damit auch der zweite client connecten kann!
     }
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
