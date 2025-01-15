@@ -309,7 +309,7 @@ void loop() {
 			DancingOnMyOwn();
 			break;
 		case 9:
-			//SetFire();
+			ILoveIt();
 			break;
 		case 10:
 			BloodyMary();
