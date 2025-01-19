@@ -1,6 +1,8 @@
 TODOs:
 =======
 
+=> ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
+
 - ignoreLIPOsafer raus
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?

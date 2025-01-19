@@ -407,7 +407,7 @@ void Physical() {
 }
 
 // #3 - TakeOnMe
-void TakeOnMe() {	// TODO
+void TakeOnMe() {	
 
 	// (E/A: 71)
 	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
@@ -509,7 +509,138 @@ void TakeOnMe() {	// TODO
 	}
 }
 
-//#4 LEER
+//#4 LEER -> Dont stop the music -> TODO ---------------------------------------------------------------------------------------------
+void DontStopTheMusic() {
+
+	switch (prog) {
+
+	case 0://text		7500
+		if (LEDGITBOARD) {
+			progScrollText("Dont stop the music by Rihanna", 22740, 70, getRandomColor(), 10);
+		}
+		else {
+			progBlack(6290, 2);
+		}		
+		break;
+
+	case 2://snarewirbel
+		progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 5:// intro1		15484
+		progStern(15480, 970, 10, 15); 
+		break;
+	//----------------------------------
+
+	case 10://verse 1a		15484
+		progBlingBlingColoring(30970, 20, 3000);
+		//progCircles(15485, 15, 485);
+		break;
+
+	case 15://verse 1b		15484
+		progFullColors(15485, 20, 485);	// zu schnell????
+		break;
+
+	case 20://bridge		13548
+		progPalette(13550, 4, 22);	// paletteID -> 0 - 10
+		break;
+
+	case 22://übergang		1935
+		progStrobo(1935, 24, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progCircles(2125, 30, 500);
+		break;
+
+	case 24://chorus 1		14516
+		//progFastBlingBling(14500, 3, 26);
+		progStern(14500, 970, 26, 15); 
+		break;
+
+	case 26://übergang		968
+		progStrobo(1000, 28, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 28://chorus 2		15445
+		progFastBlingBling(15450, 7, 30);
+		break;
+		//----------------------------------
+
+	case 30://verse 2a		15484
+		progFullColors(15475, 32, 485);
+		break;
+
+	case 32://verse 2b		15484
+		progCircles(15475, 34, 485);
+		break;
+
+	case 34://bridge		15484
+		progPalette(13550, 5, 35);	// paletteID -> 0 - 10
+		break;
+
+	case 35://übergang		1935
+		progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progCircles(2125, 30, 485);
+		break;
+
+	case 36://chorus 2a		14516
+		//progFastBlingBling(14500, 3, 37);
+		progStern(14500, 970, 37, 15); 
+		break;
+
+	case 37://übergang		968
+		progStrobo(1000, 38, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 38://chorus 2b		15445
+		progFastBlingBling(15450, 7, 40);
+		break;
+		//----------------------------------
+
+	case 40://BOOM 1		15485
+		progPalette(15485, 2, 42);	// paletteID -> 0 - 10
+		break;
+
+	case 42://nur vocals		15485
+		progMatrixHorizontal(15485, 43);
+		//progBlingBlingColoring(14500, 43);
+		break;
+		//----------------------------------
+
+	case 43://BOOM 2		15480
+		progPalette(15480, 0, 44);
+		break;
+
+	case 44://BOOM 3		15485
+		progPalette(15485, 7, 46); 
+		break;
+
+	case 46://BOOM 4	13550
+		progPalette(13550, 9, 47);
+		break;
+
+	case 47://strobo snarewirbel	1935
+		progStrobo(1935, 48, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 48://chorus 2		14515
+		progFastBlingBling(14515, 10, 49);
+		break;
+		//----------------------------------
+
+	case 49://strobo snarewirbel		970
+		progStrobo(970, 60, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+		//----------------------------------
+
+	case 60://ende schwarz
+		progBlack(10000, 100);
+		break;
+
+	case 100:
+		FastLED.clear();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
 
 //#5 -> FERTIG: 25.08.2023
 void UseSomebody() {
@@ -1060,7 +1191,7 @@ void ILoveIt() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progBlack(5000, 1);
+			progBlack(5000, 1);	// TODO: warum so lange BLACK?
 		}
 		else { // pause
 			progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms

@@ -294,7 +294,7 @@ void loop() {
 			TakeOnMe();
 			break;
 		case 4:
-			//Pokerface();
+			DontStopTheMusic();
 			break;
 		case 5:
 			UseSomebody();

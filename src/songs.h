@@ -7,8 +7,8 @@ void PhysicalTrailer();
 void Physical();
 // #3 - TakeOnMe
 void TakeOnMe();
-//#4 leer
-
+//#4 DontStopTheMusic -> todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void DontStopTheMusic();
 //#5 -> FERTIG: 25.08.2023
 void UseSomebody();
 //#6 -> FERTIG: 25.08.2023
@@ -18,7 +18,7 @@ void NoRoots();
 void Firework();
 // #8 DancingOnMyOwn();
 void DancingOnMyOwn();
-//#9 ILoveIt -> 
+//#9 ILoveIt -> todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void ILoveIt();
 // #10 BloodyMary();
 void BloodyMary();
