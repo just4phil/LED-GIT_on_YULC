@@ -467,14 +467,14 @@ void TakeOnMe() {
 		progStrobo(6235, 65, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 	case 65: //letzter durchgang	6230
-		markerLED4 = ESaite_Fis_tief; // 67;	// nächsten bund schon mal präventiv anzeigen 
+		markerLED4 = ESaite_Fis; // nächsten bund schon mal präventiv anzeigen 
 		progFastBlingBling(6230, 6, 70);
 		break;
 	case 70: //BRIDGE	18705
-		markerLED1 = ESaite_F_tief; //69;	
+		markerLED1 = ESaite_F;
 		markerLED2 = 0;
 		markerLED3 = 0;
-		markerLED4 = ESaite_Fis_tief; // 67;		
+		markerLED4 = ESaite_Fis;
 		progPalette(18705, 9, 75);	// rot weiss blau
 		break;
 	case 75: //SOLO SYNTH	6230
@@ -692,10 +692,10 @@ void UseSomebody() {
 		break;
 
 	case 30://bridge		13913
-		markerLED1 = ASaite_D; //62; // D (wird aber eh mit blau überschrieben)
-		markerLED2 = ASaite_B_tief; //67; // F#
-		markerLED3 = ESaite_B; //60; // B		
-		markerLED4 = ESaite_C; //59; // C erst fuer den naechsten Part, aber gut zur Orientierung		
+		markerLED1 = ASaite_D; // D (wird aber eh mit blau überschrieben)
+		markerLED2 = ASaite_B; 
+		markerLED3 = ESaite_B; 
+		markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung		
 		progPalette(13913, 4, 35);	// paletteID -> 0 - 10
 		break;
 
