@@ -184,7 +184,10 @@ void setup() {
 	setupCurrentPalette();
 	
 	//--- lets get started :) ---
-	switchToSong(0);  //100 // TODO: set back to 0 !!!! // 100 ist der "startup" mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
+	switchToSong(0);	// 0 SONGPAUSE loop
+						// 100 DEFAULT loop 
+						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
+
 	//switchToPart(0); // only 4 testing!!!
 	
 	#ifdef HAS_MIDI_IN	
@@ -281,7 +284,7 @@ void loop() {
 
 		switch (songID) {
 		case 0:
-			defaultLoop();
+			SONGPAUSE();
 			break;
 
 		case 1:
@@ -351,8 +354,12 @@ void loop() {
 			enjoyTheSilenceINTRO();
 			break;
 
-		case 100:
+		case 99:
 			STARTUP();
+			break;
+
+		case 100:
+			defaultLoop();
 			break;
 
 		default:

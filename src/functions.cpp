@@ -29,7 +29,7 @@ extern int progBlingBlingColoring_rounds;
 //=====================================================================
 
 int getRandomColorValue() {	// dies erzeugt einen random-farb-anteil rot, grün oder blau
-    int farbZahl = random(1, 6);
+	int farbZahl = random(1, 6);
     int farbe = 0;
     switch (farbZahl) {
     case 1:

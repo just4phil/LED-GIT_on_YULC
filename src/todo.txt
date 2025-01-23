@@ -1,7 +1,7 @@
 
 bugs:
 ======
-- enjoy the silence -> wahrscheinlich MIDI falsch!?
+
 
 
 TODOs:
@@ -30,8 +30,8 @@ TODOs:
 
 DONE:
 =====
-
-2025-02-15: added i love it as No. 9 -> TODO: LEDs programm
+2025-01-23: neuen loop: SONGPAUSE eingebaut -> zwischen den songs keinen default loop mehr!
+2025-01-15: added i love it as No. 9 -> TODO: LEDs programm
 
 
 

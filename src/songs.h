@@ -1,4 +1,5 @@
 void STARTUP();
+void SONGPAUSE();
 //#0
 void defaultLoop();
 // #1 PhysicalMitTrailer(); // FERTIG! am 12.08.2023

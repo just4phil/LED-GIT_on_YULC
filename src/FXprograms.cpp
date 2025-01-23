@@ -120,9 +120,54 @@ void progBlinkLowVoltage(unsigned int del) {
 	}
 }
 
-// r = getRandomColorValue();
-// g = getRandomColorValue();
-// b = getRandomColorValue();
+//--- progBlingBlingColoring -----
+// leds werden zufällig mit der selben farbe eingeschaltet und einige wenige zufällig ausgeschaltet
+// alle x sekunden wird die eine der drei farbkomponenten zufällig geändert
+void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed) {
+
+	//--- standard-part um dauer und naechstes programm zu speichern ----
+	if (!nextChangeMillisAlreadyCalculated) {
+		FastLED.clear(true);
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		
+		progBlingBlingColoring_rounds = 0;
+	}
+	//---------------------------------------------------------------------
+
+	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
+		millisToReduceCPUSpeed = 0;
+
+		if (progBlingBlingColoring_rounds == 0) {
+			r = getRandomColorValue();
+			g = getRandomColorValue();
+			b = getRandomColorValue();
+		}
+
+		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
+			//set random pixel to defined color
+			leds[random(0, anz_LEDs)] = CRGB(r, g, b);	
+			// delete 1 pixel sometimes
+			//if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
+			leds[random(0, anz_LEDs)] = CRGB::Black;	// in dieser version Immer auch einen pixel löschen damit es eher soft bleibt
+
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
+		}
+	}
+
+	// after DEL ms seconds change 1 part of the color randomly
+	if (millisCounterTimer >= msForColorChange) {	//15000 // ersatz für delay()
+		millisCounterTimer = 0;
+		progBlingBlingColoring_rounds++;
+		if (progBlingBlingColoring_rounds == 4) progBlingBlingColoring_rounds = 1;
+
+		if (progBlingBlingColoring_rounds == 1) b = getRandomColorValue();
+		else if (progBlingBlingColoring_rounds == 2) g = getRandomColorValue();
+		else if (progBlingBlingColoring_rounds == 3) r = getRandomColorValue();
+	}
+}
 
 //--- progBlingBlingColoring -----
 // leds werden zufällig mit der selben farbe eingeschaltet und einige wenige zufällig ausgeschaltet

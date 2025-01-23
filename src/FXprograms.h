@@ -67,6 +67,7 @@ void progBlinkLowVoltage(unsigned int del);
 
 // leds werden zufällig mit der selben farbe eingeschaltet und einige wenige zufällig ausgeschaltet
 // alle x sekunden wird die eine der drei farbkomponenten zufällig geändert
+void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed);
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed);
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange);
 

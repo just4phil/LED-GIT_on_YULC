@@ -26,7 +26,22 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 		
 	case 100:
 		FastLED.clear();
-		switchToSong(0);	// SongID 0 == DEFAULT loop
+		switchToSong(100);	// SongID 100 fuer DEFAULT loop
+		break;
+	}
+}
+
+void SONGPAUSE()  {	// soft / static LEDs
+
+ 	switch (prog) { 
+
+	case 0:
+		progBlingBlingColoringSONGPAUSE(60000, 100, 10000, 200);
+		break;
+
+	case 100:
+		FastLED.clear();
+		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
 		break;
 	}
 }
@@ -693,7 +708,7 @@ void UseSomebody() {
 
 	case 30://bridge		13913
 		markerLED1 = ASaite_D; // D (wird aber eh mit blau überschrieben)
-		markerLED2 = ASaite_B; 
+		markerLED2 = ASaite_B;
 		markerLED3 = ESaite_B; 
 		markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung		
 		progPalette(13913, 4, 35);	// paletteID -> 0 - 10
