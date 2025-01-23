@@ -60,9 +60,9 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ESaite_B; //60;
 			break;
 		case 4://DontStopTheMusic();
-			markerLED1 = ESaite_A; 
-			markerLED2 = ASaite_Cis_tief; 
-			markerLED3 = ESaite_Cis; 
+			markerLED1 = ESaite_Gis_tief; 
+			markerLED2 = ASaite_C_tief; 
+			markerLED3 = ESaite_C; 
 			//markerLED4 = ESaite_A; 	
 			break;
 		case 5://UseSomebody();
