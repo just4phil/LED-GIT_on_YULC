@@ -9,8 +9,8 @@
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
-#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-//#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
@@ -134,11 +134,11 @@
 	#define Bund_min	 		0
 	#define Bund_max	 		0
 
-	#define ESaite_E_tief	 	0	// E/A: 56 (leere / tiefe Saiten)
-	#define ESaite_F_tief	 	0	// F/Bb: 55
-	#define ESaite_Fis_tief	 	0	// F#/B: 54
-	#define ESaite_G_tief 		0	// G/C: 53
-	#define ESaite_Gis_tief	 	0	// G#/C#: 52
+	#define ESaite_E		 	0	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F		 	0	// F/Bb: 55
+	#define ESaite_Fis		 	0	// F#/B: 54
+	#define ESaite_G	 		0	// G/C: 53
+	#define ESaite_Gis		 	0	// G#/C#: 52
 	#define ESaite_A	 		0	// A/D: 51
 	#define ESaite_Bb		 	0	// Bb/D#: 50
 	#define ESaite_B		 	0	// B/E: 49
@@ -151,11 +151,11 @@
 	#define ESaite_Fis_hoch 	0	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 	#define ESaite_G_hoch	 	0	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 
-	#define ASaite_A_tief	 	0	// E/A: 56 (leere / tiefe Saiten)
-	#define ASaite_Bb_tief	 	0	// F/Bb: 55
-	#define ASaite_B_tief	 	0	// F#/B: 54
-	#define ASaite_C_tief 		0	// G/C: 53
-	#define ASaite_Cis_tief	 	0	// G#/C#: 52
+	#define ASaite_A		 	0	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb		 	0	// F/Bb: 55
+	#define ASaite_B		 	0	// F#/B: 54
+	#define ASaite_C	 		0	// G/C: 53
+	#define ASaite_Cis		 	0	// G#/C#: 52
 	#define ASaite_D	 		0	// A/D: 51
 	#define ASaite_Dis		 	0	// Bb/D#: 50
 	#define ASaite_E		 	0	// B/E: 49
