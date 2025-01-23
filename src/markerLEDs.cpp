@@ -58,6 +58,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_A; 	
 			markerLED2 = ESaite_G; 
 			markerLED3 = ESaite_B; 
+			// hat noch weitere gimmicks in songs.cpp
 			break;
 		case 4://DontStopTheMusic();
 			markerLED1 = ESaite_Gis; 
@@ -69,6 +70,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_C;
 			markerLED2 = ESaite_G;
 			markerLED3 = ESaite_F;			
+			// hat noch weitere gimmicks in songs.cpp
 			break;
 		case 6://NoRoots();
 			markerLED1 = ESaite_Fis; 

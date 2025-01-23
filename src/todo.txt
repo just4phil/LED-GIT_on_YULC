@@ -1,3 +1,9 @@
+
+bugs:
+======
+- enjoy the silence -> wahrscheinlich MIDI falsch!?
+
+
 TODOs:
 =======
 

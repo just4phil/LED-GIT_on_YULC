@@ -9,8 +9,8 @@
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
-//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+//#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
@@ -176,11 +176,11 @@
 	#define Bund_min	 		43
 	#define Bund_max	 		58
 
-	#define ESaite_E_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
-	#define ESaite_F_tief	 	55	// F/Bb: 55
-	#define ESaite_Fis_tief	 	54	// F#/B: 54
-	#define ESaite_G_tief 		53	// G/C: 53
-	#define ESaite_Gis_tief	 	52	// G#/C#: 52
+	#define ESaite_E	 		56	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F	 		55	// F/Bb: 55
+	#define ESaite_Fis	 		54	// F#/B: 54
+	#define ESaite_G 			53	// G/C: 53
+	#define ESaite_Gis		 	52	// G#/C#: 52
 	#define ESaite_A	 		51	// A/D: 51
 	#define ESaite_Bb		 	50	// Bb/D#: 50
 	#define ESaite_B		 	49	// B/E: 49
@@ -193,11 +193,11 @@
 	#define ESaite_Fis_hoch 	42	// F#/B: 42 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 	#define ESaite_G_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 
-	#define ASaite_A_tief	 	56	// E/A: 56 (leere / tiefe Saiten)
-	#define ASaite_Bb_tief	 	55	// F/Bb: 55
-	#define ASaite_B_tief	 	54	// F#/B: 54
-	#define ASaite_C_tief 		53	// G/C: 53
-	#define ASaite_Cis_tief	 	52	// G#/C#: 52
+	#define ASaite_A		 	56	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb		 	55	// F/Bb: 55
+	#define ASaite_B		 	54	// F#/B: 54
+	#define ASaite_C	 		53	// G/C: 53
+	#define ASaite_Cis		 	52	// G#/C#: 52
 	#define ASaite_D	 		51	// A/D: 51
 	#define ASaite_Dis		 	50	// Bb/D#: 50
 	#define ASaite_E		 	49	// B/E: 49
@@ -218,11 +218,11 @@
 	#define Bund_min	 		53
 	#define Bund_max	 		74
 
-	#define ESaite_E_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
-	#define ESaite_F_tief	 	69	// F/Bb: 55
-	#define ESaite_Fis_tief	 	67	// F#/B: 54
-	#define ESaite_G_tief 		65	// G/C: 53
-	#define ESaite_Gis_tief	 	63	// G#/C#: 52
+	#define ESaite_E		 	71	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F		 	69	// F/Bb: 55
+	#define ESaite_Fis		 	67	// F#/B: 54
+	#define ESaite_G	 		65	// G/C: 53
+	#define ESaite_Gis		 	63	// G#/C#: 52
 	#define ESaite_A	 		62	// A/D: 51
 	#define ESaite_Bb		 	61	// Bb/D#: 50
 	#define ESaite_B		 	60	// B/E: 49
@@ -235,11 +235,11 @@
 	#define ESaite_Fis_hoch 	53	// F#/B: 42 (hohe Oktave)
 	#define ESaite_G_hoch	 	52	// G/C: 41 (hohe Oktave)
 
-	#define ASaite_A_tief	 	71	// E/A: 56 (leere / tiefe Saiten)
-	#define ASaite_Bb_tief	 	69	// F/Bb: 55
-	#define ASaite_B_tief	 	67	// F#/B: 54
-	#define ASaite_C_tief 		65	// G/C: 53
-	#define ASaite_Cis_tief	 	63	// G#/C#: 52
+	#define ASaite_A		 	71	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb		 	69	// F/Bb: 55
+	#define ASaite_B		 	67	// F#/B: 54
+	#define ASaite_C	 		65	// G/C: 53
+	#define ASaite_Cis		 	63	// G#/C#: 52
 	#define ASaite_D	 		62	// A/D: 51
 	#define ASaite_Dis		 	61	// Bb/D#: 50
 	#define ASaite_E		 	60	// B/E: 49
