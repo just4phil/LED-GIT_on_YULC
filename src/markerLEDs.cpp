@@ -20,11 +20,11 @@ void setMarkerLEDs(byte songID) {
 
 		//    E-Saite			   A-Saite			GITARRE			BASS
 		//====================================================================================
-		// ESaite_E_tief	 	ASaite_A_tief		71		E/A 	56 (leere / tiefe Saiten)
-		// ESaite_F_tief	 	ASaite_Bb_tief		69		F/Bb 	55
-		// ESaite_Fis_tief	 	ASaite_B_tief		67		F#/B 	54
-		// ESaite_G_tief 		ASaite_C_tief		65		G/C 	53
-		// ESaite_Gis_tief	 	ASaite_Cis_tief 	63		G#/C# 	52
+		// ESaite_E			 	ASaite_A			71		E/A 	56 (leere / tiefe Saiten)
+		// ESaite_F			 	ASaite_Bb			69		F/Bb 	55
+		// ESaite_Fis		 	ASaite_B			67		F#/B 	54
+		// ESaite_G				ASaite_C			65		G/C 	53
+		// ESaite_Gis		 	ASaite_Cis		 	63		G#/C# 	52
 		// ESaite_A	 			ASaite_D			62		A/D 	51
 		// ESaite_Bb		 	ASaite_Dis			61		Bb/D# 	50
 		// ESaite_B		 		ASaite_E			60		B/E 	49
