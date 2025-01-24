@@ -70,7 +70,8 @@ FastLED_NeoMatrix* matrix;
 const static boolean DEBUG = false;
 CRGB leds[NUMMATRIX];
 int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative value to not overload a USB power supply (500mA) for 12x12 pixels.
-byte songID = 0; // 0 -> default loop
+byte songID = 0;
+byte songIDbefore = 0;
 volatile byte nextSongPart = 0;
 volatile byte prog = 0;	
 boolean needLEDsync = false;
@@ -184,6 +185,7 @@ void setup() {
 	setupCurrentPalette();
 	
 	//--- lets get started :) ---
+	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
 	switchToSong(0);	// 0 SONGPAUSE loop
 						// 100 DEFAULT loop 
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann

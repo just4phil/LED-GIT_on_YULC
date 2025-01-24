@@ -36,11 +36,11 @@ void SONGPAUSE()  {	// soft / static LEDs
  	switch (prog) { 
 
 	case 0:
-		progBlingBlingColoringSONGPAUSE(60000, 100, 10000, 500);
+		progBlingBlingColoringSONGPAUSE(60000, 100, 500);
 		break;
 
 	case 100:
-		FastLED.clear();
+		//FastLED.clear();
 		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
 		break;
 	}

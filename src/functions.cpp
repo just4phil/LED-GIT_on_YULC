@@ -13,7 +13,8 @@ extern int BRIGHTNESS;
 //extern const boolean LEDGITBOARD;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 extern CRGB leds[NUMMATRIX];
-extern byte songID; // 0 -> default loop
+extern byte songID; 
+extern byte songIDbefore;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 extern volatile unsigned int millisCounterForProgChange;		// achtung!! -> kann nur bis 65.536 zaehlen!!
 extern volatile unsigned int nextChangeMillis;		// start value = 10 sec
@@ -137,6 +138,7 @@ void switchToSong(byte song) {
 	markerLED5 = 0;
 
 	//--- start song ----
+	songIDbefore = songID;
 	songID = song;
 	switchToPart(0);
 }

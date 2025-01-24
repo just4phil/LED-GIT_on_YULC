@@ -7,8 +7,6 @@ bugs:
 TODOs:
 =======
 
-progBlingBlingColoringSONGPAUSE -> nach 60 sekunden startet es neu und die alten LEDs verbleiben so wie sie waren
-
 => ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 
 - ignoreLIPOsafer raus

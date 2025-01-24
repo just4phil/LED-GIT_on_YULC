@@ -10,7 +10,8 @@
 //extern const boolean LEDGITBOARD = false;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 
-extern byte songID; // 0 -> default loop
+extern byte songID;
+extern byte songIDbefore;
 extern byte markerLED1;
 extern byte markerLED2;
 extern byte markerLED3;
@@ -120,59 +121,12 @@ void progBlinkLowVoltage(unsigned int del) {
 	}
 }
 
-//--- progBlingBlingColoring -----
-// leds werden zufällig mit der selben farbe eingeschaltet und einige wenige zufällig ausgeschaltet
-// alle x sekunden wird die eine der drei farbkomponenten zufällig geändert
-// void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed) {
-
-// 	//--- standard-part um dauer und naechstes programm zu speichern ----
-// 	if (!nextChangeMillisAlreadyCalculated) {
-// 		FastLED.clear(true);
-// 		nextChangeMillis = durationMillis;
-// 		nextSongPart = nextPart;
-// 		nextChangeMillisAlreadyCalculated = true;
-		
-// 		progBlingBlingColoring_rounds = 0;
-// 	}
-// 	//---------------------------------------------------------------------
-
-// 	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-// 		millisToReduceCPUSpeed = 0;
-
-// 		if (progBlingBlingColoring_rounds == 0) {
-// 			r = getRandomColorValue();
-// 			g = getRandomColorValue();
-// 			b = getRandomColorValue();
-// 		}
-
-// 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-// 			//set random pixel to defined color
-// 			leds[random(0, anz_LEDs)] = CRGB(r, g, b);	
-// 			// delete 1 pixel sometimes
-// 			//if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
-// 			leds[random(0, anz_LEDs)] = CRGB::Black;	// in dieser version Immer auch einen pixel löschen damit es eher soft bleibt
-
-// 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-// 			FastLED.show();
-// 		}
-// 	}
-
-// 	// after DEL ms seconds change 1 part of the color randomly
-// 	if (millisCounterTimer >= msForColorChange) {	//15000 // ersatz für delay()
-// 		millisCounterTimer = 0;
-// 		progBlingBlingColoring_rounds++;
-// 		if (progBlingBlingColoring_rounds == 4) progBlingBlingColoring_rounds = 1;
-
-// 		if (progBlingBlingColoring_rounds == 1) b = getRandomColorValue();
-// 		else if (progBlingBlingColoring_rounds == 2) g = getRandomColorValue();
-// 		else if (progBlingBlingColoring_rounds == 3) r = getRandomColorValue();
-// 	}
-// }
-
-const int anzahlLEDsImArray = 20;
+//progBlingBlingColoringSONGPAUSE: 
+//endlos-loop: random und farbwerte in eigenes array schreiben und langsam dimmen
+const int anzahlLEDsImArray = 30;	// 29 reicht bei 500 msToReduceSpeed 
 int LEDsUndFarbWerte[anzahlLEDsImArray][4];
-
-void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed) {
+// int maxI=0;
+void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
@@ -181,15 +135,19 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 
-		// Array Initialisierung mit -1
-    	for (int i = 0; i < anzahlLEDsImArray; i++) {
-    		for (int j = 0; j < 4; j++) {
-            	LEDsUndFarbWerte[i][j] = -1;	// -1 ist ein freies element
-        	}
-    	}
+		if (songIDbefore != 0) {
+			FastLED.clear(true);
+
+			// Array Initialisierung mit -1
+			for (int i = 0; i < anzahlLEDsImArray; i++) {
+				for (int j = 0; j < 4; j++) {
+					LEDsUndFarbWerte[i][j] = -1;	// -1 ist ein freies element
+				}
+			}
+		}
 	}
 	//---------------------------------------------------------------------
-
+	
 	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
 		millisToReduceCPUSpeed = 0;
 
@@ -200,20 +158,28 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 				LEDsUndFarbWerte[i][1] = getRandomColorValue();
 				LEDsUndFarbWerte[i][2] = getRandomColorValue();
 				LEDsUndFarbWerte[i][3] = getRandomColorValue();
+				// if (i > maxI) {
+				// 	maxI = i;
+				// 	Serial.println(maxI);
+				// }
 				break;	// nach dem ersten gefundenen element abbrechen!
 			}
 		}
+	}
+
+	if (millisCounterTimer >= 60) {	// ersatz für delay()
+		millisCounterTimer = 0;
 
 		//--- aktive LEDs langsam dimmen ---
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
 			int r = LEDsUndFarbWerte[i][1];
 			int g = LEDsUndFarbWerte[i][2];
 			int b = LEDsUndFarbWerte[i][3];
-			r = r - 10;
+			r--;
 			if (r < 0) r = 0;
-			g = g - 10;
+			g--;
 			if (g < 0) g = 0;
-			b = b - 10;
+			b--;
 			if (b < 0) b = 0;
 			LEDsUndFarbWerte[i][1] = r;
 			LEDsUndFarbWerte[i][2] = g;
@@ -225,23 +191,23 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 				LEDsUndFarbWerte[i][0] = -1;
 			}
 		}
-
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-			// Farbwerte in FastLED setzen
-			for (int i = 0; i < anzahlLEDsImArray; i++) {
-				if (LEDsUndFarbWerte[i][0] >= 0) {
-					leds[LEDsUndFarbWerte[i][0]] = 
-						CRGB(LEDsUndFarbWerte[i][1], 
-						LEDsUndFarbWerte[i][2], 
-						LEDsUndFarbWerte[i][3]);
-				}
-			}
-
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-			FastLED.show();
-		}
 	}
+
+	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
+
+		// Farbwerte in FastLED setzen
+		for (int i = 0; i < anzahlLEDsImArray; i++) {
+			if (LEDsUndFarbWerte[i][0] >= 0) {
+				leds[LEDsUndFarbWerte[i][0]] = 
+					CRGB(LEDsUndFarbWerte[i][1], 
+					LEDsUndFarbWerte[i][2], 
+					LEDsUndFarbWerte[i][3]);
+			}
+		}
+
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}		
 }
 
 //--- progBlingBlingColoring -----
