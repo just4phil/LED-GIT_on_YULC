@@ -36,7 +36,7 @@ void SONGPAUSE()  {	// soft / static LEDs
  	switch (prog) { 
 
 	case 0:
-		progBlingBlingColoringSONGPAUSE(60000, 100, 10000, 200);
+		progBlingBlingColoringSONGPAUSE(60000, 100, 10000, 500);
 		break;
 
 	case 100:

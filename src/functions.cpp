@@ -123,26 +123,11 @@ void switchToPart(byte part) {
 
 	//--- initializeValues ---
 	progBlingBlingColoring_rounds = 0;
-	// progCLED_hue = 0;
-	// progCLED_counter = 0;
 
 	flag_switchToNextSongPart = false;
-	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-	// if (DEBUG) {
-	// 	Serial.print("switched to part: ");
-	// 	Serial.println(part);
-	// }
 }
 
 void switchToSong(byte song) {
-	
-	// hier besser kein Serial.print da es im Interrupt aufgerufen wird!
-	// if (DEBUG) {
-	// 	Serial.println("-------------------");
-	// 	Serial.print("switched to song: ");
-	// 	Serial.println(song);
-	// 	Serial.println("-------------------");
-	// }
 
 	//---- reset markerLEDs
 	markerLED1 = 0;
