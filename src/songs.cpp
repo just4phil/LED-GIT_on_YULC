@@ -36,8 +36,17 @@ void SONGPAUSE()  {	// soft / static LEDs
  	switch (prog) { 
 
 	case 0:
-		progBlingBlingColoringSONGPAUSE(60000, 100, 500);
-		break;
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 17600, 90, getRandomColor(), 10);
+		}
+		else {
+			progBlingBlingColoringSONGPAUSE(17600, 10, 1000);
+		}	
+	break;
+
+	case 10:
+		progBlingBlingColoringSONGPAUSE(30000, 100, 1000);
+	break;
 
 	case 100:
 		//FastLED.clear();

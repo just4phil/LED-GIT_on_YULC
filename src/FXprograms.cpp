@@ -135,7 +135,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 
-		if (songIDbefore != 0) {
+		if (songIDbefore != 0 || LEDGITBOARD) {
 			FastLED.clear(true);
 
 			// Array Initialisierung mit -1
@@ -167,7 +167,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		}
 	}
 
-	if (millisCounterTimer >= 60) {	// ersatz für delay()
+	if (millisCounterTimer >= 10) {	// 60 ms
 		millisCounterTimer = 0;
 
 		//--- aktive LEDs langsam dimmen ---
@@ -205,7 +205,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 			}
 		}
 
-		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		//gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}		
 }
