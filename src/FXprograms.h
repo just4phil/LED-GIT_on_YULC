@@ -65,6 +65,8 @@ void setDurationAndNextPart(unsigned int durationMillis, byte nextPart);
 
 void progBlinkLowVoltage(unsigned int del);
 
+void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
+
 void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
 
 // leds werden zufällig mit der selben farbe eingeschaltet und einige wenige zufällig ausgeschaltet

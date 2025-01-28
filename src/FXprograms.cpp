@@ -50,6 +50,14 @@ byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
 
+//---- fuer progBlingBlingColoringSONGPAUSE
+const int anzahlLEDsImArray = 30;	// 29 reicht bei 500 msToReduceSpeed 
+int LEDsUndFarbWerte[anzahlLEDsImArray][4];
+
+//---- fuer Sternschnuppen
+const int anzahlLEDsSternschnuppen = 10;
+int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
+
 //==================================================================
 //=========== FX programs ==========================================
 //==================================================================
@@ -121,11 +129,127 @@ void progBlinkLowVoltage(unsigned int del) {
 	}
 }
 
+int startIndex;
+int reduce;
+void initSternschnuppen() {
+
+	startIndex = random(0, anz_LEDs - 50);
+	reduce = 3;
+	// Array Initialisierung
+	LEDsUndFarbWerteSternschnuppen[0][0] = startIndex;
+	LEDsUndFarbWerteSternschnuppen[0][1] = 25;
+	LEDsUndFarbWerteSternschnuppen[0][2] = 20;//12
+	LEDsUndFarbWerteSternschnuppen[0][3] = 0;
+	
+	LEDsUndFarbWerteSternschnuppen[1][0] = startIndex + 1;
+	LEDsUndFarbWerteSternschnuppen[1][1] = 50;
+	LEDsUndFarbWerteSternschnuppen[1][2] = 35;//23
+	LEDsUndFarbWerteSternschnuppen[1][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[2][0] = startIndex + 2;
+	LEDsUndFarbWerteSternschnuppen[2][1] = 75;
+	LEDsUndFarbWerteSternschnuppen[2][2] = 50;//35
+	LEDsUndFarbWerteSternschnuppen[2][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[3][0] = startIndex + 3;
+	LEDsUndFarbWerteSternschnuppen[3][1] = 100;
+	LEDsUndFarbWerteSternschnuppen[3][2] = 75;//50
+	LEDsUndFarbWerteSternschnuppen[3][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[4][0] = startIndex + 4;
+	LEDsUndFarbWerteSternschnuppen[4][1] = 175;
+	LEDsUndFarbWerteSternschnuppen[4][2] = 120;//100
+	LEDsUndFarbWerteSternschnuppen[4][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[5][0] = startIndex + 5;
+	LEDsUndFarbWerteSternschnuppen[5][1] = 255;
+	LEDsUndFarbWerteSternschnuppen[5][2] = 175;//150
+	LEDsUndFarbWerteSternschnuppen[5][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[6][0] = startIndex + 6;
+	LEDsUndFarbWerteSternschnuppen[6][1] = 100;
+	LEDsUndFarbWerteSternschnuppen[6][2] = 75;//50
+	LEDsUndFarbWerteSternschnuppen[6][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[7][0] = startIndex + 7;
+	LEDsUndFarbWerteSternschnuppen[7][1] = 75;
+	LEDsUndFarbWerteSternschnuppen[7][2] = 50;//35
+	LEDsUndFarbWerteSternschnuppen[7][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[8][0] = startIndex + 8;
+	LEDsUndFarbWerteSternschnuppen[8][1] = 40;
+	LEDsUndFarbWerteSternschnuppen[8][2] = 35;//20
+	LEDsUndFarbWerteSternschnuppen[8][3] = 0;
+
+	LEDsUndFarbWerteSternschnuppen[9][0] = startIndex + 9;
+	LEDsUndFarbWerteSternschnuppen[9][1] = 255;
+	LEDsUndFarbWerteSternschnuppen[9][2] = 200;//150
+	LEDsUndFarbWerteSternschnuppen[9][3] = 0;
+}
+void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed) {
+
+	//--- standard-part um dauer und naechstes programm zu speichern ----
+	if (!nextChangeMillisAlreadyCalculated) {
+		//FastLED.clear(true);
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+
+		//if (songIDbefore != 0 || LEDGITBOARD) {
+			FastLED.clear(true);
+
+			// Array Initialisierung
+			initSternschnuppen();
+		//}
+	}
+	//---------------------------------------------------------------------
+	
+	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
+
+		// Farbwerte in FastLED setzen
+		for (int i = 0; i < anzahlLEDsSternschnuppen; i++) {
+			if (LEDsUndFarbWerteSternschnuppen[i][0] >= 0) {
+				leds[LEDsUndFarbWerteSternschnuppen[i][0]] = 
+					CRGB(LEDsUndFarbWerteSternschnuppen[i][1], 
+					LEDsUndFarbWerteSternschnuppen[i][2], 
+					LEDsUndFarbWerteSternschnuppen[i][3]);
+			}
+		}
+
+		//gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}	
+	
+	// //----jetzt neu platzieren und dimmen
+	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
+		millisToReduceCPUSpeed = 0;
+
+		//--- erste LED ausschalten
+		leds[LEDsUndFarbWerteSternschnuppen[0][0]] = CRGB(0,0,0);
+
+		for (int i = 0; i < anzahlLEDsSternschnuppen; i++) {
+			LEDsUndFarbWerteSternschnuppen[i][0] = LEDsUndFarbWerteSternschnuppen[i][0] +1;
+			LEDsUndFarbWerteSternschnuppen[i][1] = LEDsUndFarbWerteSternschnuppen[i][1] -reduce;
+			LEDsUndFarbWerteSternschnuppen[i][2] = LEDsUndFarbWerteSternschnuppen[i][2] -reduce -2;	// gruen etwas weniger stark reduzieren als rot
+			
+			if (LEDsUndFarbWerteSternschnuppen[i][1] < 12) LEDsUndFarbWerteSternschnuppen[i][1] = 0;
+			if (LEDsUndFarbWerteSternschnuppen[i][2] < 12) LEDsUndFarbWerteSternschnuppen[i][2] = 0;
+
+			if (LEDsUndFarbWerteSternschnuppen[i][2] == 0) {
+				reduce = 10;
+			}
+		}
+	}
+
+	if (millisCounterTimer >= 3000) {	// ersatz für delay()
+		millisCounterTimer = 0;
+		// RESTART
+		initSternschnuppen();
+	}	
+}
+
 //progBlingBlingColoringSONGPAUSE: 
 //endlos-loop: random und farbwerte in eigenes array schreiben und langsam dimmen
-const int anzahlLEDsImArray = 30;	// 29 reicht bei 500 msToReduceSpeed 
-int LEDsUndFarbWerte[anzahlLEDsImArray][4];
-// int maxI=0;
 void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
