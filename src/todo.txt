@@ -9,8 +9,8 @@ TODOs:
 
 leds rina:
 
-- physical + songs
-- dont stop
+- dont stop -> TODO wenn der song mal programmiert ist!!
+- DONE -> testen /physical + songs
 - use somebody
 - bloody mary
 - ITD: // RINA im solo ab 1382 ESaite_Cis bis 1391 // + ab 1390 ESaite_Dis für solo bis 1399
@@ -19,7 +19,10 @@ leds rina:
 - enjoyIntro: // RINA s. oben
 - tell it: 2 led für rina ausmachen
 
+- leds bei bm ende raus
 
+- songpausen -> zufallswahl der beiden neuen progs
+-----
 
 => ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 

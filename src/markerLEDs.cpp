@@ -43,18 +43,33 @@ void setMarkerLEDs(byte songID) {
 			// DO NOTHING !!
 			break;
 		case 1: //PhysicalTrailer();
-			markerLED1 = ESaite_A;
-			markerLED2 = ESaite_F;
-			markerLED3 = ESaite_G;
-			markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
-//			markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain
+			#ifdef ANDRESGIT
+				markerLED1 = ESaite_A;
+				markerLED2 = ESaite_F;
+				markerLED3 = ESaite_G;
+				markerLED4 = ESaite_C; 
+			#endif
+			#ifdef RINASBASS
+				markerLED1 = ESaite_A;
+				markerLED2 = ESaite_F;
+				markerLED3 = ESaite_G;
+				//markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+			#endif
 			break;
 		case 2://Physical();
-			markerLED1 = ESaite_A;
-			markerLED2 = ESaite_F;
-			markerLED3 = ESaite_G;
-			markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
-//			markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain
+			#ifdef ANDRESGIT
+				markerLED1 = ESaite_A;
+				markerLED2 = ESaite_F;
+				markerLED3 = ESaite_G;
+				markerLED4 = ESaite_C; 
+			#endif
+			#ifdef RINASBASS
+				markerLED1 = ESaite_A;
+				markerLED2 = ESaite_F;
+				markerLED3 = ESaite_G;
+				//markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+				// hat noch weitere gimmicks in songs.cpp
+			#endif
 			break;
 		case 3://	TakeOnMe();
 			markerLED1 = ESaite_A; 	
@@ -66,8 +81,8 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_Gis; 
 			markerLED2 = ASaite_C; 
 			markerLED3 = ESaite_C; 
-			// Rina für sample teil (3:18): ab 2237: 2 HT unter der Oktave -> ESaite_D oder ASaite_G // Ende bei Takt 2245
-			//markerLED4 = ESaite_A; 	
+			//markerLED4 = ESaite_A; 
+			// hat noch weitere gimmicks in songs.cpp für RINA
 			break;
 		case 5://UseSomebody();
 			markerLED1 = ESaite_C;

@@ -253,11 +253,6 @@ void defaultLoop()  {
 // #1 PhysicalMitTrailer(); // FERTIG! am 12.08.2023
 void PhysicalTrailer() {
 		
-	// markerLED1 = 62; 
-	// markerLED2 = 69;
-	// markerLED3 = 65;
-	// markerLED4 = 59;
-
 	switch (prog) {
 
 	case 0:
@@ -303,18 +298,6 @@ void PhysicalTrailer() {
 
 // #2 Physical(); // FERTIG! am 13.08.2023
 void Physical() {
-
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-	
-	// markerLED1 = 62; 
-	// markerLED2 = 69;
-	// markerLED3 = 65;
-	// markerLED4 = 59;
 
  	switch (prog) { 
 
@@ -385,11 +368,17 @@ void Physical() {
 
 	case 82: // hold on 1
 		progFastBlingBling(13060, 2, 84);
-		markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain // TODO: geht nach duiesem tiel nicht mehr aus! auschalten!!
+		#ifdef RINASBASS
+			// markerLED 1 - 3 in Benutzung bei Rina
+			markerLED5 = ASaite_Fis; // für Rina: Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach duiesem teil nicht mehr aus! auschalten!!
+		#endif
 		break;
 
 	case 84: // hold on 2
 		progFastBlingBling(11430, 6, 86);
+		#ifdef RINASBASS
+			markerLED5 = 0; // für Rina: wieder auschalten!!
+		#endif
 		break;
 
 	case 86: // lets get physical
@@ -538,6 +527,15 @@ void TakeOnMe() {
 
 //#4 LEER -> Dont stop the music -> TODO ---------------------------------------------------------------------------------------------
 void DontStopTheMusic() {
+
+//TODO, wenn der song mal programmiert ist!:
+		// #ifdef RINASBASS
+		// 	// markerLED 1 - 3 in Benutzung bei Rina
+		// 	markerLED5 = ASaite_Fis; // Rina für sample teil (3:18): ab 2237: 2 HT unter der Oktave -> ESaite_D oder ASaite_G // Ende bei Takt 2245
+		// #endif
+
+
+
 
 	switch (prog) {
 

@@ -8,8 +8,8 @@
 //#define USE_ESP32 //USE_TEENSY		// wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define RINASBASS	// COM17
-#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+#define RINASBASS	// COM17
+//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
 //#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
