@@ -1,5 +1,5 @@
 {
-    "idf.portWin": "COM8",
+    "idf.portWin": "COM17",
     "idf.espIdfPathWin": "C:\\Users\\andre\\esp\\v5.3.1\\esp-idf",
     "idf.pythonBinPathWin": "C:\\Users\\andre\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
     "idf.toolsPathWin": "C:\\Users\\andre\\.espressif",

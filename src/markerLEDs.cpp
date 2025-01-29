@@ -46,13 +46,15 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_A;
 			markerLED2 = ESaite_F;
 			markerLED3 = ESaite_G;
-			markerLED4 = ESaite_C;
+			markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+//			markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain
 			break;
 		case 2://Physical();
 			markerLED1 = ESaite_A;
 			markerLED2 = ESaite_F;
 			markerLED3 = ESaite_G;
-			markerLED4 = ESaite_C;
+			markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+//			markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain
 			break;
 		case 3://	TakeOnMe();
 			markerLED1 = ESaite_A; 	
@@ -64,6 +66,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_Gis; 
 			markerLED2 = ASaite_C; 
 			markerLED3 = ESaite_C; 
+			// Rina für sample teil (3:18): ab 2237: 2 HT unter der Oktave -> ESaite_D oder ASaite_G // Ende bei Takt 2245
 			//markerLED4 = ESaite_A; 	
 			break;
 		case 5://UseSomebody();
@@ -76,7 +79,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_Fis; 
 			markerLED2 = ESaite_B; 
 			markerLED3 = ESaite_G; 
-			markerLED4 = ESaite_E; 			
+			markerLED4 = ESaite_E; 
 			break;
 		case 7://Firework();
 			markerLED1 = ESaite_Bb; 
@@ -87,7 +90,7 @@ void setMarkerLEDs(byte songID) {
 		case 8://DancingOnMyOwn();
 			markerLED1 = ESaite_B;
 			markerLED2 = ESaite_Fis;
-			markerLED3 = ESaite_Cis;	
+			markerLED3 = ESaite_Cis;
 			break;
 		case 9://ILoveIT();
 			markerLED1 = ESaite_F; 
@@ -96,11 +99,12 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ASaite_Dis;			
 			break;
 		case 10://BloodyMary();
-			markerLED1 = ESaite_Bb; 
+			markerLED1 = ESaite_Bb; // fpür RINA: ausschalten: ESaite_Bb; 
 			markerLED2 = ESaite_B; 
 			markerLED3 = ESaite_Gis; 
 			markerLED4 = ESaite_Fis; 
 			markerLED5 = ESaite_Dis; 	
+			// RINA: ausschalten: ESaite_Bb; 
 			break;
 		case 11://Titanium();
 			markerLED1 = ESaite_G; 
@@ -118,7 +122,8 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_Fis; 
 			markerLED2 = ESaite_Gis; 
 			markerLED3 = ESaite_Cis; 
-			markerLED4 = ESaite_B; 		
+			markerLED4 = ESaite_B; 	
+			// RINA im solo ab 1382 ESaite_Cis bis 1391 // + ab 1390 ESaite_Dis für solo bis 1399
 			break;
 		case 14://Shivers();
 			markerLED1 = ESaite_Bb;
@@ -136,6 +141,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED2 = ESaite_Gis; 
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 	
+			// RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 		case 17://sober();
 			markerLED1 = ESaite_Gis; 
@@ -160,19 +166,21 @@ void setMarkerLEDs(byte songID) {
 			markerLED2 = ESaite_A; 
 			markerLED3 = ESaite_B;
 			markerLED4 = ESaite_E_hoch; 
+			// RINA: komplett: ESaite_Gis
 			break;
-		case 21://Tell it to my Heart
+		case 21://Tell it to my Heart 
 			markerLED1 = ESaite_F;
 			markerLED2 = ESaite_G;
 			markerLED3 = ESaite_B;
-			markerLED4 = ASaite_F; 
-			markerLED5 = ESaite_D;
+			//markerLED4 = ASaite_F; // für rina raus
+			//markerLED5 = ESaite_D; // für rina raus
 			break;
 		case 24://enjoyTheSilenceINTRO();
 			markerLED1 = ESaite_F;
 			markerLED2 = ESaite_Gis;
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 
+			// RINA s. oben
 			break;
 
 		case 100://STARTUP();

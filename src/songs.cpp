@@ -40,14 +40,14 @@ void SONGPAUSE()  {	// soft / static LEDs
 			progScrollText("Nerds on Fire", 17600, 90, getRandomColor(), 10);
 		}
 		else {
-			progSternschnuppen(17600, 10, 18) ;
-			//progBlingBlingColoringSONGPAUSE(17600, 10, 1000);
+			//progSternschnuppen(17600, 10, 18) ;
+			progBlingBlingColoringSONGPAUSE(17600, 10, 1000);
 		}	
 	break;
 
 	case 10:
-		progSternschnuppen(30000, 100, 18) ;
-		//progBlingBlingColoringSONGPAUSE(30000, 100, 1000);
+		//progSternschnuppen(30000, 100, 18) ;
+		progBlingBlingColoringSONGPAUSE(30000, 100, 1000);
 	break;
 
 	case 100:
@@ -385,6 +385,7 @@ void Physical() {
 
 	case 82: // hold on 1
 		progFastBlingBling(13060, 2, 84);
+		markerLED5 = ASaite_Fis; // für Rina: D-Saite: -> nach dem 2. refrain // TODO: geht nach duiesem tiel nicht mehr aus! auschalten!!
 		break;
 
 	case 84: // hold on 2
@@ -722,7 +723,10 @@ void UseSomebody() {
 		markerLED2 = ASaite_B;
 		markerLED3 = ESaite_B; 
 		markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung		
-		progPalette(13913, 4, 35);	// paletteID -> 0 - 10
+
+		// rina für solo (2028/2029 -> 2036) auf E-Saite: hohes C + hohes D
+
+		progPalette(13913, 4, 35);	// paletteID -> 0 - 10 
 		break;
 
 	case 35://solo		13913
