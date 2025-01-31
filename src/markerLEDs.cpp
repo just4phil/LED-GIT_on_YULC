@@ -264,6 +264,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		for (int i = Bund_min; i < Bund_max; i++) {
 			leds[i] = CRGB(0, 0, 0); //BLACK
 		}
+		
+		uint8_t BRIGHTNESS = FastLED.getBrightness(); // ACHTUNG: diese BRIGHTNESS ist eine andere variable als die globale BRIGHTNESS
 
 		if (BRIGHTNESS >= 0 && BRIGHTNESS <20) helligkeit = 255;
 		else if (BRIGHTNESS >= 20 && BRIGHTNESS <60) helligkeit = 40;
@@ -271,8 +273,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		else if (BRIGHTNESS >= 100 && BRIGHTNESS <140) helligkeit = 20;
 		else if (BRIGHTNESS >= 140 && BRIGHTNESS <180) helligkeit = 15;
 		else if (BRIGHTNESS >= 180 && BRIGHTNESS <210) helligkeit = 10;
-		else if (BRIGHTNESS >= 210 && BRIGHTNESS <230) helligkeit = 5;
-		else if (BRIGHTNESS >= 230 && BRIGHTNESS <=255) helligkeit = 2; // bei fastBling immer noch sehr hell
+		else if (BRIGHTNESS >= 210 && BRIGHTNESS <230) helligkeit = 7;
+		else if (BRIGHTNESS >= 230 && BRIGHTNESS <=255) helligkeit = 4; // bei fastBling immer noch sehr hell
 
 		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
 		// turn on special MarkerLEDs for the songs
