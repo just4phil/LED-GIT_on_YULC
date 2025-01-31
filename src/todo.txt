@@ -2,23 +2,16 @@
 bugs:
 ======
 
-- beim wechsel von prog bling colouring auf circles oder lines -> wurden LEDs nicht gelöscht ....FASTLED.clear noch mal checken
-
 
 TODOs:
 =======
+
+helligkeitsstufen der marker mit rotary testen
+
 leds rina:
     - dont stop -> TODO wenn der song mal programmiert ist!!
 
-DONE 
-- kids: // RINA: komplett: ESaite_Gis
-- tell it: 2 led für rina ausmachen
-- enjoy + enjoyIntro: RINA SOLO: Takt 718 - 723: ESaite_hohes F
-- bloody mary
-- use somebody
-- TOM
-- physical
-- ITD
+
 -------
 
 
@@ -28,6 +21,7 @@ DONE
 => ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 - leds bei bm ende raus
 
+- CHECKEN: sollen MarkerLEDs wirklich aus sein, wenn LEDsTurnedOFF?!?!?!!?!
 
 - ignoreLIPOsafer raus
 
@@ -50,6 +44,18 @@ DONE
 
 DONE:
 =====
+2025-01-31: 
+- marker helligkeit bei fastbling optimiert
+- ausfälle der markerLEDs minimiert
+marker für BASS für songs:
+- kids: // RINA: komplett: ESaite_Gis
+- tell it: 2 led für rina ausmachen
+- enjoy + enjoyIntro: RINA SOLO: Takt 718 - 723: ESaite_hohes F
+- bloody mary
+- use somebody
+- TOM
+- physical
+- ITD
 2025-01-23: neuen loop: SONGPAUSE eingebaut -> zwischen den songs keinen default loop mehr!
 2025-01-15: added i love it as No. 9 -> TODO: LEDs programm
 

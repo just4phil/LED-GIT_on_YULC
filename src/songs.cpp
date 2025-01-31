@@ -2397,12 +2397,12 @@ void Kids() { // TODO
 		break;
 	
 	case 2: //nur für ledgitboard
-		progStrobo(9107, 10, 470, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(9107, 10, 465, getRandomColor(), getRandomColor(), getRandomColor());
 		break;
 
 	case 5: //synth intro	15000
 		// 15235, da um 235 ms verschoben damit strobo nicht offbeat ist
-		progStrobo(15235, 10, 470, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(15235, 10, 465, getRandomColor(), getRandomColor(), getRandomColor());
 		break;
 		
 	case 10: // chorus intro	15000

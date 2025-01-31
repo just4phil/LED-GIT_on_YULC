@@ -371,6 +371,10 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 			FastLED.show();
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}	
 
 	// after DEL ms seconds change 1 part of the color randomly
 	if (millisCounterTimer >= msForColorChange) {	//15000 // ersatz für delay()
@@ -391,7 +395,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
+		FastLED.clear(true);
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)9.65f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -426,7 +430,11 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 		}
 		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
-	}
+	} // TODO: Checken ob das hier auch hin muss:
+	// else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+	// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+	// 	FastLED.show();
+	// }
 }
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart) {
 	progFastBlingBling(durationMillis, anzahl, nextPart, 0, 0, 0);
@@ -436,7 +444,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -476,13 +484,17 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 			}
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}
 }
 
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
+		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.3f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -586,6 +598,10 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 			FastLED.show();
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}
 }
 void progMatrixScanner(unsigned int durationMillis, byte nextPart) {
 	progMatrixScanner(durationMillis, nextPart, 0);
@@ -671,7 +687,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -700,6 +716,10 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 			FastLED.show();
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}
 }
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange) {
 	progCircles(durationMillis, nextPart, msForChange, true);
@@ -709,7 +729,7 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.05f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -742,6 +762,10 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
+	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
 	}
 }
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange) {
@@ -834,8 +858,11 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 			FastLED.show();
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}
 }
-
 void progMovingLines(unsigned int durationMillis, byte nextPart) {
 	progMovingLines(durationMillis, nextPart, 0);
 }
@@ -1013,6 +1040,10 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 		if (zaehler <= 0) scannerGoesBack = false;	
 		}
 	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
+	}
 }
 void progOutline(unsigned int durationMillis, byte nextPart) {
 	progOutline(durationMillis, nextPart, 0);
@@ -1085,6 +1116,11 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 			matrix->show();
 		}
 	}
+	//macht hier wenig sinn da text ohnehin nur auf ledgitboardmatrix funktioniert!
+	// else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+	// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+	// 	FastLED.show();
+	// }
 }
 
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart) {
@@ -1542,7 +1578,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -1781,6 +1817,10 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 		if (progMatrixZaehler > 56) {
 			progMatrixZaehler = 0;
 		}								
+	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
 	}	
 }
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart) {
@@ -1793,7 +1833,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -2042,6 +2082,10 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		if (progMatrixZaehler > 60) {
 			progMatrixZaehler = 0; // (rand() % (4 + 1 - 0) + 0); // 0;
 		}
+	}
+	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
 	}
 }
 void progMatrixVertical(unsigned int durationMillis, byte nextPart) {
