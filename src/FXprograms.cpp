@@ -436,7 +436,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -482,7 +482,7 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.3f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -530,6 +530,10 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 			} 
 			progStroboIsBlack = true;
 		}
+	}
+	else { // eingebaut, da dies die "ausfälle" der MarkerLEDs minimiert (FastLED.clear ganz oben ist aber hauptursächlich)
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		FastLED.show();
 	}
 }
 
