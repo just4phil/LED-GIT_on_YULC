@@ -6,18 +6,18 @@ bugs:
 
 TODOs:
 =======
-
 leds rina:
-- dont stop -> TODO wenn der song mal programmiert ist!!
+    - dont stop -> TODO wenn der song mal programmiert ist!!
 
-- use somebody
-- bloody mary
-- enjoy + enjoyIntro: RINA SOLO: Takt 718 - 723: ESaite_hohes F
+DONE 
 - kids: // RINA: komplett: ESaite_Gis
 - tell it: 2 led für rina ausmachen
-
-- DONE -> physical
-- DONE - ITD
+- enjoy + enjoyIntro: RINA SOLO: Takt 718 - 723: ESaite_hohes F
+- bloody mary
+- use somebody
+- TOM
+- physical
+- ITD
 -------
 
 

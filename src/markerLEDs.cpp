@@ -83,7 +83,7 @@ void setMarkerLEDs(byte songID) {
 			#endif
 			break;
 		case 3://	TakeOnMe();
-			markerLED1 = ESaite_A; 	
+			markerLED1 = ESaite_A; 	// leuchtet eh blau!
 			markerLED2 = ESaite_G; 
 			markerLED3 = ESaite_B; 
 			// hat noch weitere gimmicks in songs.cpp
@@ -186,7 +186,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED2 = ESaite_Gis; 
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 	
-			// RINA SOLO: Takt 718 - 723: ESaite_hohes F
+			// enjoy gimmick in songs.cpp -> RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 
 		case 17://sober();
@@ -210,14 +210,13 @@ void setMarkerLEDs(byte songID) {
 				markerLED2 = ESaite_A; 
 				markerLED3 = ESaite_B;
 				markerLED4 = ESaite_E_hoch; 
-				// RINA: komplett: ESaite_Gis	// TODO CHECKEN!!!!
 			#endif
 			#ifdef BASS
 				markerLED1 = ESaite_Fis;
 				markerLED2 = ESaite_A; 
 				markerLED3 = ESaite_B;
 				markerLED4 = ESaite_E_hoch; 
-				// RINA: komplett: ESaite_Gis			
+				markerLED5 = ESaite_Gis; // RINA: komplett: ESaite_Gis			
 			#endif			
 			break;
 		case 21://Tell it to my Heart 
@@ -241,7 +240,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED2 = ESaite_Gis;
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 
-			// RINA s. oben // RINA SOLO: Takt 718 - 723: ESaite_hohes F
+			// enjoy hat noch gimmicks für RINA
 			break;
 
 		case 100://STARTUP();

@@ -431,17 +431,6 @@ void Physical() {
 // #3 - TakeOnMe
 void TakeOnMe() {	
 
-	// (E/A: 71)
-	// F/Bb: 69, F#/B: 67, G/C: 65, G#/C#: 63, 
-	// A/D: 62, 
-	// Bb/D#: 61, B/E: 60, C/F: 59, C#/F#: 58, D/G: 57, D#/G#: 56, 
-	// E/A: 55, 
-	// (F/Bb: 54, F#/B: 53, G/C: 52)
-
-	// markerLED1 = 62;	
-	// markerLED2 = 65;
-	// markerLED3 = 60;
-
  	switch (prog) { 
 
 	case 0://pause	5650
@@ -492,12 +481,20 @@ void TakeOnMe() {
 		markerLED4 = ESaite_Fis; // nächsten bund schon mal präventiv anzeigen 
 		progFastBlingBling(6230, 6, 70);
 		break;
-	case 70: //BRIDGE	18705
-		markerLED1 = ESaite_F;
-		markerLED2 = 0;
-		markerLED3 = 0;
-		markerLED4 = ESaite_Fis;
-		progPalette(18705, 9, 75);	// rot weiss blau
+	case 70: //BRIDGE	18705		
+		#ifdef GIT
+			markerLED1 = ESaite_F;
+			markerLED2 = 0;
+			markerLED3 = 0;
+			markerLED4 = ESaite_Fis;
+		#endif
+		#ifdef BASS // hier für BASS genau wie GIT
+			markerLED1 = ESaite_F;
+			markerLED2 = 0;
+			markerLED3 = 0;
+			markerLED4 = ESaite_Fis;
+		#endif	
+		progPalette(18705, 9, 75);	// rot weiss blau	
 		break;
 	case 75: //SOLO SYNTH	6230
 		markerLED4 = 0;		//wieder abschalten
@@ -723,19 +720,30 @@ void UseSomebody() {
 		break;
 
 	case 30://bridge		13913
-		markerLED1 = ASaite_D; // D (wird aber eh mit blau überschrieben)
-		markerLED2 = ASaite_B;
-		markerLED3 = ESaite_B; 
-		markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung		
-
-		// rina für solo (2028/2029 -> 2036) auf E-Saite: hohes C + hohes D
-
+		#ifdef GIT
+			markerLED1 = ASaite_D; // D (wird aber eh mit blau überschrieben)
+			markerLED2 = ASaite_B;
+			markerLED3 = ESaite_B; 
+			markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung		
+		#endif	
+		#ifdef BASS
+			markerLED1 = ASaite_D; // D (wird aber eh mit blau überschrieben)
+			markerLED2 = ASaite_B;
+			markerLED3 = ESaite_B; 
+			markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung	
+		#endif	
 		progPalette(13913, 4, 35);	// paletteID -> 0 - 10 
 		break;
 
 	case 35://solo		13913
+		// #ifdef GIT
+		// #endif	
+		#ifdef BASS
+			// rina für solo (2028/2029 -> 2036) auf E-Saite: hohes C + hohes D
+			markerLED5 = ESaite_C;
+			markerLED6 = ESaite_D;
+		#endif		
 		progFullColors(13913, 40, 870);	// zu schnell
-		//progCircles(13913, 40, 435);
 		break;
 
 	case 40://solo b		17391
@@ -2051,11 +2059,16 @@ void enjoyTheSilence() {
 		break;
 
 	case 35://synth	16975
-		//progFastBlingBling(16995, 5, 40); //20s -> 3:13
+		#ifdef BASS
+			markerLED5 = ESaite_F_hoch; // RINA SOLO: Takt 718 - 723: ESaite_hohes F
+		#endif
 		progStern(17000, 970, 40, 15); 
 		break;
 
 	case 40://verse 1a	8500
+		#ifdef BASS
+			markerLED5 = 0; // RINA SOLO: ESaite_hohes F wieder aus
+		#endif
 		progPalette(8495, 2, 45);
 		break;
 
