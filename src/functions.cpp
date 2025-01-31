@@ -8,6 +8,8 @@ extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
+extern byte markerLED6;
+extern byte markerLED7;
 extern int helligkeit;
 extern int BRIGHTNESS;
 //extern const boolean LEDGITBOARD;
@@ -113,6 +115,17 @@ int getRandomColorIncludingBlack() {
 	return farbe;
 }
 
+void resetMarkerLEDs() {
+	//---- reset markerLEDs
+	markerLED1 = 0;
+	markerLED2 = 0;
+	markerLED3 = 0;
+	markerLED4 = 0;
+	markerLED5 = 0;
+	markerLED6 = 0;
+	markerLED7 = 0;
+}
+
 void switchToPart(byte part) {
 
 	prog = part;
@@ -131,11 +144,7 @@ void switchToPart(byte part) {
 void switchToSong(byte song) {
 
 	//---- reset markerLEDs
-	markerLED1 = 0;
-	markerLED2 = 0;
-	markerLED3 = 0;
-	markerLED4 = 0;
-	markerLED5 = 0;
+	resetMarkerLEDs();
 
 	//--- start song ----
 	songIDbefore = songID;
@@ -147,11 +156,7 @@ void switchToSong(byte song) {
 void switchToSongAndPart(byte song, byte part) {
 	
 	//---- reset markerLEDs
-	markerLED1 = 0;
-	markerLED2 = 0;
-	markerLED3 = 0;
-	markerLED4 = 0;
-	markerLED5 = 0;
+	resetMarkerLEDs();
 
 	//--- start song ----
 	songID = song;

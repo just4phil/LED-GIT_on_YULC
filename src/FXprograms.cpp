@@ -17,6 +17,8 @@ extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
+extern byte markerLED6;
+extern byte markerLED7;
 extern int BRIGHTNESS;
 extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int nextChangeMillis;

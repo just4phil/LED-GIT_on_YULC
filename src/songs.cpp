@@ -12,6 +12,8 @@ extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
+extern byte markerLED6;
+extern byte markerLED7;
 extern byte songID; // 0 -> default loop
 extern volatile byte prog;							// the actual song-part
 //----------------------------
@@ -363,20 +365,24 @@ void Physical() {
 		break;
 
 	case 80: // lets get physical
-		progStrobo(1630, 82, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1630, 82, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		#ifdef BASS
+			// markerLED 1 - 3 in Benutzung bei Rina
+			markerLED5 = ASaite_Fis; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
+		#endif		 
 		break;
 
 	case 82: // hold on 1
 		progFastBlingBling(13060, 2, 84);
-		#ifdef RINASBASS
+		#ifdef BASS
 			// markerLED 1 - 3 in Benutzung bei Rina
-			markerLED5 = ASaite_Fis; // für Rina: Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach duiesem teil nicht mehr aus! auschalten!!
+			markerLED5 = ASaite_Fis; // für Rina: Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
 		#endif
 		break;
 
 	case 84: // hold on 2
 		progFastBlingBling(11430, 6, 86);
-		#ifdef RINASBASS
+		#ifdef BASS
 			markerLED5 = 0; // für Rina: wieder auschalten!!
 		#endif
 		break;
@@ -529,7 +535,7 @@ void TakeOnMe() {
 void DontStopTheMusic() {
 
 //TODO, wenn der song mal programmiert ist!:
-		// #ifdef RINASBASS
+		// #ifdef BASS
 		// 	// markerLED 1 - 3 in Benutzung bei Rina
 		// 	markerLED5 = ASaite_Fis; // Rina für sample teil (3:18): ab 2237: 2 HT unter der Oktave -> ESaite_D oder ASaite_G // Ende bei Takt 2245
 		// #endif
@@ -1690,18 +1696,34 @@ void InTheDark() {	// fertig: 16.09.2023
 	
 	case 18: // chorus 2
 		progStern(16550, 1035, 20, 20); 
-		break;		
+		#ifdef BASS	
+			markerLED5 = ESaite_Cis;	// RINA bereits ab hier für "am i going under" ab 1382 ESaite_Cis bis 1391 	
+			markerLED6 = 0;
+		#endif
+		break;
 
 	case 20: // am i going under
 		progPalette(16550, 4, 22);
+		#ifdef BASS
+			markerLED5 = ESaite_Cis;	// RINA für "am i going under" ab 1382 ESaite_Cis bis 1391 
+			markerLED6 = ESaite_Dis;	// RINA bereits ab hier für solo ab 1390 ESaite_Dis für solo bis 1399
+		#endif
 		break;	
 
 	case 22: // bass solo
 		progMatrixHorizontal(16550, 24, 70);
+		#ifdef BASS
+			markerLED5 = 0;				// RINA: nach "am i going under" ESaite_Cis wieder aus
+			markerLED6 = ESaite_Dis;	// RINA für solo ab 1390 ESaite_Dis bis 1399
+		#endif
 		break;	
 
-	case 24: // chrosu 3
-		progStern(16550, 515, 26, 20); 
+	case 24: // chrous 3
+		progStern(16550, 515, 26, 20); 		
+		#ifdef BASS
+			markerLED5 = 0;	// RINA: nach "am i going under" ESaite_Cis wieder aus
+			markerLED6 = 0;	// RINA nach solo ESaite_Dis wieder aus
+		#endif
 		break;	
 
 	case 26: // chorus 4

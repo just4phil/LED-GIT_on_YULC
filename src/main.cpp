@@ -83,6 +83,8 @@ byte markerLED2 = 0;
 byte markerLED3 = 0;
 byte markerLED4 = 0;
 byte markerLED5 = 0;
+byte markerLED6 = 0;
+byte markerLED7 = 0;
 //--------------------
 volatile unsigned int millisToReduceCPUSpeed = 0;
 volatile unsigned int millisCounterTimer = 0;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
@@ -139,7 +141,6 @@ void setup() {
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			
 			midiProxy_initialize_BLE();
 		#endif
 

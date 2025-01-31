@@ -7,6 +7,8 @@ extern byte markerLED2;
 extern byte markerLED3;
 extern byte markerLED4;
 extern byte markerLED5;
+extern byte markerLED6;
+extern byte markerLED7;
 extern int BRIGHTNESS;
 extern int helligkeit;
 //extern const boolean LEDGITBOARD;
@@ -38,36 +40,45 @@ void setMarkerLEDs(byte songID) {
 		// ESaite_G_hoch	 	ASaite_C_hoch		52		G/C 	41 (hohe Oktave)
 		//====================================================================================
 
+
+			// #ifdef GIT
+
+			// #endif
+			// #ifdef BASS
+			
+			// #endif
+
+
 		switch (songID) {
 		case 0: //defaultLoop();
 			// DO NOTHING !!
 			break;
 		case 1: //PhysicalTrailer();
-			#ifdef ANDRESGIT
+			#ifdef GIT
 				markerLED1 = ESaite_A;
 				markerLED2 = ESaite_F;
 				markerLED3 = ESaite_G;
 				markerLED4 = ESaite_C; 
 			#endif
-			#ifdef RINASBASS
+			#ifdef BASS
 				markerLED1 = ESaite_A;
 				markerLED2 = ESaite_F;
 				markerLED3 = ESaite_G;
-				//markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+				//markerLED4 = ESaite_C; // braucht Rina nicht! 
 			#endif
 			break;
 		case 2://Physical();
-			#ifdef ANDRESGIT
+			#ifdef GIT
 				markerLED1 = ESaite_A;
 				markerLED2 = ESaite_F;
 				markerLED3 = ESaite_G;
 				markerLED4 = ESaite_C; 
 			#endif
-			#ifdef RINASBASS
+			#ifdef BASS
 				markerLED1 = ESaite_A;
 				markerLED2 = ESaite_F;
 				markerLED3 = ESaite_G;
-				//markerLED4 = ESaite_C; // braucht Rina nicht! ausmachen
+				//markerLED4 = ESaite_C; // braucht Rina nicht! 
 				// hat noch weitere gimmicks in songs.cpp
 			#endif
 			break;
@@ -83,6 +94,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ESaite_C; 
 			//markerLED4 = ESaite_A; 
 			// hat noch weitere gimmicks in songs.cpp für RINA
+			//TODO, wenn der song mal programmiert ist!!!
 			break;
 		case 5://UseSomebody();
 			markerLED1 = ESaite_C;
@@ -114,12 +126,20 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ASaite_Dis;			
 			break;
 		case 10://BloodyMary();
-			markerLED1 = ESaite_Bb; // fpür RINA: ausschalten: ESaite_Bb; 
-			markerLED2 = ESaite_B; 
-			markerLED3 = ESaite_Gis; 
-			markerLED4 = ESaite_Fis; 
-			markerLED5 = ESaite_Dis; 	
-			// RINA: ausschalten: ESaite_Bb; 
+			#ifdef GIT
+				markerLED1 = ESaite_Bb;
+				markerLED2 = ESaite_B; 
+				markerLED3 = ESaite_Gis; 
+				markerLED4 = ESaite_Fis; 
+				markerLED5 = ESaite_Dis; 	
+			#endif
+			#ifdef BASS
+				//markerLED1 = ESaite_Bb; // für RINA: ausschalten: ESaite_Bb; 
+				markerLED2 = ESaite_B; 
+				markerLED3 = ESaite_Gis; 
+				markerLED4 = ESaite_Fis; 
+				markerLED5 = ESaite_Dis; 	
+			#endif
 			break;
 		case 11://Titanium();
 			markerLED1 = ESaite_G; 
@@ -133,13 +153,23 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ESaite_B; 
 			markerLED4 = ESaite_Gis; 			
 			break;
+
 		case 13://InTheDark();
-			markerLED1 = ESaite_Fis; 
-			markerLED2 = ESaite_Gis; 
-			markerLED3 = ESaite_Cis; 
-			markerLED4 = ESaite_B; 	
+			#ifdef GIT
+				markerLED1 = ESaite_Fis; 
+				markerLED2 = ESaite_Gis; 
+				markerLED3 = ESaite_Cis; 
+				markerLED4 = ESaite_B; 		
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_Fis; 
+				markerLED2 = ESaite_Gis; 
+				//markerLED3 = ESaite_Cis; // braucht Rina nur im Solo
+				markerLED4 = ESaite_B; 		
+			#endif			
 			// RINA im solo ab 1382 ESaite_Cis bis 1391 // + ab 1390 ESaite_Dis für solo bis 1399
 			break;
+
 		case 14://Shivers();
 			markerLED1 = ESaite_Bb;
 			markerLED2 = ESaite_G;
@@ -158,12 +188,10 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ESaite_Dis; 	
 			// RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
+
 		case 17://sober();
-			markerLED1 = ESaite_Gis; 
-			markerLED2 = ESaite_B; 
-			markerLED3 = ESaite_Fis; 
-			//markerLED4 = ESaite_Fis; 	
 			break;
+
 		case 18://prisoner();
 			markerLED1 = ESaite_Gis; 
 			markerLED2 = ESaite_Fis; 
@@ -177,25 +205,43 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ESaite_E_hoch;
 			break;
 		case 20://Kids();
-			markerLED1 = ESaite_Fis;
-			markerLED2 = ESaite_A; 
-			markerLED3 = ESaite_B;
-			markerLED4 = ESaite_E_hoch; 
-			// RINA: komplett: ESaite_Gis
+			#ifdef GIT
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ESaite_A; 
+				markerLED3 = ESaite_B;
+				markerLED4 = ESaite_E_hoch; 
+				// RINA: komplett: ESaite_Gis	// TODO CHECKEN!!!!
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ESaite_A; 
+				markerLED3 = ESaite_B;
+				markerLED4 = ESaite_E_hoch; 
+				// RINA: komplett: ESaite_Gis			
+			#endif			
 			break;
 		case 21://Tell it to my Heart 
-			markerLED1 = ESaite_F;
-			markerLED2 = ESaite_G;
-			markerLED3 = ESaite_B;
-			//markerLED4 = ASaite_F; // für rina raus
-			//markerLED5 = ESaite_D; // für rina raus
+			#ifdef GIT
+				markerLED1 = ESaite_F;
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_B;
+				markerLED4 = ASaite_F;
+				markerLED5 = ESaite_D;
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_F;
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_B;
+				//markerLED4 = ASaite_F; // für rina raus
+				//markerLED5 = ESaite_D; // für rina raus		
+			#endif			
 			break;
 		case 24://enjoyTheSilenceINTRO();
 			markerLED1 = ESaite_F;
 			markerLED2 = ESaite_Gis;
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 
-			// RINA s. oben
+			// RINA s. oben // RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 
 		case 100://STARTUP();
@@ -235,6 +281,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		if (markerLED3 > Bund_min-1 && markerLED3 < Bund_max) leds[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 		if (markerLED4 > Bund_min-1 && markerLED4 < Bund_max) leds[markerLED4] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 		if (markerLED5 > Bund_min-1 && markerLED5 < Bund_max) leds[markerLED5] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED6 > Bund_min-1 && markerLED6 < Bund_max) leds[markerLED6] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED7 > Bund_min-1 && markerLED7 < Bund_max) leds[markerLED7] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 
 		// turn on generel MarkerLEDs
 		leds[ESaite_E_hoch] = CRGB(0, 0, helligkeit);	//CRGB::Blue;

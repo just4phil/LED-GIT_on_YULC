@@ -8,8 +8,8 @@
 //#define USE_ESP32 //USE_TEENSY		// wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-#define RINASBASS	// COM17
-//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+//#define RINASBASS	// COM17
+#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
 //#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 // midi proxy server COM4
 //
@@ -23,6 +23,9 @@
 //--- Klassen // ODER FEATURES OBEN NUTZEN!! -------------
 #ifdef RINASBASS
 	// is BT BLE Client
+	#define BASS
+	#define BASSMARKER
+	#define firstYulcPrototype 	// first one has different pins
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 		#undef HAS_MIDI_IN		// NO MIDI IN
@@ -31,6 +34,8 @@
 
 #ifdef ANDRESGIT
 	// on old TEENSY board
+	#define BASS					// BASS nur zum testen -> hier muss hin: GIT
+	#define GITMARKER 
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
@@ -38,6 +43,7 @@
 #endif
 
 #ifdef LEDMATRIX
+	#define NOMARKER		// no LED markers on gitboard
 	#define HAS_MIDI_IN		// with widi master
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
@@ -52,11 +58,6 @@
 #endif
 //---------------------------------------------------------------------------------------
 
-//---- lieber mal separat stehen lassen, falls ich die klassen oben nicht nutze
-#ifdef RINASBASS	
-	#define firstYulcPrototype 	// first one has different pins
-#endif
-//------------------------------------
 
 #ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 	#define DATA_PIN_1          1 	// yulc channel 1
@@ -129,7 +130,8 @@
 // #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
 
-#ifdef LEDMATRIX	//--------- NUR FÜR LEDGITBOARD ---------------
+#ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD ---------------
+
 	#define anz_LEDs			anz_LEDs_GITBOARD
 	#define Bund_min	 		0
 	#define Bund_max	 		0
@@ -169,7 +171,7 @@
 	#define ASaite_C_hoch	 	0	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!	
 #endif
 
-#ifdef RINASBASS	//--------- NUR FÜR RINAS BASS GITARRE ---------------
+#ifdef BASSMARKER	//--------- NUR FÜR RINAS BASS GITARRE ---------------
 
 	#define anz_LEDs			anz_LEDs_BASS
 
@@ -211,7 +213,7 @@
 	#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 #endif
 
-#ifdef ANDRESGIT	//--------- NUR FÜR ANDRES GITARRE -------------------
+#ifdef GITMARKER	//--------- NUR FÜR ANDRES GITARRE -------------------
 
 	#define anz_LEDs			anz_LEDs_GIT
 
