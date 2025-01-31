@@ -2,6 +2,7 @@
 bugs:
 ======
 
+- beim wechsel von prog bling colouring auf circles oder lines -> wurden LEDs nicht gelöscht ....FASTLED.clear noch mal checken
 
 
 TODOs:
