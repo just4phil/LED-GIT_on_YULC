@@ -218,7 +218,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 			}
 		}
 
-		//gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}	
 	
@@ -331,7 +331,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 			}
 		}
 
-		//gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}		
 }

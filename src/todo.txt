@@ -6,7 +6,8 @@ bugs:
 TODOs:
 =======
 
-helligkeitsstufen der marker mit rotary testen
+- helligkeitsstufen der marker mit rotary testen
+- markerLEDs an songEnden sofort ausschalten??
 
 leds rina:
     - dont stop -> TODO wenn der song mal programmiert ist!!
