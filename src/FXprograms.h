@@ -60,6 +60,8 @@
 // CRGB getMatrixColor(int index);
 //------------------------------------------------------------------
 
+void clearAll();
+
 // wird zB fuer ProgDisplayRGB benutzt
 void setDurationAndNextPart(unsigned int durationMillis, byte nextPart);
 
@@ -128,6 +130,7 @@ void SetupBlackAndWhiteStripedPalette();
 // This function sets up a palette of purple and green stripes.
 void SetupPurpleAndGreenPalette();
 
+void FillLEDsFromPaletteColors(uint8_t colorInd, char speed);
 void FillLEDsFromPaletteColors(uint8_t colorInd);
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
 

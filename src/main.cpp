@@ -57,6 +57,7 @@
 //===================================
 
 FastLED_NeoMatrix* matrix;
+//FastLED_NeoMatrix* matrix2;
 
 #ifdef LEDMATRIX
 	#include "neomatrix_config.h"
@@ -68,7 +69,10 @@ FastLED_NeoMatrix* matrix;
 //----------------------------------
 
 const static boolean DEBUG = false;
-CRGB leds[NUMMATRIX];
+CRGB leds[NUMMATRIX];	// dies ist das "arbeits"-array
+CRGB leds1[NUMMATRIX];	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
+CRGB leds2[NUMMATRIX];	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
+
 int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // 32 - Max is 255, 32 is a conservative value to not overload a USB power supply (500mA) for 12x12 pixels.
 byte songID = 0;
 byte songIDbefore = 0;
@@ -164,9 +168,9 @@ void setup() {
 
 	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 		//----- initialize LEDs ---------
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, NUMMATRIX).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, NUMMATRIX).setCorrection(TypicalLEDStrip);
 	#endif
 
 	#ifdef USE_TEENSY
@@ -177,7 +181,7 @@ void setup() {
 	matrix->begin();
 	matrix->setBrightness(BRIGHTNESS);
 	matrix->setTextWrap(false);
-
+	
 	#ifdef LEDMATRIX
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
 	#endif
@@ -187,7 +191,7 @@ void setup() {
 	
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	switchToSong(0);	// 0 SONGPAUSE loop
+	switchToSong(100);	// 0 SONGPAUSE loop
 						// 100 DEFAULT loop 
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 
@@ -276,7 +280,10 @@ void loop() {
 	if (LIPOvoltageIsLOW && !ignoreLIPOsafer) LEDsTurnedOff = true;
 
 	//--- falls LEDs aus sind dann hier alle löschen und nur die MarkerLEDs setzen
-	if (LEDsTurnedOff) FastLED.clear();	// LEDs off durch rotary encoder button push
+	if (LEDsTurnedOff) {
+		FastLED.clear();	// LEDs off durch rotary encoder button push
+		memset(leds, 0, anz_LEDs * sizeof(CRGB));	// unbedingt auch das LED array löschen
+	}
 
 	//=== ab hier wird nur alle 2 ms ausgefuehrt ======
 	if (flag_processFastLED) {	// LED loop only in certain time-slots to make ms-counter more accurate
@@ -375,6 +382,7 @@ void loop() {
 			FastLED.show();	// MarkerLEDs zeigen
 		}
 		//----immmer warn-LEDs blinken lassen, wenn lipovoltage LOW ---
+		// TODO: dies hier nur bei HAS_LIPO_VOLTAGE_CHECK
 		if (LIPOvoltageIsLOW) {
 			if (HalfSecondHasPast) {
 				HalfSecondHasPast = false;

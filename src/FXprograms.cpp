@@ -30,6 +30,8 @@ extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 extern CRGB leds[NUMMATRIX];
 extern FastLED_NeoMatrix* matrix;
+extern CRGB leds1[NUMMATRIX];
+extern CRGB leds2[NUMMATRIX];
 //---------------------------------------------------------------------
 
 byte red2;
@@ -96,13 +98,23 @@ const static int outlinePath6[] = { 82, 65, 64, 63, 62, 87, 96, 97, 106, 107, 11
 const static int outlinePath7[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 190, 197, 198, 199, 200, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
 const static int outlinePath8[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 189, 188, 187, 186, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
 const static int outlinePath9[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 166, 167, 168, 169, 170, 157, 156, 147, 146, 137, 136, 127 };
+//--------------------------------
+
+// FastLED.clear(); alleine reicht nicht. dann funktioniert das kopieren der LED arrays nicht bzw. dort bleiben die vorherigen LEDs an
+void clearAll() {
+	FastLED.clear();
+	memset(leds, 0, anz_LEDs * sizeof(CRGB));
+	//memset(leds1, 0, anz_LEDs * sizeof(CRGB));
+	//memset(leds2, 0, anz_LEDs * sizeof(CRGB));
+}
 
 // wird zB fuer ProgDisplayRGB benutzt
 void setDurationAndNextPart(unsigned int durationMillis, byte nextPart) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -198,7 +210,8 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 		nextChangeMillisAlreadyCalculated = true;
 
 		//if (songIDbefore != 0 || LEDGITBOARD) {
-			FastLED.clear(true);
+			//FastLED.clear(true);
+			clearAll();
 
 			// Array Initialisierung
 			initSternschnuppen();
@@ -262,7 +275,8 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		nextChangeMillisAlreadyCalculated = true;
 
 		if (songIDbefore != 0 || LEDGITBOARD) {
-			FastLED.clear(true);
+			//FastLED.clear(true);
+			clearAll();
 
 			// Array Initialisierung mit -1
 			for (int i = 0; i < anzahlLEDsImArray; i++) {
@@ -343,7 +357,8 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -395,7 +410,8 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)9.65f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -420,7 +436,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
 		//---- jetzt LEDs ausgeben
-		FastLED.clear();
+		clearAll();
 		//BRIGHTNESS = 255;	// nicht BRIGHTNESS überschreiben, sondern besser direkt setzen
 		FastLED.setBrightness(255); //brightness erhöhen...aber nicht zu hoch!
 
@@ -494,7 +510,8 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.3f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -553,7 +570,8 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)3.95f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -566,7 +584,7 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
 		millisCounterTimer = 0;
 
-		FastLED.clear();
+		clearAll();
 
 		if (!scannerGoesBack) {
 
@@ -611,7 +629,8 @@ void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsig
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -641,7 +660,9 @@ void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsig
 		if (zaehler >= 10) zaehler = 0;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			FastLED.clear();
+
+			clearAll();
+
 			matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
 			matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
 			matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
@@ -667,7 +688,8 @@ void progBlack(unsigned int durationMillis, byte nextPart) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		//FastLED.clear(true);
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -687,7 +709,8 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		clearAll();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -703,7 +726,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (clearEach) {
-				FastLED.clear();
+				clearAll();
 				col1 = getRandomColor();
 			}
 			else {
@@ -748,7 +771,7 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (clearEach) {
-				FastLED.clear();
+				clearAll();
 				col1 = getRandomColor();
 			}
 			else {
@@ -789,7 +812,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed = 0;
 
-		FastLED.clear();
+		clearAll();
 
 		switch (stage) {
 			case 0:
@@ -886,7 +909,7 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 
 		int anz;
 			
-		FastLED.clear();
+		clearAll();
 
 		if (!scannerGoesBack) {
 
@@ -1067,7 +1090,7 @@ void progRunningPixel(unsigned int durationMillis, byte nextPart) {
 	int last_x = -1;
 	int last_y = -1;
 	FastLED.setBrightness(5); // TODO: zurueck auf 155
-	FastLED.clear();
+	clearAll();
 
 	for (int y = 0; y < MATRIX_HEIGHT; y++) {
 		for (int x = 0; x < MATRIX_WIDTH; x++) {
@@ -1384,7 +1407,7 @@ extern const TProgmemRGBPalette16 MatrixColors_p PROGMEM =
 	0x99cc99, 0xb3d9b3, 0xcce6cc, 0xe6f2e6
 };
 
-void FillLEDsFromPaletteColors(uint8_t colorInd) {
+void FillLEDsFromPaletteColors(uint8_t colorInd, char speed) {
 
 	//0 rainbow slow
 	//1 rainbow fast (ohne fades)
@@ -1403,8 +1426,11 @@ void FillLEDsFromPaletteColors(uint8_t colorInd) {
 
 	for (int i = 0; i < anz_LEDs; i++) {
 		if (!LEDsTurnedOff) leds[i] = ColorFromPalette(currentPalette, colorInd, brightness, currentBlending);
-		colorInd += 3;	//3; / je hoeher dieser wert desto kuerzer sind die farbabschnitte (beeinflusst die subjektive geschwindigkeit)
+		colorInd += speed;	//3; / je hoeher dieser wert desto kuerzer sind die farbabschnitte (beeinflusst die subjektive geschwindigkeit)
 	}
+}
+void FillLEDsFromPaletteColors(uint8_t colorInd) {
+	FillLEDsFromPaletteColors(colorInd, 3);
 }
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) {
 

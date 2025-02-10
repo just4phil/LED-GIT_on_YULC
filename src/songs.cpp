@@ -27,7 +27,7 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 		break;
 		
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(100);	// SongID 100 fuer DEFAULT loop
 		break;
 	}
@@ -53,7 +53,7 @@ void SONGPAUSE()  {	// soft / static LEDs
 	break;
 
 	case 100:
-		//FastLED.clear();
+		//clearAll();
 		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
 		break;
 	}
@@ -94,12 +94,12 @@ void defaultLoop()  {
 			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlingBlingColoring(30000, 5, 4000);
+			progBlingBlingColoring(10000, 5, 4000);
 		}
 		break;
 
 	case 2:	// nur für ledgitboard
-		progBlingBlingColoring(10500, 5, 4000);
+		progBlingBlingColoring(10000, 5, 4000);
 		break;
 
 	case 5: // OK
@@ -110,7 +110,7 @@ void defaultLoop()  {
 		break;
 
 	case 15:
-		progMatrixHorizontal(16000, 20, 80);
+		progMatrixHorizontal(10000, 20, 80);
 		break;
 
 	case 20: // OK
@@ -121,7 +121,7 @@ void defaultLoop()  {
 		break;
 
 	case 30:
-		progStern(16000, 500, 35, 20);
+		progStern(10000, 500, 35, 20);
 		break;
 
 	case 35: // OK
@@ -132,7 +132,7 @@ void defaultLoop()  {
 		break;
 
 	case 45: // OK
-		progMatrixScanner(16000, 50, 25);
+		progMatrixScanner(10000, 50, 25);
 		break;
 
 	case 50: // OK
@@ -143,7 +143,7 @@ void defaultLoop()  {
 		break;
 
 	case 60: // OK
-		progFullColors(16000, 65, 600);
+		progFullColors(10000, 65, 600);
 		break;
 	
 	case 65: // OK
@@ -154,7 +154,7 @@ void defaultLoop()  {
 		break;
 
 	case 75:
-		progMovingLines(16000, 80);
+		progMovingLines(10000, 80);
 		break;
 
 	case 80: // OK
@@ -162,11 +162,11 @@ void defaultLoop()  {
 		break;
 
 	case 85: // OK
-		progCircles(16000, 90, 600, false);
+		progCircles(10000, 90, 600, false);
 		break;
 
 	case 90: 
-		progRandomLines(16000, 95, 500, true);
+		progRandomLines(10000, 95, 500, true);
 		break;
 
 	case 95: // OK
@@ -178,7 +178,7 @@ void defaultLoop()  {
 		break;
 		
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -286,7 +286,7 @@ void PhysicalTrailer() {
 	break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 	
 		// switch to the real song PHYSICAL
 		//switchToSong(2);	// we dont use this, because it turns off the MarkerLEDs
@@ -422,7 +422,7 @@ void Physical() {
 		break;
 
 	case 110:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -522,7 +522,7 @@ void TakeOnMe() {
 		progBlack(10000, 200);
 		break;	
 	case 200:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -664,7 +664,7 @@ void DontStopTheMusic() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -763,7 +763,7 @@ void UseSomebody() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -978,7 +978,7 @@ void NoRoots() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1111,7 +1111,7 @@ void Firework() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1220,7 +1220,7 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progBlack(10000, 200);
 		break;	
 	case 200:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1317,7 +1317,7 @@ void ILoveIt() {
 
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1437,7 +1437,7 @@ void BloodyMary() {
 		break;	
 
 	case 200:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1545,7 +1545,7 @@ void Titanium() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1658,7 +1658,7 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;	
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1747,7 +1747,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;	
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1867,7 +1867,7 @@ void Shivers() { // fertig: TODO
 		break;	
 
 	case 100: 
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1964,7 +1964,7 @@ void Abcdefu() {
 
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -1993,7 +1993,7 @@ void enjoyTheSilenceINTRO() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 	
 		// switch to the real song ENJOY
 		//switchToSong(16);	// we dont use this, because it turns off the MarkerLEDs
@@ -2141,7 +2141,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 200:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -2267,7 +2267,7 @@ void prisoner() {
 		break;
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -2376,7 +2376,7 @@ void Hotncold() {
 		break;	
 
 	case 100:
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -2489,7 +2489,7 @@ void Kids() { // TODO
 		break;	
 
 	case 110: 
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}
@@ -2608,7 +2608,7 @@ void Tellittomyheart() { // TODO
 		break;	
 
 	case 110: 
-		FastLED.clear();
+		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
 	}

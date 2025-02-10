@@ -14,6 +14,8 @@ extern int helligkeit;
 //extern const boolean LEDGITBOARD;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 extern CRGB leds[NUMMATRIX];
+extern CRGB leds1[NUMMATRIX];
+extern CRGB leds2[NUMMATRIX];
 //-----------------------
 
 void setMarkerLEDs(byte songID) {
@@ -259,10 +261,15 @@ void setMarkerLEDs(byte songID) {
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	
 	#ifndef LEDMATRIX	// nur für bass oder git machen, nicht aber für GITBOARD!
+
+		// Kopie erstellen
+		memcpy(leds1, leds, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
+		memcpy(leds2, leds, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
+		//--------------------------------------
 		
 		//turnOffGitBlindingLEDs
 		for (int i = Bund_min; i < Bund_max; i++) {
-			leds[i] = CRGB(0, 0, 0); //BLACK
+			leds1[i] = CRGB(0, 0, 0); //BLACK
 		}
 		
 		uint8_t BRIGHTNESS = FastLED.getBrightness(); // ACHTUNG: diese BRIGHTNESS ist eine andere variable als die globale BRIGHTNESS
@@ -278,17 +285,17 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 
 		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
 		// turn on special MarkerLEDs for the songs
-		if (markerLED1 > Bund_min-1 && markerLED1 < Bund_max) leds[markerLED1] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED2 > Bund_min-1 && markerLED2 < Bund_max) leds[markerLED2] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED3 > Bund_min-1 && markerLED3 < Bund_max) leds[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED4 > Bund_min-1 && markerLED4 < Bund_max) leds[markerLED4] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED5 > Bund_min-1 && markerLED5 < Bund_max) leds[markerLED5] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED6 > Bund_min-1 && markerLED6 < Bund_max) leds[markerLED6] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
-		if (markerLED7 > Bund_min-1 && markerLED7 < Bund_max) leds[markerLED7] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED1 > Bund_min-1 && markerLED1 < Bund_max) leds1[markerLED1] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED2 > Bund_min-1 && markerLED2 < Bund_max) leds1[markerLED2] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED3 > Bund_min-1 && markerLED3 < Bund_max) leds1[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED4 > Bund_min-1 && markerLED4 < Bund_max) leds1[markerLED4] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED5 > Bund_min-1 && markerLED5 < Bund_max) leds1[markerLED5] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED6 > Bund_min-1 && markerLED6 < Bund_max) leds1[markerLED6] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
+		if (markerLED7 > Bund_min-1 && markerLED7 < Bund_max) leds1[markerLED7] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 
 		// turn on generel MarkerLEDs
-		leds[ESaite_E_hoch] = CRGB(0, 0, helligkeit);	//CRGB::Blue;
-		leds[ESaite_A] 		= CRGB(0, 0, helligkeit);	//CRGB::Blue;
+		leds1[ESaite_E_hoch] 	= CRGB(0, 0, helligkeit);	//CRGB::Blue;
+		leds1[ESaite_A] 		= CRGB(0, 0, helligkeit);	//CRGB::Blue;
 	
 	#endif
 }
