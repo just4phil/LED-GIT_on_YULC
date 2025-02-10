@@ -36,9 +36,13 @@
 	#define GIT					// BASS nur zum testen -> hier muss hin: GIT
 	#define GITMARKER 			// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
-		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
-		#undef HAS_LIPOVOLTAGE_CHECK // NO ROTARY
+	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+	// 	#undef IS_MIDI_PROXY 	// NO MIDI PROXY
+	// 	#undef HAS_ROTARY_ENCODER // NO ROTARY
+	// for testing -> if on ESP32:
+	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+
 #endif
 
 #ifdef LEDMATRIX
