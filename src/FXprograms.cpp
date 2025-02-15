@@ -55,7 +55,7 @@ CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
 
 //---- fuer progBlingBlingColoringSONGPAUSE
-const int anzahlLEDsImArray = 30;	// 29 reicht bei 500 msToReduceSpeed 
+const int anzahlLEDsImArray = 50;	// 29 reicht bei 500 msToReduceSpeed 
 int LEDsUndFarbWerte[anzahlLEDsImArray][4];
 
 //---- fuer Sternschnuppen
@@ -307,9 +307,9 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		}
 	}
 
-	if (millisCounterTimer >= 10) {	// 60 ms
+	if (millisCounterTimer >= 10) {	// zeit fürs dimmen der leds
 		millisCounterTimer = 0;
-
+		
 		//--- aktive LEDs langsam dimmen ---
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
 			int r = LEDsUndFarbWerte[i][1];

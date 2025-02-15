@@ -43,13 +43,13 @@ void SONGPAUSE()  {	// soft / static LEDs
 		}
 		else {
 			//progSternschnuppen(17600, 10, 18) ;
-			progBlingBlingColoringSONGPAUSE(17600, 10, 1000);
+			progBlingBlingColoringSONGPAUSE(17600, 10, 250);
 		}	
 	break;
 
 	case 10:
 		//progSternschnuppen(30000, 100, 18) ;
-		progBlingBlingColoringSONGPAUSE(30000, 100, 1000);
+		progBlingBlingColoringSONGPAUSE(30000, 100, 250);
 	break;
 
 	case 100:
@@ -964,16 +964,16 @@ void NoRoots() {
 		progStern(8275, 250, 59, 15);
 		break;
 
-	case 59://chorus		7759
-		progFastBlingBling(7759, 12, 61);
+	case 59://chorus	8275	// alt: 7759
+		progFastBlingBling(8275, 12, 61);
 		break;
 
 	case 61://ende		10000		
 		if (LEDGITBOARD) {
-			progShowROOTS(30000, 100); //progShowText("ROOTS", 30000, 2, 13, getRandomColor(), 100);
+			progShowROOTS(10000, 100); //progShowText("ROOTS", 30000, 2, 13, getRandomColor(), 100);
 		}
 		else {
-			progBlingBlingColoring(30000, 100, 5000);
+			progBlack(10000, 100);
 		}			
 		break;
 
@@ -1211,11 +1211,11 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progFastBlingBling(15740, 8, 120);
 		break;
 	case 120: //instrumental, 15740
-		progPalette(15740, 11, 125);
+		progPalette(15740, 11, 127);
 		break;	
-	case 125: //outro, 11800
-		progBlingBlingColoring(11800, 127, 4000);
-		break;	
+	// case 125: //outro, 3930 // alt: 11800
+	// 	progBlingBlingColoring(3930, 127, 4000);
+	// 	break;	
 	case 127: //black, 10000
 		progBlack(10000, 200);
 		break;	
@@ -1426,11 +1426,12 @@ void BloodyMary() {
 		progStern(16845, 525, 90, 20); 
 		break;
 	case 90: //chorus b	16840
-		progFastBlingBling(16840, 8, 93);
+		progFastBlingBling(16840, 8, 96);
 		break;
-	case 93: //outro 	7370
-		progRandomLines(7370, 96, 525, true);
-		break;	
+
+	// case 93: //outro 	4210 // alt:7370
+	// 	progRandomLines(4210, 96, 525, true);
+	// 	break;	
 
 	case 96: //black, 10000
 		progBlack(10000, 200);
@@ -1738,8 +1739,8 @@ void InTheDark() {	// fertig: 16.09.2023
 		progFastBlingBling(16550, 8, 28);
 		break;	
 
-	case 28: // fade out
-		progBlingBlingColoring(16550, 30, 5000);
+	case 28: // fade out 6200 // 16550
+		progBlingBlingColoring(6200, 30, 5000);
 		break;	
 
 	case 30: // black
@@ -2085,7 +2086,12 @@ void enjoyTheSilence() {
 		break;
 
 	case 60://1  2  3  4	2125
-		progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 65);
+		if (LEDGITBOARD) {
+			progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 65);
+		}
+		else {
+			progStrobo(2125, 65, 490, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}
 		break;
 
 	case 65: //enjoy the silence	8500
@@ -2117,7 +2123,12 @@ void enjoyTheSilence() {
 		break;
 
 	case 100://1  2  3  4	2125
-		progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 105);
+		if (LEDGITBOARD) {
+			progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 105);
+		}
+		else {
+			progStrobo(2125, 105, 490, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}		
 		break;
 
 	case 105: //enjoy the silence	8500
