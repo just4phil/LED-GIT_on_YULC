@@ -34,7 +34,8 @@
 #ifdef ANDRESGIT	// on old TEENSY board
 	// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
 	#define GIT					// BASS nur zum testen -> hier muss hin: GIT
-	#define GITMARKER 			// definiert die spezifischen LED-indizes für BASS bzw. GIT
+	#define GITMARKER_GIT1 			// neue gummi LEDs //definiert die spezifischen LED-indizes für BASS bzw. GIT
+	//#define GITMARKER_GIT2 		// alte GIT!! //definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 	// 	#undef IS_MIDI_PROXY 	// NO MIDI PROXY
@@ -48,9 +49,10 @@
 #ifdef LEDMATRIX
 	#define NOMARKER		// no LED markers on gitboard
 	#define HAS_MIDI_IN		// with widi master
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-		#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
+	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
+	//	#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
 #endif
 
 #ifdef BLE_MIDI_PROXY // aktuell bei VADDER
@@ -112,7 +114,8 @@
 #define center_y 			10	//byte center_y;
 //----------------------------
 
-#define anz_LEDs_GIT 		193
+#define anz_LEDs_GIT1 		164 // neue GIT mit neuen gummi LEDs (18.2.2025)
+#define anz_LEDs_GIT2 		193
 #define anz_LEDs_BASS 		155
 #define anz_LEDs_GITBOARD 	278
 
@@ -216,9 +219,56 @@
 	#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 #endif
 
-#ifdef GITMARKER	//--------- NUR FÜR ANDRES GITARRE -------------------
+#ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES neue GITARRE -------------------
 
-	#define anz_LEDs			anz_LEDs_GIT
+//neue gummi LEDs auf der neuen GIT (ab 18.02.2025):
+//oktave 49
+//F 63 (gegenüber 92)
+// => alle werte -6
+
+	#define anz_LEDs			anz_LEDs_GIT1
+
+	#define Bund_min	 		47
+	#define Bund_max	 		68
+
+	#define ESaite_E		 	65	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F		 	63	// F/Bb: 55
+	#define ESaite_Fis		 	61	// F#/B: 54
+	#define ESaite_G	 		59	// G/C: 53
+	#define ESaite_Gis		 	57	// G#/C#: 52
+	#define ESaite_A	 		56	// A/D: 51
+	#define ESaite_Bb		 	55	// Bb/D#: 50
+	#define ESaite_B		 	54	// B/E: 49
+	#define ESaite_C			53	// C/F: 48
+	#define ESaite_Cis		 	52	// C#/F#: 47
+	#define ESaite_D	 		51	// D/G: 46
+	#define ESaite_Dis		 	50	// D#/G#: 45
+	#define ESaite_E_hoch 		49	// E/A: 44 (hohe Oktave)
+	#define ESaite_F_hoch 		48	// F/Bb: 43 (hohe Oktave)
+	#define ESaite_Fis_hoch 	47	// F#/B: 42 (hohe Oktave)
+	#define ESaite_G_hoch	 	46	// G/C: 41 (hohe Oktave)
+
+	#define ASaite_A		 	65	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb		 	63	// F/Bb: 55
+	#define ASaite_B		 	61	// F#/B: 54
+	#define ASaite_C	 		59	// G/C: 53
+	#define ASaite_Cis		 	57	// G#/C#: 52
+	#define ASaite_D	 		56	// A/D: 51
+	#define ASaite_Dis		 	55	// Bb/D#: 50
+	#define ASaite_E		 	54	// B/E: 49
+	#define ASaite_F	 		53	// C/F: 48
+	#define ASaite_Fis		 	52	// C#/F#: 47
+	#define ASaite_G	 		51	// D/G: 46
+	#define ASaite_Gis		 	50	// D#/G#: 45
+	#define ASaite_A_hoch 		49	// E/A: 44 (hohe Oktave)
+	#define ASaite_Bb_hoch 		48	// F/Bb: 43 (hohe Oktave)
+	#define ASaite_B_hoch	 	47	// F#/B: 42 (hohe Oktave)
+	#define ASaite_C_hoch	 	46	// G/C: 41 (hohe Oktave)
+#endif
+
+#ifdef GITMARKER_GIT2	//--------- NUR FÜR ANDRES alte GITARRE -------------------
+
+	#define anz_LEDs			anz_LEDs_GIT2
 
 	#define Bund_min	 		53
 	#define Bund_max	 		74
