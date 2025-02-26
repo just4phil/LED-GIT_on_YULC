@@ -191,7 +191,14 @@ void setMarkerLEDs(byte songID) {
 			// enjoy gimmick in songs.cpp -> RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 
-		case 17://sober();
+		case 17://apt();
+			markerLED1 = ESaite_E; 
+			markerLED2 = ESaite_Fis; 
+			markerLED3 = ESaite_A; 
+			markerLED4 = ASaite_D; 
+			markerLED5 = ASaite_E; 
+			markerLED6 = ASaite_Fis; 
+			markerLED7 = ASaite_Cis; 
 			break;
 
 		case 18://prisoner();

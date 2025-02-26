@@ -346,7 +346,7 @@ void loop() {
 			enjoyTheSilence();
 			break;
 		case 17:
-			//sober();
+			apt();
 			break;
 		case 18:
 			prisoner();
@@ -362,6 +362,9 @@ void loop() {
 			break;
 		case 24:
 			enjoyTheSilenceINTRO();
+			break;
+		case 25:
+			//justcantgetenough();
 			break;
 
 		case 99:
