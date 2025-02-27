@@ -1231,90 +1231,82 @@ void ILoveIt() {
 
  	switch (prog) { 
 
-	case 0:
+	case 0: // pause	5250
 		if (LEDGITBOARD) {
-			progBlack(5000, 1);	// TODO: warum so lange BLACK?
+			progBlack(1000, 1);	// TODO: warum so lange BLACK?
 		}
 		else { // pause
-			progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
+			progBlack(5250, 5); 
 		} 
 		break;
 	
 	case 1:
-		progScrollText("I love it by Icona Pop", 19545, 90, getRandomColor(), 4);
+		progScrollText("I love it by Icona Pop", 19000, 90, getRandomColor(), 10);
 		break;
 
-	case 2: // intro
-		progBlingBlingColoring(23545, 4, 3000);
-		//progPalette(17180, 6, 4);
+	case 5: // 5	synth intro	8000
+		//progBlingBlingColoring(8000, 4, 3000);
+		progPalette(8000, 6, 10);
 		break;
 
-	case 4: // strobe
-		progStrobo(1090, 6, 75, 255, 255, 255);
-	break;	
+	case 10: // 10	verse 1	16000
+		if (LEDGITBOARD) {
+			progFullColors(9250, 15, 1000);
+		}
+		else { // pause
+			progFullColors(16000, 15, 1000);
+		} 		
+		break;	
 
-	case 6: // verse 1a
-		progPalette(15000, 1, 8);
-	break;	
+	case 15: // 15	chorus 1	8000
+		//progPalette(15000, 1, 8);
+		progStern(8000, 1000, 20, 25);
+		break;	
 	
-	case 8: // verse 1b
-		progMatrixScanner(15000, 10);
-	break;	
+	case 20: // 20	verse 2	16000
+		progMatrixScanner(16000, 25);
+		break;	
 	
-	case 10: // i was into you
-		progPalette(15000, 3, 15);
-	break;	
+	case 25: // 25	chorus 2	8000
+		//progPalette(15000, 3, 15);
+		progStern(8000, 1000, 30, 25);
+		break;	
 
-	case 15: // chorus 1
-		//progPalette(16910, 11, 20);
-		progFullColors(15000, 20, 470);
+	case 30: // 30	youre on a different road	16000
+		progPalette(16000, 11, 35);
 	break;
 
-	case 20: // na na na na
-		//progBlingBlingColoring(50000, 25, 5000);
-		//progMovingLines(7500, 25);
-		progStern(7500, 25);
-	break;
+	case 35: // 35	i love it	16000
+		progStern(16000, 500, 40, 25);
+		break;
 	
-	case 25: // verse 2
-		progBlingBlingColoring(5625, 30, 5000);
-	break;
+	case 40: // 40	verse 3	16000
+		progFullColors(16000, 45, 500);	
+		break;
 
-	case 30: // STOP
-		progBlack(1875, 35);
-	break;
+	case 45: // 45	chorus 3	16000
+		progStern(16000, 500, 50, 20);
+		break;
 
-	case 35: // verse 2 weiter
-		progBlingBlingColoring(7500, 40, 5000);
-	break;
+	case 50: // 50	youre on a different road	14000
+		progPalette(14000, 11, 55);
+		break;
 
-	case 40: // i was into you
-		progPalette(15000, 3, 45);
-		//progBlingBlingColoring(15000, 45, 5000);
-	break;
+	case 55: // 55	STOP	2000
+		progBlack(2000, 60);
+		break;
 
-	case 45: // chorus 2
-		progFullColors(15000, 50, 470);
-	break;
+	case 60: //60	chorus 4	16000
+		progStern(16000, 500, 65, 20);
+		break;
 
-	case 50: // na na na na
-		progStern(15000, 55);
-		//progBlingBlingColoring(15000, 55, 5000);
-	break;
+	case 65: //65	chorus 5	8000
+		progFastBlingBling(8000, 6, 70);
+		break;
 
-	case 55: // chorus 3
-		//progBlingBlingColoring(15000, 60, 5000);
-		progFastBlingBling(15000, 4, 60);
-	break;
-
-	case 60: // triolen
-		progStrobo(4690, 65, 155, 255, 255, 255);
-	break;
-
-	case 65: // STOP
-		progBlack(10315, 100);
-	break;
-
+	case 70: // 65	BLACK	10000
+		progBlack(10000, 100);
+		break;
 
 	case 100:
 		clearAll();
