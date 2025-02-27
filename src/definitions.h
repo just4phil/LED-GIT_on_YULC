@@ -68,7 +68,7 @@
 	#define DATA_PIN_1          1 	// yulc channel 1
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
-	#define DEFAULT_BRIGHTNESS	64	//125
+	#define DEFAULT_BRIGHTNESS	48	//64
 #endif
 
 #ifdef USE_TEENSY
@@ -81,7 +81,7 @@
 	#define LED2_PIN            15
 	#define LED3_PIN            16
 	#define LIPO_PIN            19 
-	#define DEFAULT_BRIGHTNESS	32	// solange der stromversorgung nicht ausreichend ist
+	#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
 #endif
 
 #ifdef firstYulcPrototype
@@ -266,7 +266,7 @@
 	#define ASaite_C_hoch	 	46	// G/C: 41 (hohe Oktave)
 #endif
 
-#ifdef GITMARKER_GIT2	//--------- NUR FÜR ANDRES alte GITARRE -------------------
+#ifdef GITMARKER_GIT2	//--------- kann gelöscht werden! NUR FÜR ANDRES alte GITARRE -------------------
 
 	#define anz_LEDs			anz_LEDs_GIT2
 
