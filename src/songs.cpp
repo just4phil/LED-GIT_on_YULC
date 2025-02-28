@@ -2155,90 +2155,95 @@ void apt() {
 
 	switch (prog) { 
 
-   case 0:
+   case 0: // 0	pause	5840
 	   if (LEDGITBOARD) {
-		   progBlack(5000, 1);
+		   progBlack(1000, 1);
 	   }
 	   else { // pause
-		   progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
+		   progBlack(5840, 5); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
 	   } 
 	   break;
    
    case 1:
-	   progScrollText("APT by Rose feat. Bruno Mars", 19545, 90, getRandomColor(), 4);
+	   progScrollText("APT by Rose feat. Bruno Mars", 19000, 90, getRandomColor(), 10);
 	   break;
 
-   case 2: // intro
-	   progBlingBlingColoring(23545, 4, 3000);
-	   //progPalette(17180, 6, 4);
-	   break;
-
-   case 4: // strobe
-	   progStrobo(1090, 6, 75, 255, 255, 255);
-   break;	
-
-   case 6: // verse 1a
-	   progPalette(15000, 1, 8);
-   break;	
+   case 5: // 5	bassdrum intro	12885
+	   progRandomLines(12885, 10, 805, true);
+   		break;	
    
-   case 8: // verse 1b
-	   progMatrixScanner(15000, 10);
-   break;	
-   
-   case 10: // i was into you
-	   progPalette(15000, 3, 15);
-   break;	
+   case 10: // 10	verse 1	12885
+		if (LEDGITBOARD) {
+			progFullColors(11610, 15, 805);
+		}
+		else { 
+			progFullColors(12885, 15, 805);
+		}    
+		break;	
 
-   case 15: // chorus 1
-	   //progPalette(16910, 11, 20);
-	   progFullColors(15000, 20, 470);
-   break;
+   case 15: // 15	chorus 1	11275
+	   	progStern(11275, 805, 20, 20);
+   		break;
 
-   case 20: // na na na na
-	   //progBlingBlingColoring(50000, 25, 5000);
-	   //progMovingLines(7500, 25);
-	   progStern(7500, 25);
+   case 20: //20	STOP	1610
+	   progBlack(1610, 25);
    break;
    
-   case 25: // verse 2
-	   progBlingBlingColoring(5625, 30, 5000);
+   case 25: // 25	apt apt apt	12890
+	   progMatrixScanner(12890, 28, 25);
    break;
 
-   case 30: // STOP
-	   progBlack(1875, 35);
+   case 28: //28	ist whatever	3220
+   		progStrobo(3220, 30, 200, 255, 255, 255);
+   		break;
+
+   case 30: //30	verse 2	9665
+   		progPalette(9665, 3, 35);
+   		break;
+
+   case 35: // 35	chorus 2	11275
+   		progStern(11275, 805, 40, 20);
+   		break;
+
+   case 40: //40	STOP	1610
+   		progStrobo(1610, 45, 100, 255, 255, 255);
+   		break;
+
+   case 45: //45	apt apt apt	12885
+		progRandomLines(12885, 50, 400, false);
+   		break;
+
+   case 50: // 50	hey ….	5640
+   		progPalette(5640, 9, 55);
+   		break;
+
+   case 55: // 55	get ya get ya	805
+	   progStrobo(805, 60, 50, 255, 255, 255);
    break;
 
-   case 35: // verse 2 weiter
-	   progBlingBlingColoring(7500, 40, 5000);
+   case 60: // 60	hold on	25770
+	   progFastBlingBling(25770, 4, 65, 1, 15, 2500);
    break;
 
-   case 40: // i was into you
-	   progPalette(15000, 3, 45);
-	   //progBlingBlingColoring(15000, 45, 5000);
+   case 65: //65	nur vocals	4830
+	   progBlack(4830, 70);
    break;
 
-   case 45: // chorus 2
-	   progFullColors(15000, 50, 470);
+   case 70: //70	strobo	1610
+   		progStrobo(1610, 75, 50, 255, 255, 255);
    break;
 
-   case 50: // na na na na
-	   progStern(15000, 55);
-	   //progBlingBlingColoring(15000, 55, 5000);
+   case 75: //75	chorus 5	6445
+   		progStern(6445, 805, 80, 20);
    break;
 
-   case 55: // chorus 3
-	   //progBlingBlingColoring(15000, 60, 5000);
-	   progFastBlingBling(15000, 4, 60);
+   case 80: //80	apt apt apt	25775
+   		progFastBlingBling(25775, 4, 85, 1, 15, 2500);
    break;
 
-   case 60: // triolen
-	   progStrobo(4690, 65, 155, 255, 255, 255);
+   case 85: //85	BLACK	10000
+	   progBlack(10000, 100);
    break;
-
-   case 65: // STOP
-	   progBlack(10315, 100);
-   break;
-
 
    case 100:
 	   clearAll();
