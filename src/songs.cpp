@@ -2052,16 +2052,10 @@ void enjoyTheSilence() {
 		break;
 
 	case 35://synth	16975
-		#ifdef BASS
-			markerLED5 = ESaite_F_hoch; // RINA SOLO: Takt 718 - 723: ESaite_hohes F
-		#endif
 		progStern(17000, 970, 40, 15); 
 		break;
 
 	case 40://verse 1a	8500
-		#ifdef BASS
-			markerLED5 = 0; // RINA SOLO: ESaite_hohes F wieder aus
-		#endif
 		progPalette(8495, 2, 45);
 		break;
 
@@ -2095,10 +2089,16 @@ void enjoyTheSilence() {
 		break;
 
 	case 75: //bass slap part	17000
+		#ifdef BASS
+			markerLED5 = ESaite_F_hoch; // RINA SOLO: Takt 718 - 723: ESaite_hohes F
+		#endif		
 		progPalette(16990, 9, 80);	// paletteID -> 0 - 11
 		break;
 
 	case 80:// all i ever wanted	8500
+		#ifdef BASS
+			markerLED5 = 0; // RINA SOLO: Takt 718 - 723: ESaite_hohes F
+		#endif	
 		progFullColors(8495, 85, 1060);
 		break;
 
