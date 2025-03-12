@@ -89,7 +89,6 @@ void defaultLoop()  {
  	switch (prog) { 
 
 	case 0:
-		
 		if (LEDGITBOARD) {
 			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
 		}
@@ -98,7 +97,7 @@ void defaultLoop()  {
 		}
 		break;
 
-	case 2:	// nur für ledgitboard
+	case 2:	
 		progBlingBlingColoring(10000, 5, 4000);
 		break;
 
