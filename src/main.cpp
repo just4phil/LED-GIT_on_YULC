@@ -57,9 +57,8 @@
 //===================================
 
 FastLED_NeoMatrix* matrix;
-//FastLED_NeoMatrix* matrix2;
 
-#ifdef LEDMATRIX
+#if defined (LEDMATRIX) || defined (SCROLLMATRIX)
 	#include "neomatrix_config.h"
 	boolean LEDGITBOARD = true;
 	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
@@ -164,7 +163,11 @@ void setup() {
 	#endif
 
 	//---- Define matrix width and height. --------
-	matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+	#if defined(LEDMATRIX) 
+		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+	#elif defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
+		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+	#endif
 
 	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
 		//----- initialize LEDs ---------
@@ -182,7 +185,7 @@ void setup() {
 	matrix->setBrightness(BRIGHTNESS);
 	matrix->setTextWrap(false);
 	
-	#ifdef LEDMATRIX
+	#ifdef LEDMATRIX // hier nicht die SCROLLMATRIX ergänzen da kein remapping nötig
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
 	#endif
 

@@ -66,7 +66,7 @@ static const uint8_t PROGMEM mono_bmp[][8] = {
 	B00111100 },
 };
 
-#if defined(LEDMATRIX)
+#if defined(LEDMATRIX) || defined (SCROLLMATRIX) //eigentlich brauchen wir das hier nicht, da kein remapping für scrollmatrix nötig
 
 	//============================================================================= war frueher mal in LEDMatrix.h
 	//========== Andres remapping function für das LED-GIT-BOARD =================

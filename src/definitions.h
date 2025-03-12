@@ -9,8 +9,9 @@
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
-#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
 //#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+#define SCROLLMATRIX // COM5 - activate this for the klapp-Matrix
 // midi proxy server COM4
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
@@ -43,19 +44,26 @@
 	// for testing -> if on ESP32:
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-
 #endif
 
 #ifdef LEDMATRIX
-	#define NOMARKER		// no LED markers on gitboard
-	#define HAS_MIDI_IN		// with widi master
+	#define NOMARKER			// no LED markers on gitboard
+	#define HAS_MIDI_IN			// with widi master
 	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 	//	#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
 #endif
 
-#ifdef BLE_MIDI_PROXY // aktuell bei VADDER
+#ifdef SCROLLMATRIX
+	#define NOMARKER			// no LED markers on gitboard
+	#define HAS_MIDI_IN			// with widi master
+	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
+#endif
+
+#ifdef BLE_MIDI_PROXY // aktuell ungenutzt
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
@@ -81,10 +89,16 @@
 	#define LED2_PIN            15
 	#define LED3_PIN            16
 	#define LIPO_PIN            19 
-	#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+	#if defined(LEDMATRIX)
+		#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+	#elif defined(SCROLLMATRIX)
+		#define DEFAULT_BRIGHTNESS	10	// solange die stromversorgung nicht ausreichend ist
+	#elif
+		#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+	#endif
 #endif
 
-#ifdef firstYulcPrototype
+#ifdef firstYulcPrototype // ist in RINAs Gehäuse!
     #define ROTARY_ENCODER_BUTTON_PIN   38 // SW
     #define ROTARY_ENCODER_B_PIN        36 // CLK
     #define ROTARY_ENCODER_A_PIN        37 // DT
@@ -96,11 +110,17 @@
 #define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 #define ROTARY_ENCODER_STEPS 4
 
-#define SECONDSFORVOLTAGE	1
-#define MATRIX_WIDTH       	22
-#define MATRIX_HEIGHT      	23
-#define mw					MATRIX_WIDTH	// TODO: ausmerzen
-#define mh					MATRIX_HEIGHT	// TODO: ausmerzen
+#ifdef SCROLLMATRIX
+	#define MATRIX_WIDTH       	54
+	#define MATRIX_HEIGHT      	10
+	#define mw					MATRIX_WIDTH	// TODO: ausmerzen
+	#define mh					MATRIX_HEIGHT	// TODO: ausmerzen
+#else
+	#define MATRIX_WIDTH       	22
+	#define MATRIX_HEIGHT      	23
+	#define mw					MATRIX_WIDTH	// TODO: ausmerzen
+	#define mh					MATRIX_HEIGHT	// TODO: ausmerzen
+#endif
 
 #define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
 #define MATRIX_SIZE         MATRIX_WIDTH * MATRIX_HEIGHT
@@ -112,12 +132,14 @@
 #define green2 				255	//byte green2;
 #define center_x 			10	//byte center_x;
 #define center_y 			10	//byte center_y;
+#define SECONDSFORVOLTAGE	1
 //----------------------------
 
-#define anz_LEDs_GIT1 		164 // neue GIT mit neuen gummi LEDs (18.2.2025)
-#define anz_LEDs_GIT2 		193
-#define anz_LEDs_BASS 		155
-#define anz_LEDs_GITBOARD 	278
+#define anz_LEDs_GIT1 			164 // neue GIT mit neuen gummi LEDs (18.2.2025)
+#define anz_LEDs_GIT2 			193
+#define anz_LEDs_BASS 			155
+#define anz_LEDs_GITBOARD 		278
+#define anz_LEDs_SCROLLMATRIX 	540
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
@@ -136,9 +158,13 @@
 // #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
 
-#ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD ---------------
+#ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD und SCROLLMATRIX ---------------
 
-	#define anz_LEDs			anz_LEDs_GITBOARD
+	#if defined(LEDMATRIX)
+		#define anz_LEDs		anz_LEDs_GITBOARD
+	#elif defined(SCROLLMATRIX)
+		#define anz_LEDs		anz_LEDs_SCROLLMATRIX
+	#endif
 	#define Bund_min	 		0
 	#define Bund_max	 		0
 
