@@ -17,6 +17,7 @@ bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 
 - LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
 - LED 0 funktioniert nicht!!?
+- bei einem der progPalette programme flackert es immer?!
 
 
 DONE:
@@ -34,6 +35,8 @@ TODOs:
 =======
 - LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
+- testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
+
 
 leds rina:
     - dont stop -> TODO wenn der song mal programmiert ist!!
