@@ -30,26 +30,18 @@ Crystal is 40MHz
 
 bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
-- LEDGITBOARD via YULC -> scrolltext geht nicht! (geht aber via TEENSY!!)
-    #define LEDMATRIX -> brauchen wir das ???? für scrolltext hilft es jedenfalls nicht .... TODO:testen wenn scrolltext läuft
-        falls ja: update testen: https://github.com/marcmerlin/LEDMatrix
-    und brauchen wir neomatrix_config überhaupt?? .... TODO:testen wenn scrolltext läuft
-    => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
-    
 - LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
 - bei einem der progPalette programme flackert es immer?!
 
 
-DONE:
-=====
-- LEDMATRIX -> begriff ändern wegen dublette
-- memcopy vor die abfrage gelegt
-- adding BLE client (YULC4 -> 48:ca:43:80:98:4d
 
+checken:
+========
+- #define LEDMATRIX -> brauchen wir das ???? für scrolltext hilft es jedenfalls nicht .... TODO:testen wenn scrolltext läuft
+      falls ja: update testen: https://github.com/marcmerlin/LEDMatrix
+- und brauchen wir neomatrix_config überhaupt?? .... TODO:testen wenn scrolltext läuft
+    => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
 
-==============================================================================
-==============================================================================
-==============================================================================
 
 TODOs:
 =======
@@ -95,6 +87,12 @@ leds rina:
 
 DONE:
 =====
+2025-03-13:
+- auch bei matrix->funktionen muss zwingend gitblindingLEDs gecalled werden wegen MEMCOPY!!!
+- LEDMATRIX -> begriff ändern wegen dublette
+- memcopy vor die abfrage gelegt
+- adding BLE client (YULC4 -> 48:ca:43:80:98:4d
+
 2025-01-31: 
 - marker helligkeit bei fastbling optimiert
 - ausfälle der markerLEDs minimiert
