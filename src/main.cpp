@@ -59,7 +59,7 @@
 FastLED_NeoMatrix* matrix;
 
 #if defined (GITBOARD) || defined (SCROLLMATRIX) // man könnte auch defined NOMARKER nehmen
-	#include "neomatrix_config.h"	// braucht man das gar nicht?
+	//#include "neomatrix_config.h"	// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
 	boolean LEDGITBOARD = true;
 	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
 #else

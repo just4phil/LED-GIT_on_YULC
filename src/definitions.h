@@ -46,11 +46,11 @@
 #endif
 
 #ifdef GITBOARD				// aktuell auf dem TEENSY 4
-	#define NOMARKER			// no LED markers on gitboard
-	//#define HAS_MIDI_IN		// with widi master
+	#define NOMARKER		// no LED markers on gitboard
+	#define HAS_MIDI_IN		// with widi master
+	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 	//#define IS_MIDI_PROXY
 	//#define HAS_ROTARY_ENCODER
-	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
 //---------------------------------------------------------------------------------------
 
@@ -108,7 +108,7 @@
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
-//#define LEDMATRIX			// brauchen wir das ???? scrolltext läuft damit nicht .... TODO:testen wenn scrolltext läuft
+//#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
 
 #define green2 				255	//byte green2;
 #define center_x 			10	//byte center_x;
