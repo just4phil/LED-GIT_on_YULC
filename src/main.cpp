@@ -166,7 +166,7 @@ void setup() {
 	//---- Define matrix width and height. --------
 	matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 
-	#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+	#ifdef USE_ESP32
 		//----- initialize LEDs ---------
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, NUMMATRIX).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
@@ -191,7 +191,7 @@ void setup() {
 	
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	switchToSong(0);	// 0 SONGPAUSE loop
+	switchToSong(100);	// 0 SONGPAUSE loop
 						// 100 DEFAULT loop 
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 

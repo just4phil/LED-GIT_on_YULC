@@ -265,12 +265,12 @@ void setMarkerLEDs(byte songID) {
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	
-	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
+	// Kopie erstellen (muss vorab geschehen, da sonst über YULC die MATRIXEN nicht leuchten!!)
+	memcpy(leds1, leds, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
+	memcpy(leds2, leds, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
+	//--------------------------------------
 
-		// Kopie erstellen
-		memcpy(leds1, leds, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
-		memcpy(leds2, leds, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
-		//--------------------------------------
+	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
 		
 		//turnOffGitBlindingLEDs
 		for (int i = Bund_min; i < Bund_max; i++) {

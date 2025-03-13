@@ -13,11 +13,10 @@ Crystal is 40MHz
 bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
 
-TODO: LEDMATRIX -> begriff ändern wegen dublette!
+- LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
+- LED 0 funktioniert nicht!!
 
-- LEDGITBOARD funktioniert zwar auf TEENSY aber scheinbar nicht auf ESP32
-
-LED 0 funktioniert nicht!!
+TODO: LEDMATRIX -> begriff ändern wegen dublette??
 
 
 DONE:

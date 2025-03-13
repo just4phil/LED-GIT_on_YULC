@@ -36,9 +36,11 @@
 	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
-#ifdef LEDMATRIX			// aktuell auf dem TEENSY 4
-	#define NOMARKER		// no LED markers on gitboard
+#ifdef LEDMATRIX				// aktuell auf dem TEENSY 4
+	#define NOMARKER			// no LED markers on gitboard
 	//#define HAS_MIDI_IN		// with widi master
+	//#define IS_MIDI_PROXY
+	//#define HAS_ROTARY_ENCODER
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
 //---------------------------------------------------------------------------------------
@@ -48,7 +50,7 @@
 	#define DATA_PIN_1          1 	// yulc channel 1
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
-	#define DEFAULT_BRIGHTNESS	48	//64
+	#define DEFAULT_BRIGHTNESS	48
 #endif
 
 #ifdef USE_TEENSY
