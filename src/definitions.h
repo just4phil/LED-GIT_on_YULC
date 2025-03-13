@@ -106,7 +106,7 @@
 #define CLIENT_ADDRESS_YULC1	"aa:aa:aa:aa:aa:aa"	// Andres YULC -> ist aber SERVER
 #define CLIENT_ADDRESS_YULC2 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
 #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// kaputter YULC :(
-#define CLIENT_ADDRESS_YULC4	"be:67:00:5d:ae:41"	// YULC 4 vom 12.3.25
+#define CLIENT_ADDRESS_YULC4	"48:ca:43:80:98:4d"	// YULC 4 vom 12.3.25
 #define CLIENT_ADDRESS_YULC5	"cc:cc:cc:cc:cc:cc"	// YULC 5 vom 12.3.25
 #define CLIENT_ADDRESS_YULC6	"dd:dd:dd:dd:dd:dd"	// YULC 6 vom 12.3.25
 //==> aktuelle clients sind: YULC2, YULC4 und YULC5 (s. midiProxyBLEServer)
