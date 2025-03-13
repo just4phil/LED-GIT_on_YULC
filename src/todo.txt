@@ -1,12 +1,37 @@
+upload_protocol = esptool
+Looking for upload port...
+Using manually specified: COM10
+Waiting for the new upload port...
+Uploading .pio\build\esp32-s3-devkitc-1\firmware.bin
+esptool.py v4.5.1
+
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+-----------------------------------
 
 bugs:
 ======
+(ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 
+
+- LEDGITBOARD funktioniert zwar auf TEENSY aber scheinbar nicht auf ESP32
+
+LED 0 funktioniert nicht!!
+
+
+DONE:
+=====
+- adding BLE client (YULC4 -> 48:ca:43:80:98:4d
+
+
+==============================================================================
+==============================================================================
+==============================================================================
 
 TODOs:
 =======
-
-- helligkeitsstufen der marker mit rotary testen
+- LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
 
 leds rina:

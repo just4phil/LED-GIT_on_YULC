@@ -7,9 +7,9 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-#define RINASBASS	// COM17
+//#define RINASBASS	// COM17
 //#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-//#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
@@ -23,8 +23,8 @@
 	#define BASS				// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass	
 	#define BASSMARKER			// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define firstYulcPrototype 	// first one has different pins
-	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist, SONST LEUCHTEN NUR DIE MARKER!!
+	//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
 #ifdef ANDRESGIT
@@ -38,8 +38,8 @@
 
 #ifdef LEDMATRIX			// aktuell auf dem TEENSY 4
 	#define NOMARKER		// no LED markers on gitboard
-	#define HAS_MIDI_IN		// with widi master
-	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
+	//#define HAS_MIDI_IN		// with widi master
+	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
 //---------------------------------------------------------------------------------------
 
