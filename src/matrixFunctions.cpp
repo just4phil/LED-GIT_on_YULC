@@ -13,7 +13,6 @@ extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int nextChangeMillis;
 extern volatile byte nextSongPart;
 extern volatile boolean nextChangeMillisAlreadyCalculated;
-//extern const boolean LEDGITBOARD;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 
 static const uint8_t PROGMEM mono_bmp[][8] = {

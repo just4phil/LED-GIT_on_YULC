@@ -10,10 +10,10 @@ Features: WiFi, BLE
 Crystal is 40MHz
 -----------------------------------
 
-bugs:
+bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
-(ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 
+TODO: LEDMATRIX -> begriff ändern wegen dublette!
 
 - LEDGITBOARD funktioniert zwar auf TEENSY aber scheinbar nicht auf ESP32
 

@@ -11,8 +11,6 @@ extern byte markerLED6;
 extern byte markerLED7;
 extern int BRIGHTNESS;
 extern int helligkeit;
-//extern const boolean LEDGITBOARD;
-extern boolean LEDGITBOARD;	// defined in definitions.h
 extern CRGB leds[NUMMATRIX];
 extern CRGB leds1[NUMMATRIX];
 extern CRGB leds2[NUMMATRIX];
@@ -20,7 +18,7 @@ extern CRGB leds2[NUMMATRIX];
 
 void setMarkerLEDs(byte songID) {
 
-	#ifndef LEDMATRIX	// nur für bass oder git machen, nicht aber für GITBOARD!
+	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
 
 		//    E-Saite			   A-Saite			GITARRE			BASS
 		//====================================================================================
@@ -267,7 +265,7 @@ void setMarkerLEDs(byte songID) {
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	
-	#ifndef LEDMATRIX	// nur für bass oder git machen, nicht aber für GITBOARD!
+	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
 
 		// Kopie erstellen
 		memcpy(leds1, leds, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
