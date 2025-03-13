@@ -49,6 +49,7 @@ TODOs:
 - markerLEDs an songEnden sofort ausschalten??
 - testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
 - fontzoom einbauen: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/fontzoom/fontzoom.ino
+- matrixSCANNER in der form von KITT ergänzen
 
 
 leds rina:

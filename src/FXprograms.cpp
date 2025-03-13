@@ -487,17 +487,25 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
-			if (LEDGITBOARD) {
-				FastLED.showColor(CRGB(r, g, b)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+
+			for (int i = 0; i < anz_LEDs; i++) {
+				leds[i] = CRGB(r, g, b);
 			}
-			else {
-				// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-				for (int i = 0; i < anz_LEDs; i++) {
-					leds[i] = CRGB(r, g, b);
-				}
-				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-				FastLED.show();
-			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
+
+
+			// if (LEDGITBOARD) {
+			// 	FastLED.showColor(CRGB(r, g, b)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+			// }
+			// else {
+			// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
+			// 	for (int i = 0; i < anz_LEDs; i++) {
+			// 		leds[i] = CRGB(r, g, b);
+			// 	}
+			// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			// 	FastLED.show();
+			// }
 		}
 	}
 	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
@@ -529,33 +537,47 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 		if (progStroboIsBlack) {
 			
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-				if (LEDGITBOARD) {
-					FastLED.showColor(CRGB(red, green, blue)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+
+				for (int i = 0; i < anz_LEDs; i++) {
+					leds[i] = CRGB(red, green, blue);
 				}
-				else {
-					// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-					for (int i = 0; i < anz_LEDs; i++) {
-						leds[i] = CRGB(red, green, blue);
-					}
-					gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-					FastLED.show();
-				}
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				FastLED.show();
+
+				// if (LEDGITBOARD) {
+				// 	FastLED.showColor(CRGB(red, green, blue)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+				// }
+				// else {
+				// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
+				// 	for (int i = 0; i < anz_LEDs; i++) {
+				// 		leds[i] = CRGB(red, green, blue);
+				// 	}
+				// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				// 	FastLED.show();
+				// }
 			}
 			progStroboIsBlack = false;
 		}
 		else {
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-				if (LEDGITBOARD) {
-					FastLED.showColor(CRGB::Black); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+
+				for (int i = 0; i < anz_LEDs; i++) {
+					leds[i] = CRGB(0, 0, 0);
 				}
-				else {
-					// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-					for (int i = 0; i < anz_LEDs; i++) {
-						leds[i] = CRGB(0, 0, 0);
-					}
-					gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-					FastLED.show();
-				}
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				FastLED.show();
+
+				// if (LEDGITBOARD) {
+				// 	FastLED.showColor(CRGB::Black); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
+				// }
+				// else {
+				// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
+				// 	for (int i = 0; i < anz_LEDs; i++) {
+				// 		leds[i] = CRGB(0, 0, 0);
+				// 	}
+				// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				// 	FastLED.show();
+				// }
 			} 
 			progStroboIsBlack = true;
 		}
@@ -589,7 +611,7 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 		if (!scannerGoesBack) {
 
 			zaehler++;
-			if (zaehler >= 28) scannerGoesBack = true;
+			if (zaehler >= MATRIX_WIDTH +6) scannerGoesBack = true;
 
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 				matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_RED_HIGH);
@@ -733,7 +755,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 				col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
 			}
 
-			matrix->fillCircle(random(0, 21), random(0, 22), random(3, 10), col1);
+			matrix->fillCircle(random(0, MATRIX_WIDTH-1), random(0, MATRIX_HEIGHT-1), random(3, 10), col1);
 		
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
@@ -766,8 +788,8 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 	if (millisCounterTimer >= msForChange) {	// ersatz für delay()
 		millisCounterTimer = 0;
 
-		byte x1 = random(0, 21);
-		byte x2 = random(0, 21);	
+		byte x1 = random(0, MATRIX_WIDTH-1);
+		byte x2 = random(0, MATRIX_WIDTH-1);	
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (clearEach) {
@@ -778,9 +800,9 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 				col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
 			}
 
-			matrix->drawLine(x1 - 1, 0, x2 - 1, 22, col1);
-			matrix->drawLine(x1, 0, x2, 22, col1);
-			matrix->drawLine(x1 + 1, 0, x2 + 1, 22, col1);
+			matrix->drawLine(x1 - 1, 0, x2 - 1, MATRIX_HEIGHT-1, col1);
+			matrix->drawLine(x1, 0, x2, MATRIX_HEIGHT-1, col1);
+			matrix->drawLine(x1 + 1, 0, x2 + 1, MATRIX_HEIGHT-1, col1);
 		
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();

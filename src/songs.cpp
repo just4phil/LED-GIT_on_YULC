@@ -89,13 +89,28 @@ void defaultLoop()  {
  	switch (prog) { 
 
 	case 0:
-		
-		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
-		}
-		else {
-			progBlingBlingColoring(10000, 5, 4000);
-		}
+	
+		//progSternschnuppen(50000, 2, 20);			// OK
+		//progBlingBlingColoringSONGPAUSE			// OK
+		//progBlingBlingColoring					// OK
+		//progFastBlingBling(60000, 2, 100); 		// OK
+		//progFullColors(60000, 2, 1500);			// DONE
+		//progStrobo(50000, 2, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); // DONE
+		//progMatrixScanner(60000, 2, 0);			// DONE
+		//progCircles(60000, 2, 600, false);		// DONE
+		//progRandomLines(30000, 2, 500, true);		// DONE
+		progMovingLines(60000, 2);
+
+
+		//progMatrixHorizontal(30000, 2, 80);
+		//progStern(30000, 500, 2, 20);
+
+		// if (LEDGITBOARD) {
+		// 	progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
+		// }
+		// else {
+		// 	progBlingBlingColoring(10000, 5, 4000);
+		// }
 		break;
 
 	case 2:	// nur für ledgitboard

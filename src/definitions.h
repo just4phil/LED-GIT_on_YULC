@@ -95,9 +95,13 @@
 #ifdef SCROLLMATRIX
 	#define MATRIX_WIDTH       	54
 	#define MATRIX_HEIGHT      	10
+	#define center_x 			27	//byte center_x;
+	#define center_y 			5	//byte center_y;
 #else
 	#define MATRIX_WIDTH       	22
 	#define MATRIX_HEIGHT      	23
+	#define center_x 			10	//byte center_x;
+	#define center_y 			10	//byte center_y;
 #endif
 #define mw					MATRIX_WIDTH	// TODO: ausmerzen
 #define mh					MATRIX_HEIGHT	// TODO: ausmerzen
@@ -111,8 +115,6 @@
 //#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
 
 #define green2 				255	//byte green2;
-#define center_x 			10	//byte center_x;
-#define center_y 			10	//byte center_y;
 #define SECONDSFORVOLTAGE	1
 //----------------------------
 
