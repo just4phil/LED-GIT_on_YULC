@@ -32,6 +32,8 @@ bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
 - LEDGITBOARD via YULC -> scrolltext geht nicht!
     #define LEDMATRIX -> brauchen wir das ???? für scrolltext hilft es jedenfalls nicht .... TODO:testen wenn scrolltext läuft
+        falls ja: update testen: https://github.com/marcmerlin/LEDMatrix
+    und brauchen wir neomatrix_config überhaupt?? .... TODO:testen wenn scrolltext läuft
 
 - LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
 - bei einem der progPalette programme flackert es immer?!
