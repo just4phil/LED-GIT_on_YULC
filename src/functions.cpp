@@ -12,8 +12,6 @@ extern byte markerLED6;
 extern byte markerLED7;
 extern int helligkeit;
 extern int BRIGHTNESS;
-//extern const boolean LEDGITBOARD;
-extern boolean LEDGITBOARD;	// defined in definitions.h
 extern CRGB leds[NUMMATRIX];
 extern byte songID; 
 extern byte songIDbefore;
