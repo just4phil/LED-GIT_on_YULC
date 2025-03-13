@@ -9,7 +9,8 @@
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
 //#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
+#define SCROLLMATRIX // activate this for the klapp-Matrix
+//#define GITBOARD // (früher: LEDMATRIX) COM5 - activate this for the LEDgitBOARD
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
@@ -36,7 +37,15 @@
 	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
-#ifdef LEDMATRIX				// aktuell auf dem TEENSY 4
+#ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
+	#define NOMARKER			// no LED markers on gitboard
+	//#define HAS_MIDI_IN			// with widi master
+	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
+#endif
+
+#ifdef GITBOARD				// aktuell auf dem TEENSY 4
 	#define NOMARKER			// no LED markers on gitboard
 	//#define HAS_MIDI_IN		// with widi master
 	//#define IS_MIDI_PROXY
@@ -63,7 +72,12 @@
 	#define LED2_PIN            15
 	#define LED3_PIN            16
 	#define LIPO_PIN            19 
-	#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+
+	#if defined(GITBOARD)
+		#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+	#elif defined(SCROLLMATRIX)
+		#define DEFAULT_BRIGHTNESS	10	// solange die stromversorgung nicht ausreichend ist
+	#endif
 #endif
 
 #ifdef firstYulcPrototype	// aktuell in RINAs gehäuse
@@ -78,8 +92,13 @@
 #define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 #define ROTARY_ENCODER_STEPS 4
 
-#define MATRIX_WIDTH       	22
-#define MATRIX_HEIGHT      	23
+#ifdef SCROLLMATRIX
+	#define MATRIX_WIDTH       	54
+	#define MATRIX_HEIGHT      	10
+#else
+	#define MATRIX_WIDTH       	22
+	#define MATRIX_HEIGHT      	23
+#endif
 #define mw					MATRIX_WIDTH	// TODO: ausmerzen
 #define mh					MATRIX_HEIGHT	// TODO: ausmerzen
 
@@ -89,6 +108,7 @@
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
+//#define LEDMATRIX			// brauchen wir das ???? scrolltext läuft damit nicht .... TODO:testen wenn scrolltext läuft
 
 #define green2 				255	//byte green2;
 #define center_x 			10	//byte center_x;
@@ -96,9 +116,10 @@
 #define SECONDSFORVOLTAGE	1
 //----------------------------
 
-#define anz_LEDs_GIT1 		164 // neue GIT mit neuen gummi LEDs (18.2.2025) (vorher: 193)
-#define anz_LEDs_BASS 		155
-#define anz_LEDs_GITBOARD 	278
+#define anz_LEDs_GIT1 			164 // neue GIT mit neuen gummi LEDs (18.2.2025) (vorher: 193)
+#define anz_LEDs_BASS 			155
+#define anz_LEDs_GITBOARD 		278
+#define anz_LEDs_SCROLLMATRIX 	540
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
@@ -123,7 +144,12 @@
 
 #ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD ---------------
 
-	#define anz_LEDs			anz_LEDs_GITBOARD
+	#if defined(GITBOARD)
+		#define anz_LEDs		anz_LEDs_GITBOARD
+	#elif defined(SCROLLMATRIX)
+		#define anz_LEDs		anz_LEDs_SCROLLMATRIX
+	#endif
+
 	#define Bund_min	 		0
 	#define Bund_max	 		0
 

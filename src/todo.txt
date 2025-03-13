@@ -13,14 +13,16 @@ Crystal is 40MHz
 bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
 - LEDGITBOARD via YULC -> scrolltext geht nicht!
-- LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
-- LED 0 funktioniert nicht!!
+    #define LEDMATRIX -> brauchen wir das ???? für scrolltext hilft es jedenfalls nicht .... TODO:testen wenn scrolltext läuft
 
-TODO: LEDMATRIX -> begriff ändern wegen dublette??
+- LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
+- LED 0 funktioniert nicht!!?
 
 
 DONE:
 =====
+- LEDMATRIX -> begriff ändern wegen dublette
+- memcopy vor die abfrage gelegt
 - adding BLE client (YULC4 -> 48:ca:43:80:98:4d
 
 

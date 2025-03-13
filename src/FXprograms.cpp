@@ -1180,7 +1180,11 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 
 			yield();
 			matrix->clear();
-			matrix->setCursor(progScrollTextZaehler, 13);
+			#if defined(GITBOARD)
+				matrix->setCursor(progScrollTextZaehler, 13);
+			#elif defined(SCROLLMATRIX)
+				matrix->setCursor(progScrollTextZaehler, 2); 
+			#endif
 			matrix->setTextColor(col);
 			matrix->print(words);
 

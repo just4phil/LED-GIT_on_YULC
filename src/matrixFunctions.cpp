@@ -65,7 +65,7 @@ static const uint8_t PROGMEM mono_bmp[][8] = {
 	B00111100 },
 };
 
-#if defined(LEDMATRIX)
+#if defined(GITBOARD)
 
 	//============================================================================= war frueher mal in LEDMatrix.h
 	//========== Andres remapping function für das LED-GIT-BOARD =================

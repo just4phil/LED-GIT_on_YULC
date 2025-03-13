@@ -18,7 +18,7 @@ extern CRGB leds2[NUMMATRIX];
 
 void setMarkerLEDs(byte songID) {
 
-	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
+	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!
 
 		//    E-Saite			   A-Saite			GITARRE			BASS
 		//====================================================================================
@@ -270,7 +270,7 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	memcpy(leds2, leds, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
 	//--------------------------------------
 
-	#if !defined (LEDMATRIX)	// nur für bass oder git machen, nicht aber für GITBOARD!
+	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!
 		
 		//turnOffGitBlindingLEDs
 		for (int i = Bund_min; i < Bund_max; i++) {
