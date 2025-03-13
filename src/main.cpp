@@ -57,10 +57,9 @@
 //===================================
 
 FastLED_NeoMatrix* matrix;
-//FastLED_NeoMatrix* matrix2;
 
 #if defined (GITBOARD) || defined (SCROLLMATRIX) // man könnte auch defined NOMARKER nehmen
-	#include "neomatrix_config.h"
+	#include "neomatrix_config.h"	// braucht man das gar nicht?
 	boolean LEDGITBOARD = true;
 	extern uint16_t myRemapFn(uint16_t x, uint16_t y);
 #else
@@ -170,14 +169,13 @@ void setup() {
 		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 	#endif
 
-	#ifdef USE_ESP32
+	#if defined (USE_ESP32)
 		//----- initialize LEDs ---------
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, NUMMATRIX).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, NUMMATRIX).setCorrection(TypicalLEDStrip);
-	#endif
-
-	#ifdef USE_TEENSY
+	
+	#elif defined (USE_TEENSY)
 		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 	#endif
 
@@ -186,7 +184,7 @@ void setup() {
 	matrix->setBrightness(BRIGHTNESS);
 	matrix->setTextWrap(false);
 	
-	#ifdef GITBOARD
+	#if defined (GITBOARD)
 		matrix->setRemapFunction(myRemapFn);	// muss für das Git-BOARD aktiviert werden!!! (fuer meine spezifische matrix!)
 	#endif
 

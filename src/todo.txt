@@ -1,3 +1,21 @@
+https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos
+
+Low Level Drv|Glue Driver for FrameBuffer::GFX
+FastLED     - FastLED_NeoMatrix  -------------\     FastLED CRGB Array 
+SmartMatrix - SmartMatrix_GFX -----------------\    24bit FB storage        API Support
+ILI9341 \                                       \   CRGB methods like
+SSD1331  |--- FastLED_SPITFT_GFX ----------------\  scale8/fadeToBlackBy   ,FastLED API
+ST7735  /                                         |        |              / (XY 2D to 1D mapping)
+                                                  |        |             /
+ArduinoOnPc-FastLED-GFX-LEDMatrix arduino         - FrameBuffer::GFX------ Adafruit::NeoMatrix +
+emulation for linux / Raspberry Pi:               |        |             \ Adafruit::GFX APIs
+----------------------------------               /    Adafruit::GFX       \ 
+rpi-rgb-led-matrix - FastLED_RPIRGBPanel_GFX ---/   LEDMatrix (optional)   `LEDMatrix API
+ArduinoOnPC X11/linux - FastLED_TFTWrapper_GFX /
+FastLED_SDL (linux)   -  FastLED_NeoMatrix   -/                        
+
+=============================================================================
+
 upload_protocol = esptool
 Looking for upload port...
 Using manually specified: COM10
@@ -16,7 +34,6 @@ bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
     #define LEDMATRIX -> brauchen wir das ???? für scrolltext hilft es jedenfalls nicht .... TODO:testen wenn scrolltext läuft
 
 - LEDGITBOARD via YULC -> song 0 (songpause) scheint abzubrechen
-- LED 0 funktioniert nicht!!?
 - bei einem der progPalette programme flackert es immer?!
 
 
@@ -36,6 +53,7 @@ TODOs:
 - LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
 - testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
+- fontzoom einbauen: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/fontzoom/fontzoom.ino
 
 
 leds rina:

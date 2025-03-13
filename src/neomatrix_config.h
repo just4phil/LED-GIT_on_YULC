@@ -124,15 +124,6 @@ uint32_t tft_spi_speed;
 #endif
 
 
-//============================================================================
-// Matrix defines (SMARTMATRIX vs NEOMATRIX and size)
-// You should #define one and only one of them and if you need to edit it,
-// edit both the block below and the 2nd block in setup() at the bottom of this file
-//============================================================================
-//
-#if defined(M24BY24)
-#include <FastLED_NeoMatrix.h>
-#define FASTLED_NEOMATRIX
 
 //======== ANDRE: MEINE ANGABEN!!!! ====================================
 
@@ -143,6 +134,18 @@ const uint16_t MATRIX_TILE_WIDTH = MATRIX_WIDTH; //22; // width of EACH NEOPIXEL
 const uint16_t MATRIX_TILE_HEIGHT = MATRIX_HEIGHT; //23; // height of each matrix
 const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
 const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
+
+
+
+//============================================================================
+// Matrix defines (SMARTMATRIX vs NEOMATRIX and size)
+// You should #define one and only one of them and if you need to edit it,
+// edit both the block below and the 2nd block in setup() at the bottom of this file
+//============================================================================
+//
+#if defined(M24BY24)
+#include <FastLED_NeoMatrix.h>
+#define FASTLED_NEOMATRIX
 
 // Used by NeoMatrix
 //const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
@@ -197,16 +200,16 @@ extern FastLED_NeoMatrix* matrix;   //ANDRE: defined in main
 #include <FastLED_NeoMatrix.h>
 #define FASTLED_NEOMATRIX
 
-uint8_t matrix_brightness = 64;
-// Used by LEDMatrix
-const uint16_t MATRIX_TILE_WIDTH = 8; // width of EACH NEOPIXEL MATRIX (not total display)
-const uint16_t MATRIX_TILE_HEIGHT = 32; // height of each matrix
-const uint8_t MATRIX_TILE_H = 3;  // number of matrices arranged horizontally
-const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
+// uint8_t matrix_brightness = 64;
+// // Used by LEDMatrix
+// const uint16_t MATRIX_TILE_WIDTH = 8; // width of EACH NEOPIXEL MATRIX (not total display)
+// const uint16_t MATRIX_TILE_HEIGHT = 32; // height of each matrix
+// const uint8_t MATRIX_TILE_H = 3;  // number of matrices arranged horizontally
+// const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
 
-// Used by NeoMatrix
-const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
-const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
+// // Used by NeoMatrix
+// const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
+// const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines
@@ -253,16 +256,16 @@ FastLED_NeoMatrix* matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 #include <FastLED_NeoMatrix.h>
 #define FASTLED_NEOMATRIX
 
-uint8_t matrix_brightness = 64;
+// uint8_t matrix_brightness = 64;
 
-const uint16_t MATRIX_TILE_WIDTH = 16; // width of EACH NEOPIXEL MATRIX (not total display)
-const uint16_t MATRIX_TILE_HEIGHT = 16; // height of each matrix
-const uint8_t MATRIX_TILE_H = 2; // number of matrices arranged horizontally
-const uint8_t MATRIX_TILE_V = 2; // number of matrices arranged vertically
+// const uint16_t MATRIX_TILE_WIDTH = 16; // width of EACH NEOPIXEL MATRIX (not total display)
+// const uint16_t MATRIX_TILE_HEIGHT = 16; // height of each matrix
+// const uint8_t MATRIX_TILE_H = 2; // number of matrices arranged horizontally
+// const uint8_t MATRIX_TILE_V = 2; // number of matrices arranged vertically
 
-// Used by NeoMatrix
-const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
-const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
+// // Used by NeoMatrix
+// const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
+// const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines
@@ -284,19 +287,19 @@ const uint8_t MATRIXPIN = 13;
 #define FASTLED_NEOMATRIX
 
 // http://marc.merlins.org/perso/arduino/post_2018-07-30_Building-a-64x64-Neopixel-Neomatrix-_4096-pixels_-running-NeoMatrix-FastLED-IR.html
-uint8_t matrix_brightness = 128;
-//
-// Used by LEDMatrix
-const uint16_t MATRIX_TILE_WIDTH = 64; // width of EACH NEOPIXEL MATRIX (not total display)
-const uint16_t MATRIX_TILE_HEIGHT = 64; // height of each matrix
-const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
-const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
-#define NUM_STRIPS 16
-#define NUM_LEDS_PER_STRIP 256
+// uint8_t matrix_brightness = 128;
+// //
+// // Used by LEDMatrix
+// const uint16_t MATRIX_TILE_WIDTH = 64; // width of EACH NEOPIXEL MATRIX (not total display)
+// const uint16_t MATRIX_TILE_HEIGHT = 64; // height of each matrix
+// const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
+// const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
+// #define NUM_STRIPS 16
+// #define NUM_LEDS_PER_STRIP 256
 
-// Used by NeoMatrix
-const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
-const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
+// // Used by NeoMatrix
+// const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
+// const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
 
 CRGB* matrixleds;
 #ifdef LEDMATRIX
@@ -381,17 +384,17 @@ void show_callback() {
 #include <M5Stack.h>
 #include <FastLED_SPITFT_GFX.h>
 
-uint8_t matrix_brightness = 255;
-const uint16_t MATRIX_TILE_WIDTH = 320;
-const uint16_t MATRIX_TILE_HEIGHT = 240;
-//
-// Used by LEDMatrix
-const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
-const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
+// uint8_t matrix_brightness = 255;
+// const uint16_t MATRIX_TILE_WIDTH = 320;
+// const uint16_t MATRIX_TILE_HEIGHT = 240;
+// //
+// // Used by LEDMatrix
+// const uint8_t MATRIX_TILE_H = 1;  // number of matrices arranged horizontally
+// const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
 
-// Used by NeoMatrix
-const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
-const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
+// // Used by NeoMatrix
+// const uint16_t mw = MATRIX_TILE_WIDTH * MATRIX_TILE_H;
+// const uint16_t mh = MATRIX_TILE_HEIGHT * MATRIX_TILE_V;
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines
