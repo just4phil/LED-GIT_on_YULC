@@ -7,8 +7,8 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define RINASBASS	// COM17
-#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
+#define RINASBASS	// COM17
+//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
 //#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
@@ -25,14 +25,11 @@
 	#define firstYulcPrototype 	// first one has different pins
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
-		#undef HAS_MIDI_IN		// NO MIDI IN
-		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
 #endif
 
 #ifdef ANDRESGIT
-	// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
-	#define GIT					// BASS nur zum testen -> hier muss hin: GIT
-	#define GITMARKER_GIT1 			// neue gummi LEDs //definiert die spezifischen LED-indizes für BASS bzw. GIT
+	#define GIT					// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
+	#define GITMARKER_GIT1 		// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
@@ -106,9 +103,13 @@
 //------ BLE SERVER 1 and his CLIENTS -------------- 
 #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
 #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
-#define CLIENT_ADDRESS_YULC1 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
-#define CLIENT_ADDRESS_YULC2	"aa:aa:aa:aa:aa:aa"	// TODO
-#define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
+#define CLIENT_ADDRESS_YULC1	"aa:aa:aa:aa:aa:aa"	// Andres YULC -> ist aber SERVER
+#define CLIENT_ADDRESS_YULC2 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
+#define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// kaputter YULC :(
+#define CLIENT_ADDRESS_YULC4	"be:67:00:5d:ae:41"	// YULC 4 vom 12.3.25
+#define CLIENT_ADDRESS_YULC5	"cc:cc:cc:cc:cc:cc"	// YULC 5 vom 12.3.25
+#define CLIENT_ADDRESS_YULC6	"dd:dd:dd:dd:dd:dd"	// YULC 6 vom 12.3.25
+//==> aktuelle clients sind: YULC2, YULC4 und YULC5 (s. midiProxyBLEServer)
 
 //------ BLE SERVER 2 and his CLIENTS -------------- 
 // #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"

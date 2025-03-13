@@ -16,9 +16,9 @@ extern boolean waitForLEDsync; // in main
 //-------------------------------------------
 
 const char* client_addresses[] = {
-    CLIENT_ADDRESS_YULC1,
-    CLIENT_ADDRESS_YULC2,
-    CLIENT_ADDRESS_YULC3
+    CLIENT_ADDRESS_YULC2,   // RINAs YULC
+    CLIENT_ADDRESS_YULC4,   // YULC 4 vom 12.3.25
+    CLIENT_ADDRESS_YULC5    // YULC 5 vom 12.3.25
 };
 // Größe des Arrays ermitteln
 const size_t client_address_count = sizeof(client_addresses) / sizeof(client_addresses[0]);
