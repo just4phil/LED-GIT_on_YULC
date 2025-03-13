@@ -7,25 +7,25 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define RINASBASS	// COM17
-//#define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
-#define SCROLLMATRIX // activate this for the klapp-Matrix
-//#define GITBOARD // (früher: LEDMATRIX) COM5 - activate this for the LEDgitBOARD
+//#define RINASBASS		// COM17
+//#define ANDRESGIT		// COM8 (aber beim teensy nicht nötig)
+#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
+//#define GITBOARD 		// TEENSY auf COM5 - activate this for the LEDgitBOARD
 //
-//--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
+//--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
 //	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 //#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 //========================================================================================
 
-//--- Klassen // ODER FEATURES OBEN NUTZEN!! -------------
+//------ GERÄTE -------------
 #ifdef RINASBASS	// is BT BLE Client
 	#define BASS				// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass	
 	#define BASSMARKER			// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define firstYulcPrototype 	// first one has different pins
-	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist, SONST LEUCHTEN NUR DIE MARKER!!
-	//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist, SONST LEUCHTEN NUR DIE MARKER!!
+	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
 #ifdef ANDRESGIT
