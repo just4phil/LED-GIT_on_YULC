@@ -28,8 +28,8 @@ extern const uint8_t mono_bmp[][8];
 extern const uint16_t RGB_bmp[][64];
 extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
-extern CRGB leds[NUMMATRIX];
 extern FastLED_NeoMatrix* matrix;
+extern CRGB leds[NUMMATRIX];
 extern CRGB leds1[NUMMATRIX];
 extern CRGB leds2[NUMMATRIX];
 //---------------------------------------------------------------------
@@ -1136,14 +1136,12 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 			matrix->setCursor(pos_x, pos_y);
 			matrix->setTextColor(col);
 			matrix->print(words);
-			matrix->show();
+
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!! immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
+			//matrix->show();
 		}
 	}
-	//macht hier wenig sinn da text ohnehin nur auf ledgitboardmatrix funktioniert!
-	// else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-	// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-	// 	FastLED.show();
-	// }
 }
 
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart) {
@@ -1188,13 +1186,9 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 			matrix->setTextColor(col);
 			matrix->print(words);
 
-			if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
-				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-				FastLED.show();
-			}
-			else {
-				matrix->show();
-			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!! immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
+			//matrix->show();
 		}
 	}
 }
@@ -1245,13 +1239,8 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart) {
 			matrix->setTextColor(getRandomColor());
 			matrix->print("s");
 
-			if (LEDGITBOARD == false) {	// nur ausfuehren, wenn dies für die led-stripe-git kompiliert wurde!
-				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-				FastLED.show();
-			}
-			else {
-				matrix->show();
-			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
 		}
 	}
 }
@@ -1291,7 +1280,10 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
 				matrix->setCursor(2, 13);
 				matrix->setTextColor(col);
 				matrix->print(words[zaehlerWortArray]);
-				matrix->show();
+
+				gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+				FastLED.show();
+				//matrix->show();
 
 				//Serial.println(zaehlerWortArray);
 				zaehlerWortArray++; // naechstes Wort
@@ -1330,7 +1322,10 @@ void progBlinkText(String words, unsigned int durationMillis, int col, byte next
 			matrix->setCursor(x, 13);
 			matrix->setTextColor(col);
 			matrix->print(words);
-			matrix->show();
+
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();	//wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			FastLED.show();
+			//matrix->show();
 			delay(60);
 		}
 	}
