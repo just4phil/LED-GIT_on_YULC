@@ -3,15 +3,13 @@
 
 //====== DEFINES ========================================================================
 //
-//--- HARDWARE ---> choose via menu!!
-// USE_ESP32 (YULC)	wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
-//#define USE_ESP32 //USE_TEENSY		// wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
+//--- HARDWARE ---> choose via pio menu!!
+// USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define RINASBASS	// COM17
 #define ANDRESGIT	// COM8 (aber beim teensy nicht nötig)
 //#define LEDMATRIX // COM5 - activate this for the LEDgitBOARD
-// midi proxy server COM4
 //
 //--- FEATURES // ODER KLASSEN UNTEN NUTZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
@@ -31,40 +29,25 @@
 		#undef IS_MIDI_PROXY 	// NO MIDI PROXY
 #endif
 
-#ifdef ANDRESGIT	// on old TEENSY board
+#ifdef ANDRESGIT
 	// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
 	#define GIT					// BASS nur zum testen -> hier muss hin: GIT
 	#define GITMARKER_GIT1 			// neue gummi LEDs //definiert die spezifischen LED-indizes für BASS bzw. GIT
-	//#define GITMARKER_GIT2 		// alte GIT!! //definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
-	// 	#undef IS_MIDI_PROXY 	// NO MIDI PROXY
-	// 	#undef HAS_ROTARY_ENCODER // NO ROTARY
-	// for testing -> if on ESP32:
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-
+	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
-#ifdef LEDMATRIX
+#ifdef LEDMATRIX			// aktuell auf dem TEENSY 4
 	#define NOMARKER		// no LED markers on gitboard
 	#define HAS_MIDI_IN		// with widi master
-	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
-	//	#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
-#endif
-
-#ifdef BLE_MIDI_PROXY // aktuell bei VADDER
-	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-		#undef HAS_LIPOVOLTAGE_CHECK // no LIPOVOLTAGE_CHECK
 #endif
 //---------------------------------------------------------------------------------------
 
 
-#ifdef USE_ESP32	// #elif defined(USE_TEENSY)
+#ifdef USE_ESP32
 	#define DATA_PIN_1          1 	// yulc channel 1
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
@@ -84,7 +67,7 @@
 	#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
 #endif
 
-#ifdef firstYulcPrototype
+#ifdef firstYulcPrototype	// aktuell in RINAs gehäuse
     #define ROTARY_ENCODER_BUTTON_PIN   38 // SW
     #define ROTARY_ENCODER_B_PIN        36 // CLK
     #define ROTARY_ENCODER_A_PIN        37 // DT
@@ -96,7 +79,6 @@
 #define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 #define ROTARY_ENCODER_STEPS 4
 
-#define SECONDSFORVOLTAGE	1
 #define MATRIX_WIDTH       	22
 #define MATRIX_HEIGHT      	23
 #define mw					MATRIX_WIDTH	// TODO: ausmerzen
@@ -112,10 +94,10 @@
 #define green2 				255	//byte green2;
 #define center_x 			10	//byte center_x;
 #define center_y 			10	//byte center_y;
+#define SECONDSFORVOLTAGE	1
 //----------------------------
 
-#define anz_LEDs_GIT1 		164 // neue GIT mit neuen gummi LEDs (18.2.2025)
-#define anz_LEDs_GIT2 		193
+#define anz_LEDs_GIT1 		164 // neue GIT mit neuen gummi LEDs (18.2.2025) (vorher: 193)
 #define anz_LEDs_BASS 		155
 #define anz_LEDs_GITBOARD 	278
 
@@ -264,46 +246,4 @@
 	#define ASaite_Bb_hoch 		48	// F/Bb: 43 (hohe Oktave)
 	#define ASaite_B_hoch	 	47	// F#/B: 42 (hohe Oktave)
 	#define ASaite_C_hoch	 	46	// G/C: 41 (hohe Oktave)
-#endif
-
-#ifdef GITMARKER_GIT2	//--------- kann gelöscht werden! NUR FÜR ANDRES alte GITARRE -------------------
-
-	#define anz_LEDs			anz_LEDs_GIT2
-
-	#define Bund_min	 		53
-	#define Bund_max	 		74
-
-	#define ESaite_E		 	71	// E/A: 56 (leere / tiefe Saiten)
-	#define ESaite_F		 	69	// F/Bb: 55
-	#define ESaite_Fis		 	67	// F#/B: 54
-	#define ESaite_G	 		65	// G/C: 53
-	#define ESaite_Gis		 	63	// G#/C#: 52
-	#define ESaite_A	 		62	// A/D: 51
-	#define ESaite_Bb		 	61	// Bb/D#: 50
-	#define ESaite_B		 	60	// B/E: 49
-	#define ESaite_C			59	// C/F: 48
-	#define ESaite_Cis		 	58	// C#/F#: 47
-	#define ESaite_D	 		57	// D/G: 46
-	#define ESaite_Dis		 	56	// D#/G#: 45
-	#define ESaite_E_hoch 		55	// E/A: 44 (hohe Oktave)
-	#define ESaite_F_hoch 		54	// F/Bb: 43 (hohe Oktave)
-	#define ESaite_Fis_hoch 	53	// F#/B: 42 (hohe Oktave)
-	#define ESaite_G_hoch	 	52	// G/C: 41 (hohe Oktave)
-
-	#define ASaite_A		 	71	// E/A: 56 (leere / tiefe Saiten)
-	#define ASaite_Bb		 	69	// F/Bb: 55
-	#define ASaite_B		 	67	// F#/B: 54
-	#define ASaite_C	 		65	// G/C: 53
-	#define ASaite_Cis		 	63	// G#/C#: 52
-	#define ASaite_D	 		62	// A/D: 51
-	#define ASaite_Dis		 	61	// Bb/D#: 50
-	#define ASaite_E		 	60	// B/E: 49
-	#define ASaite_F	 		59	// C/F: 48
-	#define ASaite_Fis		 	58	// C#/F#: 47
-	#define ASaite_G	 		57	// D/G: 46
-	#define ASaite_Gis		 	56	// D#/G#: 45
-	#define ASaite_A_hoch 		55	// E/A: 44 (hohe Oktave)
-	#define ASaite_Bb_hoch 		54	// F/Bb: 43 (hohe Oktave)
-	#define ASaite_B_hoch	 	53	// F#/B: 42 (hohe Oktave)
-	#define ASaite_C_hoch	 	52	// G/C: 41 (hohe Oktave)
 #endif

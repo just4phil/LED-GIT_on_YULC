@@ -116,10 +116,10 @@ uint32_t tft_spi_speed;
 #include <FastLED.h>
 
 #ifdef LEDMATRIX
-// Please use https://github.com/marcmerlin/LEDMatrix/ at lesat as recent as
-// https://github.com/marcmerlin/LEDMatrix/commit/597ce703e924d45b2e676d6558c4c74a8ebc6991
-// or https://github.com/Jorgen-VikingGod/LEDMatrix/commit/a11e74c8cd5b933021b6e15eb067280a52691449
-// zero copy/no malloc code to work.
+    // Please use https://github.com/marcmerlin/LEDMatrix/ at lesat as recent as
+    // https://github.com/marcmerlin/LEDMatrix/commit/597ce703e924d45b2e676d6558c4c74a8ebc6991
+    // or https://github.com/Jorgen-VikingGod/LEDMatrix/commit/a11e74c8cd5b933021b6e15eb067280a52691449
+    // zero copy/no malloc code to work.
     #include <LEDMatrix.h>
 #endif
 
@@ -150,10 +150,10 @@ const uint8_t MATRIX_TILE_V = 1;  // number of matrices arranged vertically
 
 CRGB* matrixleds;
 #ifdef LEDMATRIX
-// cLEDMatrix defines
-// Unfortunately LEDMatrix has its own matrix definition that isn't as well documented
-// and easy to use. Look for examples if you need to setup a matrix of matrices.
-cLEDMatrix<MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, VERTICAL_ZIGZAG_MATRIX> ledmatrix(false);
+    // cLEDMatrix defines
+    // Unfortunately LEDMatrix has its own matrix definition that isn't as well documented
+    // and easy to use. Look for examples if you need to setup a matrix of matrices.
+    cLEDMatrix<MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, VERTICAL_ZIGZAG_MATRIX> ledmatrix(false);
 #endif
 
 // MATRIX DECLARATION:
