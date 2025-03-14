@@ -89,15 +89,23 @@ int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
 // //==============================================
 
 // paths for progOutlinePath
-const static int outlinePath1[] = { 30, 31, 29, 28, 27, 26, 36, 42, 43, 44, 45, 46, 25, 9, 8, 0, 1, 2, 4, 3, 16, 17, 56, 57, 91, 92, 101, 102, 111, 112, 121, 122, 162, 193, 229, 230, 262, 263, 274, 275, 276, 277, 270, 269, 254, 239, 240, 241, 242, 243, 244, 253, 252, 251, 250, 249, 211, 210, 176, 177, 178, 179, 175, 161, 152, 151, 142, 141, 132, 131, 77, 72, 73, 74, 75, 76, 37, 31 };
-const static int outlinePath2[] = { 32, 33, 34, 35, 41, 71, 70, 69, 68, 67, 47, 24, 10, 7, 6, 5, 14, 15, 18, 55, 58, 90, 93, 100, 103, 110, 113, 120, 123, 163, 192, 194, 228, 231, 261, 264, 273, 272, 271, 268, 255, 238, 220, 219, 218, 217, 216, 215, 245, 246, 247, 248, 212, 209, 208, 207, 180, 174, 160, 153, 150, 143, 140, 133, 130, 77, 72, 73, 74, 38 };
-const static int outlinePath3[] = { 39, 40, 72, 77, 78, 79, 80, 81, 66, 48, 23, 11, 12, 13, 19, 54, 59, 89, 94, 99, 104, 109, 114, 119, 124, 164, 191, 195, 227, 232, 260, 265, 266, 267, 256, 237, 221, 202, 203, 204, 205, 206, 215, 214, 213, 181, 173, 159, 154, 149, 144, 139, 134, 129 };
-const static int outlinePath4[] = { 81, 82, 65, 49, 22, 21, 20, 53, 60, 88, 95, 98, 105, 108, 115, 118, 125, 164, 191, 195, 227, 233, 258, 257, 236, 222, 201, 202, 183, 172, 158, 155, 148, 145, 138, 135, 128 };
-const static int outlinePath5[] = { 82, 65, 49, 50, 51, 61, 87, 96, 97, 106, 107, 116, 117, 126, 165, 190, 196, 226, 234, 235, 236, 222, 201, 184, 171, 157, 156, 147, 146, 137, 136, 127 };
-const static int outlinePath6[] = { 82, 65, 64, 63, 62, 87, 96, 97, 106, 107, 116, 117, 126, 165, 190, 196, 225, 224, 223, 222, 201, 184, 171, 157, 156, 147, 146, 137, 136, 127 };
-const static int outlinePath7[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 190, 197, 198, 199, 200, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
-const static int outlinePath8[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 189, 188, 187, 186, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
-const static int outlinePath9[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 166, 167, 168, 169, 170, 157, 156, 147, 146, 137, 136, 127 };
+#if defined (GITBOARD)
+	const static int outlinePath1[] = { 30, 31, 29, 28, 27, 26, 36, 42, 43, 44, 45, 46, 25, 9, 8, 0, 1, 2, 4, 3, 16, 17, 56, 57, 91, 92, 101, 102, 111, 112, 121, 122, 162, 193, 229, 230, 262, 263, 274, 275, 276, 277, 270, 269, 254, 239, 240, 241, 242, 243, 244, 253, 252, 251, 250, 249, 211, 210, 176, 177, 178, 179, 175, 161, 152, 151, 142, 141, 132, 131, 77, 72, 73, 74, 75, 76, 37, 31 };
+	const static int outlinePath2[] = { 32, 33, 34, 35, 41, 71, 70, 69, 68, 67, 47, 24, 10, 7, 6, 5, 14, 15, 18, 55, 58, 90, 93, 100, 103, 110, 113, 120, 123, 163, 192, 194, 228, 231, 261, 264, 273, 272, 271, 268, 255, 238, 220, 219, 218, 217, 216, 215, 245, 246, 247, 248, 212, 209, 208, 207, 180, 174, 160, 153, 150, 143, 140, 133, 130, 77, 72, 73, 74, 38 };
+	const static int outlinePath3[] = { 39, 40, 72, 77, 78, 79, 80, 81, 66, 48, 23, 11, 12, 13, 19, 54, 59, 89, 94, 99, 104, 109, 114, 119, 124, 164, 191, 195, 227, 232, 260, 265, 266, 267, 256, 237, 221, 202, 203, 204, 205, 206, 215, 214, 213, 181, 173, 159, 154, 149, 144, 139, 134, 129 };
+	const static int outlinePath4[] = { 81, 82, 65, 49, 22, 21, 20, 53, 60, 88, 95, 98, 105, 108, 115, 118, 125, 164, 191, 195, 227, 233, 258, 257, 236, 222, 201, 202, 183, 172, 158, 155, 148, 145, 138, 135, 128 };
+	const static int outlinePath5[] = { 82, 65, 49, 50, 51, 61, 87, 96, 97, 106, 107, 116, 117, 126, 165, 190, 196, 226, 234, 235, 236, 222, 201, 184, 171, 157, 156, 147, 146, 137, 136, 127 };
+	const static int outlinePath6[] = { 82, 65, 64, 63, 62, 87, 96, 97, 106, 107, 116, 117, 126, 165, 190, 196, 225, 224, 223, 222, 201, 184, 171, 157, 156, 147, 146, 137, 136, 127 };
+	const static int outlinePath7[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 190, 197, 198, 199, 200, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
+	const static int outlinePath8[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 165, 189, 188, 187, 186, 185, 171, 157, 156, 147, 146, 137, 136, 127 };
+	const static int outlinePath9[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 166, 167, 168, 169, 170, 157, 156, 147, 146, 137, 136, 127 };
+#elif defined (SCROLLMATRIX)
+	const static int outlinePath1[] = { 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238};
+	const static int outlinePath2[] = { 361, 360, 359, 358, 357, 356, 355, 354, 353, 352, 351, 350, 349, 348, 347, 346, 345, 344, 343, 342, 341, 340, 286, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 253, 178, 307, 232};
+	const static int outlinePath3[] = { 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 150, 149, 148, 147, 146, 145, 144, 143, 142, 141, 140, 139, 138, 137, 136, 135, 134, 133, 132, 131, 130, 129, 128, 127, 126, 125, 124, 123, 122, 121, 120, 119, 366, 281, 258, 173, 335, 312, 227, 204 };
+	const static int outlinePath4[] = { 480, 479, 478, 477, 476, 475, 474, 473, 472, 471, 470, 469, 468, 467, 466, 465, 464, 463, 462, 461, 460, 459, 458, 457, 456, 455, 454, 453, 452, 451, 450, 449, 448, 447, 446, 445, 444, 443, 442, 441, 440, 439, 438, 437, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 383, 372, 275, 264, 167, 156, 426, 329, 318, 221, 210, 113};
+	const static int outlinePath5[] = { 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 485, 378, 377, 270, 269, 162, 161, 54, 432, 431, 324, 323, 216, 215, 108, 107};
+#endif
 //--------------------------------
 
 // FastLED.clear(); alleine reicht nicht. dann funktioniert das kopieren der LED arrays nicht bzw. dort bleiben die vorherigen LEDs an
@@ -940,37 +948,40 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				anz = (sizeof(outlinePath1) / sizeof(outlinePath1[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath1[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
 			case 1:
 				anz = (sizeof(outlinePath2) / sizeof(outlinePath2[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath2[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
 			case 2:
 				anz = (sizeof(outlinePath3) / sizeof(outlinePath3[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath3[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
 			case 3:
 				anz = (sizeof(outlinePath4) / sizeof(outlinePath4[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath4[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
 			case 4:
 				anz = (sizeof(outlinePath5) / sizeof(outlinePath5[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath5[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
+
+		#if defined (GITBOARD)
+				
 			case 5:
 				anz = (sizeof(outlinePath6) / sizeof(outlinePath6[0]));
 				for (int i = 0; i < anz; i++) {
@@ -999,96 +1010,29 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 				}
 				break;
+
+		#endif
+
 			}
 		}
-		if (!LEDsTurnedOff) {
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-			FastLED.show();
+
+		if (!scannerGoesBack) {
+			zaehler++;
+			#if defined (GITBOARD)
+				if (zaehler >= 9) scannerGoesBack = true;
+			#elif defined (SCROLLMATRIX)
+				if (zaehler >= 5) scannerGoesBack = true;
+			#endif
 		}
-
-		zaehler++;
-		if (zaehler >= 9) scannerGoesBack = true;
-
 		else {
-
-			switch (zaehler) {
-			case 0:
-				anz = (sizeof(outlinePath1) / sizeof(outlinePath1[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath1[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 1:
-				anz = (sizeof(outlinePath2) / sizeof(outlinePath2[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath2[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 2:
-				anz = (sizeof(outlinePath3) / sizeof(outlinePath3[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath3[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 3:
-				anz = (sizeof(outlinePath4) / sizeof(outlinePath4[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath4[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 4:
-				anz = (sizeof(outlinePath5) / sizeof(outlinePath5[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath5[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 5:
-				anz = (sizeof(outlinePath6) / sizeof(outlinePath6[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath6[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 6:
-				anz = (sizeof(outlinePath7) / sizeof(outlinePath7[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath7[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 7:
-				anz = (sizeof(outlinePath8) / sizeof(outlinePath8[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath8[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			case 8:
-				anz = (sizeof(outlinePath9) / sizeof(outlinePath9[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath9[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-				}
-				break;
-			}
-		if (!LEDsTurnedOff) {
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-			FastLED.show();
+			zaehler--;
+			if (zaehler <= 0) scannerGoesBack = false;	
 		}
-
-		zaehler--;
-		if (zaehler <= 0) scannerGoesBack = false;	
-		}
+		
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-		FastLED.show();
-	}
+	// dies hier immer und im zweifel auch sofort callen sonst fallen die MarkerLEDs kurz aus
+	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+	FastLED.show();
 }
 void progOutline(unsigned int durationMillis, byte nextPart) {
 	progOutline(durationMillis, nextPart, 0);
@@ -1241,25 +1185,53 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart) {
 			yield();
 			matrix->clear();
 
-			matrix->setCursor(0, 3);
-			matrix->setTextColor(getRandomColor());
-			matrix->print("R");
+			#if defined(GITBOARD)
+			
+				matrix->setCursor(0, 3);
+				matrix->setTextColor(getRandomColor());
+				matrix->print("R");
 
-			matrix->setCursor(0, 8);
-			matrix->setTextColor(getRandomColor());
-			matrix->print("o");
+				matrix->setCursor(0, 8);
+				matrix->setTextColor(getRandomColor());
+				matrix->print("o");
 
-			matrix->setCursor(4, 13);
-			matrix->setTextColor(getRandomColor());
-			matrix->print("o");
+				matrix->setCursor(4, 13);
+				matrix->setTextColor(getRandomColor());
+				matrix->print("o");
 
-			matrix->setCursor(10, 14);
-			matrix->setTextColor(getRandomColor());
-			matrix->print("T");
+				matrix->setCursor(10, 14);
+				matrix->setTextColor(getRandomColor());
+				matrix->print("T");
 
-			matrix->setCursor(15, 13);
-			matrix->setTextColor(getRandomColor());
-			matrix->print("s");
+				matrix->setCursor(15, 13);
+				matrix->setTextColor(getRandomColor());
+				matrix->print("s");
+			
+			#elif defined(SCROLLMATRIX)
+
+				matrix->setCursor(2, random(0, 4));
+				matrix->setTextColor(getRandomColor());
+				matrix->print("R");
+
+				matrix->setCursor(13, random(0, 4));
+				matrix->setTextColor(getRandomColor());
+				matrix->print("O");
+
+				matrix->setCursor(random(24, 26), random(0, 4));
+				matrix->setTextColor(getRandomColor());
+				matrix->print("O");
+
+				matrix->setCursor(36, random(0, 4));
+				matrix->setTextColor(getRandomColor());
+				matrix->print("T");
+
+				matrix->setCursor(47, random(0, 4));
+				matrix->setTextColor(getRandomColor());
+				matrix->print("S");
+			
+			#endif
+
+
 
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
@@ -1299,7 +1271,13 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
 				matrix->setRotation(0);
 
 				yield();
-				matrix->setCursor(2, 13);
+
+				#if defined(GITBOARD)
+					matrix->setCursor(2, 13);
+				#elif defined(SCROLLMATRIX)
+					matrix->setCursor(10, 2); 
+				#endif
+
 				matrix->setTextColor(col);
 				matrix->print(words[zaehlerWortArray]);
 

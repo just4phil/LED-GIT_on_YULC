@@ -33,23 +33,32 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 	}
 }
 
-void SONGPAUSE()  {	// soft / static LEDs
 
+
+int randomProg = 0;
+
+void SONGPAUSE()  {	// soft / static LEDs
+	
  	switch (prog) { 
 
 	case 0:
+		randomProg	= random(1, 3);
+
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 17600, 90, getRandomColor(), 10);
+			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 10);
 		}
 		else {
-			//progSternschnuppen(17600, 10, 18) ;
-			progBlingBlingColoringSONGPAUSE(17600, 10, 250);
+			progBlack(100, 10);
 		}	
 	break;
 
 	case 10:
-		//progSternschnuppen(30000, 100, 18) ;
-		progBlingBlingColoringSONGPAUSE(30000, 100, 250);
+		if (randomProg == 1) {
+			progSternschnuppen(50000, 100, 18);
+		}
+		else if (randomProg == 2) {
+			progBlingBlingColoringSONGPAUSE(50000, 100, 250);
+		}
 	break;
 
 	case 100:
@@ -99,11 +108,19 @@ void defaultLoop()  {
 		//progMatrixScanner(60000, 2, 0);			// DONE
 		//progCircles(60000, 2, 600, false);		// DONE
 		//progRandomLines(30000, 2, 500, true);		// DONE
-		progMovingLines(60000, 2);
+		//progOutline(50000, 2, 100);				// DONE -> TODO: auf GITBOARD testen
+		//progRunningPixel							// unbenutzt?
+		//progShowText("NERDS", 60000, 10, 2, getRandomColor(), 2); 	// OK
+		//progShowROOTS(60000, 2);					// DONE
+		//progWordArray 							// unbenutzt?
+		//progBlinkText								// unbenutzt?
 
-
+		
+		//progMovingLines(60000, 2);
 		//progMatrixHorizontal(30000, 2, 80);
+		//progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed)
 		//progStern(30000, 500, 2, 20);
+
 
 		// if (LEDGITBOARD) {
 		// 	progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
