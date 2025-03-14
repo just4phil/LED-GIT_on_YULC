@@ -7,10 +7,10 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define RINASBASS		// COM17
-//#define ANDRESGIT		// COM8 (aber beim teensy nicht nötig)
-#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
-//#define GITBOARD 		// TEENSY auf COM5 - activate this for the LEDgitBOARD
+#define ANDRESGIT		// YULC1 auf COM5 
+//#define RINASBASS		// YULC2 auf COM17
+//#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
+//#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
@@ -112,7 +112,7 @@
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
-//#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
+#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
 
 #define green2 				255	//byte green2;
 #define SECONDSFORVOLTAGE	1
@@ -128,7 +128,7 @@
 //------ BLE SERVER 1 and his CLIENTS -------------- 
 #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
 #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
-#define CLIENT_ADDRESS_YULC1	"aa:aa:aa:aa:aa:aa"	// Andres YULC -> ist aber SERVER
+#define CLIENT_ADDRESS_YULC1	"48:ca:43:80:8b:95"	// Andres YULC -> ist aber SERVER
 #define CLIENT_ADDRESS_YULC2 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
 #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// kaputter YULC :(
 #define CLIENT_ADDRESS_YULC4	"48:ca:43:80:98:4d"	// YULC 4 vom 12.3.25

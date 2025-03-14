@@ -18,6 +18,24 @@ extern byte songID; // 0 -> default loop
 extern volatile byte prog;							// the actual song-part
 //----------------------------
 
+
+		//progSternschnuppen(50000, 2, 20);			// OK
+		//progBlingBlingColoringSONGPAUSE			// OK
+		//progBlingBlingColoring					// OK
+		//progFastBlingBling(60000, 2, 100); 		// OK
+		//progFullColors(60000, 2, 1500);			// DONE
+		//progStrobo(50000, 2, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); // DONE
+		//progMatrixScanner(60000, 2, 0);			// DONE
+		//progCircles(60000, 2, 600, false);		// DONE
+		//progRandomLines(30000, 2, 500, true);		// DONE
+		//progOutline(50000, 2, 100);				// DONE -> TODO: auf GITBOARD testen
+		//progRunningPixel							// unbenutzt?
+		//progShowText("NERDS", 60000, 10, 2, getRandomColor(), 2); 	// OK
+		//progShowROOTS(60000, 2);					// DONE
+		//progWordArray 							// unbenutzt?
+		//progBlinkText								// unbenutzt?
+
+
 void STARTUP()  {	// BLACK bis zum Start des Intros
 
  	switch (prog) { 
@@ -48,7 +66,7 @@ void SONGPAUSE()  {	// soft / static LEDs
 			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 10);
 		}
 		else {
-			progBlack(100, 10);
+			progBlingBlingColoringSONGPAUSE(23400, 10, 250);
 		}	
 	break;
 
@@ -97,37 +115,19 @@ void defaultLoop()  {
 
  	switch (prog) { 
 
-	case 0:
-	
-		//progSternschnuppen(50000, 2, 20);			// OK
-		//progBlingBlingColoringSONGPAUSE			// OK
-		//progBlingBlingColoring					// OK
-		//progFastBlingBling(60000, 2, 100); 		// OK
-		//progFullColors(60000, 2, 1500);			// DONE
-		//progStrobo(50000, 2, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); // DONE
-		//progMatrixScanner(60000, 2, 0);			// DONE
-		//progCircles(60000, 2, 600, false);		// DONE
-		//progRandomLines(30000, 2, 500, true);		// DONE
-		//progOutline(50000, 2, 100);				// DONE -> TODO: auf GITBOARD testen
-		//progRunningPixel							// unbenutzt?
-		//progShowText("NERDS", 60000, 10, 2, getRandomColor(), 2); 	// OK
-		//progShowROOTS(60000, 2);					// DONE
-		//progWordArray 							// unbenutzt?
-		//progBlinkText								// unbenutzt?
-
-		
+	case 0:	
 		//progMovingLines(60000, 2);
 		//progMatrixHorizontal(30000, 2, 80);
 		//progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed)
 		//progStern(30000, 500, 2, 20);
 
 
-		// if (LEDGITBOARD) {
-		// 	progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
-		// }
-		// else {
-		// 	progBlingBlingColoring(10000, 5, 4000);
-		// }
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
+		}
+		else {
+			progBlingBlingColoring(10000, 5, 4000);
+		}
 		break;
 
 	case 2:	// nur für ledgitboard
