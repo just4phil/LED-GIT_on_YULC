@@ -7,9 +7,9 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-#define ANDRESGIT		// YULC1 auf COM5 
+//#define ANDRESGIT		// YULC1 auf COM5 
 //#define RINASBASS		// YULC2 auf COM17
-//#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
+#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
@@ -40,7 +40,7 @@
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
 	#define NOMARKER			// no LED markers on gitboard
-	//#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
+	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
 	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
