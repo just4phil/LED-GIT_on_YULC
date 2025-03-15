@@ -168,10 +168,10 @@ void setup() {
 
 	//---- Define matrix width and height. --------
 	Serial.println("MATRIX SETUP");
-	#if defined(GITBOARD) 
-		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
-	#elif defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
+	#if defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
 		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
+	#else 
+		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 	#endif
 
 	#if defined (USE_ESP32)
