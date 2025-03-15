@@ -108,6 +108,8 @@ void progOutline(unsigned int durationMillis, byte nextPart);
 //TODO: fixen
 void progRunningPixel(unsigned int durationMillis, byte nextPart);
 
+void progTestRange(unsigned int durationMillis, byte nextPart);
+
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart);
 
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart);

@@ -150,14 +150,13 @@
 // #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
 
-#ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD ---------------
+#ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD und SCROLLMATRIX ---------------
 
 	#if defined(GITBOARD)
 		#define anz_LEDs		anz_LEDs_GITBOARD
 	#elif defined(SCROLLMATRIX)
 		#define anz_LEDs		anz_LEDs_SCROLLMATRIX
 	#endif
-
 	#define Bund_min	 		0
 	#define Bund_max	 		0
 

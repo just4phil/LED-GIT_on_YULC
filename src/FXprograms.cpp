@@ -386,7 +386,7 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			//set random pixel to defined color
-			leds[random(0, anz_LEDs)] = CRGB(r, g, b);	
+			leds[random(0, anz_LEDs)] = CRGB(r, g, b);
 			// delete 1 pixel sometimes
 			if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
 
@@ -1069,6 +1069,25 @@ void progRunningPixel(unsigned int durationMillis, byte nextPart) {
 			last_y = y;
 		}
 	} 
+}
+
+void progTestRange(unsigned int durationMillis, byte nextPart) {
+
+	//--- standard-part um dauer und naechstes programm zu speichern ----
+	if (!nextChangeMillisAlreadyCalculated) {
+		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
+		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
+		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+	}
+	//---------------------------------------------------------------------
+
+	for (int i = 0; i < anz_LEDs; i++) {
+		leds[i] = CRGB(100, 50, 50);
+	}
+	FastLED.show();		
 }
 
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart) {

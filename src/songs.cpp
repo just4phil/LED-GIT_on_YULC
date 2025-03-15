@@ -130,7 +130,7 @@ void defaultLoop()  {
 		}
 		break;
 
-	case 2:	// nur für ledgitboard
+	case 2:	
 		progBlingBlingColoring(10000, 5, 4000);
 		break;
 
