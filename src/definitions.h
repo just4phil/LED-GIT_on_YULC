@@ -89,8 +89,8 @@
     #define ROTARY_ENCODER_B_PIN        5 // CLK
     #define ROTARY_ENCODER_A_PIN        6 // DT
 #endif
-#define ROTARY_ENCODER_VCC_PIN -1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
-#define ROTARY_ENCODER_STEPS 4
+#define ROTARY_ENCODER_VCC_PIN 	-1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
+#define ROTARY_ENCODER_STEPS 	4
 
 #ifdef SCROLLMATRIX
 	#define MATRIX_WIDTH       	54
@@ -129,17 +129,23 @@
 #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
 #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
 #define CLIENT_ADDRESS_YULC1	"48:ca:43:80:8b:95"	// Andres YULC -> ist aber SERVER
-#define CLIENT_ADDRESS_YULC2 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
+#define CLIENT_ADDRESS_YULC2	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
 #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// kaputter YULC :(
 #define CLIENT_ADDRESS_YULC4	"48:ca:43:80:98:4d"	// YULC 4 vom 12.3.25
 #define CLIENT_ADDRESS_YULC5	"cc:cc:cc:cc:cc:cc"	// YULC 5 vom 12.3.25
 #define CLIENT_ADDRESS_YULC6	"dd:dd:dd:dd:dd:dd"	// YULC 6 vom 12.3.25
 //==> aktuelle clients sind: YULC2, YULC4 und YULC5 (s. midiProxyBLEServer)
 
+//alt:
+// #define CLIENT_ADDRESS_YULC1 "cc:8d:a2:3f:b3:9d"	// RINAs YULC
+// #define CLIENT_ADDRESS_YULC2	"48:ca:43:80:98:4d"	// TODO
+// #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
+
+
 //------ BLE SERVER 2 and his CLIENTS -------------- 
 // #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
 // #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
-// #define CLIENT_ADDRESS_YULC1 	"cc:8d:a2:3f:b3:9d"	// RINAs YULC
+// #define CLIENT_ADDRESS_YULC1 "cc:8d:a2:3f:b3:9d"	// RINAs YULC
 // #define CLIENT_ADDRESS_YULC2	"aa:aa:aa:aa:aa:aa"	// TODO
 // #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
