@@ -24,6 +24,7 @@
 	#define BASS				// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass	
 	#define BASSMARKER			// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define firstYulcPrototype 	// first one has different pins
+	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy (geht nur, wenn HAS_MIDI_IN FALSE)
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist, SONST LEUCHTEN NUR DIE MARKER!!
 	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
@@ -31,16 +32,15 @@
 #ifdef ANDRESGIT
 	#define GIT					// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
 	#define GITMARKER_GIT1 		// definiert die spezifischen LED-indizes für BASS bzw. GIT
-	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
 	#define NOMARKER			// no LED markers on gitboard
-	//#define HAS_MIDI_IN			// with widi master
-	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
 	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
@@ -49,7 +49,6 @@
 	#define NOMARKER		// no LED markers on gitboard
 	#define HAS_MIDI_IN		// with widi master
 	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
-	//#define IS_MIDI_PROXY
 	//#define HAS_ROTARY_ENCODER
 #endif
 //---------------------------------------------------------------------------------------
