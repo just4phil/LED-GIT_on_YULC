@@ -252,7 +252,7 @@ void loop() {
 					syncProgWithNextChange = false;
 				}
 			#endif
-		#else
+		#elif defined (IS_BLE_CLIENT)
 			informServerOnNextChange(nextSongPart);	// BT BLE Client: sync LEDs to server on request
 		#endif
 
