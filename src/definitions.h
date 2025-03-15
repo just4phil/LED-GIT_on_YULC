@@ -32,15 +32,15 @@
 #ifdef ANDRESGIT
 	#define GIT					// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
 	#define GITMARKER_GIT1 		// definiert die spezifischen LED-indizes für BASS bzw. GIT
-	//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
-	//#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
-	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-	// #define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
+	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
+	//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
 	#define NOMARKER			// no LED markers on gitboard
-	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
+	//#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
 	//#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
@@ -155,7 +155,10 @@
 		#define anz_LEDs		anz_LEDs_GITBOARD
 	#elif defined(SCROLLMATRIX)
 		#define anz_LEDs		anz_LEDs_SCROLLMATRIX
+	#elif defined(ANDRESGIT)							//nur zum testen!!
+		#define anz_LEDs		anz_LEDs_GIT1			//nur zum testen!!
 	#endif
+	
 	#define Bund_min	 		0
 	#define Bund_max	 		0
 

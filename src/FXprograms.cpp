@@ -112,6 +112,8 @@ int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
 void clearAll() {
 	FastLED.clear();
 	memset(leds, 0, anz_LEDs * sizeof(CRGB));
+
+	// nicht nötig:
 	//memset(leds1, 0, anz_LEDs * sizeof(CRGB));
 	//memset(leds2, 0, anz_LEDs * sizeof(CRGB));
 }

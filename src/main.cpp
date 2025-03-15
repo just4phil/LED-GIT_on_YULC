@@ -113,6 +113,8 @@ int ledState = LOW;             // ledState used to set the LED
 
 
 void setup() {
+	
+	Serial.println("START SETUP");
 
  	Serial.begin(115200);
 	delay(250);	// 500 Time for serial port to work
@@ -140,8 +142,10 @@ void setup() {
 
 	//=== MIDI / PROXY / CLIENT initialisieren =====
 	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
-
+		Serial.println("MIDI SETUP");
+		
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			Serial.println("MIDI PROXY SETUP");	
 			midiProxy_initialize_BLE();
 		#endif
 
@@ -153,6 +157,7 @@ void setup() {
 	
 	//--- rotary encoder ---------
 	#ifdef HAS_ROTARY_ENCODER
+		Serial.println("ROTARY SETUP");
 		rotary_initialize();
 	#endif
 
@@ -162,6 +167,7 @@ void setup() {
 	#endif
 
 	//---- Define matrix width and height. --------
+	Serial.println("MATRIX SETUP");
 	#if defined(GITBOARD) 
 		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 	#elif defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
@@ -173,12 +179,13 @@ void setup() {
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, NUMMATRIX).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
 		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, NUMMATRIX).setCorrection(TypicalLEDStrip);
-	
+
 	#elif defined (USE_TEENSY)
 		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
 	#endif
 
 	//NEOPIXEL	//WS2812B
+	Serial.println("MATRIX BEGIN");
 	matrix->begin();
 	matrix->setBrightness(BRIGHTNESS);
 	matrix->setTextWrap(false);
@@ -204,6 +211,8 @@ void setup() {
 			setSongAndPartIDforLEDsync(0, 0);
 		#endif
 	#endif
+
+	Serial.println("ENDE SETUP");
 }
 //====================================================
 
