@@ -34,6 +34,11 @@ extern volatile byte prog;							// the actual song-part
 		//progShowROOTS(60000, 2);					// DONE
 		//progWordArray 							// unbenutzt?
 		//progBlinkText								// unbenutzt?
+		//progStern(60000, 500, 2, 50);				// DONE
+		//progMovingLines(60000, 2);				// DONE
+		//progMatrixHorizontal(60000, 2, 80);		// DONE
+		//progMatrixVertical(60000, 2, 80);			=> bei SCROLLMATRIX unsinnig!
+
 
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
@@ -115,13 +120,7 @@ void defaultLoop()  {
 
  	switch (prog) { 
 
-	case 0:	
-		//progMovingLines(60000, 2);
-		//progMatrixHorizontal(30000, 2, 80);
-		//progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed)
-		//progStern(30000, 500, 2, 20);
-
-
+	case 0:			
 		if (LEDGITBOARD) {
 			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
 		}

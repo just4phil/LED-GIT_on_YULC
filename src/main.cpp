@@ -170,7 +170,7 @@ void setup() {
 	Serial.println("MATRIX SETUP");
 	#if defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
 		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
-	#else 
+	#else // WICHTIG HIER NICHT AUF GITBOARD ZU TESTEN SONDERN EINFACH NUR "ELSE"....sonst haben GIT/BASS keine valide MATRIX!!
 		matrix = new FastLED_NeoMatrix(leds, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG);
 	#endif
 
@@ -199,7 +199,7 @@ void setup() {
 	
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	switchToSong(100);	// 0 SONGPAUSE loop
+	switchToSong(0);	// 0 SONGPAUSE loop
 						// 100 DEFAULT loop 
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 

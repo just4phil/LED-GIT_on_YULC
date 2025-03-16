@@ -658,6 +658,8 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart) {
 }
 
 void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed) {
+int c_x;
+int c_y;
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
@@ -685,25 +687,93 @@ void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsig
 	}
 	//-------------------------------------
 
+	#if defined (SCROLLMATRIX)
+		reduceSpeed = reduceSpeed + 30;
+	#endif
+
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed = 0;
-
-		zaehler++;
-		if (zaehler >= 10) zaehler = 0;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
 			clearAll();
 
-			matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
-			matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
-			matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
-			matrix->drawLine(0, zaehler, 21, 21 - zaehler, col2);
-			matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, col1);
-			matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, col2);
-			matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
-			matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
-		
+			#if defined (SCROLLMATRIX)
+
+				c_x = center_x;
+				c_y = center_y;
+
+				//zaehler = 3;
+
+				switch (zaehler) {
+				case 0:
+					matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col1);		// 90/270 grad
+					matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col1);	// 0/180 grad
+					break;
+
+				case 1:
+					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
+					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
+					break;
+
+				case 2:
+					matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col1);	//45/225 Grad
+					matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col1);	//315/135 Grad
+					break;
+
+				case 3:
+					matrix->drawLine(c_x-9, c_y-4, c_x+10, c_y+4, col1);
+					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
+					break;
+				}
+
+				// 2. Farbe
+				switch (zaehler) {
+					case 0:
+					c_x = center_x +1;
+					c_y = center_y -1;
+					matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col2);		// 90/270 grad
+					matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col2);	// 0/180 grad
+					break;
+
+				case 1:
+					c_x = center_x +1;
+					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
+					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
+					break;
+
+				case 2:
+					c_x = center_x +1;
+					matrix->drawLine(c_x-5, c_y-5, c_x+5, c_y+5, col2);	//45/225 Grad
+					matrix->drawLine(c_x-5, c_y+5, c_x+5, c_y-5, col2);	//315/135 Grad
+					break;
+
+				case 3:
+					c_x = center_x +1;
+					matrix->drawLine(c_x-9, c_y-4, c_x+10, c_y+4, col2);
+					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
+					break;
+				}
+
+				zaehler++;
+				if (zaehler >= 4) zaehler = 0;
+
+			#else
+
+				zaehler++;
+				if (zaehler >= 10) zaehler = 0;
+
+				matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
+				matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
+				matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
+				matrix->drawLine(0, zaehler, 21, 21 - zaehler, col2);
+				matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, col1);
+				matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, col2);
+				matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
+				matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
+
+			#endif
+
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 			FastLED.show();
 		}
@@ -846,6 +916,17 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 
 		clearAll();
 
+	#if defined (SCROLLMATRIX)
+
+
+		matrix->drawLine(0 + zaehler, 0, MATRIX_WIDTH-1 - zaehler, MATRIX_HEIGHT-1, getRandomColor());
+
+		zaehler++;
+		if (zaehler >= 54) zaehler = 0;
+
+
+	#else
+
 		switch (stage) {
 			case 0:
 				zaehler++;
@@ -907,6 +988,8 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 				if (!LEDsTurnedOff) matrix->drawLine(0, zaehler, 25, 22 - zaehler, getRandomColor());
 				break;
 		}
+
+	#endif
 
 		if (!LEDsTurnedOff) {
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
@@ -1848,6 +1931,221 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 			if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
 		}
 		//--------------------------
+
+#if defined (SCROLLMATRIX)
+
+row = 24;
+offset = 0;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 26;
+offset = -20;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 28;
+offset = -15;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 30;
+offset = -8;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 32;
+offset = 0;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 34;
+offset = -14;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 36;
+offset = -21;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 38;
+offset = -9;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 40;
+offset = -1;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 42;
+offset = -16;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 44;
+offset = -23;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 46;
+offset = -11;
+colorIndex = 16;
+for (i = zaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+//--------------------------------------
+
+row = 48;
+offset = 0;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 50;
+offset = -20;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 52;
+offset = -15;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 54;
+offset = -8;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 25;
+offset = 0;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 27;
+offset = -14;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 29;
+offset = -21;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 31;
+offset = -9;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 35;
+offset = -1;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 37;
+offset = -16;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+
+row = 41;
+offset = -23;
+colorIndex = 16;
+for (i = progMatrixZaehler + offset; i > -1 + offset; i--) {
+	colorIndex--;
+	if (colorIndex < 2) colorIndex = 0;
+	if (!LEDsTurnedOff) matrix->drawPixel(row, i, getMatrixColor(colorIndex));
+}
+//--------------------------
+
+#endif
+
+
 
 		if (!LEDsTurnedOff) {
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
