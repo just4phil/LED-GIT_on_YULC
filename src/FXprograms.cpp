@@ -613,6 +613,11 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 	}
 	//---------------------------------------------------------------------
 
+#if defined (SCROLLMATRIX)
+	reduceSpeed = reduceSpeed - 20;
+	if (reduceSpeed < 0) reduceSpeed = 0;
+#endif
+
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
 		millisCounterTimer = 0;
 
@@ -722,7 +727,7 @@ int c_y;
 					break;
 
 				case 3:
-					matrix->drawLine(c_x-9, c_y-4, c_x+10, c_y+4, col1);
+					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col1);
 					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
 					break;
 				}
@@ -750,7 +755,7 @@ int c_y;
 
 				case 3:
 					c_x = center_x +1;
-					matrix->drawLine(c_x-9, c_y-4, c_x+10, c_y+4, col2);
+					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col2);
 					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
 					break;
 				}
@@ -854,7 +859,10 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+
+		clearAll();
+
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.05f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -1251,7 +1259,7 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 			#if defined(GITBOARD)
 				matrix->setCursor(progScrollTextZaehler, 13);
 			#elif defined(SCROLLMATRIX)
-				matrix->setCursor(progScrollTextZaehler, 2); 
+				matrix->setCursor(progScrollTextZaehler, 1); 
 			#endif
 			matrix->setTextColor(col);
 			matrix->print(words);
@@ -1707,7 +1715,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
+		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -1722,6 +1730,8 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
 		millisCounterTimer = 0;
+
+		clearAll();
 
 		row = 0;
 		offset = 0;
@@ -2192,6 +2202,8 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
 		millisCounterTimer = 0;
+
+		clearAll();
 
 		row = 0;
 		offset = 0;
