@@ -614,9 +614,10 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 	//---------------------------------------------------------------------
 
 #if defined (SCROLLMATRIX)
-	reduceSpeed = reduceSpeed - 20;
-	if (reduceSpeed < 0) reduceSpeed = 0;
-#endif
+	//reduceSpeed = reduceSpeed - 20;
+	//if (reduceSpeed <= 1) reduceSpeed = 1;
+	reduceSpeed = 1;
+#endif 
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
 		millisCounterTimer = 0;

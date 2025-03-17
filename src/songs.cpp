@@ -1025,7 +1025,7 @@ void Firework() {
 
 	case 0://text		7500
 		if (LEDGITBOARD) {
-			progScrollText("Firework by Katey Perry", 22740, 70, getRandomColor(), 10);
+			progBlack(5740, 2);
 		}
 		else {
 			progBlack(6290, 2);
@@ -1033,7 +1033,12 @@ void Firework() {
 		break;
 
 	case 2://snarewirbel
-		progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		if (LEDGITBOARD) {
+			progScrollText("Firework by Katey Perry", 17000, 90, getRandomColor(), 10);
+		}
+		else {
+			progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}	
 		break;
 
 	case 5:// intro1		15484
@@ -1362,14 +1367,19 @@ void BloodyMary() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Bloody Mary by Lady Gaga", 18680, 90, getRandomColor(), 6);
+			progScrollText("Bloody Mary by Lady Gaga", 17500, 90, getRandomColor(), 3);
 		}
 		else {
 			progBlack(1840, 3);
 		}
 		break;
 	case 3: //synth intro	16845
-		progRandomLines(16840, 6, 525, true);
+		if (LEDGITBOARD) {
+			progBlack(1180, 6);
+		}
+		else {
+			progRandomLines(16840, 6, 525, true);
+		}		
 		break;
 	case 6: //verse 1	16840
 		progPalette(16830, 4, 9);
@@ -1913,18 +1923,22 @@ void Abcdefu() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progBlack(5000, 1);
+			progBlack(7545, 1);
 		}
 		else { // pause
-			progBlack(1000, 2); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
+			progBlack(1000, 3); // progBlack(0, 2); -> 0ms sind ein problem!!! -> auf 1.000 ms gesetzt und bei case 2 dafür -1.000 ms
 		} 
 		break;
 	
 	case 1:
-		progScrollText("Abcdefu by Gayle", 19545, 90, getRandomColor(), 4);
+		progScrollText("Abcdefu by Gayle", 13000, 90, getRandomColor(), 2);
 		break;
 
-	case 2: // intro
+	case 2:
+		progBlack(4000, 4);
+		break;
+
+	case 3: // intro
 		progBlingBlingColoring(23545, 4, 3000);
 		//progPalette(17180, 6, 4);
 		break;
@@ -1938,7 +1952,7 @@ void Abcdefu() {
 	break;	
 	
 	case 8: // verse 1b
-		progMatrixScanner(15000, 10);
+		progMatrixScanner(15000, 10, 1);
 	break;	
 	
 	case 10: // i was into you
