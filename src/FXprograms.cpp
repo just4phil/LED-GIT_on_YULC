@@ -709,7 +709,7 @@ int c_y;
 				c_x = center_x;
 				c_y = center_y;
 
-				//zaehler = 3;
+				//zaehler = 7;
 
 				switch (zaehler) {
 				case 0:
@@ -718,18 +718,38 @@ int c_y;
 					break;
 
 				case 1:
-					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
-					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
+					matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col1);		// 90/270 grad
+					matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col1);	// 0/180 grad
 					break;
 
 				case 2:
+					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
+					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
+					break;
+				
+				case 3:	//ist kein 90 grad winkel!!
+					matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col1);		// 68/248 Grad
+					matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col1);	// 338/158 Grad 
+					break;
+
+				case 4:
 					matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col1);	//45/225 Grad
 					matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col1);	//315/135 Grad
 					break;
+					
+				case 5://ist kein 90 grad winkel!!
+					matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col1);		// 68/248 Grad
+					matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col1);	// 338/158 Grad 
+					break;
 
-				case 3:
+				case 6:
 					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col1);
 					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
+					break;
+
+				case 7:
+					matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col1);		// 68/248 Grad
+					matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col1);	// 338/158 Grad 
 					break;
 				}
 
@@ -738,31 +758,60 @@ int c_y;
 					case 0:
 					c_x = center_x +1;
 					c_y = center_y -1;
-					matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col2);		// 90/270 grad
-					matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col2);	// 0/180 grad
+					matrix->drawLine(c_x, c_y-5, c_x, c_y+5, col2);		// 90/270 grad
+					matrix->drawLine(c_x-27, c_y, c_x+27, c_y, col2);	// 0/180 grad
 					break;
 
 				case 1:
 					c_x = center_x +1;
-					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
-					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
+					c_y = center_y +1;	// hier entsteht eine mini lücke
+					matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col2);		// 90/270 grad
+					matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col2);	// 0/180 grad
 					break;
 
 				case 2:
 					c_x = center_x +1;
-					matrix->drawLine(c_x-5, c_y-5, c_x+5, c_y+5, col2);	//45/225 Grad
-					matrix->drawLine(c_x-5, c_y+5, c_x+5, c_y-5, col2);	//315/135 Grad
+					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
+					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
+					break;
+				
+				case 3:
+					c_x = center_x +1;
+					matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col2);		// 68/248 Grad
+					matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col2);	// 338/158 Grad 
 					break;
 
-				case 3:
+				case 4:
+					c_x = center_x +1;
+					matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col2);	//45/225 Grad
+					matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col2);	//315/135 Grad
+					break;
+
+				case 5:
+					c_x = center_x;
+					c_y = center_y -1;
+					matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col2);		// 68/248 Grad
+					
+					c_x = center_x+1;
+					c_y = center_y;
+					matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col2);	// 338/158 Grad 
+					break;
+
+				case 6:
 					c_x = center_x +1;
 					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col2);
 					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
 					break;
+					
+				case 7:
+					c_y = center_y +1;
+					matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col2);		// 68/248 Grad
+					matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col2);	// 338/158 Grad 
+					break;
 				}
 
 				zaehler++;
-				if (zaehler >= 4) zaehler = 0;
+				if (zaehler >= 8) zaehler = 0;
 
 			#else
 
