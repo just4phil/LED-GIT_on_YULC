@@ -45,6 +45,34 @@ checken:
 
 TODOs:
 =======
+
+physical:
+    stern scrollmatrix langsamer als git
+    git im vocals only teil stumm schalten bi slide in
+
+prisoner
+    ende let me go länger zuende laufen lassen
+
+
+shivers solo und enjoy enjoyIntro
+    songpause rein?
+
+    rina danie andere
+
+
+    aha
+nicht in sync
+
+soli zb use s. -> ouzline testen
+
+i love it
+    bridge mit wha
+    auf F schrammeln
+
+    
+
+
+
 - LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
 - testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
