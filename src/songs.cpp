@@ -122,15 +122,15 @@ void defaultLoop()  {
 
 	case 0:			
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 19000, 90, getRandomColor(), 2);
+			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 5);
 		}
 		else {
-			progBlingBlingColoring(10000, 5, 4000);
+			progBlingBlingColoring(10000, 2, 4000);
 		}
 		break;
 
 	case 2:	
-		progBlingBlingColoring(10000, 5, 4000);
+		progBlingBlingColoring(13400, 5, 4000);
 		break;
 
 	case 5: // OK
@@ -289,30 +289,28 @@ void PhysicalTrailer() {
 	switch (prog) {
 
 	case 0:
-		//progBlack(38980, 1); 
-		//progBlack(37540, 100);
-		progBlack(19130, 1);
+		progBlack(14860, 1);
 	break;
 
 	case 1:
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 19130, 90, getRandomColor(), 2);
+			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlack(19130, 2);
+			progBlack(23400, 2);
 		}	
 	break;
 
 	case 2:
-		progBlack(19130, 3);
+		progBlack(23000, 3);
 	break;
 
 	case 3:
 		if (LEDGITBOARD) {
-			progScrollText("Physical by Dua Lipa", 19130, 90, getRandomColor(), 100);
+			progScrollText("Physical by Dua Lipa", 15260, 90, getRandomColor(), 100);
 		}
 		else {
-			progBlack(19130, 100);
+			progBlack(15260, 100);
 		}	
 	break;
 
@@ -329,22 +327,22 @@ void PhysicalTrailer() {
 	}
 }
 
-// #2 Physical(); // FERTIG! am 13.08.2023
+// #2 Physical(); // FERTIG! am 13.08.2023 // TODO: start mit text checken!!
 void Physical() {
 
  	switch (prog) { 
 
 	case 0:
-		if (LEDGITBOARD) {
-			progScrollText("Physical by Dua Lipa", 13060, 90, getRandomColor(), 25);
+		if (LEDGITBOARD) {	// TODO: checken!!
+			progScrollText("Physical by Dua Lipa", 13060, 90, getRandomColor(), 25); // 15260
 		}
 		else {
-			progBlack(1430, 20);
+			progBlack(1430, 20);	// TODO: checken!!
 			//progPalette(65000, 10, 5);
 		}
 		break;
 	
-	case 20: // synth intro
+	case 20: // synth intro	// TODO: checken!!
 		progPalette(13060, 6, 25); 
 		break;
 
@@ -466,7 +464,7 @@ void TakeOnMe() {
 
 	case 0://pause	5650
 		if (LEDGITBOARD) {
-			progScrollText("Take on me by a-ha", 11885, 90, getRandomColor(), 10);
+			progScrollText("Take on me by a-ha", 14000, 90, getRandomColor(), 10);
 		}
 		else {
 			progBlack(5650, 5);
@@ -476,7 +474,12 @@ void TakeOnMe() {
 		progPalette(6235, 8, 10);
 		break;
 	case 10: //synthIntro	6230
-		progPalette(6230, 4, 15);
+		if (LEDGITBOARD) {
+			progPalette(4115, 4, 15);
+		}
+		else {
+			progPalette(6230, 4, 15);
+		}	
 		break;
 	case 15: //gitIntro	6235
 		progPalette(6235, 6, 20);
@@ -1155,15 +1158,21 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Dancing on my own by Robyn", 21395, 90, getRandomColor(), 10);
+			progBlack(2895, 5);
 		}
 		else {
 			progBlack(5655, 5);
 		}
 		break;
 	case 5: //bass, 15740
-		progPalette(15740, 8, 10);
+		if (LEDGITBOARD) {
+			progScrollText("Dancing on my own by Robyn", 18500, 90, getRandomColor(), 10);
+		}
+		else {
+			progPalette(15740, 8, 10);
+		}
 		break;
+
 	case 10: //somebody, 15735
 		progPalette(15735, 4, 15);
 		break;
@@ -1582,7 +1591,7 @@ void SuchAshame() { // fertig: 17.09.2023
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Such a shame by Talk Talk", 20000, 90, getRandomColor(), 4);
+			progScrollText("Such a shame by Talk Talk", 18000, 90, getRandomColor(), 4);
 		}
 		else {
 			progBlack(11630, 5);
@@ -1590,7 +1599,7 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;
 	
 	case 4: //nur für LED gitboard
-		progBlingBlingColoring(14380, 10, 5000);
+		progBlingBlingColoring(16380, 10, 5000);
 		break;
 
 	case 5: //intro + verse 1
@@ -1784,7 +1793,7 @@ void Shivers() { // fertig: TODO
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Shivers by Ed Sheeran", 20000, 90, getRandomColor(), 3);
+			progScrollText("Shivers by Ed Sheeran", 15540, 90, getRandomColor(), 3);
 		}
 		else {
 			progBlack(6590, 4);
@@ -1792,7 +1801,7 @@ void Shivers() { // fertig: TODO
 		break;
 	
 	case 3: //nur für ledgitboard!
-		progBlingBlingColoring(15680, 12, 5000);
+		progBlingBlingColoring(20140, 12, 5000);
 		break;
 
 	case 4: //intro		14545
@@ -2001,7 +2010,7 @@ void enjoyTheSilenceINTRO() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progBlack(46998, 5);
+			progBlack(43840, 5);
 		}
 		else {
 			progBlack(32920, 10);
@@ -2009,7 +2018,7 @@ void enjoyTheSilenceINTRO() {
 		break;
 
 	case 5:
-		progScrollText("Enjoy the silence by Depeche Mode", 18842, 90, getRandomColor(), 100);
+		progScrollText("Enjoy the silence by Depeche Mode", 22000, 90, getRandomColor(), 100);
 		break;
 
 	case 10:
@@ -2290,19 +2299,19 @@ void prisoner() {
 
 	case 0: //black	3525
 		if (LEDGITBOARD) {
-			progScrollText("Prisoner by Miley Cyrus ", 22265, 90, getRandomColor(), 6);
+			progBlack(5265, 2);
 		}
 		else {
-			progBlack(7265, 2);
+			progBlack(7265, 4);
 		}	
 		break;
 
-	case 2: //  text	15925
-		progPalette(15000, 6, 6);
+	case 2: //black	
+		progScrollText("Prisoner by Miley Cyrus", 17000, 90, getRandomColor(), 6);
 		break;
 
-	case 4: // wird nicht verwendet !!!!!
-		progBlack(2810, 6);
+	case 4: //  text	15925
+		progPalette(15000, 6, 6);
 		break;
 
 	case 6: // auftakt	1875
