@@ -72,8 +72,8 @@ void rotary_initialize() {
 
 	numberSelector.setValue - sets initial value    
 	*/
-	numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
-	//numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
+	//numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
+	numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
 	numberSelector.setValue(DEFAULT_BRIGHTNESS);
 }
 

@@ -105,7 +105,6 @@ byte secondsForVoltage = 0; // for lipo safer
 volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
 volatile boolean LEDsTurnedOff = false;		// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
-volatile boolean ignoreLIPOsafer = false;	// KANN RAUS!  when true -> leds will not be turned off when lipo voltage is low
 //--------------------
 unsigned int lastLEDchange = millis();
 int ledState = LOW;             // ledState used to set the LED
@@ -280,15 +279,6 @@ void loop() {
 			LEDsTurnedOff = false;
 		}
 	}
-	if (LIPOvoltageIsLOW && ignoreLIPOsafer) {
-		if (encoderButtonPushedLEDsOFF) {
-			LEDsTurnedOff = true;
-		}
-		else {
-			LEDsTurnedOff = false;
-		}
-	}
-	if (LIPOvoltageIsLOW && !ignoreLIPOsafer) LEDsTurnedOff = true;
 
 	//--- falls LEDs aus sind dann hier alle löschen und nur die MarkerLEDs setzen
 	if (LEDsTurnedOff) {
