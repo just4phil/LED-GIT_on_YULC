@@ -694,7 +694,7 @@ int c_y;
 	//-------------------------------------
 
 	#if defined (SCROLLMATRIX)
-		reduceSpeed = reduceSpeed + 30;
+		reduceSpeed = reduceSpeed + 10;
 	#endif
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {

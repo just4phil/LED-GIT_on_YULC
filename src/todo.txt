@@ -47,7 +47,6 @@ TODOs:
 =======
 
 physical:
-    stern scrollmatrix langsamer als git
     git im vocals only teil stumm schalten bi slide in
 
 prisoner
@@ -72,6 +71,7 @@ i love it
     
 
 
+- eigentlich braucht noch jedes YULC eine dedizierte LED um zB anzuzeigen dass eine connection zum midi proxy besteht
 
 - LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
