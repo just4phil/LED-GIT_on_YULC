@@ -46,34 +46,22 @@ checken:
 TODOs:
 =======
 
-physical:
-    git im vocals only teil stumm schalten bi slide in
+- physical: git im vocals only teil stumm schalten bi slide in
+- prisoner: ende let me go länger zuende laufen lassen
+- shivers solo und enjoyIntro -> songpause rein?
+- aha, bloddy mary -> nicht in sync
 
-prisoner
-    ende let me go länger zuende laufen lassen
-
-
-shivers solo und enjoy enjoyIntro
-    songpause rein?
-
-    rina danie andere
-
-
-    aha
-nicht in sync
-
-soli zb use s. -> ouzline testen
-
-i love it
-    bridge mit wha
-    auf F schrammeln
+- soli zb use s. -> outline testen
+- rina danie andre auf matrix ?
+- i love it
+    - bridge mit wha
+    - auf F schrammeln
 
     
 
 
 - eigentlich braucht noch jedes YULC eine dedizierte LED um zB anzuzeigen dass eine connection zum midi proxy besteht
 
-- LEDs auch mit rotary bis auf 0 abschalten!
 - markerLEDs an songEnden sofort ausschalten??
 - testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
 - fontzoom einbauen: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/fontzoom/fontzoom.ino
