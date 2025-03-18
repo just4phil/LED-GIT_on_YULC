@@ -477,7 +477,7 @@ void TakeOnMe() {
 		break;
 	case 10: //synthIntro	6230
 		if (LEDGITBOARD) {
-			progPalette(4115, 4, 15);
+			progPalette(4115, 4, 15); // 4115
 		}
 		else {
 			progPalette(6230, 4, 15);
@@ -487,7 +487,13 @@ void TakeOnMe() {
 		progPalette(6235, 6, 20);
 		break;
 	case 20: //chorus 1	18700
-		progStrobo(18700, 25, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(18700, 25, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
+		// if (LEDGITBOARD) { // sync timing
+		// 	progStrobo(18700, 25, 193, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		// }
+		// else {
+		// 	progStrobo(18700, 25, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		// }	
 		break;
 	case 25: //verse 1	18705
 		progMatrixScanner(18705, 30, 24);
@@ -1387,8 +1393,12 @@ void BloodyMary() {
 		progPalette(16830, 4, 9);
 		break;
 	case 9: //dance dance	16845
-		//progMovingLines(16845, 12);
-		progStrobo(16840, 12, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		if (LEDGITBOARD) {	// Sync-ausgleich
+			progStrobo(16840, 12, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}
+		else {
+			progStrobo(16840, 12, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}	
 		break;
 	case 12: //chorus 1	16840
 		progStern(16840, 525, 15, 20); 
@@ -1403,8 +1413,12 @@ void BloodyMary() {
 		progBlingBlingColoring(16830, 24, 3000);
 		break;
 	case 24: //dance dance	16840
-		//progMovingLines(16840, 27);
-		progStrobo(16840, 27, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		if (LEDGITBOARD) {	// Sync-ausgleich
+			progStrobo(16840, 27, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}
+		else {
+			progStrobo(16840, 27, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}	
 		break;
 	case 27: //chorus 1	16845
 		progStern(16845, 525, 30, 20); 
@@ -1464,7 +1478,12 @@ void BloodyMary() {
 		progPalette(16845, 9, 84);	// rot weiss blau
 		break;
 	case 84: //dance dance	16840
-		progStrobo(16840, 87, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		if (LEDGITBOARD) {	// Sync-ausgleich
+			progStrobo(16840, 87, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}
+		else {
+			progStrobo(16840, 87, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		}
 		break;
 	case 87: //chorus a	16845
 		progStern(16845, 525, 90, 20); 
@@ -1495,15 +1514,21 @@ void Titanium() {
 
 	case 0://text	11900		
 		if (LEDGITBOARD) {
-			progScrollText("Titanium by David Guetta", 11905, 75, getRandomColor(), 5);
+			progScrollText("Titanium by David Guetta", 14900, 75, getRandomColor(), 5);
 		}
 		else {
-			progPalette(11905, 6, 5);
+			//progPalette(11905, 6, 5);
+			progBlack(6000, 5);
 		}
 		break;
 
 	case 5:// intro	9050
-		progCircles(9045, 10, 475);
+		if (LEDGITBOARD) {
+			progCircles(6050, 10, 475);
+		}
+		else {
+			progCircles(14950, 10, 475);
+		}		
 		break;
 
 	case 10://v1: u shout it out	15250
@@ -1716,7 +1741,7 @@ void InTheDark() {	// fertig: 16.09.2023
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("In the dark by Purple Disco Machine", 20000, 90, getRandomColor(), 4);
+			progScrollText("In the dark by Purple Disco Machine", 23000, 90, getRandomColor(), 4);
 		}
 		else {
 			progBlack(7500, 5);
@@ -1724,7 +1749,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;
 	
 	case 4: //nur für ledgitboard!
-		progBlingBlingColoring(20590, 10, 5000);
+		progBlingBlingColoring(17590, 10, 5000);
 		break;
 
 	case 5: //intro+verse 1
@@ -1732,7 +1757,12 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;
 		
 	case 10: // bridge 1
-		progFullColors(16550, 12, 515);
+		if (LEDGITBOARD) { // timing sync
+			progFullColors(16550, 12, 510);
+		}
+		else {
+			progFullColors(16550, 12, 515);
+		}		
 		break;
 	
 	case 12: // chorus 1
@@ -2548,7 +2578,7 @@ void Kids() { // TODO
 
 	case 0:// pause	6795
 		if (LEDGITBOARD) {
-			progScrollText("Kids by MGMT", 12690, 90, getRandomColor(), 2);
+			progScrollText("Kids by MGMT", 11000, 90, getRandomColor(), 2);
 		}
 		else {
 			progBlack(6562, 5); // 6562, da um 235 ms verschoben da mit strobo nicht offbeat ist
@@ -2556,7 +2586,7 @@ void Kids() { // TODO
 		break;
 	
 	case 2: //nur für ledgitboard
-		progStrobo(9107, 10, 465, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(10797, 10, 460, getRandomColor(), getRandomColor(), getRandomColor());
 		break;
 
 	case 5: //synth intro	15000
@@ -2669,19 +2699,20 @@ void Tellittomyheart() { // TODO
 		break;
 	
 	case 5: //intro chorus	16270
-		//progBlingBlingColoring(16270, 10, 5000);
 		progStern(16270, 1015, 10, 20); 
 		break;
 		
 	case 10: // verse	16270
-		progFullColors(16270, 15, 510);
-		//progMatrixScanner(16270, 15, 30);
+		if (LEDGITBOARD) { // timing sync
+			progFullColors(16270, 15, 505);
+		}
+		else {
+			progFullColors(16270, 15, 510);
+		}		
 		break;
 	
 	case 15: // bridge	14240
 		progPalette(14240, 4, 20);
-		//progRandomLines(14240, 20, 455, false);
-		//progStern(14240, 1035, 20, 20); 
 		break;
 
 	case 20: // pause	1015
@@ -2693,21 +2724,15 @@ void Tellittomyheart() { // TODO
 		break;
 	
 	case 30: // chorus 1	16275
-		//progRandomLines(16275, 35, 515, false);
 		progStern(16275, 1015, 35, 20); 
 		break;		
 
 	case 35: // verse 2	16270
-		//progPalette(16270, 6, 40);
 		progRandomLines(16270, 40, 510, false);
 		break;	
 
 	case 40: // bridge	14235
 		progPalette(14235, 3, 45);
-		//progStrobo(14235, 45, 65, 255, 255, 255);
-		//progFullColors(14235, 45, 455);
-		//progStern(14235, 515, 45, 20); 
-		//progMatrixHorizontal(14235, 45, 70);
 		break;	
 
 	case 45: // pause	1020
@@ -2724,7 +2749,8 @@ void Tellittomyheart() { // TODO
 		break;	
 
 	case 60: // SOLO	16270
-		progPalette(16270, 6, 65);
+		//progPalette(16270, 6, 65);
+		progOutline(16270, 65, 90);
 		break;
 
 	case 65: // love on the run	16275

@@ -40,9 +40,9 @@
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
 	#define NOMARKER			// no LED markers on gitboard
-	#define HAS_MIDI_IN
+	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
+	//#define HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
-	//#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 #endif
 

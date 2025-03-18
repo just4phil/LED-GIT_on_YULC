@@ -46,11 +46,11 @@ checken:
 TODOs:
 =======
 
+weiter mit use somb.
+
 - physical: git im vocals only teil stumm schalten bi slide in
 - prisoner: ende let me go länger zuende laufen lassen
 - shivers solo und enjoyIntro -> songpause rein?
-- aha, bloddy mary -> nicht in sync
-
 - soli zb use s. -> outline testen
 - rina danie andre auf matrix ?
 - i love it
@@ -58,13 +58,13 @@ TODOs:
     - auf F schrammeln
 
     
+- aha, bloddy mary -> nicht in sync => ist praktisch unlösbar!!!
+
 
 
 - eigentlich braucht noch jedes YULC eine dedizierte LED um zB anzuzeigen dass eine connection zum midi proxy besteht
 
 - markerLEDs an songEnden sofort ausschalten??
-- testen: welchen Unterschied würde neomatrix_config.h bei den stripe-gits machen????
-- fontzoom einbauen: https://github.com/marcmerlin/FastLED_NeoMatrix/blob/master/examples/fontzoom/fontzoom.ino
 - matrixSCANNER in der form von KITT ergänzen
 
 
@@ -74,23 +74,13 @@ leds rina:
 
 -------
 
-
-- songpausen -> zufallswahl der beiden neuen progs
------
-
 => ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 - leds bei bm ende raus
-
-- CHECKEN: sollen MarkerLEDs wirklich aus sein, wenn LEDsTurnedOFF?!?!?!!?!
-
-- ignoreLIPOsafer raus
 
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
     - am ende waren beide clients ziemlich weit raus aus dem sync!
     - timing geht dann irgendwie flöten! ...als würden parts übersprungen !?!?
     => wenn ich das nicht fixen kann, dann doch besser sofortiger sync zum server!!
-
-- ggf. auch noch standalone mode ermöglichen...also ohne midi und ohne BLE !?
 
 - midi_in -> channel abfrage chn 10 einbauen / testen
 
