@@ -48,14 +48,14 @@ TODOs:
 
 weiter mit use somb.
 
-- physical: git im vocals only teil stumm schalten bi slide in
-- prisoner: ende let me go länger zuende laufen lassen
+
 - shivers solo und enjoyIntro -> songpause rein?
 - soli zb use s. -> outline testen
 - rina danie andre auf matrix ?
 - i love it
     - bridge mit wha
     - auf F schrammeln
+=> ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 
     
 - aha, bloddy mary -> nicht in sync => ist praktisch unlösbar!!!
@@ -73,10 +73,6 @@ leds rina:
 
 
 -------
-
-=> ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
-- leds bei bm ende raus
-
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?
     - am ende waren beide clients ziemlich weit raus aus dem sync!
     - timing geht dann irgendwie flöten! ...als würden parts übersprungen !?!?

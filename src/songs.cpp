@@ -2412,11 +2412,11 @@ void prisoner() {
 		break;
 
 	case 30: // 30	u keep making it hard	11250
-		progPalette(11250, 8, 32);
+		progPalette(9250, 8, 32);
 		break;
 
 	case 32: // 32	STOP / Vocals	3750
-		progScrollText("Prisoner", 3750, 75, getRandomColor(), 34);
+		progScrollText("Prisoner", 5750, 75, getRandomColor(), 34);
 		break;
 
 	case 34: // 34	Chorus 2 a	10300
@@ -2448,11 +2448,11 @@ void prisoner() {
 		break;
 
 	case 48: // 50	TEXT: let me go	2575
-		progScrollText("Let me go", 5500, 75, getRandomColor(), 50);
+		progScrollText("Let me go", 8500, 75, getRandomColor(), 50);
 		break;
 
 	case 50: // 52	BLACK	10000
-		progBlack(10000, 100); 
+		progBlack(5000, 100); 
 		break;
 
 	case 100:
