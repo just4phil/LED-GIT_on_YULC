@@ -46,19 +46,15 @@ checken:
 TODOs:
 =======
 
-weiter mit use somb.
-
-
 - shivers solo und enjoyIntro -> songpause rein?
 - soli zb use s. -> outline testen
 - rina danie andre auf matrix ?
 - i love it
     - bridge mit wha
     - auf F schrammeln
-=> ILoveIt -> anfang auf ledgitboard ist 5 sec. black?!
 
     
-- aha, bloddy mary -> nicht in sync => ist praktisch unlösbar!!!
+
 
 
 
@@ -70,7 +66,7 @@ weiter mit use somb.
 
 leds rina:
     - dont stop -> TODO wenn der song mal programmiert ist!!
-
+- aha, bloddy mary -> nicht in sync => ist praktisch unlösbar!!!
 
 -------
 - ISSUE!: wenn server in einem song offline geht und wieder kommt, dann hat der andere client eine kleine denkpause!?

@@ -1294,7 +1294,7 @@ void ILoveIt() {
 		break;
 	
 	case 1:
-		progScrollText("I love it by Icona Pop", 19000, 90, getRandomColor(), 10);
+		progScrollText("I love it by Icona Pop", 16500, 90, getRandomColor(), 10);
 		break;
 
 	case 5: // 5	synth intro	8000
@@ -1303,8 +1303,8 @@ void ILoveIt() {
 		break;
 
 	case 10: // 10	verse 1	16000
-		if (LEDGITBOARD) {
-			progFullColors(9250, 15, 1000);
+		if (LEDGITBOARD) {	// time-sync schwierig!
+			progFullColors(11750, 15, 990);
 		}
 		else { // pause
 			progFullColors(16000, 15, 1000);
@@ -2259,8 +2259,8 @@ void apt() {
    		break;	
    
    case 10: // 10	verse 1	12885
-		if (LEDGITBOARD) {
-			progFullColors(11610, 15, 805);
+		if (LEDGITBOARD) {	// time-sync schwierig!!
+			progFullColors(11610, 15, 890);
 		}
 		else { 
 			progFullColors(12885, 15, 805);
@@ -2300,7 +2300,12 @@ void apt() {
    		break;
 
    case 50: // 50	hey ….	5640
-   		progPalette(5640, 9, 55);
+		if (LEDGITBOARD) { // timing sync
+			progOutline(5640, 55, 50);
+		}
+		else {
+			progPalette(5640, 9, 55);
+		}	
    		break;
 
    case 55: // 55	get ya get ya	805
@@ -2749,8 +2754,12 @@ void Tellittomyheart() { // TODO
 		break;	
 
 	case 60: // SOLO	16270
-		//progPalette(16270, 6, 65);
-		progOutline(16270, 65, 90);
+		if (LEDGITBOARD) { // timing sync
+			progOutline(16270, 65, 75);
+		}
+		else {
+			progPalette(16270, 6, 65);
+		}	
 		break;
 
 	case 65: // love on the run	16275
