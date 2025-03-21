@@ -24,7 +24,7 @@ const char* client_addresses[] = {
 const size_t client_address_count = sizeof(client_addresses) / sizeof(client_addresses[0]);
 
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
-volatile bool syncLEDgits = false;
+//volatile bool syncLEDgits = false;
 
 bool aDeviceConnected = false;
 bool aDeviceDISconnected = false;
@@ -221,15 +221,16 @@ void midiProxy_midiLoop() {
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }
 
-    if (syncLEDgits) {
-        //if (anzahl_BLE_devices > 0) {
-            sendValuepairToListeners(24, songID); // 22 -> change song / 23 -> change part / 24 -> sync gits!
-            //sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
-            syncProgWithNextChange = true;
-            //Serial.println("syncLEDgits -> sendValuepairToListeners");
-        //}
-        syncLEDgits = false;
-    } 
+    //wird aktuell nicht genutzt!?
+    // if (syncLEDgits) {
+    //     //if (anzahl_BLE_devices > 0) {
+    //         sendValuepairToListeners(24, songID); // 22 -> change song / 23 -> change part / 24 -> sync gits!
+    //         //sendValuepairToListeners(23, prog); //-> sync prog now ...but also with next prog change to be really in sync!!
+    //         syncProgWithNextChange = true;
+    //         //Serial.println("syncLEDgits -> sendValuepairToListeners");
+    //     //}
+    //     syncLEDgits = false;
+    // } 
 
     if (needLEDsync) {
         needLEDsync = false;

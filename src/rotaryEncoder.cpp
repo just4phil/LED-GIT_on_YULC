@@ -87,7 +87,7 @@ void on_button_short_click() {
 	Serial.println("on_button_short_click");
 	#if defined(IS_MIDI_PROXY)
 		//syncLEDgits = true;			// short click beim proxy -> force led sync der clients
-		syncProgWithNextChange = true;
+		// syncProgWithNextChange = true;
 		Serial.println("midi proxy wants to force LED sync on clients");
 	#elif defined (IS_BLE_CLIENT)
 		needLEDsync = true;			// short click bei clients -> request led sync from proxy

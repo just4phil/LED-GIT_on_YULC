@@ -25,7 +25,6 @@ static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 static boolean doConnect = false;
 static boolean connected = false;
 static boolean isScanning = false;	// True if scan started or false if there was an error.
-boolean justSubscribed = false;
 boolean informServerOnNextProgChange = false;
 static const NimBLEAdvertisedDevice* advDevice;
 NimBLEScan* pBLEScan;
@@ -311,7 +310,7 @@ bool connectToServer() {
                 // return false;
             }
             else { // subscribe successful
-                justSubscribed = true;
+                //justSubscribed = true;    // gelöscht
             }
         } 
         // else if (pChr->canIndicate()) {
@@ -345,20 +344,21 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
                 switchToPart(value);
                 break;
 
-            case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
-                if (songID == 0) {
-                    if (justSubscribed | waitForLEDsync) {
-                        switchToSong(value); // only switch if the client jetzt subscribed to the server notification
-                        justSubscribed = false;
-                        waitForLEDsync = false;
-                    }
-                }
-                break;
+            //wird aktuell nicht benutzt!
+            // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
+            //     //if (songID == 0) {
+            //         if (waitForLEDsync) {
+            //             switchToSong(value); // only switch if the client jetzt subscribed to the server notification
+            //             waitForLEDsync = false;
+            //         }
+            //     //}
+            //     break;
             
             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
                 //if (songID == 0) {    // macht hier keinen Sinn da das ja nach dem sync der songID passiert
-                    if (justSubscribed | waitForLEDsync) {  // TESTEN !!!--------------------------------
+                    if (waitForLEDsync) {  // TESTEN !!!--------------------------------
                         switchToPart(value);
+                        waitForLEDsync = false;
                     }
                 //}
                 break;

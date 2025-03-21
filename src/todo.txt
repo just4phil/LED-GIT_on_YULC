@@ -34,6 +34,10 @@ bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 - bei einem der progPalette programme flackert es immer?!
 
 
+das muss vorher gesetzt werden!!
+setSongAndPartIDforLEDsync(songID, nextSongPart);
+
+
 
 checken:
 ========
@@ -45,7 +49,7 @@ checken:
 
 TODOs:
 =======
-
+- hybrid mode ....midi-in + BLE in !?
 - shivers solo und enjoyIntro -> songpause rein?
 - soli zb use s. -> outline testen
 - rina danie andre auf matrix ?
