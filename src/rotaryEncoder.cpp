@@ -11,15 +11,21 @@ extern int BRIGHTNESS;
 extern volatile boolean encoderButtonPushedLEDsOFF;	// for rotary encoder button push
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
 extern boolean needLEDsync;
-//extern AiEsp32RotaryEncoder *rotaryEncoder;
-//extern AiEsp32RotaryEncoderNumberSelector numberSelector;
+extern volatile bool syncProgWithNextChange;
 //---------------------------------
 AiEsp32RotaryEncoder *rotaryEncoder;
 AiEsp32RotaryEncoderNumberSelector numberSelector;
 
 //paramaters for button
 unsigned int shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
+unsigned int timeBetweenDoubleClicks = 800;
 unsigned int longPressAfterMiliseconds = 1000;  //how long čong
+
+static unsigned long lastTimeShortClick = 0;
+static bool wasButtonDown = false;
+static bool shortClickHappened = false;
+static bool wasButtonDownFIRST = false;
+static bool wasButtonDownSECOND = false;
 //---------------------------------
 
 void IRAM_ATTR readEncoderISR() {    // Function required for interupts
@@ -78,24 +84,29 @@ void rotary_initialize() {
 }
 
 void on_button_short_click() {
-	// if (encoderButtonPushedLEDsOFF) {
-	// 	encoderButtonPushedLEDsOFF = false;
-	// }
-	// else {
-	// 	encoderButtonPushedLEDsOFF = true;	// for rotary encoder button push
-	// }
+	Serial.println("on_button_short_click");
+	#if defined(IS_MIDI_PROXY)
+		//syncLEDgits = true;			// short click beim proxy -> force led sync der clients
+		syncProgWithNextChange = true;
+		Serial.println("midi proxy wants to force LED sync on clients");
+	#elif defined (IS_BLE_CLIENT)
+		needLEDsync = true;			// short click bei clients -> request led sync from proxy
+		Serial.println("midi client needs LED sync from proxy");
+	#endif	
+} 
 
-	needLEDsync = true;
+void on_button_double_click() {
+	Serial.println("on_button_double_click");
+	#if defined(IS_MIDI_PROXY)
+		needLEDsync = true;			// double click beim proxy -> request led sync from client
+		Serial.println("midi proxy needs LED sync from clients");
+	#elif defined (IS_BLE_CLIENT)
+									// double click beim client -> BISHER UNGENUTZT!
+	#endif
 } 
 
 void on_button_long_click() {
-	// if (ignoreLIPOsafer) {
-	// 	ignoreLIPOsafer = false;
-	// }
-	// else {
-	// 	ignoreLIPOsafer = true;	
-	// }
-
+	Serial.println("on_button_long_click");
 	if (encoderButtonPushedLEDsOFF) {
 		encoderButtonPushedLEDsOFF = false;
 	}
@@ -105,58 +116,67 @@ void on_button_long_click() {
 } 
 
 void rotary_onButtonClick() {
-  static unsigned long lastTimeButtonDown = 0;
-  static bool wasButtonDown = false;
 
-  bool isEncoderButtonDown = rotaryEncoder->isEncoderButtonDown();
-  //isEncoderButtonDown = !isEncoderButtonDown; //uncomment this line if your button is reversed
+	static unsigned long lastTimeButtonDown = 0;
 
-  if (isEncoderButtonDown) {
-    if (!wasButtonDown) {
-      lastTimeButtonDown = millis();
-    }
-    wasButtonDown = true;	//else we wait since button is still down
-    return;
-  }
-  //button is up
-  if (wasButtonDown) {
-    //click happened, lets see if it was short click, long click or just too short
-    if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
-      on_button_long_click();
-    } 
-	else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
-      on_button_short_click();
-    }
-  }
-  wasButtonDown = false;
+	bool isEncoderButtonDown = rotaryEncoder->isEncoderButtonDown();
+
+	if (isEncoderButtonDown) {
+		if (!wasButtonDown) {
+			lastTimeButtonDown = millis();
+		}
+		wasButtonDown = true;	//else we wait since button is still down
+		return;
+	}
+
+	//--- button is up
+
+	if (wasButtonDown) {
+
+		if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+			on_button_long_click();
+		} 	
+		else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+
+			if (wasButtonDownFIRST == false) {
+				wasButtonDownFIRST = true;
+			}
+			else {
+				wasButtonDownSECOND = true;
+			}
+			lastTimeShortClick = millis();
+			shortClickHappened = true;
+		}
+	}
+	wasButtonDown = false;
 }
 
 void rotary_loop() {	
 
 	int16_t encoderDelta = rotaryEncoder->encoderChanged();
 
-	// When just needing to know if direction changed
-	//if (encoderDelta > 0) {
-  //    Serial.println("CW");
-	//}
-  //if (encoderDelta < 0) {
-  //    Serial.println("CCW");
-	//}
-
 	// When getting value
-	if (encoderDelta != 0) {
-		//Serial.print("Value: ");
-        // Get and print encoder value when not using numberSelector
-        //int16_t encoderValue = rotaryEncoder.readEncoder();
-		//Serial.println(encoderValue);
-
-		// Get encoder value when using numberSelector
-        //Serial.println(numberSelector.getValue());
-		
+	if (encoderDelta != 0) {		
 		BRIGHTNESS = numberSelector.getValue();
 		FastLED.setBrightness(BRIGHTNESS);
-  }
+	}
 	rotary_onButtonClick();
+
+	if (shortClickHappened) {
+		if (millis() - lastTimeShortClick >= timeBetweenDoubleClicks) {
+
+			if (wasButtonDownSECOND == false) {
+				on_button_short_click();
+			}
+			else {
+				on_button_double_click();
+			}
+			wasButtonDownFIRST = false;
+			wasButtonDownSECOND = false;
+			shortClickHappened = false;
+		}
+	}
 } 
+
 //----------------
 #endif
