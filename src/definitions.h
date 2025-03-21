@@ -59,7 +59,11 @@
 	#define DATA_PIN_1          1 	// yulc channel 1
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
-	#define DEFAULT_BRIGHTNESS	48
+	#if defined(SCROLLMATRIX)
+		#define DEFAULT_BRIGHTNESS	30
+	#else
+		#define DEFAULT_BRIGHTNESS	48	// solange die stromversorgung nicht ausreichend ist
+	#endif	
 #endif
 
 #ifdef USE_TEENSY
