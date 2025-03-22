@@ -311,6 +311,7 @@ bool connectToServer() {
             }
             else { // subscribe successful
                 //justSubscribed = true;    // gelöscht
+                Serial.println("BLE-Client: subscribe to notifications successful!");
             }
         } 
         // else if (pChr->canIndicate()) {
@@ -333,10 +334,10 @@ bool connectToServer() {
 
 void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
-    if (value >= 0) {
+    if (ccIn >=22 && ccIn <= 27 && value >= 0) {
         switch (ccIn) {
             case 22:    // change song by midi
-                //Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
+                Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
                 switchToSong(value);
                 break;
 
@@ -346,21 +347,17 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
 
             //wird aktuell nicht benutzt!
             // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
-            //     //if (songID == 0) {
-            //         if (waitForLEDsync) {
-            //             switchToSong(value); // only switch if the client jetzt subscribed to the server notification
-            //             waitForLEDsync = false;
-            //         }
-            //     //}
-            //     break;
+                //if (waitForLEDsync) {
+                    //switchToSong(value); // only switch if the client jetzt subscribed to the server notification
+                   // waitForLEDsync = false;
+                //}
+                // break;
             
             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
-                //if (songID == 0) {    // macht hier keinen Sinn da das ja nach dem sync der songID passiert
-                    if (waitForLEDsync) {  // TESTEN !!!--------------------------------
-                        switchToPart(value);
-                        waitForLEDsync = false;
-                    }
-                //}
+                if (waitForLEDsync) {  // TESTEN !!!--------------------------------
+                    switchToPart(value);
+                    waitForLEDsync = false;
+                }
                 break;
 
             case 26:    // the server requests a sync; value doesnt matter
@@ -371,6 +368,10 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
                     pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
                 }
                 informServerOnNextProgChange = true;
+                break;
+            
+            case 27:    // server forces the clients to sync
+                needLEDsync = true;
                 break;                      
         }
     }

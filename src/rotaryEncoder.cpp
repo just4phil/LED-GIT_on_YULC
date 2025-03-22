@@ -11,6 +11,7 @@ extern int BRIGHTNESS;
 extern volatile boolean encoderButtonPushedLEDsOFF;	// for rotary encoder button push
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
 extern boolean needLEDsync;
+extern boolean forceLEDsync;
 extern volatile bool syncProgWithNextChange;
 //---------------------------------
 AiEsp32RotaryEncoder *rotaryEncoder;
@@ -86,8 +87,7 @@ void rotary_initialize() {
 void on_button_short_click() {
 	Serial.println("on_button_short_click");
 	#if defined(IS_MIDI_PROXY)
-		//syncLEDgits = true;			// short click beim proxy -> force led sync der clients
-		// syncProgWithNextChange = true;
+		forceLEDsync = true;			// short click beim proxy -> force led sync der clients
 		Serial.println("midi proxy wants to force LED sync on clients");
 	#elif defined (IS_BLE_CLIENT)
 		needLEDsync = true;			// short click bei clients -> request led sync from proxy

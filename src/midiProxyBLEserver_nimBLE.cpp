@@ -7,11 +7,13 @@
 //---------------------------
 
 extern byte songID;
+extern volatile byte prog;
 extern volatile bool syncProgWithNextChange;
 extern volatile bool newMidiValuesToBroadcast;
 extern volatile byte midiInCC;
 extern volatile byte midiInValue;
 extern boolean needLEDsync; // in main
+extern boolean forceLEDsync; // in main
 extern boolean waitForLEDsync; // in main
 //-------------------------------------------
 
@@ -139,9 +141,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     /**
      *  The value returned in code is the NimBLE host return code.
      */
-    void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
-        Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
-    }
+    // void onStatus(NimBLECharacteristic* pCharacteristic, int code) override {
+    //     Serial.printf("Notification/Indication return code: %d, %s\n", code, NimBLEUtils::returnCodeToString(code));
+    // }
 
     /** Peer subscribed to notifications/indications */
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
@@ -189,7 +191,6 @@ void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
 }
 
 void setSongAndPartIDforLEDsync(byte songID, byte part) {
-
     songAndPart.songID = songID;
     songAndPart.part = part;
     pCharacteristic->setValue((uint8_t*)&songAndPart, sizeof(songAndPart));
@@ -207,13 +208,11 @@ void midiProxy_midiLoop() {
     if (aDeviceDISconnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();
         Serial.println("DISCONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
-        //syncLEDgits = true;   erst bei subscribe machen!
         aDeviceDISconnected = false;
     }
 
     // notify changed value
     if (newMidiValuesToBroadcast) {
-
         //if (anzahl_BLE_devices > 0) {
             sendValuepairToListeners(midiInCC, midiInValue);
             //syncLEDgits = false; // brauchen wir hier nicht
@@ -237,6 +236,13 @@ void midiProxy_midiLoop() {
         //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
         sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
     }        
+
+    if (forceLEDsync) {
+        forceLEDsync = false;
+        //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
+        setSongAndPartIDforLEDsync(songID, prog);
+        sendValuepairToListeners(27, 1);    // 26 means server needs sync; 1 means nothing ;)
+    }     
 }
 
 //--------------

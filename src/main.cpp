@@ -76,6 +76,7 @@ byte songIDbefore = 0;
 volatile byte nextSongPart = 0;
 volatile byte prog = 0;	
 boolean needLEDsync = false;
+boolean forceLEDsync = false;
 boolean waitForLEDsync = false;
 
 //--- marker LEDs --- dienen zum markieren der buende, die fuer den jeweiligen song relevant sind
@@ -137,34 +138,6 @@ void setup() {
 		pinMode(LED3_PIN, 1); 
 	#endif
 	
-	timer_begin();
-
-	//=== MIDI / PROXY / CLIENT initialisieren =====
-	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
-		Serial.println("MIDI SETUP");
-		
-		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			Serial.println("MIDI PROXY SETUP");	
-			midiProxy_initialize_BLE();
-		#endif
-
-		midi_initialize();
-
-	#elif defined (IS_BLE_CLIENT)
-		BLE_client_initialize();
-	#endif
-	
-	//--- rotary encoder ---------
-	#ifdef HAS_ROTARY_ENCODER
-		Serial.println("ROTARY SETUP");
-		rotary_initialize();
-	#endif
-
-	//--- voltage lipo safer ----------
-	#ifdef HAS_LIPOVOLTAGE_CHECK	
-		lipoVoltageCheck_initialize();
-	#endif
-
 	//---- Define matrix width and height. --------
 	Serial.println("MATRIX SETUP");
 	#if defined(SCROLLMATRIX) // hier ist die Richtung von unten nach oben
@@ -196,6 +169,36 @@ void setup() {
 	//--- Setup Palette ---
 	setupCurrentPalette();
 	
+	//--- rotary encoder ---------
+	#ifdef HAS_ROTARY_ENCODER
+		Serial.println("ROTARY SETUP");
+		rotary_initialize();
+	#endif
+
+	//=== MIDI / PROXY / CLIENT initialisieren =====
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+		Serial.println("MIDI SETUP");
+		
+		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
+			Serial.println("MIDI PROXY SETUP");	
+			midiProxy_initialize_BLE();
+		#endif
+
+		midi_initialize();
+
+	#elif defined (IS_BLE_CLIENT)
+		BLE_client_initialize();
+	#endif
+
+	//--- voltage lipo safer ----------
+	#ifdef HAS_LIPOVOLTAGE_CHECK	
+		lipoVoltageCheck_initialize();
+	#endif
+
+	//--- Start timer ----
+	Serial.println("start timer");
+	timer_begin();
+
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
 	switchToSong(0);	// 0 SONGPAUSE loop
@@ -206,7 +209,7 @@ void setup() {
 	
 	#ifdef HAS_MIDI_IN	
 		#ifdef IS_MIDI_PROXY
-			//--- proxy: set Value for clients who ants to sync ..
+			//--- proxy: set Value for clients who wants to sync ..
 			setSongAndPartIDforLEDsync(0, 0);
 		#endif
 	#endif
