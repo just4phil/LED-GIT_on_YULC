@@ -259,6 +259,7 @@ void loop() {
 				setSongAndPartIDforLEDsync(songID, nextSongPart);
 
 				if (syncProgWithNextChange) {
+					Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: sendValuepairToListeners(25, nextSongPart)");
 					sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
 					syncProgWithNextChange = false;
 				}

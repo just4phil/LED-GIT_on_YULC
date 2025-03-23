@@ -355,24 +355,25 @@ void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
             
             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
                 if (waitForLEDsync) {  // TESTEN !!!--------------------------------
+                    Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(value);
                     switchToPart(value);
                     waitForLEDsync = false;
                 }
                 break;
 
-            case 26:    // the server requests a sync; value doesnt matter
-                SongAndPart songAndPart;
-                songAndPart.songID = songID;
-                songAndPart.part = prog;
-                if (pChr != NULL) {
-                    pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
-                }
-                informServerOnNextProgChange = true;
-                break;
+            // case 26:    // the server requests a sync; value doesnt matter
+            //     SongAndPart songAndPart;
+            //     songAndPart.songID = songID;
+            //     songAndPart.part = prog;
+            //     if (pChr != NULL) {
+            //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+            //     }
+            //     informServerOnNextProgChange = true;
+            //     break;
             
-            case 27:    // server forces the clients to sync
-                needLEDsync = true;
-                break;                      
+            // case 27:    // server forces the clients to sync
+            //     needLEDsync = true;
+            //     break;                      
         }
     }
 }
@@ -439,9 +440,10 @@ void BLE_client_Loop() {
 
                 if (value.length() == sizeof(SongAndPart)) {
                     memcpy(&receivedData, value.data(), sizeof(SongAndPart));
-                    // Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                    Serial.printf("clients reads characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
                     switchToSongAndPart(receivedData.songID, receivedData.part);
                     waitForLEDsync = true;
+                    Serial.println("now waitForLEDsync on next prog change");
                 }
                 else {
                     // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge

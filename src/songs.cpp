@@ -58,30 +58,30 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 
 
 
-int randomProg = 0;
+// int randomProg = 0;
 
 void SONGPAUSE()  {	// soft / static LEDs
 	
  	switch (prog) { 
 
 	case 0:
-		randomProg	= random(1, 3);
+		// randomProg	= random(1, 3);
 
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 10);
+			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
 		}
 		else {
-			progBlingBlingColoringSONGPAUSE(23400, 10, 250);
+			progBlingBlingColoringSONGPAUSE(11700, 10, 250);
 		}	
 	break;
 
 	case 10:
-		if (randomProg == 1) {
-			progSternschnuppen(50000, 100, 18);
-		}
-		else if (randomProg == 2) {
+		// if (randomProg == 1) {
+		// 	progSternschnuppen(50000, 100, 18);
+		// }
+		// else if (randomProg == 2) {
 			progBlingBlingColoringSONGPAUSE(50000, 100, 250);
-		}
+		//}
 	break;
 
 	case 100:

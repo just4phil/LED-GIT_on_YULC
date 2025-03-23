@@ -118,6 +118,7 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         //a client reads our song/part data -> mnow send a notify on next prog change to sync time!
         //syncLEDgits = true;     // wäre hier falsch, da der client song/part bereits geholt hat
         syncProgWithNextChange = true; // sync time on next prog change
+        Serial.println("proxy onRead() -> client reads my values -> syncProgWithNextChange to client!");
     }
     
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
@@ -231,18 +232,18 @@ void midiProxy_midiLoop() {
     //     syncLEDgits = false;
     // } 
 
-    if (needLEDsync) {
-        needLEDsync = false;
-        //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
-        sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
-    }        
+    // if (needLEDsync) {
+    //     needLEDsync = false;
+    //     //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
+    //     sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
+    // }        
 
-    if (forceLEDsync) {
-        forceLEDsync = false;
-        //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
-        setSongAndPartIDforLEDsync(songID, prog);
-        sendValuepairToListeners(27, 1);    // 26 means server needs sync; 1 means nothing ;)
-    }     
+    // if (forceLEDsync) {
+    //     forceLEDsync = false;
+    //     //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
+    //     setSongAndPartIDforLEDsync(songID, prog);
+    //     sendValuepairToListeners(27, 1);    // 26 means server needs sync; 1 means nothing ;)
+    // }     
 }
 
 //--------------
