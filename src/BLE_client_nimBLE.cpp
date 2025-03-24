@@ -45,10 +45,14 @@ static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time.
  **                       Remove as you see fit for your needs                        */
 class ClientCallbacks : public NimBLEClientCallbacks {
     void onConnect(NimBLEClient* pClient) override { 
-        Serial.printf("Connected\n"); 
+        #if defined(debug_ble_client)
+            Serial.printf("Connected\n"); 
+        #endif
         }
     void onDisconnect(NimBLEClient* pClient, int reason) override {
-        Serial.printf("%s Disconnected, reason = %d - Starting scan\n", pClient->getPeerAddress().toString().c_str(), reason);
+        #if defined(debug_ble_client)
+            Serial.printf("%s Disconnected, reason = %d - Starting scan\n", pClient->getPeerAddress().toString().c_str(), reason);
+        #endif
         NimBLEDevice::getScan()->start(scanTimeMs, false, true);
         connected = false;
         isScanning = true;
@@ -87,9 +91,13 @@ class scanCallbacks : public NimBLEScanCallbacks {
      *  If not active scanning then this will be the same as onDiscovered.
      */
     void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override {
-        Serial.printf("Advertised Device found: %s\n", advertisedDevice->toString().c_str());
+        #if defined(debug_ble_client)
+            Serial.printf("Advertised Device found: %s\n", advertisedDevice->toString().c_str());
+        #endif
         if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID))) {
-            Serial.printf("Found Our Service\n");
+            #if defined(debug_ble_client)
+                Serial.printf("Found Our Service\n");
+            #endif
             /** stop scan before connecting */
             NimBLEDevice::getScan()->stop();
             isScanning = false;
@@ -111,7 +119,9 @@ class scanCallbacks : public NimBLEScanCallbacks {
 } scanCallbacks;
 
 void initialize_Device() {
-    Serial.println("Starting BLE Client ...");
+    #if defined(debug_ble_client)
+        Serial.println("Starting BLE Client ...");
+    #endif
     NimBLEDevice::init("midi-client");    
     /** Optional: set the transmit power */
     NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
@@ -223,10 +233,14 @@ bool connectToServer() {
         pClient = NimBLEDevice::getClientByPeerAddress(advDevice->getAddress());
         if (pClient) {
             if (!pClient->connect(advDevice, false)) {
-                Serial.printf("Reconnect failed\n");
+                #if defined(debug_ble_client)
+                    Serial.printf("Reconnect failed\n");
+                #endif
                 return false;
             }
-            Serial.printf("Reconnected client\n");
+            #if defined(debug_ble_client)
+                Serial.printf("Reconnected client\n");
+            #endif            
         } else {
             /**
              *  We don't already have a client that knows this device,
@@ -239,13 +253,17 @@ bool connectToServer() {
     /** No client to reuse? Create a new one. */
     if (!pClient) {
         if (NimBLEDevice::getCreatedClientCount() >= NIMBLE_MAX_CONNECTIONS) {
-            Serial.printf("Max clients reached - no more connections available\n");
+            #if defined(debug_ble_client)
+                Serial.printf("Max clients reached - no more connections available\n");
+            #endif
             return false;
         }
 
         pClient = NimBLEDevice::createClient();
 
-        Serial.printf("New client created\n");
+        #if defined(debug_ble_client)
+            Serial.printf("New client created\n");
+        #endif
 
         pClient->setClientCallbacks(&clientCallbacks, false);
         /**
@@ -262,19 +280,25 @@ bool connectToServer() {
         if (!pClient->connect(advDevice)) {
             /** Created a client but failed to connect, don't need to keep it as it has no data */
             NimBLEDevice::deleteClient(pClient);
-            Serial.printf("Failed to connect, deleted client\n");
+            #if defined(debug_ble_client)
+                Serial.printf("Failed to connect, deleted client\n");
+            #endif
             return false;
         }
     }
 
     if (!pClient->isConnected()) {
         if (!pClient->connect(advDevice)) {
-            Serial.printf("Failed to connect\n");
+            #if defined(debug_ble_client)
+                Serial.printf("Failed to connect\n");
+            #endif
             return false;
         }
     }
 
-    Serial.printf("Connected to: %s RSSI: %d\n", pClient->getPeerAddress().toString().c_str(), pClient->getRssi());
+    #if defined(debug_ble_client)
+        Serial.printf("Connected to: %s RSSI: %d\n", pClient->getPeerAddress().toString().c_str(), pClient->getRssi());
+    #endif
 
     /** Now we can read/write/subscribe the characteristics of the services we are interested in */
     // NimBLERemoteService*        pSvc = nullptr;
@@ -307,13 +331,17 @@ bool connectToServer() {
 
         if (pChr->canNotify()) {
             if (!pChr->subscribe(true, notifyCallback)) {
-                Serial.println("BLE-Client: subscribe to notifications FAILED!");
+                #if defined(debug_ble_client)
+                    Serial.println("BLE-Client: subscribe to notifications FAILED!");
+                #endif
                 // pClient->disconnect();
                 // return false;
             }
             else { // subscribe successful
                 //justSubscribed = true;    // gelöscht
-                Serial.println("BLE-Client: subscribe to notifications successful!");
+                #if defined(debug_ble_client)
+                    Serial.println("BLE-Client: subscribe to notifications successful!");
+                #endif
             }
         } 
         // else if (pChr->canIndicate()) {
@@ -325,54 +353,18 @@ bool connectToServer() {
         // }
     } 
     else {
-        Serial.printf("Service not found.\n");
+        #if defined(debug_ble_client)
+            Serial.printf("Service not found.\n");
+        #endif
     }
 
-    Serial.printf("Done with this device!\n");
+    #if defined(debug_ble_client)
+        Serial.printf("Done with this device!\n");
+    #endif
     
     connected = true; // TODO: wo genau entsteht die connection????
     return true;
 }
-
-// void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
-//     if (ccIn >=22 && ccIn <= 27 && value >= 0) {
-//         switch (ccIn) {
-//             case 22:    // change song by midi
-//                 Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
-//                 switchToSong(value);
-//                 break;
-//             case 23:    // change part by midi
-//                 switchToPart(value);
-//                 break;
-//             //wird aktuell nicht benutzt!
-//             // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
-//                 //if (waitForLEDsync) {
-//                     //switchToSong(value); // only switch if the client jetzt subscribed to the server notification
-//                    // waitForLEDsync = false;
-//                 //}
-//                 // break;
-//             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
-//                 if (waitForLEDsync) {  // TESTEN !!!--------------------------------
-//                     Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(value);
-//                     switchToPart(value);
-//                     waitForLEDsync = false;
-//                 }
-//                 break;
-//             // case 26:    // the server requests a sync; value doesnt matter
-//             //     SongAndPart songAndPart;
-//             //     songAndPart.songID = songID;
-//             //     songAndPart.part = prog;
-//             //     if (pChr != NULL) {
-//             //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
-//             //     }
-//             //     informServerOnNextProgChange = true;
-//             //     break;
-//             case 27:    // server forces the clients to sync
-//                 needLEDsync = true;
-//                 break;                      
-//         }
-//     }
-// }
 
 void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 
@@ -388,6 +380,49 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
         case 2:    // change part by midi
             switchToPart(part);
             break;
+        
+        case 3:    // server forces the clients to sync
+            //needLEDsync = true;
+            #if defined(debug_ble_client)
+                Serial.println("client: server forces sync -> received BLEmessageForLEDsync");
+                Serial.print("songID: ");
+                Serial.println(song);
+                Serial.print("part: ");
+                Serial.println(part);
+                Serial.println("now direct switch to song and part + waitForLEDsync on next prog change");
+            #endif
+            switchToSongAndPart(song, part);
+            waitForLEDsync = true;
+            break; 
+
+        case 4:    // sync gits after connect/subscribe, but only if there is actually no song running
+            if (waitForLEDsync) {  // TESTEN !!!--------------------------------
+                #if defined(debug_ble_client)
+                    Serial.print("BLE-client: waitForLEDsync -> switchToPart: ");
+                    Serial.println(part);
+                #endif
+                switchToPart(part);
+                waitForLEDsync = false;
+            }
+            break;
+
+        case 5:    // the server requests a sync; value doesnt matter
+            #if defined(debug_ble_client)    
+                Serial.println("server requests a sync -> write values to server:"); 
+                Serial.print("songID: ");
+                Serial.println(songID);
+                Serial.print("part: ");
+                Serial.println(prog);   
+            #endif
+            BLEmessage bleMessage;
+            bleMessage.msgType = 6;
+            bleMessage.songID = songID;
+            bleMessage.part = prog;
+            if (pChr != NULL) {
+                pChr->writeValue((uint8_t*)&bleMessage, sizeof(bleMessage));
+            }
+            informServerOnNextProgChange = true;
+            break;                     
 
         //wird aktuell nicht benutzt!
         // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
@@ -396,30 +431,6 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
                 // waitForLEDsync = false;
             //}
             // break;
-        
-        case 3:    // server forces the clients to sync
-            //needLEDsync = true;
-            switchToSongAndPart(song, part);
-            waitForLEDsync = true;
-            break; 
-
-        case 4:    // sync gits after connect/subscribe, but only if there is actually no song running
-            if (waitForLEDsync) {  // TESTEN !!!--------------------------------
-                Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(part);
-                switchToPart(part);
-                waitForLEDsync = false;
-            }
-            break;
-
-        // case 26:    // the server requests a sync; value doesnt matter
-        //     SongAndPart songAndPart;
-        //     songAndPart.songID = songID;
-        //     songAndPart.part = prog;
-        //     if (pChr != NULL) {
-        //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
-        //     }
-        //     informServerOnNextProgChange = true;
-        //     break;                     
     }
 }
 
@@ -427,6 +438,13 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 void informServerOnNextChange(byte nextPart) {
     if (informServerOnNextProgChange) {
         informServerOnNextProgChange = false;
+        #if defined(debug_ble_client)
+            Serial.println("ble client: informServerOnNextChange");
+            Serial.print("songID: ");
+            Serial.println(songID);
+            Serial.print("part: ");
+            Serial.println(nextPart);
+        #endif
         BLEmessage bleMessage;
         bleMessage.msgType = 4;
         bleMessage.songID = songID;
@@ -444,10 +462,14 @@ void BLE_client_Loop() {
     if (doConnect == true) {
         doConnect = false;
         if (connectToServer()) {
-            Serial.println("We are now connected to the BLE Server.");
+            #if defined(debug_ble_client)
+                Serial.println("We are now connected to the BLE Server.");
+            #endif
         } 
         else {
-            Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+            #if defined(debug_ble_client)
+                Serial.println("We have failed to connect to the server; there is nothing more we will do.");
+            #endif
             set_values();
             scan();
             connected = false;
@@ -460,11 +482,12 @@ void BLE_client_Loop() {
         
         if (newMidiValuesReceivedFromProxy) {
 
-            // Serial.print("newMidiValuesReceivedFromProxy -> cc: ");
-            // Serial.print(newMidiCCfromProxy);
-            // Serial.print(" - value: ");
-            // Serial.println(newMidiValueFromProxy);
-
+            #if defined(debug_ble_client)
+                // Serial.print("newMidiValuesReceivedFromProxy -> cc: ");
+                // Serial.print(newMidiCCfromProxy);
+                // Serial.print(" - value: ");
+                // Serial.println(newMidiValueFromProxy);
+            #endif
             MidiDatenVomProxyAuswerten(newMsgTypeIDfromProxy, newMidiCCfromProxy, newMidiValueFromProxy);
             newMidiValuesReceivedFromProxy = false;
         }
@@ -495,35 +518,26 @@ void BLE_client_Loop() {
 
                 if (value.length() == sizeof(BLEmessage)) {
                     memcpy(&receivedData, value.data(), sizeof(BLEmessage));
-                    Serial.printf("clients: read characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                    #if defined(debug_ble_client)
+                        Serial.printf("clients: read characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                        Serial.println("now waitForLEDsync on next prog change");
+                    #endif
                     switchToSongAndPart(receivedData.songID, receivedData.part);
                     waitForLEDsync = true;
-                    Serial.println("now waitForLEDsync on next prog change");
                 }
                 else {
                     // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge
-                    Serial.println("Something went wrong!");
+                    #if defined(debug_ble_client)
+                        Serial.println("Something went wrong!");
+                    #endif
                 }
             } 
             else {
-                Serial.println("needLEDsync FAILED! - could not write value to server!");
+                #if defined(debug_ble_client)
+                    Serial.println("needLEDsync FAILED! - could not write value to server!");
+                #endif
             }
         }        
-
-        //--- here the client informs the server to send sync-data.....
-        // if (pChr != NULL) {
-        //     Serial.println("pChr != NULL - OK");
-        //     if (pChr->canWrite()) {
-        //         Serial.println("pChr->canWrite() - OK");
-        //         if (pChr->writeValue(1)) {
-        //             Serial.println("needLEDsync OK - succesfull Wrote value 1 to server");
-        //             waitForLEDsync = true;
-        //         } 
-        //         else {
-        //             Serial.println("needLEDsync FAILED! - could not write value to server!");
-        //         }
-        //     }
-        // }
     }
 }
 //-------------------

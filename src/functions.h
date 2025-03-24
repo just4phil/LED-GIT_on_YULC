@@ -9,6 +9,8 @@
     2 = change part -> only partID
     3 = force sync to clients -> songID & partID
     4 = switch part after LEDsync
+    5 = server needs LED sync from client
+    6 = client sends song/prog after server requested a sync
 */
 #pragma pack(push, 1)   // Das #pragma pack(push, 1) stellt sicher, dass die Struktur ohne zusätzliche Ausrichtung (also ohne Padding) gespeichert wird.
 struct BLEmessage {

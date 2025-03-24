@@ -258,7 +258,7 @@ void loop() {
 			setBLEmessageForLEDsync(0, songID, nextSongPart);
 
 			if (syncProgWithNextChange) {
-				Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: )" + String(nextSongPart));
+				Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: " + String(nextSongPart));
 				//sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
 				sendBLEmessageForLEDsync(4, 0, nextSongPart);
 				syncProgWithNextChange = false;

@@ -193,14 +193,6 @@ void midiProxy_initialize_BLE() {
     Serial.println("Waiting a client connection to notify...");
 }
 
-// void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
-//     uint8_t byteArray[2];
-//     byteArray[0] = midiInCC;
-//     byteArray[1] = midiInValue;
-//     pCharacteristic->setValue((uint8_t *)&byteArray, 2);
-//     pCharacteristic->notify();
-// }
-
 /* msgType -> 
     0 = set song & Part
     1 = change Song -> only songID
@@ -219,14 +211,6 @@ void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     setBLEmessageForLEDsync(msgType, songID, part);
     pCharacteristic->notify();
 }
-
-// void setValueTripleForLEDsync(byte msgType, byte songID, byte partID) {
-//     uint8_t byteArray[3];
-//     byteArray[0] = msgType;
-//     byteArray[1] = songID;
-//     byteArray[2] = partID;
-//     pCharacteristic->setValue((uint8_t *)&byteArray, 3);
-// }
 
 void midiProxy_midiLoop() {
 
@@ -267,6 +251,23 @@ void midiProxy_midiLoop() {
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }
 
+    if (needLEDsync) {
+        needLEDsync = false;
+        Serial.println("server needsLEDsync from client-> sendBLEmessageForLEDsync(5, 0, 0);");
+        sendBLEmessageForLEDsync(5, 0, 0);
+    }        
+
+    if (forceLEDsync) {
+        forceLEDsync = false;
+        Serial.println("proxy: force sync -> sendBLEmessageForLEDsync");
+        Serial.print("songID: ");
+        Serial.println(songID);
+        Serial.print("part: ");
+        Serial.println(prog);
+        sendBLEmessageForLEDsync(3, songID, prog);    // msgType 3 means server wants to force sync to clients
+        syncProgWithNextChange = true;
+    }    
+    
     //wird aktuell nicht genutzt!?
     // if (syncLEDgits) {
     //     //if (anzahl_BLE_devices > 0) {
@@ -277,23 +278,6 @@ void midiProxy_midiLoop() {
     //     //}
     //     syncLEDgits = false;
     // } 
-
-    // if (needLEDsync) {
-    //     needLEDsync = false;
-    //     //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
-    //     sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
-    // }        
-
-    if (forceLEDsync) {
-        forceLEDsync = false;
-        Serial.println("proxy: sendBLEmessageForLEDsync");
-        Serial.print("songID: ");
-        Serial.println(songID);
-        Serial.print("part: ");
-        Serial.println(prog);
-        sendBLEmessageForLEDsync(3, songID, prog);    // msgType 3 means server wants to force sync to clients
-        syncProgWithNextChange = true;
-    }     
 }
 
 //--------------
