@@ -61,6 +61,16 @@ das muss vorher gesetzt werden!!
 setSongAndPartIDforLEDsync(songID, nextSongPart);
 
 
+- ich müsste wegkommen von der reinen midi-info ....hin zu einem 3er-system
+    1. messageTyp
+    2. songID
+    3. prog/partID
+
+
+- wenn auf andresGit ein song > 0 läuft und die scrollmatrix eingeschaltet wird, dann hängt sich die scrollmatrix manchmal auf!
+    - DONE ....denke das lag dran dass parallel progchanges per midi reinkamen von sonar
+
+
 
 checken:
 ========
@@ -72,6 +82,7 @@ checken:
 
 TODOs:
 =======
+- midi_in.cpp: check Chn10 einbauen!
 - hybrid mode ....midi-in + BLE in !?
 - shivers solo und enjoyIntro -> songpause rein?
 - soli zb use s. -> outline testen

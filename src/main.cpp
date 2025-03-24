@@ -207,11 +207,10 @@ void setup() {
 
 	//switchToPart(0); // only 4 testing!!!
 	
-	#ifdef HAS_MIDI_IN	
-		#ifdef IS_MIDI_PROXY
-			//--- proxy: set Value for clients who wants to sync ..
-			setSongAndPartIDforLEDsync(0, 0);
-		#endif
+	#ifdef IS_MIDI_PROXY
+		//--- proxy: set Value for clients who wants to sync ..
+		//setSongAndPartIDforLEDsync(0, 0);
+		setBLEmessageForLEDsync(0, 0, 0);
 	#endif
 
 	Serial.println("ENDE SETUP");
@@ -253,17 +252,17 @@ void loop() {
 	#endif
 
 	if (flag_switchToNextSongPart) {
-		#ifdef HAS_MIDI_IN
-			#ifdef IS_MIDI_PROXY
-				//--- proxy: set Value for clients who wants to sync ..
-				setSongAndPartIDforLEDsync(songID, nextSongPart);
+		#ifdef IS_MIDI_PROXY
+			//--- proxy: set Value for clients who wants to sync ..
+			//setSongAndPartIDforLEDsync(songID, nextSongPart);
+			setBLEmessageForLEDsync(0, songID, nextSongPart);
 
-				if (syncProgWithNextChange) {
-					Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: sendValuepairToListeners(25, nextSongPart)");
-					sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
-					syncProgWithNextChange = false;
-				}
-			#endif
+			if (syncProgWithNextChange) {
+				Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: )" + String(nextSongPart));
+				//sendValuepairToListeners(25, nextSongPart); //-> 25 -> sync client LED-gits to prog change!!
+				sendBLEmessageForLEDsync(4, 0, nextSongPart);
+				syncProgWithNextChange = false;
+			}
 		#elif defined (IS_BLE_CLIENT)
 			informServerOnNextChange(nextSongPart);	// BT BLE Client: sync LEDs to server on request
 		#endif

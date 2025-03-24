@@ -16,12 +16,14 @@
 #endif
 
 volatile bool newMidiValuesToBroadcast = false;
+volatile byte typeID = 0; // msgType -> 0 = NULL / 1 = change Song / 2 = change part
 volatile byte midiInCC = 0;
 volatile byte midiInValue = 0;
 
-void setBroadcastValues(byte number, byte value) {
+void setBroadcastValues(byte type, byte number, byte value) {
     //--- set vlaues for broadcasting to listeners
     newMidiValuesToBroadcast = true;	
+    typeID = type;
     midiInCC = number;
     midiInValue = value;
 }
@@ -38,14 +40,14 @@ void MidiDatenAuswerten(byte channel, byte number, byte value) {
     if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
         switchToSong(value);
         #ifdef IS_MIDI_PROXY
-            setBroadcastValues(number, value);
+            setBroadcastValues(1, number, value);
         #endif
     }
     // with midi byte 23 the songpart can be changed!
     else if (number == 23 && value >= 0) {
         switchToPart(value);
         #ifdef IS_MIDI_PROXY
-            setBroadcastValues(number, value);
+            setBroadcastValues(2, number, value);
         #endif
     }
 }

@@ -29,6 +29,7 @@ boolean informServerOnNextProgChange = false;
 static const NimBLEAdvertisedDevice* advDevice;
 NimBLEScan* pBLEScan;
 volatile bool newMidiValuesReceivedFromProxy = false;
+volatile byte newMsgTypeIDfromProxy = 0;
 volatile byte newMidiCCfromProxy = 0;
 volatile byte newMidiValueFromProxy = 0;
 
@@ -162,8 +163,9 @@ void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_
     //     Serial.println(byte3);
     // //====================================================
 
-    newMidiCCfromProxy = pData[0];
-    newMidiValueFromProxy = pData[1];
+    newMsgTypeIDfromProxy = pData[0];
+    newMidiCCfromProxy = pData[1];
+    newMidiValueFromProxy = pData[2];
     newMidiValuesReceivedFromProxy = true;
 }
 
@@ -332,60 +334,105 @@ bool connectToServer() {
     return true;
 }
 
-void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
+// void MidiDatenVomProxyAuswerten(byte ccIn, byte value) {
+//     if (ccIn >=22 && ccIn <= 27 && value >= 0) {
+//         switch (ccIn) {
+//             case 22:    // change song by midi
+//                 Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
+//                 switchToSong(value);
+//                 break;
+//             case 23:    // change part by midi
+//                 switchToPart(value);
+//                 break;
+//             //wird aktuell nicht benutzt!
+//             // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
+//                 //if (waitForLEDsync) {
+//                     //switchToSong(value); // only switch if the client jetzt subscribed to the server notification
+//                    // waitForLEDsync = false;
+//                 //}
+//                 // break;
+//             case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
+//                 if (waitForLEDsync) {  // TESTEN !!!--------------------------------
+//                     Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(value);
+//                     switchToPart(value);
+//                     waitForLEDsync = false;
+//                 }
+//                 break;
+//             // case 26:    // the server requests a sync; value doesnt matter
+//             //     SongAndPart songAndPart;
+//             //     songAndPart.songID = songID;
+//             //     songAndPart.part = prog;
+//             //     if (pChr != NULL) {
+//             //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+//             //     }
+//             //     informServerOnNextProgChange = true;
+//             //     break;
+//             case 27:    // server forces the clients to sync
+//                 needLEDsync = true;
+//                 break;                      
+//         }
+//     }
+// }
 
-    if (ccIn >=22 && ccIn <= 27 && value >= 0) {
-        switch (ccIn) {
-            case 22:    // change song by midi
-                Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
-                switchToSong(value);
-                break;
+void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 
-            case 23:    // change part by midi
-                switchToPart(value);
-                break;
+    switch (msgType) {
+        case 0:
+            break;
 
-            //wird aktuell nicht benutzt!
-            // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
-                //if (waitForLEDsync) {
-                    //switchToSong(value); // only switch if the client jetzt subscribed to the server notification
-                   // waitForLEDsync = false;
-                //}
-                // break;
-            
-            case 25:    // sync gits after connect/subscribe, but only if there is actually no song running
-                if (waitForLEDsync) {  // TESTEN !!!--------------------------------
-                    Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(value);
-                    switchToPart(value);
-                    waitForLEDsync = false;
-                }
-                break;
+        case 1:    // change song
+            //Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
+            switchToSong(song);
+            break;
 
-            // case 26:    // the server requests a sync; value doesnt matter
-            //     SongAndPart songAndPart;
-            //     songAndPart.songID = songID;
-            //     songAndPart.part = prog;
-            //     if (pChr != NULL) {
-            //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
-            //     }
-            //     informServerOnNextProgChange = true;
-            //     break;
-            
-            // case 27:    // server forces the clients to sync
-            //     needLEDsync = true;
-            //     break;                      
-        }
+        case 2:    // change part by midi
+            switchToPart(part);
+            break;
+
+        //wird aktuell nicht benutzt!
+        // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running
+            //if (waitForLEDsync) {
+                //switchToSong(value); // only switch if the client jetzt subscribed to the server notification
+                // waitForLEDsync = false;
+            //}
+            // break;
+        
+        case 3:    // server forces the clients to sync
+            //needLEDsync = true;
+            switchToSongAndPart(song, part);
+            waitForLEDsync = true;
+            break; 
+
+        case 4:    // sync gits after connect/subscribe, but only if there is actually no song running
+            if (waitForLEDsync) {  // TESTEN !!!--------------------------------
+                Serial.println("BLE-client: waitForLEDsync -> switchToPart: ") + String(part);
+                switchToPart(part);
+                waitForLEDsync = false;
+            }
+            break;
+
+        // case 26:    // the server requests a sync; value doesnt matter
+        //     SongAndPart songAndPart;
+        //     songAndPart.songID = songID;
+        //     songAndPart.part = prog;
+        //     if (pChr != NULL) {
+        //         pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+        //     }
+        //     informServerOnNextProgChange = true;
+        //     break;                     
     }
 }
 
+// the server requests a sync; value doesnt matter
 void informServerOnNextChange(byte nextPart) {
     if (informServerOnNextProgChange) {
         informServerOnNextProgChange = false;
-        SongAndPart songAndPart;
-        songAndPart.songID = songID;
-        songAndPart.part = nextPart;
+        BLEmessage bleMessage;
+        bleMessage.msgType = 4;
+        bleMessage.songID = songID;
+        bleMessage.part = nextPart;
         if (pChr != NULL) {
-            pChr->writeValue((uint8_t*)&songAndPart, sizeof(songAndPart));
+            pChr->writeValue((uint8_t*)&bleMessage, sizeof(bleMessage));
         }
     }
 }
@@ -418,7 +465,7 @@ void BLE_client_Loop() {
             // Serial.print(" - value: ");
             // Serial.println(newMidiValueFromProxy);
 
-            MidiDatenVomProxyAuswerten(newMidiCCfromProxy, newMidiValueFromProxy);
+            MidiDatenVomProxyAuswerten(newMsgTypeIDfromProxy, newMidiCCfromProxy, newMidiValueFromProxy);
             newMidiValuesReceivedFromProxy = false;
         }
     } 
@@ -435,12 +482,20 @@ void BLE_client_Loop() {
                 
                 // Auslesen der Daten
                 std::string value = pChr->readValue();  
-                //std::string value = pChr->getValue(); // readValue ist sicherer!?
-                SongAndPart receivedData;
+                // SongAndPart receivedData;
+                // if (value.length() == sizeof(SongAndPart)) {
+                //     memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+                //     Serial.printf("clients: read characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                //     switchToSongAndPart(receivedData.songID, receivedData.part);
+                //     waitForLEDsync = true;
+                //     Serial.println("now waitForLEDsync on next prog change");
+                // }
 
-                if (value.length() == sizeof(SongAndPart)) {
-                    memcpy(&receivedData, value.data(), sizeof(SongAndPart));
-                    Serial.printf("clients reads characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+                BLEmessage receivedData;
+
+                if (value.length() == sizeof(BLEmessage)) {
+                    memcpy(&receivedData, value.data(), sizeof(BLEmessage));
+                    Serial.printf("clients: read characterisitc from proxy - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
                     switchToSongAndPart(receivedData.songID, receivedData.part);
                     waitForLEDsync = true;
                     Serial.println("now waitForLEDsync on next prog change");

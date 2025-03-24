@@ -10,8 +10,9 @@ extern byte songID;
 extern volatile byte prog;
 extern volatile bool syncProgWithNextChange;
 extern volatile bool newMidiValuesToBroadcast;
-extern volatile byte midiInCC;
-extern volatile byte midiInValue;
+extern volatile byte typeID;      // from midi_in.cpp
+extern volatile byte midiInCC;    // from midi_in.cpp
+extern volatile byte midiInValue; // from midi_in.cpp
 extern boolean needLEDsync; // in main
 extern boolean forceLEDsync; // in main
 extern boolean waitForLEDsync; // in main
@@ -36,7 +37,7 @@ NimBLEService *pService;
 NimBLECharacteristic *pCharacteristic;
 NimBLEAdvertising *pAdvertising;
 
-SongAndPart songAndPart;
+BLEmessage bleMessage;
 
 // Funktion, um zu prüfen, ob eine Adresse erlaubt ist
 bool is_address_in_array(const char* address) {
@@ -125,9 +126,18 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         //Serial.println("onWrite(): server reads incoming data");
         // Auslesen der Daten
         std::string value = pCharacteristic->getValue();
-        SongAndPart receivedData;
-        if (value.length() == sizeof(SongAndPart)) {
-            memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+        // SongAndPart receivedData;
+        // if (value.length() == sizeof(SongAndPart)) {
+        //     memcpy(&receivedData, value.data(), sizeof(SongAndPart));
+        //     //Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
+        //     //Serial.println("server sync request -> onWrite() -> switchToSongAndPart");
+        //     switchToSongAndPart(receivedData.songID, receivedData.part);
+        //     waitForLEDsync = true;  // wohl eher gar nicht nötig/gebraucht
+        // }
+
+        BLEmessage receivedData;
+        if (value.length() == sizeof(BLEmessage)) {
+            memcpy(&receivedData, value.data(), sizeof(BLEmessage));
             //Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
             //Serial.println("server sync request -> onWrite() -> switchToSongAndPart");
             switchToSongAndPart(receivedData.songID, receivedData.part);
@@ -183,19 +193,40 @@ void midiProxy_initialize_BLE() {
     Serial.println("Waiting a client connection to notify...");
 }
 
-void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
-    uint8_t byteArray[2];
-    byteArray[0] = midiInCC;
-    byteArray[1] = midiInValue;
-    pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+// void sendValuepairToListeners(byte midiInCC, byte midiInValue) {
+//     uint8_t byteArray[2];
+//     byteArray[0] = midiInCC;
+//     byteArray[1] = midiInValue;
+//     pCharacteristic->setValue((uint8_t *)&byteArray, 2);
+//     pCharacteristic->notify();
+// }
+
+/* msgType -> 
+    0 = set song & Part
+    1 = change Song -> only songID
+    2 = change part -> only partID
+    3 = force sync to clients -> songID & partID
+    4 = switch part after LEDsync
+*/
+void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
+    bleMessage.msgType = msgType;
+    bleMessage.songID = songID;
+    bleMessage.part = part;
+    pCharacteristic->setValue((uint8_t*)&bleMessage, sizeof(bleMessage));
+}
+
+void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
+    setBLEmessageForLEDsync(msgType, songID, part);
     pCharacteristic->notify();
 }
 
-void setSongAndPartIDforLEDsync(byte songID, byte part) {
-    songAndPart.songID = songID;
-    songAndPart.part = part;
-    pCharacteristic->setValue((uint8_t*)&songAndPart, sizeof(songAndPart));
-}
+// void setValueTripleForLEDsync(byte msgType, byte songID, byte partID) {
+//     uint8_t byteArray[3];
+//     byteArray[0] = msgType;
+//     byteArray[1] = songID;
+//     byteArray[2] = partID;
+//     pCharacteristic->setValue((uint8_t *)&byteArray, 3);
+// }
 
 void midiProxy_midiLoop() {
 
@@ -215,8 +246,23 @@ void midiProxy_midiLoop() {
     // notify changed value
     if (newMidiValuesToBroadcast) {
         //if (anzahl_BLE_devices > 0) {
-            sendValuepairToListeners(midiInCC, midiInValue);
-            //syncLEDgits = false; // brauchen wir hier nicht
+
+            switch (typeID) {
+                case 0:
+                    break;
+
+                case 1:    // change song 
+                    //Serial.println("BLE-client: MidiDatenVomProxyAuswerten -> switchToSong: ") + String(value);
+                    sendBLEmessageForLEDsync(1, midiInValue, 0);
+                    break;
+    
+                case 2:    // change part 
+                    sendBLEmessageForLEDsync(2, 0, midiInValue);
+                    break;
+
+                default:
+                    break;
+            }
         //}
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }
@@ -238,12 +284,16 @@ void midiProxy_midiLoop() {
     //     sendValuepairToListeners(26, 1);    // 26 means server needs sync; 1 means nothing ;)
     // }        
 
-    // if (forceLEDsync) {
-    //     forceLEDsync = false;
-    //     //Serial.println("server needsLEDsync -> sendValuepairToListeners(26, 1);");
-    //     setSongAndPartIDforLEDsync(songID, prog);
-    //     sendValuepairToListeners(27, 1);    // 26 means server needs sync; 1 means nothing ;)
-    // }     
+    if (forceLEDsync) {
+        forceLEDsync = false;
+        Serial.println("proxy: sendBLEmessageForLEDsync");
+        Serial.print("songID: ");
+        Serial.println(songID);
+        Serial.print("part: ");
+        Serial.println(prog);
+        sendBLEmessageForLEDsync(3, songID, prog);    // msgType 3 means server wants to force sync to clients
+        syncProgWithNextChange = true;
+    }     
 }
 
 //--------------

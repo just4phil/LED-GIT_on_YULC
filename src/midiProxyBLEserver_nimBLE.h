@@ -19,8 +19,8 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue);
 };
 void midiProxy_initialize_BLE();
-void sendValuepairToListeners(byte midiInCC, byte midiInValue);
-void setSongAndPartIDforLEDsync(byte songID, byte part);
+void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part);
+void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part); 
 void midiProxy_midiLoop();
 //--------------
 #endif
