@@ -85,28 +85,34 @@ void rotary_initialize() {
 }
 
 void on_button_short_click() {
-	Serial.println("on_button_short_click");
+	//Serial.println("on_button_short_click");
 	#if defined(IS_MIDI_PROXY)
 		forceLEDsync = true;			// short click beim proxy -> force led sync der clients
-		Serial.println("midi proxy wants to force LED sync on clients");
+		#if defined(debug_ble_proxy)
+			Serial.println("midi proxy wants to force LED sync on clients");
+		#endif
 	#elif defined (IS_BLE_CLIENT)
 		needLEDsync = true;			// short click bei clients -> request led sync from proxy
-		Serial.println("midi client needs LED sync from proxy");
+		#if defined(debug_ble_client)
+			Serial.println("midi client needs LED sync from proxy");
+		#endif
 	#endif	
 } 
 
 void on_button_double_click() {
-	Serial.println("on_button_double_click");
+	//Serial.println("on_button_double_click");
 	#if defined(IS_MIDI_PROXY)
 		needLEDsync = true;			// double click beim proxy -> request led sync from client
-		Serial.println("midi proxy needs LED sync from clients");
+		#if defined(debug_ble_proxy)
+			Serial.println("midi proxy needs LED sync from clients");
+		#endif
 	#elif defined (IS_BLE_CLIENT)
 									// double click beim client -> BISHER UNGENUTZT!
 	#endif
 } 
 
 void on_button_long_click() {
-	Serial.println("on_button_long_click");
+	//Serial.println("on_button_long_click");
 	if (encoderButtonPushedLEDsOFF) {
 		encoderButtonPushedLEDsOFF = false;
 	}

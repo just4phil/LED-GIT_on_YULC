@@ -53,7 +53,9 @@ bool is_address_in_array(const char* address) {
  **                       Remove as you see fit for your needs                        */
 class ServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
-        Serial.printf("Client address: %s\n", connInfo.getAddress().toString().c_str());
+        #if defined(debug_ble_proxy)
+            Serial.printf("Client address: %s\n", connInfo.getAddress().toString().c_str());
+        #endif
         /**
          *  We can use the connection handle here to ask for different connection parameters.
          *  Args: connection handle, min connection interval, max connection interval
@@ -67,17 +69,23 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         std::string clientAddress = connInfo.getAddress().toString();
         // Prüfen, ob die Adresse erlaubt ist
         if (!is_address_in_array(clientAddress.c_str())) {
-            Serial.printf("Verbindung von %s nicht erlaubt, wird beendet.\n", clientAddress.c_str());
+            #if defined(debug_ble_proxy)
+                Serial.printf("Verbindung von %s nicht erlaubt, wird beendet.\n", clientAddress.c_str());
+            #endif
             pServer->disconnect(connInfo.getConnHandle()); // Verbindung beenden
         } else {
-            Serial.printf("Verbindung von %s erlaubt.\n", clientAddress.c_str());
+            #if defined(debug_ble_proxy)
+                Serial.printf("Verbindung von %s erlaubt.\n", clientAddress.c_str());
+            #endif
             aDeviceConnected = true;
         }
 
         NimBLEDevice::startAdvertising(); // wichtig damit auch der zweite client connecten kann!
     }
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
-        Serial.printf("Client disconnected - start advertising\n");
+        #if defined(debug_ble_proxy)
+            Serial.printf("Client disconnected - start advertising\n");
+        #endif
         aDeviceDISconnected = true;
         NimBLEDevice::startAdvertising();
     }
@@ -119,7 +127,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         //a client reads our song/part data -> mnow send a notify on next prog change to sync time!
         //syncLEDgits = true;     // wäre hier falsch, da der client song/part bereits geholt hat
         syncProgWithNextChange = true; // sync time on next prog change
-        Serial.println("proxy onRead() -> client reads my values -> syncProgWithNextChange to client!");
+        #if defined(debug_ble_proxy)
+            Serial.println("proxy onRead() -> client reads my values -> syncProgWithNextChange to client!");
+        #endif
     }
     
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
@@ -145,7 +155,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         }
         else {
             // Fehlerbehandlung - erhaltene Daten haben nicht die erwartete Länge
-            Serial.println("server onWrite() -> read values -> Something went wrong!");
+            #if defined(debug_ble_proxy)
+                Serial.println("server onWrite() -> read values -> Something went wrong!");
+            #endif
         }
     }
 
@@ -158,7 +170,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 
     /** Peer subscribed to notifications/indications */
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
-        Serial.printf("a client subscribed to notifications");
+        #if defined(debug_ble_proxy)
+            Serial.printf("a client subscribed to notifications");
+        #endif
         //syncLEDgits = true; // sync here for auto-sync
     }
 } chrCallbacks;
@@ -190,7 +204,9 @@ void midiProxy_initialize_BLE() {
     pAdvertising->enableScanResponse(false); //(true); If your device is battery powered you may consider setting scan response to false as it will extend battery life at the expense of less data sent.
     pAdvertising->start(); 
     //----------
-    Serial.println("Waiting a client connection to notify...");
+    #if defined(debug_ble_proxy)
+        Serial.println("Waiting a client connection to notify...");
+    #endif
 }
 
 /* msgType -> 
@@ -216,14 +232,18 @@ void midiProxy_midiLoop() {
 
     if (aDeviceConnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();
-        Serial.println("CONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+        #if defined(debug_ble_proxy)
+            Serial.println("CONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+        #endif
         //syncLEDgits = true;   erst bei subscribe machen!
         aDeviceConnected = false;
     }
 
     if (aDeviceDISconnected) {
         anzahl_BLE_devices = pServer->getConnectedCount();
-        Serial.println("DISCONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+        #if defined(debug_ble_proxy)
+            Serial.println("DISCONNECT! - clients connected: " + String(anzahl_BLE_devices));	// TODO: scheint immer erst im nächsten loop korrekt zu sein!?
+        #endif
         aDeviceDISconnected = false;
     }
 
@@ -253,17 +273,21 @@ void midiProxy_midiLoop() {
 
     if (needLEDsync) {
         needLEDsync = false;
-        Serial.println("server needsLEDsync from client-> sendBLEmessageForLEDsync(5, 0, 0);");
+        #if defined(debug_ble_proxy)
+            Serial.println("server needsLEDsync from client-> sendBLEmessageForLEDsync(5, 0, 0);");
+        #endif
         sendBLEmessageForLEDsync(5, 0, 0);
     }        
 
     if (forceLEDsync) {
         forceLEDsync = false;
-        Serial.println("proxy: force sync -> sendBLEmessageForLEDsync");
-        Serial.print("songID: ");
-        Serial.println(songID);
-        Serial.print("part: ");
-        Serial.println(prog);
+        #if defined(debug_ble_proxy)
+            Serial.println("proxy: force sync -> sendBLEmessageForLEDsync");
+            Serial.print("songID: ");
+            Serial.println(songID);
+            Serial.print("part: ");
+            Serial.println(prog);
+        #endif
         sendBLEmessageForLEDsync(3, songID, prog);    // msgType 3 means server wants to force sync to clients
         syncProgWithNextChange = true;
     }    

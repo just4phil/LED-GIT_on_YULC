@@ -34,21 +34,22 @@ void setBroadcastValues(byte type, byte number, byte value) {
 // It checks if the controller number is within the 22 to 27 range
 void MidiDatenAuswerten(byte channel, byte number, byte value) {
 
-    // TODO: check Chn10 einbauen!?! -------------------------------------
+    if (channel == 10 && number >= 22 & number <= 23) { // security check ....only act on channel 10!!
 
-    // with midi byte 22 the song can be changed!
-    if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
-        switchToSong(value);
-        #ifdef IS_MIDI_PROXY
-            setBroadcastValues(1, number, value);
-        #endif
-    }
-    // with midi byte 23 the songpart can be changed!
-    else if (number == 23 && value >= 0) {
-        switchToPart(value);
-        #ifdef IS_MIDI_PROXY
-            setBroadcastValues(2, number, value);
-        #endif
+        // with midi byte 22 the song can be changed!
+        if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
+            switchToSong(value);
+            #ifdef IS_MIDI_PROXY
+                setBroadcastValues(1, number, value);
+            #endif
+        }
+        // with midi byte 23 the songpart can be changed!
+        else if (number == 23 && value >= 0) {
+            switchToPart(value);
+            #ifdef IS_MIDI_PROXY
+                setBroadcastValues(2, number, value);
+            #endif
+        }
     }
 }
 
