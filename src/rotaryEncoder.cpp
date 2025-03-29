@@ -8,7 +8,8 @@
 
 //extern const boolean DEBUG;
 extern int BRIGHTNESS;
-extern volatile boolean encoderButtonPushedLEDsOFF;	// for rotary encoder button push
+extern volatile boolean LEDsTurnedOff;
+extern volatile boolean encoderButtonLongPress;	// for rotary encoder button push
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
 extern boolean needLEDsync;
 extern boolean forceLEDsync;
@@ -79,8 +80,8 @@ void rotary_initialize() {
 
 	numberSelector.setValue - sets initial value    
 	*/
-	//numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
-	numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
+	numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
+	//numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
 	numberSelector.setValue(DEFAULT_BRIGHTNESS);
 }
 
@@ -111,15 +112,15 @@ void on_button_double_click() {
 	#endif
 } 
 
-void on_button_long_click() {
+//void on_button_long_click() {
 	//Serial.println("on_button_long_click");
-	if (encoderButtonPushedLEDsOFF) {
-		encoderButtonPushedLEDsOFF = false;
-	}
-	else {
-		encoderButtonPushedLEDsOFF = true;	// for rotary encoder button push
-	}
-} 
+	// if (encoderButtonLongPress) {
+	// 	encoderButtonLongPress = false;
+	// }
+	// else {
+	// 	encoderButtonLongPress = true;	// for rotary encoder button push
+	// }
+//} 
 
 void rotary_onButtonClick() {
 
@@ -140,7 +141,8 @@ void rotary_onButtonClick() {
 	if (wasButtonDown) {
 
 		if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
-			on_button_long_click();
+			//on_button_long_click();
+			encoderButtonLongPress = true;	// for rotary encoder button push
 		} 	
 		else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
 
@@ -165,6 +167,13 @@ void rotary_loop() {
 	if (encoderDelta != 0) {		
 		BRIGHTNESS = numberSelector.getValue();
 		FastLED.setBrightness(BRIGHTNESS);
+		
+		if (BRIGHTNESS == 0) { // wenn LEDs ausgedreht sind dann ist das wir long click
+			LEDsTurnedOff = true; // war früher auf Long Click
+		}
+		else {
+			LEDsTurnedOff = false;
+		}
 	}
 	rotary_onButtonClick();
 

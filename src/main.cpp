@@ -103,7 +103,7 @@ volatile boolean warnLEDsLipoLow = false;
 volatile bool syncProgWithNextChange = false;
 byte secondsForVoltage = 0; // for lipo safer 
 //--------------------
-volatile boolean encoderButtonPushedLEDsOFF = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
+volatile boolean encoderButtonLongPress = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
 volatile boolean LEDsTurnedOff = false;		// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
 //--------------------
@@ -219,6 +219,9 @@ void setup() {
 
 void loop() {
 
+	// if (LEDsTurnedOff) Serial.println("LEDsTurned Off");
+	// else  Serial.println("LEDsTurned ON");
+
 	if (OneSecondHasPast) {
 		secondsForVoltage++;	// count seconds for voltage lipo safer 
 		OneSecondHasPast = false;
@@ -276,11 +279,13 @@ void loop() {
 		LEDsTurnedOff = true;
 	}
 	else {
-		if (encoderButtonPushedLEDsOFF) {
-			LEDsTurnedOff = true;
-		}
-		else {
-			LEDsTurnedOff = false;
+		if (encoderButtonLongPress) {
+			// not-aus: proxy + alle clients zurück auf songPause!
+			switchToSong(0);			// every type switch to song 0
+			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync!
+				forceLEDsync = true;
+			#endif
+			encoderButtonLongPress = false;
 		}
 	}
 

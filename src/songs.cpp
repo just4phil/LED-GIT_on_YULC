@@ -309,10 +309,10 @@ void PhysicalTrailer() {
 
 	case 3:
 		if (LEDGITBOARD) {
-			progScrollText("Physical by Dua Lipa", 15260, 90, getRandomColor(), 100);
+			progScrollText("Physical by Dua Lipa", 14440, 90, getRandomColor(), 100);//15260
 		}
 		else {
-			progBlack(15260, 100);
+			progBlack(14440, 100);//15260
 		}	
 	break;
 
@@ -324,7 +324,7 @@ void PhysicalTrailer() {
 
 		//--- start song ----// we go there directly
 		songID = 2;			// this is PHYSICAL
-		switchToPart(30);	// but we have to jump over the Intro directly to part 30!
+		switchToPart(40);	// but we have to jump over the Intro directly to part 30!
 		break;
 	}
 }
