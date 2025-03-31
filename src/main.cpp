@@ -104,6 +104,7 @@ volatile bool syncProgWithNextChange = false;
 byte secondsForVoltage = 0; // for lipo safer 
 //--------------------
 volatile boolean encoderButtonLongPress = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
+volatile boolean encoderButtonNotAvailable = false;	// close long press after a long press for a second
 volatile boolean LEDsTurnedOff = false;		// übergeordnetes FLAG
 volatile boolean LIPOvoltageIsLOW = false;	// when true -> leds will be turned off
 //--------------------

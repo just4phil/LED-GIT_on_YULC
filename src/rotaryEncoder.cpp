@@ -10,6 +10,7 @@
 extern int BRIGHTNESS;
 extern volatile boolean LEDsTurnedOff;
 extern volatile boolean encoderButtonLongPress;	// for rotary encoder button push
+extern volatile boolean encoderButtonNotAvailable;	// close long press after a long press for a second
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
 extern boolean needLEDsync;
 extern boolean forceLEDsync;
@@ -24,6 +25,7 @@ unsigned int timeBetweenDoubleClicks = 800;
 unsigned int longPressAfterMiliseconds = 1000;  //how long čong
 
 static unsigned long lastTimeShortClick = 0;
+static unsigned long lastTimeLongPress = 0;
 static bool wasButtonDown = false;
 static bool shortClickHappened = false;
 static bool wasButtonDownFIRST = false;
@@ -86,7 +88,9 @@ void rotary_initialize() {
 }
 
 void on_button_short_click() {
-	//Serial.println("on_button_short_click");
+	#if defined(debug_rotary)
+		Serial.println("on_button_short_click");
+	#endif
 	#if defined(IS_MIDI_PROXY)
 		forceLEDsync = true;			// short click beim proxy -> force led sync der clients
 		#if defined(debug_ble_proxy)
@@ -101,7 +105,9 @@ void on_button_short_click() {
 } 
 
 void on_button_double_click() {
-	//Serial.println("on_button_double_click");
+	#if defined(debug_rotary)
+		Serial.println("on_button_double_click");
+	#endif
 	#if defined(IS_MIDI_PROXY)
 		needLEDsync = true;			// double click beim proxy -> request led sync from client
 		#if defined(debug_ble_proxy)
@@ -131,20 +137,34 @@ void rotary_onButtonClick() {
 	if (isEncoderButtonDown) {
 		if (!wasButtonDown) {
 			lastTimeButtonDown = millis();
+			wasButtonDown = true;	//else we wait since button is still down
 		}
-		wasButtonDown = true;	//else we wait since button is still down
+		
+		if (wasButtonDown && !encoderButtonNotAvailable) {	// der button wird immer noch gedrückt
+			if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+				encoderButtonLongPress = true;	// for rotary encoder button push
+				encoderButtonNotAvailable = true;
+				lastTimeLongPress = millis();
+				#if defined(debug_rotary)
+					Serial.println("Long press detected!");
+				#endif
+			} 
+		}
+		
 		return;
 	}
 
 	//--- button is up
 
-	if (wasButtonDown) {
+	if (wasButtonDown && !encoderButtonNotAvailable) {
 
-		if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
-			//on_button_long_click();
-			encoderButtonLongPress = true;	// for rotary encoder button push
-		} 	
-		else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+		// if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+		// 	//on_button_long_click();
+		// 	encoderButtonLongPress = true;	// for rotary encoder button push
+		// } 	
+		// else 
+		
+		if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
 
 			if (wasButtonDownFIRST == false) {
 				wasButtonDownFIRST = true;
@@ -189,6 +209,15 @@ void rotary_loop() {
 			wasButtonDownFIRST = false;
 			wasButtonDownSECOND = false;
 			shortClickHappened = false;
+		}
+	}
+
+	if (encoderButtonNotAvailable) {
+		if (millis() - lastTimeLongPress >= 3000) {	// release encoder btn lon press after 3 seconds
+			encoderButtonNotAvailable = false;	
+			#if defined(debug_rotary)
+				Serial.println("proxy: encoder long press is available again!");
+			#endif
 		}
 	}
 } 
