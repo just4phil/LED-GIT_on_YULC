@@ -1517,7 +1517,7 @@ void Titanium() {
 		break;
 
 	case 20://im bulletproof	15250
-		progMatrixScanner(15235, 25, 25);
+		progMatrixScanner(15235, 25, 20);
 		//progStrobo(16134, 25, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
@@ -1527,7 +1527,14 @@ void Titanium() {
 		break;
 
 	case 30://bridge	15250
-		progFastBlingBling(15240, 4, 35);
+		progFastBlingBling(7620, 4, 32);
+		//progMovingLines(16134, 35);
+		//progPalette(16134, 4, 35);	// paletteID -> 0 - 10
+		break;
+
+	case 32://half time	15250
+		progMatrixScanner(7620, 35, 20);	
+		///progFastBlingBling(7620, 4, 35);
 		//progMovingLines(16134, 35);
 		//progPalette(16134, 4, 35);	// paletteID -> 0 - 10
 		break;
@@ -1545,7 +1552,7 @@ void Titanium() {
 		break;
 
 	case 45://im bulletproof	15225
-		progMatrixScanner(15235, 50, 25);
+		progMatrixScanner(15235, 50, 20);
 		//progBlack(12923, 50);
 		break;
 
@@ -2271,7 +2278,8 @@ void apt() {
    		break;
 
    case 45: //45	apt apt apt	12885
-		progRandomLines(12885, 50, 400, false);
+		//progRandomLines(12885, 50, 400, false);
+		progStrobo(12885, 50, 400, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
    		break;
 
    case 50: // 50	hey ….	5640
@@ -2428,7 +2436,7 @@ void prisoner() {
 		break;
 
 	case 48: // 50	TEXT: let me go	2575
-		progScrollText("Let me go", 8500, 75, getRandomColor(), 50);
+		progScrollText("Let me go", 8000, 75, getRandomColor(), 50);
 		break;
 
 	case 50: // 52	BLACK	10000
