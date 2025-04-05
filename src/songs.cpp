@@ -570,129 +570,113 @@ void TakeOnMe() {
 	}
 }
 
-//#4 LEER -> Dont stop the music -> TODO ---------------------------------------------------------------------------------------------
+//#4 LEER -> Dont stop the music
 void DontStopTheMusic() {
 
 	switch (prog) {
 
-	case 0://text		7500
+	case 0://0	pause	7374
 		if (LEDGITBOARD) {
-			progScrollText("Dont stop the music by Rihanna", 22740, 70, getRandomColor(), 10);
+			progScrollText("Dont stop the music by Rihanna", 22740, 70, getRandomColor(), 5);
 		}
 		else {
-			progBlack(6290, 2);
+			progBlack(7374, 5);
 		}		
 		break;
 
-	case 2://snarewirbel
-		progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 5://5	intro	16270
+		if (LEDGITBOARD) {
+			progBlack(904, 10);
+		}
+		else {
+			progPalette(16270, 4, 10);	// paletteID -> 0 - 10
+		}	
 		break;
 
-	case 5:// intro1		15484
-		progStern(15480, 970, 10, 15); 
-		break;
-	//----------------------------------
-
-	case 10://verse 1a		15484
-		progBlingBlingColoring(30970, 20, 3000);
+	case 10://10	ist gettin late	16270
+		progRandomLines(16270, 15, 1015, false);	
+		//progBlingBlingColoring(30970, 20, 3000);
 		//progCircles(15485, 15, 485);
 		break;
 
-	case 15://verse 1b		15484
-		progFullColors(15485, 20, 485);	// zu schnell????
+	case 15://who knew …	16270
+		progRandomLines(16270, 20, 510, true);	
+		//progFullColors(15485, 20, 485);	// zu schnell????
 		break;
 
-	case 20://bridge		13548
-		progPalette(13550, 4, 22);	// paletteID -> 0 - 10
+	case 20://do u know what u started	16275
+		//progPalette(16275, 9, 25);	// paletteID -> 0 - 10
+		progMatrixScanner(16275, 25, 7);
 		break;
 
-	case 22://übergang		1935
-		progStrobo(1935, 24, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 25://chorus 1a: i wanna take it away	8136
+		progPalette(8136, 9, 30);	// paletteID -> 0 - 10	
+		//progStrobo(1935, 24, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progCircles(2125, 30, 500);
 		break;
 
-	case 24://chorus 1		14516
-		//progFastBlingBling(14500, 3, 26);
-		progStern(14500, 970, 26, 15); 
+	case 30://chorus 1a: i just cant refuse it	8136
+		progFastBlingBling(8136, 8, 35);
 		break;
 
-	case 26://übergang		968
-		progStrobo(1000, 28, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-		break;
-
-	case 28://chorus 2		15445
-		progFastBlingBling(15450, 7, 30);
-		break;
-		//----------------------------------
-
-	case 30://verse 2a		15484
-		progFullColors(15475, 32, 485);
-		break;
-
-	case 32://verse 2b		15484
-		progCircles(15475, 34, 485);
-		break;
-
-	case 34://bridge		15484
-		progPalette(13550, 5, 35);	// paletteID -> 0 - 10
-		break;
-
-	case 35://übergang		1935
-		progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 35://chorus 1b	16270 -> 8136
+		progFullColors(8136, 37, 510);	
+		//progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progCircles(2125, 30, 485);
 		break;
 
-	case 36://chorus 2a		14516
-		//progFastBlingBling(14500, 3, 37);
-		progStern(14500, 970, 37, 15); 
+	case 37://chorus: i just cant refuse it	8136
+		progFastBlingBling(8136, 8, 40);	
+		//progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progCircles(2125, 30, 485);
+		break;	
+
+	case 40://verse 2	16270
+		progPalette(16270, 11, 45);	// paletteID -> 0 - 10
 		break;
 
-	case 37://übergang		968
-		progStrobo(1000, 38, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-		break;
-
-	case 38://chorus 2b		15445
-		progFastBlingBling(15450, 7, 40);
-		break;
-		//----------------------------------
-
-	case 40://BOOM 1		15485
-		progPalette(15485, 2, 42);	// paletteID -> 0 - 10
-		break;
-
-	case 42://nur vocals		15485
-		progMatrixHorizontal(15485, 43);
+	case 45://do u know what u started	16270
+		progMatrixScanner(16270, 50, 7);
 		//progBlingBlingColoring(14500, 43);
 		break;
-		//----------------------------------
 
-	case 43://BOOM 2		15480
-		progPalette(15480, 0, 44);
+	case 50://bridge: bass solo	15254
+		progBlingBlingColoring(15254, 55, 3000);
 		break;
 
-	case 44://BOOM 3		15485
-		progPalette(15485, 7, 46); 
+	case 55://STROBO	1018
+		progStrobo(1018, 60, 64, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 46://BOOM 4	13550
-		progPalette(13550, 9, 47);
+	case 60://chorus 2a: i wanna take it away	8136
+		progFullColors(8136, 65, 510);	
 		break;
 
-	case 47://strobo snarewirbel	1935
-		progStrobo(1935, 48, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 65://chorus 2a: i just cant refuse it	8136
+		progFastBlingBling(8136, 8, 70);
 		break;
 
-	case 48://chorus 2		14515
-		progFastBlingBling(14515, 10, 49);
+	case 70://chorus 2a: i wanna take it away	8136
+		progFullColors(8136, 75, 510);	
 		break;
-		//----------------------------------
 
-	case 49://strobo snarewirbel		970
-		progStrobo(970, 60, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 75://chorus 2a: i just cant refuse it	8136
+		progStern(8136, 510, 80, 15); 
 		break;
-		//----------------------------------
 
-	case 60://ende schwarz
+	case 80://chorus 2a: i wanna take it away	8136
+		progFullColors(8136, 85, 510);
+		break;
+
+	case 85://chorus 2a: i just cant refuse it	8136
+		progFastBlingBling(8136, 12, 90);
+		break;
+
+	case 90://Bass Ende	8136
+		progBlingBlingColoring(8136, 95, 10000);
+		break;
+
+	case 95://ende schwarz
 		progBlack(10000, 100);
 		break;
 
