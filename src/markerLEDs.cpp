@@ -92,9 +92,9 @@ void setMarkerLEDs(byte songID) {
 			markerLED1 = ESaite_Gis; 
 			markerLED2 = ASaite_C; 
 			markerLED3 = ESaite_C; 
-			//markerLED4 = ESaite_A; 
-			// hat noch weitere gimmicks in songs.cpp für RINA
-			//TODO, wenn der song mal programmiert ist!!!
+			#ifdef BASS
+				markerLED4 = ESaite_D; 	// 10. Bund für SOLO
+			#endif
 			break;
 		case 5://UseSomebody();
 			markerLED1 = ESaite_C;
@@ -179,7 +179,10 @@ void setMarkerLEDs(byte songID) {
 		case 15://Abcdefu();
 			markerLED1 = ESaite_Gis; 
 			markerLED2 = ESaite_Fis; 
-			markerLED4 = ESaite_Cis; 			
+			markerLED4 = ESaite_Cis; 	
+			#ifdef BASS
+				markerLED5 = ESaite_B;
+			#endif					
 			break;
 		case 16://enjoyTheSilence();
 			markerLED1 = ESaite_F; 

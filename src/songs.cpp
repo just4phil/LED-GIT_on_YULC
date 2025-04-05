@@ -573,15 +573,6 @@ void TakeOnMe() {
 //#4 LEER -> Dont stop the music -> TODO ---------------------------------------------------------------------------------------------
 void DontStopTheMusic() {
 
-//TODO, wenn der song mal programmiert ist!:
-		// #ifdef BASS
-		// 	// markerLED 1 - 3 in Benutzung bei Rina
-		// 	markerLED5 = ASaite_Fis; // Rina für sample teil (3:18): ab 2237: 2 HT unter der Oktave -> ESaite_D oder ASaite_G // Ende bei Takt 2245
-		// #endif
-
-
-
-
 	switch (prog) {
 
 	case 0://text		7500

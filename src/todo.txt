@@ -48,7 +48,7 @@ TODOs:
 - hybrid mode ....midi-in + BLE in !?
 - shivers solo und enjoyIntro -> songpause rein?
 - soli zb use s. -> outline testen
-- rina danie andre auf matrix ?
+- rina daniel andre auf matrix ?
 - i love it
     - bridge mit wha
     - auf F schrammeln
