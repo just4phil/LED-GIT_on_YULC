@@ -399,8 +399,8 @@ void Physical() {
 		progStrobo(1630, 82, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		#ifdef BASS
 			// markerLED 1 - 3 in Benutzung bei Rina
-			markerLED5 = ASaite_Fis; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
-			markerLED6 = ASaite_E; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
+			//markerLED5 = ASaite_Fis; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
+			markerLED5 = ASaite_E; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
 		#endif		 
 		break;
 
@@ -408,8 +408,8 @@ void Physical() {
 		progFastBlingBling(13060, 2, 84);
 		#ifdef BASS
 			// markerLED 1 - 3 in Benutzung bei Rina
-			markerLED5 = ASaite_Fis; // für Rina: Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
-			markerLED6 = ASaite_E; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
+			//markerLED5 = ASaite_Fis; // für Rina: Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
+			markerLED5 = ASaite_E; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
 		#endif
 		break;
 
@@ -417,7 +417,6 @@ void Physical() {
 		progFastBlingBling(11430, 6, 86);
 		#ifdef BASS
 			markerLED5 = 0; // für Rina: wieder auschalten!!
-			markerLED6 = 0;
 		#endif
 		break;
 
