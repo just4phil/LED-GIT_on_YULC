@@ -148,10 +148,23 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ESaite_B; 		
 			break;
 		case 12://SuchAshame();
-			markerLED1 = ESaite_Fis;
-			markerLED2 = ESaite_G;
-			markerLED3 = ESaite_B; 
-			markerLED4 = ESaite_Gis; 			
+			// markerLED1 = ESaite_Fis;
+			// markerLED2 = ESaite_G;
+			// markerLED3 = ESaite_B; 
+			// markerLED4 = ESaite_Gis; 
+
+			#ifdef GIT
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_B; 
+				markerLED4 = ESaite_Gis; 
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_Fis;
+				markerLED2 = 0; //ESaite_G;  // für RINA: 3. Bund ausschalten
+				markerLED3 = ESaite_B; 
+				markerLED4 = ESaite_Gis; 	
+			#endif
 			break;
 
 		case 13://InTheDark();
