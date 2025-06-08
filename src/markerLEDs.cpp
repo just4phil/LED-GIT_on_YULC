@@ -89,11 +89,15 @@ void setMarkerLEDs(byte songID) {
 			// hat noch weitere gimmicks in songs.cpp
 			break;
 		case 4://DontStopTheMusic();
-			markerLED1 = ESaite_Gis; 
-			markerLED2 = ASaite_C; 
-			markerLED3 = ESaite_C; 
 			#ifdef BASS
+				markerLED1 = ESaite_Gis; 
+				markerLED2 = ASaite_C; 
+				//markerLED3 = ESaite_C; // 8. Bund aus (08.06.2025)
 				markerLED4 = ESaite_D; 	// 10. Bund für SOLO
+			#else
+				markerLED1 = ESaite_Gis; 
+				markerLED2 = ASaite_C; 
+				markerLED3 = ESaite_C; 
 			#endif
 			break;
 		case 5://UseSomebody();

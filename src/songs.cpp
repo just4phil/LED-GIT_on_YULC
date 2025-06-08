@@ -1773,7 +1773,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		progPalette(16550, 4, 22);
 		#ifdef BASS
 			markerLED5 = ESaite_Cis;	// RINA für "am i going under" ab 1382 ESaite_Cis bis 1391 
-			markerLED6 = ESaite_Dis;	// RINA bereits ab hier für solo ab 1390 ESaite_Dis für solo bis 1399
+			markerLED6 = ESaite_Dis;	// 11. bund, RINA bereits ab hier für solo ab 1390 ESaite_Dis für solo bis 1399
 		#endif
 		break;	
 
@@ -1781,7 +1781,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		progMatrixHorizontal(16550, 24, 70);
 		#ifdef BASS
 			markerLED5 = 0;				// RINA: nach "am i going under" ESaite_Cis wieder aus
-			markerLED6 = ESaite_Dis;	// RINA für solo ab 1390 ESaite_Dis bis 1399
+			markerLED6 = ESaite_Dis;	// 11. bund, RINA für solo ab 1390 ESaite_Dis bis 1399
 		#endif
 		break;	
 
