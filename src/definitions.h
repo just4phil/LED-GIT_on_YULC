@@ -8,7 +8,8 @@
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
 //#define ANDRESGIT		// YULC1 auf COM5 
-#define RINASBASS		// YULC2 auf COM17
+//#define RINASBASS		// YULC2 auf COM17
+#define LAMPE1
 //#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
@@ -36,6 +37,16 @@
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+#endif
+
+#ifdef LAMPE1
+	#define NOMARKER 
+	#define IS_BLE_CLIENT
+#endif
+
+#ifdef LAMPE2
+	#define NOMARKER 
+	#define IS_BLE_CLIENT
 #endif
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
@@ -66,7 +77,11 @@
 	#define LIPO_PIN            4 
 	#if defined(SCROLLMATRIX)
 		#define DEFAULT_BRIGHTNESS	20
-	#else
+	#elif defined(LAMPE1)
+		#define DEFAULT_BRIGHTNESS	50		
+	#elif defined(LAMPE2)
+		#define DEFAULT_BRIGHTNESS	50		
+	#else	
 		#define DEFAULT_BRIGHTNESS	48	// solange die stromversorgung nicht ausreichend ist
 	#endif	
 #endif
@@ -131,6 +146,8 @@
 #define anz_LEDs_BASS 			155
 #define anz_LEDs_GITBOARD 		278
 #define anz_LEDs_SCROLLMATRIX 	540
+#define anz_LEDs_LAMPE1 		249
+#define anz_LEDs_LAMPE2 		249 // TODO anpassen
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
@@ -163,6 +180,10 @@
 
 	#if defined(GITBOARD)
 		#define anz_LEDs		anz_LEDs_GITBOARD
+	#elif defined(LAMPE1)
+		#define anz_LEDs		anz_LEDs_LAMPE1
+	#elif defined(LAMPE2)
+		#define anz_LEDs		anz_LEDs_LAMPE2		
 	#elif defined(SCROLLMATRIX)
 		#define anz_LEDs		anz_LEDs_SCROLLMATRIX
 	#elif defined(ANDRESGIT)							//nur zum testen!!

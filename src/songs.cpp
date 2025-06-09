@@ -62,7 +62,24 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 
 void SONGPAUSE()  {	// soft / static LEDs
 	
- 	switch (prog) { 
+	// #if defined (LAMPE1) 
+
+	// 	switch (prog) { 
+
+	// 	case 0:
+	// 		progFullColors(60000, 100, 1500);
+	// 	break;
+
+	// 	case 100:
+	// 		//clearAll();
+	// 		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
+	// 		break;
+	// 	}
+
+	// #else
+	//-----------------
+
+	switch (prog) { 
 
 	case 0:
 		// randomProg	= random(1, 3);
@@ -89,6 +106,9 @@ void SONGPAUSE()  {	// soft / static LEDs
 		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
 		break;
 	}
+	//-----------------
+
+	// #endif
 }
 
 // 0 defaultLoop();
