@@ -7,9 +7,10 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define ANDRESGIT		// YULC1 auf COM5 
+//#define ANDRESGIT		// YULC1 auf COM4 
 //#define RINASBASS		// YULC2 auf COM17
-#define LAMPE1
+#define LAMPE1		// YULC5 auf COM10
+//#define LAMPE2			// YULC6 auf COM3
 //#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
@@ -78,9 +79,9 @@
 	#if defined(SCROLLMATRIX)
 		#define DEFAULT_BRIGHTNESS	20
 	#elif defined(LAMPE1)
-		#define DEFAULT_BRIGHTNESS	50		
+		#define DEFAULT_BRIGHTNESS	100		
 	#elif defined(LAMPE2)
-		#define DEFAULT_BRIGHTNESS	50		
+		#define DEFAULT_BRIGHTNESS	100		
 	#else	
 		#define DEFAULT_BRIGHTNESS	48	// solange die stromversorgung nicht ausreichend ist
 	#endif	
@@ -147,7 +148,7 @@
 #define anz_LEDs_GITBOARD 		278
 #define anz_LEDs_SCROLLMATRIX 	540
 #define anz_LEDs_LAMPE1 		249
-#define anz_LEDs_LAMPE2 		249 // TODO anpassen
+#define anz_LEDs_LAMPE2 		78 // TODO anpassen
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
@@ -159,13 +160,8 @@
 #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// kaputter YULC :(
 #define CLIENT_ADDRESS_YULC4	"48:ca:43:80:98:4d"	// YULC 4 vom 12.3.25
 #define CLIENT_ADDRESS_YULC5	"48:ca:43:80:98:89"	// YULC 5 vom 12.3.25
-#define CLIENT_ADDRESS_YULC6	"dd:dd:dd:dd:dd:dd"	// YULC 6 vom 12.3.25
-//==> aktuelle clients sind: YULC2, YULC4 und YULC5 (s. midiProxyBLEServer)
-
-//alt:
-// #define CLIENT_ADDRESS_YULC1 "cc:8d:a2:3f:b3:9d"	// RINAs YULC
-// #define CLIENT_ADDRESS_YULC2	"48:ca:43:80:98:4d"	// TODO
-// #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
+#define CLIENT_ADDRESS_YULC6	"48:ca:43:80:98:75"	// YULC 6 vom 12.3.25
+//==> aktuelle clients sind: YULC2, YULC4, YULC5 und YULC6 (s. midiProxyBLEServer)
 
 
 //------ BLE SERVER 2 and his CLIENTS -------------- 
