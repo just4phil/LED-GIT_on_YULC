@@ -147,8 +147,8 @@
 #define anz_LEDs_BASS 			155
 #define anz_LEDs_GITBOARD 		278
 #define anz_LEDs_SCROLLMATRIX 	540
-#define anz_LEDs_LAMPE1 		249
-#define anz_LEDs_LAMPE2 		78 // TODO anpassen
+#define anz_LEDs_LAMPE1 		94
+#define anz_LEDs_LAMPE2 		78
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 

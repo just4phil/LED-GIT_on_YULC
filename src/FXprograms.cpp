@@ -54,7 +54,6 @@ byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
 
-//---- fuer progBlingBlingColoringSONGPAUSE
 const int anzahlLEDsImArray = 50;	// 29 reicht bei 500 msToReduceSpeed 
 int LEDsUndFarbWerte[anzahlLEDsImArray][4];
 

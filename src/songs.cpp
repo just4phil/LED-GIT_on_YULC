@@ -62,7 +62,7 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 
 void SONGPAUSE()  {	// soft / static LEDs
 	
-	// #if defined (LAMPE1) 
+	// #if defined (LAMPE2) 
 
 	// 	switch (prog) { 
 
@@ -88,7 +88,14 @@ void SONGPAUSE()  {	// soft / static LEDs
 			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
 		}
 		else {
-			progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			
+			#if defined(LAMPE1)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
+			#elif defined(LAMPE2)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
+			#else
+				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			#endif
 		}	
 	break;
 
@@ -97,7 +104,15 @@ void SONGPAUSE()  {	// soft / static LEDs
 		// 	progSternschnuppen(50000, 100, 18);
 		// }
 		// else if (randomProg == 2) {
+
+		#if defined(LAMPE1)
+			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
+		#elif defined(LAMPE2)
+			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
+		#else
 			progBlingBlingColoringSONGPAUSE(50000, 100, 250);
+		#endif
+			
 		//}
 	break;
 
