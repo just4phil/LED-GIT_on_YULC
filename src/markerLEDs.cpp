@@ -101,11 +101,12 @@ void setMarkerLEDs(byte songID) {
 			#endif
 			break;
 		case 5://UseSomebody();
+			// hat noch weitere gimmicks in songs.cpp
 			markerLED1 = ESaite_C;
 			markerLED2 = ESaite_G;
-			markerLED3 = ESaite_F;			
-			// hat noch weitere gimmicks in songs.cpp
+			markerLED3 = ESaite_F;	
 			break;
+
 		case 6://NoRoots();
 			markerLED1 = ESaite_Fis; 
 			markerLED2 = ESaite_B; 
@@ -123,7 +124,7 @@ void setMarkerLEDs(byte songID) {
 			markerLED2 = ESaite_Fis;
 			markerLED3 = ESaite_Cis;
 			break;
-		case 9://ILoveIT();
+		case 9://ILoveIT(); // siehe auch INTRO fuer ILoveIT() unten => bei #80!!
 			markerLED1 = ESaite_F; 
 			markerLED2 = ASaite_C; 
 			markerLED3 = ASaite_F; 
@@ -146,17 +147,20 @@ void setMarkerLEDs(byte songID) {
 			#endif
 			break;
 		case 11://Titanium();
-			markerLED1 = ESaite_G; 
-			markerLED2 = ESaite_D; 
-			markerLED3 = ESaite_Fis; 
-			markerLED4 = ESaite_B; 		
+			#ifdef GIT
+				markerLED1 = ESaite_G; 
+				markerLED2 = ESaite_D; 
+				markerLED3 = ESaite_Fis; 
+				markerLED4 = ESaite_B; 
+			#endif
+			#ifdef BASS
+; 				markerLED1 = ESaite_G; 
+				//markerLED2 = ESaite_D; 
+				markerLED3 = ESaite_Fis; 
+				markerLED4 = ESaite_B; 
+			#endif		
 			break;
 		case 12://SuchAshame();
-			// markerLED1 = ESaite_Fis;
-			// markerLED2 = ESaite_G;
-			// markerLED3 = ESaite_B; 
-			// markerLED4 = ESaite_Gis; 
-
 			#ifdef GIT
 				markerLED1 = ESaite_Fis;
 				markerLED2 = ESaite_G;
@@ -268,6 +272,13 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ASaite_F; 
 			markerLED4 = ESaite_Dis; 
 			// enjoy hat noch gimmicks für RINA
+			break;
+
+		case 80:// INTRO fuer ILoveIT(); => siehe auch oben bei #9!!
+			markerLED1 = ESaite_F; 
+			markerLED2 = ASaite_C; 
+			markerLED3 = ASaite_F; 
+			markerLED4 = ASaite_Dis;			
 			break;
 
 		case 100://STARTUP();

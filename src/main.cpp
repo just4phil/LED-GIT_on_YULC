@@ -374,7 +374,11 @@ void loop() {
 			enjoyTheSilenceINTRO();
 			break;
 		case 25:
-			//justcantgetenough();
+			//Friday im in Love();
+			break;
+
+		case 80:
+			ILoveItTRAILER();
 			break;
 
 		case 99:

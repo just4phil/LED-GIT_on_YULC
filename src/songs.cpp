@@ -698,20 +698,20 @@ void DontStopTheMusic() {
 		break;
 
 	case 75://chorus 2a: i just cant refuse it	8136
-		progStern(8136, 510, 80, 15); 
+		progStern(8136, 510, 95, 15); // 21.07.2025: direkt zum ende springen (3. chorus gestrichen)
 		break;
 
-	case 80://chorus 2a: i wanna take it away	8136
-		progFullColors(8136, 85, 510);
-		break;
+	// case 80://chorus 2a: i wanna take it away	8136
+	// 	progFullColors(8136, 85, 510);
+	// 	break;
 
-	case 85://chorus 2a: i just cant refuse it	8136
-		progFastBlingBling(8136, 12, 90);
-		break;
+	// case 85://chorus 2a: i just cant refuse it	8136
+	// 	progFastBlingBling(8136, 12, 90);
+	// 	break;
 
-	case 90://Bass Ende	8136
-		progBlingBlingColoring(8136, 95, 10000);
-		break;
+	// case 90://Bass Ende	8136
+	// 	progBlingBlingColoring(8136, 95, 10000);
+	// 	break;
 
 	case 95://ende schwarz
 		progBlack(10000, 100);
@@ -795,7 +795,7 @@ void UseSomebody() {
 		#ifdef BASS
 			// rina für solo (2028/2029 -> 2036) auf E-Saite: hohes C + hohes D
 			markerLED5 = ESaite_C;
-			markerLED6 = ESaite_D;
+			//markerLED6 = ESaite_D;
 		#endif		
 		progFullColors(13913, 40, 870);	// zu schnell
 		break;
@@ -1054,7 +1054,7 @@ void Firework() {
 
 	case 2://snarewirbel
 		if (LEDGITBOARD) {
-			progScrollText("Firework by Katey Perry", 17000, 90, getRandomColor(), 10);
+			progScrollText("Firework by Katy Perry", 17000, 90, getRandomColor(), 10);
 		}
 		else {
 			progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -2824,6 +2824,56 @@ void Tellittomyheart() { // TODO
 	case 110: 
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//-----------
+
+//#80 INTRO fuer ILoveIt
+void ILoveItTRAILER() {
+		
+	switch (prog) {
+
+	case 0:
+		progBlack(21175, 1);
+	break;
+
+	case 1:
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 2);
+		}
+		else {
+			progBlack(23400, 2);
+		}	
+	break;
+
+	case 2:
+		progBlack(21175, 3);
+	break;
+
+	case 3:
+		if (LEDGITBOARD) {
+			progScrollText("I love it by Icona Pop", 16500, 90, getRandomColor(), 4);
+		}
+		else {
+			progBlack(16500, 4);
+		}	
+	break;
+
+	case 4:
+		progStrobo(1000, 100, 83, getRandomColor(), getRandomColor(), getRandomColor());
+	break;
+
+	case 100:
+		clearAll();
+	
+		// switch to the real song PHYSICAL
+		//switchToSong(9);	// we dont use this, because it turns off the MarkerLEDs
+
+		//--- start song ----// we go there directly
+		songID = 9;			// this is I LOVE IT
+		switchToPart(15);	// but we have to jump over the Intro directly to part 15!
 		break;
 	}
 }
