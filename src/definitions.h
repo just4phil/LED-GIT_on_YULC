@@ -7,11 +7,11 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-#define ANDRESGIT		// YULC1 auf COM4 
+//#define ANDRESGIT		// YULC1 auf COM4 
 //#define RINASBASS		// YULC2 auf COM17
 //#define LAMPE1		// YULC5 auf COM10
 //#define LAMPE2			// YULC6 auf COM3
-//#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
+#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------

@@ -1045,7 +1045,7 @@ void Firework() {
 
 	case 0://text		7500
 		if (LEDGITBOARD) {
-			progBlack(5740, 2);
+			progBlack(6240, 2);
 		}
 		else {
 			progBlack(6290, 2);
@@ -1054,7 +1054,7 @@ void Firework() {
 
 	case 2://snarewirbel
 		if (LEDGITBOARD) {
-			progScrollText("Firework by Katy Perry", 17000, 90, getRandomColor(), 10);
+			progScrollText("Firework by Katy Perry", 16500, 90, getRandomColor(), 10);
 		}
 		else {
 			progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -2829,14 +2829,14 @@ void Tellittomyheart() { // TODO
 }
 
 
-// #25 FridayImInLove();
+// #25 FridayImInLove(); fertig 21.07.2025
 void FridayImInLove() { // TODO
 
  	switch (prog) { 
 
 	case 0:// 0	pause	4500
 		if (LEDGITBOARD) {
-			progScrollText("Friday im in Love by The Cure", 23645, 90, getRandomColor(), 10);
+			progScrollText("Friday im in Love by The Cure", 20500, 90, getRandomColor(), 10);
 		}
 		else {
 			progBlack(4500, 5);
@@ -2849,7 +2849,7 @@ void FridayImInLove() { // TODO
 		
 	case 10: //10	intro 2	13714
 		if (LEDGITBOARD) { 
-			progStern(8283, 1015, 15, 25); 
+			progStern(11428, 1015, 15, 25); 
 		}
 		else {
 			progStern(13714, 1015, 15, 25); 
