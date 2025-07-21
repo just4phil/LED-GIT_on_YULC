@@ -47,5 +47,8 @@ void Kids();
 void Tellittomyheart();
 // #24
 void enjoyTheSilenceINTRO();
+// #25 FridayImInLove();
+void FridayImInLove();
+
 // #80
 void ILoveItTRAILER();

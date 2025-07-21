@@ -2828,6 +2828,112 @@ void Tellittomyheart() { // TODO
 	}
 }
 
+
+// #25 FridayImInLove();
+void FridayImInLove() { // TODO
+
+ 	switch (prog) { 
+
+	case 0:// 0	pause	4500
+		if (LEDGITBOARD) {
+			progScrollText("Friday im in Love by The Cure", 23645, 90, getRandomColor(), 10);
+		}
+		else {
+			progBlack(4500, 5);
+		}
+		break;
+	
+	case 5: //5	intro	13714
+		progFastBlingBling(13714, 6, 10); 
+		break;
+		
+	case 10: //10	intro 2	13714
+		if (LEDGITBOARD) { 
+			progStern(8283, 1015, 15, 25); 
+		}
+		else {
+			progStern(13714, 1015, 15, 25); 
+		}		
+		break;
+	
+	case 15: // 15	verse 1	13714
+		progPalette(13714, 3, 20);
+		break;
+
+	case 20: // 20	verse 1b	13714
+		progPalette(13714, 6, 25);
+		break;
+
+	case 25: //25	Saturday went	10286
+		progRandomLines(10286, 30, 460, true);
+		break;
+	
+	case 30: //30	verse 2	13714
+		progPalette(13714, 7, 35);
+		break;		
+
+	case 35: //35	SOLO	13714
+		//progFastBlingBling(13714, 6, 40); 
+		progFastBlingBling(13714, 2, 40, 1, 16, 2000);
+		break;	
+
+	case 40: //40	verse 3	13714
+		progPalette(13714, 2, 45);
+		break;	
+
+	case 45: //45	Saturday went	10286
+		progRandomLines(10286, 50, 460, true);
+		break;	
+
+	case 50: //50	dressed up	13714
+		progStern(13714, 430, 55, 25); 
+		break;	
+	
+	case 55: //55	dressed up 2	12000
+		//progFastBlingBling(12000, 8, 57); 
+		progFastBlingBling(12000, 2, 57, 1, 16, 2000);
+		break;	
+
+	case 57: //57	strobo	1714
+		progStrobo(1714, 60, 65, 255, 255, 255);
+		break;
+
+	case 60: //60	verse 4a	13714
+		progPalette(13714, 8, 65);
+		break;
+
+	case 65: //65	verse 4b	13714
+		progPalette(13714, 9, 70);
+		break;	
+
+	case 70: //70	outro chorus 1	13714
+		progStern(13714, 860, 75, 25); 
+		break;	
+
+	case 75: //75	outro chorus 2	12000
+		//progFastBlingBling(12000, 8, 80); 
+		progFastBlingBling(12000, 2, 80, 1, 16, 2000);
+		break;	
+
+	case 80: //80	git fade out	5143
+		progBlingBlingColoring(5143, 85, 6000);
+		break;	
+
+
+	case 85: //BLACK	10000
+		progBlack(10000, 100);
+		break;	
+
+	case 100: 
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+
+
+
 //-----------
 
 //#80 INTRO fuer ILoveIt

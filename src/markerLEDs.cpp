@@ -274,6 +274,13 @@ void setMarkerLEDs(byte songID) {
 			// enjoy hat noch gimmicks für RINA
 			break;
 
+		case 25://friday im in Love
+			markerLED1 = ESaite_G;
+			markerLED2 = ESaite_B;
+			markerLED3 = ESaite_C;
+			markerLED4 = ASaite_B; 
+			break;
+
 		case 80:// INTRO fuer ILoveIT(); => siehe auch oben bei #9!!
 			markerLED1 = ESaite_F; 
 			markerLED2 = ASaite_C; 
