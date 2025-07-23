@@ -27,9 +27,25 @@ Chip is ESP32-S3 (revision v0.2)
 Features: WiFi, BLE
 Crystal is 40MHz
 -----------------------------------
-
+  
 bugs: (ab Stand 2025-03-10_fixed_Enjoy_BassMarker)
 ======
+
+- 23.07.2025: 
+    - wenn andre long click alles abschaltet, gehen die lampen und rinas Bass nicht richtig aus, 
+        einige LEDs bleiben an (friday)
+        matrix geht auf nerds on fire aber das ist dann so ...
+
+        ==>> hm... zuletzt ging es jetzt => noch weiter testen
+main.cpp:
+		if (encoderButtonLongPress) {
+			// not-aus: proxy + alle clients zurück auf songPause!
+			switchToSong(0);			// every type switch to song 0
+			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync!
+				forceLEDsync = true;
+			#endif
+
+
 - (verschmerzbar) während song zuerst server-forceSync geklickt ....dann abgewartet bis ein neuer part mit sync durchläuft.
     dann auf client needSync geklickt -> dann ist der client angehalten
 - (verschmerzbar) wenn server und client gleichzeitig sync anfordern, dann geht nix mehr
@@ -78,6 +94,9 @@ leds rina:
 
 DONE:
 =====
+2025-07-23:
+    -!!! scheinbar klappt BT proxy nur bis 3 geräte .... das vierte geht nicht
+        => fixed in platformio.ini
 2025-03-13:
 - auch bei matrix->funktionen muss zwingend gitblindingLEDs gecalled werden wegen MEMCOPY!!!
 - LEDMATRIX -> begriff ändern wegen dublette

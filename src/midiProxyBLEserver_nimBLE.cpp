@@ -185,6 +185,7 @@ void midiProxy_initialize_BLE() {
     /** Optional: set the transmit power */
     NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
     NimBLEDevice::setMTU(23);
+    //NimBLEDevice::setMaxConnections(4);  // 4 Clients zulassen -> geht so nicht -> in plattformio.ini konfiguriert in build-flags
     pService = pServer->createService(SERVICE_UUID);
     pServer->setCallbacks(&serverCallbacks);
 
