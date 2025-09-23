@@ -37,7 +37,7 @@ void MidiDatenAuswerten(byte channel, byte number, byte value) {
     if (channel == 10 && number >= 22 & number <= 23) { // security check ....only act on channel 10!!
 
         // with midi byte 22 the song can be changed!
-        if (number == 22 && value > 0) {	// TODO:Checken warum ist hier > 0 und nicht >= 0??????
+        if (number == 22 && value >= 0) {	
             switchToSong(value);
             #ifdef IS_MIDI_PROXY
                 setBroadcastValues(1, number, value);
