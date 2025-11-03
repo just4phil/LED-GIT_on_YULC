@@ -376,6 +376,10 @@ void loop() {
 		case 25:
 			FridayImInLove();
 			break;
+		case 26:
+			//BeMine();	-------------------------TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			SONGPAUSE();
+			break;
 
 		case 80:
 			ILoveItTRAILER();

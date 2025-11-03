@@ -281,6 +281,12 @@ void setMarkerLEDs(byte songID) {
 			markerLED4 = ASaite_B; 
 			break;
 
+		case 26://Be Mine
+			markerLED1 = ESaite_Fis;
+			markerLED2 = ASaite_E;
+			markerLED3 = ASaite_Fis;
+			break;
+
 		case 80:// INTRO fuer ILoveIT(); => siehe auch oben bei #9!!
 			markerLED1 = ESaite_F; 
 			markerLED2 = ASaite_C; 
