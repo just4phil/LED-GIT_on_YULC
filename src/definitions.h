@@ -1,6 +1,42 @@
 #pragma once
 #include <FastLED_NeoMatrix.h>
 
+/**
+ * @file definitions.h
+ * @brief Global configuration and hardware-specific definitions
+ * 
+ * This file contains all compile-time configuration options, hardware pin
+ * assignments, LED matrix parameters, BLE device addresses, and instrument-
+ * specific settings for the LED-GIT project.
+ * 
+ * Configuration Structure:
+ * - Hardware Platform (ESP32/Teensy) - Selected via PlatformIO build flags
+ * - LED Device Type - Choose exactly one device type
+ * - Features - Per-device feature configuration
+ * - Pin Assignments - GPIO pin mappings per device
+ * - LED Matrix - Dimensions, type, and configuration
+ * - Instrument Markers - Fret position LED mappings per instrument
+ * - BLE Configuration - Server UUIDs and client MAC addresses
+ * 
+ * Device Types:
+ * - ANDRESGIT: Guitar LED system with MIDI input
+ * - RINASBASS: Bass LED system with BLE client
+ * - LAMPE1/LAMPE2: Standalone lamp devices
+ * - SCROLLMATRIX: Folding matrix display
+ * - GITBOARD: Teensy-based guitar board
+ * 
+ * Features:
+ * - HAS_MIDI_IN: MIDI CC input for song/part control
+ * - IS_MIDI_PROXY: BLE server broadcasting to clients
+ * - HAS_ROTARY_ENCODER: Manual song selection via knob
+ * - HAS_LIPOVOLTAGE_CHECK: Battery voltage monitoring
+ * - IS_BLE_CLIENT: Receive sync from BLE proxy
+ * 
+ * @note All definitions are compile-time constants
+ * @note Select device type by uncommenting exactly ONE LED-DEVICE definition
+ * @note Features are configured per-device in the device sections below
+ */
+
 //====== DEFINES ========================================================================
 //
 //--- HARDWARE ---> choose via pio menu!!
