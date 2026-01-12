@@ -287,6 +287,13 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ASaite_Fis;
 			break;
 
+		case 27:// I WANNA DANCE WITH SOMEBODY (124 BPM)
+			markerLED1 = ESaite_F;
+			markerLED2 = ESaite_G;
+			markerLED3 = ASaite_Dis;
+			markerLED4 = ASaite_F;
+			break;
+
 		case 80:// INTRO fuer ILoveIT(); => siehe auch oben bei #9!!
 			markerLED1 = ESaite_F; 
 			markerLED2 = ASaite_C; 

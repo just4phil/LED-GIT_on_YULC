@@ -2828,7 +2828,6 @@ void Tellittomyheart() { // TODO
 	}
 }
 
-
 // #25 FridayImInLove(); fertig 21.07.2025
 void FridayImInLove() { // TODO
 
@@ -2931,6 +2930,231 @@ void FridayImInLove() { // TODO
 	}
 }
 
+// #26 BeMine -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void BeMine() { 
+
+ 	switch (prog) { 
+
+	case 0:
+		if (LEDGITBOARD) {
+			progScrollText("Such a shame by Talk Talk", 18000, 90, getRandomColor(), 4);
+		}
+		else {
+			progBlack(11630, 5);
+		}
+		break;
+	
+	case 4: //nur für LED gitboard
+		progBlingBlingColoring(16380, 10, 5000);
+		break;
+
+	case 5: //intro + verse 1
+		progBlingBlingColoring(22750, 10, 5000);
+		break;
+		
+	case 10: // bridge 1
+		//progFullColors(12410, 12, 515);
+		progMatrixScanner(12410, 12, 30);
+		break;
+	
+	case 12: // chorus 1
+		progStern(24820, 1035, 14, 20); 
+		break;
+
+	case 14: // übergang
+		//progPalette(16540, 4, 16);
+		progFastBlingBling(8270, 8, 16);
+		break;
+
+	case 16: // pause
+		//progRandomLines(16550, 18, 515, true);
+		progBlack(5170, 18);
+		break;
+	
+	case 18: // verse 2
+		progRandomLines(16550, 20, 515, false);
+		break;		
+
+	case 20: // bridge 2
+		progPalette(10340, 6, 22);
+		break;	
+
+	case 22: // pause
+		progStrobo(2060, 24, 65, 255, 255, 255);
+		//progStern(16550, 515, 24, 20); 
+		//progMatrixHorizontal(16550, 24, 70);
+		break;	
+
+	case 24: // chorus 2
+		progStern(24820, 515, 26, 20); 
+		break;	
+
+	case 26: // übergang
+		progFastBlingBling(8270, 8, 28);
+		break;	
+
+	case 28: // pause
+		progBlack(4130, 30);
+		//progBlingBlingColoring(16550, 30, 5000);
+		break;	
+
+	case 30: // strobo
+		progStrobo(1030, 32, 65, 255, 255, 255);
+		break;
+
+	case 32: // solopart 1
+		progPalette(16550, 2, 34);
+		break;	
+
+	case 34: // solopart 2
+		progPalette(14480, 9, 36);
+		break;	
+
+	case 36: // bridge 3
+		progRandomLines(10340, 38, 515, false);
+		break;	
+
+	case 38: // pause
+		progStrobo(2060, 40, 65, 255, 255, 255);
+		//progStern(16550, 515, 24, 20); 
+		//progMatrixHorizontal(16550, 24, 70);
+		break;	
+
+	case 40: // chorus 2
+		progStern(33100, 515, 42, 20); 
+		break;	
+
+	case 42: // übergang
+		progFastBlingBling(8270, 8, 44);
+		break;	
+
+	case 44: // fade out
+		progBlingBlingColoring(6200, 46, 3000);
+		break;	
+
+	case 46: // pause
+		progBlack(10000, 100);
+		break;	
+
+	case 100:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+// #27 IWannaDanceWithSomebody -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void IWannaDanceWithSomebody() { 
+
+ 	switch (prog) { 
+
+	case 0:
+		if (LEDGITBOARD) {
+			progScrollText("Such a shame by Talk Talk", 18000, 90, getRandomColor(), 4);
+		}
+		else {
+			progBlack(11630, 5);
+		}
+		break;
+	
+	case 4: //nur für LED gitboard
+		progBlingBlingColoring(16380, 10, 5000);
+		break;
+
+	case 5: //intro + verse 1
+		progBlingBlingColoring(22750, 10, 5000);
+		break;
+		
+	case 10: // bridge 1
+		//progFullColors(12410, 12, 515);
+		progMatrixScanner(12410, 12, 30);
+		break;
+	
+	case 12: // chorus 1
+		progStern(24820, 1035, 14, 20); 
+		break;
+
+	case 14: // übergang
+		//progPalette(16540, 4, 16);
+		progFastBlingBling(8270, 8, 16);
+		break;
+
+	case 16: // pause
+		//progRandomLines(16550, 18, 515, true);
+		progBlack(5170, 18);
+		break;
+	
+	case 18: // verse 2
+		progRandomLines(16550, 20, 515, false);
+		break;		
+
+	case 20: // bridge 2
+		progPalette(10340, 6, 22);
+		break;	
+
+	case 22: // pause
+		progStrobo(2060, 24, 65, 255, 255, 255);
+		//progStern(16550, 515, 24, 20); 
+		//progMatrixHorizontal(16550, 24, 70);
+		break;	
+
+	case 24: // chorus 2
+		progStern(24820, 515, 26, 20); 
+		break;	
+
+	case 26: // übergang
+		progFastBlingBling(8270, 8, 28);
+		break;	
+
+	case 28: // pause
+		progBlack(4130, 30);
+		//progBlingBlingColoring(16550, 30, 5000);
+		break;	
+
+	case 30: // strobo
+		progStrobo(1030, 32, 65, 255, 255, 255);
+		break;
+
+	case 32: // solopart 1
+		progPalette(16550, 2, 34);
+		break;	
+
+	case 34: // solopart 2
+		progPalette(14480, 9, 36);
+		break;	
+
+	case 36: // bridge 3
+		progRandomLines(10340, 38, 515, false);
+		break;	
+
+	case 38: // pause
+		progStrobo(2060, 40, 65, 255, 255, 255);
+		//progStern(16550, 515, 24, 20); 
+		//progMatrixHorizontal(16550, 24, 70);
+		break;	
+
+	case 40: // chorus 2
+		progStern(33100, 515, 42, 20); 
+		break;	
+
+	case 42: // übergang
+		progFastBlingBling(8270, 8, 44);
+		break;	
+
+	case 44: // fade out
+		progBlingBlingColoring(6200, 46, 3000);
+		break;	
+
+	case 46: // pause
+		progBlack(10000, 100);
+		break;	
+
+	case 100:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
 
 
 

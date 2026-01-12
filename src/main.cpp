@@ -377,9 +377,11 @@ void loop() {
 			FridayImInLove();
 			break;
 		case 26:
-			//BeMine();	-------------------------TODO: SONG NOCH NICHT PROGRAMMIERT!!
-			SONGPAUSE();
+			BeMine();	//-------------------------TODO: SONG NOCH NICHT PROGRAMMIERT!!
 			break;
+		case 27:
+			IWannaDanceWithSomebody();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			break;			
 
 		case 80:
 			ILoveItTRAILER();

@@ -351,6 +351,31 @@ void enjoyTheSilenceINTRO();
 void FridayImInLove();
 
 /**
+ * @brief Be Mine song pattern
+ * 
+ * LED pattern for "Be Mine" by Kamrad.
+ * 
+ * Song: Be Mine by Kamrad
+ * 
+ * @see switchToSong()
+ */
+// #26 BeMine();
+void BeMine();
+
+/**
+ * @brief IWannaDanceWithSomebody song pattern
+ * 
+ * LED pattern for "IWannaDanceWithSomebody" by Whitney Houston.
+ * 
+ * Song: IWannaDanceWithSomebody by Whitney Houston
+ * 
+ * @see switchToSong()
+ */
+// #27 IWannaDanceWithSomebody();
+void IWannaDanceWithSomebody();
+
+
+/**
  * @brief I Love It trailer pattern
  * 
  * Special trailer/intro pattern for "I Love It" before
