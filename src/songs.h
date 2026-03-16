@@ -374,6 +374,34 @@ void BeMine();
 // #27 IWannaDanceWithSomebody();
 void IWannaDanceWithSomebody();
 
+/**
+ * @brief Billie Jean song pattern
+ * 
+ * LED pattern for "Billie Jean" by Michael Jackson.
+ * Features the iconic bass line and synth-driven visualization.
+ * 
+ * Song: Billie Jean by Michael Jackson
+ * 
+ * @see switchToSong()
+ */
+// #28 BillyJean();
+void BillyJean();
+
+
+/**
+ * @brief Maniac song pattern
+ * 
+ * LED pattern for "Maniac" by Michael Sembello.
+ * Features the iconic bass line and synth-driven visualization.
+ * 
+ * Song: Maniac by Michael Sembello
+ * 
+ * @see switchToSong()
+ */
+// #29 Maniac();
+void Maniac();
+
+void Maniac_Tminus1();
 
 /**
  * @brief I Love It trailer pattern

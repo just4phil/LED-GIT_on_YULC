@@ -383,6 +383,18 @@ void loop() {
 			IWannaDanceWithSomebody();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
 			break;			
 
+		case 28:
+			BillyJean();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			break;	
+
+		case 29:
+			Maniac();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			break;	
+
+		case 30:
+			Maniac_Tminus1();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			break;	
+
 		case 80:
 			ILoveItTRAILER();
 			break;

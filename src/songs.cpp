@@ -3160,6 +3160,300 @@ void IWannaDanceWithSomebody() {
 
 //-----------
 
+//#28 BillyJean
+void BillyJean() {
+
+	switch (prog) {
+
+	case 0://pause/text	
+		if (LEDGITBOARD) {
+			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+		}
+		else {
+			progBlack(4000, 5);
+		}		
+		break;
+
+	case 5://bass intro	8000
+		progPalette(8000, 6, 10);
+		break;
+
+	case 10://synth joins	8000
+		progPalette(8000, 4, 15);
+		break;
+
+	case 15://verse 1a	16000
+		progBlingBlingColoring(16000, 20, 4000);
+		break;
+
+	case 20://verse 1b	16000
+		progCircles(16000, 25, 500, false);
+		break;
+
+	case 25://pre-chorus	8000
+		progPalette(8000, 9, 30);
+		break;
+
+	case 30://chorus 1	16000
+		progStern(16000, 500, 35, 20);
+		break;
+
+	case 35://post-chorus	8000
+		progFastBlingBling(8000, 6, 40);
+		break;
+
+	case 40://verse 2a	16000
+		progMatrixScanner(16000, 45, 20);
+		break;
+
+	case 45://verse 2b	16000
+		progRandomLines(16000, 50, 500, true);
+		break;
+
+	case 50://pre-chorus 2	8000
+		progPalette(8000, 11, 55);
+		break;
+
+	case 55://chorus 2	16000
+		progStern(16000, 500, 60, 20);
+		break;
+
+	case 60://post-chorus 2	8000
+		progFastBlingBling(8000, 8, 65);
+		break;
+
+	case 65://bridge/breakdown	16000
+		progMovingLines(16000, 70);
+		break;
+
+	case 70://build up	8000
+		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 75://chorus 3	16000
+		progFullColors(16000, 80, 500);
+		break;
+
+	case 80://final chorus	16000
+		progStern(16000, 250, 85, 15);
+		break;
+
+	case 85://outro	8000
+		progFastBlingBling(8000, 10, 90);
+		break;
+
+	case 90://fade out	8000
+		progPalette(8000, 6, 95);
+		break;
+
+	case 95://black
+		progBlack(10000, 100);
+		break;
+
+	case 100:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#29 Maniac
+void Maniac() {
+
+	switch (prog) {
+
+	case 0://pause/text	
+		if (LEDGITBOARD) {
+			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+		}
+		else {
+			progBlack(4000, 5);
+		}		
+		break;
+
+	case 5://bass intro	8000
+		progPalette(8000, 6, 10);
+		break;
+
+	case 10://synth joins	8000
+		progPalette(8000, 4, 15);
+		break;
+
+	case 15://verse 1a	16000
+		progBlingBlingColoring(16000, 20, 4000);
+		break;
+
+	case 20://verse 1b	16000
+		progCircles(16000, 25, 500, false);
+		break;
+
+	case 25://pre-chorus	8000
+		progPalette(8000, 9, 30);
+		break;
+
+	case 30://chorus 1	16000
+		progStern(16000, 500, 35, 20);
+		break;
+
+	case 35://post-chorus	8000
+		progFastBlingBling(8000, 6, 40);
+		break;
+
+	case 40://verse 2a	16000
+		progMatrixScanner(16000, 45, 20);
+		break;
+
+	case 45://verse 2b	16000
+		progRandomLines(16000, 50, 500, true);
+		break;
+
+	case 50://pre-chorus 2	8000
+		progPalette(8000, 11, 55);
+		break;
+
+	case 55://chorus 2	16000
+		progStern(16000, 500, 60, 20);
+		break;
+
+	case 60://post-chorus 2	8000
+		progFastBlingBling(8000, 8, 65);
+		break;
+
+	case 65://bridge/breakdown	16000
+		progMovingLines(16000, 70);
+		break;
+
+	case 70://build up	8000
+		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 75://chorus 3	16000
+		progFullColors(16000, 80, 500);
+		break;
+
+	case 80://final chorus	16000
+		progStern(16000, 250, 85, 15);
+		break;
+
+	case 85://outro	8000
+		progFastBlingBling(8000, 10, 90);
+		break;
+
+	case 90://fade out	8000
+		progPalette(8000, 6, 95);
+		break;
+
+	case 95://black
+		progBlack(10000, 100);
+		break;
+
+	case 100:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+
+//#30 Maniac T-1
+void Maniac_Tminus1() {
+
+	switch (prog) {
+
+	case 0://pause/text	
+		if (LEDGITBOARD) {
+			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+		}
+		else {
+			progBlack(4000, 5);
+		}		
+		break;
+
+	case 5://bass intro	8000
+		progPalette(8000, 6, 10);
+		break;
+
+	case 10://synth joins	8000
+		progPalette(8000, 4, 15);
+		break;
+
+	case 15://verse 1a	16000
+		progBlingBlingColoring(16000, 20, 4000);
+		break;
+
+	case 20://verse 1b	16000
+		progCircles(16000, 25, 500, false);
+		break;
+
+	case 25://pre-chorus	8000
+		progPalette(8000, 9, 30);
+		break;
+
+	case 30://chorus 1	16000
+		progStern(16000, 500, 35, 20);
+		break;
+
+	case 35://post-chorus	8000
+		progFastBlingBling(8000, 6, 40);
+		break;
+
+	case 40://verse 2a	16000
+		progMatrixScanner(16000, 45, 20);
+		break;
+
+	case 45://verse 2b	16000
+		progRandomLines(16000, 50, 500, true);
+		break;
+
+	case 50://pre-chorus 2	8000
+		progPalette(8000, 11, 55);
+		break;
+
+	case 55://chorus 2	16000
+		progStern(16000, 500, 60, 20);
+		break;
+
+	case 60://post-chorus 2	8000
+		progFastBlingBling(8000, 8, 65);
+		break;
+
+	case 65://bridge/breakdown	16000
+		progMovingLines(16000, 70);
+		break;
+
+	case 70://build up	8000
+		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 75://chorus 3	16000
+		progFullColors(16000, 80, 500);
+		break;
+
+	case 80://final chorus	16000
+		progStern(16000, 250, 85, 15);
+		break;
+
+	case 85://outro	8000
+		progFastBlingBling(8000, 10, 90);
+		break;
+
+	case 90://fade out	8000
+		progPalette(8000, 6, 95);
+		break;
+
+	case 95://black
+		progBlack(10000, 100);
+		break;
+
+	case 100:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//-----------
+
 //#80 INTRO fuer ILoveIt
 void ILoveItTRAILER() {
 		
