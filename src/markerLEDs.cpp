@@ -323,6 +323,12 @@ void setMarkerLEDs(byte songID) {
 			markerLED3 = ASaite_F; 
 			markerLED4 = ASaite_Dis;			
 			break;
+		
+		case 81:// INTRO fuer Dancing On My Own(); => siehe auch oben bei #8!!
+			markerLED1 = ESaite_B;
+			markerLED2 = ESaite_Fis;
+			markerLED3 = ESaite_Cis;			
+			break;
 
 		case 100://STARTUP();
 			// DO NOTHING !!

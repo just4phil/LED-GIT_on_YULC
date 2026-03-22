@@ -416,3 +416,6 @@ void Maniac_Tminus1();
  */
 // #80
 void ILoveItTRAILER();
+
+// #81
+void INTROdancing();
