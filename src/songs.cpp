@@ -3508,33 +3508,33 @@ void INTROdancing() {
 	switch (prog) {
 
 	case 0:
-		progBlack(21175, 1);
+		progBlack(19426, 1);
 	break;
 
 	case 1:
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 2);
+			progScrollText("Nerds on Fire", 19672, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlack(23400, 2);
+			progBlack(19672, 2);
 		}	
 	break;
 
 	case 2:
-		progBlack(21175, 3);
+		progBlack(19672, 3);
 	break;
 
 	case 3:
 		if (LEDGITBOARD) {
-			progScrollText("Dancing on my own by Robyn", 16500, 90, getRandomColor(), 4);
+			progScrollText("Dancing on my own by Robyn", 12541, 90, getRandomColor(), 4);
 		}
 		else {
-			progBlack(16500, 4);
+			progBlack(12541, 4);
 		}	
 	break;
 
 	case 4:
-		progStrobo(1000, 100, 83, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(1230, 100, 82, getRandomColor(), getRandomColor(), getRandomColor());
 	break;
 
 	case 100:
@@ -3543,7 +3543,7 @@ void INTROdancing() {
 		// switch to the real song 
 		//--- start song ----// we go there directly
 		songID = 8;			// this is DANCING ON MY OWN
-		switchToPart(15);	// but we have to jump over the Intro directly to part 15!
+		switchToPart(25);	// but we have to jump over the Intro directly to part 15!
 		break;
 	}
 }
