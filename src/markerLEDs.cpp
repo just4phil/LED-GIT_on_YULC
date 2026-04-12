@@ -295,10 +295,18 @@ void setMarkerLEDs(byte songID) {
 			break;
 
 		case 28:// BillyJean
-			markerLED1 = ASaite_E;
-			markerLED2 = ESaite_G;
-			markerLED3 = ESaite_Bb;
-			markerLED4 = ASaite_F;
+			#ifdef GIT
+				markerLED1 = ESaite_E;
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_Bb;
+				markerLED4 = ASaite_F;
+			#endif
+			#ifdef BASS
+				markerLED1 = ASaite_E;
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_Bb;
+				//markerLED4 = ASaite_F;
+			#endif
 			break;
 
 		case 29:// Maniac
