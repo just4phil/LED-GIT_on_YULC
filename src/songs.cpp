@@ -3046,6 +3046,18 @@ void BeMine() {
 // #27 IWannaDanceWithSomebody -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void IWannaDanceWithSomebody() { 
 
+
+//im transponierten Teil für GIT: -> ASaite_Dis raus
+/* 
+#ifdef GIT			
+	markerLED1 = ESaite_F;
+	markerLED2 = ESaite_G;
+	//markerLED3 = ASaite_Dis;
+	markerLED4 = ASaite_F; 
+#endif
+*/
+
+
  	switch (prog) { 
 
 	case 0:
