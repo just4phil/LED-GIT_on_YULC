@@ -41,12 +41,12 @@ void setMarkerLEDs(byte songID) {
 		//====================================================================================
 
 
-			// #ifdef GIT
-
-			// #endif
-			// #ifdef BASS
-			
-			// #endif
+/* 			
+			#ifdef GIT
+			#endif
+			#ifdef BASS
+			#endif 
+*/
 
 
 		switch (songID) {
@@ -206,10 +206,18 @@ void setMarkerLEDs(byte songID) {
 			#endif					
 			break;
 		case 16://enjoyTheSilence();
-			markerLED1 = ESaite_F; 
-			markerLED2 = ESaite_Gis; 
-			markerLED3 = ASaite_F; 
-			markerLED4 = ESaite_Dis; 	
+			#ifdef GIT
+				markerLED1 = ESaite_F; 
+				markerLED2 = ESaite_Gis; 
+				markerLED3 = ASaite_F; 
+				markerLED4 = ESaite_Dis; 
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_F; 
+				markerLED2 = ESaite_Gis; 
+				markerLED3 = ESaite_D; 
+				//markerLED4 = ASaite_F; 
+			#endif 			
 			// enjoy gimmick in songs.cpp -> RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 
@@ -267,18 +275,34 @@ void setMarkerLEDs(byte songID) {
 			#endif			
 			break;
 		case 24://enjoyTheSilenceINTRO();
-			markerLED1 = ESaite_F;
-			markerLED2 = ESaite_Gis;
-			markerLED3 = ASaite_F; 
-			markerLED4 = ESaite_Dis; 
-			// enjoy hat noch gimmicks für RINA
+			#ifdef GIT
+				markerLED1 = ESaite_F; 
+				markerLED2 = ESaite_Gis; 
+				markerLED3 = ASaite_F; 
+				markerLED4 = ESaite_Dis; 
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_F; 
+				markerLED2 = ESaite_Gis; 
+				markerLED3 = ESaite_D; 
+				//markerLED4 = ASaite_F; 
+			#endif 			
+			// enjoy gimmick in songs.cpp -> RINA SOLO: Takt 718 - 723: ESaite_hohes F
 			break;
 
 		case 25://friday im in Love
-			markerLED1 = ESaite_G;
-			markerLED2 = ESaite_B;
-			markerLED3 = ESaite_C;
-			markerLED4 = ASaite_B; 
+			#ifdef GIT
+				markerLED1 = ESaite_G;
+				markerLED2 = ESaite_B;
+				markerLED3 = ESaite_C;
+				//markerLED4 = ASaite_B; 	// nur Bass!
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_G;
+				markerLED2 = ESaite_B;
+				markerLED3 = ESaite_C;
+				markerLED4 = ASaite_B; 	// nur Bass!
+			#endif			
 			break;
 
 		case 26://Be Mine
@@ -323,6 +347,7 @@ void setMarkerLEDs(byte songID) {
 				markerLED3 = ESaite_Gis;
 				markerLED4 = ESaite_Bb;
 				markerLED5 = ESaite_C;
+				markerLED6 = ESaite_D;
 			#endif
 			break;
 
