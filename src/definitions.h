@@ -43,8 +43,8 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
-//#define ANDRESGIT		// YULC1 auf COM3
-#define RINASBASS		// YULC2 auf COM8
+#define ANDRESGIT		// YULC1 auf COM3
+//#define RINASBASS		// YULC2 auf COM8
 //#define LAMPE2		// YULC5 auf COM10
 //#define LAMPE1			// YULC6 auf COM3
 //#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
@@ -179,7 +179,7 @@
 #define SECONDSFORVOLTAGE	1
 //----------------------------
 
-#define anz_LEDs_GIT1 			164 // neue GIT mit neuen gummi LEDs (18.2.2025) (vorher: 193)
+#define anz_LEDs_GIT1 			163 // war 164 bis 25.04.2026 (eine LED entfernt)
 #define anz_LEDs_BASS 			155
 #define anz_LEDs_GITBOARD 		278
 #define anz_LEDs_SCROLLMATRIX 	540
@@ -302,7 +302,7 @@
 	#define ASaite_C_hoch	 	41	// G/C: 41 (hohe Oktave)	// funktioniert am Bass nicht (out of range)!
 #endif
 
-#ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES neue GITARRE -------------------
+#ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES GITARRE -------------------
 
 //neue gummi LEDs auf der neuen GIT (ab 18.02.2025):
 //oktave 49
@@ -311,40 +311,87 @@
 
 	#define anz_LEDs			anz_LEDs_GIT1
 
-	#define Bund_min	 		47
-	#define Bund_max	 		68
+	#define Bund_min	 		45	//47
+	#define Bund_max	 		67	//68
 
-	#define ESaite_E		 	65	// E/A: 56 (leere / tiefe Saiten)
-	#define ESaite_F		 	63	// F/Bb: 55
-	#define ESaite_Fis		 	61	// F#/B: 54
-	#define ESaite_G	 		59	// G/C: 53
-	#define ESaite_Gis		 	57	// G#/C#: 52
-	#define ESaite_A	 		56	// A/D: 51
-	#define ESaite_Bb		 	55	// Bb/D#: 50
-	#define ESaite_B		 	54	// B/E: 49
-	#define ESaite_C			53	// C/F: 48
-	#define ESaite_Cis		 	52	// C#/F#: 47
-	#define ESaite_D	 		51	// D/G: 46
-	#define ESaite_Dis		 	50	// D#/G#: 45
-	#define ESaite_E_hoch 		49	// E/A: 44 (hohe Oktave)
-	#define ESaite_F_hoch 		48	// F/Bb: 43 (hohe Oktave)
-	#define ESaite_Fis_hoch 	47	// F#/B: 42 (hohe Oktave)
-	#define ESaite_G_hoch	 	46	// G/C: 41 (hohe Oktave)
+	#define ESaite_E		 	64	// E/A: 56 (leere / tiefe Saiten)
+	#define ESaite_F		 	62	// F/Bb: 55
+	#define ESaite_Fis		 	60	// F#/B: 54
+	#define ESaite_G	 		58	// G/C: 53
+	#define ESaite_Gis		 	56	// G#/C#: 52
+	#define ESaite_A	 		55	// A/D: 51
+	#define ESaite_Bb		 	54	// Bb/D#: 50
+	#define ESaite_B		 	53	// B/E: 49
+	#define ESaite_C			52	// C/F: 48
+	#define ESaite_Cis		 	51	// C#/F#: 47
+	#define ESaite_D	 		50	// D/G: 46
+	#define ESaite_Dis		 	49	// D#/G#: 45
+	#define ESaite_E_hoch 		48	// E/A: 44 (hohe Oktave)
+	#define ESaite_F_hoch 		47	// F/Bb: 43 (hohe Oktave)
+	#define ESaite_Fis_hoch 	46	// F#/B: 42 (hohe Oktave)
+	#define ESaite_G_hoch	 	45	// G/C: 41 (hohe Oktave)
 
-	#define ASaite_A		 	65	// E/A: 56 (leere / tiefe Saiten)
-	#define ASaite_Bb		 	63	// F/Bb: 55
-	#define ASaite_B		 	61	// F#/B: 54
-	#define ASaite_C	 		59	// G/C: 53
-	#define ASaite_Cis		 	57	// G#/C#: 52
-	#define ASaite_D	 		56	// A/D: 51
-	#define ASaite_Dis		 	55	// Bb/D#: 50
-	#define ASaite_E		 	54	// B/E: 49
-	#define ASaite_F	 		53	// C/F: 48
-	#define ASaite_Fis		 	52	// C#/F#: 47
-	#define ASaite_G	 		51	// D/G: 46
-	#define ASaite_Gis		 	50	// D#/G#: 45
-	#define ASaite_A_hoch 		49	// E/A: 44 (hohe Oktave)
-	#define ASaite_Bb_hoch 		48	// F/Bb: 43 (hohe Oktave)
-	#define ASaite_B_hoch	 	47	// F#/B: 42 (hohe Oktave)
-	#define ASaite_C_hoch	 	46	// G/C: 41 (hohe Oktave)
+	#define ASaite_A		 	64	// E/A: 56 (leere / tiefe Saiten)
+	#define ASaite_Bb		 	62	// F/Bb: 55
+	#define ASaite_B		 	60	// F#/B: 54
+	#define ASaite_C	 		58	// G/C: 53
+	#define ASaite_Cis		 	56	// G#/C#: 52
+	#define ASaite_D	 		55	// A/D: 51
+	#define ASaite_Dis		 	54	// Bb/D#: 50
+	#define ASaite_E		 	53	// B/E: 49
+	#define ASaite_F	 		52	// C/F: 48
+	#define ASaite_Fis		 	51	// C#/F#: 47
+	#define ASaite_G	 		50	// D/G: 46
+	#define ASaite_Gis		 	49	// D#/G#: 45
+	#define ASaite_A_hoch 		48	// E/A: 44 (hohe Oktave)
+	#define ASaite_Bb_hoch 		47	// F/Bb: 43 (hohe Oktave)
+	#define ASaite_B_hoch	 	46	// F#/B: 42 (hohe Oktave)
+	#define ASaite_C_hoch	 	45	// G/C: 41 (hohe Oktave)
 #endif
+
+// #ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES GITARRE -------------------
+
+// //neue gummi LEDs auf der neuen GIT (ab 18.02.2025):
+// //oktave 49
+// //F 63 (gegenüber 92)
+// // => alle werte -6
+
+// 	#define anz_LEDs			anz_LEDs_GIT1
+
+// 	#define Bund_min	 		47
+// 	#define Bund_max	 		68
+
+// 	#define ESaite_E		 	65	// E/A: 56 (leere / tiefe Saiten)
+// 	#define ESaite_F		 	63	// F/Bb: 55
+// 	#define ESaite_Fis		 	61	// F#/B: 54
+// 	#define ESaite_G	 		59	// G/C: 53
+// 	#define ESaite_Gis		 	57	// G#/C#: 52
+// 	#define ESaite_A	 		56	// A/D: 51
+// 	#define ESaite_Bb		 	55	// Bb/D#: 50
+// 	#define ESaite_B		 	54	// B/E: 49
+// 	#define ESaite_C			53	// C/F: 48
+// 	#define ESaite_Cis		 	52	// C#/F#: 47
+// 	#define ESaite_D	 		51	// D/G: 46
+// 	#define ESaite_Dis		 	50	// D#/G#: 45
+// 	#define ESaite_E_hoch 		49	// E/A: 44 (hohe Oktave)
+// 	#define ESaite_F_hoch 		48	// F/Bb: 43 (hohe Oktave)
+// 	#define ESaite_Fis_hoch 	47	// F#/B: 42 (hohe Oktave)
+// 	#define ESaite_G_hoch	 	46	// G/C: 41 (hohe Oktave)
+
+// 	#define ASaite_A		 	65	// E/A: 56 (leere / tiefe Saiten)
+// 	#define ASaite_Bb		 	63	// F/Bb: 55
+// 	#define ASaite_B		 	61	// F#/B: 54
+// 	#define ASaite_C	 		59	// G/C: 53
+// 	#define ASaite_Cis		 	57	// G#/C#: 52
+// 	#define ASaite_D	 		56	// A/D: 51
+// 	#define ASaite_Dis		 	55	// Bb/D#: 50
+// 	#define ASaite_E		 	54	// B/E: 49
+// 	#define ASaite_F	 		53	// C/F: 48
+// 	#define ASaite_Fis		 	52	// C#/F#: 47
+// 	#define ASaite_G	 		51	// D/G: 46
+// 	#define ASaite_Gis		 	50	// D#/G#: 45
+// 	#define ASaite_A_hoch 		49	// E/A: 44 (hohe Oktave)
+// 	#define ASaite_Bb_hoch 		48	// F/Bb: 43 (hohe Oktave)
+// 	#define ASaite_B_hoch	 	47	// F#/B: 42 (hohe Oktave)
+// 	#define ASaite_C_hoch	 	46	// G/C: 41 (hohe Oktave)
+// #endif
