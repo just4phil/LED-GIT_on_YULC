@@ -36,7 +36,7 @@
  * 
  * @see gitBlindingLEDs_OFF_MarkerLEDs_ON()
  */
-void setMarkerLEDs(byte songID);
+void setMarkerLEDs(byte songID, byte partID);
 
 /**
  * @brief Apply marker LEDs and turn off blinding LEDs in fretboard area

@@ -3058,10 +3058,10 @@ void IWannaDanceWithSomebody() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("Such a shame by Talk Talk", 18000, 90, getRandomColor(), 4);
+			progScrollText("I Wanna Dance With Somebody by Whitney Houston", 18000, 90, getRandomColor(), 4);
 		}
 		else {
-			progBlack(11630, 5);
+			progBlack(4355, 5);//pause	4355
 		}
 		break;
 	
@@ -3069,91 +3069,165 @@ void IWannaDanceWithSomebody() {
 		progBlingBlingColoring(16380, 10, 5000);
 		break;
 
-	case 5: //intro + verse 1
-		progBlingBlingColoring(22750, 10, 5000);
+	case 5: //strobo	726
+		//progBlingBlingColoring(22750, 10, 5000);
+		progStrobo(726, 10, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 		
-	case 10: // bridge 1
+	case 10: // intro	17419
+		progPalette(17419, 6, 12);	
 		//progFullColors(12410, 12, 515);
-		progMatrixScanner(12410, 12, 30);
+		//progMatrixScanner(12410, 12, 30);
 		break;
 	
-	case 12: // chorus 1
-		progStern(24820, 1035, 14, 20); 
+	case 12: // strobo	1935
+		progStrobo(1935, 14, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStern(24820, 1035, 14, 20); 
 		break;
 
-	case 14: // übergang
+	case 14: // verse 1	15484
+		progRandomLines(15484, 16, 480, true);	
 		//progPalette(16540, 4, 16);
-		progFastBlingBling(8270, 8, 16);
+		//progFastBlingBling(8270, 8, 16);
 		break;
 
-	case 16: // pause
-		//progRandomLines(16550, 18, 515, true);
-		progBlack(5170, 18);
+	case 16: // ive done alright	11613
+		progMatrixScanner(11613, 18, 30);
 		break;
 	
-	case 18: // verse 2
-		progRandomLines(16550, 20, 515, false);
+	case 18: //übergang chorus	1935
+		//progRandomLines(16550, 20, 515, false);
+		progStrobo(1935, 20, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;		
 
-	case 20: // bridge 2
-		progPalette(10340, 6, 22);
+	case 20: //chorus 1	13548
+		progStern(13548, 1925, 22, 20); 
+		//progPalette(10340, 6, 22);
 		break;	
 
-	case 22: // pause
-		progStrobo(2060, 24, 65, 255, 255, 255);
+	case 22: // w. smbdy who loves me	1935
+		progStrobo(1935, 24, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progStern(16550, 515, 24, 20); 
 		//progMatrixHorizontal(16550, 24, 70);
 		break;	
 
-	case 24: // chorus 2
-		progStern(24820, 515, 26, 20); 
+	case 24: // chorus 1 weiter	13548
+		progStern(13548, 1925, 26, 20); 
 		break;	
 
-	case 26: // übergang
-		progFastBlingBling(8270, 8, 28);
+	case 26: // w. smbdy who loves me	1935
+		progFastBlingBling(1935, 10, 28);
 		break;	
 
-	case 28: // pause
-		progBlack(4130, 30);
-		//progBlingBlingColoring(16550, 30, 5000);
+	case 28: // stehender chord	1935
+		//progMatrixHorizontal(1935, 30, 70);
+		progStrobo(1935, 30, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 
-	case 30: // strobo
-		progStrobo(1030, 32, 65, 255, 255, 255);
+	case 30: // übergang verse	1935
+		progMatrixHorizontal(1935, 32, 70);	
+		//progStrobo(1935, 32, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 32: // solopart 1
-		progPalette(16550, 2, 34);
+	case 32: // verse 2	15484
+		progPalette(15484, 2, 34);
 		break;	
 
-	case 34: // solopart 2
-		progPalette(14480, 9, 36);
+	case 34: // ive done alright	11613
+		progPalette(11613, 9, 36);
 		break;	
 
-	case 36: // bridge 3
-		progRandomLines(10340, 38, 515, false);
+	case 36: // übergang chorus	1935
+		progStrobo(1935, 38, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
+		//progRandomLines(10340, 38, 515, false);
 		break;	
 
-	case 38: // pause
-		progStrobo(2060, 40, 65, 255, 255, 255);
-		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+	case 38: // chorus 2 	13548
+		progStern(13548, 1925, 40, 20); 
 		break;	
 
-	case 40: // chorus 2
-		progStern(33100, 515, 42, 20); 
+	case 40: //w. smbdy who loves me	1935
+		progFastBlingBling(1935, 10, 42);
 		break;	
 
-	case 42: // übergang
-		progFastBlingBling(8270, 8, 44);
+	case 42: //42	chorus 2 weiter	13548
+		progStern(13548, 1925, 44, 20); 
 		break;	
 
-	case 44: // fade out
-		progBlingBlingColoring(6200, 46, 3000);
+	case 44: // 44	w. smbdy who loves me	1935
+		progStrobo(1935, 46, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 
-	case 46: // pause
+	case 46: // 46	Say you wanna dance	13548
+		progFastBlingBling(13548, 10, 48);
+		break;	
+
+	case 48: //48	übergang	1935
+		progMatrixHorizontal(1935, 50, 70);
+		break;	
+
+	case 50: // 50	i need a man …	11613
+		progPalette(11613, 12, 52);
+		break;	
+
+	case 52: //52	übergang chorus	1935
+		//im transponierten Teil für GIT: -> ASaite_Dis raus
+		// Achtung: ab hier wird für die GIT markerLED4 ausgeschaltet! -> passiert aber in markerLEDs.cpp
+		// #ifdef GIT			
+		// 	markerLED4 = 0;
+		// #endif		
+		progStrobo(1935, 54, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;	
+		
+	case 54: //54	chorus 3	13548
+		progStern(13548, 964, 56, 20); 
+		break;	
+
+	case 56: //56	w. smbdy who loves me	1935
+		progStrobo(1935, 58, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;			
+
+	case 58: //58	chorus 3 weiter	13548
+		progStern(13548, 480, 60, 20); 
+		break;
+
+	case 60: //60	w. smbdy who loves me	1935
+		progStrobo(1935, 62, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 62: //62	Say you wanna dance	2661
+		progRandomLines(2661, 64, 120, true);	
+		break;
+
+	case 64: //64	strobe	1210
+		progFastBlingBling(1210, 5, 66);
+		break;
+
+	case 66: //66	Say you wanna dance	2661
+		progRandomLines(2661, 68, 120, true);	
+		break;
+
+	case 68: //68	strobe	1210
+		progFastBlingBling(1210, 10, 70);
+		break;
+
+	case 70: //70	Say you wanna dance	2661
+		progRandomLines(2661, 72, 120, true);
+		break;
+
+	case 72: //72	strobe	1210
+		progFastBlingBling(1210, 15, 74);
+		break;
+
+	case 74: //74	w. some…	1935
+		progStern(1935, 480, 76, 20); 
+		break;				
+
+	case 76: //76	...bdy who loves me	1935
+		progFastBlingBling(1935, 20, 78);
+		break;
+
+	case 78: // pause
 		progBlack(10000, 100);
 		break;	
 

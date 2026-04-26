@@ -299,7 +299,7 @@ void loop() {
 	//=== ab hier wird nur alle 2 ms ausgefuehrt ======
 	if (flag_processFastLED) {	// LED loop only in certain time-slots to make ms-counter more accurate
 
-		setMarkerLEDs(songID);	// legt nur die Variablen fest ...keine FastLED aktionen
+		setMarkerLEDs(songID, prog);	// legt nur die Variablen fest ...keine FastLED aktionen
 		FastLED.setBrightness(BRIGHTNESS); // zur sicherheit for jedem loop neu auf default setzen. ggf. kann einzelner fx das überschreiben
 
 		switch (songID) {

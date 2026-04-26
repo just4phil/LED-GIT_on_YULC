@@ -16,7 +16,7 @@ extern CRGB leds1[NUMMATRIX];
 extern CRGB leds2[NUMMATRIX];
 //-----------------------
 
-void setMarkerLEDs(byte songID) {
+void setMarkerLEDs(byte songID, byte partID) {
 
 	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!
 
@@ -314,8 +314,15 @@ void setMarkerLEDs(byte songID) {
 		case 27:// I WANNA DANCE WITH SOMEBODY (124 BPM)
 			markerLED1 = ESaite_F;
 			markerLED2 = ESaite_G;
-			markerLED3 = ASaite_Dis;
-			markerLED4 = ASaite_F;
+			markerLED3 = ASaite_F;
+
+			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier			
+			#ifdef GIT			
+				if (partID < 52) {
+					markerLED4 = ASaite_Dis;
+				}
+				else markerLED4 = 0;	//im transponierten Teil für GIT: -> ASaite_Dis raus
+			#endif		
 			break;
 
 		case 28:// BillyJean
