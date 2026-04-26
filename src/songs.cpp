@@ -607,7 +607,7 @@ void TakeOnMe() {
 	}
 }
 
-//#4 LEER -> Dont stop the music
+//#4 - Dont stop the music
 void DontStopTheMusic() {
 
 	switch (prog) {
@@ -724,7 +724,7 @@ void DontStopTheMusic() {
 	}
 }
 
-//#5 -> FERTIG: 25.08.2023
+//#5 -> FERTIG: 25.08.2023 // ---------------------- TO BE DELETED !!!! -----------------------
 void UseSomebody() {
 
 	switch (prog) {
@@ -1291,7 +1291,7 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 	}
 }
 
-//#9 ILoveIt -> TODO ---------------------------------------------------------------------------------------------
+//#9 ILoveIt 
 void ILoveIt() {
 
  	switch (prog) { 
@@ -2274,7 +2274,7 @@ void apt() {
 	   break;
 
    case 5: // 5	bassdrum intro	12885
-	   progRandomLines(12885, 10, 805, true);
+	   progRandomLines(12885, 10, 800, true);
    		break;	
    
    case 10: // 10	verse 1	12885
@@ -2363,7 +2363,7 @@ void apt() {
    }
 }
 
-//#18 -> ok: 5.3.22
+//#18 -> ok: 5.3.22 // ---------------------- TO BE DELETED !!!! -----------------------
 void prisoner() {
 
 	switch (prog) {
@@ -2487,7 +2487,7 @@ void prisoner() {
 	}
 }
 
-// #19 Not n Cold();
+// #19 Not n Cold(); // ---------------------- TO BE DELETED !!!! -----------------------
 void Hotncold() { 
 
  	switch (prog) { 
@@ -3043,7 +3043,7 @@ void BeMine() {
 	}
 }
 
-// #27 IWannaDanceWithSomebody -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// #27 IWannaDanceWithSomebody -> fertiggestellt 26.04.2026
 void IWannaDanceWithSomebody() { 
 //im transponierten Teil für GIT: -> ASaite_Dis raus
 
@@ -3105,7 +3105,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 26: // w. smbdy who loves me	1935
-		progFastBlingBling(1935, 10, 28);
+		progFastBlingBling(1935, 6, 28);
 		break;	
 
 	case 28: // stehender chord	1935
@@ -3136,7 +3136,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 40: //w. smbdy who loves me	1935
-		progFastBlingBling(1935, 10, 42);
+		progFastBlingBling(1935, 6, 42);
 		break;	
 
 	case 42: //42	chorus 2 weiter	13548
@@ -3148,7 +3148,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 46: // 46	Say you wanna dance	13548
-		progFastBlingBling(13548, 10, 48);
+		progFastBlingBling(13548, 6, 48);
 		break;	
 
 	case 48: //48	übergang	1935
@@ -3189,7 +3189,7 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 64: //64	strobe	1210
-		progFastBlingBling(1210, 5, 66);
+		progFastBlingBling(1210, 4, 66);
 		break;
 
 	case 66: //66	Say you wanna dance	2661
@@ -3197,7 +3197,7 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 68: //68	strobe	1210
-		progFastBlingBling(1210, 10, 70);
+		progFastBlingBling(1210, 6, 70);
 		break;
 
 	case 70: //70	Say you wanna dance	2661
@@ -3205,7 +3205,7 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 72: //72	strobe	1210
-		progFastBlingBling(1210, 15, 74);
+		progFastBlingBling(1210, 8, 74);
 		break;
 
 	case 74: //74	w. some…	1935
@@ -3213,7 +3213,7 @@ void IWannaDanceWithSomebody() {
 		break;				
 
 	case 76: //76	...bdy who loves me	1935
-		progFastBlingBling(1935, 20, 78);
+		progFastBlingBling(1935, 10, 78);
 		break;
 
 	case 78: // pause
@@ -3426,7 +3426,7 @@ void Maniac() {
 }
 
 
-//#30 Maniac T-1
+//#30 Maniac T-1 // ---------------------- TO BE DELETED !!!! -----------------------
 void Maniac_Tminus1() {
 
 	switch (prog) {
@@ -3574,7 +3574,7 @@ void ILoveItTRAILER() {
 }
 
 //#81 INTRO fuer Dancing on my own
-void INTROdancing() {
+void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 		
 	switch (prog) {
 
@@ -3614,7 +3614,7 @@ void INTROdancing() {
 		// switch to the real song 
 		//--- start song ----// we go there directly
 		songID = 8;			// this is DANCING ON MY OWN
-		switchToPart(25);	// but we have to jump over the Intro directly to part 15!
+		switchToPart(25);	// but we have to jump over the Intro directly to part 25!
 		break;
 	}
 }
