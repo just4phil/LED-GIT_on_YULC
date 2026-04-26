@@ -3046,32 +3046,21 @@ void BeMine() {
 // #27 IWannaDanceWithSomebody -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void IWannaDanceWithSomebody() { 
 //im transponierten Teil für GIT: -> ASaite_Dis raus
-/* 
-#ifdef GIT			
-	markerLED1 = ESaite_F;
-	markerLED2 = ESaite_G;
-	//markerLED3 = ASaite_Dis;
-	markerLED4 = ASaite_F; 
-#endif
-*/
+
  	switch (prog) { 
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("I Wanna Dance With Somebody by Whitney Houston", 18000, 90, getRandomColor(), 4);
+			progScrollText("I Wanna Dance With Somebody by Whitney Houston", 24435, 90, getRandomColor(), 14);
 		}
 		else {
 			progBlack(4355, 5);//pause	4355
 		}
 		break;
 	
-	case 4: //nur für LED gitboard
-		progBlingBlingColoring(16380, 10, 5000);
-		break;
-
 	case 5: //strobo	726
 		//progBlingBlingColoring(22750, 10, 5000);
-		progStrobo(726, 10, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(726, 10, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 		
 	case 10: // intro	17419
@@ -3081,7 +3070,7 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 12: // strobo	1935
-		progStrobo(1935, 14, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 14, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progStern(24820, 1035, 14, 20); 
 		break;
 
@@ -3097,7 +3086,7 @@ void IWannaDanceWithSomebody() {
 	
 	case 18: //übergang chorus	1935
 		//progRandomLines(16550, 20, 515, false);
-		progStrobo(1935, 20, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 20, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;		
 
 	case 20: //chorus 1	13548
@@ -3106,7 +3095,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 22: // w. smbdy who loves me	1935
-		progStrobo(1935, 24, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 24, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progStern(16550, 515, 24, 20); 
 		//progMatrixHorizontal(16550, 24, 70);
 		break;	
@@ -3121,12 +3110,12 @@ void IWannaDanceWithSomebody() {
 
 	case 28: // stehender chord	1935
 		//progMatrixHorizontal(1935, 30, 70);
-		progStrobo(1935, 30, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 30, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 
 	case 30: // übergang verse	1935
 		progMatrixHorizontal(1935, 32, 70);	
-		//progStrobo(1935, 32, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(1935, 32, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 32: // verse 2	15484
@@ -3138,7 +3127,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 36: // übergang chorus	1935
-		progStrobo(1935, 38, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
+		progStrobo(1935, 38, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
 		//progRandomLines(10340, 38, 515, false);
 		break;	
 
@@ -3155,7 +3144,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 44: // 44	w. smbdy who loves me	1935
-		progStrobo(1935, 46, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 46, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 
 	case 46: // 46	Say you wanna dance	13548
@@ -3176,7 +3165,7 @@ void IWannaDanceWithSomebody() {
 		// #ifdef GIT			
 		// 	markerLED4 = 0;
 		// #endif		
-		progStrobo(1935, 54, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 54, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 		
 	case 54: //54	chorus 3	13548
@@ -3184,7 +3173,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 56: //56	w. smbdy who loves me	1935
-		progStrobo(1935, 58, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 58, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;			
 
 	case 58: //58	chorus 3 weiter	13548
@@ -3192,7 +3181,7 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 60: //60	w. smbdy who loves me	1935
-		progStrobo(1935, 62, 60, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 62, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 62: //62	Say you wanna dance	2661
