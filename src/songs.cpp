@@ -3236,7 +3236,7 @@ void BillyJean() {
 
 	switch (prog) {
 
-	case 0://pause/text	
+	case 0://pause	4922
 		if (LEDGITBOARD) {
 			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
 		}
@@ -3245,79 +3245,163 @@ void BillyJean() {
 		}		
 		break;
 
-	case 5://bass intro	8000
-		progPalette(8000, 6, 10);
+	case 5://5	drums intro	7500
+		progRandomLines(7500, 10, 938, true);
 		break;
 
-	case 10://synth joins	8000
-		progPalette(8000, 4, 15);
+	case 10://10	bass intro	7500
+		progRandomLines(7500, 12, 468, true);
 		break;
 
-	case 15://verse 1a	16000
-		progBlingBlingColoring(16000, 20, 4000);
+	case 12://12	synth intro	7500
+		progRandomLines(7500, 14, 468, false);
 		break;
 
-	case 20://verse 1b	16000
+	case 14://14	verse 1	7500
 		progCircles(16000, 25, 500, false);
 		break;
 
-	case 25://pre-chorus	8000
+	case 16://16	i am the one	15000
 		progPalette(8000, 9, 30);
 		break;
 
-	case 30://chorus 1	16000
+	case 18://18	verse 2	7500
 		progStern(16000, 500, 35, 20);
 		break;
 
-	case 35://post-chorus	8000
+	case 20://20	i am the one	7500
 		progFastBlingBling(8000, 6, 40);
 		break;
 
-	case 40://verse 2a	16000
+	case 22://22	people alwys told me	14063
 		progMatrixScanner(16000, 45, 20);
 		break;
 
-	case 45://verse 2b	16000
+	case 24://24	strobe	938
 		progRandomLines(16000, 50, 500, true);
 		break;
 
-	case 50://pre-chorus 2	8000
+	case 26://26	chorus 1	7500
 		progPalette(8000, 11, 55);
 		break;
 
-	case 55://chorus 2	16000
+	case 28://28	i am the one	3750
 		progStern(16000, 500, 60, 20);
 		break;
 
-	case 60://post-chorus 2	8000
+	case 30://30	chorus weiter	3750
 		progFastBlingBling(8000, 8, 65);
 		break;
 
-	case 65://bridge/breakdown	16000
+	case 32://32	i am the one	3750
 		progMovingLines(16000, 70);
 		break;
 
-	case 70://build up	8000
+	case 34	: // 	instrumental	3750
 		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 75://chorus 3	16000
+	case 36	: // 	verse 2 a	7500
 		progFullColors(16000, 80, 500);
 		break;
 
-	case 80://final chorus	16000
+	case 38	: // 	i am the one	12188
 		progStern(16000, 250, 85, 15);
 		break;
 
-	case 85://outro	8000
+	case 40	: // 	40	do think twice!!	2813
 		progFastBlingBling(8000, 10, 90);
 		break;
 
-	case 90://fade out	8000
+	case 42	: // 	42	verse 2 b	7500
 		progPalette(8000, 6, 95);
 		break;
 
-	case 95://black
+	case 44	: // 	44	i ma the one	4688
+		progPalette(8000, 6, 95);
+		break;
+
+	case 46	: // 	46	BABY!!!	2813
+		progPalette(8000, 6, 95);
+		break;
+
+	case 48	: // 	48	people always told me	14063
+		progPalette(8000, 6, 95);
+		break;
+
+	case 50	: // 	50	heyhey	938
+		progPalette(8000, 6, 95);
+		break;
+
+	case 52	: // 	52	chorus 2a	7500
+		progPalette(8000, 6, 95);
+		break;
+
+	case 54	: // 	54	iam the one	7500
+		progPalette(8000, 6, 95);
+		break;
+
+	case 56	: // 	56	chorus 2b	7500
+		progPalette(8000, 6, 95);
+		break;
+
+	case 58	: // 	58	i am the one	11250
+		progPalette(8000, 6, 95);
+		break;
+
+	case 60	: // 	60	instrumental	3750
+		progPalette(8000, 6, 95);
+		break;
+
+	case 62	: // 	62	solo a	15000
+		progPalette(8000, 6, 95);
+		break;
+
+	case 64	: // 	64	the ONE …..halftime	3750
+		progPalette(8000, 6, 95);
+		break;
+
+	case 66	: // 	66	instrumental	3750
+		progPalette(8000, 6, 95);
+		break;
+
+	case 68	: // 	68	STOP	2813
+		progPalette(8000, 6, 95);
+		break;
+
+	case 70	: // 	70	STROBE	938
+		progPalette(8000, 6, 95);
+		break;																
+
+	case 72	: // 	72	chorus 3a	3750
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 74	: // 	74	i am the one	3750
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 76	: // 	76	intrumental	3750
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 78	: // 	78	i am the one	3750
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 80	: // 	80	intrumental	3750
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 82	: // 	82	outro	13125
+		progPalette(8000, 6, 95);
+		break;	
+
+	case 84	: // 	84	not my lover	1875
+		progPalette(8000, 6, 95);
+		break;															
+
+	case 86	: // 	86	BLACK
 		progBlack(10000, 100);
 		break;
 
