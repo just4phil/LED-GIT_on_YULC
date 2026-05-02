@@ -47,8 +47,9 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
     // reduceSpeed: 18 = schnell, 30 = mittel (niedrig = schneller)
 
-void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
     // reduceSpeed: 70 = mittel typisch
+    // baseColor: Basisfarbe der Spur, fade linear zu weiß (Tipp). Default = grün.
 
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
     // Achtung: bei SCROLLMATRIX unsinnig

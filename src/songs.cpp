@@ -62,23 +62,6 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 
 void SONGPAUSE()  {	// soft / static LEDs
 	
-	// #if defined (LAMPE2) 
-
-	// 	switch (prog) { 
-
-	// 	case 0:
-	// 		progFullColors(60000, 100, 1500);
-	// 	break;
-
-	// 	case 100:
-	// 		//clearAll();
-	// 		switchToSong(0);	// 0 fuer dauer-loop // oder: SongID 100 fuer DEFAULT loop
-	// 		break;
-	// 	}
-
-	// #else
-	//-----------------
-
 	switch (prog) { 
 
 	case 0:
@@ -95,6 +78,7 @@ void SONGPAUSE()  {	// soft / static LEDs
 				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
 			#else
 				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+				//progMatrixHorizontal(11700, 10, 70);
 			#endif
 		}	
 	break;

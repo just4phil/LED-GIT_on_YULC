@@ -792,16 +792,16 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
  * 
  * @see progMatrixHorizontal()
  */
-void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
 
 /**
  * @brief Horizontal matrix scan effect (simplified)
- * 
- * Simplified version using default speed.
- * 
+ *
+ * Simplified version using default speed and green color.
+ *
  * @param durationMillis Duration of effect in milliseconds
  * @param nextPart Part ID to transition to after effect (0-255)
- * 
+ *
  * @see progMatrixHorizontal()
  */
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart);
