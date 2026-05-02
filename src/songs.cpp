@@ -3059,25 +3059,19 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 5: //strobo	726
-		//progBlingBlingColoring(22750, 10, 5000);
 		progStrobo(726, 10, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 		
 	case 10: // intro	17419
 		progPalette(17419, 6, 12);	
-		//progFullColors(12410, 12, 515);
-		//progMatrixScanner(12410, 12, 30);
 		break;
 	
 	case 12: // strobo	1935
-		progStrobo(1935, 14, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-		//progStern(24820, 1035, 14, 20); 
+		progStrobo(1935, 14, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
 		break;
 
 	case 14: // verse 1	15484
 		progRandomLines(15484, 16, 480, true);	
-		//progPalette(16540, 4, 16);
-		//progFastBlingBling(8270, 8, 16);
 		break;
 
 	case 16: // ive done alright	11613
@@ -3085,19 +3079,15 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 18: //übergang chorus	1935
-		//progRandomLines(16550, 20, 515, false);
 		progStrobo(1935, 20, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;		
 
 	case 20: //chorus 1	13548
 		progStern(13548, 1925, 22, 20); 
-		//progPalette(10340, 6, 22);
 		break;	
 
 	case 22: // w. smbdy who loves me	1935
 		progStrobo(1935, 24, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
-		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
 		break;	
 
 	case 24: // chorus 1 weiter	13548
@@ -3109,13 +3099,11 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 28: // stehender chord	1935
-		//progMatrixHorizontal(1935, 30, 70);
 		progStrobo(1935, 30, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;	
 
 	case 30: // übergang verse	1935
 		progMatrixHorizontal(1935, 32, 70);	
-		//progStrobo(1935, 32, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 32: // verse 2	15484
@@ -3128,7 +3116,6 @@ void IWannaDanceWithSomebody() {
 
 	case 36: // übergang chorus	1935
 		progStrobo(1935, 38, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
-		//progRandomLines(10340, 38, 515, false);
 		break;	
 
 	case 38: // chorus 2 	13548
@@ -3227,8 +3214,19 @@ void IWannaDanceWithSomebody() {
 	}
 }
 
-
-
+//-----------
+//0 rainbow slow
+//1 rainbow fast (ohne fades)
+//2 rainbow fast (mit fades)
+//3 lila/grün Fast mit fades
+//4 blau/lila/rot/orange mit fades Fast
+//5 white fast ohne fades
+//6 white fast mit fades
+//7 blau/weiss slow mit fades
+//8 blau/lila/rot/orange mit fades slow
+//9 weiss/blau/beige fast ohne fades (interessante farben)
+//10 weiss/blau/beige fast mit fades (interessante farben)
+//11 weiss/grün fast mit fades
 //-----------
 
 //#28 BillyJean -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3241,7 +3239,7 @@ void BillyJean() {
 			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
 		}
 		else {
-			progBlack(4000, 5);
+			progBlack(4922, 5);
 		}		
 		break;
 
@@ -3250,87 +3248,88 @@ void BillyJean() {
 		break;
 
 	case 10://10	bass intro	7500
-		progRandomLines(7500, 12, 468, true);
+		progRandomLines(7500, 12, 460, true);
 		break;
 
 	case 12://12	synth intro	7500
-		progRandomLines(7500, 14, 468, false);
+		progRandomLines(7500, 14, 460, false);
 		break;
 
 	case 14://14	verse 1	7500
-		progCircles(16000, 25, 500, false);
+		progFullColors(7500, 16, 460);
 		break;
 
 	case 16://16	i am the one	15000
-		progPalette(8000, 9, 30);
+		progRandomLines(7500, 12, 460, true);
 		break;
 
 	case 18://18	verse 2	7500
-		progStern(16000, 500, 35, 20);
+		progFullColors(7500, 20, 460);
 		break;
 
 	case 20://20	i am the one	7500
-		progFastBlingBling(8000, 6, 40);
+		progRandomLines(7500, 22, 460, true);
 		break;
 
 	case 22://22	people alwys told me	14063
-		progMatrixScanner(16000, 45, 20);
+		//progMatrixScanner(14063, 24, 18);
+		progPalette(14063, 6, 24);
 		break;
 
 	case 24://24	strobe	938
-		progRandomLines(16000, 50, 500, true);
+		progStrobo(938, 26, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 26://26	chorus 1	7500
-		progPalette(8000, 11, 55);
+		progStern(7500, 460, 28, 20);
 		break;
 
 	case 28://28	i am the one	3750
-		progStern(16000, 500, 60, 20);
+		progFullColors(3750, 30, 460);
 		break;
 
 	case 30://30	chorus weiter	3750
-		progFastBlingBling(8000, 8, 65);
+		progStern(3750, 460, 32, 20);
 		break;
 
 	case 32://32	i am the one	3750
-		progMovingLines(16000, 70);
+		progMatrixScanner(3750, 34, 18);
 		break;
 
 	case 34	: // 	instrumental	3750
-		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progFastBlingBling(3750, 5, 36);
 		break;
 
 	case 36	: // 	verse 2 a	7500
-		progFullColors(16000, 80, 500);
+		progFullColors(7500, 38, 460);
 		break;
 
 	case 38	: // 	i am the one	12188
-		progStern(16000, 250, 85, 15);
+		progRandomLines(7500, 40, 460, true);
 		break;
 
 	case 40	: // 	40	do think twice!!	2813
-		progFastBlingBling(8000, 10, 90);
+		progFastBlingBling(2813, 5, 42);
 		break;
 
 	case 42	: // 	42	verse 2 b	7500
-		progPalette(8000, 6, 95);
+		progFullColors(7500, 44, 460);
 		break;
 
 	case 44	: // 	44	i ma the one	4688
-		progPalette(8000, 6, 95);
+		progRandomLines(4688, 46, 460, true);
 		break;
 
 	case 46	: // 	46	BABY!!!	2813
-		progPalette(8000, 6, 95);
+		progFastBlingBling(2813, 5, 46);
 		break;
 
 	case 48	: // 	48	people always told me	14063
-		progPalette(8000, 6, 95);
+		progPalette(14063, 6, 50);
 		break;
 
 	case 50	: // 	50	heyhey	938
-		progPalette(8000, 6, 95);
+		progStrobo(938, 52, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 52	: // 	52	chorus 2a	7500
