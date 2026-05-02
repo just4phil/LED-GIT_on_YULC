@@ -319,8 +319,8 @@ void setMarkerLEDs(byte songID, byte partID) {
 			#endif
 			#ifdef BASS
 				markerLED2 = ESaite_G;
-				markerLED3 = ESaite_Bb
-			#endif 
+				markerLED3 = ESaite_Bb;
+			#endif
 
 			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier					
 			if (partID < 52) {
