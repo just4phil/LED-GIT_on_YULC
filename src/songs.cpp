@@ -3219,12 +3219,12 @@ void IWannaDanceWithSomebody() {
 //1 rainbow fast (ohne fades)
 //2 rainbow fast (mit fades)
 //3 lila/grün Fast mit fades
-//4 blau/lila/rot/orange mit fades Fast
+//4 blau/lila/rot/orange mit fades Fast  (interessante farben)
 //5 white fast ohne fades
 //6 white fast mit fades
 //7 blau/weiss slow mit fades
 //8 blau/lila/rot/orange mit fades slow
-//9 weiss/blau/beige fast ohne fades (interessante farben)
+//9 weiss/blau/rot ohne fades
 //10 weiss/blau/beige fast mit fades (interessante farben)
 //11 weiss/grün fast mit fades
 //-----------
@@ -3256,7 +3256,7 @@ void BillyJean() {
 		break;
 
 	case 14://verse 1	7500
-		progFullColors(7500, 16, 460);
+		progFullColors(7500, 16, 938);
 		break;
 
 	case 16://i am the one	15000
@@ -3264,7 +3264,7 @@ void BillyJean() {
 		break;
 
 	case 18://verse 2	7500
-		progFullColors(7500, 20, 460);
+		progFullColors(7500, 20, 938);
 		break;
 
 	case 20://i am the one	7500
@@ -3276,7 +3276,7 @@ void BillyJean() {
 		break;
 
 	case 24://strobe	938
-		progStrobo(938, 26, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 26, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 26://chorus 1	7500
@@ -3328,7 +3328,7 @@ void BillyJean() {
 		break;
 
 	case 50://heyhey	938
-		progStrobo(938, 52, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 52, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 52://chorus 2a	7500
@@ -3352,7 +3352,8 @@ void BillyJean() {
 		break;
 
 	case 62://solo a	15000
-		progMatrixScanner(15000, 64, 18);
+		//progMatrixScanner(15000, 64, 18);
+		progPalette(15000, 9, 64);
 		break;
 
 	case 64://the ONE …..halftime	3750
@@ -3368,7 +3369,7 @@ void BillyJean() {
 		break;
 
 	case 70://STROBE	938
-		progStrobo(938, 72, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 72, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
 	case 72://chorus 3a	3750
@@ -3384,11 +3385,11 @@ void BillyJean() {
 		break;
 
 	case 78://i am the one	3750
-		progRandomLines(3750, 80, 460, true);
+		progPalette(3750, 4, 80);
 		break;
 
 	case 80://intrumental	3750
-		progPalette(3750, 6, 82);
+		progRandomLines(3750, 82, 460, true);
 		break;
 
 	case 82://outro	13125
