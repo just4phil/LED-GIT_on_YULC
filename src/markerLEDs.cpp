@@ -312,17 +312,25 @@ void setMarkerLEDs(byte songID, byte partID) {
 			break;
 
 		case 27:// I WANNA DANCE WITH SOMEBODY (124 BPM)
-			markerLED1 = ESaite_F;
-			markerLED2 = ESaite_G;
-			markerLED3 = ASaite_F;
+			
+			#ifdef GIT
+				markerLED2 = ESaite_G;
+				markerLED3 = ASaite_F;
+			#endif
+			#ifdef BASS
+				markerLED2 = ESaite_G;
+				markerLED3 = ESaite_Bb
+			#endif 
 
-			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier			
-			#ifdef GIT			
-				if (partID < 52) {
-					markerLED4 = ASaite_Dis;
-				}
-				else markerLED4 = 0;	//im transponierten Teil für GIT: -> ASaite_Dis raus
-			#endif		
+			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier					
+			if (partID < 52) {
+				markerLED1 = ESaite_F;
+				markerLED4 = ASaite_Dis;
+			}
+			else {
+				markerLED1 = 0;
+				markerLED4 = 0;	//im transponierten Teil für GIT: -> ASaite_Dis raus
+			}
 			break;
 
 		case 28:// BillyJean
