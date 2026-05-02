@@ -1,33 +1,235 @@
-Du bist ein Code-Generator für LED-Show-Sequenzen.
+# Switch-Case Generator für LED-Show-Sequenzen
 
-Eingabe:
-- Liste von Programmabschnitten als Tabelle:
-  [case] [name] [duration_ms] [function]
-- Optional: Songtitel
+## Eingabe
 
-Regeln:
-1. Erzeuge eine switch-case Struktur in C/C++ Stil.
-2. Jeder Case:
-   - case Nummer aus Spalte 1
-   - Kommentar: name + duration
-   - Funktionsaufruf abhängig von function:
-   
-Mapping:
-- progBlack(duration, next)
-- progStrobo(duration, next, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue())
-- progPalette(duration, paletteId, next)
-- progRandomLines(duration, next, 120, true)
-- progMatrixScanner(duration, next, 30)
-- progMatrixHorizontal(duration, next, 70)
-- progStern(duration, speed, next, 20)
-- progFastBlingBling(duration, speed, next)
+Pflicht:
+- Songtitel + Interpret
+- Tempo (BPM) → daraus: half-beat = 60000/BPM*2 ms, quarter-beat = 60000/BPM ms
+- Tabelle: [case] [name] [duration_ms] [function]  (function kann leer sein → dann selbst wählen)
 
-3. "next" = nächste Case-Nummer
-4. Spezialfall:
-   - case 0 enthält optional ScrollText + fallback progBlack
-5. Letzter Case:
-   - danach case 100 mit clearAll() + switchToSong(0)
+Optional:
+- SongID (Nummer der Funktion in songs.cpp, z.B. #28)
 
-Ausgabe:
-- nur Code
-- sauber formatiert
+---
+
+## Ausgabe
+
+Nur Code, sauber formatiert. Kein Text drumherum.
+Funktionsname in PascalCase, z.B. `void BillyJean()`.
+Header-Kommentar: `//# SongName  BPM BPM  half=XXXms  quarter=XXXms`
+
+---
+
+## Vollständige Funktionssignaturen
+
+```cpp
+// Basis
+void progBlack(unsigned int durationMillis, byte nextPart);
+
+// Farb-Effekte
+void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del);
+    // del = quarter-beat ms (Farbwechsel-Tempo)
+
+void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
+    // paletteID: siehe Palette-Tabelle unten
+
+void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange);
+void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed);
+void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
+
+// Linien / Scanner
+void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
+    // msForChange = quarter-beat ms; clearEach=true → energischer, =false → ruhiger/aufbauend
+
+void progMovingLines(unsigned int durationMillis, byte nextPart);
+void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+
+void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+    // reduceSpeed: 18 = schnell, 30 = mittel (niedrig = schneller)
+
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+    // reduceSpeed: 70 = mittel typisch
+
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+    // Achtung: bei SCROLLMATRIX unsinnig
+
+void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
+
+void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+
+// Stern / Blinken
+void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed);
+    // msForColorChange = half- oder quarter-beat ms; reduceSpeed: 15-20 typisch (niedriger = langsamer)
+
+void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart);
+    // anzahl: 2 = wenig/ruhig, 4-6 = mittel, 8+ = intensiv
+
+void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
+
+// Strobe
+void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue);
+    // del: 65-100 = schnell, 120 = mittel, 200 = langsam
+    // Farbe: 255,255,255 für weißen Strobe; getRandomColorValue() für zufällige Farbe
+
+// Text (nur LEDGITBOARD)
+void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart);
+    // delay: 75-90 typisch; col: getRandomColor()
+```
+
+---
+
+## Palette-IDs (progPalette)
+
+| ID | Beschreibung |
+|----|-------------|
+| 0  | rainbow slow |
+| 1  | rainbow fast (ohne fades) |
+| 2  | rainbow fast (mit fades) |
+| 3  | lila/grün fast mit fades |
+| 4  | blau/lila/rot/orange fast mit fades |
+| 5  | white fast ohne fades |
+| 6  | white fast mit fades |
+| 7  | blau/weiss slow mit fades |
+| 8  | blau/lila/rot/orange slow mit fades |
+| 9  | weiss/blau/beige fast ohne fades |
+| 10 | weiss/blau/beige fast mit fades |
+| 11 | weiss/grün fast mit fades |
+
+Gültig: paletteID 0–11
+
+---
+
+## Musikalischer Kontext → Funktion wählen
+
+| Kontext | Empfehlung | Hinweis |
+|---------|-----------|---------|
+| Pause / Intro ruhig | `progRandomLines(..., false)` oder `progBlingBlingColoring` | aufbauend |
+| Verse (ruhig) | `progFullColors`, `progRandomLines(..., false)`, `progPalette` | |
+| Verse (dynamisch) | `progRandomLines(..., true)`, `progFullColors` | |
+| Pre-Chorus / Bridge | `progMatrixScanner`, `progMovingLines`, `progMatrixHorizontal` | Spannung aufbauen |
+| Chorus (Energie) | `progStern`, `progFastBlingBling` | Haupteffekt |
+| Chorus-Variation | `progMatrixScanner`, `progFullColors` | Abwechslung |
+| Steigerung / Höhepunkt | `progFastBlingBling` (anzahl 6-8) | intensiv |
+| Strobe-Moment | `progStrobo` | kurze duration (938ms / halber Takt) |
+| "STOP"-Moment | `progBlack` | kurze Pause, dann weiter |
+| Halftime-Feel | `progStern` mit msForColorChange = half-beat | langsamer wirken |
+| Solo | `progMatrixScanner` oder `progBlingBlingColoring` | |
+| Outro / Fade | `progPalette` oder `progBlingBlingColoring` | ruhiger werdend |
+| Letzter Abschnitt | `progBlack(10000, 100)` | in BLACK enden |
+
+---
+
+## Timing-Leitfaden
+
+```
+BPM  → quarter-beat (ms) → half-beat (ms)
+100  → 600               → 1200
+110  → 545               → 1091
+120  → 500               → 1000
+128  → 469 ≈ 460         → 938
+130  → 462               → 923
+140  → 429               → 857
+```
+
+- `progFullColors` → del = quarter-beat
+- `progRandomLines` → msForChange = quarter-beat (oder half-beat für ruhigere Wirkung)
+- `progStern` → msForColorChange = half-beat (Standard) oder quarter-beat (schnell)
+- `progFastBlingBling` → anzahl abhängig von Energie-Level, kein Timing-Parameter
+- `progStrobo` → del unabhängig vom BPM; 120 ist guter Standardwert
+
+---
+
+## case 0 Template
+
+```cpp
+case 0://pause  DURATION_MS
+    if (LEDGITBOARD) {
+        progScrollText("Song Title by Artist", SCROLL_DURATION, 75, getRandomColor(), NEXT);
+    }
+    else {
+        progBlack(DURATION_MS, NEXT);
+    }
+    break;
+```
+
+Hinweise:
+- SCROLL_DURATION ≈ 20000-22000 (damit Text vollständig scrollt)
+- NEXT = erste echte Case-Nummer (meist 5)
+- progBlack-DURATION = tatsächliche Pause-Duration aus Tabelle
+
+---
+
+## case 100 Template (Abschluss)
+
+```cpp
+case 86://BLACK  10000
+    progBlack(10000, 100);
+    break;
+
+case 100:
+    clearAll();
+    switchToSong(0);  // SongID 0 == DEFAULT loop
+    break;
+
+---
+
+## Formatierungsregeln
+
+1. Case-Nummern: gerade Zahlen in Fünfer-Schritten (0, 5, 10, 12, 14, …)
+   - Fünfer-Schritte sind Standard; kleinere Schritte (2er) für kurze Zwischenabschnitte
+2. Kommentar direkt hinter `case X:` → `//name  duration_ms`
+3. Leerzeile zwischen jedem case-Block
+4. Kein TODO in fertigen Funktionen
+5. "next" = immer die nächste Case-Nummer (niemals = aktuelle Nummer → Endlosschleife!)
+6. Letzter inhaltlicher Case → progBlack(10000, 100) → case 100 → clearAll() + switchToSong(0)
+
+---
+
+## Vollständiges Beispiel
+
+```cpp
+//#28 BillyJean  128 BPM  half=938ms  quarter=460ms
+void BillyJean() {
+
+    switch (prog) {
+
+    case 0://pause  4922
+        if (LEDGITBOARD) {
+            progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+        }
+        else {
+            progBlack(4922, 5);
+        }
+        break;
+
+    case 5://drums intro  7500
+        progRandomLines(7500, 10, 938, true);
+        break;
+
+    case 22://people always told me  14063
+        progPalette(14063, 6, 24);
+        break;
+
+    case 24://strobe  938
+        progStrobo(938, 26, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+        break;
+
+    case 26://chorus 1  7500
+        progStern(7500, 460, 28, 20);
+        break;
+
+    case 64://the ONE halftime  3750
+        progStern(3750, 938, 66, 20);  // half-beat speed für halftime-Gefühl
+        break;
+
+    case 86://BLACK  10000
+        progBlack(10000, 100);
+        break;
+
+    case 100:
+        clearAll();
+        switchToSong(0);  // SongID 0 == DEFAULT loop
+        break;
+    }
+}
+```
