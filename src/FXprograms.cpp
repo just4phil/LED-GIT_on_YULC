@@ -1778,7 +1778,7 @@ CRGB getMatrixColorTinted(int index, CRGB baseColor) {
 	}
 }
 
-void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {	// für Random-Variante: useRandomColor=true verwenden
 	
 	int colorIndex, offset, row, i;
 
@@ -2250,6 +2250,30 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart) {
 	progMatrixHorizontal(durationMillis, nextPart, 100, CRGB::Green);
 }
 
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor) {
+	static CRGB currentColor = CRGB::Green;
+	static int prevZaehler = -1;
+
+	static const CRGB palette[] = {
+		CRGB::Green, CRGB::Blue, CRGB::Red, CRGB::Cyan,
+		CRGB::Magenta, CRGB(255, 100, 0), CRGB::Purple, CRGB::Yellow
+	};
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		prevZaehler = -1;
+	}
+	if (prevZaehler == -1 || (zaehler == 0 && prevZaehler > 0)) {
+		currentColor = palette[random(0, 8)];
+	}
+	prevZaehler = zaehler;
+
+	progMatrixHorizontal(durationMillis, nextPart, reduceSpeed, currentColor);
+}
+
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, boolean useRandomColor) {
+	progMatrixHorizontal(durationMillis, nextPart, 100, useRandomColor);
+}
+
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {
 
 	int colorIndex, offset, row, i;
@@ -2515,5 +2539,29 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 }
 void progMatrixVertical(unsigned int durationMillis, byte nextPart) {
 	progMatrixVertical(durationMillis, nextPart, 100, CRGB::Green);
+}
+
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor) {
+	static CRGB currentColor = CRGB::Green;
+	static int prevZaehler = -1;
+
+	static const CRGB palette[] = {
+		CRGB::Green, CRGB::Blue, CRGB::Red, CRGB::Cyan,
+		CRGB::Magenta, CRGB(255, 100, 0), CRGB::Purple, CRGB::Yellow
+	};
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		prevZaehler = -1;
+	}
+	if (prevZaehler == -1 || (zaehler == 0 && prevZaehler > 0)) {
+		currentColor = palette[random(0, 8)];
+	}
+	prevZaehler = zaehler;
+
+	progMatrixVertical(durationMillis, nextPart, reduceSpeed, currentColor);
+}
+
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor) {
+	progMatrixVertical(durationMillis, nextPart, 100, useRandomColor);
 }
 

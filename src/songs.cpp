@@ -78,7 +78,7 @@ void SONGPAUSE()  {	// soft / static LEDs
 				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
 			#else
 				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-				//progMatrixHorizontal(11700, 10, 70);
+				//progMatrixHorizontal(11700, 10, 70, true);
 			#endif
 		}	
 	break;
@@ -162,7 +162,7 @@ void defaultLoop()  {
 		break;
 
 	case 15:
-		progMatrixHorizontal(10000, 20, 80);
+		progMatrixHorizontal(10000, 20, 80, CRGB::Green);
 		break;
 
 	case 20: // OK
@@ -1676,7 +1676,7 @@ void SuchAshame() { // fertig: 17.09.2023
 	case 22: // pause
 		progStrobo(2060, 24, 65, 255, 255, 255);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 24: // chorus 2
@@ -1711,7 +1711,7 @@ void SuchAshame() { // fertig: 17.09.2023
 	case 38: // pause
 		progStrobo(2060, 40, 65, 255, 255, 255);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 40: // chorus 2
@@ -1797,7 +1797,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;	
 
 	case 22: // bass solo
-		progMatrixHorizontal(16550, 24, 70);
+		progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		#ifdef BASS
 			markerLED5 = 0;				// RINA: nach "am i going under" ESaite_Cis wieder aus
 			markerLED6 = ESaite_Dis;	// 11. bund, RINA für solo ab 1390 ESaite_Dis bis 1399
@@ -1887,7 +1887,7 @@ void Shivers() { // fertig: TODO
 		//progStrobo(2060, 24, 65, 255, 255, 255);
 		//progFullColors(14545, 24, 455);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 24: // verse 2b	14545
@@ -1924,7 +1924,7 @@ void Shivers() { // fertig: TODO
 	case 38: // SOLO VOC	3635
 		progBlack(3635, 40);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 40: // Chorus 1	10000
@@ -2519,7 +2519,7 @@ void Hotncold() {
 	case 22: // pause
 		progStrobo(2060, 24, 65, 255, 255, 255);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 24: // chorus 2
@@ -2554,7 +2554,7 @@ void Hotncold() {
 	case 38: // pause
 		progStrobo(2060, 40, 65, 255, 255, 255);
 		//progStern(16550, 515, 24, 20); 
-		//progMatrixHorizontal(16550, 24, 70);
+		//progMatrixHorizontal(16550, 24, 70, CRGB::Green);
 		break;	
 
 	case 40: // chorus 2
@@ -2958,7 +2958,7 @@ void BeMine() {
 		break;
 
 	case 22://verse 2  15238
-		progMatrixHorizontal(15238, 24, 70);
+		progMatrixHorizontal(15238, 24, 70, CRGB::Green);
 		break;
 
 	case 24://im going crazy  15238
@@ -3056,7 +3056,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 30: // übergang verse	1935
-		progMatrixHorizontal(1935, 32, 70);	
+		progMatrixHorizontal(1935, 32, 70, true);	
 		break;
 
 	case 32: // verse 2	15484
@@ -3092,7 +3092,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 48: //48	übergang	1935
-		progMatrixHorizontal(1935, 50, 70);
+		progMatrixHorizontal(1935, 50, 70, CRGB::Green);
 		break;	
 
 	case 50: // 50	i need a man …	11613
@@ -3166,21 +3166,6 @@ void IWannaDanceWithSomebody() {
 		break;
 	}
 }
-
-//-----------
-//0 rainbow slow
-//1 rainbow fast (ohne fades)
-//2 rainbow fast (mit fades)
-//3 lila/grün Fast mit fades
-//4 blau/lila/rot/orange mit fades Fast  (interessante farben)
-//5 white fast ohne fades
-//6 white fast mit fades
-//7 blau/weiss slow mit fades
-//8 blau/lila/rot/orange mit fades slow
-//9 weiss/blau/rot ohne fades
-//10 weiss/blau/beige fast mit fades (interessante farben)
-//11 weiss/grün fast mit fades
-//-----------
 
 //#28 BillyJean  128 BPM  half=938ms  quarter=460ms  (fertiggestellt 01.05.2026)
 void BillyJean() {
@@ -3310,7 +3295,7 @@ void BillyJean() {
 		break;
 
 	case 64://the ONE …..halftime	3750
-		progMatrixHorizontal(3750, 66, 70);	
+		progMatrixHorizontal(3750, 66, 70, CRGB::Green);	
 		break;
 
 	case 66://instrumental	3750
@@ -3407,7 +3392,7 @@ void Maniac() {
 		break;
 
 	case 22://stehender chord  4586
-		progMatrixHorizontal(4586, 24, 70);
+		progMatrixHorizontal(4586, 24, 70, CRGB::Green);
 		break;
 
 	case 24://strobe  1529
@@ -3444,7 +3429,7 @@ void Maniac() {
 		break;
 
 	case 40://instrumental a  12229
-		progMatrixHorizontal(12229, 42, 70);
+		progMatrixHorizontal(12229, 42, 70, CRGB::Green);
 		break;
 
 	case 42://instrumental b  11465
@@ -3508,7 +3493,6 @@ void Maniac() {
 	}
 }
 
-
 //#30 Maniac T-1 // ---------------------- TO BE DELETED !!!! -----------------------
 void Maniac_Tminus1() {
 
@@ -3552,7 +3536,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 22://stehender chord  4586
-		progMatrixHorizontal(4586, 24, 70);
+		progMatrixHorizontal(4586, 24, 70, CRGB::Green);
 		break;
 
 	case 24://strobe  1529
@@ -3589,7 +3573,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 40://instrumental a  12229
-		progMatrixHorizontal(12229, 42, 70);
+		progMatrixHorizontal(12229, 42, 70, CRGB::Green);
 		break;
 
 	case 42://instrumental b  11465

@@ -792,18 +792,9 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
  * 
  * @see progMatrixHorizontal()
  */
-void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
-
-/**
- * @brief Horizontal matrix scan effect (simplified)
- *
- * Simplified version using default speed and green color.
- *
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- *
- * @see progMatrixHorizontal()
- */
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart);
 
 /**
@@ -825,15 +816,6 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart);
  * @see progMatrixVertical()
  */
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
-
-/**
- * @brief Vertical matrix scan effect (simplified)
- *
- * Simplified version using default speed and green color.
- *
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- *
- * @see progMatrixVertical()
- */
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
 void progMatrixVertical(unsigned int durationMillis, byte nextPart);

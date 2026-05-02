@@ -47,13 +47,19 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
     // reduceSpeed: 18 = schnell, 30 = mittel (niedrig = schneller)
 
-void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
+void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
     // reduceSpeed: 70 = mittel typisch
-    // baseColor: Basisfarbe der Spur, fade linear zu weiß (Tipp). Default = grün.
+    // baseColor: feste Basisfarbe (z.B. CRGB::Green), fade linear zu weiß (Tipp).
+    // useRandomColor=true: wechselt bei jedem Durchlauf zu einer zufälligen Farbe aus: Green/Blue/Red/Cyan/Magenta/Orange/Purple/Yellow
 
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
     // Achtung: bei SCROLLMATRIX unsinnig
-    // baseColor: Basisfarbe der Spur, fade linear zu weiß (Tipp). Default = grün.
+    // baseColor: feste Basisfarbe, fade linear zu weiß (Tipp). Default = grün.
+    // useRandomColor=true: wechselt bei jedem Durchlauf zu einer zufälligen Farbe aus: Green/Blue/Red/Cyan/Magenta/Orange/Purple/Yellow
 
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
 
