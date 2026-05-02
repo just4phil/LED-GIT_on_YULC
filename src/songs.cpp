@@ -3411,93 +3411,140 @@ void BillyJean() {
 	}
 }
 
-//#29 Maniac -> TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#29 Maniac  157 BPM  half=756ms  quarter=376ms
 void Maniac() {
 
 	switch (prog) {
 
-	case 0://pause/text	
+	case 0://pause  4013
 		if (LEDGITBOARD) {
-			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+			progScrollText("Maniac by Michael Sembello", 16242, 75, getRandomColor(), 10);	// sync: GIT/BASS erreichen case 10 (rock intro) bei t=16242ms
 		}
 		else {
-			progBlack(4000, 5);
-		}		
+			progBlack(4013, 5);
+		}
 		break;
 
-	case 5://bass intro	8000
-		progPalette(8000, 6, 10);
+	case 5://drums intro  12229
+		progBlingBlingColoring(12229, 10, 3000);
 		break;
 
-	case 10://synth joins	8000
-		progPalette(8000, 4, 15);
+	case 10://rock intro  12229
+		progFastBlingBling(12229, 6, 12);
 		break;
 
-	case 15://verse 1a	16000
-		progBlingBlingColoring(16000, 20, 4000);
+	case 12://verse 1a  12229
+		progRandomLines(12229, 14, 380, true);
 		break;
 
-	case 20://verse 1b	16000
-		progCircles(16000, 25, 500, false);
+	case 14://verse 1b  12229
+		progRandomLines(12229, 16, 380, false);
 		break;
 
-	case 25://pre-chorus	8000
-		progPalette(8000, 9, 30);
+	case 16://it could cut you like a knife  10701
+		progFullColors(10701, 18, 756);
 		break;
 
-	case 30://chorus 1	16000
-		progStern(16000, 500, 35, 20);
+	case 18://uebergang  1529
+		progFastBlingBling(1529, 4, 20);
 		break;
 
-	case 35://post-chorus	8000
-		progFastBlingBling(8000, 6, 40);
+	case 20://chorus 1  21401
+		progStern(21401, 376, 22, 20);
 		break;
 
-	case 40://verse 2a	16000
-		progMatrixScanner(16000, 45, 20);
+	case 22://stehender chord  4586
+		progMatrixHorizontal(4586, 24, 70);
 		break;
 
-	case 45://verse 2b	16000
-		progRandomLines(16000, 50, 500, true);
+	case 24://strobe  1529
+		progStrobo(1529, 26, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 50://pre-chorus 2	8000
-		progPalette(8000, 11, 55);
+	case 26://verse 2a  16051
+		progRandomLines(16051, 28, 380, true);
 		break;
 
-	case 55://chorus 2	16000
-		progStern(16000, 500, 60, 20);
+	case 28://strobe  1529
+		progStrobo(1529, 30, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 60://post-chorus 2	8000
-		progFastBlingBling(8000, 8, 65);
+	case 30://verse 2b  6879
+		progRandomLines(6879, 32, 380, false);
 		break;
 
-	case 65://bridge/breakdown	16000
-		progMovingLines(16000, 70);
+	case 32://ist a cold cinetic heat  10701
+		//progFullColors(10701, 34, 756);
+		progStrobo(10701, 34, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 70://build up	8000
-		progStrobo(8000, 75, 125, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	case 34://strobe  1529
+		progStrobo(1529, 36, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 
-	case 75://chorus 3	16000
-		progFullColors(16000, 80, 500);
+	case 36://chorus 2  21401
+		progStern(21401, 376, 38, 20);
 		break;
 
-	case 80://final chorus	16000
-		progStern(16000, 250, 85, 15);
+	case 38://uebergang zum instrumental  3057
+		progFastBlingBling(3057, 6, 40);
 		break;
 
-	case 85://outro	8000
-		progFastBlingBling(8000, 10, 90);
+	case 40://instrumental a  12229
+		progMatrixHorizontal(12229, 42, 70);
 		break;
 
-	case 90://fade out	8000
-		progPalette(8000, 6, 95);
+	case 42://instrumental b  11465
+		progFullColors(11465, 44, 756);
 		break;
 
-	case 95://black
+	case 44://strobe  764
+		progStrobo(764, 46, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 46://solo a  6115
+		progRandomLines(6115, 48, 190, true);
+		break;
+
+	case 48://solo b  6115
+		progPalette(6115, 4, 50);
+		break;
+
+	case 50://solo c  6115
+		progFastBlingBling(6115, 8, 52);
+		break;
+
+	case 52://solo d  6115
+		progPalette(6115, 8, 54);
+		break;
+
+	case 54://it could cut you like a knife  10701
+		//progFullColors(10701, 56, 376);
+		progStrobo(10701, 56, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 56://uebergang  1529
+		progStrobo(1529, 58, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 58://chorus 3  21401
+		progStern(21401, 376, 60, 20);
+		break;
+
+	case 60://stehender chord  3057
+		//progMatrixHorizontal(3057, 62, 70);
+		progFastBlingBling(3057, 2, 62);
+		break;
+
+	case 62://abschluss  3057
+		progFastBlingBling(3057, 8, 64);
+		break;
+
+	case 64://strobe  1529
+		progStrobo(1529, 66, 90, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		break;
+
+	case 66://BLACK  10000
 		progBlack(10000, 100);
 		break;
 
