@@ -2250,7 +2250,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart) {
 	progMatrixHorizontal(durationMillis, nextPart, 100, CRGB::Green);
 }
 
-void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {
 
 	int colorIndex, offset, row, i;
 
@@ -2280,7 +2280,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 2;
@@ -2289,7 +2289,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 4;
@@ -2298,7 +2298,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 6;
@@ -2307,7 +2307,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 8;
@@ -2316,7 +2316,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 10;
@@ -2325,7 +2325,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 12;
@@ -2334,7 +2334,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 14;
@@ -2343,7 +2343,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 16;
@@ -2352,7 +2352,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 18;
@@ -2361,7 +2361,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 20;
@@ -2370,7 +2370,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 22;
@@ -2379,7 +2379,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - zaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 		////--------------------------------------
 
@@ -2389,7 +2389,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 3;
@@ -2398,7 +2398,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 5;
@@ -2407,7 +2407,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 7;
@@ -2416,7 +2416,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 9;
@@ -2425,7 +2425,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 11;
@@ -2434,7 +2434,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 13;
@@ -2443,7 +2443,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 15;
@@ -2452,7 +2452,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 17;
@@ -2461,7 +2461,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 19;
@@ -2470,7 +2470,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 21;
@@ -2479,7 +2479,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		row = 23;
@@ -2488,7 +2488,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		for (i = 23 - progMatrixZaehler + offset; i < 23 + offset; i++) {
 			colorIndex--;
 			if (colorIndex < 0) colorIndex = 0;
-			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColor(colorIndex));
+			if (!LEDsTurnedOff) matrix->drawPixel(i, row, getMatrixColorTinted(colorIndex, baseColor));
 		}
 
 		//--------------------------
@@ -2514,6 +2514,6 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 	}
 }
 void progMatrixVertical(unsigned int durationMillis, byte nextPart) {
-	progMatrixVertical(durationMillis, nextPart, 100);
+	progMatrixVertical(durationMillis, nextPart, 100, CRGB::Green);
 }
 

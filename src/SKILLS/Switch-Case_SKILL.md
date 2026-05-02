@@ -51,8 +51,9 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
     // reduceSpeed: 70 = mittel typisch
     // baseColor: Basisfarbe der Spur, fade linear zu weiß (Tipp). Default = grün.
 
-void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
     // Achtung: bei SCROLLMATRIX unsinnig
+    // baseColor: Basisfarbe der Spur, fade linear zu weiß (Tipp). Default = grün.
 
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
 
