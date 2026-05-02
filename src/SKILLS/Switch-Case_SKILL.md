@@ -144,7 +144,7 @@ BPM  → quarter-beat (ms) → half-beat (ms)
 ```cpp
 case 0://pause  DURATION_MS
     if (LEDGITBOARD) {
-        progScrollText("Song Title by Artist", SCROLL_DURATION, 75, getRandomColor(), NEXT);
+        progScrollText("Song Title by Artist", SCROLL_DURATION, 75, getRandomColor(), SYNC_NEXT);
     }
     else {
         progBlack(DURATION_MS, NEXT);
@@ -152,10 +152,49 @@ case 0://pause  DURATION_MS
     break;
 ```
 
-Hinweise:
-- SCROLL_DURATION ≈ 20000-22000 (damit Text vollständig scrollt)
-- NEXT = erste echte Case-Nummer (meist 5)
-- progBlack-DURATION = tatsächliche Pause-Duration aus Tabelle
+### LEDGITBOARD Sync-Berechnung (wichtig!)
+
+LEDGITBOARD zeigt Scroll-Text (~20000ms), GIT/BASS starten sofort mit dem Intro.
+Nach dem Text muss LEDGITBOARD **exakt an einer Case-Grenze** wieder einsteigen — sonst sind alle Boards out of sync.
+
+**Vorgehen:**
+
+1. Kumulative Start-Zeiten der frühen Cases berechnen:
+   ```
+   t(case 0) = 0
+   t(case X) = t(vorheriger case) + duration(vorheriger case)
+   ```
+
+2. Case-Grenze wählen, die am nächsten bei ~22000ms liegt.
+
+3. `SCROLL_DURATION` = exakt dieser kumulativen Zeit setzen.
+
+4. `SYNC_NEXT` = Nummer dieses Case.
+
+**Beispiel BillyJean (128 BPM):**
+```
+case 0:  pause       4922ms  → t=0
+case 5:  drums intro 7500ms  → t=4922ms
+case 10: bass intro  7500ms  → t=12422ms
+case 12: synth intro 7500ms  → t=19922ms  ← nächste Grenze zu 22000ms
+case 14: verse 1     7500ms  → t=27422ms
+
+→ SCROLL_DURATION = 19922, SYNC_NEXT = 12
+```
+
+```cpp
+case 0://pause  4922
+    if (LEDGITBOARD) {
+        progScrollText("Billie Jean by Michael Jackson", 19922, 75, getRandomColor(), 12);
+        // sync: GIT/BASS erreichen case 12 bei t=19922ms
+    }
+    else {
+        progBlack(4922, 5);
+    }
+    break;
+```
+
+Faustregel: SCROLL_DURATION immer **kürzer als 22000ms** wählen (nähere Grenze bevorzugen), damit der Text nicht zu lang wirkt. Wenn die nächste Grenze deutlich über 22000ms liegt (>25000ms), trotzdem die kürzere Grenze nehmen.
 
 ---
 
@@ -170,6 +209,7 @@ case 100:
     clearAll();
     switchToSong(0);  // SongID 0 == DEFAULT loop
     break;
+```
 
 ---
 
@@ -195,7 +235,8 @@ void BillyJean() {
 
     case 0://pause  4922
         if (LEDGITBOARD) {
-            progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+            progScrollText("Billie Jean by Michael Jackson", 19922, 75, getRandomColor(), 12);
+            // sync: GIT/BASS erreichen case 12 (synth intro) bei t=19922ms
         }
         else {
             progBlack(4922, 5);

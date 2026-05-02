@@ -3236,7 +3236,7 @@ void BillyJean() {
 
 	case 0://pause	4922
 		if (LEDGITBOARD) {
-			progScrollText("Billie Jean by Michael Jackson", 22000, 75, getRandomColor(), 5);
+			progScrollText("Billie Jean by Michael Jackson", 19922, 75, getRandomColor(), 12);	// sync: GIT/BASS erreichen case 12 bei t=19922ms
 		}
 		else {
 			progBlack(4922, 5);
