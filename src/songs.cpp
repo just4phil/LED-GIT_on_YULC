@@ -354,16 +354,17 @@ void Physical() {
  	switch (prog) { 
 
 	case 0:
-		if (LEDGITBOARD) {	// TODO: checken!!
-			progScrollText("Physical by Dua Lipa", 13060, 90, getRandomColor(), 25); // 15260
+		if (LEDGITBOARD) {
+			progScrollText("Physical by Dua Lipa", 14490, 90, getRandomColor(), 25);
+			// sync: GIT/BASS erreichen case 25 bei t=1430+13060=14490ms
 		}
 		else {
-			progBlack(1430, 20);	// TODO: checken!!
+			progBlack(1430, 20);
 			//progPalette(65000, 10, 5);
 		}
 		break;
 	
-	case 20: // synth intro	// TODO: checken!!
+	case 20: // synth intro
 		progPalette(13060, 6, 25); 
 		break;
 
