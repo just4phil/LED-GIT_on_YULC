@@ -3694,33 +3694,37 @@ void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 	switch (prog) {
 
 	case 0:
-		progBlack(19426, 1);
+		progBlack(10000, 1);
 	break;
 
 	case 1:
 		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 19672, 90, getRandomColor(), 2);
+			progScrollText("Nerds on Fire", 23400, 90, getRandomColor(), 2);
 		}
 		else {
-			progBlack(19672, 2);
+			progBlack(23400, 2);
 		}	
 	break;
 
 	case 2:
-		progBlack(19672, 3);
+		progBlack(10000, 3);
 	break;
 
 	case 3:
-		if (LEDGITBOARD) {
-			progScrollText("Dancing on my own by Robyn", 12541, 90, getRandomColor(), 4);
-		}
-		else {
-			progBlack(12541, 4);
-		}	
+		progBlack(9836, 4);	
 	break;
 
 	case 4:
-		progStrobo(1230, 100, 82, getRandomColor(), getRandomColor(), getRandomColor());
+		if (LEDGITBOARD) {
+			progScrollText("Dancing on my own by Robyn", 18000, 90, getRandomColor(), 5);
+		}
+		else {
+			progBlack(18000, 5);
+		}			
+	break;
+
+	case 5:
+		progStrobo(1306, 100, 82, getRandomColor(), getRandomColor(), getRandomColor());
 	break;
 
 	case 100:
