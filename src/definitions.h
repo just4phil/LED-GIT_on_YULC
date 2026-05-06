@@ -46,8 +46,8 @@
 #define ANDRESGIT		// YULC1 auf COM3
 //#define RINASBASS		// YULC2 auf COM8
 //#define LAMPE2		// YULC5 auf COM10
-//#define LAMPE1			// YULC6 auf COM3
-//#define SCROLLMATRIX 	// YULC4 auf COM10 - activate this for the klapp-Matrix
+//#define LAMPE1		// YULC6 auf COM3
+//#define SCROLLMATRIX 	// YULC4 auf COM9 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
