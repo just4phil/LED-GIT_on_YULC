@@ -3004,7 +3004,7 @@ void IWannaDanceWithSomebody() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progScrollText("I Wanna Dance With Somebody by Whitney Houston", 24435, 90, getRandomColor(), 14);
+			progScrollText("I Wanna Dance With Somebody by Whitney Houston", 24435, 80, getRandomColor(), 14);
 		}
 		else {
 			progBlack(4355, 5);//pause	4355
