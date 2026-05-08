@@ -3583,10 +3583,27 @@ void Maniac_Tminus1() {
 		break;
 
 	case 40://instrumental a  12229
+		#ifdef GIT
+			markerLED1 = ESaite_E;
+			markerLED2 = ESaite_Fis;
+			markerLED3 = 0; //ESaite_G;
+			markerLED4 = ESaite_B;
+			markerLED5 = ASaite_G;
+			markerLED6 = ASaite_Fis;
+		#endif
+
 		progMatrixHorizontal(12229, 42, 70, CRGB::Green);
 		break;
 
 	case 42://instrumental b  11465
+		#ifdef GIT
+			markerLED1 = ESaite_E;
+			markerLED2 = ESaite_Fis;
+			markerLED3 = 0; //ESaite_G;
+			markerLED4 = ESaite_B;
+			markerLED5 = ASaite_G;
+			markerLED6 = ASaite_Fis;
+		#endif	
 		progFullColors(11465, 44, 756);
 		break;
 
