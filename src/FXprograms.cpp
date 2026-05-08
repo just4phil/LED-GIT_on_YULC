@@ -136,7 +136,7 @@ void setDurationAndNextPart(unsigned int durationMillis, byte nextPart) {
 void progBlinkLowVoltage(unsigned int del) {
 
 	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= del;
 
 		//--- switch color ---
 		if (progStroboIsBlack) {
@@ -246,7 +246,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 	
 	// //----jetzt neu platzieren und dimmen
 	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= msToReduceSpeed;
 
 		//--- erste LED ausschalten
 		leds[LEDsUndFarbWerteSternschnuppen[0][0]] = CRGB(0,0,0);
@@ -266,7 +266,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 	}
 
 	if (millisCounterTimer >= 3000) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= 3000;
 		// RESTART
 		initSternschnuppen();
 	}	
@@ -298,7 +298,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 	//---------------------------------------------------------------------
 	
 	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= msToReduceSpeed;
 
 		// freies element suchen und setzen
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
@@ -317,7 +317,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 	}
 
 	if (millisCounterTimer >= 10) {	// zeit fürs dimmen der leds
-		millisCounterTimer = 0;
+		millisCounterTimer -= 10;
 		
 		//--- aktive LEDs langsam dimmen ---
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
@@ -377,7 +377,7 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 	//---------------------------------------------------------------------
 
 	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= msToReduceSpeed;
 
 		if (progBlingBlingColoring_rounds == 0) {
 			r = getRandomColorValue();
@@ -402,7 +402,7 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 
 	// after DEL ms seconds change 1 part of the color randomly
 	if (millisCounterTimer >= msForColorChange) {	//15000 // ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= msForColorChange;
 		progBlingBlingColoring_rounds++;
 		if (progBlingBlingColoring_rounds == 4) progBlingBlingColoring_rounds = 1;
 
@@ -434,7 +434,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 	// anzahl LEDs ggf. erhoehen
 	if (millisCounterTimer >= delayForAddingLEDs) {	//15000 // ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= delayForAddingLEDs;
 		if (addLEDs > 0) {
 			if (actualAnzahlLEDs + addLEDs <= maxLEDs) {
 				actualAnzahlLEDs = actualAnzahlLEDs + addLEDs;
@@ -482,7 +482,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= del;
 
 		r = getRandomColorValue();
 		g = getRandomColorValue();
@@ -540,11 +540,11 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= del;
 
 		//--- switch color ---
 		if (progStroboIsBlack) {
-			
+
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
 				for (int i = 0; i < anz_LEDs; i++) {
@@ -619,7 +619,7 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 #endif 
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= reduceSpeed;
 
 		clearAll();
 
@@ -685,7 +685,7 @@ int c_y;
 	// change color every x seconds
 	if (msForColorChange > 0) {
 		if (millisCounterTimer >= msForColorChange) {	// ersatz für delay()
-			millisCounterTimer = 0;
+			millisCounterTimer -= msForColorChange;
 			col1 = getRandomColor();
 			col2 = getRandomColor();
 		}
@@ -697,7 +697,7 @@ int c_y;
 	#endif
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= reduceSpeed;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
@@ -878,7 +878,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= msForChange) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= msForChange;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (clearEach) {
@@ -923,7 +923,7 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= msForChange) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= msForChange;
 
 		byte x1 = random(0, MATRIX_WIDTH-1);
 		byte x2 = random(0, MATRIX_WIDTH-1);	
@@ -969,7 +969,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 	//---------------------------------------------------------------------
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= reduceSpeed;
 
 		clearAll();
 
@@ -1077,7 +1077,7 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 	//---------------------------------------------------------------------
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
-		millisToReduceCPUSpeed = 0;
+		millisToReduceCPUSpeed -= reduceSpeed;
 
 		int anz;
 			
@@ -1248,7 +1248,7 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= 100) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= 100;
 		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -1291,7 +1291,7 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
     //---------------------------------------------------------------------
 	
 	if (millisCounterTimer >= delay) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= delay;
 		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -1334,7 +1334,7 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart) {
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= 500) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= 500;
 		FastLED.setBrightness(BRIGHTNESS); //15 TODO: zurueck auf BRIGHTNESS?
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -1420,7 +1420,7 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= msPerWord) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= msPerWord;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (zaehlerWortArray <= anzWords) {
@@ -1798,7 +1798,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= reduceSpeed;
 
 		clearAll();
 
@@ -2294,7 +2294,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 	//---------------------------------------------------------------------
 
 	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer = 0;
+		millisCounterTimer -= reduceSpeed;
 
 		clearAll();
 

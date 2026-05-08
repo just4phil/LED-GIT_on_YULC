@@ -113,7 +113,7 @@
 	#define DATA_PIN_2          2 	// yulc channel 2
 	#define LIPO_PIN            4 
 	#if defined(SCROLLMATRIX)
-		#define DEFAULT_BRIGHTNESS	20
+		#define DEFAULT_BRIGHTNESS	30
 	#elif defined(LAMPE1)
 		#define DEFAULT_BRIGHTNESS	100		
 	#elif defined(LAMPE2)

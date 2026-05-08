@@ -16,6 +16,7 @@ extern CRGB leds[NUMMATRIX];
 extern byte songID; 
 extern byte songIDbefore;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
+extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterForProgChange;		// achtung!! -> kann nur bis 65.536 zaehlen!!
 extern volatile unsigned int nextChangeMillis;		// start value = 10 sec
 extern volatile boolean flag_switchToNextSongPart;
@@ -129,6 +130,7 @@ void switchToPart(byte part) {
 	prog = part;
 	nextChangeMillisAlreadyCalculated = false;	// bool wieder fuer naechstes programm freigeben
 	millisCounterTimer = 0;
+	millisToReduceCPUSpeed = 0;
 	millisCounterForProgChange = 0;
 	zaehler = 0;	// globalen zaehler auf null
 	progScrollTextZaehler = MATRIX_WIDTH + 1;
