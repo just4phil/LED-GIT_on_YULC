@@ -73,8 +73,6 @@ float    rippleCY[RIPPLE_MAX_COUNT];
 uint16_t rippleAge[RIPPLE_MAX_COUNT];
 bool     rippleActive[RIPPLE_MAX_COUNT];
 CRGB     rippleColor[RIPPLE_MAX_COUNT];
-bool     rippleUseRandom = false;
-bool     rippleSpawnAtCenter = false;
 uint16_t rippleSpawnTimer = 0;
 
 //==================================================================
@@ -2586,8 +2584,10 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useR
 //=========== progWaterRipple ======================================
 //==================================================================
 
-void progWaterRipple(unsigned int durationMillis, byte nextPart,
-                     unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient) {
+// Interne Core-Funktion — alle Parameter direkt, keine globalen Flags
+static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
+                                unsigned int msToReduceSpeed, CRGB baseColor,
+                                bool useGradient, bool useRandom, bool spawnAtCenter) {
 
 	if (!nextChangeMillisAlreadyCalculated) {
 		clearAll();
@@ -2600,7 +2600,7 @@ void progWaterRipple(unsigned int durationMillis, byte nextPart,
 		rippleCY[0] = center_y;
 		rippleAge[0] = 0;
 		rippleActive[0] = true;
-		rippleColor[0] = rippleUseRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+		rippleColor[0] = useRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
 	}
 
 	if (millisToReduceCPUSpeed < msToReduceSpeed) return;
@@ -2612,11 +2612,11 @@ void progWaterRipple(unsigned int durationMillis, byte nextPart,
 		rippleSpawnTimer = 0;
 		for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) {
 			if (!rippleActive[ri]) {
-				rippleCX[ri] = rippleSpawnAtCenter ? center_x : random(2, MATRIX_WIDTH - 2);
-				rippleCY[ri] = rippleSpawnAtCenter ? center_y : random(1, MATRIX_HEIGHT - 1);
+				rippleCX[ri] = spawnAtCenter ? center_x : random(2, MATRIX_WIDTH - 2);
+				rippleCY[ri] = spawnAtCenter ? center_y : random(1, MATRIX_HEIGHT - 1);
 				rippleAge[ri] = 0;
 				rippleActive[ri] = true;
-				rippleColor[ri] = rippleUseRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+				rippleColor[ri] = useRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
 				break;
 			}
 		}
@@ -2701,37 +2701,39 @@ void progWaterRipple(unsigned int durationMillis, byte nextPart,
 	}
 }
 
+// Öffentliche Overloads — alle delegieren zur Core-Funktion mit expliziten Flags
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient) {
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, baseColor, useGradient, false, false);
+}
+
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed, CRGB baseColor) {
-	rippleUseRandom = false; rippleSpawnAtCenter = false;
-	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, baseColor, false);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, baseColor, false, false, false);
 }
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed, bool useGradient) {
-	rippleUseRandom = true; rippleSpawnAtCenter = false;
-	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient, true, false);
 }
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed) {
-	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, false);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, false, false, false);
 }
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart) {
-	progWaterRipple(durationMillis, nextPart, 50);
+	progWaterRippleCore(durationMillis, nextPart, 50, CRGB::Black, false, false, false);
 }
 
 // Tunnel-Varianten: alle Ripples spawnen in der Mitte
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed, bool useGradient, bool spawnAtCenter) {
-	rippleUseRandom = true; rippleSpawnAtCenter = spawnAtCenter;
-	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient, true, spawnAtCenter);
 }
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient, bool spawnAtCenter) {
-	rippleUseRandom = false; rippleSpawnAtCenter = spawnAtCenter;
-	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, baseColor, useGradient);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, baseColor, useGradient, false, spawnAtCenter);
 }
 

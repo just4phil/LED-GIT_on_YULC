@@ -78,13 +78,7 @@ void SONGPAUSE()  {	// soft / static LEDs
 //   // Feste Farbe + Gradient geht natürlich auch noch:
 //   progWaterRipple(8000, 2, 40, CRGB::Blue, true);
 
-  progWaterRipple(20000, 10, 50, true);   // random colors + Hue-Gradient
-
-  // Tunnel-Varianten (spawnAtCenter=true) - crashed den Controller, vorerst deaktiviert:
-  // progWaterRipple(10000, 1, 50, false, true);   // kein Gradient
-  // progWaterRipple(20000, 10, 50, true,  true);  // mit Hue-Gradient → Tunnel mit Regenbogen
-  // progWaterRipple(10000, 1, 50, CRGB::Cyan, false, true);
-  // progWaterRipple(10000, 1, 50, CRGB::Blue, true,  true);  // Blau + Gradient + Tunnel
+  progWaterRipple(20000, 10, 50, true, true);   // Hue-Gradient + Tunnel (alle Ringe aus Mitte)
 
 
 
