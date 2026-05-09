@@ -39,7 +39,36 @@ extern volatile byte prog;							// the actual song-part
 		//progMatrixHorizontal(60000, 2, 80);		// DONE
 		//progMatrixVertical(60000, 2, 80);			=> bei SCROLLMATRIX unsinnig!
 
+		//progWaterRipple
+			//progWaterRipple(20000, 10, 50, CRGB::Cyan);           // Cyan, kein Gradient
+			//progWaterRipple(20000, 10, 40, CRGB::Blue, true);      // Blau mit Regenbogen-Hue-Verlauf
+			//progWaterRipple(20000, 10, 30);                       // Zufallsfarbe, schnell
+			//progWaterRipple(20000, 10);                           // sieht NICHT gut aus!! Zufallsfarbe, 50ms default
+			//progWaterRipple(20000, 10, 50, true);    // random colors + Hue-Gradient
+			//progWaterRipple(10000, 1, 50, false);   // random colors, kein Gradient
+			//progWaterRipple(10000, 1, 50);          // random colors, kein Gradient (wie bisher)
+			//progWaterRipple(8000, 2, 40, CRGB::Blue, true); // Feste Farbe + Gradient geht natürlich auch noch
+			//progWaterRipple(20000, 10, 50, true, true);   // Hue-Gradient + Tunnel (alle Ringe aus Mitte)
 
+	//   progSternNeu — 4 Overloads:
+		//   Aufruf: progSternNeu(dur, colorMs, next, speed)
+		//   Effekt: Standard — rotiert um center_x/center_y
+		//   ────────────────────────────────────────
+		//   Aufruf: progSternNeu(dur, colorMs, next, speed, cx, cy)
+		//   Effekt: Feste eigene Mitte
+		//   ────────────────────────────────────────
+		//   Aufruf: progSternNeu(dur, colorMs, next, speed, true)
+		//   Effekt: Wandernde Mitte (Lissajous)
+		//   ────────────────────────────────────────
+		//   Aufruf: progSternNeu(dur, colorMs, next, speed, cx, cy, true, 3)
+		//   Effekt: Volle Kontrolle — hier z.B. 3 Arm-Paare = 6-zackiger Stern
+
+		//   Interne Logik:
+		//   - Rotation via sternAngle += 0.06 rad/Frame (~1.5s/Umdrehung bei 15ms/Frame)
+		//   - Wanderung: zwei Sinus mit verschiedenen Frequenzen → Lissajous-Figur, Radius = halbe
+		//   Matrix-Dimension
+		//   - Zwei Linien pro Arm mit 0.08 rad Versatz → Doppellinien-Effekt wie beim Original
+		//   - #if SCROLLMATRIX komplett weg — läuft auf allen Matrizen
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
 
@@ -67,20 +96,8 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-		//progWaterRipple(20000, 10, 50, CRGB::Cyan);           // Cyan, kein Gradient
-		 //progWaterRipple(20000, 10, 40, CRGB::Blue, true);      // Blau mit Regenbogen-Hue-Verlauf
-		 //progWaterRipple(20000, 10, 30);                       // Zufallsfarbe, schnell
-		//progWaterRipple(20000, 10);                           // sieht NICHT gut aus!! Zufallsfarbe, 50ms default
-  //progWaterRipple(20000, 10, 50, true);    // random colors + Hue-Gradient
-//   progWaterRipple(10000, 1, 50, false);   // random colors, kein Gradient
-//   progWaterRipple(10000, 1, 50);          // random colors, kein Gradient (wie bisher)
 
-//   // Feste Farbe + Gradient geht natürlich auch noch:
-//   progWaterRipple(8000, 2, 40, CRGB::Blue, true);
-
-  progWaterRipple(20000, 10, 50, true, true);   // Hue-Gradient + Tunnel (alle Ringe aus Mitte)
-
-
+progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
 
 		// if (LEDGITBOARD) {
 		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);

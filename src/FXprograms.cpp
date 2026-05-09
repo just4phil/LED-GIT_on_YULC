@@ -48,6 +48,8 @@ int progScrollTextZaehler = MATRIX_WIDTH + 1;
 int progScrollEnde;
 boolean scannerGoesBack = false;
 int stage = 0;
+float sternAngle   = 0.0f;
+float sternWanderT = 0.0f;
 int progBlingBlingColoring_rounds = 0;
 boolean progStroboIsBlack = false;	// for strobo
 byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
@@ -853,6 +855,105 @@ void progStern(unsigned int durationMillis, unsigned char nextPart, unsigned cha
 }
 void progStern(unsigned int durationMillis, unsigned char nextPart) {
 	progStern(durationMillis, 0, nextPart, 0);
+}
+
+//==================================================================
+//=========== progSternNeu =========================================
+//==================================================================
+// Trig-basierte Version: keine hardcodierten Koordinaten,
+// variable Mitte, optional Lissajous-Wanderung, konfig. Arm-Anzahl.
+
+static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColorChange,
+                              unsigned char nextPart, unsigned char reduceSpeed,
+                              float cx_base, float cy_base, bool wander, byte numArms) {
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		clearAll();
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		col1 = getRandomColor();
+		col2 = getRandomColor();
+		sternAngle   = 0.0f;
+		sternWanderT = 0.0f;
+	}
+
+	if (msForColorChange > 0) {
+		if (millisCounterTimer >= msForColorChange) {
+			millisCounterTimer -= msForColorChange;
+			col1 = getRandomColor();
+			col2 = getRandomColor();
+		}
+	}
+
+	if (millisToReduceCPUSpeed > reduceSpeed) {
+		millisToReduceCPUSpeed -= reduceSpeed;
+
+		if (!LEDsTurnedOff) {
+			clearAll();
+
+			float cx = cx_base;
+			float cy = cy_base;
+			if (wander) {
+				float rx = (MATRIX_WIDTH  / 2.0f) - 3.0f;
+				float ry = (MATRIX_HEIGHT / 2.0f) - 2.0f;
+				cx = cx_base + rx * sinf(sternWanderT);
+				cy = cy_base + ry * sinf(sternWanderT * 0.7f + 1.047f);
+				sternWanderT += 0.03f;
+			}
+
+			// R gross genug damit die Linie immer den Rand erreicht
+			float R = sqrtf((float)(MATRIX_WIDTH * MATRIX_WIDTH + MATRIX_HEIGHT * MATRIX_HEIGHT));
+			float armStep = (float)M_PI / numArms;
+
+			for (byte a = 0; a < numArms; a++) {
+				float a1 = sternAngle + a * armStep;
+				float a2 = a1 + 0.08f;   // leichter Versatz fuer Doppellinien-Effekt (col2)
+
+				matrix->drawLine(
+					(int)(cx + cosf(a1) * R), (int)(cy + sinf(a1) * R),
+					(int)(cx - cosf(a1) * R), (int)(cy - sinf(a1) * R), col1);
+				matrix->drawLine(
+					(int)(cx + cosf(a2) * R), (int)(cy + sinf(a2) * R),
+					(int)(cx - cosf(a2) * R), (int)(cy - sinf(a2) * R), col2);
+			}
+
+			sternAngle += 0.06f;
+			if (sternAngle >= (float)M_PI) sternAngle -= (float)M_PI;
+
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	}
+}
+
+// Standard: Mitte = center_x/center_y, kein Wandern, 2 Arm-Paare
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange,
+                  unsigned char nextPart, unsigned char reduceSpeed) {
+	progSternNeuCore(durationMillis, msForColorChange, nextPart, reduceSpeed,
+	                 center_x, center_y, false, 2);
+}
+
+// Feste benutzerdefinierte Mitte
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange,
+                  unsigned char nextPart, unsigned char reduceSpeed, int cx, int cy) {
+	progSternNeuCore(durationMillis, msForColorChange, nextPart, reduceSpeed,
+	                 cx, cy, false, 2);
+}
+
+// Wandernde Mitte (Lissajous), Mitte = center_x/center_y
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange,
+                  unsigned char nextPart, unsigned char reduceSpeed, bool wander) {
+	progSternNeuCore(durationMillis, msForColorChange, nextPart, reduceSpeed,
+	                 center_x, center_y, wander, 2);
+}
+
+// Volle Kontrolle: Mitte, Wandern, Anzahl Arm-Paare
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange,
+                  unsigned char nextPart, unsigned char reduceSpeed,
+                  int cx, int cy, bool wander, byte numArms) {
+	progSternNeuCore(durationMillis, msForColorChange, nextPart, reduceSpeed,
+	                 cx, cy, wander, numArms);
 }
 
 void progBlack(unsigned int durationMillis, byte nextPart) {

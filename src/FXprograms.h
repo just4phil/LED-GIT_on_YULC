@@ -363,6 +363,13 @@ void progStern(unsigned int durationMillis, unsigned char nextPart, unsigned cha
  */
 void progStern(unsigned int durationMillis, unsigned char nextPart);
 
+// Trig-basierte Version: sin/cos-Berechnung, variable Mitte, opt. Lissajous-Wanderung
+// numArms = Anzahl Arm-Paare (2 = Kreuz/X, 3 = 6-zackig, ...)
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed);
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed, int cx, int cy);
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed, bool wander);
+void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed, int cx, int cy, bool wander, byte numArms);
+
 /**
  * @brief Black screen effect
  * 
