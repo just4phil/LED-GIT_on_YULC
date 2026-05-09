@@ -52,6 +52,7 @@ float sternAngle   = 0.0f;
 float sternWanderT = 0.0f;
 int progBlingBlingColoring_rounds = 0;
 boolean progStroboIsBlack = false;	// for strobo
+bool progTextBlinkIsOn = false;     // for progBlinkText
 byte actualAnzahlLEDs; // wird benutzt von fastBlinBling fuer die steigerung der anzahl LEDs
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
@@ -1348,41 +1349,39 @@ void progTestRange(unsigned int durationMillis, byte nextPart) {
 	FastLED.show();		
 }
 
+// Interne Hilfsfunktion: Matrix-State für Textausgabe vorbereiten
+static void textSetup() {
+	matrix->clear();
+	matrix->setTextWrap(false);
+	matrix->setTextSize(1);
+	matrix->setRotation(0);
+	yield();
+	matrix->clear();
+}
+
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear(true);
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-
-		millisCounterTimer = 100; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
+		millisCounterTimer = 100;
 	}
 	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= 100) {	// ersatz für delay()
+	if (millisCounterTimer >= 100) {
 		millisCounterTimer -= 100;
-		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
+		FastLED.setBrightness(BRIGHTNESS);
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			//uint8_t size = max(int(mw / 8), 1);
-			matrix->clear();
-			matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-			matrix->setTextSize(1);
-			matrix->setRotation(0);
-
-			yield();
-			matrix->clear();
+		if (!LEDsTurnedOff) {
+			textSetup();
 			matrix->setCursor(pos_x, pos_y);
 			matrix->setTextColor(col);
 			matrix->print(words);
-
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!! immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
 			FastLED.show();
-			//matrix->show();
 		}
 	}
 }
@@ -1436,84 +1435,58 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 	}
 }
 
-void progShowROOTS(unsigned int durationMillis, byte nextPart) {
+// Buchstaben gleichmäßig über die Matrix verteilt, jeder in Zufallsfarbe.
+// Breite Matrix (SCROLLMATRIX) → horizontale Verteilung mit Y-Jitter.
+// Hohe Matrix (ANDRESGIT etc.) → vertikale Verteilung mit X-Jitter.
+void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPart,
+                            unsigned int msDelay) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear(true);
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = msDelay;
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= 500) {	// ersatz für delay()
-		millisCounterTimer -= 500;
-		FastLED.setBrightness(BRIGHTNESS); //15 TODO: zurueck auf BRIGHTNESS?
+	if (millisCounterTimer >= msDelay) {
+		millisCounterTimer -= msDelay;
+		FastLED.setBrightness(BRIGHTNESS);
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			matrix->clear();
-			matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-			matrix->setTextSize(1);
-			matrix->setRotation(0);
+		if (!LEDsTurnedOff) {
+			textSetup();
+			int n = text.length();
+			if (n == 0) return;
 
-			yield();
-			matrix->clear();
+			if (MATRIX_WIDTH >= MATRIX_HEIGHT) {
+				// Horizontal: SCROLLMATRIX 54×10
+				int step = (n > 1) ? (MATRIX_WIDTH - 4) / (n - 1) : 0;
+				int y_base = (MATRIX_HEIGHT - 7) / 2;
+				for (int i = 0; i < n; i++) {
+					matrix->setCursor(2 + i * step, y_base + random(-1, 2));
+					matrix->setTextColor(getRandomColor());
+					matrix->print(text[i]);
+				}
+			} else {
+				// Vertikal: ANDRESGIT 22×23 und ähnliche
+				int step = (n > 1) ? (MATRIX_HEIGHT - 7) / (n - 1) : 0;
+				int x_base = max(0, MATRIX_WIDTH / 2 - 3);
+				for (int i = 0; i < n; i++) {
+					matrix->setCursor(x_base + random(-1, 2), 1 + i * step);
+					matrix->setTextColor(getRandomColor());
+					matrix->print(text[i]);
+				}
+			}
 
-			#if defined(GITBOARD)
-			
-				matrix->setCursor(0, 3);
-				matrix->setTextColor(getRandomColor());
-				matrix->print("R");
-
-				matrix->setCursor(0, 8);
-				matrix->setTextColor(getRandomColor());
-				matrix->print("o");
-
-				matrix->setCursor(4, 13);
-				matrix->setTextColor(getRandomColor());
-				matrix->print("o");
-
-				matrix->setCursor(10, 14);
-				matrix->setTextColor(getRandomColor());
-				matrix->print("T");
-
-				matrix->setCursor(15, 13);
-				matrix->setTextColor(getRandomColor());
-				matrix->print("s");
-			
-			#elif defined(SCROLLMATRIX)
-
-				matrix->setCursor(2, random(0, 4));
-				matrix->setTextColor(getRandomColor());
-				matrix->print("R");
-
-				matrix->setCursor(13, random(0, 4));
-				matrix->setTextColor(getRandomColor());
-				matrix->print("O");
-
-				matrix->setCursor(random(24, 26), random(0, 4));
-				matrix->setTextColor(getRandomColor());
-				matrix->print("O");
-
-				matrix->setCursor(36, random(0, 4));
-				matrix->setTextColor(getRandomColor());
-				matrix->print("T");
-
-				matrix->setCursor(47, random(0, 4));
-				matrix->setTextColor(getRandomColor());
-				matrix->print("S");
-			
-			#endif
-
-
-
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
 			FastLED.show();
 		}
 	}
+}
+
+// Backward-compat Wrapper für NoRoots()
+void progShowROOTS(unsigned int durationMillis, byte nextPart) {
+	progShowLettersSpread("RooTs", durationMillis, nextPart);
 }
 
 int zaehlerWortArray;
@@ -1569,41 +1542,37 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
 	}
 }
 
-// TODO: progBlinkText
-void progBlinkText(String words, unsigned int durationMillis, int col, byte nextPart) {
+void progBlinkText(String words, unsigned int durationMillis, byte nextPart,
+                   unsigned int blinkMs) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
+	static int blinkColor;
+
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear(true);
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
+		blinkColor = getRandomColor();
+		progTextBlinkIsOn = false;
+		millisCounterTimer = blinkMs;
 	}
-	//---------------------------------------------------------------------
 
-	//int last_x = -1;
-	//int last_y = -1;
-	FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf 155
+	if (millisCounterTimer >= blinkMs) {
+		millisCounterTimer -= blinkMs;
+		FastLED.setBrightness(BRIGHTNESS);
 
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-		matrix->clear();
-		matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-		matrix->setTextSize(1);
-		matrix->setRotation(0);
-		for (int8_t x = 23; x >= -90; x--) {
-			yield();
-			matrix->clear();
-			matrix->setCursor(x, 13);
-			matrix->setTextColor(col);
-			matrix->print(words);
-
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	//wichtig wegen MEMCOPY!!  immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+		if (!LEDsTurnedOff) {
+			textSetup();
+			if (progTextBlinkIsOn) {
+				int x = max(0, MATRIX_WIDTH / 2 - (int)words.length() * 3);
+				int y = max(0, MATRIX_HEIGHT / 2 - 4);
+				matrix->setCursor(x, y);
+				matrix->setTextColor(blinkColor);
+				matrix->print(words);
+			}
+			progTextBlinkIsOn = !progTextBlinkIsOn;
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
 			FastLED.show();
-			//matrix->show();
-			delay(60);
 		}
 	}
 }

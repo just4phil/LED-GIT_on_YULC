@@ -621,6 +621,8 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
  * @see markerLEDs.cpp
  */
 void progShowROOTS(unsigned int durationMillis, byte nextPart);
+// Buchstaben gleichmäßig verteilt, jeder in Zufallsfarbe — generische Version von progShowROOTS
+void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPart, unsigned int msDelay = 500);
 
 /**
  * @brief Display word array
@@ -664,7 +666,7 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
  * 
  * @see progShowText()
  */
-void progBlinkText(String words, unsigned int durationMillis, int col, byte nextPart);
+void progBlinkText(String words, unsigned int durationMillis, byte nextPart, unsigned int blinkMs = 300);
 
 /**
  * @brief Set up current color palette

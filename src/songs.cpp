@@ -38,6 +38,13 @@ extern volatile byte prog;							// the actual song-part
 		//progMovingLines(60000, 2);				// DONE
 		//progMatrixHorizontal(60000, 2, 80);		// DONE
 		//progMatrixVertical(60000, 2, 80);			=> bei SCROLLMATRIX unsinnig!
+  
+		//TEXT
+			// progShowLettersSpread("FIRE", 1550, 14);        // horizontale Verteilung auf
+			// SCROLLMATRIX
+			// progShowLettersSpread("GO", 2000, 10, 250);     // schnellerer Wechsel
+			// progBlinkText("YEAH!", 3000, 5);                // blinkt alle 300ms
+			// progBlinkText("GO!", 3000, 5, 150);             // blinkt alle 150ms
 
 		//progWaterRipple
 			//progWaterRipple(20000, 10, 50, CRGB::Cyan);           // Cyan, kein Gradient
