@@ -161,21 +161,21 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-progSineCos(20000, 10, 30);
+//progSineCos(20000, 10, 30);
 
-		// if (LEDGITBOARD) {
-		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		// }
-		// else {
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		}
+		else {
 			
-		// 	#if defined(LAMPE1)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#elif defined(LAMPE2)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#else
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-		// 	#endif
-		// }	
+			#if defined(LAMPE1)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#elif defined(LAMPE2)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#else
+				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			#endif
+		}	
 	break;
 
 	case 10:
