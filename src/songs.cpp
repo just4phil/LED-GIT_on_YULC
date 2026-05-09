@@ -51,6 +51,7 @@ extern volatile byte prog;							// the actual song-part
 			//progWaterRipple(20000, 10, 50, true, true);   // Hue-Gradient + Tunnel (alle Ringe aus Mitte)
 
 	//   progSternNeu — 4 Overloads:
+		//progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
 		//   Aufruf: progSternNeu(dur, colorMs, next, speed)
 		//   Effekt: Standard — rotiert um center_x/center_y
 		//   ────────────────────────────────────────
@@ -96,22 +97,19 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-
-progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
-
-		// if (LEDGITBOARD) {
-		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		// }
-		// else {
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		}
+		else {
 			
-		// 	#if defined(LAMPE1)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#elif defined(LAMPE2)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#else
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-		// 	#endif
-		// }	
+			#if defined(LAMPE1)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#elif defined(LAMPE2)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#else
+				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			#endif
+		}	
 	break;
 
 	case 10:
