@@ -829,6 +829,29 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
 void progMatrixVertical(unsigned int durationMillis, byte nextPart);
 
+// Matrix-Film-Regen: unabhängige Streams pro Spalte/Zeile mit zufälliger Phase, Farbe und Pause
+// maxActive=0 → alle Streams gleichzeitig aktiv; >0 → max. N gleichzeitige Streams
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor, byte maxActive = 0);
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte maxActive = 0);
+
+// Feuer-Effekt: Hitzediffusion von unten nach oben, FastLED HeatColor-Palette
+void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire);
+void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
+void progFire(unsigned int durationMillis, byte nextPart);
+
+// Plasma: überlagerte Sinuswellen erzeugen fließende Regenbogenmuster
+void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
+void progPlasma(unsigned int durationMillis, byte nextPart);
+
+// Sternenhimmel / Warp: Sterne fliegen aus dem Zentrum heraus
+void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars);
+void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 20);
+void progStarfield(unsigned int durationMillis, byte nextPart);
+
+// Lissajous-Figuren: animierte parametrische Kurven mit Fading-Trail
+void progLissajous(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 25);
+void progLissajous(unsigned int durationMillis, byte nextPart);
+
 // 2D Wasseroberflächen-Effekt: expandierende Wellenringe wie ein Stein ins Wasser
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient);
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor);

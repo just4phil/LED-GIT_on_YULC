@@ -2651,6 +2651,367 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useR
 }
 
 //==================================================================
+//=========== matrixMovieFX ========================================
+//==================================================================
+
+static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
+                               unsigned int reduceSpeed, CRGB baseColor, bool randomPerStream,
+                               byte maxActive) {
+
+	static int16_t sHead[MATRIX_WIDTH];
+	static CRGB    sColor[MATRIX_WIDTH];
+	static uint8_t sGap[MATRIX_WIDTH];   // 255 = PARKED (wartet auf freien Slot)
+
+	const bool vertical  = (MATRIX_WIDTH > MATRIX_HEIGHT);
+	const int  numStreams = vertical ? MATRIX_WIDTH : MATRIX_HEIGHT;
+	const int  streamLen  = vertical ? MATRIX_HEIGHT : MATRIX_WIDTH;
+	const int  trailLen   = 14;
+	const bool limiting   = (maxActive > 0 && (int)maxActive < numStreams);
+
+	static const CRGB colorPalette[] = {
+		CRGB(0,   220, 0),
+		CRGB(0,   180, 255),
+		CRGB(160, 0,   255),
+		CRGB(255, 140, 0),
+		CRGB(255, 0,   120),
+		CRGB(0,   255, 180),
+	};
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 100;
+
+		int nActive = limiting ? (int)maxActive : numStreams;
+
+		// Partial Fisher-Yates: zufällig nActive Indizes aus [0, numStreams) wählen
+		int indices[MATRIX_WIDTH];
+		for (int s = 0; s < numStreams; s++) indices[s] = s;
+		for (int i = 0; i < nActive; i++) {
+			int j = i + random(0, numStreams - i);
+			int tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+		}
+
+		// Alle Streams initialisieren
+		for (int s = 0; s < numStreams; s++) {
+			sColor[s] = randomPerStream ? colorPalette[random(0, 6)] : baseColor;
+			sGap[s]   = 255;           // alle zunächst PARKED
+			sHead[s]  = (int16_t)(-trailLen);
+		}
+
+		// nActive Streams gleichmäßig über den Bildschirm verteilt aktivieren
+		for (int i = 0; i < nActive; i++) {
+			int s = indices[i];
+			// Köpfe gleichmäßig von -trailLen bis streamLen-1 verteilen
+			sHead[s] = (int16_t)((int32_t)i * (streamLen + trailLen) / nActive - trailLen);
+			sGap[s]  = 0;
+		}
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+		clearAll();
+
+		for (int s = 0; s < numStreams; s++) {
+			if (sGap[s] == 255) continue;  // PARKED
+			if (sGap[s] > 0) { sGap[s]--; continue; }
+
+			int colorIdx = 16;
+			for (int i = sHead[s]; i > sHead[s] - trailLen; i--) {
+				colorIdx--;
+				if (colorIdx < 0) colorIdx = 0;
+				if (i >= 0 && i < streamLen && !LEDsTurnedOff) {
+					CRGB c = getMatrixColorTinted(colorIdx, sColor[s]);
+					if (vertical) matrix->drawPixel(s, i, c);
+					else          matrix->drawPixel(i, s, c);
+				}
+			}
+
+			sHead[s]++;
+			if (sHead[s] - trailLen >= streamLen) {
+				sHead[s] = (int16_t)(-random(1, trailLen));
+				if (randomPerStream) sColor[s] = colorPalette[random(0, 6)];
+
+				if (limiting) {
+					// Rotation: diesen Stream parken, einen zufälligen geparkten aktivieren
+					sGap[s] = 255;
+					int parked[MATRIX_WIDTH];
+					int parkedCount = 0;
+					for (int j = 0; j < numStreams; j++)
+						if (sGap[j] == 255) parked[parkedCount++] = j;
+					// parkedCount >= 1 (mindestens s selbst ist drin)
+					int pick = parked[random(0, parkedCount)];
+					sGap[pick] = (uint8_t)random(1, 15);
+				} else {
+					sGap[s] = (uint8_t)random(0, 25);
+				}
+			}
+		}
+
+		if (!LEDsTurnedOff) {
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor, byte maxActive) {
+	matrixMovieFXCore(durationMillis, nextPart, reduceSpeed, baseColor, false, maxActive);
+}
+
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {
+	matrixMovieFXCore(durationMillis, nextPart, reduceSpeed, baseColor, false, 0);
+}
+
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte maxActive) {
+	matrixMovieFXCore(durationMillis, nextPart, reduceSpeed, CRGB::Black, true, maxActive);
+}
+
+void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	matrixMovieFXCore(durationMillis, nextPart, reduceSpeed, CRGB::Black, true, 0);
+}
+
+//==================================================================
+//=========== progFire =============================================
+//==================================================================
+
+void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire) {
+	static uint8_t heat[MATRIX_HEIGHT][MATRIX_WIDTH];
+
+	static const CRGBPalette16 BlueFire_p = {
+		CRGB::Black,     CRGB::Black,       CRGB(0,0,50),    CRGB(0,0,110),
+		CRGB(0,0,180),   CRGB(0,50,210),    CRGB(0,100,240), CRGB(0,170,255),
+		CRGB(0,220,255), CRGB(90,235,255),  CRGB(190,248,255),CRGB::White,
+		CRGB::White,     CRGB::White,       CRGB::White,     CRGB::White
+	};
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+		memset(heat, 0, sizeof(heat));
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+
+		// 1. Cool down every cell
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				int c = random(0, 40);
+				heat[y][x] = (heat[y][x] > c) ? (uint8_t)(heat[y][x] - c) : 0;
+			}
+		}
+
+#if defined(SCROLLMATRIX)
+		// y=0 = physisch unten → Hitze steigt zu y=MATRIX_HEIGHT-1 auf
+		for (int y = MATRIX_HEIGHT - 1; y >= 2; y--) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				heat[y][x] = ((int)heat[y-1][x] + heat[y-2][x] + heat[y-2][x]) / 3;
+			}
+		}
+		if (random(255) < 120) {
+			int fx = random(0, MATRIX_WIDTH);
+			heat[0][fx] = (uint8_t)min((int)255, (int)heat[0][fx] + (int)random(160, 255));
+		}
+#else
+		// y=0 = physisch oben → Hitze steigt zu y=0 auf
+		for (int y = 0; y < MATRIX_HEIGHT - 2; y++) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				heat[y][x] = ((int)heat[y+1][x] + heat[y+2][x] + heat[y+2][x]) / 3;
+			}
+		}
+		if (random(255) < 120) {
+			int fx = random(0, MATRIX_WIDTH);
+			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + random(160, 255));
+		}
+#endif
+
+		if (!LEDsTurnedOff) {
+			for (int y = 0; y < MATRIX_HEIGHT; y++) {
+				for (int x = 0; x < MATRIX_WIDTH; x++) {
+					CRGB c = blueFire ? ColorFromPalette(BlueFire_p, heat[y][x])
+					                  : HeatColor(heat[y][x]);
+					matrix->drawPixel(x, y, c);
+				}
+			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	progFire(durationMillis, nextPart, reduceSpeed, false);
+}
+
+void progFire(unsigned int durationMillis, byte nextPart) {
+	progFire(durationMillis, nextPart, 30, false);
+}
+
+//==================================================================
+//=========== progPlasma ===========================================
+//==================================================================
+
+void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	static uint16_t t = 0;
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+		t = 0;
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+
+		if (!LEDsTurnedOff) {
+			for (int y = 0; y < MATRIX_HEIGHT; y++) {
+				for (int x = 0; x < MATRIX_WIDTH; x++) {
+					uint8_t hue = sin8(x * 40 + t)
+					            + sin8(y * 40 + t)
+					            + sin8((x + y) * 20 + t / 2);
+					matrix->drawPixel(x, y, CHSV(hue, 255, 255));
+				}
+			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+		t += 3;
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progPlasma(unsigned int durationMillis, byte nextPart) {
+	progPlasma(durationMillis, nextPart, 30);
+}
+
+//==================================================================
+//=========== progStarfield ========================================
+//==================================================================
+
+void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars) {
+	static float sx[40], sy[40], sz[40];
+
+	if (numStars > 40) numStars = 40;
+	const float cx  = MATRIX_WIDTH  / 2.0f;
+	const float cy  = MATRIX_HEIGHT / 2.0f;
+	const float fov = min(MATRIX_WIDTH, MATRIX_HEIGHT) / 2.0f;
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+		for (int i = 0; i < numStars; i++) {
+			sx[i] = (random(0, 200) - 100) / 10.0f;
+			sy[i] = (random(0, 200) - 100) / 10.0f;
+			sz[i] = random(1, 100) / 10.0f;
+		}
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+		clearAll();
+
+		if (!LEDsTurnedOff) {
+			for (int i = 0; i < numStars; i++) {
+				sz[i] -= 0.18f;
+				if (sz[i] <= 0.05f) {
+					sz[i] = 8.0f + random(0, 20) / 10.0f;
+					sx[i] = (random(0, 200) - 100) / 10.0f;
+					sy[i] = (random(0, 200) - 100) / 10.0f;
+				}
+				int px = (int)(sx[i] / sz[i] * fov + cx);
+				int py = (int)(sy[i] / sz[i] * fov + cy);
+				if (px >= 0 && px < MATRIX_WIDTH && py >= 0 && py < MATRIX_HEIGHT) {
+					uint8_t bright = (uint8_t)constrain((int)(220.0f / sz[i]), 20, 255);
+					matrix->drawPixel(px, py, CRGB(bright, bright, bright));
+				}
+			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	progStarfield(durationMillis, nextPart, reduceSpeed, 25);
+}
+
+void progStarfield(unsigned int durationMillis, byte nextPart) {
+	progStarfield(durationMillis, nextPart, 20, 25);
+}
+
+//==================================================================
+//=========== progLissajous ========================================
+//==================================================================
+
+void progLissajous(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	static float   delta = 0.0f;
+	static uint8_t lissHue = 0;
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+		delta   = 0.0f;
+		lissHue = 0;
+		memset(leds, 0, MATRIX_SIZE * sizeof(CRGB));
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+
+		// Fading trail: Matrix-Pixel leicht abdunkeln
+		for (int i = 0; i < MATRIX_SIZE; i++) leds[i].nscale8(210);
+
+		if (!LEDsTurnedOff) {
+			const float A = MATRIX_WIDTH  / 2.0f - 1.0f;
+			const float B = MATRIX_HEIGHT / 2.0f - 1.0f;
+
+			for (int p = 0; p < 220; p++) {
+				float t  = p * 2.0f * PI / 220.0f;
+				int   px = (int)(MATRIX_WIDTH  / 2 + A * sinf(2.0f * t + delta));
+				int   py = (int)(MATRIX_HEIGHT / 2 + B * sinf(3.0f * t));
+				if (px >= 0 && px < MATRIX_WIDTH && py >= 0 && py < MATRIX_HEIGHT) {
+					matrix->drawPixel(px, py, CHSV((uint8_t)(lissHue + p), 255, 255));
+				}
+			}
+			delta += 0.025f;
+			if (delta > 2.0f * PI) delta -= 2.0f * PI;
+			lissHue++;
+		}
+
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progLissajous(unsigned int durationMillis, byte nextPart) {
+	progLissajous(durationMillis, nextPart, 25);
+}
+
+//==================================================================
 //=========== progWaterRipple ======================================
 //==================================================================
 

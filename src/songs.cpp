@@ -79,6 +79,44 @@ extern volatile byte prog;							// the actual song-part
 		//   - Zwei Linien pro Arm mit 0.08 rad Versatz → Doppellinien-Effekt wie beim Original
 		//   - #if SCROLLMATRIX komplett weg — läuft auf allen Matrizen
 
+		// Matrix-Regen (movie FX)
+			//   // Alle Streams gleichzeitig (bisheriges Verhalten):
+			//   matrixMovieFX(5000, 14, 30);
+			//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0));
+
+			//   // Nur 5 Streams gleichzeitig aktiv (dünner, dramatischer):
+			//   matrixMovieFX(5000, 14, 30, 5);
+			//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0), 5);
+
+			//   // Sehr spärlich – nur 2 Streams auf einmal:
+			//   matrixMovieFX(5000, 14, 30, 2);
+
+
+//   progFire(duration, nextPart [, reduceSpeed=30 [, blueFire=false]])
+//   Klassisches Feuer (orange/rot/weiß) oder blaues Feuer. Hitze diffundiert von unten
+//   nach oben, zufällige Funken.
+
+//   progPlasma(duration, nextPart [, reduceSpeed=30])
+//   Drei überlagerte sin8()-Wellen → fließendes Regenbogen-Plasma. Kein State außer
+//   einem Zeitcounter.
+
+//   progStarfield(duration, nextPart [, reduceSpeed=20 [, numStars=25]])
+//   3D-Sternfeld: Sterne fliegen vom Zentrum nach außen, Helligkeit = 1/z. Mit mehr
+//   Stars oder kleinerem reduceSpeed → Warp-Speed.
+
+//   progLissajous(duration, nextPart [, reduceSpeed=25])
+//   Parametrische Kurve mit a=2, b=3. Phase δ animiert → Figur morpht kontinuierlich.
+//   Fading-Trail via leds[i].nscale8(210) pro Frame. Regenbogen-Färbung.
+
+
+		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
+		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
+		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
+		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve
+
+
+
+
 void STARTUP()  {	// BLACK bis zum Start des Intros
 
  	switch (prog) { 
@@ -106,9 +144,10 @@ void SONGPAUSE()  {	// soft / static LEDs
 		// randomProg	= random(1, 3);
 
 
-
-		
-
+		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
+		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
+		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
+		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve
 
 		// if (LEDGITBOARD) {
 		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
@@ -1183,8 +1222,8 @@ void Firework() {
 		break;
 
 	case 50://chorus 2a		14516
-		//progFastBlingBling(14500, 3, 37);
-		progStern(14500, 970, 52, 15); 
+		progSternNeu(14500, 970, 52, 15, 26, 5, true, 3);
+		//progStern(14500, 970, 52, 15); 
 		break;
 
 	case 52://übergang		968
@@ -2785,7 +2824,8 @@ void Tellittomyheart() { // TODO
 		break;
 	
 	case 30: // chorus 1	16275
-		progStern(16275, 1015, 35, 20); 
+		//progStern(16275, 1015, 35, 20); 
+		progSternNeu(16275, 1015, 35, 20, 26, 5, true, 3);
 		break;		
 
 	case 35: // verse 2	16270
