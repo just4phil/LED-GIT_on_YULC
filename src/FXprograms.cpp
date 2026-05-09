@@ -1486,7 +1486,7 @@ void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPa
 
 // Backward-compat Wrapper für NoRoots()
 void progShowROOTS(unsigned int durationMillis, byte nextPart) {
-	progShowLettersSpread("RooTs", durationMillis, nextPart);
+	progShowLettersSpread("RooTs", durationMillis, nextPart, 500);
 }
 
 int zaehlerWortArray;

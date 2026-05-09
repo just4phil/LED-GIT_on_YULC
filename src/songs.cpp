@@ -40,6 +40,7 @@ extern volatile byte prog;							// the actual song-part
 		//progMatrixVertical(60000, 2, 80);			=> bei SCROLLMATRIX unsinnig!
   
 		//TEXT
+			// progShowLettersSpread("FIRE", 20000, 10, 1000); 	  // horizontale Verteilung auf
 			// progShowLettersSpread("FIRE", 1550, 14);        // horizontale Verteilung auf
 			// SCROLLMATRIX
 			// progShowLettersSpread("GO", 2000, 10, 250);     // schnellerer Wechsel
@@ -104,19 +105,24 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		}
-		else {
+
+
+		
+
+
+		// if (LEDGITBOARD) {
+		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		// }
+		// else {
 			
-			#if defined(LAMPE1)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-			#elif defined(LAMPE2)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-			#else
-				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-			#endif
-		}	
+		// 	#if defined(LAMPE1)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#elif defined(LAMPE2)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#else
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+		// 	#endif
+		// }	
 	break;
 
 	case 10:
