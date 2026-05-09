@@ -2164,10 +2164,10 @@ void enjoyTheSilenceINTRO() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progBlack(43840, 5);
+			progBlack(10655, 5);	//43840
 		}
 		else {
-			progBlack(32920, 10);
+			progBlack(16327, 10);//32920
 		}
 		break;
 
@@ -2176,7 +2176,7 @@ void enjoyTheSilenceINTRO() {
 		break;
 
 	case 10:
-		progBlack(32920, 100);
+		progBlack(16328, 100);//32920
 		break;
 
 	case 100:
@@ -2187,7 +2187,7 @@ void enjoyTheSilenceINTRO() {
 
 		//--- start song ----// we go there directly
 		songID = 16;	// this is ENJOY
-		switchToPart(0);
+		switchToPart(2);
 		break;
 	}
 }
