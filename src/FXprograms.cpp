@@ -3012,6 +3012,105 @@ void progLissajous(unsigned int durationMillis, byte nextPart) {
 }
 
 //==================================================================
+//=========== progEqualizer ========================================
+//==================================================================
+
+#define EQ_MAX_BANDS  9
+#define EQ_BAR_WIDTH  5
+#define EQ_BAR_GAP    1
+#define EQ_BAND_STEP  (EQ_BAR_WIDTH + EQ_BAR_GAP)  // 6px per Band
+
+static void progEqualizerCore(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed,
+                               const uint8_t* centers, byte numCenters, byte deviation) {
+	static float   currH[EQ_MAX_BANDS];          // current height (float → smooth)
+	static float   targH[EQ_MAX_BANDS];          // target height
+	static uint8_t holdT[EQ_MAX_BANDS];          // ticks until next target change
+	static uint8_t storedCenters[EQ_MAX_BANDS];
+	static uint8_t storedDeviation;
+
+	const int numBands = MATRIX_WIDTH / EQ_BAND_STEP;  // 9 (SCROLLMATRIX), 3 (ANDRESGIT)
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+
+		storedDeviation = deviation;
+		for (int b = 0; b < numBands; b++) {
+			uint8_t c = (b < (int)numCenters) ? centers[b] : centers[numCenters - 1];
+			storedCenters[b] = c;
+			currH[b] = (float)c;
+			targH[b] = (float)c;
+			holdT[b]  = (uint8_t)random(0, 20);  // gestaffelter Start
+		}
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+
+		for (int b = 0; b < numBands; b++) {
+			if (holdT[b] == 0) {
+				int lo = (int)storedCenters[b] - (int)storedDeviation;
+				int hi = (int)storedCenters[b] + (int)storedDeviation;
+				if (lo < 0) lo = 0;
+				if (hi > MATRIX_HEIGHT) hi = MATRIX_HEIGHT;
+				targH[b] = (float)random(lo, hi + 1);
+				holdT[b] = (uint8_t)random(8, 30);
+			} else {
+				holdT[b]--;
+			}
+			currH[b] += (targH[b] - currH[b]) * 0.18f;
+		}
+
+		clearAll();
+		if (!LEDsTurnedOff) {
+			for (int b = 0; b < numBands; b++) {
+				int height = (int)(currH[b] + 0.5f);
+				if (height < 0) height = 0;
+				if (height > MATRIX_HEIGHT) height = MATRIX_HEIGHT;
+				int xStart = b * EQ_BAND_STEP;
+
+				for (int step = 0; step < height; step++) {
+					// green (step=0, bottom) → yellow → orange → red (step=MATRIX_HEIGHT-1, top)
+					uint8_t hue = (uint8_t)(96 - (long)step * 96 / (MATRIX_HEIGHT > 1 ? MATRIX_HEIGHT - 1 : 1));
+					CRGB col = CHSV(hue, 255, 255);
+
+					int y = MATRIX_HEIGHT - 1 - step;  // step=0=Boden, y=0=oben in GFX
+					for (int px = 0; px < EQ_BAR_WIDTH; px++) {
+						int x = xStart + px;
+						if (x < MATRIX_WIDTH) matrix->drawPixel(x, y, col);
+					}
+				}
+			}
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed,
+                   const uint8_t* centers, byte numCenters, byte deviation) {
+	progEqualizerCore(durationMillis, nextPart, reduceSpeed, centers, numCenters, deviation);
+}
+
+void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	static const uint8_t defCenters[EQ_MAX_BANDS] = {
+		MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2,
+		MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2,
+		MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2, MATRIX_HEIGHT / 2
+	};
+	progEqualizerCore(durationMillis, nextPart, reduceSpeed, defCenters, EQ_MAX_BANDS, MATRIX_HEIGHT / 2);
+}
+
+void progEqualizer(unsigned int durationMillis, byte nextPart) {
+	progEqualizer(durationMillis, nextPart, 50);
+}
+
+//==================================================================
 //=========== progWaterRipple ======================================
 //==================================================================
 

@@ -114,7 +114,12 @@ extern volatile byte prog;							// the actual song-part
 		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
 		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve
 
-
+	// EQUALIZER
+		//  Jetzt: Mittelwert 5, Abweichung 5 → Bereich [0, 10], Bänder können voll in den
+		//   roten Bereich oben ausschlagen. Wenn das noch zu selten ist, kann man die
+		//   Mittelwerte höher setzen, z.B.:
+		//static const uint8_t centers[] = {4, 6, 8, 7, 9, 7, 8, 6, 4};  // Buckel-Kurve
+		//progEqualizer(20000, 10, 10, centers, 9, 4);
 
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
@@ -136,12 +141,14 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 
 // int randomProg = 0;
 
+
 void SONGPAUSE()  {	// soft / static LEDs
 	
 	switch (prog) { 
 
 	case 0:
 		// randomProg	= random(1, 3);
+
 
 
 		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
