@@ -852,6 +852,11 @@ void progStarfield(unsigned int durationMillis, byte nextPart);
 void progLissajous(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 25);
 void progLissajous(unsigned int durationMillis, byte nextPart);
 
+// Sinus/Kosinus Kurven animiert, je eigene Farbe
+void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, float cycles, CRGB sinColor, CRGB cosColor);
+void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 40);
+void progSineCos(unsigned int durationMillis, byte nextPart);
+
 // Equalizer: Balken von unten, 5px breit + 1px Lücke, grün→gelb→orange→rot, pro Band konfigurierbarer Mittelwert
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, const uint8_t* centers, byte numCenters, byte deviation);
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 50);

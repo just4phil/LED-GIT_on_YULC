@@ -100,6 +100,18 @@ extern volatile byte prog;							// the actual song-part
 		//progEqualizer(20000, 10, 10, centers, 9, 4);
 
 
+	//progSineCos:
+  
+		//   - Sinus (cyan 0,200,255) und Kosinus (magenta 255,50,200), je eine Farbe
+		//   - Verbindungslinien zwischen aufeinanderfolgenden Pixeln → glatte Kurven, keine
+		//   Lücken bei steilen Flanken
+		//   - Animiert durch laufende Phase (phase += 0.10f pro Tick)
+		//   - Aufruf:
+		//   progSineCos(5000, 14);                        // 1.5 Zyklen, cyan/magenta
+		//   progSineCos(5000, 14, 30);                    // schneller
+		//   progSineCos(5000, 14, 40, 2.0f, CRGB(0,255,100), CRGB(255,200,0));  // 2 Zyklen, eigene Farben
+
+
 	// TODO: mit diesen 4 effekten weitermachen:
 		//   progFire(duration, nextPart [, reduceSpeed=30 [, blueFire=false]])
 		//   Klassisches Feuer (orange/rot/weiß) oder blaues Feuer. Hitze diffundiert von unten
@@ -149,19 +161,21 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		}
-		else {
+progSineCos(20000, 10, 30);
+
+		// if (LEDGITBOARD) {
+		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		// }
+		// else {
 			
-			#if defined(LAMPE1)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-			#elif defined(LAMPE2)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-			#else
-				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-			#endif
-		}	
+		// 	#if defined(LAMPE1)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#elif defined(LAMPE2)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#else
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+		// 	#endif
+		// }	
 	break;
 
 	case 10:

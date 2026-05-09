@@ -3012,6 +3012,86 @@ void progLissajous(unsigned int durationMillis, byte nextPart) {
 }
 
 //==================================================================
+//=========== progSineCos ==========================================
+//==================================================================
+
+void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed,
+                 float cycles, CRGB sinColor, CRGB cosColor) {
+	static float phase = 0.0f;
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		millisCounterTimer = 0;
+		phase = 0.0f;
+	}
+
+	if (millisCounterTimer >= reduceSpeed) {
+		millisCounterTimer -= reduceSpeed;
+		clearAll();
+
+		if (!LEDsTurnedOff) {
+			float amp  = (MATRIX_HEIGHT - 1) / 2.0f;
+			float cy   = (MATRIX_HEIGHT - 1) / 2.0f;
+			float freq = cycles * 2.0f * (float)M_PI / (float)MATRIX_WIDTH;
+
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				float t = x * freq + phase;
+
+				// Sinus: Amplitude nach oben → y kleiner
+				int ys = (int)(cy - amp * sinf(t) + 0.5f);
+				if (ys < 0) ys = 0;
+				if (ys >= MATRIX_HEIGHT) ys = MATRIX_HEIGHT - 1;
+
+				// Kosinus: 90° versetzt
+				int yc = (int)(cy - amp * cosf(t) + 0.5f);
+				if (yc < 0) yc = 0;
+				if (yc >= MATRIX_HEIGHT) yc = MATRIX_HEIGHT - 1;
+
+				// Verbindungslinie zwischen aufeinanderfolgenden Pixels (glattere Kurve)
+				if (x > 0) {
+					float t_prev = (x - 1) * freq + phase;
+					int ys_prev = (int)(cy - amp * sinf(t_prev) + 0.5f);
+					int yc_prev = (int)(cy - amp * cosf(t_prev) + 0.5f);
+
+					int y0s = ys_prev < ys ? ys_prev : ys;
+					int y1s = ys_prev < ys ? ys      : ys_prev;
+					for (int yy = y0s; yy <= y1s; yy++)
+						if (yy >= 0 && yy < MATRIX_HEIGHT) matrix->drawPixel(x, yy, sinColor);
+
+					int y0c = yc_prev < yc ? yc_prev : yc;
+					int y1c = yc_prev < yc ? yc      : yc_prev;
+					for (int yy = y0c; yy <= y1c; yy++)
+						if (yy >= 0 && yy < MATRIX_HEIGHT) matrix->drawPixel(x, yy, cosColor);
+				} else {
+					matrix->drawPixel(x, ys, sinColor);
+					matrix->drawPixel(x, yc, cosColor);
+				}
+			}
+
+			phase += 0.10f;
+			if (phase >= 2.0f * (float)M_PI) phase -= 2.0f * (float)M_PI;
+
+			gitBlindingLEDs_OFF_MarkerLEDs_ON();
+			FastLED.show();
+		}
+	} else {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
+	progSineCos(durationMillis, nextPart, reduceSpeed,
+	            1.5f, CRGB(0, 200, 255), CRGB(255, 50, 200));
+}
+
+void progSineCos(unsigned int durationMillis, byte nextPart) {
+	progSineCos(durationMillis, nextPart, 40);
+}
+
+//==================================================================
 //=========== progEqualizer ========================================
 //==================================================================
 
