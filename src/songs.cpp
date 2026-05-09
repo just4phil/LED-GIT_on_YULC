@@ -79,40 +79,18 @@ extern volatile byte prog;							// the actual song-part
 		//   - Zwei Linien pro Arm mit 0.08 rad Versatz → Doppellinien-Effekt wie beim Original
 		//   - #if SCROLLMATRIX komplett weg — läuft auf allen Matrizen
 
-		// Matrix-Regen (movie FX)
-			//   // Alle Streams gleichzeitig (bisheriges Verhalten):
-			//   matrixMovieFX(5000, 14, 30);
-			//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0));
+	// Matrix-Regen (movie FX)
+		//   // Alle Streams gleichzeitig (bisheriges Verhalten):
+		//   matrixMovieFX(5000, 14, 30);
+		//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0));
 
-			//   // Nur 5 Streams gleichzeitig aktiv (dünner, dramatischer):
-			//   matrixMovieFX(5000, 14, 30, 5);
-			//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0), 5);
+		//   // Nur 5 Streams gleichzeitig aktiv (dünner, dramatischer):
+		//   matrixMovieFX(5000, 14, 30, 5);
+		//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0), 5);
 
-			//   // Sehr spärlich – nur 2 Streams auf einmal:
-			//   matrixMovieFX(5000, 14, 30, 2);
+		//   // Sehr spärlich – nur 2 Streams auf einmal:
+		//   matrixMovieFX(5000, 14, 30, 2);
 
-
-//   progFire(duration, nextPart [, reduceSpeed=30 [, blueFire=false]])
-//   Klassisches Feuer (orange/rot/weiß) oder blaues Feuer. Hitze diffundiert von unten
-//   nach oben, zufällige Funken.
-
-//   progPlasma(duration, nextPart [, reduceSpeed=30])
-//   Drei überlagerte sin8()-Wellen → fließendes Regenbogen-Plasma. Kein State außer
-//   einem Zeitcounter.
-
-//   progStarfield(duration, nextPart [, reduceSpeed=20 [, numStars=25]])
-//   3D-Sternfeld: Sterne fliegen vom Zentrum nach außen, Helligkeit = 1/z. Mit mehr
-//   Stars oder kleinerem reduceSpeed → Warp-Speed.
-
-//   progLissajous(duration, nextPart [, reduceSpeed=25])
-//   Parametrische Kurve mit a=2, b=3. Phase δ animiert → Figur morpht kontinuierlich.
-//   Fading-Trail via leds[i].nscale8(210) pro Frame. Regenbogen-Färbung.
-
-
-		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
-		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
-		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
-		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve
 
 	// EQUALIZER
 		//  Jetzt: Mittelwert 5, Abweichung 5 → Bereich [0, 10], Bänder können voll in den
@@ -120,6 +98,29 @@ extern volatile byte prog;							// the actual song-part
 		//   Mittelwerte höher setzen, z.B.:
 		//static const uint8_t centers[] = {4, 6, 8, 7, 9, 7, 8, 6, 4};  // Buckel-Kurve
 		//progEqualizer(20000, 10, 10, centers, 9, 4);
+
+
+	// TODO: mit diesen 4 effekten weitermachen:
+		//   progFire(duration, nextPart [, reduceSpeed=30 [, blueFire=false]])
+		//   Klassisches Feuer (orange/rot/weiß) oder blaues Feuer. Hitze diffundiert von unten
+		//   nach oben, zufällige Funken.
+
+		//   progPlasma(duration, nextPart [, reduceSpeed=30])
+		//   Drei überlagerte sin8()-Wellen → fließendes Regenbogen-Plasma. Kein State außer
+		//   einem Zeitcounter.
+
+		//   progStarfield(duration, nextPart [, reduceSpeed=20 [, numStars=25]])
+		//   3D-Sternfeld: Sterne fliegen vom Zentrum nach außen, Helligkeit = 1/z. Mit mehr
+		//   Stars oder kleinerem reduceSpeed → Warp-Speed.
+
+		//   progLissajous(duration, nextPart [, reduceSpeed=25])
+		//   Parametrische Kurve mit a=2, b=3. Phase δ animiert → Figur morpht kontinuierlich.
+		//   Fading-Trail via leds[i].nscale8(210) pro Frame. Regenbogen-Färbung.
+
+		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
+		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
+		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
+		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve		
 
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
@@ -138,7 +139,6 @@ void STARTUP()  {	// BLACK bis zum Start des Intros
 }
 
 
-
 // int randomProg = 0;
 
 
@@ -149,26 +149,19 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-
-
-		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
-		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
-		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
-		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve
-
-		// if (LEDGITBOARD) {
-		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		// }
-		// else {
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		}
+		else {
 			
-		// 	#if defined(LAMPE1)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#elif defined(LAMPE2)
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
-		// 	#else
-		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-		// 	#endif
-		// }	
+			#if defined(LAMPE1)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#elif defined(LAMPE2)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#else
+				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			#endif
+		}	
 	break;
 
 	case 10:
