@@ -282,7 +282,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
  * 
  * @note Use caution with epilepsy-inducing content
  */
-void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue);
+void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue, bool invertPhase = false);
 
 /**
  * @brief Matrix scanner effect with speed control
@@ -819,3 +819,13 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor);
 void progMatrixVertical(unsigned int durationMillis, byte nextPart);
+
+// 2D Wasseroberflächen-Effekt: expandierende Wellenringe wie ein Stein ins Wasser
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient);
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor);
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, bool useGradient);
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
+void progWaterRipple(unsigned int durationMillis, byte nextPart);
+// Tunnel-Varianten: spawnAtCenter=true → alle Kreise aus der Mitte (Tunnel-Effekt)
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, bool useGradient, bool spawnAtCenter);
+void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient, bool spawnAtCenter);

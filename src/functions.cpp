@@ -25,6 +25,7 @@ extern volatile byte prog;							// the actual song-part
 extern int zaehler;
 extern int progScrollTextZaehler;
 extern int progBlingBlingColoring_rounds;
+extern boolean progStroboIsBlack;
 
 //=====================================================================
 //=========== HELPER FUNCTIONS ========================================
@@ -137,6 +138,7 @@ void switchToPart(byte part) {
 
 	//--- initializeValues ---
 	progBlingBlingColoring_rounds = 0;
+	progStroboIsBlack = false;
 
 	flag_switchToNextSongPart = false;
 }

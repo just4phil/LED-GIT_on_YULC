@@ -67,20 +67,40 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
-		if (LEDGITBOARD) {
-			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
-		}
-		else {
+		//progWaterRipple(20000, 10, 50, CRGB::Cyan);           // Cyan, kein Gradient
+		 //progWaterRipple(20000, 10, 40, CRGB::Blue, true);      // Blau mit Regenbogen-Hue-Verlauf
+		 //progWaterRipple(20000, 10, 30);                       // Zufallsfarbe, schnell
+		//progWaterRipple(20000, 10);                           // sieht NICHT gut aus!! Zufallsfarbe, 50ms default
+  //progWaterRipple(20000, 10, 50, true);    // random colors + Hue-Gradient
+//   progWaterRipple(10000, 1, 50, false);   // random colors, kein Gradient
+//   progWaterRipple(10000, 1, 50);          // random colors, kein Gradient (wie bisher)
+
+//   // Feste Farbe + Gradient geht natürlich auch noch:
+//   progWaterRipple(8000, 2, 40, CRGB::Blue, true);
+
+  progWaterRipple(20000, 10, 50, true);   // random colors + Hue-Gradient
+
+  // Tunnel-Varianten (spawnAtCenter=true) - crashed den Controller, vorerst deaktiviert:
+  // progWaterRipple(10000, 1, 50, false, true);   // kein Gradient
+  // progWaterRipple(20000, 10, 50, true,  true);  // mit Hue-Gradient → Tunnel mit Regenbogen
+  // progWaterRipple(10000, 1, 50, CRGB::Cyan, false, true);
+  // progWaterRipple(10000, 1, 50, CRGB::Blue, true,  true);  // Blau + Gradient + Tunnel
+
+
+
+		// if (LEDGITBOARD) {
+		// 	progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		// }
+		// else {
 			
-			#if defined(LAMPE1)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
-			#elif defined(LAMPE2)
-				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);
-			#else
-				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
-				//progMatrixHorizontal(11700, 10, 70, true);
-			#endif
-		}	
+		// 	#if defined(LAMPE1)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#elif defined(LAMPE2)
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+		// 	#else
+		// 		progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+		// 	#endif
+		// }	
 	break;
 
 	case 10:

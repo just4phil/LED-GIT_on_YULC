@@ -61,6 +61,22 @@ int LEDsUndFarbWerte[anzahlLEDsImArray][4];
 const int anzahlLEDsSternschnuppen = 10;
 int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
 
+//---- fuer WaterRipple
+const byte  RIPPLE_MAX_COUNT      = 5;
+const uint16_t RIPPLE_MAX_AGE     = 180;
+const uint16_t RIPPLE_SPAWN_INTV  = 50;
+const float RIPPLE_WAVE_SPEED     = 0.25f;
+const float RIPPLE_RING_SPACING   = 3.5f;
+const float RIPPLE_WAVE_WIDTH     = 2.5f;
+float    rippleCX[RIPPLE_MAX_COUNT];
+float    rippleCY[RIPPLE_MAX_COUNT];
+uint16_t rippleAge[RIPPLE_MAX_COUNT];
+bool     rippleActive[RIPPLE_MAX_COUNT];
+CRGB     rippleColor[RIPPLE_MAX_COUNT];
+bool     rippleUseRandom = false;
+bool     rippleSpawnAtCenter = false;
+uint16_t rippleSpawnTimer = 0;
+
 //==================================================================
 //=========== FX programs ==========================================
 //==================================================================
@@ -523,7 +539,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 	}
 }
 
-void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue) {
+void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue, bool invertPhase) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
@@ -535,6 +551,7 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 
+		progStroboIsBlack = invertPhase;   // Startphase: false=sync, true=invertiert (halbe Periode Versatz)
 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
 	//---------------------------------------------------------------------
@@ -2563,5 +2580,158 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, boolean useRandomColor) {
 	progMatrixVertical(durationMillis, nextPart, 100, useRandomColor);
+}
+
+//==================================================================
+//=========== progWaterRipple ======================================
+//==================================================================
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient) {
+
+	if (!nextChangeMillisAlreadyCalculated) {
+		clearAll();
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) rippleActive[ri] = false;
+		rippleSpawnTimer = 0;
+		rippleCX[0] = center_x;
+		rippleCY[0] = center_y;
+		rippleAge[0] = 0;
+		rippleActive[0] = true;
+		rippleColor[0] = rippleUseRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+	}
+
+	if (millisToReduceCPUSpeed < msToReduceSpeed) return;
+	millisToReduceCPUSpeed -= msToReduceSpeed;
+
+	// Neuen Ripple periodisch spawnen — jeder bekommt beim Spawn seine Farbe
+	rippleSpawnTimer++;
+	if (rippleSpawnTimer >= RIPPLE_SPAWN_INTV) {
+		rippleSpawnTimer = 0;
+		for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) {
+			if (!rippleActive[ri]) {
+				rippleCX[ri] = rippleSpawnAtCenter ? center_x : random(2, MATRIX_WIDTH - 2);
+				rippleCY[ri] = rippleSpawnAtCenter ? center_y : random(1, MATRIX_HEIGHT - 1);
+				rippleAge[ri] = 0;
+				rippleActive[ri] = true;
+				rippleColor[ri] = rippleUseRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+				break;
+			}
+		}
+	}
+
+	// Alter der Ripples hochzählen
+	for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) {
+		if (rippleActive[ri]) {
+			rippleAge[ri]++;
+			if (rippleAge[ri] > RIPPLE_MAX_AGE) rippleActive[ri] = false;
+		}
+	}
+
+	// HSV pro aktivem Ripple vorberechnen (nur für Gradient-Modus)
+	CHSV rippleHSV[RIPPLE_MAX_COUNT];
+	if (useGradient) {
+		for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) {
+			if (rippleActive[ri])
+				rippleHSV[ri] = rgb2hsv_approximate(rippleColor[ri]);
+		}
+	}
+
+	// Alle Pixel rendern — additive Farbmischung pro Ripple
+	for (int px = 0; px < MATRIX_WIDTH; px++) {
+		for (int py = 0; py < MATRIX_HEIGHT; py++) {
+			CRGB totalColor = CRGB::Black;
+
+			float distFromCenter = 0.0f;
+			if (useGradient) {
+				float dxc = px - center_x;
+				float dyc = py - center_y;
+				distFromCenter = sqrtf(dxc * dxc + dyc * dyc);
+			}
+
+			for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) {
+				if (!rippleActive[ri]) continue;
+				float dx = px - rippleCX[ri];
+				float dy = py - rippleCY[ri];
+				float dist = sqrtf(dx * dx + dy * dy);
+				float waveFront = rippleAge[ri] * RIPPLE_WAVE_SPEED;
+				float diff = dist - waveFront;
+				float att = 1.0f - (float)rippleAge[ri] / RIPPLE_MAX_AGE;
+				float contrib = 0.0f;
+
+				if (diff >= 0.0f && diff < RIPPLE_WAVE_WIDTH) {
+					contrib = (1.0f - diff / RIPPLE_WAVE_WIDTH) * att;
+				} else if (diff < 0.0f && waveFront > 0.0f) {
+					float trail = -diff;
+					float posInRing = fmodf(trail, RIPPLE_RING_SPACING);
+					float halfSpacing = RIPPLE_RING_SPACING * 0.5f;
+					float ringBright = (posInRing < halfSpacing)
+						? posInRing / halfSpacing
+						: (RIPPLE_RING_SPACING - posInRing) / halfSpacing;
+					contrib = ringBright * (1.0f - trail / waveFront) * att * 0.6f;
+				}
+
+				if (contrib < 0.01f) continue;
+
+				CRGB c;
+				if (useGradient) {
+					CHSV hsv = rippleHSV[ri];
+					hsv.hue += (uint8_t)(distFromCenter * 4.0f);
+					hsv.val = 255;
+					c = hsv;
+				} else {
+					c = rippleColor[ri];
+				}
+				totalColor += CRGB(
+					(uint8_t)(c.r * contrib),
+					(uint8_t)(c.g * contrib),
+					(uint8_t)(c.b * contrib)
+				);
+			}
+
+			leds[matrix->XY((uint8_t)px, (uint8_t)py)] = totalColor;
+		}
+	}
+
+	if (!LEDsTurnedOff) {
+		gitBlindingLEDs_OFF_MarkerLEDs_ON();
+		FastLED.show();
+	}
+}
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, CRGB baseColor) {
+	rippleUseRandom = false; rippleSpawnAtCenter = false;
+	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, baseColor, false);
+}
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, bool useGradient) {
+	rippleUseRandom = true; rippleSpawnAtCenter = false;
+	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient);
+}
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed) {
+	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, false);
+}
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart) {
+	progWaterRipple(durationMillis, nextPart, 50);
+}
+
+// Tunnel-Varianten: alle Ripples spawnen in der Mitte
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, bool useGradient, bool spawnAtCenter) {
+	rippleUseRandom = true; rippleSpawnAtCenter = spawnAtCenter;
+	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, useGradient);
+}
+
+void progWaterRipple(unsigned int durationMillis, byte nextPart,
+                     unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient, bool spawnAtCenter) {
+	rippleUseRandom = false; rippleSpawnAtCenter = spawnAtCenter;
+	progWaterRipple(durationMillis, nextPart, msToReduceSpeed, baseColor, useGradient);
 }
 
