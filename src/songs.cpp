@@ -514,7 +514,8 @@ void Physical() {
 		break;
 
 	case 75: // Chorus 2 (2174)
-		progPalette(24490, 9, 80);
+		//progPalette(24490, 9, 80);
+		progWaterRipple(24490, 80, 50, true, true);
 		break;
 
 	case 80: // lets get physical
@@ -672,7 +673,8 @@ void TakeOnMe() {
 		progStrobo(18705, 85, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 	case 85: //verse 3	18700
-		progPalette(18700, 11, 90);
+		//progPalette(18700, 11, 90);
+		progWaterRipple(18700, 90, 50, true, false);
 		break;
 	case 90: //take on me	12465
 		//progStern(12465, 390, 95, 20);
@@ -759,7 +761,8 @@ void DontStopTheMusic() {
 		break;	
 
 	case 40://verse 2	16270
-		progPalette(16270, 11, 45);	// paletteID -> 0 - 10
+		//progPalette(16270, 11, 45);	// paletteID -> 0 - 10
+		progWaterRipple(16270, 45, 50, true, true);
 		break;
 
 	case 45://do u know what u started	16270
@@ -877,7 +880,8 @@ void UseSomebody() {
 			markerLED3 = ESaite_B; 
 			markerLED4 = ESaite_C; // C erst fuer den naechsten Part, aber gut zur Orientierung	
 		#endif	
-		progPalette(13913, 4, 35);	// paletteID -> 0 - 10 
+		//progPalette(13913, 4, 35);	// paletteID -> 0 - 10 
+		progWaterRipple(13913, 35, 50, true, false);
 		break;
 
 	case 35://solo		13913
@@ -1020,7 +1024,8 @@ void NoRoots() {
 		break;
 
 	case 20://verse 2a		16552
-		progPalette(16550, 8, 25);	// paletteID -> 0 - 10
+		//progPalette(16550, 8, 25);	// paletteID -> 0 - 10
+		progWaterRipple(16550, 25, 50, true, true);
 		break;
 
 	case 25://verse 2b		16552
@@ -1247,7 +1252,8 @@ void Firework() {
 		break;
 
 	case 46://BOOM 4	13550
-		progPalette(13550, 9, 47);
+		//progPalette(13550, 9, 47);
+		progWaterRipple(13550, 47, 50, true, false);
 		break;
 
 	case 47://strobo snarewirbel	1935
@@ -1389,7 +1395,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progFastBlingBling(15740, 8, 120);
 		break;
 	case 120: //instrumental, 15740
-		progPalette(15740, 11, 127);
+		//progPalette(15740, 11, 127);
+		progWaterRipple(15740, 127, 50, true, true);
 		break;	
 	// case 125: //outro, 3930 // alt: 11800
 	// 	progBlingBlingColoring(3930, 127, 4000);
@@ -1471,7 +1478,8 @@ void ILoveIt() {
 		break;
 
 	case 50: // 50	youre on a different road	14000
-		progPalette(14000, 11, 55);
+		//progPalette(14000, 11, 55);
+		progWaterRipple(14000, 55, 50, true, false);
 		break;
 
 	case 55: // 55	STOP	2000
@@ -1607,7 +1615,8 @@ void BloodyMary() {
 		progFastBlingBling(1045, 4, 81);
 		break;
 	case 81: //instrumental	16845
-		progPalette(16845, 9, 84);	// rot weiss blau
+		//progPalette(16845, 9, 84);	// rot weiss blau
+		progWaterRipple(16845, 84, 50, true, true);
 		break;
 	case 84: //dance dance	16840
 		if (LEDGITBOARD) {	// Sync-ausgleich
@@ -1704,7 +1713,8 @@ void Titanium() {
 		break;
 
 	case 40://v2: race your voice	15250
-		progPalette(15240, 3, 45);
+		//progPalette(15240, 3, 45);
+		progWaterRipple(15240, 45, 50, true, false);
 		//progStrobo(16134, 45, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progMatrixScanner(29538, 40, 25);
 		break;
@@ -1841,7 +1851,8 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;	
 
 	case 34: // solopart 2
-		progPalette(14480, 9, 36);
+		//progPalette(14480, 9, 36);
+		progWaterRipple(14480, 36, 50, true, true);
 		break;	
 
 	case 36: // bridge 3
@@ -1932,7 +1943,8 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;
 
 	case 20: // am i going under
-		progPalette(16550, 4, 22);
+		//progPalette(16550, 4, 22);
+		progWaterRipple(16550, 22, 50, true, false);
 		#ifdef BASS
 			markerLED5 = ESaite_Cis;	// RINA für "am i going under" ab 1382 ESaite_Cis bis 1391 
 			markerLED6 = ESaite_Dis;	// 11. bund, RINA bereits ab hier für solo ab 1390 ESaite_Dis für solo bis 1399
@@ -2041,7 +2053,8 @@ void Shivers() { // fertig: TODO
 		break;	
 
 	case 26: // i wanna be that guy	14545
-		progPalette(14545, 3, 28);
+		//progPalette(14545, 3, 28);
+		progWaterRipple(14545, 28, 50, true, true);
 		break;	
 
 	case 28: // Chorus 1	12730
@@ -2166,7 +2179,8 @@ void Abcdefu() {
 	break;
 
 	case 40: // i was into you
-		progPalette(15000, 3, 45);
+		//progPalette(15000, 3, 45);
+		progWaterRipple(15000, 45, 50, true, false);
 		//progBlingBlingColoring(15000, 45, 5000);
 	break;
 
@@ -2332,7 +2346,8 @@ void enjoyTheSilence() {
 		#ifdef BASS
 			markerLED5 = ESaite_F_hoch; // RINA SOLO: Takt 718 - 723: ESaite_hohes F
 		#endif		
-		progPalette(16990, 9, 80);	// paletteID -> 0 - 11
+		//progPalette(16990, 9, 80);	// paletteID -> 0 - 11
+		progWaterRipple(16990, 80, 50, true, true);
 		break;
 
 	case 80:// all i ever wanted	8500
@@ -2520,7 +2535,8 @@ void prisoner() {
 		break;
 
 	case 4: //  text	15925
-		progPalette(15000, 6, 6);
+		//progPalette(15000, 6, 6);
+		progWaterRipple(15000, 6, 50, true, false);
 		break;
 
 	case 6: // auftakt	1875
@@ -2704,7 +2720,8 @@ void Hotncold() {
 		break;	
 
 	case 34: // solopart 2
-		progPalette(14480, 9, 36);
+		//progPalette(14480, 9, 36);
+		progWaterRipple(14480, 36, 50, true, true);
 		break;	
 
 	case 36: // bridge 3
@@ -2810,7 +2827,8 @@ void Kids() { // TODO
 
 	case 55: // SOLO	15000
 		//progStern(15000, 510, 60, 25); 
-		progPalette(15000, 10, 60);
+		//progPalette(15000, 10, 60);
+		progWaterRipple(15000, 60, 50, true, false);
 		break;	
 
 	case 60: // SAMPLE	1875
@@ -2929,7 +2947,8 @@ void Tellittomyheart() { // TODO
 			progOutline(16270, 65, 75);
 		}
 		else {
-			progPalette(16270, 6, 65);
+			//progPalette(16270, 6, 65);
+			progWaterRipple(16270, 65, 50, true, true);
 		}	
 		break;
 
@@ -3058,7 +3077,8 @@ void FridayImInLove() { // TODO
 		break;
 
 	case 65: //65	verse 4b	13714
-		progPalette(13714, 9, 70);
+		//progPalette(13714, 9, 70);
+		progWaterRipple(13714, 70, 50, true, false);
 		break;	
 
 	case 70: //70	outro chorus 1	13714
@@ -3135,7 +3155,8 @@ void BeMine() {
 		break;
 
 	case 24://im going crazy  15238
-		progPalette(15238, 8, 26);
+		//progPalette(15238, 8, 26);
+		progWaterRipple(15238, 26, 50, true, true);
 		break;
 
 	case 26://you got me so high  13333
@@ -3235,7 +3256,8 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 32: // verse 2	15484
-		progPalette(15484, 2, 34);
+		//progPalette(15484, 2, 34);
+		progWaterRipple(15484, 34, 50, true, false);
 		break;	
 
 	case 34: // ive done alright	11613
@@ -3475,7 +3497,8 @@ void BillyJean() {
 
 	case 62://solo a	15000
 		//progMatrixScanner(15000, 64, 18);
-		progPalette(15000, 9, 64);
+		//progPalette(15000, 9, 64);
+		progWaterRipple(15000, 64, 50, true, true);
 		break;
 
 	case 64://the ONE …..halftime	3750
