@@ -3695,7 +3695,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 42://instrumental b  11465
-		progFullColors(11465, 44, 756);
+		progFullColors(11465, 44, 756);	//TODO: passt hier nicht so gut!!!
 		break;
 
 	case 44://strobe  764

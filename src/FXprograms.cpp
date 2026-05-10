@@ -2658,9 +2658,10 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
                                unsigned int reduceSpeed, CRGB baseColor, bool randomPerStream,
                                byte maxActive) {
 
-	static int16_t sHead[MATRIX_WIDTH];
-	static CRGB    sColor[MATRIX_WIDTH];
-	static uint8_t sGap[MATRIX_WIDTH];   // 255 = PARKED (wartet auf freien Slot)
+#define STREAM_BUF (MATRIX_WIDTH > MATRIX_HEIGHT ? MATRIX_WIDTH : MATRIX_HEIGHT)
+	static int16_t sHead[STREAM_BUF];
+	static CRGB    sColor[STREAM_BUF];
+	static uint8_t sGap[STREAM_BUF];   // 255 = PARKED (wartet auf freien Slot)
 
 	const bool vertical  = (MATRIX_WIDTH > MATRIX_HEIGHT);
 	const int  numStreams = vertical ? MATRIX_WIDTH : MATRIX_HEIGHT;
@@ -2686,7 +2687,7 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 		int nActive = limiting ? (int)maxActive : numStreams;
 
 		// Partial Fisher-Yates: zufällig nActive Indizes aus [0, numStreams) wählen
-		int indices[MATRIX_WIDTH];
+		int indices[MATRIX_WIDTH > MATRIX_HEIGHT ? MATRIX_WIDTH : MATRIX_HEIGHT];
 		for (int s = 0; s < numStreams; s++) indices[s] = s;
 		for (int i = 0; i < nActive; i++) {
 			int j = i + random(0, numStreams - i);
@@ -2736,13 +2737,17 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 				if (limiting) {
 					// Rotation: diesen Stream parken, einen zufälligen geparkten aktivieren
 					sGap[s] = 255;
-					int parked[MATRIX_WIDTH];
 					int parkedCount = 0;
 					for (int j = 0; j < numStreams; j++)
-						if (sGap[j] == 255) parked[parkedCount++] = j;
+						if (sGap[j] == 255) parkedCount++;
 					// parkedCount >= 1 (mindestens s selbst ist drin)
-					int pick = parked[random(0, parkedCount)];
-					sGap[pick] = (uint8_t)random(1, 15);
+					int pick = (int)random(0, parkedCount);
+					for (int j = 0; j < numStreams; j++) {
+						if (sGap[j] == 255 && pick-- == 0) {
+							sGap[j] = (uint8_t)random(1, 15);
+							break;
+						}
+					}
 				} else {
 					sGap[s] = (uint8_t)random(0, 25);
 				}
