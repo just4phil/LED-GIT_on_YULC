@@ -1,3 +1,24 @@
+
+
+10.05.2026:
+======================
+nicht so schlimm (evtl. später ändern):
+- maniac ende strobe ist etwas zu spät
+
+refactoring:
+- matrixMovieFX umbenennen in progMatrixMovieFX
+- nextPart immer an zweite stelle des aufrufs
+--------------
+
+claude fx:
+- Mischung aus fullColor + Strobo -> full color fx mit control über die pausenlänge
+- schrolltext der an den seiten ein/aus-faded
+- circles mit fade out oder HueGradient
+
+----------------------------------------------
+
+
+
 https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos
 
 Low Level Drv|Glue Driver for FrameBuffer::GFX
