@@ -273,7 +273,8 @@ void defaultLoop()  {
 		break;
 
 	case 30:
-		progStern(10000, 500, 35, 20);
+		//progStern(10000, 500, 35, 20);
+		progSternNeu(10000, 500, 35, 5, 26, 5, true, 3);
 		break;
 
 	case 35: // OK
@@ -622,7 +623,8 @@ void TakeOnMe() {
 		progMatrixScanner(18705, 30, 24);
 		break;
 	case 30: //take on me	12465
-		progStern(12465, 390, 35, 20); 
+		//progStern(12465, 390, 35, 20); 
+		progSternNeu(12465, 390, 35, 5, 26, 5, false, 4);
 		break;
 	case 35: //tom-halfTime	6235
 		progStrobo(6235, 40, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -786,7 +788,8 @@ void DontStopTheMusic() {
 		break;
 
 	case 75://chorus 2a: i just cant refuse it	8136
-		progStern(8136, 510, 95, 15); // 21.07.2025: direkt zum ende springen (3. chorus gestrichen)
+		//progStern(8136, 510, 95, 15); // 21.07.2025: direkt zum ende springen (3. chorus gestrichen)
+		progSternNeu(8136, 510, 95, 5, 26, 5, true, 3);
 		break;
 
 	// case 80://chorus 2a: i wanna take it away	8136
@@ -889,7 +892,8 @@ void UseSomebody() {
 		break;
 
 	case 40://solo b		17391
-		progStern(17391, 870, 45, 15); 
+		//progStern(17391, 870, 45, 15); 
+		progSternNeu(17391, 870, 45, 5, 26, 5, false, 4);
 		//progStrobo(17391, 45, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		//progMatrixScanner(17391, 40, 25);
 		// macht keinen Sinn!
@@ -1097,7 +1101,8 @@ void NoRoots() {
 		break;
 
 	case 53://chorus		8276
-		progStern(8275, 500, 55, 15);
+		//progStern(8275, 500, 55, 15);
+		progSternNeu(8275, 500, 55, 5, 26, 5, true, 3);
 		break;
 
 	case 55://chorus		8276
@@ -1153,7 +1158,8 @@ void Firework() {
 		break;
 
 	case 5:// intro1		15484
-		progStern(15480, 970, 10, 15); 
+		//progStern(15480, 970, 10, 15); 
+		progSternNeu(15480, 970, 10, 5, 26, 5, false, 4);
 		break;
 	//----------------------------------
 
@@ -1177,7 +1183,8 @@ void Firework() {
 
 	case 24://chorus 1		14516
 		//progFastBlingBling(14500, 3, 26);
-		progStern(14500, 970, 26, 15); 
+		//progStern(14500, 970, 26, 15); 
+		progSternNeu(14500, 970, 26, 5, 26, 5, true, 3);
 		break;
 
 	case 26://übergang		968
@@ -1313,7 +1320,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progMatrixScanner(15735, 30, 26);
 		break;
 	case 30: //chorus 1b, 7870
-		progStern(7870, 490, 35, 20); 
+		//progStern(7870, 490, 35, 20); 
+		progSternNeu(7870, 490, 35, 5, 26, 5, false, 4);
 		break;
 	case 35: //i keep dancing, 7870
 		progFastBlingBling(7870, 4, 40);
@@ -1334,7 +1342,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progMatrixScanner(15735, 60, 26);
 		break;
 	case 60: //chorus 1b, 7870
-		progStern(7870, 490, 65, 20); 
+		//progStern(7870, 490, 65, 20); 
+		progSternNeu(7870, 490, 65, 5, 26, 5, true, 3);
 		break;
 	case 65: //i keep dancing, 7870
 		progFastBlingBling(7870, 4, 70);
@@ -1364,7 +1373,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		break;
 	case 100: //chorus 1, 15740
 		//progPalette(15740, 11, 105);
-		progStern(15740, 490, 105, 20); 
+		//progStern(15740, 490, 105, 20); 
+		progSternNeu(15740, 490, 105, 5, 26, 5, false, 4);
 		break;
 	case 105: //chorus 1b, 7870
 		//progPalette(7870, 11, 110);
@@ -1372,7 +1382,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		break;
 	case 110: //i keep dancing, 7865
 		//progFastBlingBling(7865, 4, 115);
-		progStern(7865, 490, 115, 20); 
+		//progStern(7865, 490, 115, 20); 
+		progSternNeu(7865, 490, 115, 5, 26, 5, true, 3);
 		break;
 	case 115: //i keep dancing, 15740
 		progFastBlingBling(15740, 8, 120);
@@ -1427,7 +1438,8 @@ void ILoveIt() {
 
 	case 15: // 15	chorus 1	8000
 		//progPalette(15000, 1, 8);
-		progStern(8000, 1000, 20, 25);
+		//progStern(8000, 1000, 20, 25);
+		progSternNeu(8000, 1000, 20, 5, 26, 5, false, 4);
 		break;	
 	
 	case 20: // 20	verse 2	16000
@@ -1436,7 +1448,8 @@ void ILoveIt() {
 	
 	case 25: // 25	chorus 2	8000
 		//progPalette(15000, 3, 15);
-		progStern(8000, 1000, 30, 25);
+		//progStern(8000, 1000, 30, 25);
+		progSternNeu(8000, 1000, 30, 5, 26, 5, true, 3);
 		break;	
 
 	case 30: // 30	youre on a different road	16000
@@ -1444,7 +1457,8 @@ void ILoveIt() {
 	break;
 
 	case 35: // 35	i love it	16000
-		progStern(16000, 500, 40, 25);
+		//progStern(16000, 500, 40, 25);
+		progSternNeu(16000, 500, 40, 5, 26, 5, false, 4);
 		break;
 	
 	case 40: // 40	verse 3	16000
@@ -1452,7 +1466,8 @@ void ILoveIt() {
 		break;
 
 	case 45: // 45	chorus 3	16000
-		progStern(16000, 500, 50, 20);
+		//progStern(16000, 500, 50, 20);
+		progSternNeu(16000, 500, 50, 5, 26, 5, true, 3);
 		break;
 
 	case 50: // 50	youre on a different road	14000
@@ -1464,7 +1479,8 @@ void ILoveIt() {
 		break;
 
 	case 60: //60	chorus 4	16000
-		progStern(16000, 500, 65, 20);
+		//progStern(16000, 500, 65, 20);
+		progSternNeu(16000, 500, 65, 5, 26, 5, false, 4);
 		break;
 
 	case 65: //65	chorus 5	8000
@@ -1515,7 +1531,8 @@ void BloodyMary() {
 		}	
 		break;
 	case 12: //chorus 1	16840
-		progStern(16840, 525, 15, 20); 
+		//progStern(16840, 525, 15, 20); 
+		progSternNeu(16840, 525, 15, 5, 26, 5, true, 3);
 		break;
 	case 15: //chorus instrumental	8420
 		progFastBlingBling(8420, 3, 18);
@@ -1535,7 +1552,8 @@ void BloodyMary() {
 		}	
 		break;
 	case 27: //chorus 1	16845
-		progStern(16845, 525, 30, 20); 
+		//progStern(16845, 525, 30, 20); 
+		progSternNeu(16845, 525, 30, 5, 26, 5, false, 4);
 		break;
 	case 30: //synth break	8420
 		progRandomLines(8350, 33, 525, true);
@@ -1600,7 +1618,8 @@ void BloodyMary() {
 		}
 		break;
 	case 87: //chorus a	16845
-		progStern(16845, 525, 90, 20); 
+		//progStern(16845, 525, 90, 20); 
+		progSternNeu(16845, 525, 90, 5, 26, 5, true, 3);
 		break;
 	case 90: //chorus b	16840
 		progFastBlingBling(16840, 8, 96);
@@ -1771,7 +1790,8 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;
 	
 	case 12: // chorus 1
-		progStern(24820, 1035, 14, 20); 
+		//progStern(24820, 1035, 14, 20); 
+		progSternNeu(24820, 1035, 14, 5, 26, 5, false, 4);
 		break;
 
 	case 14: // übergang
@@ -1799,7 +1819,8 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;	
 
 	case 24: // chorus 2
-		progStern(24820, 515, 26, 20); 
+		//progStern(24820, 515, 26, 20); 
+		progSternNeu(24820, 515, 26, 5, 26, 5, true, 3);
 		break;	
 
 	case 26: // übergang
@@ -1834,7 +1855,8 @@ void SuchAshame() { // fertig: 17.09.2023
 		break;	
 
 	case 40: // chorus 2
-		progStern(33100, 515, 42, 20); 
+		//progStern(33100, 515, 42, 20); 
+		progSternNeu(33100, 515, 42, 5, 26, 5, false, 4);
 		break;	
 
 	case 42: // übergang
@@ -1888,7 +1910,8 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;
 	
 	case 12: // chorus 1
-		progStern(16550, 1035, 14, 20); 
+		//progStern(16550, 1035, 14, 20); 
+		progSternNeu(16550, 1035, 14, 5, 26, 5, true, 3);
 		break;
 
 	case 14: // verse 2
@@ -1900,7 +1923,8 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;
 	
 	case 18: // chorus 2
-		progStern(16550, 1035, 20, 20); 
+		//progStern(16550, 1035, 20, 20); 
+		progSternNeu(16550, 1035, 20, 5, 26, 5, false, 4);
 		#ifdef BASS	
 			markerLED5 = ESaite_Cis;	// RINA bereits ab hier für "am i going under" ab 1382 ESaite_Cis bis 1391 	
 			markerLED6 = 0;
@@ -1924,7 +1948,8 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;	
 
 	case 24: // chrous 3
-		progStern(16550, 515, 26, 20); 		
+		//progStern(16550, 515, 26, 20); 		
+		progSternNeu(16550, 515, 26, 5, 26, 5, true, 3);
 		#ifdef BASS
 			markerLED5 = 0;	// RINA: nach "am i going under" ESaite_Cis wieder aus
 			markerLED6 = 0;	// RINA nach solo ESaite_Dis wieder aus
@@ -1988,7 +2013,8 @@ void Shivers() { // fertig: TODO
 		break;
 
 	case 16: // Chorus 1	14090
-		progStern(14090, 910, 18, 25); 
+		//progStern(14090, 910, 18, 25); 
+		progSternNeu(14090, 910, 18, 5, 26, 5, false, 4);
 		break;
 	
 	case 18: // mini pause	910
@@ -2019,7 +2045,8 @@ void Shivers() { // fertig: TODO
 		break;	
 
 	case 28: // Chorus 1	12730
-		progStern(12730, 455, 30, 25); 
+		//progStern(12730, 455, 30, 25); 
+		progSternNeu(12730, 455, 30, 5, 26, 5, true, 3);
 		//progBlingBlingColoring(16550, 30, 5000);
 		break;	
 
@@ -2047,7 +2074,8 @@ void Shivers() { // fertig: TODO
 		break;	
 
 	case 40: // Chorus 1	10000
-		progStern(10000, 910, 42, 20); 
+		//progStern(10000, 910, 42, 20); 
+		progSternNeu(10000, 910, 42, 5, 26, 5, false, 4);
 		break;	
 
 	case 42: // mini pause	910
@@ -2121,7 +2149,8 @@ void Abcdefu() {
 	case 20: // na na na na
 		//progBlingBlingColoring(50000, 25, 5000);
 		//progMovingLines(7500, 25);
-		progStern(7500, 25);
+		//progStern(7500, 25);
+		progSternNeu(7500, 468, 25, 5, 26, 5, false, 4);
 	break;
 	
 	case 25: // verse 2
@@ -2229,7 +2258,8 @@ void enjoyTheSilence() {
 
 	case 4://synth	16975
 		//progFastBlingBling(16975, 4, 4); //20s -> 3:13
-		progStern(8495, 970, 6, 15); 
+		//progStern(8495, 970, 6, 15); 
+		progSternNeu(8495, 970, 6, 5, 26, 5, true, 3);
 		break;
 
 	case 6://synth	16975
@@ -2261,7 +2291,8 @@ void enjoyTheSilence() {
 		break;
 
 	case 35://synth	16975
-		progStern(17000, 970, 40, 15); 
+		//progStern(17000, 970, 40, 15); 
+		progSternNeu(17000, 970, 40, 5, 26, 5, false, 4);
 		break;
 
 	case 40://verse 1a	8500
@@ -2391,7 +2422,8 @@ void apt() {
 		break;	
 
    case 15: // 15	chorus 1	11275
-	   	progStern(11275, 805, 20, 20);
+	   	//progStern(11275, 805, 20, 20);
+	   	progSternNeu(11275, 805, 20, 5, 26, 5, true, 3);
    		break;
 
    case 20: //20	STOP	1610
@@ -2411,7 +2443,8 @@ void apt() {
    		break;
 
    case 35: // 35	chorus 2	11275
-   		progStern(11275, 805, 40, 20);
+   		//progStern(11275, 805, 40, 20);
+   		progSternNeu(11275, 805, 40, 5, 26, 5, false, 4);
    		break;
 
    case 40: //40	STOP	1610
@@ -2449,7 +2482,8 @@ void apt() {
    break;
 
    case 75: //75	chorus 5	6445
-   		progStern(6445, 805, 80, 20);
+   		//progStern(6445, 805, 80, 20);
+   		progSternNeu(6445, 805, 80, 5, 26, 5, true, 3);
    break;
 
    case 80: //80	apt apt apt	25775
@@ -2498,7 +2532,8 @@ void prisoner() {
 		break;
 
 	case 10: // 10	oh i cant control it 	7500
-		progStern(7500, 940, 12, 15);
+		//progStern(7500, 940, 12, 15);
+		progSternNeu(7500, 940, 12, 5, 26, 5, false, 4);
 		break;
 
 	case 12:// 12	i try to replace it	7500
@@ -2506,7 +2541,8 @@ void prisoner() {
 		break;
 
 	case 14:// 14	oh i cant control it 	7500
-		progStern(7500, 470, 16, 15);
+		//progStern(7500, 470, 16, 15);
+		progSternNeu(7500, 470, 16, 5, 26, 5, true, 3);
 		break;
 
 	case 16: // 16	u keep making it hard	11250
@@ -2532,7 +2568,8 @@ void prisoner() {
 
 	case 26: // 26	v2: i tasted heaven	7500
 		//progRandomLines(7500, 28, 470, false);
-		progStern(7500, 235, 28, 15);
+		//progStern(7500, 235, 28, 15);
+		progSternNeu(7500, 235, 28, 5, 26, 5, false, 4);
 		break;
 
 	case 28: // 28	oh i cant control it 	7500
@@ -2549,7 +2586,8 @@ void prisoner() {
 		break;
 
 	case 34: // 34	Chorus 2 a	10300
-		progStern(10315, 470, 36, 15);
+		//progStern(10315, 470, 36, 15);
+		progSternNeu(10315, 470, 36, 5, 26, 5, true, 3);
 		break;
 
 	case 36: // 36	fx	950
@@ -2615,7 +2653,8 @@ void Hotncold() {
 		break;
 	
 	case 12: // chorus 1
-		progStern(24820, 1035, 14, 20); 
+		//progStern(24820, 1035, 14, 20); 
+		progSternNeu(24820, 1035, 14, 5, 26, 5, false, 4);
 		break;
 
 	case 14: // übergang
@@ -2643,7 +2682,8 @@ void Hotncold() {
 		break;	
 
 	case 24: // chorus 2
-		progStern(24820, 515, 26, 20); 
+		//progStern(24820, 515, 26, 20); 
+		progSternNeu(24820, 515, 26, 5, 26, 5, true, 3);
 		break;	
 
 	case 26: // übergang
@@ -2678,7 +2718,8 @@ void Hotncold() {
 		break;	
 
 	case 40: // chorus 2
-		progStern(33100, 515, 42, 20); 
+		//progStern(33100, 515, 42, 20); 
+		progSternNeu(33100, 515, 42, 5, 26, 5, false, 4);
 		break;	
 
 	case 42: // übergang
@@ -2745,7 +2786,8 @@ void Kids() { // TODO
 	
 	case 30: // chorus 1b	15000
 		//progRandomLines(16275, 35, 515, false);
-		progStern(15000, 940, 35, 10); 
+		//progStern(15000, 940, 35, 10); 
+		progSternNeu(15000, 940, 35, 5, 26, 5, true, 3);
 		break;		
 
 	case 35: // verse 2	15000
@@ -2758,7 +2800,8 @@ void Kids() { // TODO
 		break;	
 
 	case 45: // chorus 2	15000
-		progStern(15000, 940, 50, 10); 
+		//progStern(15000, 940, 50, 10); 
+		progSternNeu(15000, 940, 50, 5, 26, 5, false, 4);
 		break;	
 
 	case 50: // chorus 2b	15000
@@ -2779,7 +2822,8 @@ void Kids() { // TODO
 		break;	
 
 	case 70: // chorus 3	15000
-		progStern(15000, 470, 75, 10); 
+		//progStern(15000, 470, 75, 10); 
+		progSternNeu(15000, 470, 75, 5, 26, 5, true, 3);
 		break;	
 
 	case 75: // chorus 3b	15000
@@ -2828,7 +2872,8 @@ void Tellittomyheart() { // TODO
 		break;
 	
 	case 5: //intro chorus	16270
-		progStern(16270, 1015, 10, 20); 
+		//progStern(16270, 1015, 10, 20); 
+		progSternNeu(16270, 1015, 10, 5, 26, 5, false, 4);
 		break;
 		
 	case 10: // verse	16270
@@ -2902,7 +2947,8 @@ void Tellittomyheart() { // TODO
 		break;	
 
 	case 80: // chorus 3	16275
-		progStern(16275, 510, 85, 25); 
+		//progStern(16275, 510, 85, 25); 
+		progSternNeu(16275, 510, 85, 5, 26, 5, true, 3);
 		break;	
 
 	case 85: // chorus 4	16270
@@ -2955,10 +3001,12 @@ void FridayImInLove() { // TODO
 		
 	case 10: //10	intro 2	13714
 		if (LEDGITBOARD) { 
-			progStern(11428, 1015, 15, 25); 
+			//progStern(11428, 1015, 15, 25); 
+			progSternNeu(11428, 1015, 15, 5, 26, 5, false, 4);
 		}
 		else {
-			progStern(13714, 1015, 15, 25); 
+			//progStern(13714, 1015, 15, 25); 
+			progSternNeu(13714, 1015, 15, 5, 26, 5, true, 3);
 		}		
 		break;
 	
@@ -2992,7 +3040,8 @@ void FridayImInLove() { // TODO
 		break;	
 
 	case 50: //50	dressed up	13714
-		progStern(13714, 430, 55, 25); 
+		//progStern(13714, 430, 55, 25); 
+		progSternNeu(13714, 430, 55, 5, 26, 5, false, 4);
 		break;	
 	
 	case 55: //55	dressed up 2	12000
@@ -3013,7 +3062,8 @@ void FridayImInLove() { // TODO
 		break;	
 
 	case 70: //70	outro chorus 1	13714
-		progStern(13714, 860, 75, 25); 
+		//progStern(13714, 860, 75, 25); 
+		progSternNeu(13714, 860, 75, 5, 26, 5, true, 3);
 		break;	
 
 	case 75: //75	outro chorus 2	12000
@@ -3159,7 +3209,8 @@ void IWannaDanceWithSomebody() {
 		break;		
 
 	case 20: //chorus 1	13548
-		progStern(13548, 1925, 22, 20); 
+		//progStern(13548, 1925, 22, 20); 
+		progSternNeu(13548, 1925, 22, 5, 26, 5, false, 4);
 		break;	
 
 	case 22: // w. smbdy who loves me	1935
@@ -3167,7 +3218,8 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 24: // chorus 1 weiter	13548
-		progStern(13548, 1925, 26, 20); 
+		//progStern(13548, 1925, 26, 20); 
+		progSternNeu(13548, 1925, 26, 5, 26, 5, true, 3);
 		break;	
 
 	case 26: // w. smbdy who loves me	1935
@@ -3195,7 +3247,8 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 38: // chorus 2 	13548
-		progStern(13548, 1925, 40, 20); 
+		//progStern(13548, 1925, 40, 20); 
+		progSternNeu(13548, 1925, 40, 5, 26, 5, false, 4);
 		break;	
 
 	case 40: //w. smbdy who loves me	1935
@@ -3203,7 +3256,8 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 42: //42	chorus 2 weiter	13548
-		progStern(13548, 1925, 44, 20); 
+		//progStern(13548, 1925, 44, 20); 
+		progSternNeu(13548, 1925, 44, 5, 26, 5, true, 3);
 		break;	
 
 	case 44: // 44	w. smbdy who loves me	1935
@@ -3232,7 +3286,8 @@ void IWannaDanceWithSomebody() {
 		break;	
 		
 	case 54: //54	chorus 3	13548
-		progStern(13548, 964, 56, 20); 
+		//progStern(13548, 964, 56, 20); 
+		progSternNeu(13548, 964, 56, 5, 26, 5, false, 4);
 		break;	
 
 	case 56: //56	w. smbdy who loves me	1935
@@ -3240,7 +3295,8 @@ void IWannaDanceWithSomebody() {
 		break;			
 
 	case 58: //58	chorus 3 weiter	13548
-		progStern(13548, 480, 60, 20); 
+		//progStern(13548, 480, 60, 20); 
+		progSternNeu(13548, 480, 60, 5, 26, 5, true, 3);
 		break;
 
 	case 60: //60	w. smbdy who loves me	1935
@@ -3272,7 +3328,8 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 74: //74	w. some…	1935
-		progStern(1935, 480, 76, 20); 
+		//progStern(1935, 480, 76, 20); 
+		progSternNeu(1935, 480, 76, 5, 26, 5, false, 4);
 		break;				
 
 	case 76: //76	...bdy who loves me	1935
@@ -3341,7 +3398,8 @@ void BillyJean() {
 		break;
 
 	case 26://chorus 1	7500
-		progStern(7500, 460, 28, 20);
+		//progStern(7500, 460, 28, 20);
+		progSternNeu(7500, 460, 28, 5, 26, 5, true, 3);
 		break;
 
 	case 28://i am the one	3750
@@ -3349,7 +3407,8 @@ void BillyJean() {
 		break;
 
 	case 30://chorus weiter	3750
-		progStern(3750, 460, 32, 20);
+		//progStern(3750, 460, 32, 20);
+		progSternNeu(3750, 460, 32, 5, 26, 5, false, 4);
 		break;
 
 	case 32://i am the one	3750
@@ -3393,7 +3452,8 @@ void BillyJean() {
 		break;
 
 	case 52://chorus 2a	7500
-		progStern(7500, 460, 54, 20);
+		//progStern(7500, 460, 54, 20);
+		progSternNeu(7500, 460, 54, 5, 26, 5, true, 3);
 		break;
 
 	case 54://i am the one	7500
@@ -3401,7 +3461,8 @@ void BillyJean() {
 		break;
 
 	case 56://chorus 2b	7500
-		progStern(7500, 460, 58, 20);
+		//progStern(7500, 460, 58, 20);
+		progSternNeu(7500, 460, 58, 5, 26, 5, false, 4);
 		break;
 
 	case 58://i am the one	11250
@@ -3434,7 +3495,8 @@ void BillyJean() {
 		break;
 
 	case 72://chorus 3a	3750
-		progStern(3750, 460, 74, 20);
+		//progStern(3750, 460, 74, 20);
+		progSternNeu(3750, 460, 74, 5, 26, 5, true, 3);
 		break;
 
 	case 74://i am the one	3750
