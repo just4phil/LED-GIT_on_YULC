@@ -2828,7 +2828,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 		}
 		if (random(255) < 120) {
 			int fx = random(0, MATRIX_WIDTH);
-			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + random(160, 255));
+			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + (int)random(160, 255));
 		}
 #endif
 
@@ -2904,6 +2904,7 @@ void progPlasma(unsigned int durationMillis, byte nextPart) {
 
 void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars) {
 	static float sx[40], sy[40], sz[40];
+	static CRGB  starColor;
 
 	if (numStars > 40) numStars = 40;
 	const float cx  = MATRIX_WIDTH  / 2.0f;
@@ -2915,6 +2916,7 @@ void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int redu
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 		millisCounterTimer = 0;
+		starColor = CHSV((uint8_t)esp_random(), 255, 255);  // Hardware-TRNG, kein Fixed-Seed Problem
 		for (int i = 0; i < numStars; i++) {
 			sx[i] = (random(0, 200) - 100) / 10.0f;
 			sy[i] = (random(0, 200) - 100) / 10.0f;
@@ -2938,7 +2940,21 @@ void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int redu
 				int py = (int)(sy[i] / sz[i] * fov + cy);
 				if (px >= 0 && px < MATRIX_WIDTH && py >= 0 && py < MATRIX_HEIGHT) {
 					uint8_t bright = (uint8_t)constrain((int)(220.0f / sz[i]), 20, 255);
-					matrix->drawPixel(px, py, CRGB(bright, bright, bright));
+
+					// t=0 (Zentrum)→weiß, t=1 (Rand)→starColor
+					// x und y getrennt normalisieren → gleiche Farbtiefe auf beiden Achsen
+					float tx = (cx > 0.0f) ? fabsf((float)px - cx) / cx : 0.0f;
+					float ty = (cy > 0.0f) ? fabsf((float)py - cy) / cy : 0.0f;
+					float t  = sqrtf(tx * tx + ty * ty) * 0.7071f;  // /sqrt(2) → Ecke=1
+					if (t > 1.0f) t = 1.0f;
+
+					uint8_t r = (uint8_t)(255.0f * (1.0f - t) + starColor.r * t);
+					uint8_t g = (uint8_t)(255.0f * (1.0f - t) + starColor.g * t);
+					uint8_t b = (uint8_t)(255.0f * (1.0f - t) + starColor.b * t);
+
+					CRGB col(r, g, b);
+					col.nscale8(bright);
+					matrix->drawPixel(px, py, col);
 				}
 			}
 			gitBlindingLEDs_OFF_MarkerLEDs_ON();

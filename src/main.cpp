@@ -120,7 +120,11 @@ void setup() {
  	Serial.begin(115200);
 	delay(250);	// 500 Time for serial port to work
 
-	#ifdef USE_ESP32	
+	#ifdef USE_ESP32
+		// ESP32: randomSeed() ist No-Op, random() ruft intern esp_random() auf.
+		// Mehrfaches Lesen + micros() XOR akkumuliert Entropie aus Timing-Jitter und Thermik.
+		{ uint32_t s = 0; for (int _i = 0; _i < 16; _i++) { s ^= esp_random(); s ^= (uint32_t)micros(); } randomSeed(s); }
+
 		//-- turn wifi off ---------- TODO: brauche ich das wirklich? -> includes raus!?
 		WiFi.disconnect(true);
 		WiFi.mode(WIFI_OFF);

@@ -131,7 +131,7 @@ extern volatile byte prog;							// the actual song-part
 
 		//progFire(20000, 10, 30); // hm .... bissl weird aber trozudem cool
 		//progPlasma(20000, 10, 30); // hm ...einfach nur sehr farbig
-		//progStarfield(20000, 10, 10, 50);	// COOL -> sollte noch verschiedene farben oder fade/HUE Effekt bekommen
+		//progStarfield(20000, 10, 10, 50);	// ist ganz ok als zwischeneffekt
 		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve		
 
 
@@ -161,7 +161,9 @@ void SONGPAUSE()  {	// soft / static LEDs
 	case 0:
 		// randomProg	= random(1, 3);
 
+// progWaterRipple(20000, 10, 50, true, false);
 //progSineCos(20000, 10, 30);
+//progStarfield(20000, 10, 10, 50);
 
 		if (LEDGITBOARD) {
 			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
@@ -2164,10 +2166,10 @@ void enjoyTheSilenceINTRO() {
 
 	case 0:
 		if (LEDGITBOARD) {
-			progBlack(10655, 5);	//43840
+			progBlack(12778, 5);	//43840
 		}
 		else {
-			progBlack(16327, 10);//32920
+			progBlack(17389, 10);//32920
 		}
 		break;
 
@@ -2176,7 +2178,7 @@ void enjoyTheSilenceINTRO() {
 		break;
 
 	case 10:
-		progBlack(16328, 100);//32920
+		progBlack(17389, 100);//32920
 		break;
 
 	case 100:
@@ -3494,11 +3496,13 @@ void Maniac() {
 		break;
 
 	case 20://chorus 1  21401
-		progStern(21401, 376, 22, 20);
+		//progStern(21401, 376, 22, 20);
+		progSternNeu(21401, 376, 22, 5, 26, 5, true, 3);
 		break;
 
 	case 22://stehender chord  4586
-		progMatrixHorizontal(4586, 24, 70, CRGB::Green);
+		//progMatrixHorizontal(4586, 24, 70, CRGB::Green);
+		progWaterRipple(4586, 24, 50, true, false);
 		break;
 
 	case 24://strobe  1529
@@ -3527,7 +3531,8 @@ void Maniac() {
 		break;
 
 	case 36://chorus 2  21401
-		progStern(21401, 376, 38, 20);
+		//progStern(21401, 376, 38, 20);
+		progSternNeu(21401, 376, 38, 5, 26, 5, true, 3);
 		break;
 
 	case 38://uebergang zum instrumental  3057
@@ -3535,7 +3540,8 @@ void Maniac() {
 		break;
 
 	case 40://instrumental a  12229
-		progMatrixHorizontal(12229, 42, 70, CRGB::Green);
+		//progMatrixHorizontal(12229, 42, 70, CRGB::Green);
+		matrixMovieFX(12229, 42, 30, 5);
 		break;
 
 	case 42://instrumental b  11465
@@ -3559,7 +3565,8 @@ void Maniac() {
 		break;
 
 	case 52://solo d  6115
-		progPalette(6115, 8, 54);
+		//progPalette(6115, 8, 54);
+		progWaterRipple(6115, 54, 50, true, true);
 		break;
 
 	case 54://it could cut you like a knife  10701
@@ -3572,7 +3579,8 @@ void Maniac() {
 		break;
 
 	case 58://chorus 3  21401
-		progStern(21401, 376, 60, 20);
+		//progStern(21401, 376, 60, 20);
+		progSternNeu(21401, 376, 60, 5, 26, 5, true, 4);
 		break;
 
 	case 60://stehender chord  3057
@@ -3638,11 +3646,13 @@ void Maniac_Tminus1() {
 		break;
 
 	case 20://chorus 1  21401
-		progStern(21401, 376, 22, 20);
+		//progStern(21401, 376, 22, 20);
+		progSternNeu(21401, 376, 22, 5, 26, 5, true, 3);
 		break;
 
 	case 22://stehender chord  4586
-		progMatrixHorizontal(4586, 24, 70, CRGB::Green);
+		//progMatrixHorizontal(4586, 24, 70, CRGB::Green);
+		progWaterRipple(4586, 24, 50, true, false);
 		break;
 
 	case 24://strobe  1529
@@ -3671,7 +3681,8 @@ void Maniac_Tminus1() {
 		break;
 
 	case 36://chorus 2  21401
-		progStern(21401, 376, 38, 20);
+		//progStern(21401, 376, 38, 20);
+		progSternNeu(21401, 376, 38, 5, 26, 5, true, 3);
 		break;
 
 	case 38://uebergang zum instrumental  3057
@@ -3679,27 +3690,11 @@ void Maniac_Tminus1() {
 		break;
 
 	case 40://instrumental a  12229
-		#ifdef GIT
-			markerLED1 = ESaite_E;
-			markerLED2 = ESaite_Fis;
-			markerLED3 = 0; //ESaite_G;
-			markerLED4 = ESaite_B;
-			markerLED5 = ASaite_G;
-			markerLED6 = ASaite_Fis;
-		#endif
-
-		progMatrixHorizontal(12229, 42, 70, CRGB::Green);
+		//progMatrixHorizontal(12229, 42, 70, CRGB::Green);
+		matrixMovieFX(12229, 42, 100, 5);
 		break;
 
 	case 42://instrumental b  11465
-		#ifdef GIT
-			markerLED1 = ESaite_E;
-			markerLED2 = ESaite_Fis;
-			markerLED3 = 0; //ESaite_G;
-			markerLED4 = ESaite_B;
-			markerLED5 = ASaite_G;
-			markerLED6 = ASaite_Fis;
-		#endif	
 		progFullColors(11465, 44, 756);
 		break;
 
@@ -3720,7 +3715,8 @@ void Maniac_Tminus1() {
 		break;
 
 	case 52://solo d  6115
-		progPalette(6115, 8, 54);
+		//progPalette(6115, 8, 54);
+		progWaterRipple(6115, 54, 50, true, true);
 		break;
 
 	case 54://it could cut you like a knife  10701
@@ -3733,7 +3729,8 @@ void Maniac_Tminus1() {
 		break;
 
 	case 58://chorus 3  21401
-		progStern(21401, 376, 60, 20);
+		//progStern(21401, 376, 60, 20);
+		progSternNeu(21401, 376, 60, 5, 26, 5, true, 4);
 		break;
 
 	case 60://stehender chord  3057
