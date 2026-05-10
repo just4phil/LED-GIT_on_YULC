@@ -81,15 +81,15 @@ extern volatile byte prog;							// the actual song-part
 
 	// Matrix-Regen (movie FX)
 		//   // Alle Streams gleichzeitig (bisheriges Verhalten):
-		//   matrixMovieFX(5000, 14, 30);
-		//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0));
+		//   matrixMovieFX(5000, 14, 100);
+		//   matrixMovieFX(5000, 14, 100, CRGB(0, 200, 0));
 
 		//   // Nur 5 Streams gleichzeitig aktiv (dünner, dramatischer):
-		//   matrixMovieFX(5000, 14, 30, 5);
-		//   matrixMovieFX(5000, 14, 30, CRGB(0, 200, 0), 5);
+		//   matrixMovieFX(5000, 14, 100, 5);
+		//   matrixMovieFX(5000, 14, 100, CRGB(0, 200, 0), 5);
 
 		//   // Sehr spärlich – nur 2 Streams auf einmal:
-		//   matrixMovieFX(5000, 14, 30, 2);
+		//   matrixMovieFX(5000, 14, 100, 2);
 
 
 	// EQUALIZER
@@ -139,7 +139,7 @@ extern volatile byte prog;							// the actual song-part
 //progWaterRipple(20000, 10, 50, true, false);
 //progSineCos(20000, 10, 30);
 //progStarfield(20000, 10, 10, 50);
-//matrixMovieFX(5000, 14, 30, 5);
+//matrixMovieFX(5000, 14, 100, 5);
 
 
 void STARTUP()  {	// BLACK bis zum Start des Intros
@@ -1098,7 +1098,7 @@ void NoRoots() {
 
 	case 49://zwischenspiel		18621
 		//progMatrixHorizontal(18600, 51);
-		matrixMovieFX(18600, 51, 30, 6);
+		matrixMovieFX(18600, 51, 100, 6);
 		break;
 
 	case 51://solo		16552
@@ -1210,7 +1210,7 @@ void Firework() {
 		break;
 
 	case 34://bridge		15484
-		progPalette(13550, 5, 35);	// paletteID -> 0 - 10
+		progPalette(13550, 5, 35);	// weiße streifen
 		break;
 
 	case 35://übergang		1935
@@ -1233,12 +1233,12 @@ void Firework() {
 		//----------------------------------
 
 	case 40://BOOM 1		15485
-		progPalette(15485, 2, 42);	// paletteID -> 0 - 10
+		progPalette(15485, 2, 42);	// sehr farbig
 		break;
 
 	case 42://nur vocals		15485
 		//progMatrixHorizontal(15485, 44);
-		matrixMovieFX(15485, 44, 30, 6);
+		matrixMovieFX(15485, 44, 100, 6);
 		//progBlingBlingColoring(14500, 43);
 		break;
 		//----------------------------------
@@ -1360,7 +1360,7 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 	case 75: //so far away, 15735
 		//progPalette(15735, 11, 80);
 		//progMatrixHorizontal(15735, 80);
-		matrixMovieFX(15735, 80, 30, 6);
+		matrixMovieFX(15735, 80, 100, 6);
 		break;
 	case 80: //im in the corner, 5900
 		progBlack(5900, 85);
@@ -1758,7 +1758,7 @@ void Titanium() {
 
 	case 80://matrix	7625
 		//progMatrixHorizontal(7620, 85);
-		matrixMovieFX(7620, 85, 30, 6);
+		matrixMovieFX(7620, 85, 100, 6);
 		break;
 
 	case 85://BLACK	126	28571
@@ -3073,7 +3073,7 @@ void FridayImInLove() { // TODO
 		break;
 
 	case 60: //60	verse 4a	13714
-		progPalette(13714, 8, 65);
+		progPalette(13714, 2, 65);	// sehr farbig
 		break;
 
 	case 65: //65	verse 4b	13714
@@ -3642,7 +3642,7 @@ void Maniac() {
 
 	case 40://instrumental a  12229
 		//progMatrixHorizontal(12229, 42, 70, CRGB::Green);
-		matrixMovieFX(12229, 42, 30, 5);
+		matrixMovieFX(12229, 42, 100, 5);
 		break;
 
 	case 42://instrumental b  11465
