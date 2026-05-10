@@ -392,8 +392,10 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
                 Serial.println("now direct switch to song and part + waitForLEDsync on next prog change");
             #endif
             switchToSongAndPart(song, part);
+            clearAll();
+            FastLED.show();
             waitForLEDsync = true;
-            break; 
+            break;
 
         case 4:    // sync gits after connect/subscribe, but only if there is actually no song running
             if (waitForLEDsync) {  // TESTEN !!!--------------------------------
