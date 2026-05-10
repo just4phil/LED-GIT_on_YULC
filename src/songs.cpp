@@ -624,8 +624,7 @@ void TakeOnMe() {
 		progMatrixScanner(18705, 30, 24);
 		break;
 	case 30: //take on me	12465
-		//progStern(12465, 390, 35, 20); 
-		progSternNeu(12465, 390, 35, 5, 26, 5, false, 4);
+		progWaterRipple(12465, 35, 50, true, true);
 		break;
 	case 35: //tom-halfTime	6235
 		progStrobo(6235, 40, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -641,7 +640,7 @@ void TakeOnMe() {
 		break;
 	case 55: //take on me	12470
 		//progStern(12470, 390, 60, 20); 
-		progWaterRipple(12470, 60, 50, true, true);
+		progWaterRipple(12470, 60, 50, true, false);
 		break;
 	case 60: //tom-halfTime	6235
 		progStrobo(6235, 65, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
