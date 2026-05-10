@@ -2184,12 +2184,13 @@ void Abcdefu() {
 	break;
 
 	case 45: // chorus 2
-		progFullColors(15000, 50, 470);
+		progFullColors(15000, 50, 468);
 	break;
 
-	case 50: // na na na na
+	case 50: // na na na na 15000
 		//progStern(15000, 55);
-		progWaterRipple(15000, 55, 50, true, true);
+		//progWaterRipple(15000, 55, 50, true, true);
+		progSternNeu(15000, 468, 55, 5, 26, 5, true, 4);
 		//progBlingBlingColoring(15000, 55, 5000);
 	break;
 
