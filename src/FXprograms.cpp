@@ -3221,6 +3221,23 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
                                 unsigned int msToReduceSpeed, CRGB baseColor,
                                 bool useGradient, bool useRandom, bool spawnAtCenter) {
 
+	static uint8_t lastRandomHue    = 0;
+	static bool    nextIsComplement = false;
+
+	auto pickRippleColor = [&](byte ri) {
+		if (useRandom) {
+			if (nextIsComplement) {
+				rippleColor[ri] = CRGB(CHSV((uint8_t)(lastRandomHue + 128), 255, 255));
+			} else {
+				lastRandomHue   = random8();
+				rippleColor[ri] = CRGB(CHSV(lastRandomHue, 255, 255));
+			}
+			nextIsComplement = !nextIsComplement;
+		} else {
+			rippleColor[ri] = baseColor;
+		}
+	};
+
 	if (!nextChangeMillisAlreadyCalculated) {
 		clearAll();
 		nextChangeMillis = durationMillis;
@@ -3228,11 +3245,13 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
 		nextChangeMillisAlreadyCalculated = true;
 		for (byte ri = 0; ri < RIPPLE_MAX_COUNT; ri++) rippleActive[ri] = false;
 		rippleSpawnTimer = 0;
+		lastRandomHue    = 0;
+		nextIsComplement = false;
 		rippleCX[0] = center_x;
 		rippleCY[0] = center_y;
 		rippleAge[0] = 0;
 		rippleActive[0] = true;
-		rippleColor[0] = useRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+		pickRippleColor(0);
 	}
 
 	if (millisToReduceCPUSpeed < msToReduceSpeed) return;
@@ -3248,7 +3267,7 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
 				rippleCY[ri] = spawnAtCenter ? center_y : random(1, MATRIX_HEIGHT - 1);
 				rippleAge[ri] = 0;
 				rippleActive[ri] = true;
-				rippleColor[ri] = useRandom ? CRGB(CHSV(random8(), 255, 255)) : baseColor;
+				pickRippleColor(ri);
 				break;
 			}
 		}
