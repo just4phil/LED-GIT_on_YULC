@@ -2798,7 +2798,8 @@ void Kids() { // TODO
 		break;
 
 	case 25: // chorus 1	15000
-		progFullColors(15000, 30, 470);
+		//progFullColors(15000, 30, 470);
+		progStrobo(15000, 30, 465, getRandomColor(), getRandomColor(), getRandomColor());
 		break;
 	
 	case 30: // chorus 1b	15000
