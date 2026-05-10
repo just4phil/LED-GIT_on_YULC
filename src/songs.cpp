@@ -135,8 +135,15 @@ extern volatile byte prog;							// the actual song-part
 		//progLissajous(20000, 10, 25);	// farbig ähnlich palette, ganz cool aber keine echte kurve		
 
 
-void STARTUP()  {	// BLACK bis zum Start des Intros
+//progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
+//progWaterRipple(20000, 10, 50, true, false);
+//progSineCos(20000, 10, 30);
+//progStarfield(20000, 10, 10, 50);
+//matrixMovieFX(5000, 14, 30, 5);
 
+
+void STARTUP()  {	// BLACK bis zum Start des Intros
+progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
  	switch (prog) { 
 
 	case 0:
@@ -160,10 +167,6 @@ void SONGPAUSE()  {	// soft / static LEDs
 
 	case 0:
 		// randomProg	= random(1, 3);
-
-// progWaterRipple(20000, 10, 50, true, false);
-//progSineCos(20000, 10, 30);
-//progStarfield(20000, 10, 10, 50);
 
 		if (LEDGITBOARD) {
 			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
@@ -259,7 +262,7 @@ void defaultLoop()  {
 		break;
 
 	case 15:
-		progMatrixHorizontal(10000, 20, 80, CRGB::Green);
+		progMatrixHorizontal(10000, 20, 80, true);
 		break;
 
 	case 20: // OK
@@ -484,7 +487,8 @@ void Physical() {
 		break;
 
 	case 45: // Chorus 1 (2140)
-		progStern(24490, 1635, 50, 15);	
+		//progStern(24490, 1635, 50, 15);	
+		progSternNeu(24490, 1635, 50, 5, 26, 5, false, 3);
 		//progFullColors(24490, 50, 410);
 		break;
 
@@ -551,7 +555,7 @@ void Physical() {
 		break;
 
 	case 92: // chorus 3
-		progStern(11430, 1635, 94, 15);	
+		progSternNeu(11430, 1635, 94, 5, 26, 5, false, 3);
 		//progFullColors(11430, 94, 410);
 		break;
 
@@ -633,7 +637,8 @@ void TakeOnMe() {
 		progRandomLines(18700, 55, 390, false);
 		break;
 	case 55: //take on me	12470
-		progStern(12470, 390, 60, 20); 
+		//progStern(12470, 390, 60, 20); 
+		progWaterRipple(12470, 60, 50, true, true);
 		break;
 	case 60: //tom-halfTime	6235
 		progStrobo(6235, 65, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -668,7 +673,8 @@ void TakeOnMe() {
 		progPalette(18700, 11, 90);
 		break;
 	case 90: //take on me	12465
-		progStern(12465, 390, 95, 20);
+		//progStern(12465, 390, 95, 20);
+		progWaterRipple(12465, 95, 50, true, false);
 		break;	
 	case 95: //tom-halfTime	6235
 		progStrobo(6235, 100, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
@@ -945,7 +951,8 @@ void NoRoots() {
 		break;
 
 	case 7://bridge		7759
-		progMovingLines(7915, 8);
+		//progMovingLines(7915, 8);
+		progWaterRipple(7915, 8, 50, true, true);
 		break;
 
 	case 8://ROOTS 1	1550	1552
@@ -1081,7 +1088,8 @@ void NoRoots() {
 		break;
 
 	case 49://zwischenspiel		18621
-		progMatrixHorizontal(18600, 51);
+		//progMatrixHorizontal(18600, 51);
+		matrixMovieFX(18600, 51, 30, 6);
 		break;
 
 	case 51://solo		16552
@@ -1097,7 +1105,8 @@ void NoRoots() {
 		break;
 
 	case 57://chorus		8276
-		progStern(8275, 250, 59, 15);
+		//progStern(8275, 250, 59, 15);
+		progWaterRipple(8275, 59, 50, true, false);
 		break;
 
 	case 59://chorus	8275	// alt: 7759
@@ -1198,8 +1207,8 @@ void Firework() {
 		break;
 
 	case 36://chorus 2a		14516
-		//progFastBlingBling(14500, 3, 37);
-		progStern(14500, 970, 37, 15); 
+		progWaterRipple(14500, 37, 50, true, false);
+		//progStern(14500, 970, 37, 15); 
 		break;
 
 	case 37://übergang		968
@@ -1216,7 +1225,8 @@ void Firework() {
 		break;
 
 	case 42://nur vocals		15485
-		progMatrixHorizontal(15485, 44);
+		//progMatrixHorizontal(15485, 44);
+		matrixMovieFX(15485, 44, 30, 6);
 		//progBlingBlingColoring(14500, 43);
 		break;
 		//----------------------------------
@@ -1334,7 +1344,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		break;
 	case 75: //so far away, 15735
 		//progPalette(15735, 11, 80);
-		progMatrixHorizontal(15735, 80);
+		//progMatrixHorizontal(15735, 80);
+		matrixMovieFX(15735, 80, 30, 6);
 		break;
 	case 80: //im in the corner, 5900
 		progBlack(5900, 85);
@@ -1344,8 +1355,8 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		progStrobo(1970, 90, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
 		break;
 	case 90: //chorus 1, 7870
-		//progPalette(7870, 11, 95);
-		progStern(7870, 490, 95, 20); 
+		progWaterRipple(7870, 95, 50, true, true);
+		//progStern(7870, 490, 95, 20); 
 		break;	
 	case 95: //i keep dancing, 7865
 		//progPalette(7865, 11, 100);
@@ -1717,7 +1728,8 @@ void Titanium() {
 		break;
 
 	case 80://matrix	7625
-		progMatrixHorizontal(7620, 85);
+		//progMatrixHorizontal(7620, 85);
+		matrixMovieFX(7620, 85, 30, 6);
 		break;
 
 	case 85://BLACK	126	28571
@@ -1904,7 +1916,7 @@ void InTheDark() {	// fertig: 16.09.2023
 		break;	
 
 	case 22: // bass solo
-		progMatrixHorizontal(16550, 24, 70, CRGB::Green);
+		progMatrixHorizontal(16550, 24, 70, true);
 		#ifdef BASS
 			markerLED5 = 0;				// RINA: nach "am i going under" ESaite_Cis wieder aus
 			markerLED6 = ESaite_Dis;	// 11. bund, RINA für solo ab 1390 ESaite_Dis bis 1399
@@ -2134,7 +2146,8 @@ void Abcdefu() {
 	break;
 
 	case 50: // na na na na
-		progStern(15000, 55);
+		//progStern(15000, 55);
+		progWaterRipple(15000, 55, 50, true, true);
 		//progBlingBlingColoring(15000, 55, 5000);
 	break;
 
@@ -2866,6 +2879,7 @@ void Tellittomyheart() { // TODO
 		break;	
 
 	case 60: // SOLO	16270
+
 		if (LEDGITBOARD) { // timing sync
 			progOutline(16270, 65, 75);
 		}
@@ -2875,7 +2889,8 @@ void Tellittomyheart() { // TODO
 		break;
 
 	case 65: // love on the run	16275
-		progPalette(16275, 9, 70);
+		// progPalette(16275, 9, 70);
+		progWaterRipple(16275, 70, 50, true, false);
 		break;	
 
 	case 70: // pause	1015
@@ -3066,7 +3081,7 @@ void BeMine() {
 		break;
 
 	case 22://verse 2  15238
-		progMatrixHorizontal(15238, 24, 70, CRGB::Green);
+		progMatrixHorizontal(15238, 24, 70, true);
 		break;
 
 	case 24://im going crazy  15238
@@ -3200,7 +3215,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 48: //48	übergang	1935
-		progMatrixHorizontal(1935, 50, 70, CRGB::Green);
+		progMatrixHorizontal(1935, 50, 70, true);
 		break;	
 
 	case 50: // 50	i need a man …	11613
@@ -3403,7 +3418,7 @@ void BillyJean() {
 		break;
 
 	case 64://the ONE …..halftime	3750
-		progMatrixHorizontal(3750, 66, 70, CRGB::Green);	
+		progMatrixHorizontal(3750, 66, 70, true);	
 		break;
 
 	case 66://instrumental	3750
@@ -3458,6 +3473,7 @@ void BillyJean() {
 }
 
 //#29 Maniac  157 BPM  half=756ms  quarter=376ms  (fertiggestellt 01.05.2026)
+// ---------------------- TO BE DELETED !!!! -> wir nutzen Maniac T-1!! --------------
 void Maniac() {
 
 	switch (prog) {
@@ -3607,7 +3623,7 @@ void Maniac() {
 	}
 }
 
-//#30 Maniac T-1 // ---------------------- TO BE DELETED !!!! -----------------------
+//#30 Maniac T-1 // ----------> wir nutzen Maniac T-1!! -----------------------
 void Maniac_Tminus1() {
 
 	switch (prog) {

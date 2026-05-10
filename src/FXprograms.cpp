@@ -2359,6 +2359,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, boolean us
 	progMatrixHorizontal(durationMillis, nextPart, 100, useRandomColor);
 }
 
+//progMatrixVertical wird gar nicht genutzt!
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor) {
 
 	int colorIndex, offset, row, i;
