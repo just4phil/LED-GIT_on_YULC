@@ -4,6 +4,7 @@
 #include "definitions.h"
 #include <NimBLEDevice.h>
 #include "functions.h"
+#include "FXprograms.h"
 
 //----------------------------
 
