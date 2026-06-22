@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laufzeit-Umschaltung GITBOARD ⇄ ANDRESGIT (ESP32)</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12; --kbd:#262d36;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#11202e,#0f1216);border-bottom:1px solid var(--border);
+    padding:32px 24px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  h1{font-size:28px;margin:0 0 6px}
+  h2{font-size:22px;margin:38px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent)}
+  h3{font-size:18px;margin:26px 0 8px;color:var(--accent2)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0 8px 0;padding-left:22px}
+  li{margin:5px 0}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;
+    font-size:13px;line-height:1.5}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;
+    border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;
+    border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;
+    border-radius:6px;margin:14px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent)}
+  td code{font-size:12.5px}
+  kbd{background:var(--kbd);border:1px solid var(--border);border-bottom-width:2px;
+    border-radius:5px;padding:1px 7px;font-size:12.5px;font-family:monospace}
+  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--border);
+    color:var(--muted);border-radius:999px;padding:2px 11px;font-size:12.5px;margin:0 6px 6px 0}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:var(--accent);color:#06101c;font-weight:700;font-size:14px;margin-right:8px}
+  .file{color:var(--accent2);font-family:monospace;font-size:13px}
+  a{color:var(--accent)}
+  footer{color:var(--muted);font-size:13px;margin-top:40px;border-top:1px solid var(--border);padding-top:16px}
+  .toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 0}
+  .toc a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Laufzeit-Umschaltung GITBOARD ⇄ ANDRESGIT</h1>
+    <p class="sub">Ein ESP32-Controller, zwei LED-Konfigurationen — umschaltbar zur Laufzeit per Rotary-Encoder.</p>
+    <div style="margin-top:14px">
+      <span class="tag">Ziel: esp32-s3-devkitc-1</span>
+      <span class="tag">Build-Device: ANDRESGIT</span>
+      <span class="tag">Live-Switch</span>
+      <span class="tag">BLE-Proxy bleibt aktiv</span>
+      <span class="tag">Implementierungs-Spezifikation</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="panel toc">
+  <strong>Inhalt</strong>
+  <a href="#context">1 &middot; Kontext &amp; Anwendungsfall</a>
+  <a href="#ausgangslage">2 &middot; Ausgangslage (warum es gut machbar ist)</a>
+  <a href="#entscheidungen">3 &middot; Getroffene Design-Entscheidungen</a>
+  <a href="#changes">4 &middot; Konkrete Änderungen</a>
+  <a href="#toggle">5 &middot; <code>toggleLEDconfig()</code> im Detail</a>
+  <a href="#files">6 &middot; Betroffene Dateien (Übersicht)</a>
+  <a href="#reuse">7 &middot; Wiederverwendete Bausteine</a>
+  <a href="#risks">8 &middot; Risiken &amp; offene Punkte</a>
+  <a href="#verify">9 &middot; Verifikation / Testplan</a>
+</div>
+
+<h2 id="context"><span class="num">1</span>Kontext &amp; Anwendungsfall</h2>
+<p>
+Derzeit wird das Zielgerät über genau ein <code>#define</code> in <span class="file">src/definitions.h</span>
+(Zeile&nbsp;46&nbsp;ff.) zur <strong>Compile-Zeit</strong> festgelegt. <code>GITBOARD</code> lief bisher auf
+einem Teensy 4.0, <code>ANDRESGIT</code> auf einem ESP32-S3.
+</p>
+<p>
+<strong>Neues Ziel:</strong> <em>ein</em> ESP32-Controller (dieselbe BLE- und Rotary-Encoder-Hardware) soll
+wahlweise zwei verschiedene LED-Konfigurationen ansteuern:
+</p>
+<table>
+  <tr><th>Aspekt</th><th>ANDRESGIT (Gitarre)</th><th>GITBOARD (Board)</th></tr>
+  <tr><td>LED-Anzahl</td><td><code>anz_LEDs_GIT1 = 163</code></td><td><code>anz_LEDs_GITBOARD = 278</code></td></tr>
+  <tr><td>Fret-Marker</td><td>ja (rot/blau, <code>GITMARKER_GIT1</code>)</td><td>nein (<code>NOMARKER</code>)</td></tr>
+  <tr><td>Blinding-LEDs aus</td><td>ja (Fretboard-Bereich geschwärzt)</td><td>nein</td></tr>
+  <tr><td>Matrix-Remap</td><td>eingebaute Zigzag-Anordnung</td><td>Spezial-<code>myRemapFn()</code></td></tr>
+  <tr><td>Ausgabe-Kanäle</td><td>leds1 (Fretboard+Marker), leds2 (Strap)</td><td>volles Bild über einen Kanal</td></tr>
+  <tr><td>Text-/Scroll-Effekte</td><td>nicht genutzt</td><td>genutzt (eigene Cursor-Positionen)</td></tr>
+</table>
+<p>
+Praktischer Ablauf: Controller von einer Gitarre abziehen → an die andere LED-Konfiguration anstecken →
+<strong>per Rotary-Encoder-Geste zur Laufzeit umschalten</strong>, ohne neu zu flashen. MIDI-In und
+BLE-Proxy bleiben in beiden Modi identisch aktiv (gleiche Hardware) — <em>nur das LED-Rendering ändert sich</em>.
+</p>
+
+<h2 id="ausgangslage"><span class="num">2</span>Ausgangslage — warum das gut machbar ist</h2>
+<div class="ok">
+<strong>Die Architektur ist bereits weitgehend laufzeitfähig.</strong>
+<ul>
+  <li><code>LEDGITBOARD</code> ist schon eine normale <code>boolean</code>-Variable
+      (<span class="file">main.cpp:61/64</span>) und steuert bereits <strong>~70 Verzweigungen</strong> in
+      <span class="file">songs.cpp</span> sowie Verzweigungen in <span class="file">FXprograms.cpp</span>
+      und <span class="file">matrixFunctions.cpp</span> (<code>if (LEDGITBOARD) { … }</code>).</li>
+  <li>Festgenagelt wird der Modus nur durch (a) die <strong>Compile-Zeit-Initialisierung</strong> dieser
+      Variable und (b) einige wenige verbliebene <code>#ifdef</code>-Blöcke.</li>
+  <li>Da GITBOARD künftig <strong>ebenfalls auf ESP32</strong> läuft, entfällt das schwierige
+      Teensy↔ESP32-Plattformproblem (andere Pins, andere Timer, anderes MIDI-Serial, kein BLE) komplett.</li>
+  <li>Die CRGB-Puffer <code>leds/leds1/leds2</code> sind bereits mit <code>NUMMATRIX</code> (= 22×23 = 506,
+      also &gt; 278) dimensioniert (<span class="file">main.cpp:69-71</span>) → <strong>kein Reallokieren</strong>;
+      beide Konfigurationen passen in dieselben Puffer.</li>
+</ul>
+</div>
+
+<h2 id="entscheidungen"><span class="num">3</span>Getroffene Design-Entscheidungen</h2>
+<table>
+  <tr><th>Frage</th><th>Entscheidung</th></tr>
+  <tr><td>Umschaltzeitpunkt</td><td><strong>Live im Betrieb</strong> (kein Reboot, kein Flashen)</td></tr>
+  <tr><td>Auswahl-Mechanismus</td><td><strong>Rotary-Encoder-Geste</strong> (Empfehlung: Triple-Click)</td></tr>
+  <tr><td>BLE-Rolle</td><td><strong>Proxy bleibt in beiden Modi aktiv</strong> — gleiche Hardware, MIDI-In + BLE-Broadcast laufen unverändert weiter</td></tr>
+  <tr><td>Build</td><td>weiterhin als <code>ANDRESGIT</code> auf <code>esp32-s3-devkitc-1</code>; die Umschaltung ist rein intern</td></tr>
+</table>
+<p><strong>Kerngedanke:</strong> Beide Render-Profile werden in <em>dasselbe</em> Binary kompiliert; die wenigen
+verbliebenen Compile-Zeit-Entscheidungen werden auf bestehende Laufzeit-Variablen umgestellt
+(<code>LEDGITBOARD</code> und neu <code>anz_LEDs</code>).</p>
+
+<h2 id="changes"><span class="num">4</span>Konkrete Änderungen</h2>
+
+<h3>4.1 — <code>anz_LEDs</code>: vom <code>#define</code> zur Laufzeit-Variable</h3>
+<p>In <span class="file">definitions.h</span> ist <code>anz_LEDs</code> aktuell ein <code>#define</code>
+(Zeile&nbsp;222 im <code>NOMARKER</code>-Block für ANDRESGIT-Test bzw. Zeile&nbsp;312 im
+<code>GITMARKER_GIT1</code>-Block). Die Per-Device-Konstanten
+<code>anz_LEDs_GIT1=163</code> / <code>anz_LEDs_GITBOARD=278</code> (Zeile&nbsp;182/184) <strong>bleiben</strong> <code>#define</code>s.</p>
+<ul>
+  <li><code>#define anz_LEDs …</code> entfernen.</li>
+  <li>Globale Variable in <span class="file">main.cpp</span> anlegen und in <code>setup()</code> initialisieren:
+    <pre><code>// main.cpp (global)
+uint16_t anz_LEDs = anz_LEDs_GIT1;   // Startwert = Gitarren-Konfig</code></pre></li>
+  <li>Deklaration in <span class="file">definitions.h</span> (oder gemeinsamem Header):
+    <pre><code>extern uint16_t anz_LEDs;</code></pre></li>
+  <li>Alle vorhandenen Nutzungen lesen <code>anz_LEDs</code> als Wert und funktionieren unverändert, u.a.:
+    <code>memset(leds,0,anz_LEDs*sizeof(CRGB))</code> (main.cpp:300, FXprograms.cpp:130),
+    <code>for (int i=0;i&lt;anz_LEDs;i++)</code> (FXprograms.cpp:517/568/591/1346/1672),
+    <code>random(0,anz_LEDs-50)</code> (FXprograms.cpp:176).</li>
+</ul>
+<div class="note">Puffer bleiben <code>NUMMATRIX</code>-groß — nichts neu allokieren. <code>anz_LEDs</code> begrenzt
+lediglich, wie viele Pixel beschrieben/gelöscht werden.</div>
+
+<h3>4.2 — <code>LEDGITBOARD</code> zur umschaltbaren Variable machen</h3>
+<p><span class="file">main.cpp:59-65</span>: Die Variable existiert bereits, wird aber per
+<code>#if defined(GITBOARD)||defined(SCROLLMATRIX)</code> auf <code>true</code> initialisiert.</p>
+<ul>
+  <li>Für den ANDRESGIT-Build bleibt der Startwert <code>false</code>.</li>
+  <li>Die Deklaration <code>extern uint16_t myRemapFn(uint16_t,uint16_t);</code> (main.cpp:62) aus dem
+      <code>#ifdef</code>-Block <strong>herausziehen</strong>, damit sie immer verfügbar ist.</li>
+</ul>
+<pre><code>// main.cpp – Ziel
+boolean LEDGITBOARD = false;                          // umschaltbar zur Laufzeit
+extern uint16_t myRemapFn(uint16_t x, uint16_t y);    // immer verfügbar</code></pre>
+
+<h3>4.3 — Marker-Rendering per Laufzeit gaten statt <code>NOMARKER</code></h3>
+<p>In <span class="file">markerLEDs.cpp</span>:</p>
+<ul>
+  <li><code>setMarkerLEDs()</code>: <code>#if !defined(NOMARKER)</code> (Zeile&nbsp;21) →
+      Laufzeit <code>if (!LEDGITBOARD) { … }</code>.</li>
+  <li><code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code>: der Marker-Abschnitt
+      <code>#if !defined(NOMARKER)</code> (Zeile&nbsp;421) → <code>if (!LEDGITBOARD) { … }</code>.</li>
+  <li><code>extern boolean LEDGITBOARD;</code> oben in <span class="file">markerLEDs.cpp</span> ergänzen.</li>
+  <li>Die <code>GITMARKER_GIT1</code>-Indizes (<code>Bund_min/max</code>, <code>ESaite_*</code>,
+      <code>ASaite_*</code>) bleiben einkompiliert.</li>
+</ul>
+<div class="note">Das <code>memcpy(leds → leds1/leds2)</code> (markerLEDs.cpp:417-418) kopiert immer den
+<em>vollen</em> Puffer (<code>sizeof(leds)</code>) und läuft in beiden Modi. Im GITBOARD-Modus wird weder der
+Fretboard-Bereich geschwärzt noch werden Marker gezeichnet; das 278-LED-Board hängt an einem Kanal und
+erhält das volle Bild über <code>leds1</code> (DATA_PIN_1) → <strong>kein <code>FastLED.addLeds</code>-Umbau nötig</strong>.</div>
+
+<h3>4.4 — Matrix-Remap zur Laufzeit setzen / lösen</h3>
+<ul>
+  <li><span class="file">matrixFunctions.cpp:68</span>: Der Guard <code>#if defined(GITBOARD)</code> um
+      <code>myRemapFn()</code> (Definition Zeile&nbsp;74) muss so erweitert werden, dass die Funktion
+      <strong>immer kompiliert</strong> wird (Guard entfernen bzw. weiten).</li>
+  <li><span class="file">main.cpp:170-172</span>: Den bisher per <code>#if defined(GITBOARD)</code>
+      gemachten <code>setRemapFunction</code>-Aufruf in die Toggle-Logik verlagern:
+    <pre><code>if (LEDGITBOARD) matrix-&gt;setRemapFunction(myRemapFn);
+else             matrix-&gt;setRemapFunction(nullptr);   // ⚠ siehe Risiken</code></pre></li>
+</ul>
+<div class="warn"><strong>Zu verifizieren:</strong> ob <code>setRemapFunction(nullptr)</code> bei
+FastLED_NeoMatrix die <em>eingebaute</em> Zigzag-Anordnung
+(<code>NEO_MATRIX_TOP+RIGHT+ROWS+ZIGZAG</code>) wiederherstellt. Die Lib prüft i.d.R.
+<code>if(remapFn)</code> vor Nutzung — dann genügt <code>nullptr</code>. Falls nicht: eine Identitäts-/Standard-XY-Remap-Funktion für den Gitarren-Modus bereitstellen.</div>
+
+<h3>4.5 — Verbliebene <code>#ifdef GITBOARD</code>-Reste in <span class="file">FXprograms.cpp</span></h3>
+<p>Betroffen sind reine Text-/Scroll-Effekte, die <em>ohnehin nur</em> bei <code>LEDGITBOARD==true</code> laufen:</p>
+<ul>
+  <li>Cursor-Positionen <span class="file">FXprograms.cpp:1423-1427</span> und
+      <span class="file">1525-1529</span> (<code>#if defined(GITBOARD)</code> vs. <code>SCROLLMATRIX</code>):
+      Da SCROLLMATRIX ein separater Build bleibt, im <code>LEDGITBOARD</code>-Pfad die GITBOARD-Werte
+      verwenden und den <code>#ifdef</code> entfernen.
+    <pre><code>// vorher                          // nachher (innerhalb if (LEDGITBOARD) …)
+#if defined(GITBOARD)              matrix-&gt;setCursor(progScrollTextZaehler, 13);
+  matrix-&gt;setCursor(...,13);
+#elif defined(SCROLLMATRIX)
+  matrix-&gt;setCursor(...,1);
+#endif</code></pre></li>
+  <li>Scanner-/Zähler-Logik <span class="file">1242</span> und <span class="file">1280-1282</span> analog
+      auf den <code>LEDGITBOARD</code>-Laufzeitpfad ziehen.</li>
+  <li>Die globalen <code>outlinePath*[]</code>-Arrays (<span class="file">108-124</span>,
+      <code>SCROLLMATRIX</code> vs. else=GITBOARD) bleiben <strong>unverändert</strong>: der Gitarren-Modus
+      ruft <code>progOutlinePath</code> nicht auf, daher stören die GITBOARD-Indizes (&gt;163) dort nicht.</li>
+</ul>
+
+<h3>4.6 — Umschalt-Geste im Rotary-Encoder</h3>
+<p>Bestehende Gesten in <span class="file">rotaryEncoder.cpp</span>:</p>
+<table>
+  <tr><th>Geste</th><th>aktuelle Aktion</th></tr>
+  <tr><td>Drehen</td><td>Helligkeit (rotary_loop, Z.184-197)</td></tr>
+  <tr><td><kbd>Short-Click</kbd></td><td><code>forceLEDsync</code> (Proxy) bzw. <code>needLEDsync</code> (Client)</td></tr>
+  <tr><td><kbd>Double-Click</kbd></td><td><code>needLEDsync</code> vom Client anfordern (Proxy)</td></tr>
+  <tr><td><kbd>Long-Press</kbd> (≥1 s)</td><td>Not-Aus → <code>switchToSong(0)</code> (main.cpp:287)</td></tr>
+</table>
+<div class="note"><strong>Empfehlung: Triple-Click</strong> als Umschalt-Geste — erweitert die vorhandene
+Single/Double-Erkennung (<code>wasButtonDownFIRST/SECOND</code>) um eine dritte Stufe und kollidiert weder mit
+Not-Aus noch mit Sync. <em>Alternative:</em> „Drücken + Drehen".</div>
+<p>Der Triple-Click ruft die neue Funktion <code>toggleLEDconfig()</code> auf (siehe Abschnitt&nbsp;5).
+Implementierung sinnvollerweise in <span class="file">main.cpp</span> / <span class="file">functions.h</span>
+(Zugriff auf <code>matrix</code>, <code>switchToSong</code>, Puffer), Aufruf aus dem Encoder per <code>extern</code>.</p>
+
+<h3>4.7 — Optional: Modus persistieren (NVS / Preferences)</h3>
+<p>Damit der zuletzt gewählte Modus einen Reboot übersteht: in <code>toggleLEDconfig()</code> per ESP32-
+<code>Preferences</code> speichern und in <code>setup()</code> lesen. Nicht zwingend für die Live-Umschaltung,
+aber komfortabel — als optionaler Folgeschritt umsetzbar.</p>
+
+<h2 id="toggle"><span class="num">5</span><code>toggleLEDconfig()</code> im Detail</h2>
+<p>Die zentrale neue Funktion. Sie wird durch die Encoder-Geste ausgelöst und stellt alle
+Laufzeit-Zustände konsistent um:</p>
+<pre><code>void toggleLEDconfig() {
+    LEDGITBOARD = !LEDGITBOARD;
+
+    // 1) LED-Anzahl umstellen
+    anz_LEDs = LEDGITBOARD ? anz_LEDs_GITBOARD : anz_LEDs_GIT1;   // 278 / 163
+
+    // 2) Matrix-Remap setzen/lösen
+    if (LEDGITBOARD) matrix-&gt;setRemapFunction(myRemapFn);
+    else             matrix-&gt;setRemapFunction(nullptr);   // ⚠ ggf. Identitäts-Remap
+
+    // 3) Reste der anderen Konfiguration löschen
+    FastLED.clear();
+    memset(leds,  0, NUMMATRIX * sizeof(CRGB));
+    memset(leds1, 0, NUMMATRIX * sizeof(CRGB));
+    memset(leds2, 0, NUMMATRIX * sizeof(CRGB));
+
+    // 4) Sauberer Neueinstieg
+    switchToSong(0);
+    #if defined(IS_MIDI_PROXY)
+        forceLEDsync = true;     // Clients mitnehmen
+    #endif
+
+    // 5) optional: Preferences.putBool("ledcfg", LEDGITBOARD);
+
+    Serial.println(LEDGITBOARD ? "MODE: GITBOARD (278)" : "MODE: ANDRESGIT (163)");
+}</code></pre>
+<div class="warn">Da der Aufruf aus dem Encoder-Kontext kommt, sollte das eigentliche Umschalten möglichst
+außerhalb der LED-Render-Phase passieren (z.B. ein <code>volatile bool requestConfigToggle</code> setzen
+und im <code>loop()</code> vor dem <code>flag_processFastLED</code>-Block ausführen), um Race-Conditions mit
+einem laufenden <code>FastLED.show()</code> zu vermeiden.</div>
+
+<h2 id="files"><span class="num">6</span>Betroffene Dateien (Übersicht)</h2>
+<table>
+  <tr><th>Datei</th><th>Änderung</th></tr>
+  <tr><td class="file">src/definitions.h</td><td><code>anz_LEDs</code> von <code>#define</code> auf <code>extern</code>-Variable; Per-Device-Konstanten behalten</td></tr>
+  <tr><td class="file">src/main.cpp</td><td><code>anz_LEDs</code>-Definition; <code>LEDGITBOARD</code>-Init=false + <code>myRemapFn</code>-extern herausziehen; Remap-Setup (170-172); <code>toggleLEDconfig()</code>; Toggle-Request im <code>loop()</code></td></tr>
+  <tr><td class="file">src/markerLEDs.cpp</td><td><code>NOMARKER</code>-Guards (21, 421) → <code>if (!LEDGITBOARD)</code>; <code>extern LEDGITBOARD</code></td></tr>
+  <tr><td class="file">src/matrixFunctions.cpp</td><td><code>myRemapFn</code>-Guard (68) immer kompilieren</td></tr>
+  <tr><td class="file">src/FXprograms.cpp</td><td><code>#ifdef GITBOARD</code> Cursor/Scanner-Blöcke (1242,1280,1423,1525) → Laufzeitpfad</td></tr>
+  <tr><td class="file">src/rotaryEncoder.cpp</td><td>Triple-Click-Erkennung → <code>toggleLEDconfig()</code> (bzw. Request-Flag)</td></tr>
+  <tr><td class="file">src/functions.h</td><td>Deklaration von <code>toggleLEDconfig()</code></td></tr>
+</table>
+
+<h2 id="reuse"><span class="num">7</span>Wiederverwendete vorhandene Bausteine</h2>
+<ul>
+  <li><code>LEDGITBOARD</code> — bereits Laufzeit-Boolean, ~70 Nutzungen in <span class="file">songs.cpp</span>.</li>
+  <li><code>switchToSong(0)</code> / <code>clearAll()</code> (<span class="file">FXprograms.cpp:128</span>) für sauberen Neustart.</li>
+  <li><code>myRemapFn()</code> (<span class="file">matrixFunctions.cpp:74</span>) für die GITBOARD-Matrix.</li>
+  <li>Bestehende Click-Erkennungs-Statemachine in <span class="file">rotaryEncoder.cpp</span> (<code>wasButtonDownFIRST/SECOND</code>).</li>
+  <li>BLE-Proxy-Pfad (<code>IS_MIDI_PROXY</code>) bleibt unverändert aktiv — kein Eingriff nötig.</li>
+</ul>
+
+<h2 id="risks"><span class="num">8</span>Risiken &amp; offene Punkte</h2>
+<ul>
+  <li><strong>Remap zurücksetzen:</strong> <code>setRemapFunction(nullptr)</code>-Verhalten der Lib verifizieren;
+      ggf. Identitäts-Remap bereitstellen (siehe 4.4).</li>
+  <li><strong>Timing/Race:</strong> Umschalten nicht mitten in einem <code>FastLED.show()</code> ausführen —
+      Request-Flag im <code>loop()</code> abarbeiten (siehe 5).</li>
+  <li><strong>Geister-LEDs:</strong> Beim Wechsel 163→278 vs. 278→163 sicherstellen, dass alle Puffer
+      vollständig (über <code>NUMMATRIX</code>) gelöscht werden, damit keine Reste der anderen Konfig leuchten.</li>
+  <li><strong>Helligkeit/Strom:</strong> 278 LEDs ziehen mehr Strom als 163 — <code>DEFAULT_BRIGHTNESS</code>
+      ist konservativ (48); bei Bedarf je Modus anpassen.</li>
+  <li><strong>Matrix-Orientierung:</strong> Beide Modi nutzen denselben „else"-Zweig
+      (<code>NEO_MATRIX_TOP+RIGHT+ROWS+ZIGZAG</code>, main.cpp:151) — kein Unterschied, kein Eingriff nötig.</li>
+  <li><strong>Lipo-Warn-LEDs</strong> nutzen feste Indizes 52/72 (main.cpp:434-440) — in beiden Modi gültig.</li>
+</ul>
+
+<h2 id="verify"><span class="num">9</span>Verifikation / Testplan</h2>
+<ol>
+  <li><strong>Build:</strong> <code>pio run -e esp32-s3-devkitc-1</code> (als <code>ANDRESGIT</code>) muss
+      fehlerfrei kompilieren — insbesondere müssen <code>myRemapFn</code> und <code>anz_LEDs</code> linken
+      (keine <code>undefined reference</code>).</li>
+  <li><strong>Gitarren-Modus (Default):</strong> Flashen, an die 163-LED-Gitarre anschließen. Songs/Marker
+      verhalten sich exakt wie zuvor; Fret-Marker + Blinding-Off funktionieren.</li>
+  <li><strong>Umschalten:</strong> Triple-Click am Encoder → LEDs werden gelöscht, Modus wechselt
+      (Serial @115200 loggt den Modus). An die 278-LED-Board-Konfiguration anschließen: Matrix-Remap aktiv,
+      keine Marker, Text-/Scroll-Effekte und Outline-Pfade korrekt.</li>
+  <li><strong>Zurückschalten:</strong> Erneuter Triple-Click → zurück in den Gitarren-Modus; prüfen, dass der
+      Remap sauber deaktiviert wird (keine verschobene/zerrissene Anzeige).</li>
+  <li><strong>BLE-Proxy:</strong> In beiden Modi prüfen, dass Song-/Part-Wechsel weiterhin an Clients
+      (RINASBASS/LAMPEn) gebroadcastet werden (eine Lampe als Client mitlaufen lassen).</li>
+  <li><strong>Stabilität:</strong> Mehrfaches Hin-/Herschalten während ein Song läuft — auf Flackern/Hänger
+      und korrekte LED-Anzahl (keine Geister-LEDs jenseits <code>anz_LEDs</code>) achten.</li>
+</ol>
+
+<footer>
+  Spezifikation für spätere Implementierung &middot; Projekt: LED-GIT_on_YULC &middot;
+  Zeilennummern beziehen sich auf den Stand zum Zeitpunkt der Erstellung dieses Dokuments.
+</footer>
+
+</div>
+</body>
+</html>
