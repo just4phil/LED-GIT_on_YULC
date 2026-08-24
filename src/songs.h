@@ -22,13 +22,26 @@ void STARTUP();
 void SONGPAUSE();
 
 /**
- * @brief Default loop pattern for unknown songs
+ * @brief Default loop pattern for time between songs
  * 
  * Fallback animation pattern used when no specific song is
  * selected or when an invalid song ID is provided. Shows a
  * generic pattern to indicate default state.
  * 
  * @note Used for song ID 0
+ * @see switchToSong()
+ */
+//#0
+void SONGPAUSE_ohne_switchToSong0();
+
+/**
+ * @brief Default loop pattern for unknown songs to show marker LEDS without switching Back to 0
+ * 
+ * Fallback animation pattern used when no specific song is
+ * selected or when an invalid song ID is provided. Shows a
+ * generic pattern to indicate default state.
+ * 
+ * @note Used as default song (when there is no song for the given song ID 0!)
  * @see switchToSong()
  */
 //#0

@@ -210,6 +210,60 @@ void SONGPAUSE()  {	// soft / static LEDs
 	// #endif
 }
 
+//----SPEZIALVERSION: SONGPAUSE OHNE switchToSong(0);
+// dient dazu für einen neuen song erstmal marker leds machen zu können und währenddessen sonpause laufen zu lassen
+// aber das programm songpause darf dann nicht nach kurzer zeit auf songID 0 wechseln!
+// Used as default song (when there is no song for the given song ID 0!)
+void SONGPAUSE_ohne_switchToSong0()  {	// soft / static LEDs
+	
+	switch (prog) { 
+
+	case 0:
+		// randomProg	= random(1, 3);
+
+		if (LEDGITBOARD) {
+			progScrollText("Nerds on Fire", 11700, 90, getRandomColor(), 10);
+		}
+		else {
+			
+			#if defined(LAMPE1)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#elif defined(LAMPE2)
+				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#else
+				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
+			#endif
+		}	
+	break;
+
+	case 10:
+		// if (randomProg == 1) {
+		// 	progSternschnuppen(50000, 100, 18);
+		// }
+		// else if (randomProg == 2) {
+
+		#if defined(LAMPE1)
+			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
+		#elif defined(LAMPE2)
+			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
+		#else
+			progBlingBlingColoringSONGPAUSE(50000, 100, 250);
+		#endif
+			
+		//}
+	break;
+
+	case 100:
+		//switchToSong(0);	// HIER DEAKTIVIERT -> Erläuterung s. oben
+		break;
+	}
+	//-----------------
+
+	// #endif
+}
+//-----------------------------------
+
+
 // 0 defaultLoop();
 // ---
 // 1 PhysicalMitTrailer();

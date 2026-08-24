@@ -385,6 +385,33 @@ void setMarkerLEDs(byte songID, byte partID) {
 			#endif			
 			break;
 
+		case 31: // AllTheThingsSheSaid_tatu
+				markerLED1 = ESaite_F;
+				markerLED2 = ASaite_C;
+				markerLED3 = ASaite_E;
+				markerLED4 = ASaite_F;				//markerLED5 = ASaite_C;
+				//markerLED6 = ASaite_Fis;
+			break;	
+
+		case 32: // ItsRainingMen
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ESaite_Gis;
+				markerLED3 = ASaite_Dis;
+				markerLED4 = ASaite_E;
+				markerLED5 = ASaite_Fis;
+				//markerLED6 = ASaite_Fis;
+			break;	
+			
+		case 33: // GirlJustWannaHaveFun
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ESaite_A;
+				markerLED3 = ASaite_D;
+				markerLED4 = ASaite_E;
+				markerLED5 = ASaite_Fis;
+				//markerLED6 = ASaite_Fis;
+			break;	
+
+
 		case 80:// INTRO fuer ILoveIT(); => siehe auch oben bei #9!!
 			markerLED1 = ESaite_F; 
 			markerLED2 = ASaite_C; 

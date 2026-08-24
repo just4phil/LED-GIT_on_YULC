@@ -381,23 +381,35 @@ void loop() {
 			FridayImInLove();
 			break;
 		case 26:
-			BeMine();	//-------------------------TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			BeMine();
 			break;
 		case 27:
-			IWannaDanceWithSomebody();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			IWannaDanceWithSomebody();	
 			break;			
 
 		case 28:
-			BillyJean();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			BillyJean();
 			break;	
 
 		case 29:
-			Maniac();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			Maniac();
 			break;	
 
 		case 30:
-			Maniac_Tminus1();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+			Maniac_Tminus1();
 			break;	
+
+		// case 31:
+		// 	AllTheThingsSheSaid_tatu();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+		// 	break;	
+
+		// case 32:
+		// 	ItsRainingMen();			//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+		// 	break;	
+			
+		// case 33:
+		// 	GirlJustWannaHaveFun();		//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
+		// 	break;	
 
 		case 80:
 			ILoveItTRAILER();
@@ -416,7 +428,8 @@ void loop() {
 			break;
 
 		default:
-			defaultLoop();
+			SONGPAUSE_ohne_switchToSong0(); // geändert auf songpause damit man für einen unfertigen song erstmal die marker LEDs machen kann und es läuft das programm songpause
+											// Used as default song (when there is no song for the given song ID 0!)
 			break;
 		}
 
