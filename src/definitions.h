@@ -102,11 +102,57 @@
 #endif
 //---------------------------------------------------------------------------------------
 
+//==== Geräte-Identität für Szenen (scenes.cpp) =========================================
+// Bühne von links nach rechts (Publikumssicht): Lampe1 - Bass - Drums/Matrix - Gitarre - Lampe2
+#define DEV_LAMPE1		0x01
+#define DEV_BASS		0x02
+#define DEV_DRUMS		0x04	// Scrollmatrix an den Drums
+#define DEV_GIT			0x08
+#define DEV_LAMPE2		0x10
+#define DEV_GITBOARD	0x20
+#define DEV_ALL			0x3F
+#define STAGE_POSITIONS	5		// Anzahl Positionen auf der Bühne (0..4)
+
+#define CLASS_GUITAR	1		// Kontur-Strip (guitarShapeFX)
+#define CLASS_LAMP		2		// vertikaler Strip
+#define CLASS_MATRIX	3		// 2D-Matrix
+
+#if defined(LAMPE1)
+	#define DEV_ME			DEV_LAMPE1
+	#define STAGE_POS		0
+	#define DEVICE_CLASS	CLASS_LAMP
+#elif defined(RINASBASS)
+	#define DEV_ME			DEV_BASS
+	#define STAGE_POS		1
+	#define DEVICE_CLASS	CLASS_GUITAR
+#elif defined(SCROLLMATRIX)
+	#define DEV_ME			DEV_DRUMS
+	#define STAGE_POS		2
+	#define DEVICE_CLASS	CLASS_MATRIX
+#elif defined(ANDRESGIT)
+	#define DEV_ME			DEV_GIT
+	#define STAGE_POS		3
+	#define DEVICE_CLASS	CLASS_GUITAR
+#elif defined(LAMPE2)
+	#define DEV_ME			DEV_LAMPE2
+	#define STAGE_POS		4
+	#define DEVICE_CLASS	CLASS_LAMP
+#elif defined(GITBOARD)
+	#define DEV_ME			DEV_GITBOARD
+	#define STAGE_POS		2
+	#define DEVICE_CLASS	CLASS_MATRIX
+#endif
+#define isDev(mask)		((DEV_ME & (mask)) != 0)
+
+#define LAMP_IDX0_AT_BOTTOM	1	// 1: LED 0 der Lampen sitzt unten (ausmessen!)
+//---------------------------------------------------------------------------------------
+
 //==== debug ============
 //#define debug_ble_client
 #define debug_ble_proxy
 //#define debug_rotary
 //#define START_WITH_FX_DEMO	// startet direkt mit Song 90 (Demo der neuen guitarShapeFX) statt SONGPAUSE
+//#define START_WITH_SCENE_DEMO	// startet direkt mit Song 91 (Demo der Szenen + Farbschemata) statt SONGPAUSE
 //-----------------------------------------------------------------------------------------
 
 #ifdef USE_ESP32

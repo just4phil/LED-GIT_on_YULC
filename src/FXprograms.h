@@ -25,6 +25,7 @@
  */
 
 #include <Arduino.h>
+#include <FastLED.h>
 
 //==================================================================
 //=========== FX programs ==========================================
@@ -283,6 +284,7 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
  * @note Use caution with epilepsy-inducing content
  */
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue, bool invertPhase = false);
+void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, CRGB col, bool invertPhase = false);	// z.B. mit getRandomCRGB()
 
 /**
  * @brief Matrix scanner effect with speed control

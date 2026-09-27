@@ -58,6 +58,14 @@ uint16_t ledToLoop(uint16_t i);					// LED-Index -> Konturposition
 uint8_t zoneOfLoop(uint16_t k);					// Konturposition -> GuitarZone
 void setMirrored(uint16_t dFromHead, CRGB col);	// setzt beide Seiten im Abstand d von der Kopfspitze
 void fillZone(uint8_t zone, CRGB col);
+void fire2012Step(uint8_t* heat, int len);
+
+//--- gemeinsames Grundgerüst für prog-Funktionen (auch von scenes.cpp genutzt) ---
+bool fxPartStart(unsigned int durationMillis, byte nextPart);	// true beim ersten Aufruf eines Parts
+bool fxFrameDue(unsigned int ms);								// true, wenn der nächste Frame fällig ist
+void fxShow();													// Marker + FastLED.show(), beachtet LEDsTurnedOff
+uint32_t fxBeats(uint8_t bpm);									// Beats seit Partbeginn		// ein Fire2012-Schritt, heat[0] = unten
+extern const CRGBPalette16 outlineBlueFire_p;
 
 //--- Effekte ---
 // 1: Komet mit Schweif um die Kontur, optional zweiter Komet gegenläufig

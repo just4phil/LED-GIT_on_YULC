@@ -4,6 +4,7 @@
 #include "functions.h"
 #include "definitions.h"
 #include "colors.h"
+#include "colorSchemes.h"
 //---------------------------------------------------------------------
 
 //extern const boolean LEDGITBOARD;			// geht aus irgendeinem Grund nicht -> FXprograms.cpp.o:(.literal._Z14progFullColorsjhj+0x0): undefined reference to `LEDGITBOARD'
@@ -321,9 +322,10 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
 			if (LEDsUndFarbWerte[i][0] == -1) {
 				LEDsUndFarbWerte[i][0] = random(0, anz_LEDs);
-				LEDsUndFarbWerte[i][1] = getRandomColorValue();
-				LEDsUndFarbWerte[i][2] = getRandomColorValue();
-				LEDsUndFarbWerte[i][3] = getRandomColorValue();
+				CRGB c = getRandomCRGB();
+				LEDsUndFarbWerte[i][1] = c.r;
+				LEDsUndFarbWerte[i][2] = c.g;
+				LEDsUndFarbWerte[i][3] = c.b;
 				// if (i > maxI) {
 				// 	maxI = i;
 				// 	Serial.println(maxI);
@@ -397,9 +399,8 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 		millisToReduceCPUSpeed -= msToReduceSpeed;
 
 		if (progBlingBlingColoring_rounds == 0) {
-			r = getRandomColorValue();
-			g = getRandomColorValue();
-			b = getRandomColorValue();
+			CRGB c = getRandomCRGB();
+			r = c.r; g = c.g; b = c.b;
 		}
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -423,7 +424,11 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 		progBlingBlingColoring_rounds++;
 		if (progBlingBlingColoring_rounds == 4) progBlingBlingColoring_rounds = 1;
 
-		if (progBlingBlingColoring_rounds == 1) b = getRandomColorValue();
+		if (colorSchemeActive()) {	// mit Schema: ganze Schemafarbe statt einzelner Kanal
+			CRGB c = getRandomCRGB();
+			r = c.r; g = c.g; b = c.b;
+		}
+		else if (progBlingBlingColoring_rounds == 1) b = getRandomColorValue();
 		else if (progBlingBlingColoring_rounds == 2) g = getRandomColorValue();
 		else if (progBlingBlingColoring_rounds == 3) r = getRandomColorValue();
 	}
@@ -468,7 +473,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 		//set random pixel to defined color
 		for (int i = 0; i < actualAnzahlLEDs; i++) {
-			leds[random(0, anz_LEDs)] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); //LED_RED_HIGH;
+			leds[random(0, anz_LEDs)] = getRandomCRGB(); //LED_RED_HIGH;
 		}
 		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
@@ -501,15 +506,8 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 	if (millisCounterTimer >= del) {	// ersatz für delay()
 		millisCounterTimer -= del;
 
-		r = getRandomColorValue();
-		g = getRandomColorValue();
-		b = getRandomColorValue();
-
-		if (r == 0 && g == 0 && b == 0) {
-			r = getRandomColorValue();
-			g = getRandomColorValue();
-			b = getRandomColorValue();
-		}
+		CRGB c = getRandomCRGB();
+		r = c.r; g = c.g; b = c.b;
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
@@ -613,6 +611,9 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 		gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 		FastLED.show();
 	}
+}
+void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, CRGB col, bool invertPhase) {
+	progStrobo(durationMillis, nextPart, del, col.r, col.g, col.b, invertPhase);
 }
 
 void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
@@ -1207,35 +1208,35 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				anz = (sizeof(outlinePath1) / sizeof(outlinePath1[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath1[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 1:
 				anz = (sizeof(outlinePath2) / sizeof(outlinePath2[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath2[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 2:
 				anz = (sizeof(outlinePath3) / sizeof(outlinePath3[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath3[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 3:
 				anz = (sizeof(outlinePath4) / sizeof(outlinePath4[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath4[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 4:
 				anz = (sizeof(outlinePath5) / sizeof(outlinePath5[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath5[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 
@@ -1245,28 +1246,28 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				anz = (sizeof(outlinePath6) / sizeof(outlinePath6[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath6[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
 				}
 				break;
 			case 6:
 				anz = (sizeof(outlinePath7) / sizeof(outlinePath7[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath7[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
 				}
 				break;
 			case 7:
 				anz = (sizeof(outlinePath8) / sizeof(outlinePath8[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath8[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
 				}
 				break;
 			case 8:
 				anz = (sizeof(outlinePath9) / sizeof(outlinePath9[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath9[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
 				}
 				break;
 
@@ -1587,7 +1588,7 @@ void setupCurrentPalette() {
 void SetupTotallyRandomPalette()
 {
 	for (int i = 0; i < 16; i++) {
-		currentPalette[i] = CHSV(random8(), 255, random8());
+		currentPalette[i] = colorSchemeActive() ? getRandomCRGB() : CRGB(CHSV(random8(), 255, random8()));
 	}
 }
 // This function sets up a palette of black and white stripes,
@@ -1666,6 +1667,7 @@ void FillLEDsFromPaletteColors(uint8_t colorInd, char speed) {
 	//9 weiss/blau/beige fast ohne fades (interessante farben)
 	//10 weiss/blau/beige fast mit fades (interessante farben)
 	//11 weiss/grün fast mit fades
+//20 (PALETTE_SCHEME) Verlauf aus dem aktiven Farbschema
 
 	uint8_t brightness = 255;	// TODO: Achtung hier wird NICHT die allgemeine CONST für BRIGHTNESS genutzt (ggf. weil dann zu dunkel!?)
 
@@ -1691,6 +1693,7 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) 
 //9 weiss/blau/beige fast ohne fades (interessante farben)
 //10 weiss/blau/beige fast mit fades (interessante farben)
 //11 weiss/grün fast mit fades
+//20 (PALETTE_SCHEME) Verlauf aus dem aktiven Farbschema
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
@@ -1749,6 +1752,10 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) 
 			break;
 		case 11:
 			currentPalette = MatrixColors_p;
+			currentBlending = LINEARBLEND;
+			break;
+		case PALETTE_SCHEME:
+			currentPalette = schemePalette();
 			currentBlending = LINEARBLEND;
 			break;
 		}
@@ -2348,7 +2355,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 		prevZaehler = -1;
 	}
 	if (prevZaehler == -1 || (zaehler == 0 && prevZaehler > 0)) {
-		currentColor = palette[random(0, 8)];
+		currentColor = colorSchemeActive() ? getRandomCRGB() : palette[random(0, 8)];
 	}
 	prevZaehler = zaehler;
 
@@ -2640,7 +2647,7 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 		prevZaehler = -1;
 	}
 	if (prevZaehler == -1 || (zaehler == 0 && prevZaehler > 0)) {
-		currentColor = palette[random(0, 8)];
+		currentColor = colorSchemeActive() ? getRandomCRGB() : palette[random(0, 8)];
 	}
 	prevZaehler = zaehler;
 
@@ -2697,7 +2704,7 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 
 		// Alle Streams initialisieren
 		for (int s = 0; s < numStreams; s++) {
-			sColor[s] = randomPerStream ? colorPalette[random(0, 6)] : baseColor;
+			sColor[s] = randomPerStream ? (colorSchemeActive() ? getRandomCRGB() : colorPalette[random(0, 6)]) : baseColor;
 			sGap[s]   = 255;           // alle zunächst PARKED
 			sHead[s]  = (int16_t)(-trailLen);
 		}
@@ -2733,7 +2740,7 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 			sHead[s]++;
 			if (sHead[s] - trailLen >= streamLen) {
 				sHead[s] = (int16_t)(-random(1, trailLen));
-				if (randomPerStream) sColor[s] = colorPalette[random(0, 6)];
+				if (randomPerStream) sColor[s] = (colorSchemeActive() ? getRandomCRGB() : colorPalette[random(0, 6)]);
 
 				if (limiting) {
 					// Rotation: diesen Stream parken, einen zufälligen geparkten aktivieren
@@ -2922,7 +2929,7 @@ void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int redu
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 		millisCounterTimer = 0;
-		starColor = CHSV((uint8_t)esp_random(), 255, 255);  // Hardware-TRNG, kein Fixed-Seed Problem
+		starColor = colorSchemeActive() ? getRandomCRGB() : CRGB(CHSV((uint8_t)esp_random(), 255, 255));  // Hardware-TRNG, kein Fixed-Seed Problem
 		for (int i = 0; i < numStars; i++) {
 			sx[i] = (random(0, 200) - 100) / 10.0f;
 			sy[i] = (random(0, 200) - 100) / 10.0f;
@@ -3225,7 +3232,9 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
 	static bool    nextIsComplement = false;
 
 	auto pickRippleColor = [&](byte ri) {
-		if (useRandom) {
+		if (useRandom && colorSchemeActive()) {
+			rippleColor[ri] = getRandomCRGB();
+		} else if (useRandom) {
 			if (nextIsComplement) {
 				rippleColor[ri] = CRGB(CHSV((uint8_t)(lastRandomHue + 128), 255, 255));
 			} else {

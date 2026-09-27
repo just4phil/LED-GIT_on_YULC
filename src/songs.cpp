@@ -4,6 +4,8 @@
 #include "functions.h"
 #include "FXprograms.h"
 #include "guitarShapeFX.h"
+#include "colorSchemes.h"
+#include "scenes.h"
 #include "matrixFunctions.h"
 //----------------------------
 
@@ -25,7 +27,7 @@ extern volatile byte prog;							// the actual song-part
 		//progBlingBlingColoring					// OK
 		//progFastBlingBling(60000, 2, 100); 		// OK
 		//progFullColors(60000, 2, 1500);			// DONE
-		//progStrobo(50000, 2, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); // DONE
+		//progStrobo(50000, 2, 75, getRandomCRGB()); // DONE
 		//progMatrixScanner(60000, 2, 0);			// DONE
 		//progCircles(60000, 2, 600, false);		// DONE
 		//progRandomLines(30000, 2, 500, true);		// DONE
@@ -557,7 +559,7 @@ void Physical() {
 		break;
 
 	case 60: // snarewirbel
-		progStrobo(1630, 65, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1630, 65, 75, getRandomCRGB()); 
 		break;
 
 	case 65: // verse 2
@@ -574,7 +576,7 @@ void Physical() {
 		break;
 
 	case 80: // lets get physical
-		progStrobo(1630, 82, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1630, 82, 75, getRandomCRGB());
 		#ifdef BASS
 			// markerLED 1 - 3 in Benutzung bei Rina
 			//markerLED5 = ASaite_Fis; // für Rina: bereits hier einschalten -> Ton liegt auf D-Saite: -> nach dem 2. refrain // TODO: geht nach diesem teil nicht mehr aus! auschalten!!
@@ -599,7 +601,7 @@ void Physical() {
 		break;
 
 	case 86: // lets get physical
-		progStrobo(1635, 88, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1635, 88, 75, getRandomCRGB()); 
 		break;
 
 	case 88: // SOLO VOC
@@ -608,7 +610,7 @@ void Physical() {
 		break;
 
 	case 90: // lets get physical
-		progStrobo(1635, 92, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1635, 92, 75, getRandomCRGB()); 
 		break;
 
 	case 92: // chorus 3
@@ -617,7 +619,7 @@ void Physical() {
 		break;
 
 	case 94: // lets get physical
-		progStrobo(1630, 96, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1630, 96, 75, getRandomCRGB()); 
 		break;
 
 	case 96: // chorus 4
@@ -667,12 +669,12 @@ void TakeOnMe() {
 		progPalette(6235, 6, 20);
 		break;
 	case 20: //chorus 1	18700
-		progStrobo(18700, 25, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
+		progStrobo(18700, 25, 195, getRandomCRGB());	
 		// if (LEDGITBOARD) { // sync timing
-		// 	progStrobo(18700, 25, 193, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		// 	progStrobo(18700, 25, 193, getRandomCRGB());
 		// }
 		// else {
-		// 	progStrobo(18700, 25, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		// 	progStrobo(18700, 25, 195, getRandomCRGB());
 		// }	
 		break;
 	case 25: //verse 1	18705
@@ -682,13 +684,13 @@ void TakeOnMe() {
 		progWaterRipple(12465, 35, 50, true, true);
 		break;
 	case 35: //tom-halfTime	6235
-		progStrobo(6235, 40, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(6235, 40, 780, getRandomCRGB());
 		break;
 	case 40: //letzter durchgang	6235
 		progFastBlingBling(6235, 6, 45);
 		break;
 	case 45: //chorus 2	12465
-		progStrobo(12465, 50, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(12465, 50, 195, getRandomCRGB());
 		break;
 	case 50: //verse 2	18700
 		progRandomLines(18700, 55, 390, false);
@@ -698,7 +700,7 @@ void TakeOnMe() {
 		progWaterRipple(12470, 60, 50, true, false);
 		break;
 	case 60: //tom-halfTime	6235
-		progStrobo(6235, 65, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(6235, 65, 780, getRandomCRGB());
 		break;
 	case 65: //letzter durchgang	6230
 		markerLED4 = ESaite_Fis; // nächsten bund schon mal präventiv anzeigen 
@@ -724,7 +726,7 @@ void TakeOnMe() {
 		progBlack(6230, 80);
 		break;
 	case 80: //chorus 3	18705
-		progStrobo(18705, 85, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(18705, 85, 195, getRandomCRGB());
 		break;
 	case 85: //verse 3	18700
 		//progPalette(18700, 11, 90);
@@ -735,13 +737,13 @@ void TakeOnMe() {
 		progWaterRipple(12465, 95, 50, true, false);
 		break;	
 	case 95: //tom-halfTime	6235
-		progStrobo(6235, 100, 780, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(6235, 100, 780, getRandomCRGB());
 		break;
 	case 100: //letzter durchgang	6235
 		progFastBlingBling(6235, 6, 105);
 		break;
 	case 105: //chorus 3	18700
-		progStrobo(18700, 110, 195, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(18700, 110, 195, getRandomCRGB());
 		break;
 	case 110: //black, 10000
 		progBlack(10000, 200);
@@ -794,7 +796,7 @@ void DontStopTheMusic() {
 
 	case 25://chorus 1a: i wanna take it away	8136
 		progPalette(8136, 9, 30);	// paletteID -> 0 - 10	
-		//progStrobo(1935, 24, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(1935, 24, 50, getRandomCRGB());
 		//progCircles(2125, 30, 500);
 		break;
 
@@ -804,13 +806,13 @@ void DontStopTheMusic() {
 
 	case 35://chorus 1b	16270 -> 8136
 		progFullColors(8136, 37, 510);	
-		//progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(1925, 36, 50, getRandomCRGB());
 		//progCircles(2125, 30, 485);
 		break;
 
 	case 37://chorus: i just cant refuse it	8136
 		progFastBlingBling(8136, 8, 40);	
-		//progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(1925, 36, 50, getRandomCRGB());
 		//progCircles(2125, 30, 485);
 		break;	
 
@@ -829,7 +831,7 @@ void DontStopTheMusic() {
 		break;
 
 	case 55://STROBO	1018
-		progStrobo(1018, 60, 64, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1018, 60, 64, getRandomCRGB());
 		break;
 
 	case 60://chorus 2a: i wanna take it away	8136
@@ -910,11 +912,11 @@ void UseSomebody() {
 
 	case 20://verse 2b		
 		progRandomLines(10435, 22, 215, false);	// clearEach= false!
-		//progStrobo(13915, 25, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(13915, 25, 75, getRandomCRGB());
 		break;
 
 	case 22://verse 2c
-		progStrobo(3480, 25, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(3480, 25, 75, getRandomCRGB());
 		break;
 
 	case 25://chorus 2		27826
@@ -952,7 +954,7 @@ void UseSomebody() {
 	case 40://solo b		17391
 		//progStern(17391, 870, 45, 15); 
 		progSternNeu(17391, 870, 45, 5, 26, 5, false, 4);
-		//progStrobo(17391, 45, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(17391, 45, 75, getRandomCRGB());
 		//progMatrixScanner(17391, 40, 25);
 		// macht keinen Sinn!
 		break;
@@ -989,7 +991,7 @@ void NoRoots() {
 		break;
 
 	case 1://git
-		progStrobo(775, 2, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(775, 2, 50, getRandomCRGB());
 		break;
 
 	case 2://intro1		8276
@@ -997,7 +999,7 @@ void NoRoots() {
 		break;
 
 	case 3://git
-		progStrobo(775, 4, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(775, 4, 50, getRandomCRGB());
 		break;
 
 	case 4://verse 1a		16552
@@ -1022,7 +1024,7 @@ void NoRoots() {
 			progShowROOTS(1395, 9);
 		}
 		else {
-			progStrobo(1395, 9, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1395, 9, 50, getRandomCRGB());
 		}			
 		break;
 
@@ -1035,7 +1037,7 @@ void NoRoots() {
 			progShowROOTS(1395, 11);
 		}
 		else {
-			progStrobo(1395, 11, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1395, 11, 50, getRandomCRGB());
 		}				
 		break;
 
@@ -1052,7 +1054,7 @@ void NoRoots() {
 			progShowROOTS(1550, 14);
 		}
 		else {
-			progStrobo(1550, 14, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 14, 50, getRandomCRGB());
 		}		
 		break;
 
@@ -1065,7 +1067,7 @@ void NoRoots() {
 			progShowROOTS(1550, 16);
 		}
 		else {
-			progStrobo(1550, 16, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 16, 50, getRandomCRGB());
 		}	
 		break;
 
@@ -1095,7 +1097,7 @@ void NoRoots() {
 			progShowROOTS(1550, 31);
 		}
 		else {
-			progStrobo(1550, 31, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 31, 50, getRandomCRGB());
 		}	
 		break;
 
@@ -1108,7 +1110,7 @@ void NoRoots() {
 			progShowROOTS(1550, 35);
 		}
 		else {
-			progStrobo(1550, 35, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 35, 50, getRandomCRGB());
 		}			
 		break;
 
@@ -1125,7 +1127,7 @@ void NoRoots() {
 			progShowROOTS(1550, 41);
 		}
 		else {
-			progStrobo(1550, 41, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 41, 50, getRandomCRGB());
 		}	
 		break;
 
@@ -1138,7 +1140,7 @@ void NoRoots() {
 			progShowROOTS(1550, 45);
 		}
 		else {
-			progStrobo(1550, 45, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(1550, 45, 50, getRandomCRGB());
 		}	
 		break;
 
@@ -1212,7 +1214,7 @@ void Firework() {
 			progScrollText("Firework by Katy Perry", 16500, 90, getRandomColor(), 10);
 		}
 		else {
-			progStrobo(970, 5, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(970, 5, 50, getRandomCRGB());
 		}	
 		break;
 
@@ -1236,7 +1238,7 @@ void Firework() {
 		break;
 
 	case 22://übergang		1935
-		progStrobo(1935, 24, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 24, 50, getRandomCRGB());
 		//progCircles(2125, 30, 500);
 		break;
 
@@ -1247,7 +1249,7 @@ void Firework() {
 		break;
 
 	case 26://übergang		968
-		progStrobo(1000, 30, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1000, 30, 50, getRandomCRGB());
 		break;
 
 	// case 28://chorus 2		15445
@@ -1268,7 +1270,7 @@ void Firework() {
 		break;
 
 	case 35://übergang		1935
-		progStrobo(1925, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1925, 36, 50, getRandomCRGB());
 		//progCircles(2125, 30, 485);
 		break;
 
@@ -1278,7 +1280,7 @@ void Firework() {
 		break;
 
 	case 37://übergang		968
-		progStrobo(1000, 40, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1000, 40, 50, getRandomCRGB());
 		break;
 
 	// case 38://chorus 2b		15445
@@ -1311,7 +1313,7 @@ void Firework() {
 		break;
 
 	case 47://strobo snarewirbel	1935
-		progStrobo(1935, 50, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 50, 50, getRandomCRGB());
 		break;
 
 	case 50://chorus 2a		14516
@@ -1320,7 +1322,7 @@ void Firework() {
 		break;
 
 	case 52://übergang		968
-		progStrobo(1000, 54, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1000, 54, 50, getRandomCRGB());
 		break;
 
 	case 54://chorus 2		14515
@@ -1329,7 +1331,7 @@ void Firework() {
 		//----------------------------------
 
 	case 56://strobo snarewirbel		970
-		progStrobo(970, 60, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(970, 60, 50, getRandomCRGB());
 		break;
 		//----------------------------------
 
@@ -1421,7 +1423,7 @@ void DancingOnMyOwn() {	// FERTIG: 26.08.2023
 		break;
 	case 85: //snarewirbel, 1970
 		//progPalette(1970, 11, 90);
-		progStrobo(1970, 90, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1970, 90, 50, getRandomCRGB());
 		break;
 	case 90: //chorus 1, 7870
 		progWaterRipple(7870, 95, 50, true, true);
@@ -1586,10 +1588,10 @@ void BloodyMary() {
 		break;
 	case 9: //dance dance	16845
 		if (LEDGITBOARD) {	// Sync-ausgleich
-			progStrobo(16840, 12, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 12, 520, getRandomCRGB());
 		}
 		else {
-			progStrobo(16840, 12, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 12, 525, getRandomCRGB());
 		}	
 		break;
 	case 12: //chorus 1	16840
@@ -1607,10 +1609,10 @@ void BloodyMary() {
 		break;
 	case 24: //dance dance	16840
 		if (LEDGITBOARD) {	// Sync-ausgleich
-			progStrobo(16840, 27, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 27, 520, getRandomCRGB());
 		}
 		else {
-			progStrobo(16840, 27, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 27, 525, getRandomCRGB());
 		}	
 		break;
 	case 27: //chorus 1	16845
@@ -1621,49 +1623,49 @@ void BloodyMary() {
 		progRandomLines(8350, 33, 525, true);
 		break;
 	case 33: //git vs synth (git)	1050
-		progStrobo(1050, 36, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1050, 36, 50, getRandomCRGB());
 		break;
 	case 36: //git vs synth (synth)	1055
 		progFastBlingBling(1045, 4, 39);
 		break;
 	case 39: //git vs synth (git)	1050
-		progStrobo(1050, 42, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1050, 42, 50, getRandomCRGB());
 		break;
 	case 42: //git vs synth (synth)	1055
 		progFastBlingBling(1045, 4, 45);
 		break;
 	case 45: //git vs synth (git)	1050
-		progStrobo(1050, 48, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1050, 48, 50, getRandomCRGB());
 		break;
 	case 48: //git vs synth (synth)	1055
 		progFastBlingBling(1045, 4, 51);
 		break;
 	case 51: //git vs synth (git)	1055
-		progStrobo(1055, 54, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1055, 54, 50, getRandomCRGB());
 		break;	
 	case 54: //git vs synth (synth)	1050
 		progFastBlingBling(1045, 4, 57);
 		break;
 	case 57: //git vs synth (git)	1055
-		progStrobo(1055, 60, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1055, 60, 50, getRandomCRGB());
 		break;
 	case 60: //git vs synth (synth)	1050
 		progFastBlingBling(1045, 4, 63);
 		break;
 	case 63: //git vs synth (git)	1055
-		progStrobo(1055, 66, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1055, 66, 50, getRandomCRGB());
 		break;
 	case 66: //git vs synth (synth)	1050
 		progFastBlingBling(1045, 4, 69);
 		break;
 	case 69: //git vs synth (git)	1055
-		progStrobo(1055, 72, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1055, 72, 50, getRandomCRGB());
 		break;	
 	case 72: //git vs synth (synth)	1050
 		progFastBlingBling(1045, 4, 75);
 		break;	
 	case 75: //git vs synth (git)	1055
-		progStrobo(1055, 78, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1055, 78, 50, getRandomCRGB());
 		break;
 	case 78: //git vs synth (synth)	1050
 		progFastBlingBling(1045, 4, 81);
@@ -1674,10 +1676,10 @@ void BloodyMary() {
 		break;
 	case 84: //dance dance	16840
 		if (LEDGITBOARD) {	// Sync-ausgleich
-			progStrobo(16840, 87, 520, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 87, 520, getRandomCRGB());
 		}
 		else {
-			progStrobo(16840, 87, 525, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(16840, 87, 525, getRandomCRGB());
 		}
 		break;
 	case 87: //chorus a	16845
@@ -1739,7 +1741,7 @@ void Titanium() {
 
 	case 20://im bulletproof	15250
 		progMatrixScanner(15235, 25, 20);
-		//progStrobo(16134, 25, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(16134, 25, 75, getRandomCRGB());
 		break;
 
 	case 25://chorus 1	15225
@@ -1769,7 +1771,7 @@ void Titanium() {
 	case 40://v2: race your voice	15250
 		//progPalette(15240, 3, 45);
 		progWaterRipple(15240, 45, 50, true, false);
-		//progStrobo(16134, 45, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(16134, 45, 75, getRandomCRGB());
 		//progMatrixScanner(29538, 40, 25);
 		break;
 
@@ -1792,7 +1794,7 @@ void Titanium() {
 
 	case 60://Pause: STONE HEART ..	15725
 		progBlack(15715, 65);
-		//progStrobo(12100, 65, 75, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		//progStrobo(12100, 65, 75, getRandomCRGB());
 		break;
 
 	case 65://chorus 3	30475
@@ -2322,7 +2324,7 @@ void enjoyTheSilence() {
 
 
 	case 2://words are very	7975
-		progStrobo(530, 4, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(530, 4, 50, getRandomCRGB());
 		break;
 
 	case 4://synth	16975
@@ -2344,7 +2346,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 20://words are very	7975
-		progStrobo(7965, 25, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(7965, 25, 50, getRandomCRGB());
 		break;
 
 	case 25://STOP	525
@@ -2356,7 +2358,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 32://snarewirbel
-		progStrobo(540, 35, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(540, 35, 50, getRandomCRGB());
 		break;
 
 	case 35://synth	16975
@@ -2377,7 +2379,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 55://words are very	8500
-		progStrobo(8495, 60, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(8495, 60, 50, getRandomCRGB());
 		break;
 
 	case 60://1  2  3  4	2125
@@ -2385,7 +2387,7 @@ void enjoyTheSilence() {
 			progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 65);
 		}
 		else {
-			progStrobo(2125, 65, 490, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(2125, 65, 490, getRandomCRGB());
 		}
 		break;
 
@@ -2413,7 +2415,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 85://words are very	8500
-		progStrobo(8495, 90, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(8495, 90, 50, getRandomCRGB());
 		break;
 
 	case 90:// all i ever wanted	8475
@@ -2421,7 +2423,7 @@ void enjoyTheSilence() {
 		break;
 
 	case 95://words are very	8500
-		progStrobo(8495, 100, 50, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(8495, 100, 50, getRandomCRGB());
 		break;
 
 	case 100://1  2  3  4	2125
@@ -2429,7 +2431,7 @@ void enjoyTheSilence() {
 			progScrollText("1  2  3  4", 2125, 25, getRandomColor(), 105);
 		}
 		else {
-			progStrobo(2125, 105, 490, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+			progStrobo(2125, 105, 490, getRandomCRGB());
 		}		
 		break;
 
@@ -2523,7 +2525,7 @@ void apt() {
 
    case 45: //45	apt apt apt	12885
 		//progRandomLines(12885, 50, 400, false);
-		progStrobo(12885, 50, 400, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(12885, 50, 400, getRandomCRGB());
    		break;
 
    case 50: // 50	hey ….	5640
@@ -3262,7 +3264,7 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 5: //strobo	726
-		progStrobo(726, 10, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(726, 10, 100, getRandomCRGB());
 		break;
 		
 	case 10: // intro	17419
@@ -3270,7 +3272,7 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 12: // strobo	1935
-		progStrobo(1935, 14, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue()); 
+		progStrobo(1935, 14, 100, getRandomCRGB()); 
 		break;
 
 	case 14: // verse 1	15484
@@ -3282,7 +3284,7 @@ void IWannaDanceWithSomebody() {
 		break;
 	
 	case 18: //übergang chorus	1935
-		progStrobo(1935, 20, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 20, 100, getRandomCRGB());
 		break;		
 
 	case 20: //chorus 1	13548
@@ -3291,7 +3293,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 22: // w. smbdy who loves me	1935
-		progStrobo(1935, 24, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 24, 100, getRandomCRGB());
 		break;	
 
 	case 24: // chorus 1 weiter	13548
@@ -3304,7 +3306,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 28: // stehender chord	1935
-		progStrobo(1935, 30, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 30, 100, getRandomCRGB());
 		break;	
 
 	case 30: // übergang verse	1935
@@ -3321,7 +3323,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 36: // übergang chorus	1935
-		progStrobo(1935, 38, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());	
+		progStrobo(1935, 38, 100, getRandomCRGB());	
 		break;	
 
 	case 38: // chorus 2 	13548
@@ -3339,7 +3341,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 44: // 44	w. smbdy who loves me	1935
-		progStrobo(1935, 46, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 46, 100, getRandomCRGB());
 		break;	
 
 	case 46: // 46	Say you wanna dance	13548
@@ -3360,7 +3362,7 @@ void IWannaDanceWithSomebody() {
 		// #ifdef GIT			
 		// 	markerLED4 = 0;
 		// #endif		
-		progStrobo(1935, 54, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 54, 100, getRandomCRGB());
 		break;	
 		
 	case 54: //54	chorus 3	13548
@@ -3369,7 +3371,7 @@ void IWannaDanceWithSomebody() {
 		break;	
 
 	case 56: //56	w. smbdy who loves me	1935
-		progStrobo(1935, 58, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 58, 100, getRandomCRGB());
 		break;			
 
 	case 58: //58	chorus 3 weiter	13548
@@ -3378,7 +3380,7 @@ void IWannaDanceWithSomebody() {
 		break;
 
 	case 60: //60	w. smbdy who loves me	1935
-		progStrobo(1935, 62, 100, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1935, 62, 100, getRandomCRGB());
 		break;
 
 	case 62: //62	Say you wanna dance	2661
@@ -3472,7 +3474,7 @@ void BillyJean() {
 		break;
 
 	case 24://strobe	938
-		progStrobo(938, 26, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 26, 80, getRandomCRGB());
 		break;
 
 	case 26://chorus 1	7500
@@ -3526,7 +3528,7 @@ void BillyJean() {
 		break;
 
 	case 50://heyhey	938
-		progStrobo(938, 52, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 52, 80, getRandomCRGB());
 		break;
 
 	case 52://chorus 2a	7500
@@ -3570,7 +3572,7 @@ void BillyJean() {
 		break;
 
 	case 70://STROBE	938
-		progStrobo(938, 72, 80, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(938, 72, 80, getRandomCRGB());
 		break;
 
 	case 72://chorus 3a	3750
@@ -3599,7 +3601,7 @@ void BillyJean() {
 		break;
 
 	// case 84://not my lover	1875
-	// 	progStrobo(1875, 86, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+	// 	progStrobo(1875, 86, 120, getRandomCRGB());
 	// 	break;
 
 	case 86://BLACK	10000
@@ -3663,7 +3665,7 @@ void Maniac() {
 		break;
 
 	case 24://strobe  1529
-		progStrobo(1529, 26, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 26, 120, getRandomCRGB());
 		break;
 
 	case 26://verse 2a  16051
@@ -3671,7 +3673,7 @@ void Maniac() {
 		break;
 
 	case 28://strobe  1529
-		progStrobo(1529, 30, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 30, 120, getRandomCRGB());
 		break;
 
 	case 30://verse 2b  6879
@@ -3680,11 +3682,11 @@ void Maniac() {
 
 	case 32://ist a cold cinetic heat  10701
 		//progFullColors(10701, 34, 756);
-		progStrobo(10701, 34, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(10701, 34, 380, getRandomCRGB());
 		break;
 
 	case 34://strobe  1529
-		progStrobo(1529, 36, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 36, 120, getRandomCRGB());
 		break;
 
 	case 36://chorus 2  21401
@@ -3720,7 +3722,7 @@ void Maniac() {
 		break;
 
 	case 44://strobe  764
-		progStrobo(764, 46, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(764, 46, 120, getRandomCRGB());
 		break;
 
 	case 46://solo a  6115
@@ -3742,11 +3744,11 @@ void Maniac() {
 
 	case 54://it could cut you like a knife  10701
 		//progFullColors(10701, 56, 376);
-		progStrobo(10701, 56, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(10701, 56, 380, getRandomCRGB());
 		break;
 
 	case 56://uebergang  1529
-		progStrobo(1529, 58, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 58, 120, getRandomCRGB());
 		break;
 
 	case 58://chorus 3  21401
@@ -3764,7 +3766,7 @@ void Maniac() {
 		break;
 
 	case 64://strobe  1529
-		progStrobo(1529, 66, 90, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 66, 90, getRandomCRGB());
 		break;
 
 	case 66://BLACK  10000
@@ -3827,7 +3829,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 24://strobe  1529
-		progStrobo(1529, 26, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 26, 120, getRandomCRGB());
 		break;
 
 	case 26://verse 2a  16051
@@ -3835,7 +3837,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 28://strobe  1529
-		progStrobo(1529, 30, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 30, 120, getRandomCRGB());
 		break;
 
 	case 30://verse 2b  6879
@@ -3844,11 +3846,11 @@ void Maniac_Tminus1() {
 
 	case 32://ist a cold cinetic heat  10701
 		//progFullColors(10701, 34, 756);
-		progStrobo(10701, 34, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(10701, 34, 380, getRandomCRGB());
 		break;
 
 	case 34://strobe  1529
-		progStrobo(1529, 36, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 36, 120, getRandomCRGB());
 		break;
 
 	case 36://chorus 2  21401
@@ -3886,7 +3888,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 44://strobe  764
-		progStrobo(764, 46, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(764, 46, 120, getRandomCRGB());
 		break;
 
 	case 46://solo a  6115
@@ -3908,11 +3910,11 @@ void Maniac_Tminus1() {
 
 	case 54://it could cut you like a knife  10701
 		//progFullColors(10701, 56, 376);
-		progStrobo(10701, 56, 380, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(10701, 56, 380, getRandomCRGB());
 		break;
 
 	case 56://uebergang  1529
-		progStrobo(1529, 58, 120, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 58, 120, getRandomCRGB());
 		break;
 
 	case 58://chorus 3  21401
@@ -3930,7 +3932,7 @@ void Maniac_Tminus1() {
 		break;
 
 	case 64://strobe  1529
-		progStrobo(1529, 66, 90, getRandomColorValue(), getRandomColorValue(), getRandomColorValue());
+		progStrobo(1529, 66, 90, getRandomCRGB());
 		break;
 
 	case 66://BLACK  10000
@@ -4068,6 +4070,39 @@ void neueEffekteDemo() {
 	case 60:	progSpatialRainbow(10000, 65, false);						break;	// läuft nach oben
 	case 65:	progFuse(10000, 70);										break;
 	case 70:	progCometLoop(8000, 100, 8, 0, false);						break;	// einzelner roter Komet
+
+	case 100:
+		clearAll();
+		switchToPart(0);	// Demo in Dauerschleife
+		break;
+	}
+}
+
+//#91
+//==== DEMO: Szenen + Farbschemata auf allen Geräten (Songwahl per MIDI CC#0 = 91 oder START_WITH_SCENE_DEMO) ====
+void szenenDemo() {
+
+	const uint8_t bpm = 120;
+
+	switch (prog) {
+
+	case 0:		setColorScheme(SCHEME_ICE);		scene(SCENE_CALM,       8000,  5, bpm);	break;
+	case 5:		setColorScheme(SCHEME_NEON);	scene(SCENE_VERSE,      8000, 10, bpm);	break;
+	case 10:	setColorScheme(SCHEME_FIRE);	scene(SCENE_BUILDUP,    8000, 15, bpm);	break;
+	case 15:	setColorScheme(SCHEME_FIRE);	scene(SCENE_DROP,       8000, 20, bpm);	break;
+	case 20:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_WAVE_LR,    8000, 25, bpm);	break;
+	case 25:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_WAVE_RL,    8000, 30, bpm);	break;
+	case 30:	setColorScheme(SCHEME_RETRO);	scene(SCENE_WAVE_OUT,   8000, 35, bpm);	break;
+	case 35:	setColorScheme(SCHEME_NEON);	scene(SCENE_PINGPONG,   8000, 40, bpm);	break;
+	case 40:	setColorScheme(SCHEME_RED);		scene(SCENE_SOLO_GIT,   8000, 45, bpm);	break;
+	case 45:	setColorScheme(SCHEME_BLUE);	scene(SCENE_SOLO_BASS,  8000, 50, bpm);	break;
+	case 50:	setColorScheme(SCHEME_TOXIC);	scene(SCENE_SOLO_DRUMS, 8000, 55, bpm);	break;
+	case 55:	setColorScheme(SCHEME_ICE);		scene(SCENE_FIRE,       8000, 60, bpm);	break;	// blaues Feuer
+	case 60:	setColorScheme(SCHEME_FIRE);	scene(SCENE_FIRE,       8000, 65, bpm);	break;
+
+	// normale Programme mit Farbschema
+	case 65:	setColorScheme(SCHEME_ROYAL);	progStrobo(4000, 70, 75, getRandomCRGB());		break;
+	case 70:	setColorScheme(SCHEME_SUNSET);	progPalette(8000, PALETTE_SCHEME, 100);			break;
 
 	case 100:
 		clearAll();

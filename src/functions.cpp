@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include "colors.h"
 #include "definitions.h"
+#include "colorSchemes.h"
 
 extern byte markerLED1;
 extern byte markerLED2;
@@ -56,6 +57,7 @@ int getRandomColorValue() {	// dies erzeugt einen random-farb-anteil rot, grün 
 }
 
 int getRandomColor() { // dies erzeugt einen random color wert für die indexed colors:
+	if (colorSchemeActive()) return toRGB565(getRandomCRGB());
 	int farbZahl = random(1, 7);
 	int farbe = LED_BLACK;
 	switch (farbZahl) {
@@ -85,6 +87,7 @@ int getRandomColor() { // dies erzeugt einen random color wert für die indexed 
 }
 
 int getRandomColorIncludingBlack() {
+	if (colorSchemeActive()) return (random(0, 8) == 0) ? LED_BLACK : toRGB565(getRandomCRGB());
 	int farbZahl = random(1, 9);
 	int farbe = LED_BLACK;
 	switch (farbZahl) {
@@ -141,6 +144,7 @@ void switchToPart(byte part) {
 	progBlingBlingColoring_rounds = 0;
 	progStroboIsBlack = false;
 	strapOverride = false;
+	setColorScheme(SCHEME_RANDOM);	// Songs setzen ihr Schema bei jedem Durchlauf neu
 
 	flag_switchToNextSongPart = false;
 }

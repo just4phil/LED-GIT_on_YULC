@@ -437,3 +437,8 @@ void INTROdancing();
  * @brief Demo aller neuen Kontur-Effekte aus guitarShapeFX (Song-ID 90, läuft in Dauerschleife)
  */
 void neueEffekteDemo();
+
+/**
+ * @brief Demo der Szenen + Farbschemata auf allen Geräten (Song-ID 91, läuft in Dauerschleife)
+ */
+void szenenDemo();

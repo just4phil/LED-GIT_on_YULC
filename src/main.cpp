@@ -206,7 +206,9 @@ void setup() {
 
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	#ifdef START_WITH_FX_DEMO
+	#if defined(START_WITH_SCENE_DEMO)
+		switchToSong(91);	// Demo der Szenen + Farbschemata
+	#elif defined(START_WITH_FX_DEMO)
 		switchToSong(90);	// Demo der guitarShapeFX
 	#else
 		switchToSong(0);	// 0 SONGPAUSE loop
@@ -425,6 +427,10 @@ void loop() {
 
 		case 90:
 			neueEffekteDemo();
+			break;
+
+		case 91:
+			szenenDemo();
 			break;
 
 		case 99:

@@ -4,6 +4,7 @@
 #include "markerLEDs.h"
 #include "FXprograms.h"
 #include "guitarShapeFX.h"
+#include "colorSchemes.h"
 //---------------------------------------------------------------------
 
 extern CRGB leds[NUMMATRIX];
@@ -131,7 +132,7 @@ void initGuitarShape() {
 }
 
 // Standard-Teil: Dauer + nächsten Part merken; liefert true beim ersten Aufruf eines Parts
-static bool partStart(unsigned int durationMillis, byte nextPart) {
+bool fxPartStart(unsigned int durationMillis, byte nextPart) {
 	if (nextChangeMillisAlreadyCalculated) return false;
 	nextChangeMillis = durationMillis;
 	nextSongPart = nextPart;
@@ -143,7 +144,7 @@ static bool partStart(unsigned int durationMillis, byte nextPart) {
 }
 
 // true, wenn seit dem letzten Frame mindestens ms vergangen sind
-static bool frameDue(unsigned int ms) {
+bool fxFrameDue(unsigned int ms) {
 	if (millisToReduceCPUSpeed < ms) return false;
 	unsigned int rest = millisToReduceCPUSpeed - ms;
 	millisToReduceCPUSpeed = (rest > ms) ? 0 : rest;	// nicht endlos nachholen
@@ -151,7 +152,7 @@ static bool frameDue(unsigned int ms) {
 }
 
 // dies hier immer callen, sonst fallen die MarkerLEDs kurz aus
-static void showFrame() {
+void fxShow() {
 	if (LEDsTurnedOff) {
 		clearAll();
 		fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
@@ -161,7 +162,7 @@ static void showFrame() {
 }
 
 // Beats seit Partbeginn (bpm), ohne Überlauf
-static uint32_t beatsSinceStart(uint8_t bpm) {
+uint32_t fxBeats(uint8_t bpm) {
 	return (uint32_t)((uint64_t)millisCounterForProgChange * bpm / 60000);
 }
 
@@ -172,9 +173,9 @@ static uint32_t beatsSinceStart(uint8_t bpm) {
 static int cometPos = 0;
 
 void progCometLoop(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, uint8_t hue, bool twoComets) {
-	if (partStart(durationMillis, nextPart)) cometPos = 0;
+	if (fxPartStart(durationMillis, nextPart)) cometPos = 0;
 
-	if (frameDue(msPerStep)) {
+	if (fxFrameDue(msPerStep)) {
 		fadeToBlackBy(leds, anz_LEDs, 28);	// ergibt den Schweif
 		cometPos = (cometPos + 1) % anz_LEDs;
 
@@ -189,7 +190,7 @@ void progCometLoop(unsigned int durationMillis, byte nextPart, unsigned int msPe
 			}
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progCometLoop(unsigned int durationMillis, byte nextPart) {
@@ -203,9 +204,9 @@ void progCometLoop(unsigned int durationMillis, byte nextPart) {
 #define BLAST_MILLIS	600
 
 void progChargeBlast(unsigned int durationMillis, byte nextPart, unsigned int chargeMillis, uint8_t hue) {
-	partStart(durationMillis, nextPart);
+	fxPartStart(durationMillis, nextPart);
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int t = millisCounterForProgChange % (chargeMillis + BLAST_MILLIS);
 		fill_solid(leds, anz_LEDs, CRGB::Black);
 
@@ -232,7 +233,7 @@ void progChargeBlast(unsigned int durationMillis, byte nextPart, unsigned int ch
 			if (tb < 120) fillZone(ZONE_HEAD, CRGB::White);
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progChargeBlast(unsigned int durationMillis, byte nextPart) {
@@ -249,17 +250,17 @@ static uint8_t vuPeakHold = 0;	// Frames
 static uint32_t vuLastBeat = 0;
 
 void progSymmetricVU(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
-	if (partStart(durationMillis, nextPart)) {
+	if (fxPartStart(durationMillis, nextPart)) {
 		vuLevel = vuPeak = vuPeakHold = 0;
 		vuLastBeat = 0;
 	}
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;
 
 		// Anregung: Beat-Kicks, Zufalls-Kicks und ein wabernder Grundpegel
 		if (bpm > 0) {
-			uint32_t beat = beatsSinceStart(bpm);
+			uint32_t beat = fxBeats(bpm);
 			if (beat != vuLastBeat) {
 				vuLastBeat = beat;
 				vuLevel = max(vuLevel, random8(190, 255));
@@ -282,7 +283,7 @@ void progSymmetricVU(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		int peakPos = (long)vuPeak * LOOP_HALF / 256;
 		setMirrored(LOOP_HALF - peakPos, CRGB::White);
 	}
-	showFrame();
+	fxShow();
 }
 
 void progSymmetricVU(unsigned int durationMillis, byte nextPart) {
@@ -303,12 +304,12 @@ static CRGB shockColor[SHOCK_MAX_WAVES];
 static unsigned int shockLastSpawn = 0;
 
 static void progShockwaveImpl(unsigned int durationMillis, byte nextPart, unsigned int msBetweenWaves, bool randomColor, CRGB col) {
-	if (partStart(durationMillis, nextPart)) {
+	if (fxPartStart(durationMillis, nextPart)) {
 		for (int w = 0; w < SHOCK_MAX_WAVES; w++) shockActive[w] = false;
 		shockLastSpawn = 0u - msBetweenWaves;	// erste Welle sofort
 	}
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;
 
 		// neue Welle
@@ -317,7 +318,7 @@ static void progShockwaveImpl(unsigned int durationMillis, byte nextPart, unsign
 			if (!shockActive[w]) {
 				shockActive[w] = true;
 				shockBirth[w] = ms;
-				shockColor[w] = randomColor ? CRGB(CHSV(random8(), 255, 255)) : col;
+				shockColor[w] = randomColor ? (colorSchemeActive() ? getRandomCRGB() : CRGB(CHSV(random8(), 255, 255))) : col;
 				shockLastSpawn = ms;
 				spawn = false;
 			}
@@ -340,7 +341,7 @@ static void progShockwaveImpl(unsigned int durationMillis, byte nextPart, unsign
 			}
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBetweenWaves, CRGB col) {
@@ -360,7 +361,7 @@ void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBe
 static uint8_t wipeProj[anz_LEDs];	// Position jeder LED entlang der Wisch-Richtung (0..255)
 
 void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg) {
-	if (partStart(durationMillis, nextPart)) {
+	if (fxPartStart(durationMillis, nextPart)) {
 		float a = angleDeg * PI / 180.0f;
 		float ca = cosf(a), sa = sinf(a);
 		float proj[anz_LEDs];
@@ -375,7 +376,7 @@ void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int swee
 		}
 	}
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;
 		unsigned int sweep = ms / sweepMillis;
 		unsigned int phase = ms % sweepMillis;
@@ -391,7 +392,7 @@ void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int swee
 			leds[i] |= CRGB(CHSV(hue, 230, 255 - delta * 255 / WIPE_WIDTH));
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 //==================================================================
@@ -404,9 +405,9 @@ static uint8_t boltFlashesLeft = 0;
 static unsigned int boltNextFlash = 0;
 
 void progLightning(unsigned int durationMillis, byte nextPart, uint8_t chance) {
-	if (partStart(durationMillis, nextPart)) boltFlashesLeft = 0;
+	if (fxPartStart(durationMillis, nextPart)) boltFlashesLeft = 0;
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;
 		fadeToBlackBy(leds, anz_LEDs, 30);
 
@@ -437,7 +438,7 @@ void progLightning(unsigned int durationMillis, byte nextPart, uint8_t chance) {
 			boltNextFlash = ms + random8(30, 90);
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progLightning(unsigned int durationMillis, byte nextPart) {
@@ -452,9 +453,22 @@ void progLightning(unsigned int durationMillis, byte nextPart) {
 #define FIRE_COOLING	70
 #define FIRE_SPARKING	120
 
-static uint8_t fireHeat[2][FIRE_CELLS];	// [Seite][0 = unten .. LOOP_HALF = Kopf]
+static uint8_t fireHeat[2][FIRE_CELLS];
 
-static const CRGBPalette16 outlineBlueFire_p = {
+void fire2012Step(uint8_t* heat, int len) {
+	for (int c = 0; c < len; c++) {
+		heat[c] = qsub8(heat[c], random8(0, (FIRE_COOLING * 10) / len + 2));
+	}
+	for (int c = len - 1; c >= 2; c--) {
+		heat[c] = (heat[c - 1] + heat[c - 2] + heat[c - 2]) / 3;
+	}
+	if (random8() < FIRE_SPARKING) {
+		int y = random8(7);
+		heat[y] = qadd8(heat[y], random8(160, 255));
+	}
+}	// [Seite][0 = unten .. LOOP_HALF = Kopf]
+
+const CRGBPalette16 outlineBlueFire_p = {
 	CRGB::Black,     CRGB::Black,       CRGB(0,0,50),     CRGB(0,0,110),
 	CRGB(0,0,180),   CRGB(0,50,210),    CRGB(0,100,240),  CRGB(0,170,255),
 	CRGB(0,220,255), CRGB(90,235,255),  CRGB(190,248,255),CRGB::White,
@@ -462,22 +476,11 @@ static const CRGBPalette16 outlineBlueFire_p = {
 };
 
 void progOutlineFire(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, bool blueFire) {
-	if (partStart(durationMillis, nextPart)) memset(fireHeat, 0, sizeof(fireHeat));
+	if (fxPartStart(durationMillis, nextPart)) memset(fireHeat, 0, sizeof(fireHeat));
 
-	if (frameDue(msPerStep)) {
-		for (int side = 0; side < 2; side++) {
-			uint8_t* heat = fireHeat[side];
-			for (int c = 0; c < FIRE_CELLS; c++) {
-				heat[c] = qsub8(heat[c], random8(0, (FIRE_COOLING * 10) / FIRE_CELLS + 2));
-			}
-			for (int c = FIRE_CELLS - 1; c >= 2; c--) {
-				heat[c] = (heat[c - 1] + heat[c - 2] + heat[c - 2]) / 3;
-			}
-			if (random8() < FIRE_SPARKING) {
-				int y = random8(7);
-				heat[y] = qadd8(heat[y], random8(160, 255));
-			}
-		}
+	if (fxFrameDue(msPerStep)) {
+		fire2012Step(fireHeat[0], FIRE_CELLS);
+		fire2012Step(fireHeat[1], FIRE_CELLS);
 
 		for (int c = 0; c < FIRE_CELLS; c++) {
 			int d = LOOP_HALF - c;
@@ -489,7 +492,7 @@ void progOutlineFire(unsigned int durationMillis, byte nextPart, unsigned int ms
 			}
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progOutlineFire(unsigned int durationMillis, byte nextPart) {
@@ -500,29 +503,29 @@ void progOutlineFire(unsigned int durationMillis, byte nextPart) {
 //=========== 8: Zone Beat =========================================
 //==================================================================
 
-static uint8_t zoneHue[ZONE_COUNT];
+static CRGB zoneCol[ZONE_COUNT];
 static uint8_t zoneVal[ZONE_COUNT];
 static uint32_t zoneLastBeat = 0;
 
 void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
-	if (partStart(durationMillis, nextPart)) {
+	if (fxPartStart(durationMillis, nextPart)) {
 		for (int z = 0; z < ZONE_COUNT; z++) {
-			zoneHue[z] = z * 42;
+			zoneCol[z] = colorSchemeActive() ? schemeColor(z) : CRGB(CHSV(z * 42, 255, 255));
 			zoneVal[z] = 25;
 		}
 		zoneLastBeat = 0xFFFFFFFF;
 	}
 
-	if (frameDue(10)) {
-		uint32_t beat = beatsSinceStart(bpm);
+	if (fxFrameDue(10)) {
+		uint32_t beat = fxBeats(bpm);
 		if (beat != zoneLastBeat) {
 			zoneLastBeat = beat;
 			uint8_t z = beat % ZONE_COUNT;	// läuft einmal um die Gitarre
-			zoneHue[z] = beat * 37;
+			zoneCol[z] = colorSchemeActive() ? schemeColor(beat) : CRGB(CHSV(beat * 37, 255, 255));
 			zoneVal[z] = 255;
 			if (beat % 4 == 0) {			// auf der Eins zusätzlich die gegenüberliegende Zone
 				uint8_t opp = (z + ZONE_COUNT / 2) % ZONE_COUNT;
-				zoneHue[opp] = zoneHue[z] + 128;
+				zoneCol[opp] = colorSchemeActive() ? schemeColor(beat + 1) : CRGB(CHSV(beat * 37 + 128, 255, 255));
 				zoneVal[opp] = 255;
 			}
 		}
@@ -530,10 +533,11 @@ void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 
 		for (int k = 0; k < anz_LEDs; k++) {
 			uint8_t z = zoneOfLoop(k);
-			leds[loopToLed(k)] = CHSV(zoneHue[z], 255, zoneVal[z]);
+			CRGB c = zoneCol[z];
+			leds[loopToLed(k)] = c.nscale8(zoneVal[z]);
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 //==================================================================
@@ -543,9 +547,9 @@ void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 #define HEART_DUB_MS	220		// Abstand "lub" -> "dub"
 
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
-	partStart(durationMillis, nextPart);
+	fxPartStart(durationMillis, nextPart);
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int period = 60000 / max((uint8_t)1, bpm);
 		unsigned int t = millisCounterForProgChange % period;
 
@@ -579,7 +583,7 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 			fillZone(ZONE_HEAD, c);
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
@@ -593,9 +597,9 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 static uint8_t rainbowOffset = 0;
 
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating, unsigned int msPerStep) {
-	partStart(durationMillis, nextPart);
+	fxPartStart(durationMillis, nextPart);
 
-	if (frameDue(msPerStep)) {
+	if (fxFrameDue(msPerStep)) {
 		rainbowOffset++;
 		for (int i = 0; i < anz_LEDs; i++) {
 			uint8_t hue = rotating ? ledAngle[i] + rainbowOffset
@@ -603,7 +607,7 @@ void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotatin
 			leds[i] = CHSV(hue, 255, 255);
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating) {
@@ -621,10 +625,10 @@ static uint16_t strapLed(int s) {	// s = 0 an der Schulter .. anz_LEDs_STRAP-1 a
 }
 
 void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMillis) {
-	if (partStart(durationMillis, nextPart)) fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
+	if (fxPartStart(durationMillis, nextPart)) fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
 	strapOverride = true;
 
-	if (frameDue(10)) {
+	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;
 
 		if (ms < fuseMillis) {
@@ -663,7 +667,7 @@ void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMilli
 			}
 		}
 	}
-	showFrame();
+	fxShow();
 }
 
 void progFuse(unsigned int durationMillis, byte nextPart) {
