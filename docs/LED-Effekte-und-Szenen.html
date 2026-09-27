@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LED-Effekte und Szenen</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12; --kbd:#262d36;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#1a1230,#11202e 55%,#0f1216);border-bottom:1px solid var(--border);padding:34px 0 28px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.2px}
+  h2{font-size:23px;margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+  h3{font-size:18px;margin:0 0 6px;color:var(--accent2)}
+  h4{font-size:15px;margin:18px 0 6px;color:var(--ink)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  a{color:var(--accent)}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff;overflow-wrap:anywhere}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13px;line-height:1.5;margin:10px 0}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .c{color:#7d8b99}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .tablewrap{overflow-x:auto;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent);white-space:nowrap}
+  td code{font-size:12.5px}
+  .tag{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:20px;
+    padding:0 9px;font-size:12px;color:var(--muted);margin:2px 4px 2px 0}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;margin-top:18px}
+  .toc a{color:var(--ink);text-decoration:none;opacity:.85}
+  .toc a:hover{opacity:1;color:var(--accent)}
+  .toc b{color:var(--accent);margin-right:6px}
+
+  /* Vorschau */
+  .stagebox{background:#07090c;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  canvas{display:block;width:100%;height:auto}
+  .controls{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-top:1px solid var(--border);background:var(--panel)}
+  .controls .sep{flex-basis:100%;height:0}
+  .btn{background:var(--panel2);color:var(--ink);border:1px solid var(--border);border-radius:6px;
+    padding:5px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+  .btn:hover{border-color:var(--accent)}
+  .btn.on{background:var(--accent);color:#06121f;border-color:var(--accent);font-weight:600}
+  .controls label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  select{background:var(--panel2);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:13px}
+  .nowplaying{padding:8px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);background:var(--panel)}
+  .nowplaying code{font-size:12.5px}
+  .sticky{position:sticky;top:0;z-index:5;padding-top:8px;background:var(--bg)}
+  @media (max-height:760px){.sticky{position:static}}
+
+  /* Effekt-Karten */
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:14px 0;scroll-margin-top:360px}
+  .cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .num{display:inline-block;min-width:26px;height:26px;border-radius:50%;background:var(--accent);color:#06121f;
+    font-weight:700;text-align:center;line-height:26px;font-size:13px;margin-right:8px}
+  .card .play{flex:none}
+  .kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:14px;margin:8px 0}
+  .kv div:nth-child(odd){color:var(--muted)}
+
+  /* Farbschemata */
+  .sw{display:inline-block;width:26px;height:18px;border-radius:4px;border:1px solid #0006;vertical-align:middle;margin-right:4px}
+  .zonedot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:6px}
+  footer{color:var(--muted);font-size:13px;margin-top:50px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>LED-Effekte &amp; Szenen</h1>
+    <p class="sub">Neue Kontur-Effekte für die SG, Farbschemata und geräteübergreifende Szenen für die ganze Band. Die Vorschauen auf dieser Seite sind JavaScript-Nachbauten der Firmware-Effekte.</p>
+    <p class="sub" style="margin-top:6px"><span class="tag">Branch neueEffekte</span><span class="tag">Branch szenen</span><span class="tag">FastLED 3.5.0</span><span class="tag">ESP32-S3</span></p>
+    <nav class="toc">
+      <a href="#ueberblick"><b>1</b>Überblick</a>
+      <a href="#kontur"><b>2</b>Kontur-Konzept &amp; Kalibrierung</a>
+      <a href="#effekte"><b>3</b>Die 11 Kontur-Effekte</a>
+      <a href="#gurt"><b>4</b>Gurt-Override</a>
+      <a href="#schemata"><b>5</b>Farbschemata</a>
+      <a href="#szenen"><b>6</b>Szenen</a>
+      <a href="#primitive"><b>7</b>Primitive für alle Geräte</a>
+      <a href="#demos"><b>8</b>Demo-Songs 90 &amp; 91</a>
+      <a href="#checkliste"><b>9</b>Kalibrier-Checkliste</a>
+      <a href="#dateien"><b>10</b>Dateien &amp; API-Referenz</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ===================================================================== -->
+<h2 id="ueberblick">1 · Überblick</h2>
+<p>Bisher waren die meisten Effekte Matrix-Effekte für ein 22×23-Raster. Auf der Gitarre liegen die LEDs aber als <b>eine geschlossene Kette von 163 LEDs rund um die Kontur</b>. Nachbarn im Raster sind dort oft nicht nebeneinander, deshalb sieht vieles wie Rauschen aus. Die neuen Bausteine nutzen die echte Form:</p>
+<div class="tablewrap"><table>
+  <tr><th>Baustein</th><th>Was er macht</th><th>Datei</th></tr>
+  <tr><td><b>Kontur-Effekte</b></td><td>11 Effekte, die entlang der Kontur, in Zonen (Kopf, Hals, Hörner, Korpus) oder im echten Raum (XY) rechnen.</td><td><code>guitarShapeFX.cpp/.h</code></td></tr>
+  <tr><td><b>Gurt-Override</b></td><td>Der Gurt kann ein eigenes Bild bekommen, statt nur eine Kopie der Gitarre zu zeigen.</td><td><code>guitarShapeFX</code>, <code>markerLEDs.cpp</code></td></tr>
+  <tr><td><b>Farbschemata</b></td><td>Legen fest, aus welchen Farben <i>alle</i> Programme ihre „Zufallsfarben“ ziehen. Ohne Schema bleibt alles wie bisher.</td><td><code>colorSchemes.cpp/.h</code></td></tr>
+  <tr><td><b>Szenen</b></td><td>Ein Part sagt nur <i>was</i> passieren soll (<code>SCENE_DROP</code>). Jedes Gerät zeigt dazu sein passendes Programm, ohne <code>#ifdef</code> im Song.</td><td><code>scenes.cpp/.h</code></td></tr>
+</table></div>
+<div class="note">Die Szenen-Features liegen auf dem Branch <code>szenen</code>, der auf <code>neueEffekte</code> aufbaut. Wer <code>szenen</code> auscheckt, hat alles.</div>
+
+<!-- ===================================================================== -->
+<h2 id="kontur">2 · Kontur-Konzept &amp; Kalibrierung</h2>
+<p>Alle Kontur-Effekte rechnen mit der <b>Konturposition <code>k</code></b>: <code>k = 0</code> ist die Spitze der Kopfplatte, dann geht es einmal um die Gitarre herum (Kopfplatte unten → Hals-Unterkante → unteres Horn → Korpus → oberes Horn → Hals-Oberkante → Kopfplatte oben). Symmetrische Effekte nutzen den <b>Abstand <code>d</code> von der Kopfspitze</b>: <code>d = 0</code> ist der Kopf, <code>d = 81</code> (<code>anz_LEDs/2</code>) liegt unten am Korpus.</p>
+<p>Für räumliche Effekte hat jede LED zusätzlich <b>XY-Koordinaten</b>. Sie werden beim ersten Effekt einmal aus einem Umriss berechnet, der vom Foto der Gitarre abgezeichnet wurde (<code>initGuitarShape()</code>). Weil die LEDs gleichmäßig auf dem Strip sitzen, werden sie gleichmäßig auf diesem Umriss verteilt.</p>
+
+<h4>Zonen</h4>
+<div class="tablewrap"><table>
+  <tr><th>Zone</th><th>Konturposition k</th><th>Define</th></tr>
+  <tr><td><span class="zonedot" style="background:#ffffff"></span>Kopfplatte (<code>ZONE_HEAD</code>)</td><td>151–162 und 0–11</td><td>—</td></tr>
+  <tr><td><span class="zonedot" style="background:#4ea1ff"></span>Hals-Unterkante (<code>ZONE_NECK_LOW</code>)</td><td>12–35</td><td><code>ZONE_NECK_LOW_START 12</code></td></tr>
+  <tr><td><span class="zonedot" style="background:#ffb86b"></span>unteres Horn (<code>ZONE_HORN_LOW</code>)</td><td>36–50</td><td><code>ZONE_HORN_LOW_START 36</code></td></tr>
+  <tr><td><span class="zonedot" style="background:#ff4f7a"></span>Korpus (<code>ZONE_BODY</code>)</td><td>51–111</td><td><code>ZONE_BODY_START 51</code></td></tr>
+  <tr><td><span class="zonedot" style="background:#b67bff"></span>oberes Horn (<code>ZONE_HORN_UP</code>)</td><td>112–122</td><td><code>ZONE_HORN_UP_START 112</code></td></tr>
+  <tr><td><span class="zonedot" style="background:#7ee787"></span>Hals-Oberkante mit Markern (<code>ZONE_NECK_UP</code>)</td><td>123–150</td><td><code>ZONE_NECK_UP_START 123</code>, <code>ZONE_HEAD_UP_START 151</code></td></tr>
+</table></div>
+<p>Die Zonen-Karte siehst du auch live in der Vorschau unten (Button <b>Zonen-Karte</b>).</p>
+
+<h4>Kalibrierung (<code>src/definitions.h</code>, Block <code>GITMARKER_GIT1</code>)</h4>
+<div class="tablewrap"><table>
+  <tr><th>Define</th><th>Wert</th><th>Bedeutung</th></tr>
+  <tr><td><code>GUITAR_HEAD_TIP_IDX</code></td><td>77</td><td>LED-Index an der Spitze der Kopfplatte. Aus dem Foto geschätzt: Die blauen Marker (Index 48 und 55) sitzen an der Hals-Oberkante. <b>Der wichtigste Wert:</b> Wirkt ein Effekt versetzt, zuerst diesen anpassen.</td></tr>
+  <tr><td><code>GUITAR_LOOP_DIR</code></td><td>1</td><td><code>+1</code>: Der LED-Index steigt von der Kopfspitze Richtung Hals-<i>Unter</i>kante (Diskant-Seite ohne Marker). Wirkt die Gitarre gespiegelt, auf <code>-1</code> setzen.</td></tr>
+  <tr><td><code>ZONE_*_START</code></td><td>siehe oben</td><td>Grenzen der Zonen als Konturposition ab der Kopfspitze.</td></tr>
+  <tr><td><code>GUITAR_STRAP_PIN_POS</code></td><td>117</td><td>Konturposition, an der der Gurt ansetzt (oberes Horn). Wird von <code>progFuse</code> genutzt.</td></tr>
+  <tr><td><code>anz_LEDs_STRAP</code></td><td>60</td><td>Anzahl der LEDs am Gurt (geschätzt).</td></tr>
+  <tr><td><code>STRAP_IDX0_AT_GUITAR</code></td><td>1</td><td><code>1</code>: LED 0 des Gurts sitzt an der Gitarre, <code>0</code>: an der Schulter.</td></tr>
+</table></div>
+<p>Für Geräte ohne eigene Geometrie (z. B. den Bass) setzt <code>guitarShapeFX.h</code> Standardwerte, die von der SG auf <code>anz_LEDs</code> hochgerechnet werden.</p>
+
+<!-- ===================================================================== -->
+<h2 id="effekte">3 · Die 11 Kontur-Effekte</h2>
+<p>Alle Effekte folgen dem bekannten Muster <code>progXxx(durationMillis, nextPart, …)</code>. Sie setzen beim ersten Aufruf Dauer und nächsten Part, arbeiten mit dem 2-ms-Timer statt <code>delay()</code>, respektieren <code>LEDsTurnedOff</code> und rufen am Ende <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code> + <code>FastLED.show()</code> auf. Die Fret-Marker bleiben also sichtbar.</p>
+
+<div class="sticky">
+<div class="stagebox">
+  <canvas id="gcv" width="960" height="560" aria-label="Vorschau der Gitarre"></canvas>
+  <div class="nowplaying" id="gnow">—</div>
+  <div class="controls" id="gbtns"></div>
+  <div class="controls">
+    <label><input type="checkbox" id="gmarker"> Bundseite abdunkeln + Marker (wie auf der Bühne)</label>
+    <label>Farbschema <select id="gscheme"></select></label>
+  </div>
+</div>
+</div>
+
+<div id="cards"></div>
+
+<!-- ===================================================================== -->
+<h2 id="gurt">4 · Gurt-Override</h2>
+<p>Der Gurt-Strip hängt an <code>DATA_PIN_2</code> und zeigt normalerweise eine Kopie von <code>leds[]</code> ohne Marker. <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code> macht dazu <code>memcpy(leds2, leds, …)</code>. Für Effekte, die Gurt und Gitarre <i>unterschiedlich</i> bespielen, gibt es:</p>
+<div class="tablewrap"><table>
+  <tr><th>Symbol</th><th>Bedeutung</th></tr>
+  <tr><td><code>bool strapOverride</code></td><td>Ist es <code>true</code>, wird <code>ledsStrap[]</code> statt der Kopie auf den Gurt gegeben. Die restlichen LEDs von <code>leds2</code> werden schwarz.</td></tr>
+  <tr><td><code>CRGB ledsStrap[anz_LEDs_STRAP]</code></td><td>Eigener Puffer für den Gurt.</td></tr>
+  <tr><td>Reset</td><td><code>switchToPart()</code> setzt <code>strapOverride</code> bei jedem Part-Wechsel auf <code>false</code>. Ein Effekt muss es deshalb in jedem Frame neu setzen, so wie <code>progFuse</code>.</td></tr>
+</table></div>
+<p>Bisher nutzt nur <b>#11 Zündschnur</b> den Override. Alle anderen Effekte lassen den Gurt wie gewohnt mitlaufen.</p>
+
+<!-- ===================================================================== -->
+<h2 id="schemata">5 · Farbschemata</h2>
+<p>Viele Programme würfeln ihre Farben selbst. Bisher ließ sich deshalb nicht gezielt steuern, welche Farben zu sehen sind. Ein Farbschema legt fest, aus welchen Farben <b>alle</b> Programme ihre Zufallsfarben ziehen. Das gilt für die alten Programme genauso wie für die neuen.</p>
+
+<h4>Verwendung</h4>
+<pre><code>void MeinSong() {
+    setColorScheme(SCHEME_FIRE);                  <span class="c">// VOR dem switch: gilt für alle Parts</span>
+    switch (prog) {
+    case 20: progFullColors(8000, 30, 500);  break;   <span class="c">// wechselt nur noch zwischen rot/orange/gelb</span>
+    case 30: setColorScheme(SCHEME_ICE);          <span class="c">// nur für diesen Part</span>
+             progStrobo(1630, 35, 75, getRandomCRGB()); break;
+    case 35: progPalette(8000, PALETTE_SCHEME, 40); break;  <span class="c">// Verlauf aus den Schemafarben</span>
+    …</code></pre>
+<div class="note"><b>Warum oben in der Song-Funktion?</b> Die Song-Funktion läuft bei jedem 2-ms-Takt, der Aufruf kostet praktisch nichts. So stimmt das Schema auch dann, wenn ein Client per BLE mitten im Song einsteigt und Part 0 nie gesehen hat. <code>switchToPart()</code> setzt das Schema bei jedem Part-Wechsel auf <code>SCHEME_RANDOM</code> zurück. Songs ohne Schema verhalten sich deshalb exakt wie bisher.</div>
+
+<h4>Verfügbare Schemata</h4>
+<div class="tablewrap"><table id="schemetable">
+  <tr><th>ID</th><th>Farben</th><th>Hinweis</th></tr>
+</table></div>
+
+<h4>API (<code>colorSchemes.h</code>)</h4>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>Beschreibung</th></tr>
+  <tr><td><code>setColorScheme(id)</code> / <code>getColorScheme()</code></td><td>Aktives Schema setzen bzw. lesen.</td></tr>
+  <tr><td><code>colorSchemeActive()</code></td><td><code>false</code> bei <code>SCHEME_RANDOM</code>.</td></tr>
+  <tr><td><code>CRGB getRandomCRGB()</code></td><td>Zufällige Farbe aus dem Schema. Bei <code>SCHEME_RANDOM</code> genau die alte Logik: <code>CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue())</code>.</td></tr>
+  <tr><td><code>CRGB schemeColor(n)</code></td><td>n-te Farbe des Schemas (modulo Anzahl). Ohne Schema: Regenbogen, auf 5 Bühnenpositionen verteilt.</td></tr>
+  <tr><td><code>CRGB deviceColor()</code></td><td>Farbe dieses Geräts, also <code>schemeColor(STAGE_POS)</code>. Jedes Gerät bekommt so eine eigene Farbe, die zum Schema passt.</td></tr>
+  <tr><td><code>CRGBPalette16 schemePalette()</code></td><td>Weicher Verlauf über alle Schemafarben. Wird von <code>progPalette(…, PALETTE_SCHEME, …)</code> genutzt (<code>PALETTE_SCHEME = 20</code>).</td></tr>
+  <tr><td><code>uint16_t toRGB565(CRGB)</code></td><td>Umrechnung für die indizierten Matrix-Farben (<code>LED_*</code> aus <code>colors.h</code>).</td></tr>
+</table></div>
+
+<h4>Welche Programme folgen dem Schema?</h4>
+<div class="tablewrap"><table>
+  <tr><th>Quelle</th><th>Betroffene Programme</th><th>Verhalten mit Schema</th></tr>
+  <tr><td><code>getRandomColor()</code>, <code>getRandomColorIncludingBlack()</code></td><td>progScrollText, progShowText, progStern/SternNeu, progCircles, progRandomLines, progMovingLines, progWordArray, progBlinkText, progShowLettersSpread</td><td>Schemafarbe als RGB565, bei <i>IncludingBlack</i> mit 1/8 Chance schwarz.</td></tr>
+  <tr><td>3× <code>getRandomColorValue()</code> → <code>getRandomCRGB()</code></td><td>progBlingBlingColoringSONGPAUSE, progBlingBlingColoring, progFastBlingBling, progFullColors, progOutline (GITBOARD-Pfade)</td><td>ganze Schemafarbe. Bei BlingBlingColoring wird pro Runde eine neue Schemafarbe gezogen statt nur ein Kanal geändert.</td></tr>
+  <tr><td><code>progStrobo(…, CRGB col)</code></td><td>neue Überladung; alle 97 Strobo-Aufrufe mit Zufallsfarben in <code>songs.cpp</code> nutzen jetzt <code>getRandomCRGB()</code></td><td>Strobo in Schemafarben</td></tr>
+  <tr><td>direkte Zufallspaletten</td><td>progMatrixHorizontal/Vertical (random), matrixMovieFX (random pro Stream), SetupTotallyRandomPalette (progPalette 4), progWaterRipple (random), progStarfield</td><td>Schemafarben statt fester Palette</td></tr>
+  <tr><td>Kontur-Effekte</td><td>progShockwave (Zufallsfarben), progZoneBeat</td><td>Schemafarben</td></tr>
+</table></div>
+<p>Nicht betroffen sind Programme mit festen Farben (z. B. <code>progStrobo(…, 255, 255, 255)</code>, feste Paletten 0–3 und 5–11, progFire), ebenso Effekte mit explizitem Farbton-Parameter.</p>
+
+<!-- ===================================================================== -->
+<h2 id="szenen">6 · Szenen</h2>
+<p>Bisher zeigen die Geräte meist dasselbe Programm. Wer pro Gerät etwas anderes wollte, brauchte <code>#ifdef</code> in jedem Part. Szenen drehen das um: Der Song sagt, <b>was</b> passieren soll, und jedes Gerät entscheidet zentral in <code>scenes.cpp</code>, <b>wie</b> es das umsetzt.</p>
+<pre><code>void MeinSong() {
+    setColorScheme(SCHEME_NEON);
+    switch (prog) {
+    case 0:  scene(SCENE_CALM,     15000,  5, 128); break;
+    case 5:  scene(SCENE_VERSE,    30000, 10, 128); break;
+    case 10: scene(SCENE_BUILDUP,   7500, 15, 128); break;   <span class="c">// 4 Takte Aufladen, Explosion am Ende</span>
+    case 15: scene(SCENE_DROP,     15000, 20, 128); break;
+    case 20: progStrobo(1875, 25, 75, getRandomCRGB()); break;   <span class="c">// normale Programme gehen weiterhin</span>
+    …</code></pre>
+<div class="warn"><b>Wichtig:</b> Alle Geräte rufen die Szene mit <b>derselben Dauer</b> auf, sonst laufen die Parts auseinander. Beats werden ab Part-Start aus <code>millisCounterForProgChange</code> berechnet, und der Part-Start wird per BLE synchronisiert. <code>bpm = 0</code> heißt 120.</div>
+
+<h4>Bühne &amp; Geräte-Identität (<code>definitions.h</code>)</h4>
+<div class="tablewrap"><table>
+  <tr><th>Gerät</th><th><code>DEV_ME</code></th><th><code>STAGE_POS</code></th><th><code>DEVICE_CLASS</code></th></tr>
+  <tr><td>LAMPE1 (links)</td><td><code>DEV_LAMPE1</code> 0x01</td><td>0</td><td><code>CLASS_LAMP</code></td></tr>
+  <tr><td>RINASBASS</td><td><code>DEV_BASS</code> 0x02</td><td>1</td><td><code>CLASS_GUITAR</code></td></tr>
+  <tr><td>SCROLLMATRIX (Drums, nach hinten versetzt)</td><td><code>DEV_DRUMS</code> 0x04</td><td>2</td><td><code>CLASS_MATRIX</code></td></tr>
+  <tr><td>ANDRESGIT</td><td><code>DEV_GIT</code> 0x08</td><td>3</td><td><code>CLASS_GUITAR</code></td></tr>
+  <tr><td>LAMPE2 (rechts)</td><td><code>DEV_LAMPE2</code> 0x10</td><td>4</td><td><code>CLASS_LAMP</code></td></tr>
+  <tr><td>GITBOARD (wird nicht mehr genutzt)</td><td><code>DEV_GITBOARD</code> 0x20</td><td>2</td><td><code>CLASS_MATRIX</code></td></tr>
+</table></div>
+<p>Dazu gibt es <code>DEV_ALL</code>, <code>STAGE_POSITIONS</code> (5) und das Makro <code>isDev(mask)</code>. Damit gehen auch Einzeiler ohne <code>#ifdef</code>:</p>
+<pre><code>case 40: if (isDev(DEV_GIT | DEV_BASS)) progChargeBlast(8000, 45); else progBlack(8000, 45); break;</code></pre>
+
+<h4>Bühnen-Vorschau</h4>
+<div class="stagebox">
+  <canvas id="scv" width="1000" height="330" aria-label="Vorschau der Bühne"></canvas>
+  <div class="nowplaying" id="snow">—</div>
+  <div class="controls" id="sbtns"></div>
+  <div class="controls">
+    <label>Farbschema <select id="sscheme"></select></label>
+    <label>BPM <input type="range" id="sbpm" min="60" max="180" value="120"> <span id="sbpmv">120</span></label>
+    <label>Partdauer <select id="sdur"><option value="4000">4 s</option><option value="8000" selected>8 s</option><option value="16000">16 s</option></select></label>
+  </div>
+</div>
+<p class="sub" style="font-size:13px;margin-top:6px">Vereinfacht: Lampen mit 40 statt 94/78 LEDs, der Bass ist als SG-Kontur dargestellt, die Matrix als 54×10-Raster.</p>
+
+<h4>Welches Gerät zeigt was?</h4>
+<div class="tablewrap"><table>
+  <tr><th>Szene</th><th>Gitarre / Bass</th><th>Lampen</th><th>Matrix (Drums)</th></tr>
+  <tr><td><code>SCENE_CALM</code></td><td><code>progBreathe</code> in <code>deviceColor()</code>, 4 Beats pro Atemzug</td><td><code>progBreathe</code></td><td><code>progWaterRipple(…, 70, deviceColor())</code></td></tr>
+  <tr><td><code>SCENE_VERSE</code></td><td><code>progZoneBeat(bpm)</code></td><td><code>progLampPulse(bpm)</code></td><td><code>matrixMovieFX(…, 80, deviceColor())</code></td></tr>
+  <tr><td><code>SCENE_BUILDUP</code></td><td><code>progChargeBlast</code>, eine Aufladung über <i>Dauer − 600 ms</i>, dann Explosion</td><td><code>progLampFill</code>, füllt sich synchron und explodiert gleichzeitig</td><td><code>progStarfield</code></td></tr>
+  <tr><td><code>SCENE_DROP</code></td><td><code>progShockwave</code>, eine Welle pro Beat</td><td><code>progBeatFlash</code>, jeder Beat eine andere Schemafarbe</td><td><code>progWaterRipple</code> mit Schemafarben und Verlauf, aus der Mitte</td></tr>
+  <tr><td><code>SCENE_FIRE</code></td><td><code>progOutlineFire</code></td><td><code>progLampFire</code></td><td><code>progFire</code></td></tr>
+  <tr><td colspan="4" style="color:var(--muted)">Bei ICE, ROYAL und BLUE brennt das Feuer in allen drei Spalten blau.</td></tr>
+  <tr><td><code>SCENE_WAVE_LR</code></td><td colspan="3">alle: <code>progBeatFlash</code> in <code>deviceColor()</code>, verzögert um <code>STAGE_POS × WAVE_STEP_MS</code> (100 ms). Der Blitz läuft von links nach rechts.</td></tr>
+  <tr><td><code>SCENE_WAVE_RL</code></td><td colspan="3">wie oben, von rechts nach links</td></tr>
+  <tr><td><code>SCENE_WAVE_OUT</code></td><td colspan="3">wie oben, von der Mitte (Drums) nach außen, Verzögerung = Abstand zur Mitte</td></tr>
+  <tr><td><code>SCENE_PINGPONG</code></td><td colspan="3">alle: <code>progPingPong</code>. Pro Beat leuchtet genau eine Bühnenposition, nie zweimal hintereinander dieselbe. Alle Geräte berechnen die Folge identisch über <code>sharedRand8</code>, ohne zusätzliche Übertragung.</td></tr>
+  <tr><td><code>SCENE_SOLO_GIT</code></td><td>Gitarre: <code>progCometLoop</code> (2 Kometen)<br>Bass: Atmen mit 40/255</td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td></tr>
+  <tr><td><code>SCENE_SOLO_BASS</code></td><td>Bass: <code>progCometLoop</code><br>Gitarre: Atmen mit 40/255</td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td></tr>
+  <tr><td><code>SCENE_SOLO_DRUMS</code></td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td><td><code>progWaterRipple</code> schnell, Schemafarben</td></tr>
+</table></div>
+
+<h4>Eigene Szenen ergänzen</h4>
+<ol>
+  <li>Neue ID in <code>enum SceneID</code> (<code>scenes.h</code>) anlegen.</li>
+  <li>In <code>scene()</code> (<code>scenes.cpp</code>) je einen <code>case</code> pro <code>DEVICE_CLASS</code>-Block ergänzen. Gilt die Szene für alle Geräte gleich, reicht ein <code>case</code> im oberen <code>switch</code>, der mit <code>return</code> endet.</li>
+  <li>Alle Geräte mit dem neuen Stand flashen, denn die Zuordnung ist in jede Firmware kompiliert.</li>
+</ol>
+
+<!-- ===================================================================== -->
+<h2 id="primitive">7 · Primitive für alle Geräte</h2>
+<p>Diese Programme schreiben direkt in <code>leds[0..anz_LEDs)</code> und laufen deshalb auf jedem Gerät. Die Szenen nutzen sie, sie funktionieren aber auch einzeln in normalen Songs.</p>
+<div class="tablewrap"><table>
+  <tr><th>Signatur</th><th>Wirkung</th></tr>
+  <tr><td><code>progBreathe(dur, next, CRGB col, periodMillis, maxVal)</code></td><td>Ganzes Gerät atmet in <code>col</code>, Helligkeit per <code>quadwave8</code> zwischen 3 und <code>maxVal</code>.</td></tr>
+  <tr><td><code>progBeatFlash(dur, next, bpm, CRGB col, delayMillis)</code></td><td>Flash auf jedem Beat (+ Verzögerung), klingt über max. 70 % des Beats bzw. 450 ms quadratisch ab.</td></tr>
+  <tr><td><code>progPingPong(dur, next, bpm)</code></td><td>Gemeinsame Folge über <code>sharedRand8</code>: Pro Beat ist genau eine Bühnenposition aktiv und flasht in <code>deviceColor()</code>. Der Rest ist dunkel.</td></tr>
+  <tr><td><code>progLampFill(dur, next, CRGB col)</code></td><td>Lampe füllt sich über <i>Dauer − 600 ms</i> von unten, mit heller Kante und leichtem Flackern. Danach 600 ms weiße Explosion, synchron zu <code>progChargeBlast</code> in <code>SCENE_BUILDUP</code>.</td></tr>
+  <tr><td><code>progLampPulse(dur, next, bpm, CRGB col)</code></td><td>Auf jedem Beat ein leichter Flash, dazu ein Lichtschuss mit 6-LED-Schweif, der nach 60 % des Beats oben ankommt.</td></tr>
+  <tr><td><code>progLampFire(dur, next, bool blueFire)</code></td><td>1D-Fire2012 von unten nach oben (nutzt <code>fire2012Step</code>).</td></tr>
+  <tr><td><code>uint8_t sharedRand8(uint32_t salt)</code></td><td>Hash aus <code>songID</code>, <code>prog</code> und <code>salt</code>, ohne Zustand. Gleicher „Zufall“ auf allen Geräten. Bewusst nicht über <code>randomSeed()</code>, weil <code>random()</code> auf jedem Gerät unterschiedlich oft aufgerufen wird.</td></tr>
+</table></div>
+<p>Lampen-Ausrichtung: <code>LAMP_IDX0_AT_BOTTOM</code> (1 = LED 0 unten). Füllt sich eine Lampe von oben, auf 0 setzen.</p>
+
+<h4>Gemeinsames Grundgerüst (<code>guitarShapeFX.h</code>)</h4>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>Beschreibung</th></tr>
+  <tr><td><code>bool fxPartStart(dur, next)</code></td><td>Setzt beim ersten Aufruf eines Parts Dauer und nächsten Part, löscht die LEDs, initialisiert die Geometrie und gibt <code>true</code> zurück. Genau dann gehört der Effekt-Zustand zurückgesetzt.</td></tr>
+  <tr><td><code>bool fxFrameDue(ms)</code></td><td>Frame-Takt über <code>millisToReduceCPUSpeed</code>, holt nicht endlos nach.</td></tr>
+  <tr><td><code>void fxShow()</code></td><td>Beachtet <code>LEDsTurnedOff</code>, setzt Marker, ruft <code>FastLED.show()</code>. In jedem Durchlauf aufrufen, sonst flackern die Marker.</td></tr>
+  <tr><td><code>uint32_t fxBeats(bpm)</code></td><td>Beats seit Partbeginn, ohne Überlauf.</td></tr>
+  <tr><td><code>loopToLed(k)</code>, <code>ledToLoop(i)</code>, <code>zoneOfLoop(k)</code>, <code>setMirrored(d, col)</code>, <code>fillZone(zone, col)</code>, <code>fire2012Step(heat, len)</code></td><td>Geometrie-Helper für eigene Effekte.</td></tr>
+</table></div>
+
+<!-- ===================================================================== -->
+<h2 id="demos">8 · Demo-Songs 90 &amp; 91</h2>
+<p>Songwahl per MIDI <b>CC#0</b>. Alternativ startet ein Gerät direkt mit der Demo, wenn in <code>definitions.h</code> <code>START_WITH_FX_DEMO</code> (90) bzw. <code>START_WITH_SCENE_DEMO</code> (91) aktiv ist. Beide Demos laufen in Dauerschleife.</p>
+<div class="tablewrap"><table>
+  <tr><th colspan="3">Song 90: <code>neueEffekteDemo()</code> (Kontur-Effekte)</th></tr>
+  <tr><th>Part</th><th>Aufruf</th><th>Dauer</th></tr>
+  <tr><td>0</td><td><code>progCometLoop(12000, 5)</code> – 2 Kometen</td><td>12 s</td></tr>
+  <tr><td>5</td><td><code>progChargeBlast(12000, 10, 2000, 160)</code></td><td>12 s</td></tr>
+  <tr><td>10</td><td><code>progSymmetricVU(12000, 15, 120)</code></td><td>12 s</td></tr>
+  <tr><td>15</td><td><code>progShockwave(12000, 20, 700)</code></td><td>12 s</td></tr>
+  <tr><td>20</td><td><code>progPlaneWipe(12000, 25, 1200, WIPE_ANGLE_NECK)</code></td><td>12 s</td></tr>
+  <tr><td>25</td><td><code>progPlaneWipe(8000, 30, 1500, WIPE_ANGLE_HORIZONTAL)</code></td><td>8 s</td></tr>
+  <tr><td>30</td><td><code>progLightning(12000, 35)</code></td><td>12 s</td></tr>
+  <tr><td>35 / 40</td><td><code>progOutlineFire</code> rot / blau</td><td>12 s / 8 s</td></tr>
+  <tr><td>45</td><td><code>progZoneBeat(12000, 50, 128)</code></td><td>12 s</td></tr>
+  <tr><td>50</td><td><code>progHeartbeat(12000, 55, 70)</code></td><td>12 s</td></tr>
+  <tr><td>55 / 60</td><td><code>progSpatialRainbow</code> drehend / aufsteigend</td><td>je 10 s</td></tr>
+  <tr><td>65</td><td><code>progFuse(10000, 70)</code></td><td>10 s</td></tr>
+  <tr><td>70</td><td><code>progCometLoop(8000, 100, 8, 0, false)</code> – ein roter Komet</td><td>8 s</td></tr>
+</table></div>
+<div class="tablewrap"><table>
+  <tr><th colspan="3">Song 91: <code>szenenDemo()</code> (Szenen + Schemata, 120 BPM, je 8 s)</th></tr>
+  <tr><th>Part</th><th>Schema</th><th>Szene / Programm</th></tr>
+  <tr><td>0</td><td>ICE</td><td><code>SCENE_CALM</code></td></tr>
+  <tr><td>5</td><td>NEON</td><td><code>SCENE_VERSE</code></td></tr>
+  <tr><td>10</td><td>FIRE</td><td><code>SCENE_BUILDUP</code></td></tr>
+  <tr><td>15</td><td>FIRE</td><td><code>SCENE_DROP</code></td></tr>
+  <tr><td>20 / 25</td><td>SUNSET</td><td><code>SCENE_WAVE_LR</code> / <code>SCENE_WAVE_RL</code></td></tr>
+  <tr><td>30</td><td>RETRO</td><td><code>SCENE_WAVE_OUT</code></td></tr>
+  <tr><td>35</td><td>NEON</td><td><code>SCENE_PINGPONG</code></td></tr>
+  <tr><td>40 / 45 / 50</td><td>RED / BLUE / TOXIC</td><td><code>SCENE_SOLO_GIT</code> / <code>_BASS</code> / <code>_DRUMS</code></td></tr>
+  <tr><td>55 / 60</td><td>ICE / FIRE</td><td><code>SCENE_FIRE</code> (blau / rot)</td></tr>
+  <tr><td>65</td><td>ROYAL</td><td><code>progStrobo(4000, 70, 75, getRandomCRGB())</code> (4 s)</td></tr>
+  <tr><td>70</td><td>SUNSET</td><td><code>progPalette(8000, PALETTE_SCHEME, 100)</code></td></tr>
+</table></div>
+<div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
+
+<!-- ===================================================================== -->
+<h2 id="checkliste">9 · Kalibrier-Checkliste</h2>
+<p>Alle Geometrie-Werte sind aus einem Foto geschätzt und noch nicht an der Hardware geprüft.</p>
+<div class="tablewrap"><table>
+  <tr><th>Symptom</th><th>Stellschraube</th></tr>
+  <tr><td>Explosion von ChargeBlast bzw. Kometen-Treffpunkt liegt nicht an der Kopfplatte</td><td><code>GUITAR_HEAD_TIP_IDX</code> (Tipp: Mit <code>progTestRange</code> einzelne Indizes ansehen)</td></tr>
+  <tr><td>Oben/unten bzw. Bund-/Diskantseite vertauscht, Zonen gespiegelt</td><td><code>GUITAR_LOOP_DIR</code> → <code>-1</code></td></tr>
+  <tr><td>ZoneBeat/Heartbeat-Zonen sitzen daneben</td><td><code>ZONE_*_START</code></td></tr>
+  <tr><td>Zündschnur läuft falsch herum den Gurt entlang</td><td><code>STRAP_IDX0_AT_GUITAR</code></td></tr>
+  <tr><td>Funke erreicht die Gitarre zu früh/zu spät, Rest des Gurts bleibt dunkel</td><td><code>anz_LEDs_STRAP</code></td></tr>
+  <tr><td>Gitarre entzündet sich nicht am Gurtansatz</td><td><code>GUITAR_STRAP_PIN_POS</code></td></tr>
+  <tr><td>Lampen füllen sich von oben</td><td><code>LAMP_IDX0_AT_BOTTOM</code> → 0</td></tr>
+  <tr><td>Welle über die Bühne wirkt durch BLE-Latenz verwaschen</td><td><code>WAVE_STEP_MS</code> erhöhen (<code>scenes.h</code>)</td></tr>
+  <tr><td>Bass-Zonen passen nicht</td><td>eigene <code>GUITAR_HEAD_TIP_IDX</code>/<code>ZONE_*</code> im Block <code>BASSMARKER</code> ergänzen</td></tr>
+</table></div>
+
+<!-- ===================================================================== -->
+<h2 id="dateien">10 · Dateien &amp; API-Referenz</h2>
+<div class="tablewrap"><table>
+  <tr><th>Datei</th><th>Inhalt</th></tr>
+  <tr><td><code>src/guitarShapeFX.cpp/.h</code></td><td>Geometrie (Umriss, XY, Zonen), Grundgerüst <code>fx*</code>, 11 Kontur-Effekte, Gurt-Puffer</td></tr>
+  <tr><td><code>src/colorSchemes.cpp/.h</code></td><td>Farbschemata, <code>getRandomCRGB</code>, <code>deviceColor</code>, <code>schemePalette</code></td></tr>
+  <tr><td><code>src/scenes.cpp/.h</code></td><td><code>scene()</code>, Primitive, Lampen-Effekte, <code>sharedRand8</code></td></tr>
+  <tr><td><code>src/definitions.h</code></td><td>Geräte-Identität (<code>DEV_*</code>, <code>STAGE_POS</code>, <code>DEVICE_CLASS</code>), Geometrie-Defines, Start-Demos</td></tr>
+  <tr><td><code>src/markerLEDs.cpp</code></td><td>Gurt-Override in <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code></td></tr>
+  <tr><td><code>src/functions.cpp</code></td><td><code>switchToPart()</code> setzt <code>strapOverride</code> und Farbschema zurück; Zufallsfarben mit Schema</td></tr>
+  <tr><td><code>src/FXprograms.cpp/.h</code></td><td>Schema-Anbindung der alten Programme, <code>progStrobo(…, CRGB)</code>, <code>PALETTE_SCHEME</code></td></tr>
+  <tr><td><code>src/songs.cpp/.h</code>, <code>src/main.cpp</code></td><td>Demo-Songs 90/91 und Dispatcher</td></tr>
+</table></div>
+
+<footer>Stand: 27.09.2026 · Die Vorschauen sind JavaScript-Nachbauten der Firmware-Effekte. Farben und Helligkeit wirken auf echten WS2812B anders.</footer>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Geometrie der SG (identisch zu guitarShapeFX.cpp)
+   ===================================================================== */
+const OUTLINE=[[912,648],[880,720],[840,745],[790,760],[470,990],[430,1010],[400,1045],[410,1075],[455,1080],[440,1110],[400,1120],
+  [330,1170],[300,1220],[270,1290],[200,1330],[120,1310],[60,1250],[20,1150],[10,1070],[40,1020],[120,1000],[200,960],[270,900],
+  [320,890],[345,905],[335,945],[380,960],[760,720],[790,680],[840,640],[880,625]];
+const BRIDGE=[235,1085], BODYC=[200,1130];
+const N=163, HALF=81, HEAD=77, DIR=1;
+const Z={NECK_LOW:12,HORN_LOW:36,BODY:51,HORN_UP:112,NECK_UP:123,HEAD_UP:151,STRAP_PIN:117};
+const STRAP_N=60, BUND_MIN=45, BUND_MAX=67;
+
+const mod=(a,n)=>((a%n)+n)%n;
+const led=k=>mod(HEAD+DIR*k,N);
+function zoneOf(k){ if(k<Z.NECK_LOW||k>=Z.HEAD_UP) return 0; if(k<Z.HORN_LOW) return 1; if(k<Z.BODY) return 2; if(k<Z.HORN_UP) return 3; if(k<Z.NECK_UP) return 4; return 5; }
+
+// LED-Positionen (Foto-Pixel) + normierte XY (0..255) wie initGuitarShape()
+const G=(function(){
+  const n=OUTLINE.length, seg=[]; let total=0, minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  for(let p=0;p<n;p++){const a=OUTLINE[p],b=OUTLINE[(p+1)%n]; seg[p]=Math.hypot(b[0]-a[0],b[1]-a[1]); total+=seg[p];
+    minX=Math.min(minX,a[0]);maxX=Math.max(maxX,a[0]);minY=Math.min(minY,a[1]);maxY=Math.max(maxY,a[1]);}
+  const scale=255/Math.max(maxX-minX,maxY-minY);
+  const px=new Array(N),py=new Array(N),nx=new Array(N),ny=new Array(N);
+  let p=0,s0=0;
+  for(let k=0;k<N;k++){const s=total*k/N; while(p<n-1&&s>s0+seg[p]){s0+=seg[p];p++;}
+    const f=seg[p]>0?(s-s0)/seg[p]:0,a=OUTLINE[p],b=OUTLINE[(p+1)%n];
+    const x=a[0]+(b[0]-a[0])*f, y=a[1]+(b[1]-a[1])*f, i=led(k);
+    px[i]=x;py[i]=y;nx[i]=Math.max(0,Math.min(255,(x-minX)*scale));ny[i]=Math.max(0,Math.min(255,(y-minY)*scale));}
+  const bx=(BRIDGE[0]-minX)*scale,by=(BRIDGE[1]-minY)*scale,cx=(BODYC[0]-minX)*scale,cy=(BODYC[1]-minY)*scale;
+  const dist=[],ang=[]; let md=1;
+  for(let i=0;i<N;i++){dist[i]=Math.hypot(nx[i]-bx,ny[i]-by); md=Math.max(md,dist[i]);
+    ang[i]=Math.floor((Math.atan2(ny[i]-cy,nx[i]-cx)+Math.PI)*256/(2*Math.PI))&255;}
+  return {px,py,nx,ny,distB:dist.map(d=>Math.floor(d*255/md)),ang,minX,minY};
+})();
+
+/* =====================================================================
+   Farb-Helfer (angelehnt an FastLED)
+   ===================================================================== */
+const clamp=v=>v<0?0:v>255?255:v;
+function hsv(h,s,v){ h=mod(h,256)/256*6; s/=255; v/=255; const i=Math.floor(h),f=h-i,p=v*(1-s),q=v*(1-s*f),t=v*(1-s*(1-f));
+  const r=[[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i%6]; return [r[0]*255,r[1]*255,r[2]*255]; }
+function hueOf(c){ const [r,g,b]=c.map(x=>x/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn; if(!d) return 0;
+  let h= mx===r?((g-b)/d)%6 : mx===g?(b-r)/d+2 : (r-g)/d+4; return mod(Math.round(h*256/6),256); }
+const scale=(c,v)=>[c[0]*v/255,c[1]*v/255,c[2]*v/255];
+const blend=(a,b,t)=>[a[0]+(b[0]-a[0])*t/255,a[1]+(b[1]-a[1])*t/255,a[2]+(b[2]-a[2])*t/255];
+const add=(a,b)=>[clamp(a[0]+b[0]),clamp(a[1]+b[1]),clamp(a[2]+b[2])];
+const maxc=(a,b)=>[Math.max(a[0],b[0]),Math.max(a[1],b[1]),Math.max(a[2],b[2])];
+const BLACK=[0,0,0], WHITE=[255,255,255];
+function fade(L,amt){ const f=(255-amt)/255; for(let i=0;i<L.length;i++) L[i]=scale(L[i],f*255); }
+function fill(L,c){ for(let i=0;i<L.length;i++) L[i]=c; }
+const rnd=(a,b)=>b===undefined?Math.floor(Math.random()*a):a+Math.floor(Math.random()*(b-a));
+function heatColor(t){ const t192=Math.floor(t*191/255), ramp=(t192&63)<<2;
+  if(t192&0x80) return [255,255,ramp]; if(t192&0x40) return [255,ramp,0]; return [ramp,0,0]; }
+const BLUEFIRE=[[0,0,0],[0,0,0],[0,0,50],[0,0,110],[0,0,180],[0,50,210],[0,100,240],[0,170,255],[0,220,255],[90,235,255],[190,248,255],WHITE,WHITE,WHITE,WHITE,WHITE];
+function blueFire(h){ const x=h/256*16, i=Math.floor(x), f=x-i; return blend(BLUEFIRE[i],BLUEFIRE[Math.min(15,i+1)],f*255); }
+// Value-Noise als Ersatz für inoise8
+const hash=n=>{ n=Math.imul(n^0x9E3779B1,0x85EBCA6B); n^=n>>>13; n=Math.imul(n,0xC2B2AE35); return ((n^(n>>>16))>>>0)/4294967296; };
+function noise1(x){ const i=Math.floor(x),f=x-i,s=f*f*(3-2*f); return (hash(i)*(1-s)+hash(i+1)*s)*255; }
+function noise2(x,y){ const i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+  const h=(a,b)=>hash(a*7919+b*104729);
+  const a=h(i,j)*(1-sx)+h(i+1,j)*sx, b=h(i,j+1)*(1-sx)+h(i+1,j+1)*sx; return (a*(1-sy)+b*sy)*255; }
+
+/* =====================================================================
+   Farbschemata (identisch zu colorSchemes.cpp)
+   ===================================================================== */
+const SCHEMES=[
+  {id:"SCHEME_RANDOM",c:null,note:"wie bisher: freie Zufallsfarben (Standard)"},
+  {id:"SCHEME_FIRE",c:[[255,0,0],[255,80,0],[255,180,0]],note:""},
+  {id:"SCHEME_ICE",c:[[0,60,255],[0,200,255],[170,220,255]],note:"kaltes Schema → blaues Feuer"},
+  {id:"SCHEME_NEON",c:[[255,0,120],[0,255,200],[140,0,255]],note:""},
+  {id:"SCHEME_ROYAL",c:[[0,0,255],[120,0,255],[200,200,255]],note:"kaltes Schema → blaues Feuer"},
+  {id:"SCHEME_TOXIC",c:[[0,255,0],[150,255,0],[255,230,0]],note:""},
+  {id:"SCHEME_SUNSET",c:[[255,90,0],[255,0,90],[120,0,200],[255,170,0]],note:""},
+  {id:"SCHEME_RETRO",c:[[255,0,0],[255,255,255],[0,0,255]],note:""},
+  {id:"SCHEME_WHITE",c:[[255,255,255]],note:""},
+  {id:"SCHEME_RED",c:[[255,0,0]],note:""},
+  {id:"SCHEME_BLUE",c:[[0,0,255]],note:"kaltes Schema → blaues Feuer"},
+];
+function Scheme(idx){
+  const s=SCHEMES[idx];
+  return {
+    idx, active:!!s.c,
+    cold:[2,4,10].includes(idx),
+    color(n){ return s.c? s.c[mod(n,s.c.length)] : hsv(mod(n,5)*256/5,255,255); },
+    random(){ if(s.c) return s.c[rnd(s.c.length)]; const v=()=>[5,63,127,191,255][rnd(5)]; return [v(),v(),v()]; },
+    device(pos){ return this.color(pos); },
+  };
+}
+(function(){ const t=document.getElementById("schemetable");
+  SCHEMES.forEach(s=>{ const tr=document.createElement("tr");
+    const sw=s.c? s.c.map(c=>`<span class="sw" style="background:rgb(${c})" title="rgb(${c})"></span>`).join("") : '<span class="sw" style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f)"></span>';
+    tr.innerHTML=`<td><code>${s.id}</code></td><td>${sw}</td><td>${s.note}</td>`; t.appendChild(tr); });
+  for(const id of ["gscheme","sscheme"]){ const sel=document.getElementById(id);
+    SCHEMES.forEach((s,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=s.id.replace("SCHEME_",""); sel.appendChild(o); }); }
+  document.getElementById("sscheme").value=3;
+})();
+
+/* =====================================================================
+   Kontur-Effekte (JS-Nachbau von guitarShapeFX.cpp)
+   Jeder Effekt: step(ms, L, S) wird alle 10 ms aufgerufen.
+   L = Gitarre (Strip-Index), S = Gurt (null = Kopie der Gitarre)
+   ===================================================================== */
+function setM(L,d,c){ L[led(d)]=c; L[led(-d)]=c; }
+function fillZoneG(L,z,c){ for(let k=0;k<N;k++) if(zoneOf(k)===z) L[led(k)]=c; }
+function every(msStep){ let last=-1e9; return ms=>{ if(ms-last<msStep) return false; last=ms; return true; }; }
+
+const FX={
+  zones(){ const cols=[[255,255,255],[78,161,255],[255,184,107],[255,79,122],[182,123,255],[126,231,135]];
+    return {step(ms,L){ for(let k=0;k<N;k++){ const c=cols[zoneOf(k)]; L[led(k)]= k===0? ((ms/250|0)%2?WHITE:BLACK) : scale(c,160); } }}; },
+
+  comet({step=12,hue=160,two=true}={}){ let pos=0; const due=every(step);
+    return {step(ms,L){ if(!due(ms)) return; fade(L,28); pos=(pos+1)%N;
+      L[led(pos)]=hsv(hue,110,255);
+      if(two){ L[led(-pos)]=hsv(hue+128,110,255); const d=Math.min(pos,N-pos);
+        if(d===0||Math.abs(d-HALF)<=1) for(let j=-4;j<=4;j++) L[led(pos+j)]=WHITE; } }}; },
+
+  chargeBlast({charge=2000,hue=160}={}){ return {step(ms,L){ const t=ms%(charge+600); fill(L,BLACK);
+      if(t<charge){ const level=Math.floor(t*(HALF+1)/charge);
+        for(let fb=0;fb<level;fb++){ const edge=fb>=level-2; setM(L,HALF-fb, edge?hsv(hue,60,255):hsv(hue,255,Math.min(255,50+150*fb/HALF+rnd(40)))); }
+        fillZoneG(L,0,hsv(hue,200,20+120*t/charge));
+      } else { const tb=t-charge, front=tb*HALF/250, f=255-tb*255/600;
+        for(let d=0;d<=HALF&&d<=front;d++) setM(L,d,hsv(hue,Math.min(255,d*6),f*(255-d*150/HALF)/255));
+        if(tb<120) fillZoneG(L,0,WHITE); } }}; },
+
+  vu({bpm=0}={}){ let level=0,peak=0,hold=0,lastBeat=0;
+    return {step(ms,L){ if(bpm>0){ const b=Math.floor(ms*bpm/60000); if(b!==lastBeat){ lastBeat=b; level=Math.max(level,rnd(190,255)); } }
+      if(rnd(256)<10) level=Math.max(level,rnd(80,210));
+      level=Math.max(level*243/256, noise1(ms/3/256)/2);
+      if(level>=peak){peak=level;hold=40;} else if(hold>0) hold--; else peak=Math.max(0,peak-3);
+      fill(L,BLACK); const n=Math.floor(level*(HALF+1)/256);
+      for(let fb=0;fb<n;fb++) setM(L,HALF-fb,hsv(96-96*fb/HALF,255,200));
+      setM(L,HALF-Math.floor(peak*HALF/256),WHITE); }}; },
+
+  shockwave({interval=700,col=null,scheme}={}){ const waves=[]; let lastSpawn=-interval;
+    return {step(ms,L){ if(ms-lastSpawn>=interval&&waves.length<4){ waves.push({b:ms,c: col||(scheme&&scheme.active?scheme.random():hsv(rnd(256),255,255))}); lastSpawn=ms; }
+      fade(L,60);
+      for(let w=waves.length-1;w>=0;w--){ const age=ms-waves[w].b, r=age*255/900; if(r>255+22){waves.splice(w,1);continue;}
+        const life=255-Math.min(160,age*160/900);
+        for(let i=0;i<N;i++){ const dl=Math.abs(G.distB[i]-r); if(dl>=22) continue; L[i]=add(L[i],scale(waves[w].c,(255-dl*255/22)*life/255)); } } }}; },
+
+  planeWipe({sweep=1200,angle=-36}={}){ const a=angle*Math.PI/180, pr=G.nx.map((x,i)=>x*Math.cos(a)+G.ny[i]*Math.sin(a));
+    const mn=Math.min(...pr),mx=Math.max(...pr), proj=pr.map(p=>(p-mn)*255/Math.max(1,mx-mn)), W=45;
+    return {step(ms,L){ const sw=Math.floor(ms/sweep), ph=ms%sweep; let pos=ph*(255+2*W)/sweep-W; if(sw&1) pos=255-pos;
+      fade(L,45); for(let i=0;i<N;i++){ const d=Math.abs(proj[i]-pos); if(d<W) L[i]=maxc(L[i],hsv(sw*48,230,255-d*255/W)); } }}; },
+
+  lightning({chance=6}={}){ let left=0,next=0,big=false,start=0,len=0;
+    return {step(ms,L){ fade(L,30);
+      if(left===0&&rnd(1024)<chance){ big=rnd(256)<60; start=rnd(N); len=rnd(4,20); left=rnd(2,5); next=ms; }
+      if(left>0&&ms>=next){ const strong=left&1, bolt=()=>{const v=rnd(strong?150:60,255); return [v*3/4,v*4/5,v];};
+        if(big) for(let d=0;d<Z.HORN_LOW;d++) setM(L,d,bolt()); else for(let j=0;j<len;j++) L[led(start+j)]=bolt();
+        left--; next=ms+rnd(30,90); } }}; },
+
+  outlineFire({blue=false,step=20}={}){ const C=HALF+1, heat=[new Array(C).fill(0),new Array(C).fill(0)], due=every(step);
+    return {step(ms,L){ if(!due(ms)) return; heat.forEach(h=>fire2012(h));
+      for(let c=0;c<C;c++){ const d=HALF-c; for(let s=0;s<2;s++){ const col=blue?blueFire(heat[s][c]):heatColor(heat[s][c]), i=led(s?-d:d);
+        L[i]=(s&&(d===0||d===HALF))?maxc(L[i],col):col; } } }}; },
+
+  zoneBeat({bpm=128,scheme}={}){ const act=scheme&&scheme.active; const col=[],val=[]; let last=-1;
+    for(let z=0;z<6;z++){ col[z]=act?scheme.color(z):hsv(z*42,255,255); val[z]=25; }
+    return {step(ms,L){ const b=Math.floor(ms*bpm/60000);
+      if(b!==last){ last=b; const z=b%6; col[z]=act?scheme.color(b):hsv(b*37,255,255); val[z]=255;
+        if(b%4===0){ const o=(z+3)%6; col[o]=act?scheme.color(b+1):hsv(b*37+128,255,255); val[o]=255; } }
+      for(let z=0;z<6;z++) val[z]=Math.max(25,val[z]*240/256);
+      for(let k=0;k<N;k++){ const z=zoneOf(k); L[led(k)]=scale(col[z],val[z]); } }}; },
+
+  heartbeat({bpm=70,col=[255,0,0]}={}){ return {step(ms,L){ const period=60000/bpm, t=ms%period;
+      const lub=255-t*255/150, dub=t>=220?200-(t-220)*200/180:0; let env=Math.max(8,lub,dub); env=env*env/255;
+      fill(L,BLACK); const body=scale(col,Math.max(6,env));
+      for(let k=0;k<N;k++){ const z=zoneOf(k); if(z>=2&&z<=4) L[led(k)]=body; }
+      const travel=period*0.45;
+      if(t>=220&&t<220+travel){ const p=Math.floor(Z.HORN_LOW-(t-220)*Z.HORN_LOW/travel);
+        for(let j=0;j<4;j++){ if(p+j>Z.HORN_LOW) break; setM(L,p+j,scale(col,200>>j)); } }
+      else if(t>=220+travel&&t<220+travel+150) fillZoneG(L,0,scale(col,120-(t-220-travel)*120/150)); }}; },
+
+  rainbow({rotating=true,step=15}={}){ let off=0; const due=every(step);
+    return {step(ms,L){ if(!due(ms)) return; off=(off+1)&255;
+      for(let i=0;i<N;i++) L[i]=hsv((rotating?G.ang[i]:G.ny[i])+off,255,255); }}; },
+
+  fuse({fuseMs=3000}={}){ return {strap:true, step(ms,L,S){
+      if(ms<fuseMs){ const spark=Math.floor(ms*STRAP_N/fuseMs); fade(S,20);
+        for(let s=0;s<spark-2;s++) if(rnd(256)<12) S[s]=[rnd(60,120),rnd(10,30),0];
+        S[spark]=[255,rnd(160,230),80]; if(spark+1<STRAP_N&&rnd(256)<120) S[spark+1]=[255,90,0];
+        fill(L,BLACK); const g=ms*80/fuseMs; for(let j=-2;j<=2;j++) L[led(Z.STRAP_PIN+j)]=[g,g/4,0];
+      } else { const tb=ms-fuseMs, front=tb*(HALF+1)/1500;
+        for(let k=0;k<N;k++){ let dk=Math.abs(k-Z.STRAP_PIN); dk=Math.min(dk,N-dk); let c=BLACK;
+          if(dk<=front){ c=(dk>=front-2&&front<=HALF)?[255,230,150]:heatColor(Math.min(255,80+noise2(k*40/256,ms/3/256)*175/255)); }
+          if(tb<200&&dk<8) c=add(c,scale([200,200,200],255-tb*255/200));
+          L[led(k)]=c; }
+        for(let s=0;s<STRAP_N;s++) S[s]=heatColor(noise2(s*50/256,ms/4/256)/3); } }}; },
+};
+function fire2012(h){ const len=h.length;
+  for(let c=0;c<len;c++) h[c]=Math.max(0,h[c]-rnd(0,Math.floor(700/len)+2));
+  for(let c=len-1;c>=2;c--) h[c]=Math.floor((h[c-1]+2*h[c-2])/3);
+  if(rnd(256)<120){ const y=rnd(7); h[y]=Math.min(255,h[y]+rnd(160,255)); } }
+
+/* =====================================================================
+   Effekt-Katalog (Doku-Karten + Vorschau-Buttons)
+   ===================================================================== */
+const EFFECTS=[
+ {key:"zones",name:"Zonen-Karte",preview:true,noCard:true,make:()=>FX.zones(),code:"Zonen: Kopf, Hals unten/oben, Hörner, Korpus – die blinkende LED ist k = 0 (Kopfspitze)"},
+ {key:"comet",n:1,name:"Comet Loop",fn:"progCometLoop",
+  sig:["progCometLoop(dur, next, msPerStep, hue, twoComets)","progCometLoop(dur, next)   // = (…, 12, 160, true)"],
+  params:[["msPerStep","ms pro LED-Schritt (12 → Umlauf in ~2 s)"],["hue","Farbton 0–255 (FastLED-HSV)"],["twoComets","zweiter Komet gegenläufig in Komplementärfarbe"]],
+  desc:"Ein heller Komet mit langem, ausglimmendem Schweif rast um die Kontur. Mit <code>twoComets</code> laufen zwei Kometen gegenläufig von der Kopfspitze los. An der Kopfplatte und unten am Korpus treffen sie sich und lösen einen kurzen weißen Blitz aus.",
+  use:"Intros, Übergänge, Solo (in <code>SCENE_SOLO_*</code>).",ex:"case 0: progCometLoop(12000, 5); break;",make:()=>FX.comet()},
+ {key:"charge",n:2,name:"Charge & Blast",fn:"progChargeBlast",
+  sig:["progChargeBlast(dur, next, chargeMillis, hue)","progChargeBlast(dur, next)   // = (…, 2000, 160)"],
+  params:[["chargeMillis","Dauer der Aufladung; Zyklus = chargeMillis + 600 ms Explosion, wiederholt sich bis Partende"],["hue","Farbton der Ladung"]],
+  desc:"Licht füllt sich beidseitig synchron von unten den Hals hinauf, die Kopfplatte glüht dabei immer stärker. Oben explodiert sie weiß, der Blitz läuft in 250 ms zurück nach unten und klingt ab. Die Gitarre wird zur „Laserkanone“.",
+  use:"Breaks und Drops. Tipp: <code>chargeMillis</code> = Länge eines Takts oder mehrerer Takte, z. B. 1875 ms bei 128 BPM.",ex:"case 40: progChargeBlast(8000, 45, 1875, 160); break;",make:()=>FX.chargeBlast()},
+ {key:"vu",n:3,name:"Symmetric VU",fn:"progSymmetricVU",
+  sig:["progSymmetricVU(dur, next, bpm)","progSymmetricVU(dur, next)   // bpm = 0: nur Zufall"],
+  params:[["bpm","Beat-Kicks im Songtempo; 0 = nur Zufallskicks + Rauschen"]],
+  desc:"Pegelanzeige, die spiegelsymmetrisch von unten zur Kopfplatte steigt, grün → gelb → rot, mit weißem Peak-Hold-Pixel. Einen Audio-Eingang gibt es nicht: Der Pegel entsteht aus Beat-Kicks, Zufallskicks und einem wabernden Grundrauschen.",
+  use:"Strophen, rhythmische Parts.",ex:"case 10: progSymmetricVU(12000, 15, 120); break;",make:()=>FX.vu({bpm:120})},
+ {key:"shock",n:4,name:"Shockwave",fn:"progShockwave",
+  sig:["progShockwave(dur, next, msBetweenWaves, CRGB col)","progShockwave(dur, next, msBetweenWaves)   // Zufalls- bzw. Schemafarben"],
+  params:[["msBetweenWaves","Abstand der Wellen (z. B. = 60000/BPM für eine Welle pro Beat)"],["col","feste Farbe; ohne: Zufallsfarben bzw. Farbschema"]],
+  desc:"Ringwellen breiten sich im <i>echten Raum</i> vom Steg aus: zuerst leuchtet der Korpus, dann der Hals, zuletzt die Kopfplatte. Max. 4 Wellen gleichzeitig, 900 ms bis zum entferntesten Punkt, mit Nachglühen.",
+  use:"Drops und Refrains (in <code>SCENE_DROP</code>).",ex:"case 15: progShockwave(12000, 20, 469); break;   // 128 BPM",make:s=>FX.shockwave({scheme:s})},
+ {key:"wipe",n:5,name:"Plane Wipe",fn:"progPlaneWipe",
+  sig:["progPlaneWipe(dur, next, sweepMillis, angleDeg)"],
+  params:[["sweepMillis","Dauer eines Durchlaufs; danach zurück, jeder Durchlauf neue Farbe"],["angleDeg","Richtung: WIPE_ANGLE_HORIZONTAL (0), WIPE_ANGLE_VERTICAL (−90), WIPE_ANGLE_NECK (−36, entlang der Halsachse) oder beliebig"]],
+  desc:"Eine Lichtebene fährt unter einem frei wählbaren Winkel über die Gitarre hin und her. Auf dem Umriss sieht das aus wie ein Scanner, der den Körper abtastet.",
+  use:"Übergänge, „Scan“-Momente.",ex:"case 20: progPlaneWipe(12000, 25, 1200, WIPE_ANGLE_NECK); break;",make:()=>FX.planeWipe()},
+ {key:"light",n:6,name:"Lightning",fn:"progLightning",
+  sig:["progLightning(dur, next, chance)","progLightning(dur, next)   // chance = 6"],
+  params:[["chance","Wahrscheinlichkeit pro 10-ms-Frame in 1/1024 (6 ≈ ein Blitz alle 1,7 s)"]],
+  desc:"Zufällige Segmente blitzen grellweiß-bläulich, jeweils 2–4 Mal flackernd mit Nachglühen. Etwa jeder vierte Blitz fährt beidseitig durch den ganzen Hals.",
+  use:"Rock-Hits, ruhige Parts mit Spannung.",ex:"case 30: progLightning(12000, 35, 12); break;",make:()=>FX.lightning()},
+ {key:"fire",n:7,name:"Kontur-Feuer",fn:"progOutlineFire",
+  sig:["progOutlineFire(dur, next, msPerStep, blueFire)","progOutlineFire(dur, next)   // = (…, 20, false)"],
+  params:[["msPerStep","Simulationstakt (20 ms)"],["blueFire","blaue Flammen statt rot-gelb"]],
+  desc:"Fire2012 läuft von unten beidseitig die Kontur hinauf, die Kopfplatte wird zur Flammenspitze. Anders als das Matrix-<code>progFire</code> wird hier die Form selbst zur Flamme.",
+  use:"<code>SCENE_FIRE</code>, harte Refrains.",ex:"case 35: progOutlineFire(12000, 40); break;",make:()=>FX.outlineFire(),alt:{label:"blau",make:()=>FX.outlineFire({blue:true})}},
+ {key:"zone",n:8,name:"Zone Beat",fn:"progZoneBeat",
+  sig:["progZoneBeat(dur, next, bpm)"],
+  params:[["bpm","Songtempo"]],
+  desc:"Pro Beat leuchtet die nächste Zone (Kopf → Hals unten → Horn → Korpus → Horn → Hals oben) in neuer Farbe auf und klingt ab. Auf der Eins leuchtet zusätzlich die gegenüberliegende Zone. Mit Farbschema kommen die Farben aus dem Schema.",
+  use:"Strophen (in <code>SCENE_VERSE</code>).",ex:"case 45: progZoneBeat(12000, 50, 128); break;",make:s=>FX.zoneBeat({scheme:s})},
+ {key:"heart",n:9,name:"Heartbeat",fn:"progHeartbeat",
+  sig:["progHeartbeat(dur, next, bpm, CRGB col)","progHeartbeat(dur, next, bpm)   // col = Rot"],
+  params:[["bpm","Herzfrequenz"],["col","Farbe"]],
+  desc:"Nur der Korpus pulsiert als Doppelschlag („lub-dub“). Nach dem zweiten Schlag wandert ein Puls beidseitig den Hals hinauf, und die Kopfplatte glimmt kurz nach.",
+  use:"Intros, Balladen, ruhige Parts.",ex:"case 50: progHeartbeat(12000, 55, 70); break;",make:()=>FX.heartbeat()},
+ {key:"rainbow",n:10,name:"Regenbogen im Raum",fn:"progSpatialRainbow",
+  sig:["progSpatialRainbow(dur, next, rotating, msPerStep)","progSpatialRainbow(dur, next, rotating)   // msPerStep = 15"],
+  params:[["rotating","true: dreht um den Korpusmittelpunkt · false: läuft von unten nach oben"],["msPerStep","Geschwindigkeit"]],
+  desc:"Der Farbton ergibt sich aus der Lage im Raum, entweder aus dem Winkel um den Korpus oder aus der Höhe. Der Regenbogen „liegt“ dadurch auf der Gitarre, statt nur durchzulaufen.",
+  use:"Party-Parts, Outros.",ex:"case 55: progSpatialRainbow(10000, 60, true); break;",make:()=>FX.rainbow(),alt:{label:"aufsteigend",make:()=>FX.rainbow({rotating:false})}},
+ {key:"fuse",n:11,name:"Zündschnur",fn:"progFuse",
+  sig:["progFuse(dur, next, fuseMillis)","progFuse(dur, next)   // fuseMillis = 3000"],
+  params:[["fuseMillis","Zeit, bis der Funke von der Schulter bis zur Gitarre gelaufen ist"]],
+  desc:"Ein Funke läuft den Gurt hinunter, dahinter glimmen Glutreste. Am Gurtansatz (oberes Horn) entzündet sich die Gitarre: Nach einem Zündblitz laufen zwei Flammenfronten in 1,5 s um die Kontur, danach brennt alles. Der Gurt glimmt nur noch. Das ist der einzige Effekt mit eigenem Gurt-Bild (siehe Abschnitt 4).",
+  use:"Songanfang, großer Einstieg nach einer Pause.",ex:"case 65: progFuse(10000, 70); break;",make:()=>FX.fuse()},
+];
+
+/* =====================================================================
+   Gitarren-Vorschau
+   ===================================================================== */
+const gcv=document.getElementById("gcv"), gctx=gcv.getContext("2d");
+const GVB={x:-20,y:560,w:960,h:800};   // Ausschnitt in Foto-Pixeln
+// Gurt: vom Gurtansatz (oberes Horn) nach oben aus dem Bild
+const strapPts=[]; for(let s=0;s<STRAP_N;s++){ const f=s/(STRAP_N-1); strapPts.push([348+f*22, 900-f*330]); }
+let gState={eff:null,scheme:Scheme(0),t0:0,tick:0,L:[],S:[],entry:null};
+function gStart(entry){
+  gState.entry=entry; gState.eff=entry.make(gState.scheme);
+  gState.L=new Array(N).fill(BLACK); gState.S=new Array(STRAP_N).fill(BLACK); gState.t0=performance.now(); gState.tick=0;
+  document.getElementById("gnow").innerHTML= entry.code? entry.code : `<code>${entry.sig[0].replace("dur, next","…")}</code> – ${entry.name}`;
+  document.querySelectorAll("#gbtns .btn").forEach(b=>b.classList.toggle("on",b.dataset.key===entry.key+(entry.altOf?"-alt":"")));
+}
+function toCanvas(x,y,c){ return [(x-GVB.x)*c.width/GVB.w,(y-GVB.y)*c.height/GVB.h]; }
+function drawLED(ctx,x,y,c,r){
+  const lum=Math.max(c[0],c[1],c[2]);
+  if(lum<4){ ctx.fillStyle="#1b2028"; ctx.beginPath(); ctx.arc(x,y,r*0.55,0,6.283); ctx.fill(); return; }
+  const col=`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+  ctx.globalCompositeOperation="lighter";
+  const g=ctx.createRadialGradient(x,y,0,x,y,r*3.2); g.addColorStop(0,`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${0.55*lum/255})`); g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r*3.2,0,6.283); ctx.fill();
+  ctx.globalCompositeOperation="source-over";
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,r*0.75,0,6.283); ctx.fill();
+}
+function drawGuitar(){
+  const c=gcv, ctx=gctx; ctx.fillStyle="#07090c"; ctx.fillRect(0,0,c.width,c.height);
+  // Umriss
+  ctx.strokeStyle="#20262f"; ctx.lineWidth=14; ctx.lineJoin="round"; ctx.beginPath();
+  OUTLINE.forEach((p,i)=>{ const [x,y]=toCanvas(p[0],p[1],c); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.closePath(); ctx.stroke();
+  ctx.fillStyle="#0d1117"; ctx.fill();
+  // Gurt
+  ctx.strokeStyle="#1a1f27"; ctx.lineWidth=16; ctx.beginPath(); strapPts.forEach((p,i)=>{const [x,y]=toCanvas(p[0],p[1],c); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.stroke();
+  const L=gState.L, marker=document.getElementById("gmarker").checked;
+  const r=c.width/190;
+  for(let i=0;i<N;i++){ let col=L[i];
+    if(marker&&i>=BUND_MIN&&i<BUND_MAX) col=(i===48||i===55)?[0,0,120]:BLACK;
+    const [x,y]=toCanvas(G.px[i],G.py[i],c); drawLED(ctx,x,y,col,r); }
+  const S=gState.eff&&gState.eff.strap? gState.S : L;   // ohne Override: Kopf der Kette (leds[0..59])
+  for(let s=0;s<STRAP_N;s++){ const [x,y]=toCanvas(strapPts[s][0],strapPts[s][1],c); drawLED(ctx,x,y,S[s],r*0.9); }
+}
+
+/* =====================================================================
+   Bühnen-Vorschau (Szenen)
+   ===================================================================== */
+const LAMP_N=40, MW=54, MH=10;
+const lampFX={
+  breathe:(col,period,maxV)=>({step(ms,L){ const w=(1-Math.cos(2*Math.PI*(ms%period)/period))/2*255; fill(L,scale(col,Math.max(3,w*maxV/255))); }}),
+  beatFlash:(bpm,colFn,delay)=>({step(ms,L){ const p=60000/bpm; const env= ms>=delay? flashEnv((ms-delay)%p,p):0; fill(L,scale(colFn(ms),env)); }}),
+  pulse:(bpm,col)=>({step(ms,L){ const p=60000/bpm,t=ms%p; fill(L,scale(col,Math.max(8,flashEnv(t,p)*100/255)));
+      const pos=Math.floor(t*L.length*10/(p*6)); for(let j=0;j<6;j++){ const h=pos-j; if(h>=0&&h<L.length) L[h]=scale(col,255>>j); } }}),
+  fill:(dur,col)=>({step(ms,L){ const n=L.length, fillMs=dur>1200?dur-600:dur;
+      if(ms<fillMs){ const level=Math.floor(ms*n/fillMs); for(let h=0;h<n;h++) L[h]= (h>=level-2&&h<=level)? blend(col,WHITE,160) : h<level? scale(col,60+150*h/n+rnd(40)) : BLACK; }
+      else { const v=255-Math.min(255,(ms-fillMs)*255/600); fill(L,scale(blend(col,WHITE,v),v)); } }}),
+  fire:(blue)=>{ const h=new Array(LAMP_N).fill(0), due=every(20); return {step(ms,L){ if(!due(ms)) return; fire2012(h); for(let i=0;i<L.length;i++) L[i]=blue?blueFire(h[i]):heatColor(h[i]); }}; },
+};
+function flashEnv(t,p){ const d=Math.min(p*0.7,450); if(t>=d) return 0; const v=255-t*255/d; return v*v/255; }
+function sharedRand(salt){ return Math.floor(hash(salt*2654435761+91)*256); }
+function pingPong(bpm,pos,colFn){ let beat=0, cur=sharedRand(0)%5;
+  return {step(ms,L){ const b=Math.floor(ms*bpm/60000); while(beat<b){ beat++; cur=(cur+1+sharedRand(beat)%4)%5; }
+    const p=60000/bpm, t=ms%p; fill(L, cur===pos? scale(colFn(),255-t*200/p) : BLACK); }}; }
+
+// Matrix-Effekte (54×10, y=0 oben)
+const mxFX={
+  ripple:({speed=70,col=null,scheme,center=false})=>{ const R=[]; let last=-1e9; const interval=speed*12;
+    return {step(ms,L){ if(ms-last>interval&&R.length<5){ R.push({x:center?MW/2:rnd(MW),y:center?MH/2:rnd(MH),b:ms,c:col||(scheme.active?scheme.random():hsv(rnd(256),255,255))}); last=ms; }
+      fill(L,BLACK);
+      for(let k=R.length-1;k>=0;k--){ const age=(ms-R[k].b)/speed; if(age>45){R.splice(k,1);continue;}
+        for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){ const d=Math.hypot(x-R[k].x,(y-R[k].y)*1.2), rr=age*0.9;
+          for(let ring=0;ring<3;ring++){ const dl=Math.abs(d-(rr-ring*3.5)); if(dl<1.6&&rr-ring*3.5>0){ const v=(1-dl/1.6)*(1-age/45)*255*(1-ring*0.3); L[y*MW+x]=add(L[y*MW+x],scale(R[k].c,v)); } } } } }}; },
+  rain:(col)=>{ const head=[],spd=[]; for(let x=0;x<MW;x++){ head[x]=-rnd(20); spd[x]=1+rnd(2); } const due=every(80);
+    return {step(ms,L){ if(!due(ms)) return; fade(L,70); for(let x=0;x<MW;x++){ head[x]+=spd[x]*0.5; if(head[x]>MH+6) head[x]=-rnd(12);
+      const y=Math.floor(head[x]); if(y>=0&&y<MH) L[y*MW+x]=blend(col,WHITE,90); } }}; },
+  starfield:(scheme)=>{ const st=[]; for(let i=0;i<30;i++) st.push(newStar()); const c=scheme.active?scheme.random():hsv(rnd(256),255,255);
+    function newStar(){ return {x:(Math.random()-.5)*20,y:(Math.random()-.5)*20,z:Math.random()*10+.2}; }
+    return {step(ms,L){ fade(L,90); const speed=0.05+0.25*Math.min(1,ms/8000);
+      st.forEach((s,i)=>{ s.z-=speed; if(s.z<=0.2){ st[i]=newStar(); st[i].z=10; return; }
+        const x=Math.round(MW/2+s.x/s.z*4), y=Math.round(MH/2+s.y/s.z*1.2); if(x>=0&&x<MW&&y>=0&&y<MH) L[y*MW+x]=scale(c,Math.min(255,255*(1-s.z/10)+60)); else st[i]=newStar(); }); }}; },
+  fire:(blue)=>{ const h=new Array(MW*MH).fill(0), due=every(30);
+    return {step(ms,L){ if(!due(ms)) return;
+      for(let i=0;i<h.length;i++) h[i]=Math.max(0,h[i]-rnd(40));
+      for(let y=0;y<MH-2;y++) for(let x=0;x<MW;x++) h[y*MW+x]=Math.floor((h[(y+1)*MW+x]+2*h[(y+2)*MW+x])/3);
+      for(let k=0;k<3;k++) if(rnd(256)<120){ const x=rnd(MW); h[(MH-1)*MW+x]=Math.min(255,h[(MH-1)*MW+x]+rnd(160,255)); }
+      for(let i=0;i<h.length;i++) L[i]=blue?blueFire(h[i]):heatColor(h[i]); }}; },
+};
+
+const SCENES=[
+  ["SCENE_CALM","Calm"],["SCENE_VERSE","Verse"],["SCENE_BUILDUP","Buildup"],["SCENE_DROP","Drop"],["SCENE_FIRE","Fire"],
+  ["SCENE_WAVE_LR","Wave →"],["SCENE_WAVE_RL","Wave ←"],["SCENE_WAVE_OUT","Wave ↔"],["SCENE_PINGPONG","PingPong"],
+  ["SCENE_SOLO_GIT","Solo Git"],["SCENE_SOLO_BASS","Solo Bass"],["SCENE_SOLO_DRUMS","Solo Drums"]];
+const DEVICES=[{name:"Lampe 1",cls:"lamp",pos:0,dev:"LAMPE1"},{name:"Bass",cls:"guitar",pos:1,dev:"BASS"},{name:"Drums (Matrix)",cls:"matrix",pos:2,dev:"DRUMS"},
+  {name:"Gitarre",cls:"guitar",pos:3,dev:"GIT"},{name:"Lampe 2",cls:"lamp",pos:4,dev:"LAMPE2"}];
+
+// Nachbau von scene() in scenes.cpp
+function makeSceneFX(id,d,dur,bpm,sch){
+  const beat=60000/bpm, me=sch.device(d.pos), cls=d.cls;
+  const breathe=(m)=>lampFX.breathe(me,beat*4,m);
+  const STEP=100;
+  switch(id){
+    case "SCENE_WAVE_LR": return lampFX.beatFlash(bpm,()=>me,d.pos*STEP);
+    case "SCENE_WAVE_RL": return lampFX.beatFlash(bpm,()=>me,(4-d.pos)*STEP);
+    case "SCENE_WAVE_OUT": return lampFX.beatFlash(bpm,()=>me,Math.abs(d.pos-2)*STEP);
+    case "SCENE_PINGPONG": return pingPong(bpm,d.pos,()=>me);
+  }
+  if(id.startsWith("SCENE_SOLO")){ const who={SCENE_SOLO_GIT:"GIT",SCENE_SOLO_BASS:"BASS",SCENE_SOLO_DRUMS:"DRUMS"}[id]; if(d.dev!==who) return breathe(40); }
+  if(cls==="guitar") switch(id){
+    case "SCENE_CALM": return breathe(160);
+    case "SCENE_VERSE": return FX.zoneBeat({bpm,scheme:sch});
+    case "SCENE_BUILDUP": return FX.chargeBlast({charge:dur>1200?dur-600:dur,hue:hueOf(me)});
+    case "SCENE_DROP": return FX.shockwave({interval:beat,scheme:sch});
+    case "SCENE_FIRE": return FX.outlineFire({blue:sch.cold});
+    default: return FX.comet({step:8,hue:hueOf(me),two:true});
+  }
+  if(cls==="lamp") switch(id){
+    case "SCENE_CALM": return breathe(160);
+    case "SCENE_VERSE": return lampFX.pulse(bpm,me);
+    case "SCENE_BUILDUP": return lampFX.fill(dur,me);
+    case "SCENE_DROP": return lampFX.beatFlash(bpm,ms=>sch.color(Math.floor(ms*bpm/60000)),0);
+    case "SCENE_FIRE": return lampFX.fire(sch.cold);
+    default: return lampFX.pulse(bpm,me);
+  }
+  switch(id){   // Matrix
+    case "SCENE_CALM": return mxFX.ripple({speed:70,col:me,scheme:sch});
+    case "SCENE_VERSE": return mxFX.rain(me);
+    case "SCENE_BUILDUP": return mxFX.starfield(sch);
+    case "SCENE_DROP": return mxFX.ripple({speed:30,scheme:sch,center:true});
+    case "SCENE_FIRE": return mxFX.fire(sch.cold);
+    default: return mxFX.ripple({speed:25,scheme:sch});
+  }
+}
+const scv=document.getElementById("scv"), sctx=scv.getContext("2d");
+let sState={id:"SCENE_WAVE_LR",t0:0,tick:0,devs:[]};
+function sStart(id){
+  if(id) sState.id=id;
+  const sch=Scheme(+document.getElementById("sscheme").value), bpm=+document.getElementById("sbpm").value, dur=+document.getElementById("sdur").value;
+  sState.dur=dur; sState.t0=performance.now(); sState.tick=0;
+  sState.devs=DEVICES.map(d=>({d,fx:makeSceneFX(sState.id,d,dur,bpm,sch),L:new Array(d.cls==="guitar"?N:d.cls==="lamp"?LAMP_N:MW*MH).fill(BLACK)}));
+  document.querySelectorAll("#sbtns .btn").forEach(b=>b.classList.toggle("on",b.dataset.key===sState.id));
+  document.getElementById("snow").innerHTML=`<code>setColorScheme(${SCHEMES[sch.idx].id}); scene(${sState.id}, ${dur}, next, ${bpm});</code>`;
+}
+function drawStage(){
+  const c=scv, ctx=sctx, W=c.width, H=c.height; ctx.fillStyle="#07090c"; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#10141a"; ctx.fillRect(0,H-34,W,34);
+  ctx.font="13px Segoe UI, sans-serif"; ctx.textAlign="center";
+  const t=(performance.now()-sState.t0)%sState.dur;
+  ctx.fillStyle="#2a323c"; ctx.fillRect(0,H-3,W,3); ctx.fillStyle="#4ea1ff"; ctx.fillRect(0,H-3,W*t/sState.dur,3);
+  sState.devs.forEach(({d,L})=>{
+    let cx;
+    if(d.cls==="lamp"){ cx=d.pos===0?55:W-55; const top=40,bot=H-50;
+      ctx.fillStyle="#12161c"; ctx.fillRect(cx-7,top-6,14,bot-top+12);
+      for(let h=0;h<LAMP_N;h++){ const y=bot-(bot-top)*h/(LAMP_N-1); drawLED(ctx,cx,y,L[h],3.2); } }
+    else if(d.cls==="guitar"){ cx=d.pos===1?245:W-245; const sc=0.23, ox=cx-(461*sc), oy=60;
+      ctx.strokeStyle="#1b2129"; ctx.lineWidth=4; ctx.beginPath(); OUTLINE.forEach((p,i)=>{const x=ox+(p[0]-10)*sc,y=oy+(p[1]-625)*sc; i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.closePath(); ctx.stroke();
+      for(let i=0;i<N;i++) drawLED(ctx,ox+(G.px[i]-10)*sc,oy+(G.py[i]-625)*sc,L[i],2.1); }
+    else { cx=W/2; const cw=5.2, ox=cx-MW*cw/2, oy=34;
+      ctx.fillStyle="#0e1217"; ctx.fillRect(ox-6,oy-6,MW*cw+12,MH*cw*1.1+12);
+      for(let y=0;y<MH;y++) for(let x=0;x<MW;x++) drawLED(ctx,ox+x*cw+cw/2,oy+y*cw*1.1+cw/2,L[y*MW+x],1.9); }
+    ctx.fillStyle="#9aa7b4"; ctx.fillText(`${d.name} · Pos ${d.pos}`,cx,H-13);
+  });
+  ctx.fillStyle="#5d6773"; ctx.textAlign="left"; ctx.fillText("Publikumssicht →  links",10,18); ctx.textAlign="right"; ctx.fillText("rechts",W-10,18);
+}
+
+/* =====================================================================
+   Aufbau der Seite + Animationsschleife (10-ms-Takt wie der Firmware-Timer)
+   ===================================================================== */
+(function build(){
+  const gb=document.getElementById("gbtns"), cards=document.getElementById("cards");
+  const addBtn=(label,key,fn)=>{ const b=document.createElement("button"); b.className="btn"; b.textContent=label; b.dataset.key=key; b.onclick=fn; gb.appendChild(b); return b; };
+  EFFECTS.forEach(e=>{
+    addBtn(e.n?`${e.n} · ${e.name}`:e.name, e.key, ()=>gStart(e));
+    if(e.alt){ const alt=Object.assign({},e,{make:e.alt.make,altOf:true,name:`${e.name} (${e.alt.label})`}); addBtn(`${e.n} · ${e.alt.label}`, e.key+"-alt", ()=>gStart(alt)); }
+    if(e.noCard) return;
+    const card=document.createElement("div"); card.className="card"; card.id="fx-"+e.key;
+    card.innerHTML=`<div class="cardhead"><h3><span class="num">${e.n}</span>${e.name} <code style="font-size:13px">${e.fn}</code></h3>
+      <button class="btn play">▶ Vorschau</button></div>
+      <p>${e.desc}</p>
+      <pre><code>${e.sig.map(s=>"void "+s.replace(/(\/\/.*)$/,'<span class="c">$1</span>')).join("\n")}</code></pre>
+      <div class="kv">${e.params.map(p=>`<div><code>${p[0]}</code></div><div>${p[1]}</div>`).join("")}<div>Einsatz</div><div>${e.use}</div></div>
+      <pre><code>${e.ex}</code></pre>`;
+    card.querySelector(".play").onclick=()=>{ gStart(e); document.getElementById("effekte").scrollIntoView(); };
+    cards.appendChild(card);
+  });
+  const sb=document.getElementById("sbtns");
+  SCENES.forEach(([id,label])=>{ const b=document.createElement("button"); b.className="btn"; b.textContent=label; b.dataset.key=id; b.onclick=()=>sStart(id); sb.appendChild(b); });
+  document.getElementById("gscheme").onchange=e=>{ gState.scheme=Scheme(+e.target.value); gStart(gState.entry); };
+  document.getElementById("sscheme").onchange=()=>sStart();
+  document.getElementById("sdur").onchange=()=>sStart();
+  const bpm=document.getElementById("sbpm"); bpm.oninput=()=>{ document.getElementById("sbpmv").textContent=bpm.value; }; bpm.onchange=()=>sStart();
+  gStart(EFFECTS[1]); sStart("SCENE_WAVE_LR");
+})();
+
+const visible=new Map();
+new IntersectionObserver(es=>es.forEach(e=>visible.set(e.target,e.isIntersecting)),{threshold:0}).observe(gcv);
+new IntersectionObserver(es=>es.forEach(e=>visible.set(e.target,e.isIntersecting)),{threshold:0}).observe(scv);
+function loop(now){
+  if(visible.get(gcv)!==false){
+    const ms=now-gState.t0; let n=0;
+    while(gState.tick<=ms&&n++<30){ gState.eff.step(gState.tick,gState.L,gState.S); gState.tick+=10; }
+    if(n>=30) gState.tick=ms;
+    drawGuitar();
+  }
+  if(visible.get(scv)!==false){
+    const ms=now-sState.t0;
+    if(ms>=sState.dur) sStart();                       // Part zu Ende → Szene neu starten (wie next = gleicher Part)
+    else { let n=0; while(sState.tick<=ms&&n++<30){ sState.devs.forEach(x=>x.fx.step(sState.tick,x.L)); sState.tick+=10; } if(n>=30) sState.tick=ms; }
+    drawStage();
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
