@@ -432,3 +432,8 @@ void ILoveItTRAILER();
 
 // #81
 void INTROdancing();
+
+/**
+ * @brief Demo aller neuen Kontur-Effekte aus guitarShapeFX (Song-ID 90, läuft in Dauerschleife)
+ */
+void neueEffekteDemo();

@@ -1,5 +1,6 @@
 #include "definitions.h"
 #include <FastLED.h>
+#include "guitarShapeFX.h"
 //-----------------------
 
 extern byte markerLED1;
@@ -443,6 +444,10 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 	// Kopie erstellen (muss vorab geschehen, da sonst über YULC die MATRIXEN nicht leuchten!!)
 	memcpy(leds1, leds, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
 	memcpy(leds2, leds, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
+	if (strapOverride) {				// Effekt mit eigenem Gurt-Bild (z.B. progFuse)
+		memcpy(leds2, ledsStrap, sizeof(ledsStrap));
+		memset(leds2 + anz_LEDs_STRAP, 0, (NUMMATRIX - anz_LEDs_STRAP) * sizeof(CRGB));
+	}
 	//--------------------------------------
 
 	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!

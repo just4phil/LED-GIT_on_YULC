@@ -3,6 +3,7 @@
 #include "markerLEDs.h"
 #include "functions.h"
 #include "FXprograms.h"
+#include "guitarShapeFX.h"
 #include "matrixFunctions.h"
 //----------------------------
 
@@ -4045,3 +4046,32 @@ void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 
 //-----------
 
+
+//#90
+//==== DEMO: neue Effekte aus guitarShapeFX (Songwahl per MIDI CC#0 = 90 oder START_WITH_FX_DEMO) ====
+void neueEffekteDemo() {
+
+	switch (prog) {
+
+	case 0:		progCometLoop(12000, 5);									break;	// 2 Kometen gegenläufig
+	case 5:		progChargeBlast(12000, 10, 2000, 160);						break;
+	case 10:	progSymmetricVU(12000, 15, 120);							break;
+	case 15:	progShockwave(12000, 20, 700);								break;	// Zufallsfarben
+	case 20:	progPlaneWipe(12000, 25, 1200, WIPE_ANGLE_NECK);			break;
+	case 25:	progPlaneWipe(8000, 30, 1500, WIPE_ANGLE_HORIZONTAL);		break;
+	case 30:	progLightning(12000, 35);									break;
+	case 35:	progOutlineFire(12000, 40);									break;
+	case 40:	progOutlineFire(8000, 45, 20, true);						break;	// blaues Feuer
+	case 45:	progZoneBeat(12000, 50, 128);								break;
+	case 50:	progHeartbeat(12000, 55, 70);								break;
+	case 55:	progSpatialRainbow(10000, 60, true);						break;	// dreht um den Korpus
+	case 60:	progSpatialRainbow(10000, 65, false);						break;	// läuft nach oben
+	case 65:	progFuse(10000, 70);										break;
+	case 70:	progCometLoop(8000, 100, 8, 0, false);						break;	// einzelner roter Komet
+
+	case 100:
+		clearAll();
+		switchToPart(0);	// Demo in Dauerschleife
+		break;
+	}
+}

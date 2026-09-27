@@ -106,6 +106,7 @@
 //#define debug_ble_client
 #define debug_ble_proxy
 //#define debug_rotary
+//#define START_WITH_FX_DEMO	// startet direkt mit Song 90 (Demo der neuen guitarShapeFX) statt SONGPAUSE
 //-----------------------------------------------------------------------------------------
 
 #ifdef USE_ESP32
@@ -185,6 +186,8 @@
 #define anz_LEDs_SCROLLMATRIX 	540
 #define anz_LEDs_LAMPE1 		94
 #define anz_LEDs_LAMPE2 		78
+#define anz_LEDs_STRAP 			60	// Gurt-Strip an DATA_PIN_2 (geschätzt -> ausmessen!)
+#define STRAP_IDX0_AT_GUITAR	1	// 1: LED 0 des Gurts sitzt an der Gitarre, 0: an der Schulter
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
@@ -347,6 +350,18 @@
 	#define ASaite_Bb_hoch 		47	// F/Bb: 43 (hohe Oktave)
 	#define ASaite_B_hoch	 	46	// F#/B: 42 (hohe Oktave)
 	#define ASaite_C_hoch	 	45	// G/C: 41 (hohe Oktave)
+
+	//--- Geometrie der SG-Kontur für guitarShapeFX (geschätzt aus Foto vom 27.09.2026 -> mit progTestRange ausmessen!) ---
+	#define GUITAR_HEAD_TIP_IDX		77	// LED-Index an der Spitze der Kopfplatte
+	#define GUITAR_LOOP_DIR			1	// +1: LED-Index steigt von der Kopfspitze Richtung Hals-UNTERkante (Diskant-Seite ohne Marker), sonst -1
+	// Zonen als Position entlang der Kontur, gezählt ab Kopfspitze in GUITAR_LOOP_DIR-Richtung (0..anz_LEDs-1)
+	#define ZONE_NECK_LOW_START		12	// Sattel, Hals-Unterkante
+	#define ZONE_HORN_LOW_START		36	// unteres (kurzes) Horn
+	#define ZONE_BODY_START			51	// Korpus-Rundung
+	#define ZONE_HORN_UP_START		112	// oberes Horn (Gurtpin)
+	#define ZONE_NECK_UP_START		123	// Hals-Oberkante (mit Markern)
+	#define ZONE_HEAD_UP_START		151	// Sattel, Kopfplatte obere Seite
+	#define GUITAR_STRAP_PIN_POS	117	// Konturposition, an der der Gurt ansetzt
 #endif
 
 // #ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES GITARRE -------------------

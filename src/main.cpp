@@ -206,7 +206,11 @@ void setup() {
 
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	switchToSong(0);	// 0 SONGPAUSE loop
+	#ifdef START_WITH_FX_DEMO
+		switchToSong(90);	// Demo der guitarShapeFX
+	#else
+		switchToSong(0);	// 0 SONGPAUSE loop
+	#endif
 						// 100 DEFAULT loop 
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 
@@ -418,6 +422,10 @@ void loop() {
 		case 81:
 			INTROdancing();
 			break;			
+
+		case 90:
+			neueEffekteDemo();
+			break;
 
 		case 99:
 			STARTUP();

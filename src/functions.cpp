@@ -26,6 +26,7 @@ extern int zaehler;
 extern int progScrollTextZaehler;
 extern int progBlingBlingColoring_rounds;
 extern boolean progStroboIsBlack;
+extern bool strapOverride;
 
 //=====================================================================
 //=========== HELPER FUNCTIONS ========================================
@@ -139,6 +140,7 @@ void switchToPart(byte part) {
 	//--- initializeValues ---
 	progBlingBlingColoring_rounds = 0;
 	progStroboIsBlack = false;
+	strapOverride = false;
 
 	flag_switchToNextSongPart = false;
 }
