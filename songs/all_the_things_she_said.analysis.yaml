@@ -1,0 +1,165 @@
+audio: songs\audio\ATTSS.mp3
+audio_dauer_s: 211.0
+takt1_im_audio_ms: 20
+takt1_quelle: YAML (audio_beat1_ms)
+bpm_yaml: 86
+bpm_gemessen: 86.02
+tonart_gesamt: A-Moll
+legende:
+  power: '0-5 Lautheit: 5 = lautester Part, je 1,5 dB leiser eine Stufe weniger, 0 = still'
+  build: -1..+1 Lautstärkeverlauf im Part (+ = steigert sich)
+  drive: 0-1 rhythmische Dichte / perkussiver Anteil
+  brightness: 0-1 Klangfarbe dunkel/warm -> hell/scharf
+  lowend: 0-1 Bass-Anteil (Drop, Bass setzt ein)
+  mood: Dur/Moll-Tendenz des Parts
+  grenze_hoerbar: an der Part-Grenze ändert sich hörbar der Klang
+sections:
+- name: pause
+  start_ms: 0
+  dur_ms: 2791
+  power: 0
+  loudness_db: -78.1
+  build: 0.0
+  drive: 0.0
+  brightness: 0.0
+  lowend: 0.0
+  mood: still
+- name: intro
+  start_ms: 2791
+  dur_ms: 11163
+  power: 1
+  loudness_db: -19.9
+  build: 0.55
+  drive: 0.41
+  brightness: 0.55
+  lowend: 0.0
+  mood: A-Moll
+  grenze_hoerbar: true
+- name: intro band
+  start_ms: 13953
+  dur_ms: 22326
+  power: 5
+  loudness_db: -4.2
+  build: -0.1
+  drive: 0.71
+  brightness: 1.0
+  lowend: 0.25
+  mood: A-Moll (unsicher)
+  grenze_hoerbar: true
+- name: verse 1
+  start_ms: 36279
+  dur_ms: 25116
+  power: 4
+  loudness_db: -4.7
+  build: 0.07
+  drive: 1.0
+  brightness: 0.66
+  lowend: 0.39
+  mood: E-Moll
+  grenze_hoerbar: true
+- name: chorus 1
+  start_ms: 61395
+  dur_ms: 22326
+  power: 5
+  loudness_db: -3.8
+  build: 0.06
+  drive: 0.73
+  brightness: 0.88
+  lowend: 0.28
+  mood: E-Moll (unsicher)
+  grenze_hoerbar: false
+- name: solo
+  start_ms: 83721
+  dur_ms: 22326
+  power: 4
+  loudness_db: -5.2
+  build: 0.05
+  drive: 0.46
+  brightness: 0.83
+  lowend: 0.33
+  mood: E-Moll
+  grenze_hoerbar: true
+- name: verse 2a
+  start_ms: 106047
+  dur_ms: 11163
+  power: 1
+  loudness_db: -9.0
+  build: -0.01
+  drive: 0.92
+  brightness: 0.76
+  lowend: 0.15
+  mood: G-Dur
+  grenze_hoerbar: false
+- name: verse 2b
+  start_ms: 117209
+  dur_ms: 11163
+  power: 4
+  loudness_db: -5.1
+  build: 0.11
+  drive: 0.78
+  brightness: 0.8
+  lowend: 0.33
+  mood: E-Moll
+  grenze_hoerbar: true
+- name: chorus 2
+  start_ms: 128372
+  dur_ms: 22326
+  power: 5
+  loudness_db: -3.6
+  build: 0.04
+  drive: 0.67
+  brightness: 0.88
+  lowend: 0.27
+  mood: A-Moll (unsicher)
+  grenze_hoerbar: true
+- name: bridge
+  start_ms: 150698
+  dur_ms: 19535
+  power: 2
+  loudness_db: -8.7
+  build: 0.2
+  drive: 0.65
+  brightness: 0.8
+  lowend: 0.12
+  mood: A-Moll
+  grenze_hoerbar: true
+- name: bridge hit
+  start_ms: 170233
+  dur_ms: 2791
+  power: 5
+  loudness_db: -2.7
+  build: 0.09
+  drive: 0.76
+  brightness: 0.74
+  lowend: 0.29
+  mood: A-Dur
+  grenze_hoerbar: true
+- name: chorus 3
+  start_ms: 173023
+  dur_ms: 33488
+  power: 5
+  loudness_db: -3.7
+  build: 0.13
+  drive: 0.6
+  brightness: 0.96
+  lowend: 0.25
+  mood: A-Moll
+  grenze_hoerbar: false
+- name: end
+  start_ms: 206512
+  dur_ms: 2791
+  power: 1
+  loudness_db: -9.0
+  build: -0.91
+  drive: 0.0
+  brightness: 0.0
+  lowend: 1.0
+  mood: A-Dur
+  grenze_hoerbar: false
+accents:
+- section: intro
+  bar: 4
+  beat: 1.0
+  type: fill_into_next
+  rise_db: 14.4
+warnungen: []

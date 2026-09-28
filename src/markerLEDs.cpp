@@ -1,6 +1,7 @@
 #include "definitions.h"
 #include <FastLED.h>
 #include "guitarShapeFX.h"
+#include "songs_generated.h"	// setGeneratedMarkerLEDs()
 //-----------------------
 
 extern byte markerLED1;
@@ -431,7 +432,8 @@ void setMarkerLEDs(byte songID, byte partID) {
 			break;
 
 		default://defaultLoop();
-			// DO NOTHING !!
+			// kein handgeschriebener case -> Marker der generierten Songs (songs/*.yaml, sonst nichts)
+			setGeneratedMarkerLEDs(songID, partID);
 			break;
 		}
 
