@@ -25,6 +25,8 @@ from pathlib import Path
 
 import yaml
 
+import markers as mk
+
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 SONGS_DIR = ROOT / "songs"
@@ -124,6 +126,7 @@ def expand_parts(song):
 			parts.append((start, main))
 			tsec = dict(tail)
 			tsec.setdefault("name", sec["name"] + " (tail)")
+			tsec["_parent"] = sec["name"]
 			tsec.setdefault("bpm", sec.get("bpm", song["bpm"]))
 			tsec.setdefault("scheme", sec.get("scheme"))
 			parts.append((end - tail_ms, tsec))
@@ -437,6 +440,8 @@ STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
 
 def merge_show(song, show, show_name):
 	"""Technische Gestaltung (show.yaml) per Abschnittsname in die semantische Struktur einsetzen."""
+	if "markers" in show:
+		raise SongError(f"{show_name}: markers gehören in {song['_file']} (Song-Datei), nicht in die Show")
 	for k in SONG_DESIGN_KEYS:
 		if k in show:
 			song[k] = show[k]
@@ -507,13 +512,32 @@ CPP_HEADER = """//==============================================================
 #include "songs_generated.h"
 
 extern volatile byte prog;
+extern byte markerLED1, markerLED2, markerLED3, markerLED4, markerLED5, markerLED6, markerLED7;
 """
 
 
-def write_outputs(songs, funcs_code):
-	OUT_CPP.write_text(CPP_HEADER + "\n" + "\n\n".join(funcs_code) + "\n", encoding="utf-8")
+def gen_markers(marker_cases):
+	"""setGeneratedMarkerLEDs(): wird aus setMarkerLEDs() (markerLEDs.cpp) im default-Fall aufgerufen,
+	also nur für Songs ohne handgeschriebene Marker."""
+	lines = ["//==================================================================",
+			 "// Bund-Marker der generierten Songs (aus markers: in songs/*.yaml)",
+			 "//==================================================================",
+			 "void setGeneratedMarkerLEDs(byte songID, byte partID) {",
+			 "#if !defined(NOMARKER)",
+			 "\tswitch (songID) {"]
+	for case_lines in marker_cases:
+		lines += case_lines
+	lines += ["\tdefault:", "\t\tbreak;\t// keine Marker", "\t}", "#endif", "}"]
+	return "\n".join(lines)
 
-	h = ["// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern", "#pragma once", ""]
+
+def write_outputs(songs, funcs_code, marker_cases):
+	OUT_CPP.write_text(CPP_HEADER + "\n" + "\n\n".join(funcs_code) + "\n\n" + gen_markers(marker_cases) + "\n",
+					   encoding="utf-8")
+
+	h = ["// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern", "#pragma once", "",
+		 "#include <Arduino.h>", "",
+		 "void setGeneratedMarkerLEDs(byte songID, byte partID);\t// Marker der generierten Songs", ""]
 	for s in songs:
 		h.append(f"void {s['function']}();\t// #{s['id']} {s['name']}")
 	OUT_H.write_text("\n".join(h) + "\n", encoding="utf-8")
@@ -554,7 +578,8 @@ def main():
 		songs = load_songs()
 		taken = main_song_ids()
 		seen_ids, seen_fns = {}, {}
-		code, all_errors = [], []
+		code, all_errors, marker_cases = [], [], []
+		hand_markers = mk.handwritten_ids()
 		for s in songs:
 			if s["id"] in taken:
 				all_errors.append(f"{s['_file']}: Song-ID {s['id']} ist in main.cpp schon vergeben")
@@ -571,7 +596,23 @@ def main():
 				widths = matrix_widths()
 				s["_scroll_plans"] = {d: plan_scroll(s, timeline, widths[d]) for d in SCROLL_DEVICES}
 			all_errors += [f"{s['_file']}: {e}" for e in validate(s, timeline)]
+
+			# Bund-Marker: Handarbeit in markerLEDs.cpp hat immer Vorrang
+			if s["id"] in hand_markers:
+				s["_marker_note"] = "von Hand in markerLEDs.cpp" + (" - markers: in der YAML wird ignoriert" if s.get("markers") else "")
+			elif s.get("markers"):
+				errs = mk.validate(s["markers"], [x["name"] for x in s["sections"]])
+				all_errors += [f"{s['_file']}: {e}" for e in errs]
+				part_cases = {}
+				for p in timeline:
+					part_cases.setdefault(p["sec"].get("_parent") or p["sec"].get("name"), []).append(p["case"])
+				if not errs:
+					marker_cases.append(mk.gen_case(s["id"], s["markers"], part_cases))
+				s["_marker_note"] = "generiert aus markers: der Song-Datei"
+			else:
+				s["_marker_note"] = "keine"
 			print_timeline(s, timeline)
+			print(f"  Marker: {s.get('_marker_note')}")
 			code.append(gen_function(s, timeline, end_case))
 	except SongError as e:
 		print(f"FEHLER: {e}", file=sys.stderr)
@@ -586,7 +627,7 @@ def main():
 	if args.dry_run:
 		print("\n(dry-run, nichts geschrieben)")
 		return 0
-	write_outputs(songs, code)
+	write_outputs(songs, code, marker_cases)
 	print(f"\n{len(songs)} Song(s) -> {OUT_CPP.relative_to(ROOT)}, {OUT_H.relative_to(ROOT)}, main.cpp")
 	return 0
 
