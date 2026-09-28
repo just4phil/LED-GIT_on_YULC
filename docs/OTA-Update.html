@@ -73,7 +73,7 @@
       <a href="#update"><b>4</b>Update Schritt für Schritt</a>
       <a href="#leds"><b>5</b>LED-Anzeige</a>
       <a href="#ablauf"><b>6</b>Was intern passiert</a>
-      <a href="#version"><b>7</b>Versionen</a>
+      <a href="#version"><b>7</b>Versionen &amp; Backups</a>
       <a href="#geraete"><b>8</b>Geräte &amp; Build-Envs</a>
       <a href="#ble"><b>9</b>BLE-Protokoll</a>
       <a href="#flash"><b>10</b>Flash-Partitionen</a>
@@ -196,6 +196,7 @@ pio run -e scrollmatrix -t upload --upload-port COMx   <span class="c">// Port p
 <pre><code>python tools/build_ota.py --serve            <span class="c"># alle 5 Geräte</span>
 python tools/build_ota.py lampe1 lampe2 --serve   <span class="c"># nur einzelne</span>
 python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur ausliefern</span></code></pre>
+    Vor dem Bauen fragt das Skript, ob der bisherige Stand aus <code>ota/</code> gesichert werden soll (s. unten, „Backups“). Mit <code>j</code> antworten, wenn der aktuelle Stand gut funktioniert hat.
     Das Skript zeigt die Größe jeder Firmware und die IP-Adressen des PCs. Eine davon muss <code>OTA_SERVER</code> sein. Das Fenster offen lassen, solange das Update läuft.</li>
   <li><b>Geräte einschalten</b> <span class="who du">du</span><br>
     Bass, Lampen, Scrollmatrix laufen normal im Leerlauf (Song 0). Die Gitarre ist noch aus.</li>
@@ -248,7 +249,7 @@ python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur
   <li>Neustart → <code>setup()</code> → <code>otaIsRequested()</code> liest das Flag und <b>löscht es sofort</b>. Dadurch kann es keine Boot-Schleife geben: Auch wenn das Update abbricht, ist der nächste Start normal.</li>
   <li><code>otaRun()</code> (kehrt nie zurück):
     <ul>
-      <li>WLAN per <code>WiFiMulti</code> mit allen SSIDs aus <code>OTA_WIFI_LIST</code>, Timeout 20 s.</li>
+      <li>WLAN per <code>WiFiMulti</code> mit allen SSIDs aus <code>OTA_WIFI_LIST</code>: Suchen + Anmelden, je Versuch max. 8 s, insgesamt max. 20 s.</li>
       <li><code>GET http://OTA_SERVER:OTA_PORT/&lt;DEVICE_NAME&gt;/version.json</code></li>
       <li>Server-<code>version</code> ≤ eigene <code>FW_VERSION</code> → grün, Neustart ohne Download.</li>
       <li>sonst <code>GET …/firmware.bin</code> → <code>Update.begin(size)</code>, <code>Update.setMD5(md5)</code>, <code>Update.writeStream()</code>, <code>Update.end()</code>. Die Firmware wird in den <b>gerade nicht laufenden</b> App-Slot geschrieben. <code>Update.end()</code> prüft MD5 und Image und schaltet erst dann den Boot-Slot um.</li>
@@ -279,14 +280,23 @@ OTA: Update angefordert -> Neustart in den Update-Modus
 OTA: FEHLER - WLAN nicht erreichbar -> Neustart ohne Update
 OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neustart ohne Update</code></pre>
 
-<h2 id="version">7 · Versionen</h2>
+<h2 id="version">7 · Versionen &amp; Backups</h2>
 <ul>
   <li><code>FW_VERSION</code> = Unix-Zeit (Sekunden) des Builds, z.&nbsp;B. <code>1790604888</code>. Steigt immer, ein einfacher Zahlenvergleich reicht.</li>
   <li><code>FW_GIT</code> = kurzer Git-Hash von <code>HEAD</code>, mit <code>+</code> wenn es ungespeicherte Änderungen gab. Nur zur Info, wird nicht verglichen.</li>
   <li>Gesetzt von <code>tools/fw_version.py</code> (PlatformIO <code>extra_scripts = pre:</code>). Die Defines gelten <b>nur für <code>src/otaUpdate.cpp</code></b> (Build-Middleware). Eine neue Version kompiliert also nur diese eine Datei neu, nicht das ganze Projekt. Andere Dateien lesen die Version über <code>otaFirmwareVersion()</code> / <code>otaFirmwareGit()</code>.</li>
   <li><code>build_ota.py</code> setzt die Umgebungsvariable <code>FW_VERSION</code> einmal für alle Geräte eines Laufs → alle bekommen dieselbe Nummer. Normale Builds (z.&nbsp;B. USB-Upload aus VS Code) nehmen die aktuelle Uhrzeit.</li>
 </ul>
-<div class="warn"><b>Folge:</b> Ein Gerät lädt nur, was <b>später gebaut</b> wurde als seine eigene Firmware. Hast du nach dem letzten <code>build_ota.py</code> ein Gerät per USB geflasht, ist dessen Version neuer → es ignoriert den Server. Einfach <code>build_ota.py</code> neu laufen lassen. Zurück auf eine ältere Firmware geht nur, indem man den alten Stand neu baut (bekommt dann eine neue Zeit) oder per USB.</div>
+<div class="warn"><b>Folge:</b> Ein Gerät lädt nur, was <b>später gebaut</b> wurde als seine eigene Firmware. Hast du nach dem letzten <code>build_ota.py</code> ein Gerät per USB geflasht, ist dessen Version neuer → es ignoriert den Server. Einfach <code>build_ota.py</code> neu laufen lassen. Zurück auf eine ältere Firmware geht per Backup (<code>--restore</code>, s. unten), per Neubau des alten Stands oder per USB.</div>
+
+<h3 id="backup">Backups &amp; Zurückspielen</h3>
+<ul>
+  <li>Vor jedem Bauen fragt <code>build_ota.py</code>: <i>„Bisherigen Stand (…; gebaut 28.09.2026 23:01) als Backup sichern? [j/N]“</i>. Bei <code>j</code> werden alle Geräte-Ordner aus <code>ota/</code> nach <code>ota/backup/JJJJ-MM-TT/</code> kopiert (<code>firmware.bin</code> + <code>version.json</code>). Ein zweites Backup am selben Tag landet in <code>…_2</code>, <code>…_3</code> usw. Enter = kein Backup.</li>
+  <li>Ohne Frage: <code>--backup</code> (immer sichern) oder <code>--no-backup</code> (nie). Läuft das Skript ohne Konsole (keine Eingabe möglich), wird ohne <code>--backup</code> nichts gesichert.</li>
+  <li>Gefragt wird nur, wenn in <code>ota/</code> schon etwas liegt. Gesichert wird immer der <b>ganze</b> bisherige Stand, auch wenn nur einzelne Geräte neu gebaut werden.</li>
+  <li><b>Zurückspielen:</b> <code>python tools/build_ota.py --restore 2026-09-28 --serve</code> kopiert die Geräte aus dem Backup zurück nach <code>ota/</code> und gibt ihnen eine <b>neue</b> Versionsnummer (jetzt). Sonst würden die Geräte die ältere Firmware nicht laden. In <code>version.json</code> steht dann <code>"restored_from"</code> mit Backup-Name und ursprünglicher Version. Vorher kommt dieselbe Backup-Frage für den aktuellen Stand.</li>
+  <li>Die Backups liegen im gitignored <code>ota/</code>-Ordner, also <b>nur auf diesem PC</b>, und werden vom Server mit ausgeliefert (harmlos, die Geräte fragen nur ihren eigenen Ordner ab). Aufräumen von Hand.</li>
+</ul>
 
 <h3>version.json</h3>
 <pre><code>{
@@ -355,8 +365,9 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code></td></tr>
 <tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
 <tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>
-<tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
+<tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, Backup-Frage, <code>--restore</code>, HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
 <tr><td><code>ota/&lt;gerät&gt;/</code></td><td>Build-Ausgabe: <code>firmware.bin</code> + <code>version.json</code>. <b>Gitignored</b></td></tr>
+<tr><td><code>ota/backup/&lt;JJJJ-MM-TT&gt;/&lt;gerät&gt;/</code></td><td>Gesicherte frühere Stände (s. Kap. 7). <b>Gitignored</b>, nur lokal</td></tr>
 </table></div>
 
 <h2 id="konfig">12 · Konstanten &amp; Timeouts</h2>
@@ -366,6 +377,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td>Warten auf Clients</td><td><code>midiProxy_broadcastOTA()</code></td><td>20 s</td><td>Danach wird auch mit weniger Clients gesendet</td></tr>
 <tr><td>Wiederholungen msgType 7</td><td><code>midiProxy_broadcastOTA()</code></td><td>3 × 500 ms</td><td>Sicherheit gegen verlorene Notifications</td></tr>
 <tr><td><code>OTA_WIFI_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>20 s</td><td>WLAN-Suche</td></tr>
+<tr><td>Anmelde-Timeout je Versuch</td><td><code>otaRun()</code>, <code>wifiMulti.run(8000)</code></td><td>8 s</td><td>Muss für Anmeldung + DHCP reichen, sonst bricht <code>WiFiMulti</code> die laufende Anmeldung mit einem neuen Scan ab</td></tr>
 <tr><td><code>OTA_HTTP_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>10 s</td><td>Verbindungs- und Lese-Timeout HTTP</td></tr>
 <tr><td><code>OTA_BRIGHTNESS</code></td><td><code>otaUpdate.cpp</code></td><td>32</td><td>LED-Helligkeit der Statusanzeige</td></tr>
 <tr><td><code>OTA_SERVER</code> / <code>OTA_PORT</code></td><td><code>secrets.h</code></td><td>192.168.137.1 / 8080</td><td>Muss zu <code>build_ota.py</code> (<code>PORT</code>) passen</td></tr>
@@ -379,6 +391,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td>Ein Client reagiert gar nicht</td><td>Client spielte einen Song (<code>songID ≠ 0</code>) oder hat die OTA-Firmware noch nicht</td><td>Einmal per USB flashen (Kap. 3). Song-Schutz ist normalerweise kein Problem, weil die Gitarre vorher auf Song 0 schaltet.</td></tr>
 <tr><td>Rot: „kein WLAN konfiguriert“</td><td><code>src/secrets.h</code> fehlte beim Build</td><td>Anlegen, neu bauen, <b>einmal per USB</b> flashen (die WLAN-Daten stecken in der Firmware)</td></tr>
 <tr><td>Rot: „WLAN nicht erreichbar“</td><td>SSID/Passwort falsch, 5-GHz-Netz, Hotspot aus</td><td>2,4-GHz-WLAN, Daten in <code>secrets.h</code> prüfen</td></tr>
+<tr><td>Alle Geräte blinken rot, im Server-Fenster keine Anfrage der Geräte</td><td>FRITZ!Box lässt nur bekannte WLAN-Geräte zu (die ESP32 sind ihr neu)</td><td><i>WLAN → Sicherheit → „Alle neuen WLAN-Geräte zulassen“</i>, Update auslösen. Danach stehen die Geräte in der Liste und die Sperre kann wieder an. Die WLAN-MAC eines ESP32 ist meist die BLE-MAC − 2.</td></tr>
 <tr><td>Rot: „HTTP -1“</td><td>Server nicht erreichbar: falsche IP, Firewall, Server nicht gestartet</td><td>IP aus der Ausgabe von <code>build_ota.py</code> mit <code>OTA_SERVER</code> vergleichen, Firewall freigeben, Server-Fenster offen lassen</td></tr>
 <tr><td>Rot: „HTTP 404“</td><td>Kein Ordner für dieses Gerät auf dem Server</td><td><code>build_ota.py</code> für dieses Gerät laufen lassen</td></tr>
 <tr><td>Rot: „Download/Flash … MD5“</td><td>Download abgebrochen oder Datei beschädigt</td><td>Nochmal auslösen, WLAN-Empfang prüfen</td></tr>

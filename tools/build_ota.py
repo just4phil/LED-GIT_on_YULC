@@ -6,6 +6,11 @@ build_ota.py - baut die Firmware für alle Geräte und legt sie für das OTA-Upd
     python tools/build_ota.py lampe1 lampe2    # nur diese Geräte
     python tools/build_ota.py --serve          # bauen + HTTP-Server auf Port 8080 starten
     python tools/build_ota.py --serve-only     # nur den Server starten (ohne neu zu bauen)
+    python tools/build_ota.py --restore 2026-09-28   # Backup wieder ausliefern (mit neuer Version)
+
+Vor dem Bauen fragt das Skript, ob der bisherige Stand aus ota/ gesichert werden soll
+(-> ota/backup/<JJJJ-MM-TT>/, bei mehreren am selben Tag _2, _3, ...).
+--backup / --no-backup beantworten die Frage vorab.
 
 Pro Gerät entsteht:
     ota/<gerät>/firmware.bin
@@ -52,6 +57,60 @@ def git_hash():
         return h
     except Exception:
         return "unknown"
+
+
+def current_devices():
+    return [d for d in DEVICES if (OTA_DIR / d / "version.json").exists()]
+
+
+def backup_dir_for_today():
+    base = OTA_DIR / "backup" / time.strftime("%Y-%m-%d")
+    target, n = base, 2
+    while target.exists():
+        target = base.with_name(f"{base.name}_{n}")
+        n += 1
+    return target
+
+
+def maybe_backup(answer):
+    """answer: True/False = vorab per Option entschieden, None = fragen."""
+    present = current_devices()
+    if not present:
+        return
+    if answer is None:
+        if not sys.stdin.isatty():
+            print("Kein Backup (keine Eingabe möglich; --backup erzwingt eins)")
+            return
+        versions = {json.loads((OTA_DIR / d / "version.json").read_text(encoding="utf-8"))["version"] for d in present}
+        stand = ", ".join(time.strftime("%d.%m.%Y %H:%M", time.localtime(v)) for v in sorted(versions))
+        reply = input(f"Bisherigen Stand ({', '.join(present)}; gebaut {stand}) als Backup sichern? [j/N] ")
+        answer = reply.strip().lower() in ("j", "ja", "y", "yes")
+    if not answer:
+        return
+    target = backup_dir_for_today()
+    for d in present:
+        shutil.copytree(OTA_DIR / d, target / d)
+    print(f"Backup: {len(present)} Geräte -> {target.relative_to(ROOT)}")
+
+
+def restore(name):
+    src = OTA_DIR / "backup" / name
+    devices = [d for d in DEVICES if (src / d / "firmware.bin").exists()]
+    if not devices:
+        sys.exit(f"Kein Backup unter {src.relative_to(ROOT)}")
+    # neue Versionsnummer, sonst laden die Geräte eine ältere Firmware nicht
+    version = int(time.time())
+    for d in devices:
+        out = OTA_DIR / d
+        if out.exists():
+            shutil.rmtree(out)
+        shutil.copytree(src / d, out)
+        info = json.loads((out / "version.json").read_text(encoding="utf-8"))
+        info["restored_from"] = f"{name} (version {info['version']})"
+        info["version"] = version
+        (out / "version.json").write_text(json.dumps(info, indent=1) + "\n", encoding="utf-8")
+        print(f"  {d:13s} <- backup/{name}/{d}")
+    print(f"Wiederhergestellt mit neuer Version {version}")
 
 
 def build(devices):
@@ -106,12 +165,20 @@ def main():
     ap.add_argument("devices", nargs="*", metavar="gerät", help="Standard: alle (" + ", ".join(DEVICES) + ")")
     ap.add_argument("--serve", action="store_true", help="nach dem Bauen den HTTP-Server starten")
     ap.add_argument("--serve-only", action="store_true", help="nur den HTTP-Server starten")
+    ap.add_argument("--restore", metavar="ORDNER", help="Backup aus ota/backup/<ORDNER> ausliefern statt zu bauen")
+    grp = ap.add_mutually_exclusive_group()
+    grp.add_argument("--backup", dest="backup", action="store_true", default=None, help="vorher ohne Frage sichern")
+    grp.add_argument("--no-backup", dest="backup", action="store_false", help="vorher nicht sichern, nicht fragen")
     args = ap.parse_args()
     unknown = [d for d in args.devices if d not in DEVICES]
     if unknown:
         ap.error(f"unbekanntes Gerät: {', '.join(unknown)} (möglich: {', '.join(DEVICES)})")
 
-    if not args.serve_only:
+    if args.restore:
+        maybe_backup(args.backup)
+        restore(args.restore)
+    elif not args.serve_only:
+        maybe_backup(args.backup)
         build(args.devices or DEVICES)
     if args.serve or args.serve_only:
         serve()

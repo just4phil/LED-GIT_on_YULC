@@ -145,7 +145,7 @@ void otaRun() {
 	WiFi.mode(WIFI_STA);
 	unsigned long start = millis();
 	int blink = 0;
-	while (wifiMulti.run(1000) != WL_CONNECTED) {
+	while (wifiMulti.run(8000) != WL_CONNECTED) {	// run() sucht + verbindet neu: Timeout muss für Anmeldung + DHCP reichen
 		otaShowStatus(CRGB::Blue, (blink++ % 2) ? 0.1f : 0.0f);
 		if (millis() - start > OTA_WIFI_TIMEOUT_MS) otaFail("WLAN nicht erreichbar");
 	}
