@@ -24,12 +24,18 @@ Python: `tools/.venv/Scripts/python` (Pakete: `tools/requirements.txt`; fehlt di
 
 ## Ablauf
 
-1. **Semantische Datei**: liegt sie schon vor, lesen. Sonst aus den Angaben des Users anlegen (lose
-   Angaben wie "8 Takte Intro langsam" übersetzen) und ihm zeigen. Freie Song-ID wählen:
+1. **Semantische Datei**: liegt sie schon vor, lesen. Hat der User ein Songbook-Sheet (XML mit `<part>`/`<row>`,
+   Akkorde in `[..]`) und die MP3, damit erzeugen:
+   `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore tools/.venv/Scripts/python tools/sheet2song.py <sheet> songs/audio/<mp3> --id <n>`
+   Die Konsolentabelle prüfen (Spalte akkorde < 50 % / `<- prüfen`, `# !`-Hinweise zu Pegelsprüngen) und
+   dem User zeigen; Parts mit Pegelsprung für die Show sinnvoll aufteilen (mit dem User abstimmen).
+   Sonst aus den Angaben des Users anlegen (lose Angaben wie "8 Takte Intro langsam" übersetzen) und ihm zeigen.
+   Ausführliche Anleitung für den User: `docs/Song-Workflow.html`. Freie Song-ID wählen:
    `songgen.py` meldet Kollisionen mit `main.cpp`; MIDI erlaubt 0..127.
+   Das BPM kennt der User für jeden Song - immer von ihm nehmen, nie aus dem Audio schätzen.
 2. **Audio analysieren**, wenn `audio:` gesetzt ist (Datei in `songs/audio/`, wird nicht versioniert):
    `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore tools/.venv/Scripts/python tools/songanalyze.py songs/<name>.yaml`
-   - Warnungen zuerst klären: Tempo-Drift → `bpm` korrigieren; unsichere Takt-1-Schätzung → User nach
+   - Warnungen zuerst klären: Tempo-Drift → Tippfehler im `bpm`? mit dem User klären; unsichere Takt-1-Schätzung → User nach
      `audio_beat1_ms` fragen; Formgrenze ohne YAML-Grenze → Taktzahlen mit dem User prüfen.
      Die Analyse erneut laufen lassen, bis die Struktur sitzt.
    - Dann `songs/<name>.analysis.yaml` lesen UND `songs/<name>_analysis.png` mit dem Read-Tool ansehen.
@@ -51,6 +57,21 @@ Abschnitt: `name` (eindeutig), `bars` und/oder `beats`, optional `bpm` / `beats_
 Alles andere ist freie Beschreibung: `description`, `energy` 0-5, `lyrics`, `instruments`, `solo`, `mood` …
 `energy` dient auch als Fallback, falls ein Abschnitt in der Show fehlt (0 Black, 1 CALM, 2 VERSE,
 3 BUILDUP, 4-5 DROP).
+
+## Bund-Marker-LEDs (`markers:` in der Song-Datei)
+
+**NIE ändern, was der User gesetzt oder akzeptiert hat** - weder handgeschriebene cases in
+`src/markerLEDs.cpp` noch einen `markers:`-Block in `songs/*.yaml`. Auffälligkeiten nur im Chat ansprechen.
+
+- Vorschlag nur für neue Songs ohne Marker: `sheet2song.py` schreibt ihn automatisch (Grundtöne der
+  transponierten Akkorde auf E- und A-Saite, ohne Leersaite/5./12. Bund, max. 7, `tools/markers.py`).
+  Ohne Sheet: aus den Akkorden, die der User nennt, nach denselben Regeln - dem User als Vorschlag zeigen.
+- Hat `markerLEDs.cpp` einen case für die Song-ID, gilt immer der (Generator erzeugt dann nichts).
+- Format: `markers: {all: [...], guitar: [...], bass: [...], parts: {<abschnitt>: {all|guitar|bass: [...]}}}`
+  (`guitar`/`bass` ersetzen `all` für das Instrument; `parts` gilt für den Abschnitt inkl. seines Tails).
+- Marker-Namen: `ESaite_E` … `ESaite_G_hoch`, `ASaite_A` … `ASaite_C_hoch` (`src/definitions.h`).
+  E- und A-Saite teilen sich die LED pro Bund (ESaite_C = ASaite_F = 8. Bund).
+- Der Generator erzeugt `setGeneratedMarkerLEDs()`, aufgerufen im `default` von `setMarkerLEDs()`.
 
 ## Feste Regeln für Anfang und Ende (macht der Generator automatisch)
 
@@ -86,7 +107,8 @@ semantischen Datei aufzuteilen.
 ## Dramaturgie-Regeln
 
 Messwerte → Wahl (`power` 0-5, `build`/`drive`/`brightness`/`lowend`/`mood` aus der Analyse; ohne Audio aus
-dem Musikverständnis des Songs ableiten):
+dem Musikverständnis des Songs ableiten). Alle Masters sind stark limitiert: `power` ist in 1,5-dB-Stufen
+unter dem lautesten Abschnitt (≥ 4 Takte) skaliert; bei knappen Entscheidungen auch `loudness_db` direkt vergleichen:
 
 | Situation | Szene / FX |
 |---|---|

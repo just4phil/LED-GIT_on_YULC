@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song-Workflow</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#1a1230,#11202e 55%,#0f1216);border-bottom:1px solid var(--border);padding:34px 0 28px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.2px}
+  h2{font-size:23px;margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+  h3{font-size:18px;margin:26px 0 6px;color:var(--accent2)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  a{color:var(--accent)}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff;overflow-wrap:anywhere}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13px;line-height:1.5;margin:10px 0}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .c{color:#7d8b99}
+  .k{color:#ffb86b}
+  .s{color:#7ee787}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .tablewrap{overflow-x:auto;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent);white-space:nowrap}
+  td code{font-size:12.5px}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;margin-top:18px}
+  .toc a{color:var(--ink);text-decoration:none;opacity:.85}
+  .toc a:hover{opacity:1;color:var(--accent)}
+  .toc b{color:var(--accent);margin-right:6px}
+  .steps{counter-reset:st;list-style:none;padding:0}
+  .steps>li{counter-increment:st;position:relative;padding:14px 16px 14px 58px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;margin:10px 0}
+  .steps>li::before{content:counter(st);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#06121f;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .who{display:inline-block;font-size:12px;border-radius:20px;padding:0 9px;margin-left:6px;border:1px solid var(--border);color:var(--muted)}
+  .who.du{color:var(--warn);border-color:#5a4526}
+  .who.claude{color:var(--accent2);border-color:#2b4a33}
+  .who.tool{color:var(--accent);border-color:#23405f}
+  svg{max-width:100%;height:auto;display:block}
+  .flow text{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  @media (max-width:600px){ h1{font-size:24px} h2{font-size:20px} .steps>li{padding-left:50px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Song-Workflow: vom Chord-Sheet zur LED-Show</h1>
+    <p class="sub">Neue Songs werden nicht mehr von Hand in <code>songs.cpp</code> programmiert: Sheet + MP3 → Struktur in Takten → Show-Dramaturgie → generierter C++-Code. Stand 28.09.2026.</p>
+    <nav class="toc">
+      <a href="#ueberblick"><b>1</b>Überblick</a>
+      <a href="#setup"><b>2</b>Einmalige Einrichtung</a>
+      <a href="#ablauf"><b>3</b>Neuer Song Schritt für Schritt</a>
+      <a href="#sheet2song"><b>4</b>sheet2song: Struktur aus Sheet + Audio</a>
+      <a href="#songdatei"><b>5</b>Die Song-Datei (semantisch)</a>
+      <a href="#analyse"><b>6</b>Audio-Analyse</a>
+      <a href="#show"><b>7</b>Die Show-Datei (technisch)</a>
+      <a href="#regeln"><b>8</b>Feste Regeln: Anfang &amp; Ende</a>
+      <a href="#generator"><b>9</b>Generator &amp; Timing</a>
+      <a href="#technik"><b>10</b>Wie die MP3 analysiert wird</a>
+      <a href="#beispiel"><b>11</b>Beispiel: All The Things She Said</a>
+      <a href="#probleme"><b>12</b>Probleme &amp; Lösungen</a>
+      <a href="#marker"><b>13</b>Bund-Marker-LEDs</a>
+      <a href="#dateien"><b>14</b>Dateien</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<h2 id="ueberblick">1 · Überblick</h2>
+<p>Ein Song läuft ab dem Start-MIDI-Signal (CC 22 = Song-ID, Kanal 10) millisekundengenau durch. Alle Part-Dauern ergeben sich deshalb aus <b>Tempo × Takten</b>. Das Werkzeug rechnet sie aus, statt sie per Excel zu ermitteln.</p>
+
+<div class="panel">
+<svg class="flow" viewBox="0 0 980 300" role="img" aria-label="Ablauf vom Sheet zur Firmware">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9aa7b4"/>
+    </marker>
+  </defs>
+  <g font-size="13" fill="#e6edf3">
+    <!-- Eingaben -->
+    <rect x="10" y="20" width="150" height="54" rx="8" fill="#241d12" stroke="#ffb86b"/>
+    <text x="85" y="43" text-anchor="middle">Chord-Sheet (XML)</text>
+    <text x="85" y="61" text-anchor="middle" fill="#9aa7b4" font-size="11">Parts · Lyrics · Akkorde · Tempo</text>
+    <rect x="10" y="100" width="150" height="54" rx="8" fill="#241d12" stroke="#ffb86b"/>
+    <text x="85" y="123" text-anchor="middle">MP3</text>
+    <text x="85" y="141" text-anchor="middle" fill="#9aa7b4" font-size="11">songs/audio/</text>
+
+    <!-- sheet2song -->
+    <rect x="210" y="55" width="150" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
+    <text x="285" y="80" text-anchor="middle">sheet2song.py</text>
+    <text x="285" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">Akkord-Abgleich → Takte</text>
+
+    <!-- song.yaml -->
+    <rect x="410" y="55" width="150" height="60" rx="8" fill="#241d12" stroke="#ffb86b"/>
+    <text x="485" y="80" text-anchor="middle">&lt;name&gt;.yaml</text>
+    <text x="485" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">semantisch · du prüfst</text>
+
+    <!-- analyse -->
+    <rect x="410" y="175" width="150" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
+    <text x="485" y="200" text-anchor="middle">songanalyze.py</text>
+    <text x="485" y="218" text-anchor="middle" fill="#9aa7b4" font-size="11">Power · Stimmung · Akzente</text>
+
+    <!-- show -->
+    <rect x="610" y="55" width="150" height="60" rx="8" fill="#14211a" stroke="#7ee787"/>
+    <text x="685" y="80" text-anchor="middle">&lt;name&gt;.show.yaml</text>
+    <text x="685" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">Szenen · Farben · Claude</text>
+
+    <!-- songgen -->
+    <rect x="810" y="55" width="160" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
+    <text x="890" y="80" text-anchor="middle">songgen.py</text>
+    <text x="890" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">→ songs_generated.cpp</text>
+
+    <rect x="810" y="175" width="160" height="60" rx="8" fill="#1d242d" stroke="#2a323c"/>
+    <text x="890" y="200" text-anchor="middle">pio run + flashen</text>
+    <text x="890" y="218" text-anchor="middle" fill="#9aa7b4" font-size="11">alle ESP32-Geräte</text>
+  </g>
+  <g stroke="#9aa7b4" stroke-width="1.6" fill="none" marker-end="url(#ar)">
+    <path d="M160,47 L205,75"/>
+    <path d="M160,127 L205,98"/>
+    <path d="M360,85 L405,85"/>
+    <path d="M485,115 L485,170"/>
+    <path d="M560,85 L605,85"/>
+    <path d="M560,205 L640,205 L670,120"/>
+    <path d="M760,85 L805,85"/>
+    <path d="M890,115 L890,170"/>
+    <path d="M160,140 C300,240 330,250 405,215"/>
+  </g>
+  <g font-size="12">
+    <text x="30" y="275" fill="#ffb86b">■ von dir</text>
+    <text x="140" y="275" fill="#4ea1ff">■ Werkzeug (Python)</text>
+    <text x="300" y="275" fill="#7ee787">■ Claude gestaltet</text>
+  </g>
+</svg>
+</div>
+
+<div class="tablewrap"><table>
+<tr><th>Datei</th><th>Wer</th><th>Inhalt</th></tr>
+<tr><td><code>songs/&lt;name&gt;.yaml</code></td><td>du (vom Tool vorbereitet)</td><td>Was musikalisch passiert: Tempo, Takte je Part, MIDI-Offset, Lyrics, Akkorde, Beschreibung</td></tr>
+<tr><td><code>songs/&lt;name&gt;.show.yaml</code></td><td>Claude</td><td>Wie es aussieht: Szene, Farbschema, Geräte-Overrides, Akzente je Part (per Part-Name, ohne Takte)</td></tr>
+<tr><td><code>src/songs_generated.cpp/.h</code></td><td>Generator</td><td>C++-Funktion pro Song, nie von Hand ändern</td></tr>
+</table></div>
+
+<h2 id="setup">2 · Einmalige Einrichtung</h2>
+<p>Die Python-Werkzeuge laufen in einer eigenen Umgebung <code>tools/.venv</code> (nicht versioniert). Einmal pro Rechner, in Git Bash im Projektordner:</p>
+<pre><code>python -m venv tools/.venv
+tools/.venv/Scripts/python -m pip install -r tools/requirements.txt</code></pre>
+<p>Pakete: <code>librosa</code> (Audioanalyse), <code>numpy</code>, <code>matplotlib</code> (Analysebild), <code>soundfile</code>, <code>pyyaml</code>. Getestet mit Python 3.9.</p>
+<div class="note">Tipp: Die Konsolenausgabe enthält Umlaute. Falls Zeichensalat erscheint, vor die Befehle <code>PYTHONIOENCODING=utf-8</code> setzen. Warnungen von librosa blendet <code>PYTHONWARNINGS=ignore</code> aus.</div>
+
+<h2 id="ablauf">3 · Neuer Song Schritt für Schritt</h2>
+<ol class="steps">
+  <li><b>MP3 ablegen</b><span class="who du">du</span><br>
+    Datei nach <code>songs/audio/</code> kopieren. Der Ordner wird nicht versioniert. Wichtig: Es muss genau die Version sein, die live läuft, mit demselben Tempo und derselben Stille am Anfang.</li>
+  <li><b>Struktur erzeugen</b><span class="who tool">sheet2song</span><br>
+<pre><code>tools/.venv/Scripts/python tools/sheet2song.py "C:/…/Songtitel.txt" songs/audio/SONG.mp3 --id 32</code></pre>
+    Das Tool liest Sheet und Audio und schreibt <code>songs/&lt;titel&gt;.yaml</code>. Details in <a href="#sheet2song">Abschnitt 4</a>.</li>
+  <li><b>Struktur prüfen</b><span class="who du">du</span><br>
+    Tabelle in der Konsole ansehen: Passen die Taktzahlen? Alle Parts mit <code>&lt;- prüfen</code> oder <code># !</code>-Hinweis kurz gegenhören. <code>midi_offset</code> prüfen. Parts mit großem Pegelsprung eventuell aufteilen, z. B. <code>verse 2a</code>/<code>verse 2b</code>. Optional <code>description</code>/<code>energy</code> ergänzen: Deine Einschätzung hat bei der Gestaltung Vorrang vor den Messwerten.</li>
+  <li><b>Show gestalten lassen</b><span class="who claude">Claude</span><br>
+    In Claude Code z. B.: <i>„Gestalte die Show für songs/&lt;titel&gt;.yaml“</i>. Claude nutzt den Skill <code>new-song</code> und geht so vor:
+    <ul>
+      <li>Analyse laufen lassen und das Analysebild ansehen,</li>
+      <li><code>&lt;titel&gt;.show.yaml</code> schreiben,</li>
+      <li>generieren und alle ESP32-Geräte bauen,</li>
+      <li>dir die Timeline zeigen.</li>
+    </ul></li>
+  <li><b>Flashen &amp; testen</b><span class="who du">du</span><br>
+    <code>pio run -e esp32-s3-devkitc-1 --target upload</code> pro Gerät (Gerät in <code>src/definitions.h</code> wählen). Song per MIDI starten: CC 22 = Song-ID auf Kanal 10.</li>
+  <li><b>Nachsteuern</b><span class="who du">du</span> <span class="who claude">Claude</span><br>
+    Gefällt ein Part nicht, genügt ein Satz wie <i>„Chorus 2 soll mehr Bewegung haben“</i>. Geändert wird nur die Show-Datei, danach wird neu generiert. Stimmt ein Timing nicht, wird die Song-Datei korrigiert (Takte, Offset).</li>
+</ol>
+
+<h2 id="sheet2song">4 · sheet2song: Struktur aus Sheet + Audio</h2>
+<pre><code>tools/.venv/Scripts/python tools/sheet2song.py &lt;sheet.txt&gt; &lt;audio.mp3&gt; --id &lt;0..127&gt; [Optionen]</code></pre>
+<div class="tablewrap"><table>
+<tr><th>Option</th><th>Bedeutung</th></tr>
+<tr><td><code>--id</code></td><td>Song-ID = MIDI-Wert von CC 22 (Pflicht). Der Generator meldet, wenn die ID in <code>main.cpp</code> schon vergeben ist.</td></tr>
+<tr><td><code>--bpm</code></td><td>Tempo, nur nötig, wenn im Sheet weder <code>&lt;myTempo&gt;</code> noch <code>&lt;tempo&gt;</code> steht. <code>myTempo</code> hat Vorrang.</td></tr>
+<tr><td><code>--midi-offset</code></td><td>Notenwert, wie spät das Start-MIDI nach Takt 1 kommt (Standard <code>1/8</code>)</td></tr>
+<tr><td><code>--out</code></td><td>andere Zieldatei (Standard <code>songs/&lt;titel&gt;.yaml</code>)</td></tr>
+<tr><td><code>--force</code></td><td>vorhandene Datei überschreiben. Ohne diese Option bricht das Tool ab, damit deine Änderungen nicht verloren gehen.</td></tr>
+</table></div>
+
+<h3>Was aus dem Sheet gelesen wird</h3>
+<ul>
+  <li><code>&lt;title&gt;</code>, <code>&lt;artist&gt;</code>: Name und Lauftext auf der Scrollmatrix</li>
+  <li><code>&lt;myTempo&gt;</code> (sonst <code>&lt;tempo&gt;</code>): BPM</li>
+  <li><code>&lt;transpose&gt;</code>: Die Akkorde im Audio liegen um so viele Halbtöne höher. Beispiel ATTSS: <code>Fm</code> + 4 = <code>Am</code>.</li>
+  <li><code>&lt;part name="…"&gt;</code> mit <code>&lt;row&gt;</code>: Part-Namen, erste Textzeile als <code>lyrics</code>, Akkorde als <code>chords</code>. Leere Parts (z. B. „Chorus Lines gelöscht“) werden übersprungen.</li>
+</ul>
+
+<h3>Wie die Takte bestimmt werden</h3>
+<ol>
+  <li><b>Erwartete Länge aus dem Sheet</b>:
+    <ul>
+      <li>eine Textzeile mit bis zu 2 Akkorden = 1 Takt, mit 3–4 Akkorden = 2 Takte;</li>
+      <li>eine Zeile mit mehreren Textzeilen = 1 Takt pro Textzeile;</li>
+      <li>eine reine Akkordzeile (Instrumental) = 1 Akkord pro Takt.</li>
+    </ul>
+    Das ist nur eine Schätzung, denn Sheets notieren Wiederholungen oft nicht aus.</li>
+  <li><b>Beat-Raster</b>: Das Tempo ist bekannt. Gesucht wird nur, wo die Schläge liegen, also der Versatz mit den stärksten Anschlägen auf dem Raster.</li>
+  <li><b>Akkorde im Audio</b>: Pro halbem Takt wird bestimmt, welcher der Sheet-Akkorde am besten klingt (Chroma-Analyse, siehe <a href="#technik">Abschnitt 10</a>).</li>
+  <li><b>Abgleich</b>: Die Parts werden in Sheet-Reihenfolge so auf die Takte verteilt, dass die erwarteten Akkorde möglichst gut zum Audio passen (dynamische Programmierung). Grenzen liegen immer auf einem Taktanfang. Ein Part darf seine Akkordfolge wiederholen oder halb so schnell spielen. Kleiner Malus, wenn die Länge stark von der Sheet-Schätzung abweicht: Das entscheidet bei Parts mit gleicher Akkordfolge (Chorus → Bridge).</li>
+  <li><b>Takt-Eins</b>: Alle 4 möglichen Zählzeiten werden als Taktanfang probiert. Die mit dem besten Abgleich gewinnt.</li>
+  <li><b>Bund-Marker</b>: Nur wenn der Song noch keine hat, kommt ein Vorschlag aus den Akkord-Grundtönen dazu (siehe <a href="#marker">Abschnitt 13</a>).</li>
+  <li><b>Pause und Ausklang</b>: Stille Takte vor dem ersten Ton werden zum Part <code>pause</code>. Klingende Takte nach dem letzten Sheet-Part werden zu <code>ende</code>.</li>
+</ol>
+
+<h3>Die Ausgabe lesen</h3>
+<pre><code>  part                     takte sheet  start mp3  akkorde
+  intro                       12    10    0:02.81      67%
+                           ! Pegelsprung vor Takt 5: -15.8 -> -3.7 dB
+  verse 1                      9     9    0:36.30     100%
+  …</code></pre>
+<ul>
+  <li><b>takte</b>: Ergebnis. <b>sheet</b>: Schätzung aus dem Sheet. Weichen beide ab, ist das oft richtig (ausgelassene Wiederholungen), sollte aber kurz geprüft werden.</li>
+  <li><b>start mp3</b>: Position in der Audiodatei, zum Gegenhören.</li>
+  <li><b>akkorde</b>: Anteil der halben Takte, in denen der erwartete Akkord erkannt wurde. Unter 50 % steht <code>&lt;- prüfen</code>. Werte um 60–70 % sind bei Intros mit Effekten oder Sprechgesang normal.</li>
+  <li><b>! Pegelsprung</b>: Innerhalb des Parts ändert sich die Lautstärke um mindestens 3 dB. Das ist ein guter Kandidat, den Part für die Show zu teilen.</li>
+</ul>
+
+<h2 id="songdatei">5 · Die Song-Datei (semantisch)</h2>
+<pre><code><span class="k">id</span>: 31
+<span class="k">name</span>: <span class="s">"All The Things She Said"</span>
+<span class="k">artist</span>: <span class="s">"t.A.T.u."</span>
+<span class="k">bpm</span>: 86
+<span class="k">beats_per_bar</span>: 4
+<span class="k">midi_offset</span>: 1/8            <span class="c"># MIDI kommt eine Achtel nach Takt 1</span>
+<span class="k">audio</span>: songs/audio/ATTSS.mp3
+<span class="k">audio_beat1_ms</span>: 20            <span class="c"># Takt 1 in der MP3 (für die Analyse)</span>
+
+<span class="k">sections</span>:
+  - <span class="k">name</span>: pause                 <span class="c"># eindeutig! Die Show-Datei verweist darauf</span>
+    <span class="k">bars</span>: 1
+  - <span class="k">name</span>: intro
+    <span class="k">bars</span>: 4
+    <span class="k">energy</span>: 1                   <span class="c"># optional, deine Einschätzung 0-5</span>
+    <span class="k">lyrics</span>: <span class="s">"All the things she said"</span>
+    <span class="k">description</span>: <span class="s">"leiser Chant, am Ende Crescendo"</span></code></pre>
+<div class="tablewrap"><table>
+<tr><th>Feld</th><th>Bedeutung</th></tr>
+<tr><td><code>id</code></td><td>Song-ID 0..127 (MIDI CC 22)</td></tr>
+<tr><td><code>bpm</code></td><td>Tempo in Viertel pro Minute. Kommt immer von dir und wird nie geschätzt.</td></tr>
+<tr><td><code>midi_offset</code></td><td>Notenwert (<code>1/8</code>, <code>1/16</code>, <code>3/16</code>, negativ = MIDI kommt vor Takt 1). Der erste Part wird entsprechend kürzer, alles andere bleibt auf dem Raster. Nur im Notfall <code>midi_offset_ms</code>.</td></tr>
+<tr><td><code>audio</code>, <code>audio_beat1_ms</code></td><td>nur für die Analyse, beeinflussen den Code nicht</td></tr>
+<tr><td><code>sections[].bars</code> / <code>beats</code></td><td>Länge des Parts. Beides zusammen ist möglich (z. B. 4 Takte + 2 Beats).</td></tr>
+<tr><td><code>sections[].bpm</code>, <code>beats_per_bar</code></td><td>Tempo- oder Taktwechsel ab diesem Part</td></tr>
+<tr><td><code>energy</code>, <code>lyrics</code>, <code>chords</code>, <code>instruments</code>, <code>solo</code>, <code>mood</code>, <code>description</code></td><td>frei. Das ist Futter für die Gestaltung. <code>energy</code> ist zugleich die Rückfalllösung, wenn ein Part in der Show fehlt (0 Black, 1 Calm, 2 Verse, 3 Buildup, 4–5 Drop).</td></tr>
+</table></div>
+
+<h2 id="analyse">6 · Audio-Analyse</h2>
+<pre><code>tools/.venv/Scripts/python tools/songanalyze.py songs/&lt;titel&gt;.yaml</code></pre>
+<p>Misst pro Part, relativ zum Song, und schreibt <code>songs/&lt;titel&gt;.analysis.yaml</code> plus das Bild <code>songs/&lt;titel&gt;_analysis.png</code>:</p>
+<div class="tablewrap"><table>
+<tr><th>Wert</th><th>Bedeutung</th><th>Nutzen für die Show</th></tr>
+<tr><td><code>power</code> 0–5</td><td>Lautheit. 5 = lautester Part (ab 4 Takten), je 1,5 dB leiser eine Stufe weniger, 0 = still. Feste dB-Stufen, weil alle Masters stark limitiert sind.</td><td>Energie der Szene</td></tr>
+<tr><td><code>loudness_db</code></td><td>mittlerer Pegel relativ zum lautesten Moment</td><td>bei knappen Entscheidungen</td></tr>
+<tr><td><code>build</code> −1…+1</td><td>Lautstärkeverlauf im Part (+ = steigert sich)</td><td>Buildup-Szenen</td></tr>
+<tr><td><code>drive</code> 0–1</td><td>rhythmische Dichte + perkussiver Anteil</td><td>ruhig oder treibend</td></tr>
+<tr><td><code>brightness</code> 0–1</td><td>Klangfarbe dunkel → hell</td><td>kalte oder warme Farbschemata</td></tr>
+<tr><td><code>lowend</code> 0–1</td><td>Bassanteil unter 150 Hz</td><td>Drops, Feuer</td></tr>
+<tr><td><code>mood</code></td><td>Dur/Moll-Tendenz</td><td>Farbstimmung</td></tr>
+<tr><td><code>grenze_hoerbar</code></td><td>an der Part-Grenze ändert sich der Klang</td><td>Kontrolle der Struktur</td></tr>
+<tr><td><code>accents</code></td><td><code>stop</code>, <code>hit_after_stop</code>, <code>fill_into_next</code> mit Takt/Beat</td><td>Strobo-Absprünge, Black-Momente</td></tr>
+</table></div>
+<p>Das Bild zeigt übereinander: Pegelverlauf mit Part-Grenzen, Spektrogramm, die Merkmale als Balken und die „Formwechsel“-Kurve. Spitzen dort, wo keine Grenze liegt, deuten auf eine falsche Taktzahl hin. Claude liest das Bild vor der Gestaltung mit.</p>
+
+<h2 id="show">7 · Die Show-Datei (technisch)</h2>
+<pre><code><span class="k">function</span>: gen_AllTheThingsSheSaid
+<span class="k">scheme</span>: SCHEME_ICE                  <span class="c"># Grundfarben</span>
+<span class="k">sections</span>:
+  <span class="k">intro</span>:                            <span class="c"># = name aus der Song-Datei</span>
+    <span class="k">scene</span>: SCENE_CALM
+    <span class="k">scheme</span>: SCHEME_ICE
+    <span class="k">tail</span>:                           <span class="c"># letzte 2 Beats als eigener Part</span>
+      <span class="k">beats</span>: 2
+      <span class="k">scene</span>: SCENE_BUILDUP
+    <span class="k">why</span>: <span class="s">"leiser Chant, Crescendo in den Band-Einsatz"</span>
+  <span class="k">verse 1b</span>:
+    <span class="k">scene</span>: SCENE_VERSE
+    <span class="k">devices</span>:                        <span class="c"># Ausnahmen für einzelne Geräte</span>
+      <span class="k">ANDRESGIT</span>: <span class="s">"progSymmetricVU(${dur}, ${next}, ${bpm})"</span>
+  <span class="k">bridge hit</span>:
+    <span class="k">fx</span>: <span class="s">"progStrobo(${dur}, ${next}, 75, CRGB::White)"</span></code></pre>
+<div class="tablewrap"><table>
+<tr><th>Feld</th><th>Bedeutung</th></tr>
+<tr><td><code>scene</code></td><td>Szene für alle Geräte, jedes zeigt sie auf seine Art (siehe <code>docs/LED-Effekte-und-Szenen.html</code>): <code>SCENE_CALM</code>, <code>_VERSE</code>, <code>_BUILDUP</code>, <code>_DROP</code>, <code>_FIRE</code>, <code>_WAVE_LR</code>, <code>_WAVE_RL</code>, <code>_WAVE_OUT</code>, <code>_PINGPONG</code>, <code>_SOLO_GIT</code>, <code>_SOLO_BASS</code>, <code>_SOLO_DRUMS</code></td></tr>
+<tr><td><code>fx</code></td><td>beliebiger Effektaufruf für alle Geräte, statt einer Szene</td></tr>
+<tr><td><code>scheme</code></td><td>Farbschema: <code>SCHEME_FIRE</code>, <code>_ICE</code>, <code>_NEON</code>, <code>_ROYAL</code>, <code>_TOXIC</code>, <code>_SUNSET</code>, <code>_RETRO</code>, <code>_WHITE</code>, <code>_RED</code>, <code>_BLUE</code>, <code>_RANDOM</code></td></tr>
+<tr><td><code>devices</code></td><td>Ausnahmen: <code>guitar</code>, <code>lamp</code>, <code>matrix</code> oder einzelne Geräte <code>ANDRESGIT</code>, <code>RINASBASS</code>, <code>LAMPE1</code>, <code>LAMPE2</code>, <code>SCROLLMATRIX</code>. Ein einzelnes Gerät hat Vorrang vor seiner Klasse.</td></tr>
+<tr><td><code>tail</code></td><td>die letzten N Beats als eigener Part (Strobo-Absprung, Aufladen vor dem Chorus)</td></tr>
+<tr><td><code>why</code></td><td>Begründung, landet als Kommentar im C++-Code</td></tr>
+<tr><td>Platzhalter</td><td><code>${dur}</code> Part-Dauer, <code>${next}</code> nächster Part, <code>${bpm}</code>, <code>${beat}</code>, <code>${half}</code>, <code>${bar}</code> in ms</td></tr>
+<tr><td>Song-Ebene</td><td><code>function</code>, <code>scheme</code>, <code>scroll_text</code> (false = kein Lauftext), <code>scroll_title</code>, <code>scroll_delay</code> (Standard 90), <code>end_black_ms</code> (Standard 10000)</td></tr>
+</table></div>
+<div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Song-Datei vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen.</div>
+
+<h2 id="regeln">8 · Feste Regeln: Anfang &amp; Ende</h2>
+<p>Diese Regeln setzt der Generator automatisch um, genau wie in den handgeschriebenen Songs:</p>
+<div class="tablewrap"><table>
+<tr><th>Moment</th><th>Verhalten</th></tr>
+<tr><td>Start-MIDI</td><td>Der erste Part ist auf allen Geräten <code>progBlack</code>. Eine Gestaltung dafür in der Show wird ignoriert, mit Hinweis.</td></tr>
+<tr><td>Lauftext</td><td>SCROLLMATRIX zeigt „Titel by Interpret“. Ein Durchlauf dauert <code>(MATRIX_WIDTH − 2 + 6 × Zeichen) × delay</code> ms, die Breite liest der Generator aus <code>definitions.h</code>.</td></tr>
+<tr><td>Wiedereinstieg<br>Variante 1</td><td>Endet der Text höchstens 4 s vor einer Part-Grenze, bleibt die Matrix erst schwarz. Der Text endet dann genau an der Grenze (wie im Original von „Dancing On My Own“).</td></tr>
+<tr><td>Wiedereinstieg<br>Variante 2</td><td>Sonst läuft der Text sofort. Danach zeigt die Matrix den Rest des laufenden Parts verkürzt und steigt an der nächsten Grenze ein. Der Rest beginnt auf einem Beat, damit Szenen, die im Takt blinken, nicht versetzt laufen.</td></tr>
+<tr><td>Ende</td><td>Nach dem letzten Part 10 s <code>progBlack</code> auf allen Geräten, dann <code>clearAll(); switchToSong(0);</code> (Pausen-Loop).</td></tr>
+</table></div>
+
+<h2 id="generator">9 · Generator &amp; Timing</h2>
+<pre><code>tools/.venv/Scripts/python tools/songgen.py --dry-run   <span class="c"># nur Timeline zeigen</span>
+tools/.venv/Scripts/python tools/songgen.py             <span class="c"># alle songs/*.yaml → C++</span>
+pio run -e esp32-s3-devkitc-1</code></pre>
+<p>Der Generator verarbeitet immer <b>alle</b> Songs. Er schreibt <code>src/songs_generated.cpp/.h</code> neu und trägt die Songs in <code>main.cpp</code> zwischen den Markern <code>GENERATED SONGS</code> ein. Handgeschriebene Songs in <code>songs.cpp</code> bleiben unberührt.</p>
+<h3>So werden die Millisekunden berechnet</h3>
+<ul>
+  <li>Dauer eines Beats = 60000 / BPM ms, ein Takt = 4 Beats. Bei 86 BPM: 697,67 ms bzw. 2790,7 ms.</li>
+  <li>Zuerst werden die <b>absoluten</b> Startzeiten aller Parts ab Takt 1 berechnet und erst dann gerundet: <code>Dauer = round(Ende) − round(Start)</code>. So entsteht keine Rundungsdrift wie beim Aufaddieren einzelner gerundeter Dauern. Der Abgleich mit dem handgeschriebenen „Dancing On My Own“ ergab 1 ms Abweichung nach 4:25 min.</li>
+  <li>Zeitbasis im Code ist das Start-MIDI: Alle Zeiten werden um <code>midi_offset</code> verschoben. Bei <code>1/8</code> und 86 BPM ist der erste Part 349 ms kürzer.</li>
+  <li>Die case-Nummern laufen in 5er-Schritten. case 1 und 2 sind für den Lauftext der Scrollmatrix reserviert.</li>
+</ul>
+
+<h2 id="technik">10 · Wie die MP3 analysiert wird</h2>
+<div class="ok">
+<p><b>Kurz gesagt:</b> Die MP3 wird ausschließlich lokal analysiert, mit der Python-Bibliothek <b>librosa</b> in <code>tools/.venv</code>. Sie wird als Mono-Signal geladen und in Fenster von etwa 23 ms zerlegt. Daraus werden berechnet:</p>
+<ul>
+  <li><b>Chroma</b>: die Energie der 12 Halbtöne, auf dem harmonischen Anteil ohne Schlagzeug. Daraus kommen Akkorde und Tonart.</li>
+  <li><b>Onsets und Kick-Energie unter 120 Hz</b>: Daraus kommen die Lage des Beat-Rasters und die Takt-Eins. Das Tempo selbst kommt von dir.</li>
+  <li><b>RMS-Pegel</b>: für Power, Stille, Pegelsprünge und Stopps.</li>
+  <li><b>Spektralschwerpunkt und Bassanteil</b>: für Helligkeit und Lowend.</li>
+  <li><b>Formwechsel</b>: Wo sich Klangfarbe, Harmonie und Pegel ändern, liegen Part-Grenzen. Damit wird die Struktur geprüft.</li>
+</ul>
+<p><b>Wie <code>sheet2song</code> daraus die Takte bestimmt:</b></p>
+<ol>
+  <li>Es rechnet die Sheet-Akkorde um den <code>&lt;transpose&gt;</code>-Wert hoch.</li>
+  <li>Pro halbem Takt bestimmt es, welcher dieser Akkorde im Audio am besten klingt.</li>
+  <li>Dann verteilt es die Parts in Sheet-Reihenfolge auf die Takte, sodass die Akkordfolgen bestmöglich passen. Ein Part darf seine Akkorde wiederholen oder halb so schnell spielen. Die Sheet-Länge entscheidet nur bei Mehrdeutigkeit, etwa wenn Chorus und Bridge dieselben Akkorde haben.</li>
+</ol>
+<p>Weil nur die Akkorde aus deinem Sheet in Frage kommen, ist das deutlich zuverlässiger als eine freie Akkorderkennung. Die Details stehen in den Tabellen und Abschnitten darunter.</p>
+</div>
+
+<p>Beide Werkzeuge nutzen die Python-Bibliothek <b>librosa</b>. Alles läuft lokal, kein Cloud-Dienst. Die MP3 wird als Mono-Signal mit 22 050 Hz geladen und in kurze Fenster zerlegt (512 Samples ≈ 23 ms).</p>
+<div class="tablewrap"><table>
+<tr><th>Messgröße</th><th>librosa-Funktion</th><th>Wofür</th></tr>
+<tr><td>Chroma: Energie der 12 Halbtöne, oktavunabhängig</td><td><code>chroma_cqt</code> auf dem harmonischen Anteil</td><td>Akkorde erkennen, Tonart</td></tr>
+<tr><td>Harmonisch/perkussiv trennen</td><td><code>effects.hpss</code></td><td>Akkorde ohne Schlagzeug-Störung, perkussiver Anteil für <code>drive</code></td></tr>
+<tr><td>Anschlagsstärke (Onsets)</td><td><code>onset.onset_strength</code></td><td>Beat-Raster, rhythmische Dichte</td></tr>
+<tr><td>Kick-Drum-Energie unter 120 Hz</td><td>Onsets auf dem Tiefbass-Spektrum</td><td>Takt-Eins finden</td></tr>
+<tr><td>Lautheit (RMS in dB)</td><td><code>feature.rms</code></td><td><code>power</code>, Stille, Pegelsprünge, Stopps</td></tr>
+<tr><td>Spektralschwerpunkt</td><td><code>spectral_centroid</code></td><td><code>brightness</code></td></tr>
+<tr><td>Formwechsel</td><td>Selbstähnlichkeit von MFCC + Chroma + Pegel mit Schachbrett-Kern (Foote-Novelty)</td><td>Grenzen prüfen</td></tr>
+</table></div>
+<h3>Akkorderkennung</h3>
+<p>Für jeden halben Takt wird der mittlere Chroma-Vektor mit den Dreiklang-Schablonen der Sheet-Akkorde verglichen (Kosinus-Ähnlichkeit). Septimen und Slash-Akkorde werden dabei auf Dur/Moll-Dreiklänge reduziert. Weil nur die Akkorde aus dem Sheet in Frage kommen, ist das viel zuverlässiger als eine freie Akkorderkennung.</p>
+<h3>Grenzen des Verfahrens</h3>
+<ul>
+  <li>Das Tempo wird nicht erkannt, es kommt immer von dir. Automatische Beat-Tracker liegen gern daneben: Bei ATTSS meldete der Standard-Tracker 117 statt 86 BPM, ChatGPT 86,76 BPM. Das wären nach gut 3 Minuten fast 2 s Versatz.</li>
+  <li>Parts mit identischer Akkordfolge direkt hintereinander, etwa Chorus → Bridge bei ATTSS, sind nur über die Sheet-Länge unterscheidbar. Deshalb sollte das Sheet vollständig sein.</li>
+  <li>Sprechgesang, stark effektierte Intros oder Parts ohne Harmonie (nur Drums) erkennt die Akkordanalyse schlecht. Das zeigt die Spalte „akkorde“.</li>
+  <li>Stimmung und Energie sind Messwerte, keine Musikalität. Deine <code>description</code>/<code>energy</code> haben bei der Gestaltung Vorrang.</li>
+</ul>
+
+<h2 id="beispiel">11 · Beispiel: All The Things She Said (Song 31)</h2>
+<p>Sheet mit 8 Parts, <code>transpose 4</code>, <code>myTempo 86</code>. Ergebnis von <code>sheet2song</code> ohne Nacharbeit:</p>
+<div class="tablewrap"><table>
+<tr><th>Part</th><th>Takte</th><th>Sheet-Schätzung</th><th>Start MP3</th><th>Akkorde</th><th>Hinweis</th></tr>
+<tr><td>pause</td><td>1</td><td></td><td>0:00.02</td><td></td><td>stiller Takt in der MP3</td></tr>
+<tr><td>intro</td><td>12</td><td>10</td><td>0:02.81</td><td>67 %</td><td>Pegelsprung vor Takt 5 → aufgeteilt in intro (4) + intro band (8)</td></tr>
+<tr><td>verse 1</td><td>9</td><td>9</td><td>0:36.30</td><td>100 %</td><td></td></tr>
+<tr><td>chorus 1</td><td>8</td><td>8</td><td>1:01.42</td><td>100 %</td><td></td></tr>
+<tr><td>solo</td><td>8</td><td>8</td><td>1:23.74</td><td>100 %</td><td></td></tr>
+<tr><td>verse 2</td><td>8</td><td>8</td><td>1:46.07</td><td>100 %</td><td>Pegelsprung vor Takt 5 → verse 2a/2b</td></tr>
+<tr><td>chorus 2</td><td>8</td><td>8</td><td>2:08.39</td><td>100 %</td><td></td></tr>
+<tr><td>bridge</td><td>8</td><td>8</td><td>2:30.72</td><td>100 %</td><td>Sprung vor Takt 8 → bridge (7) + bridge hit (1)</td></tr>
+<tr><td>chorus 3</td><td>12</td><td>12</td><td>2:53.04</td><td>100 %</td><td></td></tr>
+<tr><td>ende</td><td>1</td><td></td><td>3:26.53</td><td></td><td>Schlussakkord</td></tr>
+</table></div>
+<p>Die fertigen Dateien: <code>songs/all_the_things_she_said.yaml</code> und <code>.show.yaml</code>.</p>
+
+<h2 id="probleme">12 · Probleme &amp; Lösungen</h2>
+<div class="tablewrap"><table>
+<tr><th>Meldung / Symptom</th><th>Ursache und Lösung</th></tr>
+<tr><td><code>existiert schon</code> (sheet2song)</td><td>Das Tool überschreibt keine Song-Datei. <code>--out</code> für eine Testdatei oder <code>--force</code>.</td></tr>
+<tr><td><code>kein Tempo im Sheet</code></td><td><code>--bpm</code> angeben</td></tr>
+<tr><td>Part mit <code>&lt;- prüfen</code></td><td>Akkorde kaum erkannt. Transpose im Sheet prüfen und die Stelle gegenhören. Takte notfalls von Hand in der YAML korrigieren.</td></tr>
+<tr><td>alle Parts um einen Takt verschoben</td><td>Takt-Eins falsch gewählt, z. B. bei einem Auftakt. <code>audio_beat1_ms</code> um einen Takt korrigieren, die Pause-Takte anpassen.</td></tr>
+<tr><td><code>Song-ID … schon vergeben</code> (songgen)</td><td>andere <code>id</code> wählen</td></tr>
+<tr><td><code>Abschnitt 'x' gibt es … nicht</code></td><td>Part-Name in der Show-Datei stimmt nicht mit der Song-Datei überein</td></tr>
+<tr><td><code>darf bars nicht setzen</code></td><td>Takte gehören in die Song-Datei, nicht in die Show-Datei</td></tr>
+<tr><td>Show läuft langsam auseinander</td><td>BPM prüfen (Analyse meldet Drift). Bei Live-Tempo-Schwankungen der Band hilft nur ein Part-Sync per MIDI (CC 23).</td></tr>
+<tr><td>erster Part-Wechsel zu früh oder spät</td><td><code>midi_offset</code> anpassen (<code>1/16</code>, <code>3/16</code> …)</td></tr>
+</table></div>
+
+<h2 id="marker">13 · Bund-Marker-LEDs</h2>
+<div class="warn"><b>Grundregel:</b> Marker, die du gesetzt oder akzeptiert hast, werden nie mehr verändert. Das gilt für jedes Werkzeug und für Claude. Vorgeschlagen wird nur für Songs, die noch gar keine Marker haben.</div>
+<h3>Wie der Vorschlag entsteht</h3>
+<ul>
+  <li>Grundtöne aller Akkorde im Song, <b>nach</b> dem Transpose, z. B. Sheet <code>C#</code> + 4 = <code>F</code>.</li>
+  <li>Jeder Grundton wird auf der E-Saite <b>und</b> auf der A-Saite markiert. Beide Saiten teilen sich eine LED pro Bund: <code>ESaite_C</code> und <code>ASaite_F</code> sind dieselbe LED am 8. Bund.</li>
+  <li>Keine Marker auf dem 5. und 12. Bund (dort leuchten immer die blauen LEDs) und keine auf der Leersaite.</li>
+  <li>Höchstens 7 Marker (<code>markerLED1…7</code>). Bei mehr fallen die seltensten Akkorde weg, mit Hinweis.</li>
+  <li>Das Mapping auf die LEDs von Gitarre und Bass passiert wie bisher über die Defines in <code>definitions.h</code>.</li>
+</ul>
+<h3>Wo die Marker stehen</h3>
+<div class="tablewrap"><table>
+<tr><th>Fall</th><th>Verhalten</th></tr>
+<tr><td>Song-ID hat einen <code>case</code> in <code>src/markerLEDs.cpp</code></td><td>Deine Handarbeit gilt immer. <code>sheet2song</code> schlägt nichts vor, der Generator erzeugt nichts. Das betrifft z. B. #31 ATTSS.</td></tr>
+<tr><td>Neuer Song ohne Marker</td><td><code>sheet2song</code> schreibt einen <code>markers:</code>-Block als <b>Vorschlag</b> ans Ende der Song-Datei. Behältst oder änderst du ihn, gilt er als deiner.</td></tr>
+<tr><td>Song-Datei hat schon <code>markers:</code></td><td><code>sheet2song --force</code> übernimmt den Block Zeichen für Zeichen, der Generator setzt ihn nur um.</td></tr>
+</table></div>
+<pre><code><span class="k">markers</span>:
+  <span class="k">all</span>: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]   <span class="c"># Gitarre und Bass</span>
+  <span class="k">bass</span>: [ESaite_F, ESaite_G]                     <span class="c"># nur Bass (ersetzt all)</span>
+  <span class="k">parts</span>:                                        <span class="c"># Spezial-Marker für einzelne Abschnitte</span>
+    <span class="k">solo</span>: {<span class="k">bass</span>: [ESaite_Cis, ESaite_Dis]}       <span class="c"># gilt im Abschnitt inkl. seines Tails</span></code></pre>
+<p>Der Generator erzeugt daraus <code>setGeneratedMarkerLEDs()</code> in <code>songs_generated.cpp</code>. Aufgerufen wird sie im <code>default</code>-Zweig von <code>setMarkerLEDs()</code>, also nur, wenn es keinen handgeschriebenen <code>case</code> gibt. Ungültige Marker-Namen, mehr als 7 Marker oder unbekannte Abschnitte meldet er als Fehler.</p>
+<h3>Wie der Schutz abgesichert ist</h3>
+<ul>
+  <li><b>In den Werkzeugen</b> (<code>tools/markers.py</code>): Ein handgeschriebener <code>case</code> in <code>setMarkerLEDs()</code> hat immer Vorrang. <code>sheet2song</code> übernimmt einen vorhandenen <code>markers:</code>-Block wörtlich. Die Show-Datei darf keine Marker enthalten, sonst bricht der Generator ab.</li>
+  <li><b>Bei Claude</b>: Die Regel „nie ändern, was gesetzt oder akzeptiert ist“ steht im Memory und im Skill <code>new-song</code>. Fällt Claude etwas auf, etwa ein fehlender Akkord-Grundton, gibt es nur einen Hinweis im Chat, keine Änderung.</li>
+</ul>
+
+<h3>Änderungen am bestehenden Code</h3>
+<p>In <code>src/markerLEDs.cpp</code> sind genau zwei Dinge dazugekommen. Die handgeschriebenen <code>case</code>s sind unverändert.</p>
+<pre><code>#include "songs_generated.h"	<span class="c">// setGeneratedMarkerLEDs()</span>
+…
+		default://defaultLoop();
+			<span class="c">// kein handgeschriebener case -> Marker der generierten Songs (songs/*.yaml, sonst nichts)</span>
+			setGeneratedMarkerLEDs(songID, partID);
+			break;</code></pre>
+<p>Vorher stand im <code>default</code>-Zweig nur „DO NOTHING“. Für Songs ohne handgeschriebenen <code>case</code> und ohne <code>markers:</code> in der YAML bleibt es dabei: Die generierte Funktion setzt dann nichts.</p>
+<p>Im generierten Code werden bei jedem Aufruf alle 7 Marker gesetzt, unbenutzte auf <code>0</code>. So bleiben beim Wechsel in einen Part mit Spezial-Markern keine alten Marker stehen. Unterschiedliche Marker für Gitarre und Bass landen in <code>#ifdef GIT … #else … #endif</code>.</p>
+
+<h3>Geprüft</h3>
+<ul>
+  <li>Vorschlag für eine neue Song-ID aus dem ATTSS-Sheet erzeugt: 5 Marker, siehe Vergleich unten.</li>
+  <li>Für #31 (handgeschrieben) kommt kein Vorschlag, und der Generator meldet „von Hand in markerLEDs.cpp“.</li>
+  <li><code>markers:</code>-Block wie ein User geändert (andere Marker plus Spezial-Marker im Solo), dann <code>sheet2song --force</code>: Der Block blieb Zeichen für Zeichen gleich.</li>
+  <li>Testsong mit Spezial-Markern nur für den Bass im Solo: Der erzeugte Code setzt im Solo für den Bass die Spezial-Marker, für die Gitarre die normalen. Er baut für Gitarre, Bass und Lampe.</li>
+</ul>
+
+<h3>Vergleich: Vorschlag und Handarbeit bei ATTSS</h3>
+<p>Akkorde im Sheet: C#, Cm, Fm, G#, D#. Mit Transpose +4 werden daraus F, Em, Am, C, G.</p>
+<div class="tablewrap"><table>
+<tr><th>Grundton</th><th>E-Saite</th><th>A-Saite</th><th>Vorschlag</th><th>von Hand (#31)</th></tr>
+<tr><td>F</td><td>1. Bund</td><td>8. Bund</td><td>1, 8</td><td><code>ESaite_F</code> (1), <code>ASaite_F</code> (8)</td></tr>
+<tr><td>C</td><td>8. Bund</td><td>3. Bund</td><td>8, 3</td><td><code>ASaite_C</code> (3)</td></tr>
+<tr><td>E (Em)</td><td>Leersaite/12. Bund: –</td><td>7. Bund</td><td>7</td><td><code>ASaite_E</code> (7)</td></tr>
+<tr><td>A (Am)</td><td>5. Bund: –</td><td>Leersaite: –</td><td>–</td><td>–</td></tr>
+<tr><td>G</td><td>3. Bund</td><td>10. Bund</td><td>3, 10</td><td>(10 fehlt)</td></tr>
+</table></div>
+<p>Ergebnis: Der Vorschlag wäre Bund 1, 3, 7, 8 und 10, von Hand gesetzt sind 1, 3, 7, 8. Der einzige Unterschied ist Bund 10 für den G-Akkord aus Verse und Solo, vermutlich bewusst weggelassen. Nach der Schutzregel bleiben die Marker von #31 so, wie sie sind.</p>
+
+<h2 id="dateien">14 · Dateien</h2>
+<div class="tablewrap"><table>
+<tr><th>Pfad</th><th>Inhalt</th></tr>
+<tr><td><code>tools/sheet2song.py</code></td><td>Sheet (XML) + MP3 → semantische Song-Datei</td></tr>
+<tr><td><code>tools/songanalyze.py</code></td><td>Messwerte pro Part → <code>.analysis.yaml</code> + <code>_analysis.png</code></td></tr>
+<tr><td><code>tools/songgen.py</code></td><td>Song- + Show-Dateien → C++</td></tr>
+<tr><td><code>tools/markers.py</code></td><td>Marker-Vorschlag, Prüfung und Code für die Bund-Marker</td></tr>
+<tr><td><code>src/markerLEDs.cpp</code></td><td>handgeschriebene Marker (haben Vorrang) + Aufruf der generierten</td></tr>
+<tr><td><code>tools/requirements.txt</code></td><td>Python-Pakete</td></tr>
+<tr><td><code>songs/*.yaml</code></td><td>Song-Dateien (versioniert)</td></tr>
+<tr><td><code>songs/audio/</code></td><td>MP3s (nicht versioniert)</td></tr>
+<tr><td><code>src/songs_generated.cpp/.h</code></td><td>generierter Code, nicht von Hand ändern</td></tr>
+<tr><td><code>src/scenes.h/.cpp</code>, <code>src/colorSchemes.h</code></td><td>Szenen und Farbschemata</td></tr>
+<tr><td><code>.claude/skills/new-song/SKILL.md</code></td><td>Arbeitsanweisung und Gestaltungsregeln für Claude</td></tr>
+<tr><td><code>docs/LED-Effekte-und-Szenen.html</code></td><td>Effekte, Szenen und Farbschemata mit Live-Vorschau</td></tr>
+</table></div>
+
+</main>
+</body>
+</html>
