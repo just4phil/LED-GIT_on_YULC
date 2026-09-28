@@ -55,6 +55,10 @@
 //	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 //#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
+
+//---- start a special demo? --------
+//#define START_WITH_FX_DEMO
+//#define START_WITH_SCENE_DEMO
 //========================================================================================
 
 //------ GERÄTE -------------

@@ -40,3 +40,8 @@
 *.exe
 *.out
 *.app
+
+# Song-Tools
+tools/.venv/
+tools/__pycache__/
+songs/audio/

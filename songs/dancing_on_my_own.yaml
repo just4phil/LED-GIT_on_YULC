@@ -1,0 +1,142 @@
+# Semantische Songbeschreibung (vom User gepflegt): WAS passiert musikalisch.
+# Die technische Umsetzung steht in dancing_on_my_own.show.yaml (von Claude abgeleitet).
+#
+# Struktur aus DancingOnMyOwn() (songs.cpp, #8) übernommen, als eigener Song #40 zum Vergleich.
+#
+# Generieren:  tools/.venv/Scripts/python tools/songgen.py
+# Analyse:     tools/.venv/Scripts/python tools/songanalyze.py songs/dancing_on_my_own.yaml
+
+id: 40
+name: Dancing On My Own
+artist: Robyn
+bpm: 122
+beats_per_bar: 4
+midi_offset: 1/8             # Start-MIDI kommt eine Achtel nach Takt 1 (bei 122 BPM = 246 ms)
+# audio: songs/audio/dancing_on_my_own.mp3
+# audio_beat1_ms: 0
+
+# Pro Abschnitt: name (eindeutig) + bars/beats sind Pflicht, alles andere ist freie Beschreibung.
+# Hilfreich: description, energy (0-5, eigene Einschätzung), instruments, mood, solo, lyrics
+sections:
+  - name: pause
+    bars: 3
+    energy: 0
+    description: Stille vor dem Song
+
+  - name: bass
+    bars: 8
+    energy: 1
+    instruments: [synth-bass]
+    description: nur pulsierender Synth-Bass, dunkel
+
+  - name: verse 1
+    bars: 8
+    energy: 2
+    instruments: [synth-bass, vocals]
+    lyrics: Somebody said you got a new friend
+    description: Gesang setzt ein, melancholisch
+
+  - name: verse 1b
+    bars: 8
+    energy: 2
+    instruments: [synth-bass, vocals, guitar]
+    description: Gitarre steigt ein
+
+  - name: pre-chorus
+    bars: 4
+    energy: 3
+    lyrics: Yeah I know it's stupid
+    description: Spannung baut sich auf
+
+  - name: chorus 1
+    bars: 8
+    energy: 5
+    lyrics: I'm in the corner, watching you kiss her
+    description: voller Chorus
+
+  - name: chorus 1b
+    bars: 4
+    energy: 5
+
+  - name: hook 1
+    bars: 4
+    energy: 5
+    lyrics: I keep dancing on my own
+    description: Hook, am Ende kurzer Absprung in den Stopp
+
+  - name: stop
+    bars: 2
+    energy: 0
+    description: Break, alles still
+
+  - name: verse 2
+    bars: 10
+    energy: 2
+    description: wie Verse 1, etwas voller
+
+  - name: chorus 2
+    bars: 8
+    energy: 5
+
+  - name: chorus 2b
+    bars: 4
+    energy: 5
+
+  - name: hook 2
+    bars: 4
+    energy: 5
+    lyrics: I keep dancing on my own
+
+  - name: instrumental
+    bars: 8
+    energy: 4
+    solo: guitar
+    description: Instrumentalteil, Gitarre im Vordergrund
+
+  - name: bridge
+    bars: 8
+    energy: 1
+    lyrics: So far away but still so near
+    description: zurückgenommen, verträumt
+
+  - name: corner
+    bars: 3
+    energy: 0
+    lyrics: I'm in the corner
+    description: fast still, nur Gesang
+
+  - name: snare roll
+    bars: 1
+    energy: 3
+    description: Snarewirbel in das Finale
+
+  - name: chorus 3
+    bars: 4
+    energy: 5
+    description: Finale beginnt
+
+  - name: hook 3
+    bars: 4
+    energy: 5
+
+  - name: chorus 4
+    bars: 8
+    energy: 5
+
+  - name: chorus 4b
+    bars: 4
+    energy: 5
+
+  - name: hook 4
+    bars: 4
+    energy: 5
+
+  - name: hook 5
+    bars: 8
+    energy: 5
+    description: Höhepunkt, letzter Takt maximal
+
+  - name: outro
+    bars: 8
+    energy: 2
+    description: instrumentales Outro, klingt aus

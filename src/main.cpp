@@ -17,6 +17,7 @@
 #include "FXprograms.h"
 #include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
 #include "songs.h"
+#include "songs_generated.h"		// aus songs/*.yaml, siehe tools/songgen.py
 #include "TimerFunctions.h"		// includes setup variables and callback for timer ---
 //=============================
 
@@ -416,6 +417,12 @@ void loop() {
 		// case 33:
 		// 	GirlJustWannaHaveFun();		//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
 		// 	break;	
+
+		// >>> GENERATED SONGS (tools/songgen.py) >>>
+		case 40:
+			gen_DancingOnMyOwn();
+			break;
+		// <<< GENERATED SONGS <<<
 
 		case 80:
 			ILoveItTRAILER();

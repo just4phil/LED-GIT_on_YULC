@@ -1,0 +1,122 @@
+# Technische Show (von Claude aus dancing_on_my_own.yaml abgeleitet): WIE es auf den Geräten aussieht.
+# Keine Takte/Tempi hier - die Struktur steht nur in der semantischen Datei.
+# Abschnitte ohne Eintrag fallen auf ihr energy zurück (0 Black, 1 CALM, 2 VERSE, 3 BUILDUP, 4-5 DROP).
+
+function: gen_DancingOnMyOwn
+scheme: SCHEME_NEON          # Grundpalette, einzelne Abschnitte überschreiben
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  bass:
+    scene: SCENE_CALM
+    scheme: SCHEME_ICE
+    why: nur Synth-Bass, dunkel und kühl anfangen
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ICE
+    why: Gesang setzt ein, Puls auf allen Geräten, noch kalt
+
+  verse 1b:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    devices:
+      guitar: "progZoneBeat(${dur}, ${next}, ${bpm})"
+      ANDRESGIT: "progSymmetricVU(${dur}, ${next}, ${bpm})"
+    why: Gitarre steigt ein und bekommt ein eigenes VU, Rest bleibt im Verse-Puls
+
+  pre-chorus:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: lädt sich über 4 Takte auf und entlädt sich genau in den Chorus
+
+  chorus 1:
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: erster Chorus, volle Energie im Beat
+
+  chorus 1b:
+    scene: SCENE_WAVE_LR
+    why: Bühnenbewegung als Variation
+
+  hook 1:
+    scene: SCENE_PINGPONG
+    tail:
+      beats: 2
+      fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
+    why: "'on my own' springt von Gerät zu Gerät, kurzer Strobo als Absprung in den Stopp"
+
+  stop:
+    fx: "progBlack(${dur}, ${next})"
+
+  verse 2:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: zurück in den Puls, eine Stufe wärmer als Verse 1
+
+  chorus 2:
+    scene: SCENE_DROP
+
+  chorus 2b:
+    scene: SCENE_WAVE_RL
+    why: Welle diesmal andersrum
+
+  hook 2:
+    scene: SCENE_PINGPONG
+
+  instrumental:
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_RETRO
+    why: Gitarre im Spotlight, rot/weiß/blau wie im Original
+
+  bridge:
+    scene: SCENE_CALM
+    scheme: SCHEME_ICE
+    devices:
+      matrix: "matrixMovieFX(${dur}, ${next}, 100, 6)"
+    why: alles zieht sich zurück, Matrix-Film wie im Original
+
+  corner:
+    fx: "progBlack(${dur}, ${next})"
+    why: Stille vor dem Finale
+
+  snare roll:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_WHITE
+    why: 1 Takt Aufladen, Blast genau auf den Einsatz
+
+  chorus 3:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    why: Finale beginnt, Farbwechsel auf Feuer
+
+  hook 3:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_FIRE
+
+  chorus 4:
+    scene: SCENE_DROP
+    scheme: SCHEME_SUNSET
+
+  chorus 4b:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_SUNSET
+
+  hook 4:
+    scene: SCENE_WAVE_LR
+    scheme: SCHEME_SUNSET
+
+  hook 5:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    tail:
+      beats: 4
+      fx: "progStrobo(${dur}, ${next}, 65, CRGB::White)"
+    why: Höhepunkt, letzter Takt weißer Strobo
+
+  outro:
+    scene: SCENE_CALM
+    scheme: SCHEME_SUNSET
+    why: ausatmen
