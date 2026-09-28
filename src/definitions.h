@@ -48,10 +48,10 @@
 // die Auswahl hier:
 #if !defined(ANDRESGIT) && !defined(RINASBASS) && !defined(LAMPE1) && !defined(LAMPE2) && !defined(SCROLLMATRIX) && !defined(GITBOARD)
 #define ANDRESGIT		// YULC1 auf COM3 / seit 24.8.2026 COM8
-//#define RINASBASS		// YULC2 auf COM8 / seit 24.8.2026 COM9
+//#define RINASBASS		// YULC2 auf COM9 / seit 24.8.2026 COM9
 //#define LAMPE2		// YULC5 auf COM10
 //#define LAMPE1		// YULC6 auf COM11
-//#define SCROLLMATRIX 	// YULC4 auf COM9 - activate this for the klapp-Matrix
+//#define SCROLLMATRIX 	// YULC4 auf COM12 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
 #endif
 //

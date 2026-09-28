@@ -8,7 +8,7 @@ name: All The Things She Said
 artist: t.A.T.u.
 bpm: 86
 beats_per_bar: 4
-midi_offset: 1/8             # TODO: bitte prüfen
+midi_offset: 3/8
 audio: songs/audio/ATTSS.mp3
 audio_beat1_ms: 20           # MP3 beginnt mit einem stillen Takt ("pause"), Band ab 2811 ms
 
