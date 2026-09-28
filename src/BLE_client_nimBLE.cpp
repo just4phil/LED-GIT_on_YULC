@@ -5,6 +5,7 @@
 #include <NimBLEDevice.h>
 #include "functions.h"
 #include "FXprograms.h"
+#include "otaUpdate.h"
 
 //----------------------------
 
@@ -425,7 +426,13 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
                 pChr->writeValue((uint8_t*)&bleMessage, sizeof(bleMessage));
             }
             informServerOnNextProgChange = true;
-            break;                     
+            break;
+
+        case 7:    // proxy schickt alle Geräte in den OTA-Update-Modus (Knopf beim Einschalten der Gitarre)
+            if (songID == 0) {    // nur im Leerlauf, nie mitten im Song
+                otaRequestAndRestart();
+            }
+            break;
 
         //wird aktuell nicht benutzt!
         // case 24:    // sync gits after connect/subscribe, but only if there is actually no song running

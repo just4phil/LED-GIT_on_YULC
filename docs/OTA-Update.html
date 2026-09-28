@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTA-Firmware-Update</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#10261d,#11202e 55%,#0f1216);border-bottom:1px solid var(--border);padding:34px 0 28px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.2px}
+  h2{font-size:23px;margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+  h3{font-size:18px;margin:26px 0 6px;color:var(--accent2)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  a{color:var(--accent)}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff;overflow-wrap:anywhere}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13px;line-height:1.5;margin:10px 0}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .c{color:#7d8b99}
+  .k{color:#ffb86b}
+  .s{color:#7ee787}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .tablewrap{overflow-x:auto;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent);white-space:nowrap}
+  td code{font-size:12.5px}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;margin-top:18px}
+  .toc a{color:var(--ink);text-decoration:none;opacity:.85}
+  .toc a:hover{opacity:1;color:var(--accent)}
+  .toc b{color:var(--accent);margin-right:6px}
+  .steps{counter-reset:st;list-style:none;padding:0}
+  .steps>li{counter-increment:st;position:relative;padding:14px 16px 14px 58px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;margin:10px 0}
+  .steps>li::before{content:counter(st);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#06121f;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .who{display:inline-block;font-size:12px;border-radius:20px;padding:0 9px;margin-left:6px;border:1px solid var(--border);color:var(--muted)}
+  .who.du{color:var(--warn);border-color:#5a4526}
+  .who.geraet{color:var(--accent2);border-color:#2b4a33}
+  .who.tool{color:var(--accent);border-color:#23405f}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px;border:1px solid #0006}
+  svg{max-width:100%;height:auto;display:block}
+  .flow text{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  @media (max-width:600px){ h1{font-size:24px} h2{font-size:20px} .steps>li{padding-left:50px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>OTA-Firmware-Update über WLAN</h1>
+    <p class="sub">Alle Geräte auf einmal aktualisieren, ohne USB-Kabel: bauen am PC, Gitarre mit gedrücktem Knopf einschalten, fertig. Stand 28.09.2026, Branch <code>ota</code>.</p>
+    <nav class="toc">
+      <a href="#ueberblick"><b>1</b>Überblick</a>
+      <a href="#kurz"><b>2</b>Kurzanleitung</a>
+      <a href="#setup"><b>3</b>Einmalige Einrichtung</a>
+      <a href="#update"><b>4</b>Update Schritt für Schritt</a>
+      <a href="#leds"><b>5</b>LED-Anzeige</a>
+      <a href="#ablauf"><b>6</b>Was intern passiert</a>
+      <a href="#version"><b>7</b>Versionen</a>
+      <a href="#geraete"><b>8</b>Geräte &amp; Build-Envs</a>
+      <a href="#ble"><b>9</b>BLE-Protokoll</a>
+      <a href="#flash"><b>10</b>Flash-Partitionen</a>
+      <a href="#dateien"><b>11</b>Dateien</a>
+      <a href="#konfig"><b>12</b>Konstanten &amp; Timeouts</a>
+      <a href="#probleme"><b>13</b>Probleme &amp; Lösungen</a>
+      <a href="#grenzen"><b>14</b>Grenzen &amp; Risiken</a>
+      <a href="#erweitern"><b>15</b>Erweitern</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<h2 id="ueberblick">1 · Überblick</h2>
+<p>Das Update ist ein <b>Pull-Modell</b>: Der PC stellt die fertigen Firmwares per HTTP bereit. Jedes Gerät holt sich seine eigene Datei selbst, aber nur wenn sie neuer ist als die installierte. Ausgelöst wird das Ganze von der Gitarre (MIDI-Proxy), die per BLE ohnehin mit allen anderen Geräten verbunden ist.</p>
+
+<div class="panel">
+<svg class="flow" viewBox="0 0 980 330" role="img" aria-label="Ablauf des OTA-Updates: PC baut und stellt bereit, Gitarre löst per BLE aus, alle Geräte laden per WLAN">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9aa7b4"/>
+    </marker>
+  </defs>
+  <g font-size="13" fill="#e6edf3">
+    <!-- PC -->
+    <rect x="10" y="20" width="220" height="130" rx="10" fill="#11202e" stroke="#4ea1ff"/>
+    <text x="120" y="44" text-anchor="middle" font-weight="700">PC / Laptop</text>
+    <text x="120" y="68" text-anchor="middle">build_ota.py</text>
+    <text x="120" y="86" text-anchor="middle" fill="#9aa7b4" font-size="11">pio run × 5 Geräte</text>
+    <text x="120" y="108" text-anchor="middle">ota/&lt;gerät&gt;/</text>
+    <text x="120" y="126" text-anchor="middle" fill="#9aa7b4" font-size="11">firmware.bin + version.json</text>
+    <text x="120" y="142" text-anchor="middle" fill="#7ee787" font-size="11">HTTP-Server :8080</text>
+
+    <!-- WLAN -->
+    <rect x="300" y="55" width="150" height="60" rx="30" fill="#1d242d" stroke="#9aa7b4"/>
+    <text x="375" y="81" text-anchor="middle">WLAN</text>
+    <text x="375" y="99" text-anchor="middle" fill="#9aa7b4" font-size="11">Heim oder Hotspot</text>
+    <line x1="230" y1="85" x2="298" y2="85" stroke="#9aa7b4" marker-end="url(#ar)" marker-start="url(#ar)"/>
+
+    <!-- Gitarre -->
+    <rect x="520" y="20" width="200" height="110" rx="10" fill="#241d12" stroke="#ffb86b"/>
+    <text x="620" y="44" text-anchor="middle" font-weight="700">Gitarre (andresgit)</text>
+    <text x="620" y="66" text-anchor="middle" fill="#9aa7b4" font-size="11">MIDI-Proxy / BLE-Server</text>
+    <text x="620" y="90" text-anchor="middle">Knopf beim Einschalten</text>
+    <text x="620" y="110" text-anchor="middle" fill="#ffb86b" font-size="11">→ BLE msgType 7 an alle</text>
+
+    <!-- Clients -->
+    <rect x="520" y="200" width="450" height="110" rx="10" fill="#14211a" stroke="#7ee787"/>
+    <text x="745" y="224" text-anchor="middle" font-weight="700">BLE-Clients</text>
+    <rect x="535" y="240" width="100" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
+    <text x="585" y="270" text-anchor="middle" font-size="12">rinasbass</text>
+    <rect x="645" y="240" width="100" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
+    <text x="695" y="270" text-anchor="middle" font-size="12">lampe1</text>
+    <rect x="755" y="240" width="100" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
+    <text x="805" y="270" text-anchor="middle" font-size="12">lampe2</text>
+    <rect x="865" y="240" width="95" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
+    <text x="912" y="270" text-anchor="middle" font-size="12">scrollmatrix</text>
+
+    <!-- BLE Pfeil -->
+    <line x1="660" y1="130" x2="660" y2="198" stroke="#ffb86b" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+    <text x="670" y="170" fill="#ffb86b" font-size="11">① BLE: „in Update-Modus“</text>
+
+    <!-- WLAN Pfeile -->
+    <path d="M520,75 C480,75 470,85 452,85" stroke="#7ee787" fill="none" marker-end="url(#ar)"/>
+    <path d="M520,255 C400,255 380,160 380,117" stroke="#7ee787" fill="none" marker-end="url(#ar)"/>
+    <text x="260" y="200" fill="#7ee787" font-size="11">② nach Neustart: WLAN → version.json</text>
+    <text x="260" y="218" fill="#7ee787" font-size="11">③ nur wenn neuer: firmware.bin laden</text>
+    <text x="260" y="236" fill="#7ee787" font-size="11">④ Neustart mit neuer Firmware</text>
+  </g>
+</svg>
+</div>
+
+<p>Wichtig für das Verständnis: <b>WLAN und BLE laufen nie gleichzeitig.</b> Ein Gerät, das updaten soll, merkt sich das in einem Flag im Flash (NVS) und startet neu. Im nächsten Start sieht <code>setup()</code> das Flag und geht direkt in den Update-Modus. BLE, Timer und Effekte werden dann gar nicht erst gestartet. Nach dem Update (oder einem Fehler) startet das Gerät wieder ganz normal.</p>
+
+<h2 id="kurz">2 · Kurzanleitung</h2>
+<div class="ok">
+<ol>
+  <li>Alle Geräte (außer Gitarre) einschalten und normal laufen lassen.</li>
+  <li>Am PC: <code>python tools/build_ota.py --serve</code> (baut alles, startet Server, Fenster offen lassen).</li>
+  <li>Gitarre mit <b>gedrücktem Rotary-Knopf</b> einschalten, Knopf ca. 1–2 s halten, bis die LEDs lila werden.</li>
+  <li>Warten: lila (Gitarre sammelt Clients) → blau (WLAN) → gelb (Download) → grün. Danach laufen alle Geräte mit der neuen Firmware.</li>
+  <li>Kontrolle: im Server-Fenster steht je Gerät ein <code>GET /&lt;gerät&gt;/firmware.bin … 200</code>.</li>
+</ol>
+</div>
+
+<h2 id="setup">3 · Einmalige Einrichtung</h2>
+<ol class="steps">
+  <li><b>WLAN-Zugang anlegen</b> <span class="who du">du</span><br>
+    Vorlage kopieren und ausfüllen. Die Datei ist gitignored und landet nie im Repo.
+<pre><code>copy src\secrets.h.example src\secrets.h</code></pre>
+<pre><code><span class="c">// src/secrets.h</span>
+<span class="k">#define</span> OTA_WIFI_LIST { \
+	{ <span class="s">"Heim-WLAN"</span>,		<span class="s">"passwort"</span> }, \
+	{ <span class="s">"Laptop-Hotspot"</span>,	<span class="s">"passwort"</span> }, \
+}
+<span class="k">#define</span> OTA_SERVER	<span class="s">"192.168.137.1"</span>	<span class="c">// IP des PCs mit build_ota.py --serve</span>
+<span class="k">#define</span> OTA_PORT	8080</code></pre>
+    Mehrere WLANs sind erlaubt, das Gerät nimmt das stärkste gefundene. <code>OTA_SERVER</code> ist <b>eine</b> feste IP, sie muss in jedem eingetragenen WLAN stimmen. Am einfachsten ist deshalb der <b>Windows-Mobile-Hotspot</b> des Laptops: Dort hat der Laptop immer <code>192.168.137.1</code>, egal wo du bist. 2,4 GHz einstellen (der ESP32-S3 kann kein 5 GHz).
+  </li>
+  <li><b>Jedes Gerät einmal per USB flashen</b> <span class="who du">du</span><br>
+    Die OTA-Funktion muss einmal auf dem Gerät sein, bevor es sich per WLAN updaten kann. Ab dann geht alles drahtlos.
+<pre><code>pio run -e andresgit    -t upload --upload-port COM8
+pio run -e rinasbass    -t upload --upload-port COM9
+pio run -e lampe1       -t upload --upload-port COM11
+pio run -e lampe2       -t upload --upload-port COM10
+pio run -e scrollmatrix -t upload --upload-port COMx   <span class="c">// Port prüfen, s. Kap. 8</span></code></pre>
+    Im seriellen Monitor erscheint beim Start z.&nbsp;B. <code>FIRMWARE lampe1 - Version 1790604888 (a5ea119)</code>.
+  </li>
+  <li><b>Windows-Firewall freigeben</b> <span class="who du">du</span><br>
+    Beim ersten <code>--serve</code> fragt Windows, ob Python im Netzwerk erreichbar sein darf. <b>Zulassen</b>, und zwar auch für „Öffentliche Netzwerke“, denn der Hotspot gilt oft als öffentlich. Ohne Freigabe sehen die Geräte den Server nicht (Fehler „HTTP -1“).
+  </li>
+</ol>
+
+<h2 id="update">4 · Update Schritt für Schritt</h2>
+<ol class="steps">
+  <li><b>Code ändern und committen</b> <span class="who du">du</span><br>
+    Nicht zwingend, aber dann steht im Log ein sauberer Git-Hash. Mit ungespeicherten Änderungen hängt ein <code>+</code> am Hash (z.&nbsp;B. <code>a5ea119+</code>).</li>
+  <li><b>Bauen und Server starten</b> <span class="who tool">build_ota.py</span>
+<pre><code>python tools/build_ota.py --serve            <span class="c"># alle 5 Geräte</span>
+python tools/build_ota.py lampe1 lampe2 --serve   <span class="c"># nur einzelne</span>
+python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur ausliefern</span></code></pre>
+    Das Skript zeigt die Größe jeder Firmware und die IP-Adressen des PCs. Eine davon muss <code>OTA_SERVER</code> sein. Das Fenster offen lassen, solange das Update läuft.</li>
+  <li><b>Geräte einschalten</b> <span class="who du">du</span><br>
+    Bass, Lampen, Scrollmatrix laufen normal im Leerlauf (Song 0). Die Gitarre ist noch aus.</li>
+  <li><b>Gitarre mit gedrücktem Knopf einschalten</b> <span class="who du">du</span><br>
+    Rotary-Knopf drücken, einschalten, <b>mindestens 1 s</b> halten. Die LEDs der Gitarre werden lila: Sie wartet, bis alle vier Clients verbunden sind. Der lila Balken wächst mit jedem verbundenen Client (max. 20 s).</li>
+  <li><b>Automatisch: Befehl an alle</b> <span class="who geraet">Gitarre</span><br>
+    Die Gitarre schaltet alle Clients auf Song 0, schickt 3× den Update-Befehl und startet dann selbst im Update-Modus neu.</li>
+  <li><b>Automatisch: jedes Gerät lädt</b> <span class="who geraet">alle Geräte</span><br>
+    Blau blinkend = WLAN-Suche, gelber Balken = Download, grün = fertig. Danach Neustart mit der neuen Firmware. Ein Gerät, das schon aktuell ist, zeigt nur kurz grün und startet normal.</li>
+  <li><b>Kontrollieren</b> <span class="who du">du</span><br>
+    Im Server-Fenster muss je Gerät <code>GET /&lt;gerät&gt;/version.json</code> und (wenn neuer) <code>GET /&lt;gerät&gt;/firmware.bin</code> mit <code>200</code> stehen. Ein Gerät, das rot geblinkt hat, läuft mit der alten Firmware weiter: Kap. 13.</li>
+</ol>
+
+<div class="note">Nur ein einzelnes Gerät updaten geht genauso: Der Ablauf schickt immer alle in den Update-Modus, aber nur Geräte mit neuerer Version auf dem Server laden etwas herunter. Die anderen zeigen kurz grün und starten normal.</div>
+
+<h2 id="leds">5 · LED-Anzeige</h2>
+<div class="tablewrap"><table>
+<tr><th>Farbe</th><th>Wer</th><th>Bedeutung</th></tr>
+<tr><td><span class="dot" style="background:#a020f0"></span>lila, Balken wächst</td><td>Gitarre</td><td>Wartet auf die Clients. Balkenlänge = Anteil der Clients, die schon verbunden sind.</td></tr>
+<tr><td><span class="dot" style="background:#2060ff"></span>blau, blinkend</td><td>alle</td><td>Update-Modus, sucht WLAN (max. 20 s).</td></tr>
+<tr><td><span class="dot" style="background:#2060ff"></span>blau, kurzer Balken</td><td>alle</td><td>WLAN verbunden, fragt Server nach der Version.</td></tr>
+<tr><td><span class="dot" style="background:#ffd000"></span>gelb, Balken wächst</td><td>alle</td><td>Download läuft, Balken = Fortschritt in Prozent.</td></tr>
+<tr><td><span class="dot" style="background:#20c040"></span>grün, voll (2 s)</td><td>alle</td><td>Neue Firmware geschrieben, <b>oder</b> schon aktuell. Danach Neustart.</td></tr>
+<tr><td><span class="dot" style="background:#ff3030"></span>rot, blinkend (≈2,5 s)</td><td>alle</td><td>Fehler. Danach normaler Start mit der <b>alten</b> Firmware. Grund steht im seriellen Log.</td></tr>
+</table></div>
+<p>Die Anzeige läuft mit fester Helligkeit 32 (<code>OTA_BRIGHTNESS</code>) auf beiden Ausgängen (<code>leds1</code>/<code>leds2</code>), ohne Marker-Overlay.</p>
+
+<h2 id="ablauf">6 · Was intern passiert</h2>
+
+<h3>Gitarre (Proxy) beim Einschalten mit Knopf</h3>
+<ol>
+  <li><code>setup()</code> initialisiert die LEDs, dann <code>otaIsRequested()</code> (normalerweise false).</li>
+  <li><code>otaBootButtonHeld()</code> prüft <code>ROTARY_ENCODER_BUTTON_PIN</code> (GPIO 4, Pull-up, gedrückt = LOW): Bleibt der Knopf 1 s gedrückt → <code>true</code>. Ist er gar nicht gedrückt, kostet das nur ca. 5 ms Startzeit.</li>
+  <li><code>midiProxy_initialize_BLE()</code> startet den BLE-Server wie immer, direkt danach <code>midiProxy_broadcastOTA()</code>:
+    <ul>
+      <li>wartet, bis <code>subscribedClients</code> ≥ Anzahl erlaubter Clients (4), max. 20 s. Gezählt wird im <code>onSubscribe</code>-Callback: Erst wer Notifications abonniert hat, empfängt den Befehl sicher.</li>
+      <li>sendet msgType 1 / Song 0 (alle auf SONGPAUSE), 500 ms Pause.</li>
+      <li>sendet 3× msgType 7 im Abstand von 500 ms (falls eine Notification verloren geht).</li>
+      <li>1 s warten, dann <code>otaRequestAndRestart()</code>.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Client beim Empfang von msgType 7</h3>
+<p><code>MidiDatenVomProxyAuswerten()</code> in <code>BLE_client_nimBLE.cpp</code>, <code>case 7</code>: Nur wenn <code>songID == 0</code> → <code>otaRequestAndRestart()</code>. Während eines Songs wird der Befehl ignoriert. Das ist der Schutz gegen ein Update mitten im Gig.</p>
+
+<h3>Update-Modus (alle Geräte)</h3>
+<ol>
+  <li><code>otaRequestAndRestart()</code>: NVS-Namespace <code>ota</code>, Key <code>req</code> = true, dann <code>ESP.restart()</code>.</li>
+  <li>Neustart → <code>setup()</code> → <code>otaIsRequested()</code> liest das Flag und <b>löscht es sofort</b>. Dadurch kann es keine Boot-Schleife geben: Auch wenn das Update abbricht, ist der nächste Start normal.</li>
+  <li><code>otaRun()</code> (kehrt nie zurück):
+    <ul>
+      <li>WLAN per <code>WiFiMulti</code> mit allen SSIDs aus <code>OTA_WIFI_LIST</code>, Timeout 20 s.</li>
+      <li><code>GET http://OTA_SERVER:OTA_PORT/&lt;DEVICE_NAME&gt;/version.json</code></li>
+      <li>Server-<code>version</code> ≤ eigene <code>FW_VERSION</code> → grün, Neustart ohne Download.</li>
+      <li>sonst <code>GET …/firmware.bin</code> → <code>Update.begin(size)</code>, <code>Update.setMD5(md5)</code>, <code>Update.writeStream()</code>, <code>Update.end()</code>. Die Firmware wird in den <b>gerade nicht laufenden</b> App-Slot geschrieben. <code>Update.end()</code> prüft MD5 und Image und schaltet erst dann den Boot-Slot um.</li>
+      <li>grün, 2 s, Neustart → neue Firmware startet normal.</li>
+    </ul>
+  </li>
+  <li>Jeder Fehler (kein WLAN, HTTP ≠ 200, falsche Größe, MD5 falsch) → <code>otaFail()</code>: rot blinken, Neustart. Der Boot-Slot wurde nicht umgeschaltet → alte Firmware.</li>
+</ol>
+
+<h3>Serielles Log (115200 Baud)</h3>
+<pre><code>FIRMWARE lampe1 - Version 1790604888 (a5ea119)
+OTA: Update-Modus - Gerät lampe1, Version 1790604888 (a5ea119)
+OTA: WLAN Laptop-Hotspot, IP 192.168.137.57
+OTA: Server-Version 1790609999 (b7c2d10)
+OTA: 0%
+OTA: 10%
+...
+OTA: 100%
+OTA: neue Firmware 1790609999 geschrieben -> Neustart
+FIRMWARE lampe1 - Version 1790609999 (b7c2d10)
+
+<span class="c">// Gitarre:</span>
+proxy: OTA für alle Geräte -> warte auf Clients
+proxy: 4 von 4 Clients bereit -> sende OTA-Befehl
+OTA: Update angefordert -> Neustart in den Update-Modus
+
+<span class="c">// Fehlerfälle:</span>
+OTA: FEHLER - WLAN nicht erreichbar -> Neustart ohne Update
+OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neustart ohne Update</code></pre>
+
+<h2 id="version">7 · Versionen</h2>
+<ul>
+  <li><code>FW_VERSION</code> = Unix-Zeit (Sekunden) des Builds, z.&nbsp;B. <code>1790604888</code>. Steigt immer, ein einfacher Zahlenvergleich reicht.</li>
+  <li><code>FW_GIT</code> = kurzer Git-Hash von <code>HEAD</code>, mit <code>+</code> wenn es ungespeicherte Änderungen gab. Nur zur Info, wird nicht verglichen.</li>
+  <li>Gesetzt von <code>tools/fw_version.py</code> (PlatformIO <code>extra_scripts = pre:</code>). Die Defines gelten <b>nur für <code>src/otaUpdate.cpp</code></b> (Build-Middleware). Eine neue Version kompiliert also nur diese eine Datei neu, nicht das ganze Projekt. Andere Dateien lesen die Version über <code>otaFirmwareVersion()</code> / <code>otaFirmwareGit()</code>.</li>
+  <li><code>build_ota.py</code> setzt die Umgebungsvariable <code>FW_VERSION</code> einmal für alle Geräte eines Laufs → alle bekommen dieselbe Nummer. Normale Builds (z.&nbsp;B. USB-Upload aus VS Code) nehmen die aktuelle Uhrzeit.</li>
+</ul>
+<div class="warn"><b>Folge:</b> Ein Gerät lädt nur, was <b>später gebaut</b> wurde als seine eigene Firmware. Hast du nach dem letzten <code>build_ota.py</code> ein Gerät per USB geflasht, ist dessen Version neuer → es ignoriert den Server. Einfach <code>build_ota.py</code> neu laufen lassen. Zurück auf eine ältere Firmware geht nur, indem man den alten Stand neu baut (bekommt dann eine neue Zeit) oder per USB.</div>
+
+<h3>version.json</h3>
+<pre><code>{
+ <span class="s">"version"</span>: 1790604888,
+ <span class="s">"git"</span>: <span class="s">"a5ea119"</span>,
+ <span class="s">"md5"</span>: <span class="s">"652f0c9c5b3345a56a53aaa58518d25a"</span>,
+ <span class="s">"size"</span>: 1155488
+}</code></pre>
+<p>Das Gerät liest die Felder mit einem Mini-Parser (<code>jsonValue()</code> in <code>otaUpdate.cpp</code>), keine JSON-Bibliothek. Das Format muss flach bleiben (keine verschachtelten Objekte). <code>size</code> wird nicht ausgewertet, die Größe kommt aus dem HTTP-Header.</p>
+
+<h2 id="geraete">8 · Geräte &amp; Build-Envs</h2>
+<p>Jedes Gerät hat ein eigenes PlatformIO-Env, das das Geräte-Define per <code>-D</code> setzt. <code>definitions.h</code> muss dafür <b>nicht</b> editiert werden. Das Geräte-Define schaltet wie bisher alle Features (<code>IS_MIDI_PROXY</code>, <code>IS_BLE_CLIENT</code>, …).</p>
+<div class="tablewrap"><table>
+<tr><th>Env</th><th>Define</th><th>DEVICE_NAME / Server-Ordner</th><th>Hardware</th><th>Rolle</th><th>BLE-MAC</th><th>COM (Notiz)</th></tr>
+<tr><td><code>andresgit</code></td><td><code>ANDRESGIT</code></td><td><code>andresgit</code></td><td>YULC1</td><td>MIDI-Proxy, BLE-Server, <b>Auslöser</b></td><td><code>48:ca:43:80:8b:95</code></td><td>COM8</td></tr>
+<tr><td><code>rinasbass</code></td><td><code>RINASBASS</code></td><td><code>rinasbass</code></td><td>YULC2 (erster Prototyp, andere Pins)</td><td>BLE-Client</td><td><code>cc:8d:a2:3f:b3:9d</code></td><td>COM9</td></tr>
+<tr><td><code>lampe1</code></td><td><code>LAMPE1</code></td><td><code>lampe1</code></td><td>YULC6</td><td>BLE-Client</td><td><code>48:ca:43:80:98:75</code></td><td>COM11</td></tr>
+<tr><td><code>lampe2</code></td><td><code>LAMPE2</code></td><td><code>lampe2</code></td><td>YULC5</td><td>BLE-Client</td><td><code>48:ca:43:80:98:89</code></td><td>COM10</td></tr>
+<tr><td><code>scrollmatrix</code></td><td><code>SCROLLMATRIX</code></td><td><code>scrollmatrix</code></td><td>YULC4</td><td>BLE-Client</td><td><code>48:ca:43:80:98:4d</code></td><td>COM9? (Konflikt mit Bass in den Notizen, prüfen)</td></tr>
+</table></div>
+<ul>
+  <li><b>Altes Env</b> <code>esp32-s3-devkitc-1</code>: nimmt das Gerät weiterhin aus <code>definitions.h</code> (Fallback, nur aktiv wenn kein Geräte-Define per Build-Flag gesetzt ist). Funktioniert, enthält ebenfalls OTA.</li>
+  <li><code>teensy40</code> (GITBOARD): kein OTA, wird von <code>build_ota.py</code> nicht gebaut.</li>
+  <li>Alle ESP32-Envs erben von <code>[esp32_base]</code> in <code>platformio.ini</code>. Gemeinsame Einstellungen (Libs, Flags) nur dort ändern.</li>
+  <li>Die Firmware kann <b>nur</b> das Gerät aktualisieren, für das sie gebaut wurde: <code>DEVICE_NAME</code> ist fest einkompiliert und bestimmt den Server-Ordner.</li>
+</ul>
+
+<h2 id="ble">9 · BLE-Protokoll</h2>
+<p>Struktur <code>BLEmessage</code> (<code>functions.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Eine Characteristic mit READ/WRITE/NOTIFY.</p>
+<div class="tablewrap"><table>
+<tr><th>msgType</th><th>Richtung</th><th>Bedeutung</th></tr>
+<tr><td>0</td><td>Proxy</td><td>Song + Part setzen (Wert zum Lesen für Sync)</td></tr>
+<tr><td>1</td><td>Proxy → Clients</td><td>Song wechseln (<code>songID</code>)</td></tr>
+<tr><td>2</td><td>Proxy → Clients</td><td>Part wechseln (<code>part</code>)</td></tr>
+<tr><td>3</td><td>Proxy → Clients</td><td>Sync erzwingen (Song + Part)</td></tr>
+<tr><td>4</td><td>beide</td><td>Part wechseln nach LED-Sync</td></tr>
+<tr><td>5</td><td>Proxy → Clients</td><td>Proxy braucht LED-Sync von einem Client</td></tr>
+<tr><td>6</td><td>Client → Proxy</td><td>Client meldet Song/Part nach Sync-Anfrage</td></tr>
+<tr><td><b>7</b></td><td>Proxy → Clients</td><td><b>In den OTA-Update-Modus</b> (nur angenommen bei <code>songID == 0</code>)</td></tr>
+</table></div>
+<p>Welche Clients der Proxy überhaupt akzeptiert, steht in <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>. Deren Anzahl ist auch die Zahl, auf die <code>midiProxy_broadcastOTA()</code> wartet.</p>
+
+<h2 id="flash">10 · Flash-Partitionen</h2>
+<p>Das Board <code>esp32-s3-devkitc-1</code> nutzt standardmäßig <code>default_8MB.csv</code> (in <code>platformio.ini</code> steht keine eigene Tabelle):</p>
+<div class="tablewrap"><table>
+<tr><th>Partition</th><th>Größe</th><th>Zweck</th></tr>
+<tr><td><code>nvs</code></td><td>20 KB</td><td>Einstellungen, u. a. das OTA-Flag (<code>ota</code>/<code>req</code>)</td></tr>
+<tr><td><code>otadata</code></td><td>8 KB</td><td>Welcher App-Slot startet</td></tr>
+<tr><td><code>app0</code> (ota_0)</td><td>3,3 MB</td><td>Firmware A</td></tr>
+<tr><td><code>app1</code> (ota_1)</td><td>3,3 MB</td><td>Firmware B</td></tr>
+<tr><td><code>spiffs</code>, <code>coredump</code></td><td>Rest</td><td>ungenutzt</td></tr>
+</table></div>
+<p>Laufende Firmware und Update wechseln sich zwischen <code>app0</code> und <code>app1</code> ab. Die Firmware ist aktuell ca. 1,14 MB, also reichlich Platz. Grenze: <b>3,3 MB</b> pro Firmware (PlatformIO zeigt die Auslastung beim Build als „Flash: xx %“).</p>
+<div class="warn">Die Partitionstabelle <b>nicht ändern</b>, ohne alle Geräte danach per USB neu zu flashen. Eine andere Tabelle lässt sich nicht per OTA übertragen.</div>
+
+<h2 id="dateien">11 · Dateien</h2>
+<div class="tablewrap"><table>
+<tr><th>Datei</th><th>Inhalt</th></tr>
+<tr><td><code>src/otaUpdate.h/.cpp</code></td><td>Gesamte OTA-Logik: Flag (NVS), <code>otaRun()</code> (WLAN, Version, Download, Flash), LED-Anzeige <code>otaShowStatus()</code>, Knopf-Abfrage <code>otaBootButtonHeld()</code> (nur Proxy)</td></tr>
+<tr><td><code>src/secrets.h</code></td><td>WLAN-Liste, Server-IP, Port. <b>Gitignored</b>, muss lokal angelegt werden. Fehlt sie, gibt es beim Build eine Warnung und OTA scheitert mit „kein WLAN konfiguriert“.</td></tr>
+<tr><td><code>src/secrets.h.example</code></td><td>Vorlage für <code>secrets.h</code> (im Repo)</td></tr>
+<tr><td><code>src/main.cpp</code></td><td>In <code>setup()</code> nach der LED-/Paletten-Initialisierung: Versions-Ausgabe, <code>otaIsRequested()</code> → <code>otaRun()</code>, beim Proxy <code>otaBootButtonHeld()</code>. Nach <code>midiProxy_initialize_BLE()</code>: <code>midiProxy_broadcastOTA()</code></td></tr>
+<tr><td><code>src/midiProxyBLEserver_nimBLE.cpp/.h</code></td><td><code>midiProxy_broadcastOTA()</code>, Zähler <code>subscribedClients</code> im <code>onSubscribe</code>-Callback</td></tr>
+<tr><td><code>src/BLE_client_nimBLE.cpp</code></td><td><code>case 7</code> in <code>MidiDatenVomProxyAuswerten()</code></td></tr>
+<tr><td><code>src/functions.h</code></td><td><code>BLEmessage</code>, Doku der msgTypes 0–7</td></tr>
+<tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code></td></tr>
+<tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
+<tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>
+<tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
+<tr><td><code>ota/&lt;gerät&gt;/</code></td><td>Build-Ausgabe: <code>firmware.bin</code> + <code>version.json</code>. <b>Gitignored</b></td></tr>
+</table></div>
+
+<h2 id="konfig">12 · Konstanten &amp; Timeouts</h2>
+<div class="tablewrap"><table>
+<tr><th>Wert</th><th>Wo</th><th>Standard</th><th>Bedeutung</th></tr>
+<tr><td>Knopf-Haltezeit</td><td><code>otaBootButtonHeld()</code></td><td>1000 ms</td><td>So lange muss der Knopf beim Einschalten gedrückt sein</td></tr>
+<tr><td>Warten auf Clients</td><td><code>midiProxy_broadcastOTA()</code></td><td>20 s</td><td>Danach wird auch mit weniger Clients gesendet</td></tr>
+<tr><td>Wiederholungen msgType 7</td><td><code>midiProxy_broadcastOTA()</code></td><td>3 × 500 ms</td><td>Sicherheit gegen verlorene Notifications</td></tr>
+<tr><td><code>OTA_WIFI_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>20 s</td><td>WLAN-Suche</td></tr>
+<tr><td><code>OTA_HTTP_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>10 s</td><td>Verbindungs- und Lese-Timeout HTTP</td></tr>
+<tr><td><code>OTA_BRIGHTNESS</code></td><td><code>otaUpdate.cpp</code></td><td>32</td><td>LED-Helligkeit der Statusanzeige</td></tr>
+<tr><td><code>OTA_SERVER</code> / <code>OTA_PORT</code></td><td><code>secrets.h</code></td><td>192.168.137.1 / 8080</td><td>Muss zu <code>build_ota.py</code> (<code>PORT</code>) passen</td></tr>
+</table></div>
+
+<h2 id="probleme">13 · Probleme &amp; Lösungen</h2>
+<div class="tablewrap"><table>
+<tr><th>Symptom</th><th>Ursache</th><th>Lösung</th></tr>
+<tr><td>Gitarre startet normal, kein Lila</td><td>Knopf zu kurz oder zu spät gedrückt</td><td>Knopf <b>vor</b> dem Einschalten drücken und ≥ 1 s halten</td></tr>
+<tr><td>Lila Balken wird nicht voll, nach 20 s geht es trotzdem weiter</td><td>Ein Client ist aus oder verbindet nicht</td><td>Client einschalten, Vorgang wiederholen. Die schon aktualisierten Geräte zeigen dann nur grün.</td></tr>
+<tr><td>Ein Client reagiert gar nicht</td><td>Client spielte einen Song (<code>songID ≠ 0</code>) oder hat die OTA-Firmware noch nicht</td><td>Einmal per USB flashen (Kap. 3). Song-Schutz ist normalerweise kein Problem, weil die Gitarre vorher auf Song 0 schaltet.</td></tr>
+<tr><td>Rot: „kein WLAN konfiguriert“</td><td><code>src/secrets.h</code> fehlte beim Build</td><td>Anlegen, neu bauen, <b>einmal per USB</b> flashen (die WLAN-Daten stecken in der Firmware)</td></tr>
+<tr><td>Rot: „WLAN nicht erreichbar“</td><td>SSID/Passwort falsch, 5-GHz-Netz, Hotspot aus</td><td>2,4-GHz-WLAN, Daten in <code>secrets.h</code> prüfen</td></tr>
+<tr><td>Rot: „HTTP -1“</td><td>Server nicht erreichbar: falsche IP, Firewall, Server nicht gestartet</td><td>IP aus der Ausgabe von <code>build_ota.py</code> mit <code>OTA_SERVER</code> vergleichen, Firewall freigeben, Server-Fenster offen lassen</td></tr>
+<tr><td>Rot: „HTTP 404“</td><td>Kein Ordner für dieses Gerät auf dem Server</td><td><code>build_ota.py</code> für dieses Gerät laufen lassen</td></tr>
+<tr><td>Rot: „Download/Flash … MD5“</td><td>Download abgebrochen oder Datei beschädigt</td><td>Nochmal auslösen, WLAN-Empfang prüfen</td></tr>
+<tr><td>Grün, aber alte Firmware</td><td>Geräteversion ist neuer als die auf dem Server (z.&nbsp;B. später per USB geflasht)</td><td><code>build_ota.py</code> erneut laufen lassen (neue Zeitstempel-Version)</td></tr>
+<tr><td>Neue Firmware stürzt ab / Boot-Schleife</td><td>Fehler im neuen Code</td><td>Per USB flashen (kein automatischer Rollback, Kap. 14)</td></tr>
+</table></div>
+
+<h2 id="grenzen">14 · Grenzen &amp; Risiken</h2>
+<ul>
+  <li><b>Kein automatischer Rollback.</b> Startet die neue Firmware, aber stürzt später ab, bleibt sie aktiv. Der Arduino-Core hat die Rollback-Funktion des Bootloaders standardmäßig aus. Notfallweg ist immer USB. Deshalb: neue Firmware erst an einem Gerät per USB testen, dann per OTA an alle.</li>
+  <li><b>WLAN-Daten sind einkompiliert.</b> Neues WLAN = <code>secrets.h</code> ändern, bauen, per OTA verteilen (solange das alte WLAN noch geht), sonst per USB.</li>
+  <li><b>Keine Verschlüsselung / Signatur.</b> HTTP ohne TLS. Wer im selben WLAN einen Server unter <code>OTA_SERVER</code> betreibt, könnte Firmware einspielen, aber nur während ein Update ausgelöst ist. Für ein privates Heim-/Hotspot-Netz vertretbar.</li>
+  <li><b>Auslöser nur über die Gitarre.</b> Die Lampen haben keinen Knopf. Ohne laufende Gitarre (Proxy) gibt es kein OTA für die Clients.</li>
+  <li><b>Nie auf der Bühne.</b> Clients nehmen den Befehl nur im Leerlauf an, und die Gitarre startet OTA nur mit gedrücktem Knopf beim Einschalten. Im Gig-Betrieb passiert also nichts, außer jemand hält beim Einschalten den Knopf.</li>
+</ul>
+
+<h2 id="erweitern">15 · Erweitern</h2>
+<h3>Neues Gerät hinzufügen</h3>
+<ol>
+  <li><code>definitions.h</code>: Geräte-Block mit Features, im <code>DEV_ME</code>-Block ein <code>DEVICE_NAME</code> ergänzen, das Define in die Fallback-Bedingung (<code>#if !defined(ANDRESGIT) &amp;&amp; …</code>) aufnehmen.</li>
+  <li><code>platformio.ini</code>: neues Env mit <code>extends = esp32_base</code> und <code>build_flags = ${esp32_base.build_flags} -D NEUESGERAET</code>.</li>
+  <li><code>tools/build_ota.py</code>: Env-Name in <code>DEVICES</code> aufnehmen.</li>
+  <li>Ist es ein BLE-Client: MAC in <code>definitions.h</code> und in <code>client_addresses[]</code> (<code>midiProxyBLEserver_nimBLE.cpp</code>) eintragen. Sonst akzeptiert der Proxy es nicht und wartet beim OTA vergeblich darauf.</li>
+  <li>Einmal per USB flashen.</li>
+</ol>
+<h3>Ideen für später</h3>
+<ul>
+  <li>Server-Adresse automatisch finden (z.&nbsp;B. Gateway-IP oder mDNS) statt fester <code>OTA_SERVER</code>.</li>
+  <li>Rollback aktivieren (eigener Bootloader mit <code>CONFIG_APP_ROLLBACK_ENABLE</code>, Firmware bestätigt sich nach erfolgreichem Start).</li>
+  <li>Zusätzlicher Auslöser per MIDI-CC vom WIDI.</li>
+</ul>
+
+<div class="note"><b>Pflege:</b> Diese Seite ist die Referenz für alles rund um OTA. Bei jeder Änderung an <code>otaUpdate.*</code>, am BLE-Protokoll, an den Geräte-Envs, an <code>build_ota.py</code>/<code>fw_version.py</code> oder an den Partitionen wird sie mit angepasst.</div>
+
+</main>
+</body>
+</html>

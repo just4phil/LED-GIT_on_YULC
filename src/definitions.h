@@ -43,12 +43,17 @@
 // USE_ESP32 //USE_TEENSY wird hier nicht ausgewählt, sondern ist in der ini hinterlegt!
 //
 //--- LED-DEVICE --- activate EXACTLY ONE of these options: -------
+// Die Geräte-Envs in platformio.ini (andresgit, rinasbass, lampe1, lampe2, scrollmatrix)
+// setzen das Gerät per -D Build-Flag. Nur das Env esp32-s3-devkitc-1 (und teensy40) nimmt
+// die Auswahl hier:
+#if !defined(ANDRESGIT) && !defined(RINASBASS) && !defined(LAMPE1) && !defined(LAMPE2) && !defined(SCROLLMATRIX) && !defined(GITBOARD)
 #define ANDRESGIT		// YULC1 auf COM3 / seit 24.8.2026 COM8
 //#define RINASBASS		// YULC2 auf COM8 / seit 24.8.2026 COM9
 //#define LAMPE2		// YULC5 auf COM10
 //#define LAMPE1		// YULC6 auf COM11
 //#define SCROLLMATRIX 	// YULC4 auf COM9 - activate this for the klapp-Matrix
 //#define GITBOARD 		// TEENSY auf COM8 (aber beim teensy nicht nötig)
+#endif
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
 //#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
@@ -122,26 +127,32 @@
 #define CLASS_MATRIX	3		// 2D-Matrix
 
 #if defined(LAMPE1)
+	#define DEVICE_NAME		"lampe1"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_LAMPE1
 	#define STAGE_POS		0
 	#define DEVICE_CLASS	CLASS_LAMP
 #elif defined(RINASBASS)
+	#define DEVICE_NAME		"rinasbass"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_BASS
 	#define STAGE_POS		1
 	#define DEVICE_CLASS	CLASS_GUITAR
 #elif defined(SCROLLMATRIX)
+	#define DEVICE_NAME		"scrollmatrix"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_DRUMS
 	#define STAGE_POS		2
 	#define DEVICE_CLASS	CLASS_MATRIX
 #elif defined(ANDRESGIT)
+	#define DEVICE_NAME		"andresgit"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_GIT
 	#define STAGE_POS		3
 	#define DEVICE_CLASS	CLASS_GUITAR
 #elif defined(LAMPE2)
+	#define DEVICE_NAME		"lampe2"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_LAMPE2
 	#define STAGE_POS		4
 	#define DEVICE_CLASS	CLASS_LAMP
 #elif defined(GITBOARD)
+	#define DEVICE_NAME		"gitboard"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_GITBOARD
 	#define STAGE_POS		2
 	#define DEVICE_CLASS	CLASS_MATRIX

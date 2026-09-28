@@ -22,5 +22,14 @@ void midiProxy_initialize_BLE();
 void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part);
 void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part); 
 void midiProxy_midiLoop();
+
+/**
+ * @brief Alle Clients und den Proxy selbst in den OTA-Update-Modus schicken
+ *
+ * Wartet bis alle Clients Notifications abonniert haben (max. 20 s), schickt
+ * msgType 7 und startet dann selbst im Update-Modus neu. Kehrt nicht zurück.
+ * @see otaUpdate.h
+ */
+void midiProxy_broadcastOTA();
 //--------------
 #endif

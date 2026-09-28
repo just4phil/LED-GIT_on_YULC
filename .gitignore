@@ -45,3 +45,7 @@
 tools/.venv/
 tools/__pycache__/
 songs/audio/
+
+# OTA
+ota/
+src/secrets.h

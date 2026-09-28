@@ -17,10 +17,11 @@
  * - 4: Switch part after LED sync
  * - 5: Server needs LED sync from client
  * - 6: Client sends song/part after server requested a sync
+ * - 7: Enter OTA update mode (only accepted while songID == 0, see otaUpdate.h)
  */
 #pragma pack(push, 1)   // Ensures structure is stored without padding
 struct BLEmessage {
-    uint8_t msgType; /**< Message type (0-6) */
+    uint8_t msgType; /**< Message type (0-7) */
     uint8_t songID;  /**< Song ID to switch to */
     uint8_t part;     /**< Part ID to switch to */
 };

@@ -24,7 +24,12 @@ There are no unit tests in this project.
 
 ## Device Selection (critical before building)
 
-**All configuration lives in `src/definitions.h`.** Before building, exactly ONE device must be uncommented:
+Preferred: one PlatformIO env per device sets the device via `-D` flag — `andresgit`, `rinasbass`,
+`lampe1`, `lampe2`, `scrollmatrix` (e.g. `pio run -e lampe1 -t upload --upload-port COM11`).
+`definitions.h` does not need editing for these.
+
+The legacy env `esp32-s3-devkitc-1` (and `teensy40`) takes the device from `src/definitions.h`, where
+exactly ONE device must be uncommented (used only when no device flag is set):
 
 ```cpp
 #define ANDRESGIT    // Guitar (YULC1, COM3) — MIDI proxy, BLE server
@@ -75,6 +80,7 @@ MIDI CC#0 = song select, CC#32 = part select (handled in `midi_in.h`). The proxy
 | `BLE_client_nimBLE.cpp/.h` | NimBLE BLE client (non-proxy devices) |
 | `rotaryEncoder.cpp/.h` | Song selection knob (short press = select, long press = emergency stop) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
+| `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
 | `colors.h` | RGB565 color constants at multiple brightness levels |
 
 ### Generated songs (songs/*.yaml)
@@ -83,6 +89,18 @@ and `songs/<name>.show.yaml` (derived by Claude: scenes/schemes per section), ge
 Never edit the generated files by hand. `tools/songanalyze.py` measures power/mood per section from the
 song's audio. `tools/sheet2song.py` derives the song file (bars per part) from a songbook chord sheet + MP3.
 Full workflow: `docs/Song-Workflow.html` (user guide), `.claude/skills/new-song/SKILL.md` (design rules).
+
+### OTA firmware updates (`otaUpdate.cpp/.h`)
+`python tools/build_ota.py --serve` builds all device envs with one shared `FW_VERSION` (Unix time, set by
+`tools/fw_version.py` only for `otaUpdate.cpp`) into `ota/<device>/firmware.bin` + `version.json` and serves
+`ota/` on port 8080. Trigger: switch on ANDRESGIT with the rotary button held → proxy waits for all clients
+to subscribe, sends BLE msgType 7, clients (only while `songID == 0`) and proxy set an NVS flag and reboot.
+In `setup()` the flag is read+cleared and `otaRun()` connects to WiFi (credentials in gitignored
+`src/secrets.h`, template `src/secrets.h.example`), downloads only a newer version (MD5-checked) into the
+free OTA slot (`default_8MB.csv`, 2 × 3.3 MB) and reboots. Any failure → normal boot with the old firmware.
+LEDs: blue = WiFi, yellow = progress, green = done/up to date, red = error, purple = proxy waiting for clients.
+Full reference + user procedure: `docs/OTA-Update.html`. **Keep it up to date in the same change** whenever
+OTA code, the BLE protocol (msgTypes), device envs, `build_ota.py`/`fw_version.py` or partitions change.
 
 ### FastLED version pinned to 3.5.0
 Do **not** upgrade FastLED — 3.9.x breaks on ESP32-S3 (`esp_memory_utils.h` missing).

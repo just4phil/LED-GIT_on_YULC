@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 #include "functions.h"
+#include "otaUpdate.h"
+#include <FastLED.h>
 //---------------------------
 
 extern byte songID;
@@ -32,6 +34,7 @@ uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 
 bool aDeviceConnected = false;
 bool aDeviceDISconnected = false;
+volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications (für OTA-Broadcast)
 
 static NimBLEServer* pServer;
 NimBLEService *pService;
@@ -174,6 +177,8 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         #if defined(debug_ble_proxy)
             Serial.printf("a client subscribed to notifications");
         #endif
+        if (subValue > 0) subscribedClients++;          // für midiProxy_broadcastOTA()
+        else if (subscribedClients > 0) subscribedClients--;
         //syncLEDgits = true; // sync here for auto-sync
     }
 } chrCallbacks;
@@ -217,6 +222,7 @@ void midiProxy_initialize_BLE() {
     2 = change part -> only partID
     3 = force sync to clients -> songID & partID
     4 = switch part after LEDsync
+    7 = enter OTA update mode (midiProxy_broadcastOTA)
 */
 void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     bleMessage.msgType = msgType;
@@ -228,6 +234,27 @@ void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
 void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     setBLEmessageForLEDsync(msgType, songID, part);
     pCharacteristic->notify();
+}
+
+// Knopf beim Einschalten gedrückt: alle Clients + Proxy in den OTA-Update-Modus. Kehrt nicht zurück.
+void midiProxy_broadcastOTA() {
+    Serial.println("proxy: OTA für alle Geräte -> warte auf Clients");
+    unsigned long start = millis();
+    while (subscribedClients < client_address_count && millis() - start < 20000) {
+        otaShowStatus(CRGB::Purple, (float)subscribedClients / client_address_count);
+        delay(250);
+    }
+    Serial.printf("proxy: %d von %d Clients bereit -> sende OTA-Befehl\n", subscribedClients, client_address_count);
+    otaShowStatus(CRGB::Purple, 1.0f);
+
+    sendBLEmessageForLEDsync(1, 0, 0);      // alle auf SONGPAUSE: Clients nehmen OTA nur im Leerlauf an
+    delay(500);
+    for (int i = 0; i < 3; i++) {           // mehrfach, falls eine Notification verloren geht
+        sendBLEmessageForLEDsync(7, 0, 0);
+        delay(500);
+    }
+    delay(1000);                            // Clients Zeit zum Neustart geben, dann selbst
+    otaRequestAndRestart();
 }
 
 void midiProxy_midiLoop() {

@@ -29,6 +29,7 @@
 #ifdef USE_ESP32
 	#include <WiFiType.h>		// to turn WIFI off
 	#include <WiFi.h>			// to turn WIFI off
+	#include "otaUpdate.h"		// Firmware-Update über WLAN
 
 	#ifdef HAS_ROTARY_ENCODER
 		#include "rotaryEncoder.h"
@@ -174,7 +175,16 @@ void setup() {
 
 	//--- Setup Palette ---
 	setupCurrentPalette();
-	
+
+	//--- OTA: nach Update-Anforderung hier in den Update-Modus (kehrt nicht zurück) ---
+	#ifdef USE_ESP32
+		Serial.printf("FIRMWARE %s - Version %lu (%s)\n", DEVICE_NAME, (unsigned long)otaFirmwareVersion(), otaFirmwareGit());
+		if (otaIsRequested()) otaRun();
+		#ifdef IS_MIDI_PROXY
+			bool otaForAllDevices = otaBootButtonHeld();	// Rotary-Knopf beim Einschalten gedrückt -> alle Geräte updaten
+		#endif
+	#endif
+
 	//--- rotary encoder ---------
 	#ifdef HAS_ROTARY_ENCODER
 		Serial.println("ROTARY SETUP");
@@ -188,6 +198,7 @@ void setup() {
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
 			Serial.println("MIDI PROXY SETUP");	
 			midiProxy_initialize_BLE();
+			if (otaForAllDevices) midiProxy_broadcastOTA();	// kehrt nicht zurück
 		#endif
 
 		midi_initialize();
