@@ -30,6 +30,7 @@ from songgen import ROOT, section_times, section_bpm, section_beats  # noqa: E40
 SR = 22050
 HOP = 512
 SILENT_DB = -30		# Part gilt als still, wenn sein Mittel so weit unter dem lautesten Moment liegt
+DB_PER_POWER = 1.5	# Masters sind stark limitiert: pro 1,5 dB unter dem lautesten Part eine Power-Stufe weniger
 
 # Krumhansl-Profile für Dur/Moll-Tendenz
 MAJOR = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
@@ -192,6 +193,7 @@ def analyze(song, audio_path, out_yaml, out_png):
 		n_on = ((onset_times >= a) & (onset_times < b)).sum()
 		raw.append({
 			"loud": float(np.mean(seg_db)),
+			"dur": b - a,
 			"slope": float(slope_db_per_s * (b - a)),			# dB Anstieg über den ganzen Part
 			"onsets": n_on / (b - a),
 			"perc": float(perc_rms[m].mean() / (perc_rms[m].mean() + harm_rms[m].mean() + 1e-9)),
@@ -208,7 +210,9 @@ def analyze(song, audio_path, out_yaml, out_png):
 	if not valid:
 		raise SystemExit("FEHLER: kein klingender Abschnitt im Audio gefunden (Takt 1 / Audiodatei prüfen)")
 	max_on = max(1e-9, max(v["onsets"] for v in valid))
-	loud_n = dict(zip(map(id, valid), norm01([r["loud"] for r in valid])))
+	# Bezug: lautester Abschnitt ab 4 Takten (ein einzelner lauter Takt soll nicht alles nach unten drücken)
+	bar_ref = 4 * 60.0 / song["bpm"] * song.get("beats_per_bar", 4)
+	loudest = max([r["loud"] for r in valid if r["dur"] >= bar_ref * 0.99] or [r["loud"] for r in valid])
 	drive_n = dict(zip(map(id, valid), norm01([0.5 * r["onsets"] / max_on + 0.5 * r["perc"] for r in valid])))
 	bright_n = dict(zip(map(id, valid), norm01([r["bright"] for r in valid])))
 	low_n = dict(zip(map(id, valid), norm01([r["low"] for r in valid])))
@@ -230,7 +234,7 @@ def analyze(song, audio_path, out_yaml, out_png):
 		key = key_of(r["chroma"])
 		vi = id(r)
 		entry.update({
-			"power": 1 + int(round(loud_n[vi] * 4)),		# 1..5, 0 = still
+			"power": int(np.clip(5 - round((loudest - r["loud"]) / DB_PER_POWER), 1, 5)),	# 1..5, 0 = still
 			"loudness_db": round(r["loud"], 1),
 			"build": round(float(np.clip(r["slope"] / 12.0, -1, 1)), 2),	# +1 = steigt stark an, -1 = fällt ab
 			"drive": round(float(drive_n[vi]), 2),
@@ -302,7 +306,7 @@ def analyze(song, audio_path, out_yaml, out_png):
 		"bpm_gemessen": round(measured_bpm, 2) if measured_bpm else None,
 		"tonart_gesamt": f"{song_key[1]}-{song_key[2]}",
 		"legende": {
-			"power": "0-5 Lautheit relativ zum Song",
+			"power": "0-5 Lautheit: 5 = lautester Part, je 1,5 dB leiser eine Stufe weniger, 0 = still",
 			"build": "-1..+1 Lautstärkeverlauf im Part (+ = steigert sich)",
 			"drive": "0-1 rhythmische Dichte / perkussiver Anteil",
 			"brightness": "0-1 Klangfarbe dunkel/warm -> hell/scharf",
