@@ -1,0 +1,8 @@
+zeit: '2026-10-03 13:45:31'
+notiz: Übernahme in die neue Ordnerstruktur
+werkzeug_git: c3730f3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: a23fa322c33eb81810ac7f8e8794a1cd3f72759a70f8f96b3ccd8c6e8305dad3
+  show.yaml: 0fdda00ece7daf43950c90781f4a68ba628f939f42258dbbf54c3301a84e1243
+  generated.cpp: 25f4a29d78debedd8d3f95ceb7efbfc362cf98bf75cc40e306758dcec82fa877

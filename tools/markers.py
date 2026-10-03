@@ -37,6 +37,50 @@ def handwritten_ids():
 	return {int(x) for x in re.findall(r"\bcase\s+(\d+)\s*:", body)}
 
 
+def handwritten_slots(song_id):
+	"""Marker-Slots (1..7), die der handgeschriebene case dieser Song-ID in setMarkerLEDs() setzt."""
+	text = MARKER_CPP.read_text(encoding="utf-8", errors="ignore")
+	m = re.search(r"void setMarkerLEDs\s*\(.*?\)\s*\{(.*?)\n\}", text, re.S)
+	body = re.sub(r"//[^\n]*|/\*.*?\*/", "", m.group(1) if m else text, flags=re.S)
+	c = re.search(r"\bcase\s+" + str(song_id) + r"\s*:(.*?)(?=\bcase\s+\d+\s*:|\bdefault\s*:|\Z)", body, re.S)
+	return {int(x) for x in re.findall(r"markerLED(\d)\s*=", c.group(1))} if c else set()
+
+
+def slot_parts(markers):
+	"""[(abschnitt, instrument, slot, name)] aller Slot-Angaben ({slot: Name}) in markers.parts."""
+	out = []
+	for p, s in ((markers or {}).get("parts") or {}).items():
+		for inst, v in (s or {}).items():
+			if isinstance(v, dict):
+				out += [(p, inst, slot, name) for slot, name in v.items()]
+	return out
+
+
+def inline_code(markers, part_cases, base_slots):
+	"""Slot-Angaben einzelner Parts als Code für den Anfang der Song-Funktion. Er läuft in jedem Durchlauf
+	nach setMarkerLEDs(), genau wie die Inline-Marker der handgeschriebenen Songs. Slots, die die
+	Grund-Marker nicht selbst setzen (base_slots), werden außerhalb der Parts wieder ausgeschaltet."""
+	per = {}
+	for p, inst, slot, name in slot_parts(markers):
+		per.setdefault((inst, int(slot)), []).append((sorted(part_cases.get(p, [])), str(name), p))
+	lines = []
+	for inst in ("all", "guitar", "bass"):
+		items = sorted((k, v) for k, v in per.items() if k[0] == inst)
+		if not items:
+			continue
+		if inst != "all":
+			lines.append("#ifdef " + ("GIT" if inst == "guitar" else "BASS"))
+		for (_inst, slot), entries in items:
+			for j, (cases, name, p) in enumerate(entries):
+				cond = " || ".join(f"prog == {c}" for c in cases)
+				lines.append(f"\t{'if' if j == 0 else 'else if'} ({cond}) markerLED{slot} = {name};\t// {p}")
+			if slot not in base_slots:
+				lines.append(f"\telse markerLED{slot} = 0;")
+		if inst != "all":
+			lines.append("#endif")
+	return lines
+
+
 def propose(chord_counts):
 	"""Marker aus Akkord-Grundtönen. chord_counts: {(root, quality): Anzahl halber Takte im Song}.
 	Liefert (Markernamen nach Häufigkeit, Hinweise)."""
@@ -72,6 +116,15 @@ def validate(markers, part_names):
 			if k not in ("all", "guitar", "bass"):
 				errs.append(f"markers {where}: unbekannter Schlüssel '{k}' (all, guitar, bass)")
 				continue
+			if isinstance(v, dict):		# {slot: Name}: einzelne Slots in diesem Part setzen (nur unter parts)
+				if not where.startswith("parts."):
+					errs.append(f"markers {where}.{k}: Slot-Angaben {{slot: Name}} gibt es nur unter parts")
+				for slot, n in v.items():
+					if not (isinstance(slot, int) and 1 <= slot <= MAX_MARKERS):
+						errs.append(f"markers {where}.{k}: Slot '{slot}' muss 1..{MAX_MARKERS} sein")
+					if n != 0 and n not in FRET:
+						errs.append(f"markers {where}.{k}: unbekannter Marker '{n}'")
+				continue
 			v = v or []
 			if len(v) > MAX_MARKERS:
 				errs.append(f"markers {where}.{k}: höchstens {MAX_MARKERS} Marker")
@@ -106,7 +159,9 @@ def gen_case(song_id, markers, part_cases):
 	lines = [f"\tcase {song_id}:"]
 	overrides = []
 	for p, s in (markers.get("parts") or {}).items():
-		overrides.append((sorted(part_cases.get(p, [])), resolve(s or {}, base), p))
+		s = {k: v for k, v in (s or {}).items() if not isinstance(v, dict)}	# Slot-Angaben laufen inline in der Song-Funktion
+		if s:
+			overrides.append((sorted(part_cases.get(p, [])), resolve(s, base), p))
 
 	def block(gb, indent):
 		g, b = gb

@@ -1,4 +1,4 @@
-audio: songs\audio\ATTSS.mp3
+audio: songs\AllTheThingsSheSaid_v1\quelle\ATTSS.mp3
 audio_dauer_s: 211.0
 takt1_im_audio_ms: 20
 takt1_quelle: YAML (audio_beat1_ms)

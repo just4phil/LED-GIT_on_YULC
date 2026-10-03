@@ -1,0 +1,8 @@
+zeit: '2026-10-03 13:50:38'
+notiz: Kommentar in show.yaml angepasst
+werkzeug_git: c3730f3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: a23fa322c33eb81810ac7f8e8794a1cd3f72759a70f8f96b3ccd8c6e8305dad3
+  show.yaml: b0c67a931325aa8c0cf4d9b5c7e9cfc8c53a961d81f27ed93a66d2a5591946cd
+  generated.cpp: 628d30a4c0d661c401a5afa419672d18efa77a3214aa4cbf02aa7b6dc356c66f

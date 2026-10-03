@@ -1,0 +1,78 @@
+# Technische Show (von Claude aus song.yaml + Analyse abgeleitet).
+# Idee: Regen/Kälte (ICE/BLUE) in Intro, Verses und Bridge, die Chorusse brechen rot aus, das Finale brennt.
+# Messwerte: Chorusse power 5 (-3,5 dB), Verses 4, verse 2a + bridge fast leer (power 1-2, kaum Bass),
+# Grundtonart A-Moll -> kalte Grundfarben, Rot nur als Kontrast.
+
+function: gen_AllTheThingsSheSaid
+scheme: SCHEME_ICE
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  intro:
+    scene: SCENE_CALM
+    scheme: SCHEME_ICE
+    tail:
+      beats: 2
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_WHITE
+    why: "leiser Chant, nur Atmen in Eisblau; Crescendo in den letzten 2 Beats lädt auf und explodiert auf den Band-Einsatz (power 1, build 0.55)"
+
+  intro band:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_BLUE
+    why: "Band setzt voll ein (power 5, sehr hell) - Blitze laufen pro Beat von den Drums nach außen, noch kalt"
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ICE
+    why: "rhythmischer Puls, meiste Bewegung im Song (drive 1.0), aber Stimmung bleibt kalt"
+
+  chorus 1:
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "erster Chorus: Farbe bricht auf Rot um, volle Energie im Beat"
+
+  solo:
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_ROYAL
+    why: "Gitarre im Spotlight, Rest atmet dezent in Blau/Lila"
+
+  verse 2a:
+    scene: SCENE_CALM
+    scheme: SCHEME_BLUE
+    why: "fast leer (power 1, kaum Bass) - alles zieht sich zurück"
+
+  verse 2b:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ICE
+    why: "Band wieder voll, Puls wie Verse 1"
+
+  chorus 2:
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Chorus erkennbar gleich wie Chorus 1"
+
+  bridge:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_ICE
+    why: "'Mother looking at me': leise, aber steigende Spannung (build 0.2) - lädt sich über 7 Takte langsam auf, Explosion genau auf 'Have I crossed the line?'"
+
+  bridge hit:
+    fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
+    why: "ein voller Takt - weißer Strobo als Absprung ins Finale"
+
+  chorus 3:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    tail:
+      beats: 8
+      scene: SCENE_PINGPONG
+      scheme: SCHEME_RED
+    why: "Finale: Chorus eine Stufe mehr als vorher (Feuer statt Drop); letzte 2 Takte 'This is not enough' springen von Gerät zu Gerät"
+
+  end:
+    scene: SCENE_CALM
+    scheme: SCHEME_RED
+    why: "Schlussakkord klingt aus, rotes Nachglühen, danach 10 s schwarz"

@@ -44,8 +44,12 @@
 # Song-Tools
 tools/.venv/
 tools/__pycache__/
-songs/audio/
+songs/**/*.mp3
+songs/**/song.vorschlag.yaml
 
 # OTA
 ota/
 src/secrets.h
+
+# Excel-Sperrdateien (Tabelle gerade geöffnet)
+~$*

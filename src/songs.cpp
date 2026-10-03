@@ -7,6 +7,7 @@
 #include "colorSchemes.h"
 #include "scenes.h"
 #include "matrixFunctions.h"
+#include "songs_generated.h"	// Part-Nummern der generierten Songs (GEN_...), für Trailer-Einsprünge
 //----------------------------
 
 extern boolean LEDGITBOARD;	// defined in definitions.h
@@ -4041,7 +4042,7 @@ void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 		// switch to the real song 
 		//--- start song ----// we go there directly
 		songID = 8;			// this is DANCING ON MY OWN
-		switchToPart(25);	// but we have to jump over the Intro directly to part 25!
+		switchToPart(GEN_DANCINGONMYOWN_CHORUS_1);	// (= 25) but we have to jump over the Intro directly to chorus 1! Konstante aus songs_generated.h
 		break;
 	}
 }

@@ -1,0 +1,9 @@
+zeit: '2026-10-03 15:03:55'
+notiz: Song-ID 8 (ersetzt DancingOnMyOwn() in main.cpp), Part-Konstanten ergänzt;
+  Code unverändert
+werkzeug_git: c3730f3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: '-'
+  show.yaml: '-'
+  generated.cpp: ef6515475495f53118681922180c2d795f317f00e3a55e1f7caec769be1aad29

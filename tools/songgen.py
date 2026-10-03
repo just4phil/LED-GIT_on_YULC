@@ -1,25 +1,37 @@
 #!/usr/bin/env python3
 """
-songgen.py - erzeugt Song-Funktionen aus songs/*.yaml
+songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
 
-    tools/.venv/Scripts/python tools/songgen.py            # alle Songs generieren
-    tools/.venv/Scripts/python tools/songgen.py --dry-run  # nur Timeline anzeigen, nichts schreiben
+    tools/.venv/Scripts/python tools/songgen.py                        # Songs und ihren Stand auflisten
+    tools/.venv/Scripts/python tools/songgen.py <Song>                 # diesen Song generieren
+    tools/.venv/Scripts/python tools/songgen.py <Song> --dry-run       # nur Timeline anzeigen, nichts schreiben
+    tools/.venv/Scripts/python tools/songgen.py <Song> --versions      # gespeicherte Versionen
+    tools/.venv/Scripts/python tools/songgen.py <Song> --restore <Version>
+    tools/.venv/Scripts/python tools/songgen.py --assemble             # nur src/ aus den gespeicherten Songs neu bauen
 
-Pro Song zwei Dateien:
-    songs/<name>.yaml        semantisch (vom User): Tempo, Takte, midi_offset, was musikalisch passiert
-    songs/<name>.show.yaml   technisch (von Claude abgeleitet): Szenen, Farbschemata, Overrides, Tails
-Die Struktur steht nur in der semantischen Datei, die Show-Datei ordnet per Abschnittsname zu.
+<Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
+    song.yaml       gehört dem User: Tempo, Takte, midi_offset, Stimmungen, Effekt-Wünsche. WIRD NIE GESCHRIEBEN.
+    show.yaml       technisch (von Claude abgeleitet): Szenen, Farbschemata, Overrides, Tails
+    generated.cpp   erzeugter Code dieses Songs
+    versionen/<Zeit>/   Kopie von song.yaml + show.yaml + generated.cpp bei jeder Generierung
+Die Struktur steht nur in song.yaml, die Show ordnet per Abschnittsname zu. Gestaltung in song.yaml
+(scene, fx, scheme, devices, tail) hat immer Vorrang vor show.yaml.
 
 Schreibt:
-    src/songs_generated.cpp / .h    (komplett neu, eine Funktion pro YAML)
-    src/main.cpp                    (nur zwischen den Markern "GENERATED SONGS")
+    songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
+    src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
+    src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
 Zeitbasis: 0 ms = Eintreffen des Start-MIDI-Signals. Das MIDI kommt midi_offset (Notenwert, z. B. 1/8)
 NACH Takt 1 -> der erste Part wird um den Offset kürzer. Alle Grenzen werden aus absoluten Zeiten
 gerundet, dadurch entsteht keine kumulative Rundungsdrift.
 """
 import argparse
+import datetime
+import hashlib
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -34,8 +46,17 @@ OUT_CPP = SRC / "songs_generated.cpp"
 OUT_H = SRC / "songs_generated.h"
 MAIN_CPP = SRC / "main.cpp"
 
-MARK_BEGIN = "// >>> GENERATED SONGS (tools/songgen.py) >>>"
-MARK_END = "// <<< GENERATED SONGS <<<"
+SONG_FILE = "song.yaml"			# gehört dem User, wird von keinem Werkzeug geschrieben
+SHOW_FILE = "show.yaml"
+GEN_FILE = "generated.cpp"
+VERSIONS_DIR = "versionen"
+VERSION_FILES = (SONG_FILE, SHOW_FILE, GEN_FILE)
+
+MARK_BEGIN = "// >>> GENERATED SONGS (tools/songgen.py) >>>"	# dahinter kommen die cases neuer Song-IDs
+TAG = "// <<< GENERATED SONGS <<<"							# hängt an jedem generierten Aufruf in main.cpp
+SONGS_CPP = SRC / "songs.cpp"
+CALL_RE = re.compile(r"^(\s*)(\w+)\(\);")
+OLD_CALL_RE = re.compile(r"^\s*//\s*(\w+)\(\);")
 
 SCROLL_DEVICES = ("SCROLLMATRIX", "GITBOARD")	# zeigen am Songanfang Titel + Interpret als Lauftext
 SCROLL_MAX_WAIT_MS = 4000	# so lange darf die Matrix vor dem Lauftext schwarz bleiben, damit er genau an einer Grenze endet
@@ -204,7 +225,7 @@ def default_call(part, song):
 	if not scene:
 		energy = sec.get("energy")
 		if energy is None:
-			raise SongError(f"Abschnitt '{sec.get('name')}' hat keine Gestaltung: scene/fx in der .show.yaml oder energy setzen")
+			raise SongError(f"Abschnitt '{sec.get('name')}' hat keine Gestaltung: scene/fx in {SHOW_FILE} oder energy setzen")
 		if energy <= 0:
 			return fill(BLACK, part, song)
 		scene = ENERGY_SCENE[min(5, int(energy))]
@@ -308,9 +329,12 @@ def gen_function(song, timeline, end_case):
 	lines = []
 	bpm = song["bpm"]
 	lines.append(f"//#{song['id']} {song['name']}" + (f" - {song['artist']}" if song.get("artist") else "")
-				 + f"  {bpm} BPM  midi_offset {offset_text(song)}  (generiert aus songs/{song['_file']} + {song['_show'] or '-'})")
+				 + f"  {bpm} BPM  midi_offset {offset_text(song)}  (generiert aus songs/{song['_dir']}: {SONG_FILE} + {song['_show'] or '-'})")
 	lines.append(f"void {fn}() {{")
 	lines.append("")
+	if song.get("_marker_inline"):
+		lines.append(f"\t// Marker einzelner Parts (markers.parts in {SONG_FILE}), läuft nach setMarkerLEDs()")
+		lines += song["_marker_inline"] + [""]
 	if song.get("scheme"):
 		lines.append(f"\tsetColorScheme({song['scheme']});\t// Default für alle Parts")
 		lines.append("")
@@ -385,15 +409,138 @@ def known_functions():
 	return names
 
 
-def main_song_ids():
-	"""case-IDs im switch(songID) von main.cpp, ohne den generierten Block."""
-	text = MAIN_CPP.read_text(encoding="utf-8")
-	text = re.sub(re.escape(MARK_BEGIN) + ".*?" + re.escape(MARK_END), "", text, flags=re.S)
-	m = re.search(r"switch \(songID\) \{(.*?)default:", text, re.S)
-	if not m:
+def main_cases(lines):
+	"""{Song-ID: (erste, letzte+1 Zeile)} der aktiven cases im switch (songID) von main.cpp."""
+	s = next((i for i, l in enumerate(lines) if "switch (songID)" in l), None)
+	if s is None:
 		raise SongError("switch (songID) in main.cpp nicht gefunden")
-	body = "\n".join(l for l in m.group(1).splitlines() if not l.strip().startswith("//"))
-	return set(int(x) for x in re.findall(r"case (\d+):", body))
+	cases, cur = {}, None
+	for i in range(s + 1, len(lines)):
+		st = lines[i].strip()
+		m = re.match(r"case (\d+):", st)
+		if m or st.startswith("default:"):
+			if cur is not None:
+				cases[cur[0]] = (cur[1], i)
+			if not m:
+				break
+			cur = (int(m.group(1)), i)
+	return cases
+
+
+def main_lines():
+	return MAIN_CPP.read_text(encoding="utf-8").split("\n")
+
+
+def handwritten_songs(lines=None):
+	"""{Song-ID: Funktionsname} der handgeschriebenen Songs in main.cpp - egal ob noch aktiv oder schon durch
+	einen generierten ersetzt (dann steht der alte Aufruf auskommentiert direkt über dem generierten)."""
+	lines = lines or main_lines()
+	out = {}
+	for cid, (a, b) in main_cases(lines).items():
+		for i in range(a + 1, b):
+			m = CALL_RE.match(lines[i])
+			if not m:
+				continue
+			if not m.group(2).startswith("gen_"):
+				out[cid] = m.group(2)
+			else:
+				old = OLD_CALL_RE.match(lines[i - 1])
+				if old:
+					out[cid] = old.group(1)
+			break
+	return out
+
+
+def bind_main(lines, frags):
+	"""Generierte Songs in den switch (songID) einbinden (Zeilenliste von main.cpp, wird verändert):
+	- gibt es den case schon (alter, handgeschriebener Song): alten Aufruf auskommentieren, generierten darunter
+	- sonst: neuer case hinter dem Marker GENERATED SONGS
+	- generierte Aufrufe ohne Song-Ordner wieder entfernen (alter Aufruf wird wieder aktiv)"""
+	want = {f["id"]: f["function"] for f in frags}
+	changed = True
+	while changed:
+		changed = False
+		for cid, (a, b) in main_cases(lines).items():
+			for i in range(a + 1, b):
+				m = CALL_RE.match(lines[i])
+				if not (m and m.group(2).startswith("gen_")) or want.get(cid) == m.group(2):
+					continue
+				if OLD_CALL_RE.match(lines[i - 1]):
+					lines[i - 1] = re.sub(r"//\s*", "", lines[i - 1], count=1)
+					del lines[i]
+				else:
+					end = next(k for k in range(i, b) if lines[k].strip().startswith("break;"))
+					del lines[a:end + 1]
+				changed = True
+				break
+			if changed:
+				break
+	for cid, fn in sorted(want.items(), reverse=True):
+		cases = main_cases(lines)
+		new = f"\t\t\t{fn}(); {TAG}"
+		if cid in cases:
+			a, b = cases[cid]
+			calls = [i for i in range(a + 1, b) if CALL_RE.match(lines[i])]
+			gen = [i for i in calls if CALL_RE.match(lines[i]).group(2).startswith("gen_")]
+			if gen:
+				lines[gen[0]] = new
+			elif calls:
+				for i in calls:
+					ind = CALL_RE.match(lines[i]).group(1)
+					lines[i] = ind + "//" + lines[i][len(ind):]
+				lines.insert(calls[-1] + 1, new)
+			else:
+				raise SongError(f"main.cpp: case {cid} hat keinen Funktionsaufruf")
+		else:
+			k = next((i for i, l in enumerate(lines) if MARK_BEGIN in l), None)
+			if k is None:
+				raise SongError(f"Marker '{MARK_BEGIN}' fehlt in main.cpp")
+			lines[k + 1:k + 1] = [f"\t\tcase {cid}:", new, "\t\t\tbreak;"]
+	return lines
+
+
+def old_function_body(name):
+	"""[(Zeilennummer, Zeile)] der handgeschriebenen Song-Funktion in songs.cpp."""
+	lines = SONGS_CPP.read_text(encoding="utf-8", errors="ignore").split("\n")
+	s = next((i for i, l in enumerate(lines) if re.match(r"\s*void\s+" + re.escape(name) + r"\s*\(\s*\)", l)), None)
+	if s is None:
+		return []
+	depth, out, started = 0, [], False
+	for i in range(s, len(lines)):
+		code = lines[i].split("//")[0]
+		depth += code.count("{") - code.count("}")
+		started = started or "{" in code
+		out.append((i + 1, lines[i]))
+		if started and depth <= 0:
+			break
+	return out
+
+
+def part_constants(song, timeline):
+	"""[(Konstante, case)]: Part-Nummern für handgeschriebenen Code, der in den Song springt (Trailer)."""
+	base = "GEN_" + re.sub(r"\W+", "_", song["function"][4:] if song["function"].startswith("gen_") else song["function"]).upper()
+	out, seen = [], set()
+	for p in timeline[:-1]:
+		c = base + "_" + re.sub(r"\W+", "_", str(p["sec"].get("name", ""))).strip("_").upper()
+		if c not in seen:
+			seen.add(c)
+			out.append((c, p["case"]))
+	return out
+
+
+def trailer_jumps(song_id):
+	"""[(Zeilennummer, Ziel)]: Stellen in songs.cpp, die mit 'songID = N; switchToPart(x);' in diesen Song springen."""
+	lines = SONGS_CPP.read_text(encoding="utf-8", errors="ignore").split("\n")
+	out = []
+	for i, l in enumerate(lines[:-1]):
+		if l.strip().startswith("//") or not re.search(r"\bsongID\s*=\s*" + str(song_id) + r"\s*;", l.split("//")[0]):
+			continue
+		for k in (i, i + 1, i + 2):
+			m = re.search(r"switchToPart\(\s*(\w+)\s*\)", lines[k].split("//")[0]) if k < len(lines) else None
+			if m:
+				out.append((k + 1, m.group(1)))
+				break
+	return out
 
 
 def validate(song, timeline):
@@ -434,28 +581,50 @@ def pascal(name):
 	return "".join(w[:1].upper() + w[1:] for w in re.split(r"[^A-Za-z0-9]+", name) if w)
 
 
-SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "end_black_ms")
+SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms")
+SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme")
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
 
 
-def merge_show(song, show, show_name):
-	"""Technische Gestaltung (show.yaml) per Abschnittsname in die semantische Struktur einsetzen."""
+def merge_show(song, show):
+	"""Technische Gestaltung (show.yaml) per Abschnittsname in die Struktur einsetzen.
+	Gestaltung, die der User in song.yaml gesetzt hat, hat immer Vorrang vor der Show."""
 	if "markers" in show:
-		raise SongError(f"{show_name}: markers gehören in {song['_file']} (Song-Datei), nicht in die Show")
+		raise SongError(f"{SHOW_FILE}: markers gehören in {SONG_FILE}, nicht in die Show")
+	notes = song.setdefault("_notes", [])
 	for k in SONG_DESIGN_KEYS:
-		if k in show:
+		if k not in show:
+			continue
+		if k not in song:
 			song[k] = show[k]
+		elif song[k] != show[k]:
+			notes.append(f"{k}: {song[k]} aus {SONG_FILE} hat Vorrang vor {SHOW_FILE}")
 	design = show.get("sections") or {}
 	names = [s["name"] for s in song["sections"]]
 	for name in design:
 		if name not in names:
-			raise SongError(f"{show_name}: Abschnitt '{name}' gibt es in {song['_file']} nicht")
+			raise SongError(f"{SHOW_FILE}: Abschnitt '{name}' gibt es in {SONG_FILE} nicht")
 	for sec in song["sections"]:
-		d = design.get(sec["name"]) or {}
+		d = dict(design.get(sec["name"]) or {})
 		clash = [k for k in d if k in STRUCTURE_KEYS]
 		if clash:
-			raise SongError(f"{show_name}: '{sec['name']}' darf {', '.join(clash)} nicht setzen - Struktur gehört in {song['_file']}")
+			raise SongError(f"{SHOW_FILE}: '{sec['name']}' darf {', '.join(clash)} nicht setzen - Struktur gehört in {SONG_FILE}")
+		user = {k: sec[k] for k in SECTION_DESIGN_KEYS if k in sec}
+		if "scene" in user and "fx" in user:
+			raise SongError(f"{SONG_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
+		if "scene" in user or "fx" in user:
+			# der User legt den Effekt fest -> Effekt und Geräte-Overrides der Show gelten für diesen Part nicht
+			for k in ("scene", "fx", "devices", "why"):
+				d.pop(k, None)
+			d["why"] = f"Vorgabe aus {SONG_FILE}"
+		elif "devices" in user:
+			user["devices"] = {**(d.get("devices") or {}), **user["devices"]}
+		if "why" in sec:
+			d.pop("why", None)
 		sec.update(d)
+		sec.update(user)
+		if user:
+			notes.append(f"'{sec['name']}': {', '.join(user)} aus {SONG_FILE} (Vorrang vor {SHOW_FILE})")
 
 
 def force_black_start(song):
@@ -471,34 +640,238 @@ def force_black_start(song):
 	first.setdefault("why", "Start-MIDI: alle Geräte schwarz")
 
 
-def load_songs():
-	songs = []
-	for f in sorted(SONGS_DIR.glob("*.yaml")):
-		if f.name.endswith((".analysis.yaml", ".show.yaml")):
-			continue
-		song = yaml.safe_load(f.read_text(encoding="utf-8"))
-		song["_file"] = f.name
-		for req in ("id", "name", "bpm", "sections"):
-			if req not in song:
-				raise SongError(f"{f.name}: Feld '{req}' fehlt")
-		names = [s.get("name") for s in song["sections"]]
-		dup = sorted({n for n in names if names.count(n) > 1})
-		if None in names or dup:
-			raise SongError(f"{f.name}: jeder Abschnitt braucht einen eindeutigen Namen (doppelt: {', '.join(map(str, dup))})")
+#==================================================================
+#=========== Song-Ordner ==========================================
+#==================================================================
 
-		show_file = f.with_name(f.stem + ".show.yaml")
-		song["_show"] = show_file.name if show_file.exists() else None
-		if show_file.exists():
-			merge_show(song, yaml.safe_load(show_file.read_text(encoding="utf-8")) or {}, show_file.name)
-		force_black_start(song)
-		song.setdefault("function", "gen_" + pascal(song["name"]))
-		songs.append(song)
-	return songs
+def song_dirs():
+	return sorted(d for d in SONGS_DIR.iterdir() if d.is_dir())
 
+
+def find_song_dir(name):
+	"""Song-Ordner unter songs/: exakter Name oder eindeutiger Anfang (Groß/Klein egal)."""
+	key = Path(name).name.lower()
+	dirs = song_dirs()
+	hit = [d for d in dirs if d.name.lower() == key] or [d for d in dirs if d.name.lower().startswith(key)]
+	if len(hit) != 1:
+		raise SongError(f"Song '{name}' {'nicht gefunden' if not hit else 'ist nicht eindeutig'} - Ordner unter songs/: "
+						+ ", ".join(d.name for d in dirs))
+	return hit[0]
+
+
+def find_audio(song, song_dir):
+	"""Audiodatei eines Songs: 'audio:' relativ zum Song-Ordner (auch nur der Dateiname), sonst die einzige MP3 im Ordner."""
+	if song.get("audio"):
+		a = Path(song["audio"])
+		for c in (song_dir / a, song_dir / "quelle" / a.name, song_dir / a.name, ROOT / a):
+			if c.is_file():
+				return c.resolve()
+	found = [p for p in song_dir.rglob("*.mp3") if VERSIONS_DIR not in p.parts]
+	return found[0].resolve() if len(found) == 1 else None
+
+
+def load_song(song_dir, song_path=None, show_path=None):
+	"""song.yaml + show.yaml eines Ordners laden und zusammenführen (beide Dateien werden nur gelesen)."""
+	song_path = song_path or song_dir / SONG_FILE
+	show_path = show_path or song_dir / SHOW_FILE
+	label = f"{song_dir.name}/{SONG_FILE}"
+	if not song_path.exists():
+		raise SongError(f"{label} fehlt")
+	song = yaml.safe_load(song_path.read_text(encoding="utf-8"))
+	song["_dir"] = song_dir.name
+	for req in ("id", "name", "bpm", "sections"):
+		if req not in song:
+			raise SongError(f"{label}: Feld '{req}' fehlt")
+	names = [s.get("name") for s in song["sections"]]
+	dup = sorted({n for n in names if names.count(n) > 1})
+	if None in names or dup:
+		raise SongError(f"{label}: jeder Abschnitt braucht einen eindeutigen Namen (doppelt: {', '.join(map(str, dup))})")
+
+	song["_show"] = SHOW_FILE if show_path.exists() else None
+	show = (yaml.safe_load(show_path.read_text(encoding="utf-8")) or {}) if show_path.exists() else {}
+	merge_show(song, show)
+	force_black_start(song)
+	song.setdefault("function", "gen_" + pascal(song["name"]))
+	return song
+
+
+def generate(song, others):
+	"""Einen geladenen Song prüfen und Code erzeugen. others: Fragmente der anderen Songs (ID-/Namenskollisionen).
+	Liefert (timeline, Funktions-Code, Marker-case-Zeilen, Fehler)."""
+	errors = []
+	notes = song.setdefault("_notes", [])
+	if not 1 <= song["id"] <= 127:
+		errors.append("Song-ID muss 1..127 sein (MIDI; 0 ist der Pausen-Loop)")
+	old = handwritten_songs().get(song["id"])
+	if old:
+		notes.append(f"ersetzt den handgeschriebenen Song {old}() in main.cpp case {song['id']}: der alte Aufruf wird "
+					 f"auskommentiert, der alte Code bleibt in songs.cpp")
+	for o in others:
+		if o["id"] == song["id"]:
+			errors.append(f"Song-ID {song['id']} hat auch songs/{o['dir']}")
+		if o["function"] == song["function"]:
+			errors.append(f"Funktionsname {song['function']} hat auch songs/{o['dir']}")
+
+	timeline, end_case = build_timeline(song)
+	if song.get("scroll_text", True):
+		widths = matrix_widths()
+		song["_scroll_plans"] = {d: plan_scroll(song, timeline, widths[d]) for d in SCROLL_DEVICES}
+	errors += validate(song, timeline)
+
+	# Bund-Marker: Handarbeit in markerLEDs.cpp hat immer Vorrang. Slot-Angaben einzelner Parts
+	# (markers.parts.<abschnitt>.<all|guitar|bass>: {slot: Name}) laufen zusätzlich inline in der Song-Funktion.
+	marker_lines = []
+	markers = song.get("markers") or {}
+	hand = song["id"] in mk.handwritten_ids()
+	slots = mk.slot_parts(markers)
+	part_cases = {}
+	for p in timeline:
+		part_cases.setdefault(p["sec"].get("_parent") or p["sec"].get("name"), []).append(p["case"])
+	errs = mk.validate(markers, [x["name"] for x in song["sections"]]) if markers else []
+	errors += errs
+	if hand:
+		lists = any(k != "parts" for k in markers) or len(slots) < sum(len(s or {}) for s in (markers.get("parts") or {}).values())
+		song["_marker_note"] = "Grund-Marker von Hand in markerLEDs.cpp" + (
+			f" - Marker-Listen in {SONG_FILE} werden ignoriert" if lists else "")
+	elif markers:
+		if not errs:
+			marker_lines = mk.gen_case(song["id"], markers, part_cases)
+		song["_marker_note"] = f"generiert aus markers: in {SONG_FILE}"
+	else:
+		song["_marker_note"] = "keine"
+	if slots and not errs:
+		song["_marker_inline"] = mk.inline_code(markers, part_cases, mk.handwritten_slots(song["id"]) if hand else set(range(1, 8)))
+		song["_marker_note"] += f" + {len(slots)} Part-Marker inline"
+	# Der alte Code setzt Marker inline -> sie MÜSSEN in den generierten Code übernommen werden
+	inline_old = [(n, l.strip()) for n, l in (old_function_body(old) if old else [])
+				  if re.search(r"markerLED\d\s*=", l.split("//")[0])]
+	if inline_old and not slots:
+		errors.append(f"der alte Code {old}() setzt Marker-LEDs in einzelnen Parts, sie müssen übernommen werden: in {SONG_FILE} "
+					  f"unter markers.parts eintragen, z. B. 'bridge 1: {{bass: {{5: ASaite_E}}}}'. Stellen in songs.cpp:\n"
+					  + "\n".join(f"        Zeile {n}: {l}" for n, l in inline_old))
+	elif inline_old:
+		notes.append(f"{old}() setzt Marker inline (songs.cpp Zeilen {', '.join(str(n) for n, _l in inline_old)}) - "
+					 f"bitte mit markers.parts in {SONG_FILE} vergleichen")
+
+	# Trailer: handgeschriebener Code, der in diesen Song springt, braucht die neuen Part-Nummern
+	song["_parts"] = part_constants(song, timeline)
+	consts = dict(song["_parts"])
+	for n, target in trailer_jumps(song["id"]):
+		if target.isdigit():
+			errors.append(f"songs.cpp Zeile {n} springt mit fester Part-Nummer switchToPart({target}) in diesen Song. Die "
+						  f"Nummern des generierten Codes sind andere: dort eine Konstante aus der Liste 'Part-Konstanten' einsetzen")
+		elif target not in consts:
+			errors.append(f"songs.cpp Zeile {n}: switchToPart({target}) - diese Konstante gibt es für den Song nicht")
+		else:
+			notes.append(f"Trailer-Einsprung songs.cpp Zeile {n}: {target} = case {consts[target]}")
+	return timeline, gen_function(song, timeline, end_case), marker_lines, errors
+
+
+#==================================================================
+#=========== Fragment (generated.cpp je Song) =====================
+#==================================================================
+
+FRAG_HEAD = "// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern (Quelle: song.yaml + show.yaml)"
+
+
+def norm_text(path):
+	"""Dateiinhalt mit einheitlichen Zeilenenden (None, wenn die Datei fehlt)."""
+	return path.read_bytes().replace(b"\r\n", b"\n") if path.exists() else None
+
+
+def sha(path):
+	data = norm_text(path)
+	return hashlib.sha256(data).hexdigest() if data is not None else "-"
+
+
+def write_lf(path, text):
+	with open(path, "w", encoding="utf-8", newline="\n") as f:
+		f.write(text)
+
+
+def fragment_text(song, code, marker_lines, song_dir):
+	head = [FRAG_HEAD, f"//@id {song['id']}", f"//@function {song['function']}", f"//@name {song['name']}",
+			f"//@song_sha {sha(song_dir / SONG_FILE)}", f"//@show_sha {sha(song_dir / SHOW_FILE)}"]
+	head += [f"//@part {c} {n}" for c, n in song.get("_parts", [])] + ["//@code"]
+	return "\n".join(head) + "\n" + code + "\n//@markers\n" + "".join(l + "\n" for l in marker_lines)
+
+
+def read_fragment(path):
+	text = path.read_text(encoding="utf-8")
+	m = re.match(r"(.*?)\n//@code\n(.*)\n//@markers\n(.*)\Z", text, re.S)
+	if not m:
+		raise SongError(f"{path.relative_to(ROOT)} ist kein gültiges Fragment - Song neu generieren")
+	meta = dict(re.findall(r"^//@(\w+) (.*)$", m.group(1), re.M))
+	return {"id": int(meta["id"]), "function": meta["function"], "name": meta["name"],
+			"song_sha": meta.get("song_sha"), "show_sha": meta.get("show_sha"),
+			"parts": re.findall(r"^//@part (\w+) (\d+)$", m.group(1), re.M),
+			"code": m.group(2), "markers": [l for l in m.group(3).splitlines() if l.strip()],
+			"dir": path.parent.name}
+
+
+def fragments(skip=None):
+	return [read_fragment(d / GEN_FILE) for d in song_dirs() if d != skip and (d / GEN_FILE).exists()]
+
+
+def is_current(song_dir, frag):
+	"""Passt generated.cpp noch zu song.yaml + show.yaml?"""
+	return frag["song_sha"] == sha(song_dir / SONG_FILE) and frag["show_sha"] == sha(song_dir / SHOW_FILE)
+
+
+#==================================================================
+#=========== Versionen ============================================
+#==================================================================
+
+def versions(song_dir):
+	v = song_dir / VERSIONS_DIR
+	return sorted(d for d in v.iterdir() if d.is_dir()) if v.exists() else []
+
+
+def git_state():
+	try:
+		run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, timeout=10).stdout.strip()
+		head = run("rev-parse", "--short", "HEAD")
+		return head + (" + lokale Änderungen in tools/ oder src/" if run("status", "--porcelain", "--", "tools", "src") else "")
+	except Exception:
+		return "unbekannt"
+
+
+def save_version(song_dir, note=""):
+	"""Aktuellen Stand (song.yaml, show.yaml, generated.cpp) nach versionen/<Zeit>/ kopieren.
+	Nichts zu tun, wenn es genau diesen Stand schon als Version gibt. Liefert den Ordner oder None."""
+	if not (song_dir / GEN_FILE).exists():
+		return None
+	for v in versions(song_dir):
+		if all(norm_text(song_dir / f) == norm_text(v / f) for f in VERSION_FILES):
+			return None
+	now = datetime.datetime.now()
+	stamp = now.strftime("%Y-%m-%d_%H%M")
+	dst, n = song_dir / VERSIONS_DIR / stamp, 1
+	while dst.exists():
+		n += 1
+		dst = song_dir / VERSIONS_DIR / f"{stamp}_{n}"
+	dst.mkdir(parents=True)
+	for f in VERSION_FILES:
+		if (song_dir / f).exists():
+			shutil.copy2(song_dir / f, dst / f)
+	info = {
+		"zeit": now.strftime("%Y-%m-%d %H:%M:%S"),
+		"notiz": note or "",
+		"werkzeug_git": git_state(),
+		"code_passt_zu_yaml": is_current(song_dir, read_fragment(song_dir / GEN_FILE)),
+		"sha256": {f: sha(song_dir / f) for f in VERSION_FILES},
+	}
+	write_lf(dst / "info.yaml", yaml.safe_dump(info, allow_unicode=True, sort_keys=False))
+	return dst
+
+
+#==================================================================
+#=========== src/ zusammensetzen ==================================
+#==================================================================
 
 CPP_HEADER = """//==================================================================
-// AUTOMATISCH GENERIERT von tools/songgen.py aus songs/*.yaml
-// NICHT von Hand ändern -> YAML anpassen und neu generieren
+// AUTOMATISCH GENERIERT von tools/songgen.py aus songs/<Song>/generated.cpp
+// NICHT von Hand ändern -> song.yaml / show.yaml anpassen und den Song neu generieren
 //==================================================================
 #include <Arduino.h>
 #include <FastLED.h>
@@ -520,7 +893,7 @@ def gen_markers(marker_cases):
 	"""setGeneratedMarkerLEDs(): wird aus setMarkerLEDs() (markerLEDs.cpp) im default-Fall aufgerufen,
 	also nur für Songs ohne handgeschriebene Marker."""
 	lines = ["//==================================================================",
-			 "// Bund-Marker der generierten Songs (aus markers: in songs/*.yaml)",
+			 "// Bund-Marker der generierten Songs (aus markers: in songs/<Song>/song.yaml)",
 			 "//==================================================================",
 			 "void setGeneratedMarkerLEDs(byte songID, byte partID) {",
 			 "#if !defined(NOMARKER)",
@@ -531,27 +904,46 @@ def gen_markers(marker_cases):
 	return "\n".join(lines)
 
 
-def write_outputs(songs, funcs_code, marker_cases):
-	OUT_CPP.write_text(CPP_HEADER + "\n" + "\n\n".join(funcs_code) + "\n\n" + gen_markers(marker_cases) + "\n",
-					   encoding="utf-8")
+def write_if_changed(path, text):
+	if not path.exists() or path.read_text(encoding="utf-8") != text:
+		path.write_text(text, encoding="utf-8")
+
+
+def assemble():
+	"""src/songs_generated.cpp/.h + Block in main.cpp aus den generated.cpp aller Song-Ordner bauen.
+	Der Code jedes Songs wird unverändert übernommen, hier wird nichts neu generiert."""
+	frags = sorted(fragments(), key=lambda f: f["id"])
+	seen = {}
+	for f in frags:
+		for key in (f["id"], f["function"]):
+			if key in seen:
+				raise SongError(f"songs/{f['dir']}: {key} ist auch in songs/{seen[key]} vergeben")
+			seen[key] = f["dir"]
+
+	write_if_changed(OUT_CPP, CPP_HEADER + "\n" + "\n\n".join(f["code"] for f in frags) + "\n\n"
+					 + gen_markers([f["markers"] for f in frags if f["markers"]]) + "\n")
 
 	h = ["// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern", "#pragma once", "",
 		 "#include <Arduino.h>", "",
 		 "void setGeneratedMarkerLEDs(byte songID, byte partID);\t// Marker der generierten Songs", ""]
-	for s in songs:
-		h.append(f"void {s['function']}();\t// #{s['id']} {s['name']}")
-	OUT_H.write_text("\n".join(h) + "\n", encoding="utf-8")
+	for f in frags:
+		h.append(f"void {f['function']}();\t// #{f['id']} {f['name']}")
+	if any(f["parts"] for f in frags):
+		h += ["", "// Part-Nummern (case) der generierten Songs - für handgeschriebenen Code, der in einen Song springt (Trailer)"]
+		for f in frags:
+			h += [f"#define {c} {n}" for c, n in f["parts"]]
+	write_if_changed(OUT_H, "\n".join(h) + "\n")
 
 	text = MAIN_CPP.read_text(encoding="utf-8")
-	block = [MARK_BEGIN]
-	for s in songs:
-		block += [f"\t\tcase {s['id']}:", f"\t\t\t{s['function']}();", "\t\t\tbreak;"]
-	block.append("\t\t" + MARK_END)
-	new = re.sub(re.escape(MARK_BEGIN) + ".*?" + re.escape(MARK_END), lambda m: "\n".join(block), text, flags=re.S)
-	if new == text and MARK_BEGIN not in text:
-		raise SongError("Marker 'GENERATED SONGS' fehlen in main.cpp")
+	new = "\n".join(bind_main(text.split("\n"), frags))
 	if new != text:
 		MAIN_CPP.write_text(new, encoding="utf-8")
+	return frags
+
+
+def print_assembled(frags):
+	print(f"\nsrc/songs_generated.cpp/.h + main.cpp: {len(frags)} Song(s) - "
+		  + (", ".join(f"#{f['id']} {f['name']}" for f in frags) or "keine"))
 
 
 def print_timeline(song, timeline):
@@ -567,69 +959,138 @@ def print_timeline(song, timeline):
 		print(f"  {dev:<12} \"{pl['text']}\": {how} -> Einstieg case {pl['join']['case']} @{fmt_time(pl['join']['start'])}")
 	for n in song.get("_notes", []):
 		print(f"  Hinweis: {n}")
+	print(f"  Marker: {song.get('_marker_note')}")
+	for l in song.get("_marker_inline", []):
+		print("    " + l.replace("\t", "  "))
+
+
+#==================================================================
+#=========== Kommandos ============================================
+#==================================================================
+
+def cmd_list():
+	print("Songs unter songs/ (generieren: songgen.py <Song>):\n")
+	for d in song_dirs():
+		if (d / GEN_FILE).exists():
+			f = read_fragment(d / GEN_FILE)
+			sid = f"#{f['id']}"
+			if not (d / SONG_FILE).exists():
+				state = f"Code eingefroren (keine {SONG_FILE}) - bleibt in der Firmware, wie er ist"
+			else:
+				state = "aktuell" if is_current(d, f) else f"{SONG_FILE}/{SHOW_FILE} seit der Generierung geändert"
+		elif (d / SONG_FILE).exists():
+			state, sid = "noch nicht generiert", ""
+		else:
+			state, sid = f"leer (keine {SONG_FILE})", ""
+		print(f"  {d.name:<28} {sid:>4}  {state}  ({len(versions(d))} Versionen)")
+	return 0
+
+
+def cmd_generate(song_dir, dry_run, note):
+	song = load_song(song_dir)
+	timeline, code, marker_lines, errors = generate(song, fragments(skip=song_dir))
+	print_timeline(song, timeline)
+	if trailer_jumps(song["id"]) or errors:
+		print("  Part-Konstanten (songs_generated.h): " + ", ".join(f"{c}={n}" for c, n in song["_parts"]))
+	if errors:
+		print("\nFEHLER:", file=sys.stderr)
+		for e in errors:
+			print("  - " + e, file=sys.stderr)
+		return 1
+	if dry_run:
+		print("\n(dry-run, nichts geschrieben)")
+		return 0
+
+	gen = song_dir / GEN_FILE
+	if gen.exists():
+		old = read_fragment(gen)
+		if old["song_sha"] != sha(song_dir / SONG_FILE):
+			print(f"\n{SONG_FILE} wurde seit der letzten Generierung geändert (von dir) - wird übernommen.")
+		if old["code"] == code and old["markers"] == marker_lines:
+			print("Der erzeugte Code ist identisch mit dem bisherigen.")
+	write_lf(gen, fragment_text(song, code, marker_lines, song_dir))
+	v = save_version(song_dir, note)
+	print(f"\n-> songs/{song_dir.name}/{GEN_FILE}")
+	print(f"-> Version {v.name} gespeichert" if v else "-> keine neue Version (genau dieser Stand ist schon gespeichert)")
+	print_assembled(assemble())
+	return 0
+
+
+def cmd_versions(song_dir):
+	vs = versions(song_dir)
+	if not vs:
+		print(f"songs/{song_dir.name}: noch keine Versionen")
+		return 0
+	print(f"Versionen von songs/{song_dir.name} (zurückholen: songgen.py {song_dir.name} --restore <Version>):\n")
+	for v in vs:
+		info = yaml.safe_load((v / "info.yaml").read_text(encoding="utf-8")) if (v / "info.yaml").exists() else {}
+		active = all(norm_text(song_dir / f) == norm_text(v / f) for f in (SHOW_FILE, GEN_FILE))
+		print(f"  {v.name}{'  <- aktiv' if active else ''}  {info.get('notiz') or ''}"
+			  + ("" if info.get("code_passt_zu_yaml", True) else "  (Code älter als die YAML-Dateien)"))
+	return 0
+
+
+def cmd_restore(song_dir, version):
+	hit = [v for v in versions(song_dir) if v.name == version] or [v for v in versions(song_dir) if v.name.startswith(version)]
+	if len(hit) != 1:
+		raise SongError(f"Version '{version}' {'nicht gefunden' if not hit else 'ist nicht eindeutig'} - siehe --versions")
+	vdir = hit[0]
+	frag = read_fragment(vdir / GEN_FILE)
+
+	saved = save_version(song_dir, f"automatisch vor Restore von {vdir.name}")
+	if saved:
+		print(f"Bisheriger Stand gesichert als Version {saved.name}")
+
+	# zurück kommen nur show.yaml + generated.cpp. song.yaml gehört dem User und wird nie geschrieben.
+	if (vdir / SHOW_FILE).exists():
+		shutil.copy2(vdir / SHOW_FILE, song_dir / SHOW_FILE)
+	elif (song_dir / SHOW_FILE).exists():
+		(song_dir / SHOW_FILE).unlink()
+	shutil.copy2(vdir / GEN_FILE, song_dir / GEN_FILE)
+	print(f"Version {vdir.name} ist wieder aktiv: {SHOW_FILE} + {GEN_FILE} (Code 1:1 wie gespeichert)")
+
+	if norm_text(song_dir / SONG_FILE) != norm_text(vdir / SONG_FILE):
+		print(f"\nACHTUNG: deine {SONG_FILE} ist heute anders als in dieser Version. Sie wird NICHT zurückkopiert.\n"
+			  f"  Der wiederhergestellte Code gehört zu songs/{song_dir.name}/{VERSIONS_DIR}/{vdir.name}/{SONG_FILE}.\n"
+			  f"  Beim nächsten Generieren gilt wieder deine aktuelle {SONG_FILE}. Willst du die alte zurück, kopiere sie selbst.")
+	try:
+		song = load_song(song_dir, vdir / SONG_FILE, vdir / SHOW_FILE)
+		_tl, code, marker_lines, _e = generate(song, [])
+		same = code == frag["code"] and marker_lines == frag["markers"]
+	except SongError:
+		same = False
+	print("\nKontrolle: der heutige Generator erzeugt aus dieser Version exakt denselben Code." if same else
+		  "\nHinweis: der heutige Generator würde aus dieser Version anderen Code erzeugen (Werkzeug oder Header geändert).\n"
+		  "  Verwendet wird der gespeicherte Code, unverändert.")
+	print_assembled(assemble())
+	return 0
 
 
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+	ap.add_argument("song", nargs="?", help="Ordnername unter songs/ (Anfang genügt)")
 	ap.add_argument("--dry-run", action="store_true", help="nur Timeline anzeigen, nichts schreiben")
+	ap.add_argument("--note", default="", help="Notiz zur gespeicherten Version")
+	ap.add_argument("--versions", action="store_true", help="gespeicherte Versionen des Songs auflisten")
+	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (show.yaml + Code, nie song.yaml)")
+	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
 	args = ap.parse_args()
 
 	try:
-		songs = load_songs()
-		taken = main_song_ids()
-		seen_ids, seen_fns = {}, {}
-		code, all_errors, marker_cases = [], [], []
-		hand_markers = mk.handwritten_ids()
-		for s in songs:
-			if s["id"] in taken:
-				all_errors.append(f"{s['_file']}: Song-ID {s['id']} ist in main.cpp schon vergeben")
-			if not 0 <= s["id"] <= 127:
-				all_errors.append(f"{s['_file']}: Song-ID muss 0..127 sein (MIDI)")
-			if s["id"] in seen_ids:
-				all_errors.append(f"{s['_file']}: Song-ID {s['id']} auch in {seen_ids[s['id']]}")
-			if s["function"] in seen_fns:
-				all_errors.append(f"{s['_file']}: Funktionsname {s['function']} auch in {seen_fns[s['function']]}")
-			seen_ids[s["id"]] = seen_fns[s["function"]] = s["_file"]
-
-			timeline, end_case = build_timeline(s)
-			if s.get("scroll_text", True):
-				widths = matrix_widths()
-				s["_scroll_plans"] = {d: plan_scroll(s, timeline, widths[d]) for d in SCROLL_DEVICES}
-			all_errors += [f"{s['_file']}: {e}" for e in validate(s, timeline)]
-
-			# Bund-Marker: Handarbeit in markerLEDs.cpp hat immer Vorrang
-			if s["id"] in hand_markers:
-				s["_marker_note"] = "von Hand in markerLEDs.cpp" + (" - markers: in der YAML wird ignoriert" if s.get("markers") else "")
-			elif s.get("markers"):
-				errs = mk.validate(s["markers"], [x["name"] for x in s["sections"]])
-				all_errors += [f"{s['_file']}: {e}" for e in errs]
-				part_cases = {}
-				for p in timeline:
-					part_cases.setdefault(p["sec"].get("_parent") or p["sec"].get("name"), []).append(p["case"])
-				if not errs:
-					marker_cases.append(mk.gen_case(s["id"], s["markers"], part_cases))
-				s["_marker_note"] = "generiert aus markers: der Song-Datei"
-			else:
-				s["_marker_note"] = "keine"
-			print_timeline(s, timeline)
-			print(f"  Marker: {s.get('_marker_note')}")
-			code.append(gen_function(s, timeline, end_case))
+		if args.assemble:
+			print_assembled(assemble())
+			return 0
+		if not args.song:
+			return cmd_list()
+		song_dir = find_song_dir(args.song)
+		if args.versions:
+			return cmd_versions(song_dir)
+		if args.restore:
+			return cmd_restore(song_dir, args.restore)
+		return cmd_generate(song_dir, args.dry_run, args.note)
 	except SongError as e:
 		print(f"FEHLER: {e}", file=sys.stderr)
 		return 1
-
-	if all_errors:
-		print("\nFEHLER:", file=sys.stderr)
-		for e in all_errors:
-			print("  - " + e, file=sys.stderr)
-		return 1
-
-	if args.dry_run:
-		print("\n(dry-run, nichts geschrieben)")
-		return 0
-	write_outputs(songs, code, marker_cases)
-	print(f"\n{len(songs)} Song(s) -> {OUT_CPP.relative_to(ROOT)}, {OUT_H.relative_to(ROOT)}, main.cpp")
-	return 0
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+zeit: '2026-10-03 14:06:46'
+notiz: bisheriger Code aus Git (c3730f3) übernommen, YAML-Dateien vom User gelöscht
+werkzeug_git: c3730f3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: '-'
+  show.yaml: '-'
+  generated.cpp: 41f8d1ffb0562e9a2a3b4004ea99ea2a5daa09a9df34e7cb1b704b00224191ce

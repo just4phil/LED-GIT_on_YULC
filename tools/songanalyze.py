@@ -2,12 +2,13 @@
 """
 songanalyze.py - misst Stimmung und Power der Song-Abschnitte aus dem Audio
 
-    tools/.venv/Scripts/python tools/songanalyze.py songs/dancing_on_my_own.yaml
+    tools/.venv/Scripts/python tools/songanalyze.py <Song>     # Ordnername unter songs/ (Anfang genügt)
 
 Braucht im YAML:  audio: <pfad relativ zum Projekt>   optional: audio_beat1_ms: <ms>
 Schreibt:
-    songs/<name>.analysis.yaml   Messwerte pro Abschnitt + Akzente + Warnungen
-    songs/<name>_analysis.png    Lautstärke, Spektrogramm, Merkmale, Formgrenzen
+    songs/<Song>/audio-analyse/analysis.yaml   Messwerte pro Abschnitt + Akzente + Warnungen
+    songs/<Song>/audio-analyse/analysis.png    Lautstärke, Spektrogramm, Merkmale, Formgrenzen
+song.yaml wird nur gelesen.
 
 Alle Merkmale sind relativ zum Song normiert (lautester Part = power 5), nicht absolut.
 """
@@ -25,7 +26,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from songgen import ROOT, section_times, section_bpm, section_beats  # noqa: E402
+from songgen import ROOT, SONG_FILE, SongError, find_audio, find_song_dir, section_times, section_bpm, section_beats  # noqa: E402
 
 SR = 22050
 HOP = 512
@@ -385,23 +386,30 @@ def plot(song, y, sr, times, rms_db, S, sec_t, sections_out, accents, nov_t, nov
 
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-	ap.add_argument("song_yaml")
+	ap.add_argument("song", help="Ordnername unter songs/ (Anfang genügt)")
 	args = ap.parse_args()
 
-	path = Path(args.song_yaml).resolve()
-	song = yaml.safe_load(path.read_text(encoding="utf-8"))
-	if "audio" not in song:
-		print("FEHLER: im YAML fehlt 'audio: <datei>'", file=sys.stderr)
+	try:
+		song_dir = find_song_dir(args.song)
+	except SongError as e:
+		print(f"FEHLER: {e}", file=sys.stderr)
 		return 1
-	audio = (ROOT / song["audio"]).resolve()
-	if not audio.exists():
-		print(f"FEHLER: Audiodatei nicht gefunden: {audio}", file=sys.stderr)
+	path = song_dir / SONG_FILE
+	if not path.exists():
+		print(f"FEHLER: {path.relative_to(ROOT)} fehlt", file=sys.stderr)
+		return 1
+	song = yaml.safe_load(path.read_text(encoding="utf-8"))
+	audio = find_audio(song, song_dir)
+	if audio is None:
+		print(f"FEHLER: Audiodatei nicht gefunden (audio: {song.get('audio')}) - MP3 nach songs/{song_dir.name}/quelle/ legen", file=sys.stderr)
 		return 1
 	for sec in song["sections"]:
 		section_beats(sec, song)	# Validierung
 
-	out_yaml = path.with_name(path.stem + ".analysis.yaml")
-	out_png = path.with_name(path.stem + "_analysis.png")
+	out_dir = song_dir / "audio-analyse"
+	out_dir.mkdir(exist_ok=True)
+	out_yaml = out_dir / "analysis.yaml"
+	out_png = out_dir / "analysis.png"
 	res = analyze(song, audio, out_yaml, out_png)
 
 	print(f"Tempo: YAML {res['bpm_yaml']}  gemessen {res['bpm_gemessen']}   Takt 1 im Audio: {res['takt1_im_audio_ms']} ms ({res['takt1_quelle']})")

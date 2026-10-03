@@ -1,0 +1,129 @@
+# VORSCHLAG von Claude für songs/Physical_v1/song.yaml (03.10.2026). Der Generator beachtet diese Datei nicht.
+# Die Struktur stammt aus dem handgeschriebenen Physical() in src/songs.cpp (seit 2023 live erprobt) und ist
+# Takt für Takt gegen die neue MP3 geprüft: Pegelwechsel liegen genau auf diesen Grenzen, die Summe ist
+# 125 Takte = Länge der MP3. sheet2song konnte die Takte hier nicht zuverlässig bestimmen, weil der Song
+# nur alle 2 Takte den Akkord wechselt.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. song.yaml gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+
+id: 2                        # wie bisher: der Generator kommentiert Physical() in main.cpp case 2 aus und bindet den neuen Code ein
+name: "Physical"
+artist: "Dua Lipa"
+bpm: 147
+beats_per_bar: 4
+midi_offset: 1/8
+audio: quelle/2026-10-03_physical.mp3
+audio_beat1_ms: 428          # erster Klick des Vorzählers; die Musik beginnt einen Takt später bei 2061 ms
+
+sections:
+  - name: pause
+    bars: 1
+    description: "Vorzähler: 4 Klicks, sonst still"
+
+  - name: synth intro
+    bars: 8
+    chords: "Am | F | C | G (je 2 Takte)"
+    description: "nur Synth, leise (-21 dB). Im letzten halben Takt Auftakt in den Band-Einsatz"
+
+  - name: intro band
+    bars: 8
+    chords: "Am | F | C | G (je 2 Takte)"
+    description: "Band setzt voll ein, instrumental"
+
+  - name: verse 1
+    bars: 16
+    lyrics: "Common love isn't for us"
+    description: "voller Pegel wie das Intro; im letzten halben Takt bricht die Band ab"
+
+  - name: sample
+    bars: 2
+    lyrics: "Who needs to go to sleep when I got you next to me?"
+    description: "Sprach-Sample fast ohne Band (-21 dB). Im letzten halben Takt Synth-Auftakt in den Chorus"
+
+  - name: chorus 1
+    bars: 15
+    lyrics: "All night, I'll riot with you"
+    description: "lautester Formteil (-4,5 dB)"
+
+  - name: chorus 1 hit
+    bars: 1
+    lyrics: "Let's get physical"
+    description: "letzter Chorus-Takt, die zweite Takthälfte bricht ab"
+
+  - name: drum fill
+    bars: 1
+    description: "nur Drums (-15 dB)"
+
+  - name: snare roll
+    bars: 1
+    description: "Snare-Wirbel, steigert sich in den Verse (-17 -> -8 dB)"
+
+  - name: verse 2
+    bars: 15
+    lyrics: "Adrenaline keeps on rushin' in"
+    description: "so laut wie der Chorus (-5 dB), deutlich lauter als Verse 1"
+
+  - name: pre-chorus 2
+    bars: 1
+    lyrics: "Who needs to go to sleep when I got you next to me?"
+    description: "anders als beim ersten Mal spielt die Band hier durch (-7 dB), kein Stopp"
+
+  - name: chorus 2
+    bars: 15
+    lyrics: "All night, I'll riot with you"
+
+  - name: chorus 2 hit
+    bars: 1
+    lyrics: "Let's get physical"
+    description: "leicht zurückgenommen (-7,5 dB), kein Abbruch"
+
+  - name: bridge 1
+    bars: 8
+    lyrics: "Hold on just a little tighter"
+
+  - name: bridge 2
+    bars: 7
+    lyrics: "Hold on just a little tighter"
+
+  - name: bridge hit
+    bars: 1
+    lyrics: "Let's get physical"
+    description: "fällt in der zweiten Takthälfte ab in den Breakdown"
+
+  - name: chorus 3 solo voc
+    bars: 7
+    lyrics: "All night, I'll riot with you"
+    description: "Breakdown: Gesang fast allein, leisester Teil nach dem Intro (-9 bis -16 dB), Tiefpunkt in Takt 5-6"
+
+  - name: chorus 3 solo voc hit
+    bars: 1
+    lyrics: "Let's get physical"
+    description: "Band kommt zurück (-8 -> -5 dB)"
+
+  - name: chorus 3
+    bars: 7
+    lyrics: "Lights out, follow the noise"
+
+  - name: chorus 3 hit
+    bars: 1
+    lyrics: "Let's get physical"
+
+  - name: outro
+    bars: 7
+    lyrics: "(Physical, physical) Let's get physical"
+
+  - name: outro hit
+    bars: 1
+    lyrics: "phy-phy-phy-physical"
+    description: "Schluss: die zweite Takthälfte bricht ab, danach Stille"
+
+# Bund-Marker: von Hand in src/markerLEDs.cpp gesetzt (case 2), werden dort gepflegt.
+# Dein alter Code schaltet für Rina zusätzlich markerLED5 = ASaite_E ein ("lets get physical" nach Chorus 2
+# und "hold on 1") und danach wieder aus. Das ist hier 1:1 übernommen: {Slot: Marker}, nur für den Bass.
+markers:
+  parts:
+    chorus 2 hit: {bass: {5: ASaite_E}}
+    bridge 1:     {bass: {5: ASaite_E}}
+# Akkorde im Song: Am, F, C, G

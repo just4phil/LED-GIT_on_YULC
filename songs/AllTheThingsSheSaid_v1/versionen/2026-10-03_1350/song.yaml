@@ -1,0 +1,86 @@
+# Semantische Songbeschreibung. Quelle: Chord-Sheet t.a.t.u_Allthethingsshesaid (transpose +4, myTempo 86)
+# + Audio songs/audio/ATTSS.mp3. Taktzahlen aus den Akkordwechseln im Audio abgeleitet
+# (eine Sheet-Zeile mit 2 Akkorden = 1 Takt, Verse/Solo 1 Akkord pro Takt).
+# Die Technik steht in all_the_things_she_said.show.yaml.
+
+id: 31
+name: All The Things She Said
+artist: t.A.T.u.
+bpm: 86
+beats_per_bar: 4
+midi_offset: 3/8
+audio: songs/audio/ATTSS.mp3
+audio_beat1_ms: 20           # MP3 beginnt mit einem stillen Takt ("pause"), Band ab 2811 ms
+
+sections:
+  - name: pause
+    bars: 1
+    energy: 0
+    description: stiller Takt am Anfang der MP3
+
+  - name: intro
+    bars: 4
+    energy: 1
+    lyrics: All the things she said, all that she said
+    description: leiser Chant ohne Bass, ab Beat 2,5 im letzten Takt Crescendo in den Band-Einsatz
+
+  - name: intro band
+    bars: 8
+    energy: 4
+    lyrics: This is not enough
+    description: volle Band setzt ein, "This is not enough" + instrumental
+
+  - name: verse 1
+    bars: 9
+    energy: 3
+    lyrics: I'm in serious shit, I feel totally lost
+    description: Fm-D#-G#-Cm je 1 Takt, letzte Zeile "Nobody else so we can be free" wiederholt (9. Takt)
+
+  - name: chorus 1
+    bars: 8
+    energy: 5
+    lyrics: All the things she said, running through my head
+
+  - name: solo
+    bars: 8
+    energy: 4
+    solo: guitar               # bitte prüfen: welches Instrument hat das Solo?
+    description: Fm-D#-G#-Cm instrumental
+
+  - name: verse 2a
+    bars: 4
+    energy: 2
+    lyrics: And I'm all mixed up, feeling cornered and rushed
+    description: sparsam, deutlich leiser (-9 dB)
+
+  - name: verse 2b
+    bars: 4
+    energy: 3
+    lyrics: When they stop and stare - don't worry me
+    description: Band wieder voll
+
+  - name: chorus 2
+    bars: 8
+    energy: 5
+
+  - name: bridge
+    bars: 7
+    energy: 2
+    lyrics: Mother looking at me, tell me what do you see?
+    description: leise und angespannt, steigert sich zum Ende
+
+  - name: bridge hit
+    bars: 1
+    energy: 5
+    lyrics: Have I crossed the line?
+    description: ein voller, lauter Takt vor dem letzten Chorus
+
+  - name: chorus 3
+    bars: 12
+    energy: 5
+    description: letzter Chorus, verlängert (+ All the things she said + This is not enough)
+
+  - name: end
+    bars: 1
+    energy: 1
+    description: Schlussakkord klingt aus

@@ -2,15 +2,20 @@
 """
 sheet2song.py - semantische Song-Datei aus Songbook-Sheet (XML) + Audio (MP3) erzeugen
 
-    tools/.venv/Scripts/python tools/sheet2song.py <sheet.txt> <audio.mp3> --id 31 [--midi-offset 1/8]
+    tools/.venv/Scripts/python tools/sheet2song.py <Song> --id 31 [--midi-offset 1/8]
+
+<Song> = Ordner unter songs/ (z. B. SuchAShame_v1). Sheet (.txt/.xml) und MP3 liegen in songs/<Song>/quelle/
+(oder direkt im Ordner); mit --sheet / --audio lassen sie sich auch einzeln angeben.
 
 Das Sheet liefert Parts, Lyrics, Akkorde, Tempo (<myTempo>, sonst <tempo>) und <transpose>.
 Das Audio liefert, wie viele Takte jeder Part wirklich dauert: Die Akkordfolge jedes Parts wird
 im Audio gesucht (Chroma-Analyse pro halbem Takt), die Part-Grenzen liegen immer auf einem Taktanfang.
 
-Schreibt songs/<titel>.yaml (bricht ab, wenn die Datei schon existiert - dann --force oder --out).
+Schreibt songs/<Song>/song.yaml - aber NUR, wenn es die Datei noch nicht gibt. Eine vorhandene song.yaml
+gehört dem User und wird nie überschrieben: das Ergebnis landet dann als Vorschlag in song.vorschlag.yaml
+daneben (zum Vergleichen, der Generator beachtet sie nicht).
 Bund-Marker werden nur vorgeschlagen, wenn es für die Song-ID noch keine gibt (markerLEDs.cpp oder
-markers: in der vorhandenen YAML); ein vorhandener markers:-Block wird bei --force wörtlich übernommen.
+markers: in der vorhandenen song.yaml); ein vorhandener markers:-Block wird wörtlich übernommen.
 """
 import argparse
 import math
@@ -24,7 +29,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import markers as mk  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+from songgen import ROOT, SONG_FILE, VERSIONS_DIR, SongError, find_song_dir  # noqa: E402
+
+PROPOSAL_FILE = "song.vorschlag.yaml"	# Ergebnis, wenn es schon eine song.yaml gibt (die wird nie überschrieben)
 SR = 22050
 HOP = 512
 SILENT_BAR_DB = -35			# Takt gilt als still (Pause vor/nach dem Song)
@@ -90,8 +97,15 @@ def parse_sheet(path):
 			# reine Akkordzeile (instrumental) = 1 Akkord pro Takt
 			bars = len(chords) if not lyric else max(lines, math.ceil(len(chords) / 2))
 			rows.append({"chords": chords, "lyric": lyric, "bars": bars})
-		if rows:
-			sheet["parts"].append({"name": part.get("name", "part").strip(), "rows": rows})
+		# "Verse 1, 16 Takte" im Part-Namen = feste Taktzahl vom User (zählt mehr als jede Schätzung);
+		# damit zählen auch Parts ohne Akkorde (Synth-Intro, Drum-Solo)
+		name = part.get("name", "part").strip()
+		fixed = None
+		m = re.match(r"(.*?)[\s,;:(-]*(\d+)\s*takte?\)?\s*$", name, re.I)
+		if m and m.group(1).strip():
+			name, fixed = m.group(1).strip(), int(m.group(2))
+		if rows or fixed:
+			sheet["parts"].append({"name": name, "rows": rows, "fixed_bars": fixed})
 	if not sheet["parts"]:
 		raise SystemExit("FEHLER: keine Parts mit Akkorden im Sheet gefunden")
 	return sheet
@@ -105,7 +119,7 @@ def part_pattern(part):
 		base, extra = divmod(halves, n)
 		for i, c in enumerate(r["chords"]):
 			seq += [c] * (base + (1 if i >= n - extra else 0))
-	return seq, sum(r["bars"] for r in part["rows"])
+	return seq, part.get("fixed_bars") or sum(r["bars"] for r in part["rows"])
 
 
 #==================================================================
@@ -167,7 +181,8 @@ def bar_grid(a, first_bar, bar):
 def align(parts, halves, s0, last, chord_list):
 	"""Parts nacheinander auf die Takte s0..last verteilen, sodass die Akkorde am besten passen.
 	Kosten je halbem Takt = (bester Akkord dort) - (erwarteter Akkord); Muster dürfen sich wiederholen
-	(Sheet notiert Wiederholungen oft nur einmal) oder doppelt so langsam laufen (1 Akkord pro Takt)."""
+	(Sheet notiert Wiederholungen oft nur einmal) oder langsamer laufen (1 Akkord pro Takt bzw. pro 2 Takte).
+	Parts mit fester Taktzahl ("... 16 Takte" im Namen) bekommen genau diese Länge."""
 	T = np.array([tmpl(c) for c in chord_list])
 	cidx = {c: i for i, c in enumerate(chord_list)}
 	sim = halves @ T.T									# [halbe Takte, Akkorde]
@@ -182,10 +197,11 @@ def align(parts, halves, s0, last, chord_list):
 	pats = []
 	for p in parts:
 		seq, exp_bars = part_pattern(p)
-		idx = np.array([cidx[c] for c in seq])
-		pats.append(([idx, np.repeat(idx, 2)], exp_bars))
+		idx = np.array([cidx[c] for c in seq], dtype=int)
+		pats.append(([idx, np.repeat(idx, 2), np.repeat(idx, 4)] if len(idx) else [idx], exp_bars))
 
 	for pi, (variants, exp_bars) in enumerate(pats):
+		fixed = parts[pi].get("fixed_bars")
 		max_len = min(N, max(4, exp_bars * 4))
 		for b in range(N):
 			if dp[pi][b] >= INF:
@@ -193,10 +209,14 @@ def align(parts, halves, s0, last, chord_list):
 			h0 = 2 * (s0 + b)
 			for vi, pat in enumerate(variants):
 				L = min(2 * max_len, 2 * (N - b))
-				seq = pat[np.arange(L) % len(pat)]
-				c = np.cumsum(cost[h0 + np.arange(L), seq])
+				if len(pat):
+					c = np.cumsum(cost[h0 + np.arange(L), pat[np.arange(L) % len(pat)]])
+				else:
+					c = np.zeros(L)		# Part ohne Akkorde: nur die feste Länge zählt
 				for n in range(1, L // 2 + 1):
-					prior = PRIOR_WEIGHT * abs(math.log(n / exp_bars))
+					if fixed and n != fixed:
+						continue
+					prior = 0.0 if fixed else PRIOR_WEIGHT * abs(math.log(n / exp_bars))
 					v = dp[pi][b] + c[2 * n - 1] + prior
 					if v < dp[pi + 1][b + n]:
 						dp[pi + 1][b + n] = v
@@ -216,6 +236,9 @@ def align(parts, halves, s0, last, chord_list):
 	for pi, (a, b, vi) in enumerate(res):
 		pat = pats[pi][0][vi]
 		hs = 2 * (s0 + a) + np.arange(2 * (b - a))
+		if not len(pat):
+			fits.append(None)
+			continue
 		seq = pat[np.arange(len(hs)) % len(pat)]
 		fits.append(float((cost[hs, seq] < 0.05).mean()) if len(hs) else 0.0)
 	return res, e, total, fits
@@ -225,10 +248,6 @@ def align(parts, halves, s0, last, chord_list):
 #=========== Ausgabe ==============================================
 #==================================================================
 
-def slug(s):
-	return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
-
-
 def fmt(t):
 	return f"{int(t // 60)}:{t % 60:05.2f}"
 
@@ -237,25 +256,40 @@ def ystr(s):
 	return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
+def find_source(song_dir, exts, what):
+	"""Die eine Datei mit passender Endung im Song-Ordner bzw. in quelle/ (nicht in versionen/)."""
+	found = [f for f in sorted(song_dir.rglob("*")) if f.is_file() and f.suffix.lower() in exts
+			 and VERSIONS_DIR not in f.parts and f.parent.name != "audio-analyse"]
+	if len(found) != 1:
+		raise SystemExit(f"FEHLER: {what} in songs/{song_dir.name}: {len(found)} Kandidaten ({', '.join(f.name for f in found) or 'keine'})"
+						 f" - nach quelle/ legen oder --{'sheet' if what == 'Sheet' else 'audio'} angeben")
+	return found[0]
+
+
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-	ap.add_argument("sheet")
-	ap.add_argument("audio")
+	ap.add_argument("song", help="Ordnername unter songs/")
+	ap.add_argument("--sheet", help="Sheet-Datei (Standard: die einzige .txt/.xml im Song-Ordner bzw. in quelle/)")
+	ap.add_argument("--audio", help="Audiodatei (Standard: die einzige .mp3 im Song-Ordner bzw. in quelle/)")
 	ap.add_argument("--id", type=int, required=True, help="Song-ID (MIDI CC 22), 0..127")
 	ap.add_argument("--bpm", type=float, help="Tempo, falls nicht im Sheet (<myTempo>/<tempo>)")
 	ap.add_argument("--midi-offset", default="1/8", help="Notenwert, z. B. 1/8 (Standard)")
-	ap.add_argument("--out", help="Zieldatei (Standard songs/<titel>.yaml)")
-	ap.add_argument("--force", action="store_true", help="vorhandene Datei überschreiben")
 	args = ap.parse_args()
 
+	try:
+		song_dir = find_song_dir(args.song)
+	except SongError as e:
+		raise SystemExit(f"FEHLER: {e}")
+	args.sheet = args.sheet or find_source(song_dir, (".txt", ".xml"), "Sheet")
+	args.audio = args.audio or find_source(song_dir, (".mp3",), "MP3")
 	sheet = parse_sheet(args.sheet)
 	bpm = args.bpm or sheet["bpm"]
 	if not bpm:
 		raise SystemExit("FEHLER: kein Tempo im Sheet - bitte --bpm angeben")
 	audio = Path(args.audio).resolve()
-	out = Path(args.out) if args.out else ROOT / "songs" / (slug(sheet["title"] or audio.stem) + ".yaml")
-	if out.exists() and not args.force:
-		raise SystemExit(f"FEHLER: {out} existiert schon (--force zum Überschreiben oder --out)")
+	song_file = song_dir / SONG_FILE
+	is_proposal = song_file.exists()	# vorhandene song.yaml gehört dem User -> nur einen Vorschlag daneben schreiben
+	out = song_dir / PROPOSAL_FILE if is_proposal else song_file
 
 	tr = sheet["transpose"]
 	parts = sheet["parts"]
@@ -312,6 +346,10 @@ def main():
 		sec = {"name": n, "bars": nb, "lyrics": lyric, "chords": chords, "_hints": hints}
 		if vi == 1:
 			sec["_hints"].insert(0, "Akkorde laufen halb so schnell wie im Sheet notiert (1 Akkord pro Takt)")
+		elif vi == 2:
+			sec["_hints"].insert(0, "Akkorde laufen viermal so langsam wie im Sheet notiert (1 Akkord pro 2 Takte)")
+		if p.get("fixed_bars"):
+			sec["_hints"].insert(0, f"Taktzahl fest aus dem Sheet-Namen ({p['fixed_bars']} Takte)")
 		sections.append(sec)
 		report.append((n, nb, exp, starts[gs], b["fits"][pi], hints))
 	tail = b["last"] - s0 + 1 - b["e"]
@@ -326,7 +364,10 @@ def main():
 		f"#   Audio: {audio.name}",
 		f"# Taktzahlen aus dem Abgleich der Sheet-Akkorde mit dem Audio. Bitte prüfen: Namen, Hinweise (# !),",
 		f"# midi_offset; Parts mit Pegelsprung ggf. aufteilen (z. B. 'verse 2a'/'verse 2b').",
-		f"# Die Technik (Szenen/Farben) kommt in {out.stem}.show.yaml.",
+		"# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug",
+		"# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:",
+		"#   energy: 0-5, description, mood, instruments, solo  -> Einschätzung, daraus wird die Show abgeleitet",
+		"#   scene: SCENE_..., scheme: SCHEME_..., fx: \"prog...\"  -> feste Vorgabe, hat immer Vorrang vor show.yaml",
 		"",
 		f"id: {args.id}",
 		f"name: {ystr(sheet['title'] or audio.stem)}",
@@ -334,7 +375,7 @@ def main():
 		f"bpm: {bpm:g}",
 		"beats_per_bar: 4",
 		f"midi_offset: {args.midi_offset}",
-		f"audio: {audio.relative_to(ROOT).as_posix() if audio.is_relative_to(ROOT) else audio.as_posix()}",
+		f"audio: {audio.relative_to(song_dir).as_posix() if audio.is_relative_to(song_dir) else audio.as_posix()}",
 		f"audio_beat1_ms: {beat1_ms}",
 		"",
 		"sections:",
@@ -351,8 +392,8 @@ def main():
 		lines.append("")
 	# Bund-Marker: nie etwas Vorhandenes ändern
 	old_block = None
-	if out.exists():
-		m = re.search(r"^(?:#[^\n]*\n)*markers:.*", out.read_text(encoding="utf-8"), re.S | re.M)
+	if song_file.exists():
+		m = re.search(r"^(?:#[^\n]*\n)*markers:.*", song_file.read_text(encoding="utf-8"), re.S | re.M)
 		old_block = m.group(0).rstrip("\n") if m else None
 	counts = {}
 	for pi, (st, en, vi) in enumerate(b["res"]):
@@ -372,20 +413,25 @@ def main():
 		names, notes = mk.propose(counts)
 		marker_msg = "VORSCHLAG: " + ", ".join(f"{n} ({mk.FRET[n]}. Bund)" for n in names)
 		lines += mk.yaml_block(names, notes, chords_text)
-	out.parent.mkdir(parents=True, exist_ok=True)
+	if is_proposal:
+		lines[:0] = [f"# VORSCHLAG - {SONG_FILE} existiert schon und wurde NICHT angefasst. Nur zum Vergleichen,",
+					 "# der Generator beachtet diese Datei nicht. Übernimm von Hand, was du brauchst.", ""]
 	out.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 	print(f"Takt 1 (Raster) bei {beat1_ms} ms, Takt = {bar * 1000:.1f} ms, erster klingender Takt: {s0 + 1}")
 	print(f"\n  {'part':<24} {'takte':>5} {'sheet':>5}  {'start mp3':>9}  {'akkorde':>7}")
 	for n, nb, exp, st, fit, hints in report:
-		flag = "  <- prüfen" if fit < 0.5 else ""
-		print(f"  {n:<24} {nb:>5} {exp:>5}  {fmt(st):>9}  {fit * 100:6.0f}%{flag}")
+		flag = "  <- prüfen" if fit is not None and fit < 0.5 else ""
+		fit_txt = f"{fit * 100:6.0f}%" if fit is not None else "      -"
+		print(f"  {n:<24} {nb:>5} {exp:>5}  {fmt(st):>9}  {fit_txt}{flag}")
 		for h in hints:
 			print(f"  {'':<24} ! {h}")
 	if tail > 0:
 		print(f"  {'ende':<24} {tail:>5}")
 	print(f"\nBund-Marker: {marker_msg}")
-	print(f"\n-> {out}")
+	print(f"\n-> {out.relative_to(ROOT)}")
+	if is_proposal:
+		print(f"   {SONG_FILE} existiert schon und wurde nicht angefasst - das ist nur ein Vorschlag zum Vergleichen.")
 	return 0
 
 

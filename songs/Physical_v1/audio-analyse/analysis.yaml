@@ -1,0 +1,274 @@
+audio: songs\Physical_v1\quelle\2026-10-03_physical.mp3
+audio_dauer_s: 205.1
+takt1_im_audio_ms: 428
+takt1_quelle: YAML (audio_beat1_ms)
+bpm_yaml: 147
+bpm_gemessen: 147.0
+tonart_gesamt: A-Moll
+legende:
+  power: '0-5 Lautheit: 5 = lautester Part, je 1,5 dB leiser eine Stufe weniger, 0 = still'
+  build: -1..+1 Lautstärkeverlauf im Part (+ = steigert sich)
+  drive: 0-1 rhythmische Dichte / perkussiver Anteil
+  brightness: 0-1 Klangfarbe dunkel/warm -> hell/scharf
+  lowend: 0-1 Bass-Anteil (Drop, Bass setzt ein)
+  mood: Dur/Moll-Tendenz des Parts
+  grenze_hoerbar: an der Part-Grenze ändert sich hörbar der Klang
+sections:
+- name: pause
+  start_ms: 0
+  dur_ms: 1633
+  power: 0
+  loudness_db: -53.5
+  build: 0.0
+  drive: 0.0
+  brightness: 0.0
+  lowend: 0.0
+  mood: still
+- name: synth intro
+  start_ms: 1633
+  dur_ms: 13061
+  power: 1
+  loudness_db: -20.5
+  build: 0.27
+  drive: 0.01
+  brightness: 0.29
+  lowend: 0.0
+  mood: A-Moll
+  grenze_hoerbar: false
+- name: intro band
+  start_ms: 14694
+  dur_ms: 13061
+  power: 4
+  loudness_db: -7.2
+  build: 0.04
+  drive: 0.75
+  brightness: 0.12
+  lowend: 1.0
+  mood: C-Dur
+  grenze_hoerbar: true
+- name: verse 1
+  start_ms: 27755
+  dur_ms: 26122
+  power: 4
+  loudness_db: -6.5
+  build: -0.07
+  drive: 0.38
+  brightness: 0.04
+  lowend: 0.78
+  mood: C-Dur
+  grenze_hoerbar: true
+- name: sample
+  start_ms: 53878
+  dur_ms: 3265
+  power: 1
+  loudness_db: -19.7
+  build: 0.86
+  drive: 0.84
+  brightness: 0.49
+  lowend: 0.16
+  mood: A-Dur (unsicher)
+  grenze_hoerbar: true
+- name: chorus 1
+  start_ms: 57143
+  dur_ms: 24490
+  power: 5
+  loudness_db: -5.1
+  build: -0.06
+  drive: 0.1
+  brightness: 0.16
+  lowend: 0.59
+  mood: C-Dur
+  grenze_hoerbar: false
+- name: chorus 1 hit
+  start_ms: 81633
+  dur_ms: 1633
+  power: 3
+  loudness_db: -8.5
+  build: -1.0
+  drive: 0.37
+  brightness: 0.35
+  lowend: 0.4
+  mood: E-Moll (unsicher)
+  grenze_hoerbar: false
+- name: drum fill
+  start_ms: 83265
+  dur_ms: 1633
+  power: 1
+  loudness_db: -15.3
+  build: 0.16
+  drive: 0.95
+  brightness: 1.0
+  lowend: 0.7
+  mood: G#-Moll (unsicher)
+  grenze_hoerbar: false
+- name: snare roll
+  start_ms: 84898
+  dur_ms: 1633
+  power: 1
+  loudness_db: -12.7
+  build: 1.0
+  drive: 1.0
+  brightness: 0.73
+  lowend: 0.83
+  mood: C#-Moll (unsicher)
+  grenze_hoerbar: true
+- name: verse 2
+  start_ms: 86531
+  dur_ms: 24490
+  power: 5
+  loudness_db: -5.2
+  build: -0.01
+  drive: 0.48
+  brightness: 0.02
+  lowend: 0.72
+  mood: C-Dur
+  grenze_hoerbar: true
+- name: pre-chorus 2
+  start_ms: 111020
+  dur_ms: 1633
+  power: 4
+  loudness_db: -6.8
+  build: -0.18
+  drive: 0.33
+  brightness: 0.27
+  lowend: 0.6
+  mood: G-Moll (unsicher)
+  grenze_hoerbar: false
+- name: chorus 2
+  start_ms: 112653
+  dur_ms: 24490
+  power: 5
+  loudness_db: -5.0
+  build: -0.06
+  drive: 0.09
+  brightness: 0.1
+  lowend: 0.61
+  mood: C-Dur
+  grenze_hoerbar: false
+- name: chorus 2 hit
+  start_ms: 137143
+  dur_ms: 1633
+  power: 3
+  loudness_db: -7.5
+  build: 0.04
+  drive: 0.31
+  brightness: 0.29
+  lowend: 0.43
+  mood: A-Dur (unsicher)
+  grenze_hoerbar: false
+- name: bridge 1
+  start_ms: 138776
+  dur_ms: 13061
+  power: 5
+  loudness_db: -5.7
+  build: 0.09
+  drive: 0.13
+  brightness: 0.24
+  lowend: 0.29
+  mood: D-Moll (unsicher)
+  grenze_hoerbar: false
+- name: bridge 2
+  start_ms: 151837
+  dur_ms: 11429
+  power: 5
+  loudness_db: -5.7
+  build: -0.09
+  drive: 0.1
+  brightness: 0.21
+  lowend: 0.45
+  mood: D-Moll (unsicher)
+  grenze_hoerbar: true
+- name: bridge hit
+  start_ms: 163265
+  dur_ms: 1633
+  power: 3
+  loudness_db: -7.8
+  build: -0.5
+  drive: 0.01
+  brightness: 0.16
+  lowend: 0.58
+  mood: D-Moll (unsicher)
+  grenze_hoerbar: false
+- name: chorus 3 solo voc
+  start_ms: 164898
+  dur_ms: 11429
+  power: 1
+  loudness_db: -12.2
+  build: -0.24
+  drive: 0.76
+  brightness: 0.86
+  lowend: 0.49
+  mood: C-Moll (unsicher)
+  grenze_hoerbar: true
+- name: chorus 3 solo voc hit
+  start_ms: 176327
+  dur_ms: 1633
+  power: 4
+  loudness_db: -6.4
+  build: 0.53
+  drive: 0.21
+  brightness: 0.47
+  lowend: 0.36
+  mood: A-Dur (unsicher)
+  grenze_hoerbar: true
+- name: chorus 3
+  start_ms: 177959
+  dur_ms: 11429
+  power: 5
+  loudness_db: -5.3
+  build: -0.1
+  drive: 0.1
+  brightness: 0.14
+  lowend: 0.58
+  mood: C-Dur
+  grenze_hoerbar: true
+- name: chorus 3 hit
+  start_ms: 189388
+  dur_ms: 1633
+  power: 5
+  loudness_db: -5.0
+  build: -0.1
+  drive: 0.0
+  brightness: 0.14
+  lowend: 0.62
+  mood: G-Dur
+  grenze_hoerbar: true
+- name: outro
+  start_ms: 191020
+  dur_ms: 11429
+  power: 5
+  loudness_db: -5.0
+  build: -0.11
+  drive: 0.06
+  brightness: 0.15
+  lowend: 0.59
+  mood: C-Dur
+  grenze_hoerbar: true
+- name: outro hit
+  start_ms: 202449
+  dur_ms: 1633
+  power: 2
+  loudness_db: -9.2
+  build: -1.0
+  drive: 0.06
+  brightness: 0.0
+  lowend: 0.38
+  mood: D-Moll (unsicher)
+  grenze_hoerbar: true
+accents:
+- section: synth intro
+  bar: 8
+  beat: 1.0
+  type: fill_into_next
+  rise_db: 15.1
+- section: sample
+  bar: 2
+  beat: 1.0
+  type: fill_into_next
+  rise_db: 15.7
+- section: snare roll
+  bar: 1
+  beat: 1.0
+  type: fill_into_next
+  rise_db: 12.8
+warnungen: []

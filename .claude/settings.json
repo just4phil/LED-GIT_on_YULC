@@ -1,3 +1,19 @@
 {
-  "enabledMcpjsonServers": ["semble"]
+  "enabledMcpjsonServers": ["semble"],
+  "permissions": {
+    "deny": ["Edit(songs/**/song.yaml)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/tools/hook_protect_song.py\""
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,0 +1,118 @@
+# Technische Show (von Claude aus song.yaml + Analyse + dem handgeschriebenen Physical() abgeleitet).
+# Idee: 80er-Neon. Verses dunkel in Blau/Lila (ROYAL), Chorusse in Neon, Bridge warm (SUNSET), Finale brennt.
+# Aus dem alten Code übernommen: das Motiv "1 Takt Strobo auf jedes 'Let's get physical'" (erstes und letztes
+# Mal weiß, dazwischen farbig) und Black + Strobo-Auftakt auf dem Sprach-Sample vor Chorus 1.
+# Neu gegenüber dem alten Code: sichtbarer Wechsel beim Band-Einsatz (+14 dB), alle Chorusse erkennbar gleich,
+# Bewegung über die Bühne in der Bridge.
+
+scheme: SCHEME_NEON
+end_black_ms: 6530                  # 4 Takte, wie im alten Code
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  synth intro:
+    scene: SCENE_CALM
+    scheme: SCHEME_ROYAL
+    tail:
+      beats: 2
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_WHITE
+    why: "nur Synth, sehr leise (-21 dB): ruhiges Atmen; der Auftakt im letzten halben Takt lädt auf und explodiert auf den Band-Einsatz"
+
+  intro band:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_NEON
+    why: "größter Pegelsprung im Song (+14 dB): Blitze laufen pro Beat von den Drums nach außen"
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "rhythmischer Puls im Beat, dunkler als das Intro, damit der Chorus aufgehen kann"
+
+  sample:
+    fx: "progBlack(${dur}, ${next})"
+    tail:
+      beats: 2
+      fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
+    why: "wie im alten Code: Black auf dem Sprach-Sample, weißer Strobo auf dem Synth-Auftakt (hier steigt auch der Trailer ein)"
+
+  chorus 1:
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "lautester Formteil: volle Energie im Beat, Neon"
+
+  chorus 1 hit:
+    fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
+    why: "Motiv 'Let's get physical': 1 Takt Strobo, beim ersten Mal weiß"
+
+  drum fill:
+    scene: SCENE_SOLO_DRUMS
+    scheme: SCHEME_NEON
+    why: "nur Drums: Spotlight auf die Mitte, der Rest tritt zurück"
+
+  snare roll:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_WHITE
+    why: "Snare-Wirbel steigert sich (build 1.0): lädt einen Takt auf, Explosion auf Verse 2"
+
+  verse 2:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "wie Verse 1, damit die Form erkennbar bleibt"
+
+  pre-chorus 2:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_WHITE
+    why: "die Band spielt hier durch (kein Stopp wie beim ersten Mal): aufladen statt Black, Explosion auf Chorus 2"
+
+  chorus 2:
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "erkennbar gleich wie Chorus 1"
+
+  chorus 2 hit:
+    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
+    why: "Motiv 'Let's get physical', farbig"
+
+  bridge 1:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_SUNSET
+    why: "'Hold on': neue Farbe, das Licht springt pro Beat von Gerät zu Gerät"
+
+  bridge 2:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_SUNSET
+    why: "zweite Hälfte der Bridge: Bewegung wird gerichtet, von der Mitte nach außen"
+
+  bridge hit:
+    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
+    why: "Motiv 'Let's get physical', farbig; danach fällt alles in den Breakdown"
+
+  chorus 3 solo voc:
+    scene: SCENE_CALM
+    scheme: SCHEME_BLUE
+    why: "Breakdown, Gesang fast allein (-12 dB): alles zieht sich zurück"
+
+  chorus 3 solo voc hit:
+    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
+    why: "Motiv 'Let's get physical', farbig; die Band kommt zurück"
+
+  chorus 3:
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "Chorus wieder voll, erkennbar gleich"
+
+  chorus 3 hit:
+    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
+    why: "Motiv 'Let's get physical', farbig"
+
+  outro:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    why: "Finale eine Stufe über dem Chorus: Feuer auf allen Geräten"
+
+  outro hit:
+    fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
+    why: "letztes 'Physical': weißer Strobo wie beim ersten Mal, danach schwarz"

@@ -351,7 +351,8 @@ void loop() {
 			Firework();
 			break;
 		case 8:
-			DancingOnMyOwn();
+			//DancingOnMyOwn();
+			gen_DancingOnMyOwn(); // <<< GENERATED SONGS <<<
 			break;
 		case 9:
 			ILoveIt();
@@ -417,10 +418,6 @@ void loop() {
 			Maniac_Tminus1();
 			break;	
 
-		// case 31:
-		// 	AllTheThingsSheSaid_tatu();	//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
-		// 	break;	
-
 		// case 32:
 		// 	ItsRainingMen();			//-----TODO: SONG NOCH NICHT PROGRAMMIERT!!
 		// 	break;	
@@ -431,12 +428,9 @@ void loop() {
 
 		// >>> GENERATED SONGS (tools/songgen.py) >>>
 		case 31:
-			gen_AllTheThingsSheSaid();
+			gen_AllTheThingsSheSaid(); // <<< GENERATED SONGS <<<
 			break;
-		case 40:
-			gen_DancingOnMyOwn();
-			break;
-		// <<< GENERATED SONGS <<<
+
 
 		case 80:
 			ILoveItTRAILER();
