@@ -1,67 +1,129 @@
 ---
 name: new-song
-description: Neuen Song für die LED-Show anlegen oder umgestalten - aus BPM + Songstruktur (Takte) eine songs/*.yaml schreiben, optional das Audio analysieren, die Szenen-Dramaturgie über alle Geräte gestalten und per tools/songgen.py C++ generieren. Verwenden bei "neuer Song", "Song einbauen", "Show für <Song> gestalten", "YAML für Song".
+description: Neuen Song für die LED-Show anlegen oder umgestalten - pro Song ein Ordner songs/<Song>/ mit song.yaml (gehört dem User, nie schreiben) und show.yaml (Claude), optional das Audio analysieren, die Szenen-Dramaturgie über alle Geräte gestalten und per tools/songgen.py <Song> C++ generieren (mit Version/Restore). Verwenden bei "neuer Song", "Song einbauen", "Show für <Song> gestalten", "YAML für Song", "zurück zur alten Version".
 ---
 
 # Neuer Song: Struktur → Analyse → Dramaturgie → Code
 
-Der Song wird NICHT mehr von Hand in `src/songs.cpp` programmiert. Pro Song gibt es zwei Dateien:
+Der Song wird NICHT mehr von Hand in `src/songs.cpp` programmiert. Pro Song gibt es einen Ordner
+`songs/<Song>/` (z. B. `AllTheThingsSheSaid_v1`; `_v1` = Fassung des Songs/Audios, eine `_v2` ist ein eigener
+Ordner mit eigener ID):
 
 | Datei | Wer | Inhalt |
 |---|---|---|
-| `songs/<name>.yaml` | User | semantisch: Tempo, Takte, `midi_offset`, was musikalisch passiert |
-| `songs/<name>.show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails - per Abschnittsname |
+| `song.yaml` | **User** | Tempo, Takte, `midi_offset`, Stimmungen, Effekt-Wünsche. **Nie schreiben.** |
+| `show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails - per Abschnittsname |
+| `generated.cpp` | Generator | erzeugter Code dieses Songs |
+| `versionen/<Zeit>/` | Generator | Kopie von song.yaml + show.yaml + generated.cpp + info.yaml je Generierung |
+| `quelle/` | User | Sheet (.txt) + MP3 (MP3 nicht in Git) |
+| `audio-analyse/` | Tool | `analysis.yaml` + `analysis.png` |
 
-Die Struktur (Takte, Tempo) steht NUR in der semantischen Datei; `songgen.py` verweigert Takt-/Tempo-Angaben
-in der Show-Datei. Die semantische Datei des Users nicht umgestalten - nur ändern, wenn der User es will
-oder die Analyse einen Strukturfehler zeigt (dann mit dem User klären).
-Daraus erzeugt `tools/songgen.py` `src/songs_generated.cpp/.h` und den `case` in `main.cpp`
-(zwischen den Markern `GENERATED SONGS`). Generierte Dateien nie von Hand ändern.
-Beispiel: `songs/dancing_on_my_own.yaml` + `songs/dancing_on_my_own.show.yaml`.
+## `song.yaml` ist unantastbar
+
+Die Ergänzungen des Users zu Parts, Stimmungen und Effekten dürfen NIEMALS überschrieben werden.
+- Claude schreibt, verschiebt oder löscht `songs/*/song.yaml` nie (auch nicht per Shell). Ein Hook
+  (`tools/hook_protect_song.py`) und eine deny-Regel in `.claude/settings.json` blockieren das technisch.
+  Den Schutz nicht umgehen. Braucht die Datei eine Änderung (Strukturfehler, fehlender Part, Aufteilung
+  für einen zweiten Akzent), dem User die konkreten Zeilen im Chat vorschlagen - er trägt sie ein.
+- Einzige Ausnahme: `struktur2song.py` und `sheet2song.py` legen `song.yaml` an, wenn es sie noch nicht gibt.
+  Gibt es sie, schreiben sie `song.vorschlag.yaml` daneben (nur zum Vergleichen, der Generator ignoriert sie).
+- Gestaltung in `song.yaml` hat immer Vorrang vor `show.yaml`: `scene`/`fx` (dann entfallen auch die
+  `devices`-Overrides der Show für den Part), `scheme`, `tail`, `devices`; auf Song-Ebene `scheme`, `scroll_*`,
+  `end_black_ms`, `function`. Solche Vorgaben nicht in der Show "korrigieren" - sie gelten. Die Show um sie
+  herum stimmig gestalten (Kontrast, Steigerung).
+- Die Struktur (Takte, Tempo) steht NUR in `song.yaml`; `songgen.py` verweigert sie in der Show.
 
 Python: `tools/.venv/Scripts/python` (Pakete: `tools/requirements.txt`; fehlt die venv:
 `python -m venv tools/.venv && tools/.venv/Scripts/python -m pip install -r tools/requirements.txt`).
+Vor die Befehle `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore` setzen. `<Song>` = Ordnername, Anfang genügt.
 
 ## Ablauf
 
-1. **Semantische Datei**: liegt sie schon vor, lesen. Hat der User ein Songbook-Sheet (XML mit `<part>`/`<row>`,
-   Akkorde in `[..]`) und die MP3, damit erzeugen:
-   `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore tools/.venv/Scripts/python tools/sheet2song.py <sheet> songs/audio/<mp3> --id <n>`
-   Die Konsolentabelle prüfen (Spalte akkorde < 50 % / `<- prüfen`, `# !`-Hinweise zu Pegelsprüngen) und
-   dem User zeigen; Parts mit Pegelsprung für die Show sinnvoll aufteilen (mit dem User abstimmen).
-   Sonst aus den Angaben des Users anlegen (lose Angaben wie "8 Takte Intro langsam" übersetzen) und ihm zeigen.
+1. **`song.yaml`**: liegt sie schon vor, lesen. Sonst kommt die Struktur aus der **Struktur-Tabelle des Users**
+   (Standardweg - er schneidet die Parts selbst für die Show, mit den Taktnummern aus dem DAW):
+   `tools/.venv/Scripts/python tools/struktur2song.py <Song>_v1 --neu` legt `quelle/struktur.xlsx` an (Kopie von
+   `songs/struktur-vorlage.xlsx`; Kopf:
+   Titel, Interpret, Song-ID, BPM, StartTakt, StartBit; pro Part: Name, bis Takt, optional Energie, Effektidee,
+   Beschreibung, Akkorde, BPM). Der User füllt sie aus, dann `tools/.venv/Scripts/python tools/struktur2song.py <Song>`
+   → `song.yaml` (StartBit 0,125/0,25/0,375 → `midi_offset` 1/8, 1/4, 3/8; Effektidee → `idea`). Die
+   Konsolentabelle (Takte, Start/Dauer in ms) dem User zeigen.
+   Die Taktzählung des Users ist die verlässlichste Quelle. Struktur NICHT aus dem Audio raten: ein Versuch an
+   18 Songs (MP3s ohne Bass, mit Klick) fand bei brauchbarer Trefferquote drei falsche Grenzen je richtiger.
+   Das Audio dient für Energie pro Part und als Gegenprobe (Länge der MP3 gegen die Summe der Takte).
+   Alternative, nur wenn das Chord-Sheet so geschnitten ist wie die Show: Sheet (XML mit `<part>`/`<row>`,
+   Akkorde in `[..]`) + MP3 in `quelle/`, `tools/.venv/Scripts/python tools/sheet2song.py <Song> --id <n>`.
+   Steht im Part-Namen des Sheets eine Taktzahl ("Verse 1, 16 Takte"), gilt sie fest; das ist bei Songs mit
+   langsamem Akkordwechsel (1 Akkord pro 2 Takte) nötig, sonst liegt der Abgleich daneben.
+   Ohne Tabelle und Sheet: den Inhalt aus den Angaben des Users im Chat vorschlagen.
+   Die alten Songs aus `src/songs.cpp` haben schon eine `song.yaml` (einmalig übernommen mit
+   `tools/excel2song.py`, Kommentare `# bisher:` = alter Effekt, `# !` = vom User zu prüfen).
    Ausführliche Anleitung für den User: `docs/Song-Workflow.html`. Freie Song-ID wählen:
-   `songgen.py` meldet Kollisionen mit `main.cpp`; MIDI erlaubt 0..127.
+   `songgen.py` meldet Kollisionen mit anderen generierten Songs; erlaubt ist 1..127. Die ID eines alten,
+   handgeschriebenen Songs nur nehmen, wenn die neue Fassung ihn ersetzen soll (siehe unten).
    Das BPM kennt der User für jeden Song - immer von ihm nehmen, nie aus dem Audio schätzen.
-2. **Audio analysieren**, wenn `audio:` gesetzt ist (Datei in `songs/audio/`, wird nicht versioniert):
-   `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore tools/.venv/Scripts/python tools/songanalyze.py songs/<name>.yaml`
+2. **Audio analysieren**: `tools/.venv/Scripts/python tools/songanalyze.py <Song>`
    - Warnungen zuerst klären: Tempo-Drift → Tippfehler im `bpm`? mit dem User klären; unsichere Takt-1-Schätzung → User nach
      `audio_beat1_ms` fragen; Formgrenze ohne YAML-Grenze → Taktzahlen mit dem User prüfen.
      Die Analyse erneut laufen lassen, bis die Struktur sitzt.
-   - Dann `songs/<name>.analysis.yaml` lesen UND `songs/<name>_analysis.png` mit dem Read-Tool ansehen.
-3. **Show ableiten**: `songs/<name>.show.yaml` schreiben (Regeln unten). Grundlage sind die Beschreibungen
+   - Dann `audio-analyse/analysis.yaml` lesen UND `audio-analyse/analysis.png` mit dem Read-Tool ansehen.
+3. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind die Beschreibungen
    des Users (description, energy, lyrics, instruments, solo, mood) und - falls vorhanden - die Messwerte.
    Widersprechen sich beide, gilt die Einschätzung des Users; den Widerspruch kurz erwähnen. Jede Wahl mit `why:`.
-4. **Generieren**: `tools/.venv/Scripts/python tools/songgen.py` (erst `--dry-run` für die Timeline).
-5. **Bauen**: `pio run -e esp32-s3-devkitc-1`. Bei Geräte-Overrides (`devices:`) oder neuen Szenen auch
-   die anderen Geräte bauen: `src/definitions.h` sichern, Gerät umschalten, bauen, Sicherung zurückkopieren.
+4. **Generieren** - immer nur den einen Song, den der User nennt:
+   `tools/.venv/Scripts/python tools/songgen.py <Song> --dry-run`, dann ohne `--dry-run`, mit
+   `--note "<was sich geändert hat>"`. Das schreibt `generated.cpp`, legt eine Version an und setzt
+   `src/songs_generated.cpp/.h` + den Block in `main.cpp` aus den `generated.cpp` aller Songs zusammen
+   (die anderen Songs werden nicht neu generiert). Generierte Dateien nie von Hand ändern.
+5. **Bauen**: `pio run -e andresgit`. Bei Geräte-Overrides (`devices:`) oder neuen Szenen auch die anderen
+   Geräte-Envs bauen (`rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`); `src/definitions.h` nicht anfassen.
 6. Dem User die Timeline (case, Start, Dauer) und eine kurze Beschreibung der Dramaturgie zeigen.
 
-## Semantische Datei (`<name>.yaml`)
+## Alten, handgeschriebenen Song ersetzen (Pflichtregeln des Users)
+
+Gibt es den Song schon in `src/songs.cpp`, bekommt die generierte Fassung **dieselbe Song-ID**. `songgen.py`
+bindet sie wie bei `case 8` ein: alter Aufruf auskommentiert, darunter `gen_X(); // <<< GENERATED SONGS <<<`.
+Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENERATED SONGS (tools/songgen.py) >>>`.
+
+1. **Marker MÜSSEN übernommen werden.** Setzt die alte Funktion Marker in einzelnen Parts
+   (`markerLED5 = ASaite_E;`, oft unter `#ifdef BASS`), gehören sie 1:1 in `song.yaml` unter `markers.parts` als
+   Slot-Angabe: `bridge 1: {bass: {5: ASaite_E}}` (Slot = Nummer von markerLED1..7, `0` = aus; Schlüssel
+   `all`/`guitar`/`bass`). Da Claude `song.yaml` nicht schreibt: die Zeilen dem User fertig vorschlagen
+   (bzw. in `song.vorschlag.yaml`). Der Generator bricht ab, solange sie fehlen, und setzt sie inline an den
+   Anfang der Song-Funktion. Die Grund-Marker im `case` von `markerLEDs.cpp` gelten unverändert weiter.
+2. **Trailer berücksichtigen.** Springt ein Trailer in den Song (`songID = N; switchToPart(x);` in `songs.cpp`),
+   die feste Zahl durch die Konstante des entsprechenden Parts ersetzen (`GEN_<SONG>_<PART>` aus
+   `songs_generated.h`, Liste in der `--dry-run`-Ausgabe) - denselben musikalischen Einstiegspunkt wie bisher
+   wählen (alte Part-Dauern nachrechnen). Der Generator bricht ab, solange dort eine Zahl steht. Braucht der
+   Trailer einen Einstieg mitten in einem Part, diesen per `tail` als eigenen Part abtrennen.
+3. Die Struktur aus den alten Part-Dauern ableiten und die alten Effekte als Geschmacksreferenz lesen (siehe
+   Dramaturgie-Regeln).
+
+## Versionen und Restore
+
+- `songgen.py` (ohne Argument): alle Songs mit Stand (aktuell / YAML seit der Generierung geändert).
+- `songgen.py <Song> --versions`: Liste; `--restore <Version>`: sichert erst den aktuellen Stand, holt dann
+  `show.yaml` + `generated.cpp` 1:1 zurück (Code wird nicht neu berechnet) und setzt `src/` neu zusammen.
+  `song.yaml` wird dabei nie zurückkopiert; weicht sie ab, meldet das Tool das - dem User weitergeben.
+- `songgen.py --assemble`: nur `src/` neu zusammensetzen (z. B. nach dem Löschen eines Song-Ordners).
+- Versionen nie löschen oder ändern.
+
+## `song.yaml` (Felder)
 
 Song: `id`, `name`, `artist`, `bpm`, `beats_per_bar` (4), `midi_offset` als Notenwert (`1/8`, `1/16`, `3/16`;
 Viertel = 1 Beat; das MIDI kommt so spät NACH Takt 1 → erster Part entsprechend kürzer; negativ → schwarzer
 Vorlauf; ms werden aus dem Tempo des ersten Abschnitts berechnet; nur im Ausnahmefall `midi_offset_ms`),
-`audio`, `audio_beat1_ms`.
+`audio` (relativ zum Song-Ordner, z. B. `quelle/x.mp3`), `audio_beat1_ms`.
 Abschnitt: `name` (eindeutig), `bars` und/oder `beats`, optional `bpm` / `beats_per_bar` (Tempo-/Taktwechsel).
-Alles andere ist freie Beschreibung: `description`, `energy` 0-5, `lyrics`, `instruments`, `solo`, `mood` …
+Einschätzung (frei): `description`, `energy` 0-5, `idea` (Effektidee des Users in Worten - in der Show
+umsetzen und im `why` nennen), `lyrics`, `instruments`, `solo`, `mood` …
+Feste Vorgabe: `scene`, `fx`, `scheme`, `tail`, `devices` (siehe oben).
 `energy` dient auch als Fallback, falls ein Abschnitt in der Show fehlt (0 Black, 1 CALM, 2 VERSE,
 3 BUILDUP, 4-5 DROP).
 
-## Bund-Marker-LEDs (`markers:` in der Song-Datei)
+## Bund-Marker-LEDs (`markers:` in `song.yaml`)
 
 **NIE ändern, was der User gesetzt oder akzeptiert hat** - weder handgeschriebene cases in
-`src/markerLEDs.cpp` noch einen `markers:`-Block in `songs/*.yaml`. Auffälligkeiten nur im Chat ansprechen.
+`src/markerLEDs.cpp` noch einen `markers:`-Block in `song.yaml`. Auffälligkeiten nur im Chat ansprechen.
 
 - Vorschlag nur für neue Songs ohne Marker: `sheet2song.py` schreibt ihn automatisch (Grundtöne der
   transponierten Akkorde auf E- und A-Saite, ohne Leersaite/5./12. Bund, max. 7, `tools/markers.py`).
@@ -86,7 +148,7 @@ Alles andere ist freie Beschreibung: `description`, `energy` 0-5, `lyrics`, `ins
      damit beat-synchrone Szenen im Takt bleiben), dann Einstieg an der nächsten Grenze.
 - **Ende**: nach dem letzten Abschnitt 10 s `progBlack` auf allen Geräten, dann `clearAll(); switchToSong(0);`.
 
-## Show-Datei (`<name>.show.yaml`)
+## `show.yaml`
 
 Song-Ebene: `function` (optional, sonst `gen_<Name>`), `scheme` (Default-Farbschema), `scroll_text`
 (false schaltet den Lauftext ab), `scroll_title` (statt "<name> by <artist>"), `scroll_delay` (ms pro Pixel,
@@ -101,8 +163,8 @@ eigener Part, z. B. Strobo-Absprung), `why`.
 Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms).
 `devices`-Schlüssel: `guitar`, `lamp`, `matrix` oder einzelne Geräte `ANDRESGIT`, `RINASBASS`, `LAMPE1`,
 `LAMPE2`, `SCROLLMATRIX`, `GITBOARD` (Einzelgerät schlägt Klasse). Geräte ohne Override zeigen die Szene.
-Muss ein Abschnitt für einen Akzent geteilt werden (mehr als ein `tail`), den User bitten, ihn in der
-semantischen Datei aufzuteilen.
+Muss ein Abschnitt für einen Akzent geteilt werden (mehr als ein `tail`), den User bitten, ihn in
+`song.yaml` aufzuteilen.
 
 ## Dramaturgie-Regeln
 
@@ -129,6 +191,15 @@ unter dem lautesten Abschnitt (≥ 4 Takte) skaliert; bei knappen Entscheidungen
 - **Farbdramaturgie**: 2-3 Schemata pro Song. `brightness` niedrig → ICE/ROYAL/BLUE, hoch → NEON/SUNSET/FIRE;
   `mood` Moll → eher kalt, Dur → eher warm. Wechsel nur an Formgrenzen. Schemata: `src/colorSchemes.h`.
 - **Stille ist ein Effekt**: Black vor einem großen Einsatz macht den Einsatz stärker.
+- **Hook-Zeile als Motiv** (aus dem handgeschriebenen `Physical()`): kehrt eine Hook am Ende jedes Blocks
+  wieder ("Let's get physical"), bekommt sie jedes Mal denselben kurzen Akzent (1 Takt Strobo), beim ersten
+  und letzten Mal weiß, dazwischen farbig. Das gliedert den Song stärker als wechselnde Chorus-Effekte.
+- **Pegelsprünge nicht verschenken**: der größte Sprung im Song (leises Intro → Band-Einsatz) braucht einen
+  sichtbaren Wechsel der Szene, nicht zweimal dieselbe Effektart.
+- **Gibt es den Song schon handgeschrieben in `src/songs.cpp`**: dessen Part-Dauern (ms / Taktdauer = Takte)
+  sind die verlässlichste Struktur und die alten Effekte zeigen den Geschmack des Users - beides vor der
+  Gestaltung lesen und mit der Analyse vergleichen. Springt ein anderer Song per `switchToPart(n)` hinein
+  oder setzt der alte Code Marker-LEDs inline, dem User sagen, was beim Umstieg angepasst werden muss.
 - **Geräte-Overrides** sparsam und begründet (z. B. Gitarre bekommt eigenes VU, wenn sie einsetzt).
   Effekte und ihre Parameter: `src/FXprograms.h`, `src/guitarShapeFX.h`, Faustregeln in
   `src/SKILLS/Switch-Case_SKILL.md`. `progScrollText`/Matrix-Effekte nur auf `matrix`/`GITBOARD`.
