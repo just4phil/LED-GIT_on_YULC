@@ -1,0 +1,9 @@
+zeit: '2026-10-03 17:20:32'
+notiz: 'Erste Show: NEON-Riff/Chorus, blaue Verses, SUNSET-Pre-Chorus mit Strobo-Absprung,
+  Finale bis Feuer'
+werkzeug_git: 408a3d9 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 0530a2a15a60239cff76c9584ad77adf46885f279992a37563805735d03369e9
+  show.yaml: a38dbc92a243f4e5906c0cc16460f8cc59f3e0491ac4e321710ad535f724972d
+  generated.cpp: e2615672ae12db1cfbda7b572d952cea4120dc337c3cb36b8c3a8d0c7c9a7c39

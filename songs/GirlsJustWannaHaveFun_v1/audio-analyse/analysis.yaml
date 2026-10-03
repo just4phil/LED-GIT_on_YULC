@@ -1,0 +1,209 @@
+audio: songs\GirlsJustWannaHaveFun_v1\quelle\2026-10-03_girlsjustwannahavefun.mp3
+audio_dauer_s: 198.1
+takt1_im_audio_ms: 70
+takt1_quelle: aus Struktur geschätzt (Sicherheit 4.3, >4 gut) - ggf. audio_beat1_ms setzen
+bpm_yaml: 126
+bpm_gemessen: 125.99
+tonart_gesamt: A-Dur
+legende:
+  power: '0-5 Lautheit: 5 = lautester Part, je 1,5 dB leiser eine Stufe weniger, 0 = still'
+  build: -1..+1 Lautstärkeverlauf im Part (+ = steigert sich)
+  drive: 0-1 rhythmische Dichte / perkussiver Anteil
+  brightness: 0-1 Klangfarbe dunkel/warm -> hell/scharf
+  lowend: 0-1 Bass-Anteil (Drop, Bass setzt ein)
+  mood: Dur/Moll-Tendenz des Parts
+  grenze_hoerbar: an der Part-Grenze ändert sich hörbar der Klang
+sections:
+- name: pause
+  start_ms: 0
+  dur_ms: 5714
+  power: 0
+  loudness_db: -49.2
+  build: 0.0
+  drive: 0.0
+  brightness: 0.0
+  lowend: 0.0
+  mood: still
+- name: intro
+  start_ms: 5714
+  dur_ms: 15238
+  power: 3
+  loudness_db: -7.1
+  build: 0.09
+  drive: 0.2
+  brightness: 0.69
+  lowend: 0.72
+  mood: F#-Moll
+  grenze_hoerbar: true
+- name: verse 1
+  start_ms: 20952
+  dur_ms: 17143
+  power: 4
+  loudness_db: -6.2
+  build: -0.06
+  drive: 0.86
+  brightness: 0.0
+  lowend: 0.63
+  mood: A-Dur (unsicher)
+  grenze_hoerbar: false
+- name: instrumental break
+  start_ms: 38095
+  dur_ms: 7619
+  power: 3
+  loudness_db: -7.3
+  build: 0.08
+  drive: 0.3
+  brightness: 0.95
+  lowend: 0.67
+  mood: F#-Moll
+  grenze_hoerbar: true
+- name: verse 2
+  start_ms: 45714
+  dur_ms: 17143
+  power: 4
+  loudness_db: -5.8
+  build: 0.01
+  drive: 1.0
+  brightness: 0.04
+  lowend: 0.72
+  mood: F#-Moll
+  grenze_hoerbar: true
+- name: thats all they really want
+  start_ms: 62857
+  dur_ms: 7619
+  power: 5
+  loudness_db: -4.4
+  build: -0.02
+  drive: 0.32
+  brightness: 0.24
+  lowend: 0.4
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: when the working day is done
+  start_ms: 70476
+  dur_ms: 9524
+  power: 4
+  loudness_db: -5.1
+  build: 0.07
+  drive: 0.31
+  brightness: 0.07
+  lowend: 0.35
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: fun girls they wanna have
+  start_ms: 80000
+  dur_ms: 7619
+  power: 4
+  loudness_db: -5.9
+  build: 0.11
+  drive: 0.0
+  brightness: 0.74
+  lowend: 0.06
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: synth solo
+  start_ms: 87619
+  dur_ms: 15238
+  power: 3
+  loudness_db: -6.7
+  build: 0.07
+  drive: 0.62
+  brightness: 0.12
+  lowend: 1.0
+  mood: F#-Moll
+  grenze_hoerbar: false
+- name: verse 3
+  start_ms: 102857
+  dur_ms: 17143
+  power: 5
+  loudness_db: -4.8
+  build: -0.01
+  drive: 0.58
+  brightness: 0.11
+  lowend: 0.5
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: thats all they really want (2)
+  start_ms: 120000
+  dur_ms: 7619
+  power: 5
+  loudness_db: -4.3
+  build: -0.05
+  drive: 0.28
+  brightness: 0.38
+  lowend: 0.37
+  mood: A-Dur (unsicher)
+  grenze_hoerbar: false
+- name: when the working day is done (2)
+  start_ms: 127619
+  dur_ms: 9524
+  power: 5
+  loudness_db: -4.9
+  build: 0.03
+  drive: 0.31
+  brightness: 0.05
+  lowend: 0.3
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: fun girls they wanna have (2)
+  start_ms: 137143
+  dur_ms: 7619
+  power: 3
+  loudness_db: -7.2
+  build: -0.02
+  drive: 0.15
+  brightness: 0.82
+  lowend: 0.38
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: they just wanna …
+  start_ms: 144762
+  dur_ms: 11429
+  power: 4
+  loudness_db: -5.1
+  build: 0.05
+  drive: 0.18
+  brightness: 0.88
+  lowend: 0.0
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: they just wanna … (2)
+  start_ms: 156190
+  dur_ms: 11429
+  power: 3
+  loudness_db: -7.1
+  build: -0.04
+  drive: 0.3
+  brightness: 0.79
+  lowend: 0.49
+  mood: A-Dur
+  grenze_hoerbar: false
+- name: they just wanna … (3)
+  start_ms: 167619
+  dur_ms: 11429
+  power: 5
+  loudness_db: -5.0
+  build: 0.01
+  drive: 0.26
+  brightness: 1.0
+  lowend: 0.0
+  mood: A-Dur
+  grenze_hoerbar: false
+accents: []
+warnungen:
+- Deutliche Formgrenze bei 12829 ms (ca. Takt 4.7 in 'intro') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 17171 ms (ca. Takt 7.0 in 'intro') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 24578 ms (ca. Takt 2.9 in 'verse 1') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 53185 ms (ca. Takt 4.9 in 'verse 2') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 73874 ms (ca. Takt 2.8 in 'when the working day is done') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl
+  nicht?
+- Deutliche Formgrenze bei 83580 ms (ca. Takt 2.9 in 'fun girls they wanna have') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl
+  nicht?
+- Deutliche Formgrenze bei 91498 ms (ca. Takt 3.0 in 'synth solo') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 98650 ms (ca. Takt 6.8 in 'synth solo') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 106568 ms (ca. Takt 2.9 in 'verse 3') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 113720 ms (ca. Takt 6.7 in 'verse 3') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine Taktzahl nicht?
+- Deutliche Formgrenze bei 131088 ms (ca. Takt 2.8 in 'when the working day is done (2)') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine
+  Taktzahl nicht?
+- Deutliche Formgrenze bei 140794 ms (ca. Takt 2.9 in 'fun girls they wanna have (2)') ohne YAML-Grenze - fehlt ein Abschnitt oder stimmt eine
+  Taktzahl nicht?

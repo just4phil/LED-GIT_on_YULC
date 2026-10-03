@@ -1,0 +1,9 @@
+zeit: '2026-10-03 17:58:04'
+notiz: 'Vierte Finale-Runde ergänzt (Song endete 6 Takte zu früh): PINGPONG Neon,
+  DROP Neon, DROP Sunset, FIRE + Strobo'
+werkzeug_git: 408a3d9 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 47849bf952954a9e0fd18d8a0a0a202fc4c66efdb1ad2d89321f86c8666eead5
+  show.yaml: 1a1a5029bfb3cd7e376ad1f593cf6b98e0c45addae7b472ae7b6f43faff7650c
+  generated.cpp: 80ddb89c938d6063a30d5406f3b936be2eb9ee77327e76c113935cfcb9e1d25f

@@ -427,6 +427,9 @@ void loop() {
 		// 	break;	
 
 		// >>> GENERATED SONGS (tools/songgen.py) >>>
+		case 33:
+			gen_GirlsJustWannaHaveFun(); // <<< GENERATED SONGS <<<
+			break;
 		case 31:
 			gen_AllTheThingsSheSaid(); // <<< GENERATED SONGS <<<
 			break;

@@ -1,0 +1,103 @@
+# Technische Show (von Claude aus song.yaml + Analyse abgeleitet).
+# Idee: bunter 80er-Pop in A-Dur. NEON (pink/cyan/violett) ist die Erkennungsfarbe für Riff und Chorus,
+# die Verses treten in Blau zurück, die Pre-Chorusse wärmen in SUNSET auf, das Finale steigert sich
+# über vier Durchgänge bis ins Feuer.
+# Messwerte: Mix sehr dicht (alle Parts zwischen -4,3 und -7,3 dB) -> die Lautheit trennt die Parts kaum,
+# es gilt durchgehend das energy des Users. Aus der Analyse genutzt: brightness (Riff/Chorus sehr hell,
+# Verses dunkel) und Tonart A-Dur -> warme/bunte Farben, Blau nur als Ruhepol.
+
+function: gen_GirlsJustWannaHaveFun
+scheme: SCHEME_NEON
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  intro:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_NEON
+    why: "krachiger Einstieg der vollen Band aus der Stille (energy 4): Blitze laufen pro Beat von den Drums nach außen, Neonfarben setzen das Erkennungsbild des Songs"
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_BLUE
+    why: "energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls, dafür einfarbig Blau - größter Kontrast zum bunten Intro"
+
+  instrumental break:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_NEON
+    why: "das Riff vom Intro kehrt zurück (energy 4, brightness 0.95) - erkennbar gleich gestaltet"
+
+  verse 2:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "energy 2: gleicher Puls wie Verse 1, eine Stufe farbiger (Blau + Lila + Weiß)"
+
+  thats all they really want:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Pre-Chorus, energy 3: lädt sich über 4 Takte auf, Explosion genau auf 'when the working day is done'; Farbe kippt ins Warme"
+
+  when the working day is done:
+    scene: SCENE_WAVE_LR
+    scheme: SCHEME_SUNSET
+    tail:
+      beats: 4
+      fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
+    why: "Pre-Chorus, energy 4: Bewegung quer über die Bühne treibt auf den Chorus zu; der 5. Takt ist der Absprung - ein Takt weißer Strobo"
+
+  fun girls they wanna have:
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "Chorus, energy 5: volle Energie im Beat in den Neonfarben des Riffs"
+
+  synth solo:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_RANDOM
+    why: "'farbig und abwechslungsreich', energy 4: pro Beat springt das Licht auf ein anderes Gerät, freie Zufallsfarben - der bunteste Part des Songs"
+
+  verse 3:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo"
+
+  thats all they really want (2):
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "wie der erste Pre-Chorus"
+
+  when the working day is done (2):
+    scene: SCENE_WAVE_LR
+    scheme: SCHEME_SUNSET
+    tail:
+      beats: 4
+      fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
+    why: "wie beim ersten Mal, Strobo-Absprung als wiederkehrendes Motiv vor dem Chorus"
+
+  fun girls they wanna have (2):
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "Chorus erkennbar gleich wie Chorus 1"
+
+  they just wanna …:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_NEON
+    why: "Finale Runde 1, energy 4: eine Stufe unter dem Chorus - die Hook springt von Gerät zu Gerät, Platz für die Steigerung"
+
+  they just wanna … (2):
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    why: "Finale Runde 2, energy 5: wieder alle Geräte voll im Beat, in den Neonfarben des Chorus"
+
+  they just wanna … (3):
+    scene: SCENE_DROP
+    scheme: SCHEME_SUNSET
+    why: "Finale Runde 3, energy 5: gleiche Wucht, Farbe kippt ins Warme - Vorstufe zum Feuer"
+
+  they just wanna … (4):
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    tail:
+      beats: 4
+      fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
+    why: "Finale Runde 4, energy 5: letzte Stufe - Feuer auf allen Geräten, letzter Takt weißer Strobo als Schlusspunkt, danach 10 s schwarz"

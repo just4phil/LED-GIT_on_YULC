@@ -1,0 +1,99 @@
+# Semantische Songbeschreibung, erzeugt von tools/struktur2song.py aus quelle/struktur.xlsx
+# (StartTakt 3581, StartBit 0.375; Parts bis Takt 3675).
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, idea, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+
+id: 33
+name: "Girls just wanna have fun"
+artist: "Cyndi Lauper"
+bpm: 126
+beats_per_bar: 4
+midi_offset: 3/8
+audio: quelle/2026-10-03_girlsjustwannahavefun.mp3
+# audio_beat1_ms: 0          # wo Takt 1 in der MP3 liegt - songanalyze.py schätzt es, wenn die Zeile fehlt
+
+sections:
+  - name: "pause"
+    bars: 3
+    energy: 0
+    idea: "black"
+    description: "stille"
+
+  - name: "intro"
+    bars: 8
+    energy: 4
+    description: "volle band als krachiger einstieg"
+
+  - name: "verse 1"
+    bars: 9
+    energy: 1
+    description: "ruhig aber schön rhythmisch"
+
+  - name: "instrumental break"
+    bars: 4
+    energy: 4
+    description: "volle band , krachiges instrumental"
+
+  - name: "verse 2"
+    bars: 9
+    energy: 2
+    description: "ruhig aber schön rhythmisch"
+
+  - name: "thats all they really want"
+    bars: 4
+    energy: 3
+    description: "pre chorus mittlere energie"
+
+  - name: "when the working day is done"
+    bars: 5
+    energy: 4
+    description: "pre chorus höhere energie"
+
+  - name: "fun girls they wanna have"
+    bars: 4
+    energy: 5
+    description: "chorus"
+
+  - name: "synth solo"
+    bars: 8
+    energy: 4
+    description: "schön rhythmisches synth solo, farbig und abwechselungsreich"
+
+  - name: "verse 3"
+    bars: 9
+    energy: 2
+    description: "schön rhythmisch"
+
+  - name: "thats all they really want (2)"
+    bars: 4
+    energy: 3
+    description: "pre chorus mittlere energie"
+
+  - name: "when the working day is done (2)"
+    bars: 5
+    energy: 4
+    description: "pre chorus höhere energie"
+
+  - name: "fun girls they wanna have (2)"
+    bars: 4
+    energy: 5
+    description: "chorus"
+
+  - name: "they just wanna …"
+    bars: 6
+    energy: 4
+    description: "chorus"
+
+  - name: "they just wanna … (2)"
+    bars: 6
+    energy: 5
+    description: "chorus"
+
+  - name: "they just wanna … (3)"
+    bars: 6
+    energy: 5
+    description: "chorus"
+
+# Bund-Marker: von Hand in src/markerLEDs.cpp gesetzt (case 33), werden dort gepflegt.
