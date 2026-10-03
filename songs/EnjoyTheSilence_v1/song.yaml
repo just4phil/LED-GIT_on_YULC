@@ -1,0 +1,136 @@
+# Grundstruktur aus dem Excel-Songkalkulator und enjoyTheSilence() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1737, StartBit 0.375
+# Intro/Trailer: enjoyTheSilenceINTRO() (#24) springt in diesen Song
+
+id: 16
+name: "Enjoy The Silence"
+artist: "Depeche Mode"
+bpm: 113
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "text"
+    bars: 3
+    beats: 3
+    # bisher: progBlack(7170, 2)
+
+  - name: "words are very"
+    beats: 1
+    # bisher: progStrobo(530, 4, 50, getRandomCRGB())
+
+  - name: "synth"
+    bars: 4
+    # bisher: progSternNeu(8495, 970, 6, 5, 26, 5, true, 3)
+
+  - name: "synth (2)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 8, 10)
+
+  - name: "verse 1a"
+    bars: 8
+    # bisher: progPalette(16990, 3, 15)
+
+  - name: "all i ever wanted"
+    bars: 4
+    # bisher: progFullColors(8495, 20, 1060)
+
+  - name: "words are very (2)"
+    bars: 3
+    beats: 3
+    # bisher: progStrobo(7965, 25, 50, getRandomCRGB())
+
+  - name: "STOP"
+    beats: 1
+    # bisher: progBlack(520, 30)
+
+  - name: "drumloop"
+    beats: 3
+    # bisher: progMovingLines(1590, 32)
+
+  - name: "snarewirbel"
+    beats: 1
+    # bisher: progStrobo(540, 35, 50, getRandomCRGB())
+
+  - name: "synth (3)"
+    bars: 8
+    # bisher: progSternNeu(17000, 970, 40, 5, 26, 5, false, 4)
+
+  - name: "verse 1a (2)"
+    bars: 4
+    # bisher: progPalette(8495, 2, 45)
+
+  - name: "verse 1b"
+    bars: 4
+    # bisher: progPalette(8495, 3, 50)
+
+  - name: "all i ever wanted (2)"
+    bars: 4
+    # bisher: progFullColors(8495, 55, 1060)
+
+  - name: "words are very (3)"
+    bars: 4
+    # bisher: progStrobo(8495, 60, 50, getRandomCRGB())
+
+  - name: "2  3  4"
+    bars: 1
+    # bisher: progStrobo(2125, 65, 490, getRandomCRGB())   (Matrix: progScrollText("1 2 3 4", 2125, 25, getRandomColor(), 65))
+
+  - name: "enjoy the silence"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 2, 70)
+
+  - name: "enjoy the silence (2)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 4, 75)
+
+  - name: "bass slap part"
+    bars: 8
+    # bisher: progWaterRipple(16990, 80, 50, true, true)
+    # ! der alte Code setzt hier Marker: markerLED5 = ESaite_F_hoch
+
+  - name: "all i ever wanted (3)"
+    bars: 4
+    # bisher: progFullColors(8495, 85, 1060)
+    # ! der alte Code setzt hier Marker: markerLED5 = 0
+
+  - name: "words are very (4)"
+    bars: 4
+    # bisher: progStrobo(8495, 90, 50, getRandomCRGB())
+
+  - name: "all i ever wanted (4)"
+    bars: 4
+    # bisher: progFullColors(8500, 95, 1060)
+
+  - name: "words are very (5)"
+    bars: 4
+    # bisher: progStrobo(8495, 100, 50, getRandomCRGB())
+
+  - name: "2  3  4 (2)"
+    bars: 1
+    # bisher: progStrobo(2125, 105, 490, getRandomCRGB())   (Matrix: progScrollText("1 2 3 4", 2125, 25, getRandomColor(), 105))
+
+  - name: "enjoy the silence (3)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 2, 110)
+
+  - name: "enjoy the silence (4)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 4, 115)
+
+  - name: "enjoy the silence (5)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 6, 120)
+
+  - name: "enjoy the silence (6)"
+    bars: 4
+    # bisher: progFastBlingBling(8495, 8, 135)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 16) und direkt in einzelnen Parts (siehe '# !' oben).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

@@ -1,0 +1,79 @@
+# Grundstruktur aus dem Excel-Songkalkulator und BeMine() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2116, StartBit 0.375 - ACHTUNG: BASIERT AUF: ALLE_SONGS
+
+id: 26
+name: "Be Mine"
+artist: "Kamrad"
+bpm: 126
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 3
+    # bisher: progBlack(5000, 5)   (Matrix: progScrollText("Be Mine by Kamrad", 20238, 75, getRandomColor(), 10))
+
+  - name: "intro"
+    bars: 8
+    # bisher: progBlingBlingColoring(15238, 10, 946)
+
+  - name: "verse 1a"
+    bars: 8
+    # bisher: progPalette(15238, 1, 12)
+
+  - name: "verse 1b"
+    bars: 8
+    # bisher: progPalette(15238, 4, 14)
+
+  - name: "you got me so high"
+    bars: 7
+    # bisher: progRandomLines(13333, 16, 470, false)
+
+  - name: "snareroll"
+    bars: 1
+    # bisher: progFastBlingBling(1905, 6, 18)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progFullColors(15238, 20, 470)
+
+  - name: "uebergang"
+    bars: 1
+    # bisher: progBlack(1905, 22)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progMatrixHorizontal(15238, 24, 70, true)
+
+  - name: "im going crazy"
+    bars: 8
+    # bisher: progWaterRipple(15238, 26, 50, true, true)
+
+  - name: "you got me so high (2)"
+    bars: 7
+    # bisher: progRandomLines(13333, 28, 470, false)
+
+  - name: "snareroll (2)"
+    bars: 1
+    # bisher: progFastBlingBling(1905, 6, 30)
+
+  - name: "chorus 2"
+    bars: 7
+    # bisher: progFullColors(13333, 32, 474)
+
+  - name: "strobe"
+    bars: 1
+    # bisher: progStrobo(1905, 34, 120, 255, 255, 255)
+
+  - name: "chorus 3"
+    bars: 8
+    # bisher: progFastBlingBling(15238, 2, 36, 1, 20, 946)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 26).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

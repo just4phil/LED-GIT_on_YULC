@@ -1,0 +1,91 @@
+# Grundstruktur aus dem Excel-Songkalkulator und FridayImInLove() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2629, StartBit 0.375 - fertig 21.07.2025 ACHTUNG: BASIERT AUF DER LP16 DATEI SONAR
+
+id: 25
+name: "Friday I'm In Love"
+artist: "The Cure"
+bpm: 140
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 3
+    # bisher: progBlack(4500, 5)   (Matrix: progScrollText("Friday im in Love by The Cure", 20500, 90, getRandomColor(), 10))
+
+  - name: "intro"
+    bars: 8
+    # bisher: progFastBlingBling(13714, 6, 10)
+
+  - name: "intro 2"
+    bars: 8
+    # bisher: progSternNeu(13714, 1015, 15, 5, 26, 5, true, 3)
+
+  - name: "verse 1"
+    bars: 8
+    # bisher: progPalette(13714, 3, 20)
+
+  - name: "verse 1b"
+    bars: 8
+    # bisher: progPalette(13714, 6, 25)
+
+  - name: "Saturday went"
+    bars: 6
+    # bisher: progRandomLines(10286, 30, 460, true)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progPalette(13714, 7, 35)
+
+  - name: "SOLO"
+    bars: 8
+    # bisher: progFastBlingBling(13714, 2, 40, 1, 16, 2000)
+
+  - name: "verse 3"
+    bars: 8
+    # bisher: progPalette(13714, 2, 45)
+
+  - name: "Saturday went (2)"
+    bars: 6
+    # bisher: progRandomLines(10286, 50, 460, true)
+
+  - name: "dressed up"
+    bars: 8
+    # bisher: progSternNeu(13714, 430, 55, 5, 26, 5, false, 4)
+
+  - name: "dressed up 2"
+    bars: 7
+    # bisher: progFastBlingBling(12000, 2, 57, 1, 16, 2000)
+
+  - name: "strobo"
+    bars: 1
+    # bisher: progStrobo(1714, 60, 65, 255, 255, 255)
+
+  - name: "verse 4a"
+    bars: 8
+    # bisher: progPalette(13714, 2, 65)
+
+  - name: "verse 4b"
+    bars: 8
+    # bisher: progWaterRipple(13714, 70, 50, true, false)
+
+  - name: "outro chorus 1"
+    bars: 8
+    # bisher: progSternNeu(13714, 860, 75, 5, 26, 5, true, 3)
+
+  - name: "outro chorus 2"
+    bars: 7
+    # bisher: progFastBlingBling(12000, 2, 80, 1, 16, 2000)
+
+  - name: "git fade out"
+    bars: 3
+    # bisher: progBlingBlingColoring(5143, 85, 6000)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 25).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

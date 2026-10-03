@@ -1,0 +1,76 @@
+# Grundstruktur aus dem Excel-Songkalkulator und ILoveIt() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2050, StartBit 0.375 - OK am 27.02.2025 ACHTUNG: BASIERT AUF DER LP16 DATEI SONAR
+# Intro/Trailer: ILoveItTRAILER() (#80) springt in diesen Song
+
+id: 9
+name: "I Love It"
+artist: "Icona Pop"
+bpm: 120
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 3
+    # bisher: progBlack(5250, 5)
+
+  - name: "synth intro"
+    bars: 4
+    # bisher: progPalette(8000, 6, 10)
+
+  - name: "verse 1"
+    bars: 8
+    # bisher: progFullColors(16000, 15, 1000)
+
+  - name: "chorus 1"
+    bars: 4
+    # bisher: progSternNeu(8000, 1000, 20, 5, 26, 5, false, 4)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progMatrixScanner(16000, 25)
+
+  - name: "chorus 2"
+    bars: 4
+    # bisher: progSternNeu(8000, 1000, 30, 5, 26, 5, true, 3)
+
+  - name: "youre on a different road"
+    bars: 8
+    # bisher: progPalette(16000, 11, 35)
+
+  - name: "i love it"
+    bars: 8
+    # bisher: progSternNeu(16000, 500, 40, 5, 26, 5, false, 4)
+
+  - name: "verse 3"
+    bars: 8
+    # bisher: progFullColors(16000, 45, 500)
+
+  - name: "chorus 3"
+    bars: 8
+    # bisher: progSternNeu(16000, 500, 50, 5, 26, 5, true, 3)
+
+  - name: "youre on a different road (2)"
+    bars: 7
+    # bisher: progWaterRipple(14000, 55, 50, true, false)
+
+  - name: "STOP"
+    bars: 1
+    # bisher: progBlack(2000, 60)
+
+  - name: "chorus 4"
+    bars: 8
+    # bisher: progSternNeu(16000, 500, 65, 5, 26, 5, false, 4)
+
+  - name: "chorus 5"
+    bars: 4
+    # bisher: progFastBlingBling(8000, 6, 70)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 9).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

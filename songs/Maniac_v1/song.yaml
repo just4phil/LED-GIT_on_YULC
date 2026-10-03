@@ -1,0 +1,145 @@
+# Grundstruktur aus dem Excel-Songkalkulator und Maniac_Tminus1() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2477, StartBit 0.375 - ACHTUNG: BASIERT AUF: ALLE_SONGS
+# Maniac_Tminus1() (#30) ist die genutzte Fassung, Maniac() (#29) ist veraltet
+
+id: 30
+name: "Maniac"
+artist: "Michael Sembello"
+bpm: 157
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 3
+    # bisher: progBlack(4013, 5)   (Matrix: progScrollText("Maniac by Michael Sembello", 16242, 75, getRandomColor(), 10))
+
+  - name: "drums intro"
+    bars: 8
+    # bisher: progBlingBlingColoring(12229, 10, 3000)
+
+  - name: "rock intro"
+    bars: 8
+    # bisher: progFastBlingBling(12229, 6, 12)
+
+  - name: "verse 1a"
+    bars: 8
+    # bisher: progRandomLines(12229, 14, 380, true)
+
+  - name: "verse 1b"
+    bars: 8
+    # bisher: progRandomLines(12229, 16, 380, false)
+
+  - name: "it could cut you like a knife"
+    bars: 7
+    # bisher: progFullColors(10701, 18, 756)
+
+  - name: "uebergang"
+    bars: 1
+    # bisher: progFastBlingBling(1529, 4, 20)
+
+  - name: "chorus 1"
+    bars: 14
+    # bisher: progSternNeu(21401, 376, 22, 5, 26, 5, true, 3)
+
+  - name: "stehender chord"
+    bars: 3
+    # bisher: progWaterRipple(4586, 24, 50, true, false)
+
+  - name: "strobe"
+    bars: 1
+    # bisher: progStrobo(1529, 26, 120, getRandomCRGB())
+
+  - name: "verse 2a"
+    bars: 10
+    beats: 2
+    # bisher: progRandomLines(16051, 28, 380, true)
+
+  - name: "strobe (2)"
+    bars: 1
+    # bisher: progStrobo(1529, 30, 120, getRandomCRGB())
+
+  - name: "verse 2b"
+    bars: 4
+    beats: 2
+    # bisher: progRandomLines(6879, 32, 380, false)
+
+  - name: "ist a cold cinetic heat"
+    bars: 7
+    # bisher: progStrobo(10701, 34, 380, getRandomCRGB())
+
+  - name: "strobe (3)"
+    bars: 1
+    # bisher: progStrobo(1529, 36, 120, getRandomCRGB())
+
+  - name: "chorus 2"
+    bars: 14
+    # bisher: progSternNeu(21401, 376, 38, 5, 26, 5, true, 3)
+
+  - name: "uebergang zum instrumental"
+    bars: 2
+    # bisher: progFastBlingBling(3057, 6, 40)
+
+  - name: "instrumental a"
+    bars: 8
+    # bisher: matrixMovieFX(12229, 42, 100, 5)
+    # ! der alte Code setzt hier Marker: markerLED1 = ESaite_E; markerLED2 = ESaite_Fis; markerLED3 = 0; markerLED4 = ESaite_B; markerLED5 = ASaite_G; markerLED6 = ASaite_Fis
+
+  - name: "instrumental b"
+    bars: 7
+    beats: 2
+    # bisher: progFullColors(11465, 44, 756)
+    # ! der alte Code setzt hier Marker: markerLED1 = ESaite_E; markerLED2 = ESaite_Fis; markerLED3 = 0; markerLED4 = ESaite_B; markerLED5 = ASaite_G; markerLED6 = ASaite_Fis
+
+  - name: "strobe (4)"
+    beats: 2
+    # bisher: progStrobo(764, 46, 120, getRandomCRGB())
+
+  - name: "solo a"
+    bars: 4
+    # bisher: progRandomLines(6115, 48, 190, true)
+
+  - name: "solo b"
+    bars: 4
+    # bisher: progPalette(6115, 4, 50)
+
+  - name: "solo c"
+    bars: 4
+    # bisher: progFastBlingBling(6115, 8, 52)
+
+  - name: "solo d"
+    bars: 4
+    # bisher: progWaterRipple(6115, 54, 50, true, true)
+
+  - name: "it could cut you like a knife (2)"
+    bars: 7
+    # bisher: progStrobo(10701, 56, 380, getRandomCRGB())
+
+  - name: "uebergang (2)"
+    bars: 1
+    # bisher: progStrobo(1529, 58, 120, getRandomCRGB())
+
+  - name: "chorus 3"
+    bars: 14
+    # bisher: progSternNeu(21401, 376, 60, 5, 26, 5, true, 4)
+
+  - name: "stehender chord (2)"
+    bars: 2
+    # bisher: progFastBlingBling(3057, 2, 62)
+
+  - name: "abschluss"
+    bars: 2
+    # bisher: progFastBlingBling(3057, 8, 64)
+
+  - name: "strobe (5)"
+    bars: 1
+    # bisher: progStrobo(1529, 66, 90, getRandomCRGB())
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 30) und direkt in einzelnen Parts (siehe '# !' oben).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

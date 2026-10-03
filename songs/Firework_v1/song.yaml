@@ -1,0 +1,119 @@
+# Grundstruktur aus dem Excel-Songkalkulator und Firework() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 819, StartBit 0.25 - am 08.05.2026 an gekürzte fassung angepasst // am 27.5.2024 an neue struktur angepasst
+
+id: 7
+name: "Firework"
+artist: "Katy Perry"
+bpm: 124
+beats_per_bar: 4
+midi_offset: 1/4
+
+sections:
+  - name: "text"
+    bars: 3
+    beats: 2
+    # bisher: progBlack(6290, 2)
+
+  - name: "snarewirbel"
+    beats: 2
+    # bisher: progStrobo(970, 5, 50, getRandomCRGB())   (Matrix: progScrollText("Firework by Katy Perry", 16500, 90, getRandomColor(), 10))
+
+  - name: "intro1"
+    bars: 8
+    # bisher: progSternNeu(15480, 970, 10, 5, 26, 5, false, 4)
+
+  - name: "verse 1a"
+    bars: 16
+    # bisher: progBlingBlingColoring(30970, 20, 3000)
+
+  - name: "bridge"
+    bars: 7
+    # bisher: progPalette(13550, 4, 22)
+
+  - name: "übergang"
+    bars: 1
+    # bisher: progStrobo(1935, 24, 50, getRandomCRGB())
+
+  - name: "chorus 1"
+    bars: 7
+    beats: 2
+    # bisher: progSternNeu(14500, 970, 26, 5, 26, 5, true, 3)
+    # ! Excel: 7 Takte, der alte Code ist anders
+
+  - name: "übergang (2)"
+    beats: 2
+    # bisher: progStrobo(1000, 30, 50, getRandomCRGB())
+    # ! Excel: 1 Takte, der alte Code ist anders
+
+  - name: "verse 2a"
+    bars: 8
+    # bisher: progFullColors(15475, 32, 485)
+
+  - name: "verse 2b"
+    bars: 8
+    # bisher: progCircles(15475, 34, 485)
+
+  - name: "bridge (2)"
+    bars: 7
+    # bisher: progPalette(13550, 5, 35)
+    # ! Excel: 8 Takte, der alte Code ist anders
+
+  - name: "übergang (3)"
+    bars: 1
+    # bisher: progStrobo(1925, 36, 50, getRandomCRGB())
+
+  - name: "chorus 2a"
+    bars: 7
+    beats: 2
+    # bisher: progWaterRipple(14500, 37, 50, true, false)
+
+  - name: "übergang (4)"
+    beats: 2
+    # bisher: progStrobo(1000, 40, 50, getRandomCRGB())
+
+  - name: "BOOM 1"
+    bars: 8
+    # bisher: progPalette(15485, 2, 42)
+
+  - name: "nur vocals"
+    bars: 8
+    # bisher: matrixMovieFX(15485, 44, 100, 6)
+
+  - name: "BOOM 3"
+    bars: 8
+    # bisher: progPalette(15485, 7, 46)
+
+  - name: "BOOM 4"
+    bars: 7
+    # bisher: progWaterRipple(13550, 47, 50, true, false)
+
+  - name: "strobo snarewirbel"
+    bars: 1
+    # bisher: progStrobo(1935, 50, 50, getRandomCRGB())
+
+  - name: "chorus 2a (2)"
+    bars: 7
+    beats: 2
+    # bisher: progSternNeu(14500, 970, 52, 15, 26, 5, true, 3)
+
+  - name: "übergang (5)"
+    beats: 2
+    # bisher: progStrobo(1000, 54, 50, getRandomCRGB())
+
+  - name: "chorus 2"
+    bars: 7
+    beats: 2
+    # bisher: progFastBlingBling(14515, 10, 56)
+
+  - name: "strobo snarewirbel (2)"
+    beats: 2
+    # bisher: progStrobo(970, 60, 50, getRandomCRGB())
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 7).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

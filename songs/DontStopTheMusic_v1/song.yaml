@@ -1,0 +1,100 @@
+# Grundstruktur aus dem Excel-Songkalkulator und DontStopTheMusic() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2147, StartBit 0.375 - 2025-04-05 00:00:00 ACHTUNG: BASIERT AUF DER LP16 DATEI SONAR
+
+id: 4
+name: "Don't Stop The Music"
+artist: "Rihanna"
+bpm: 118
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 4
+    # bisher: progBlack(7374, 5)   (Matrix: progScrollText("Dont stop the music by Rihanna", 22740, 70, getRandomColor(), 5))
+
+  - name: "intro"
+    bars: 8
+    # bisher: progPalette(16270, 4, 10)   (Matrix: progBlack(904, 10))
+
+  - name: "ist gettin late"
+    bars: 8
+    # bisher: progRandomLines(16270, 15, 1015, false)
+
+  - name: "who knew …"
+    bars: 8
+    # bisher: progRandomLines(16270, 20, 510, true)
+
+  - name: "do u know what u started"
+    bars: 8
+    # bisher: progMatrixScanner(16275, 25, 7)
+
+  - name: "chorus 1a: i wanna take it away"
+    bars: 4
+    # bisher: progPalette(8136, 9, 30)
+
+  - name: "chorus 1a: i just cant refuse it"
+    bars: 4
+    # bisher: progFastBlingBling(8136, 8, 35)
+
+  - name: "chorus 1b"
+    bars: 4
+    # bisher: progFullColors(8136, 37, 510)
+
+  - name: "chorus: i just cant refuse it"
+    bars: 4
+    # bisher: progFastBlingBling(8136, 8, 40)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progWaterRipple(16270, 45, 50, true, true)
+
+  - name: "do u know what u started (2)"
+    bars: 8
+    # bisher: progMatrixScanner(16270, 50, 7)
+
+  - name: "bridge: bass solo"
+    bars: 7
+    beats: 2
+    # bisher: progBlingBlingColoring(15254, 55, 3000)
+
+  - name: "STROBO"
+    beats: 2
+    # bisher: progStrobo(1018, 60, 64, getRandomCRGB())
+
+  - name: "chorus 2a: i wanna take it away"
+    bars: 4
+    # bisher: progFullColors(8136, 65, 510)
+
+  - name: "chorus 2a: i just cant refuse it"
+    bars: 4
+    # bisher: progFastBlingBling(8136, 8, 70)
+
+  - name: "chorus 2a: i wanna take it away (2)"
+    bars: 4
+    # bisher: progFullColors(8136, 75, 510)
+
+  - name: "chorus 2a: i just cant refuse it (2)"
+    bars: 4
+    # bisher: progSternNeu(8136, 510, 95, 5, 26, 5, true, 3)
+
+  - name: "chorus 4a: i wanna take it away"
+    bars: 4
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+  - name: "chorus 4a: i just cant refuse it"
+    bars: 4
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+  - name: "Bass Ende"
+    bars: 4
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 4).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

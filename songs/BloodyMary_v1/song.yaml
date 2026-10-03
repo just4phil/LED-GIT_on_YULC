@@ -1,0 +1,147 @@
+# Grundstruktur aus dem Excel-Songkalkulator und BloodyMary() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1211, StartBit 0.125
+
+id: 10
+name: "Bloody Mary"
+artist: "Lady Gaga"
+bpm: 114
+beats_per_bar: 4
+midi_offset: 1/8
+
+sections:
+  - name: "BLACK"
+    bars: 1
+    # bisher: progBlack(1840, 3)   (Matrix: progScrollText("Bloody Mary by Lady Gaga", 17500, 90, getRandomColor(), 3))
+
+  - name: "synth intro"
+    bars: 8
+    # bisher: progRandomLines(16840, 6, 525, true)   (Matrix: progBlack(1180, 6))
+
+  - name: "verse 1"
+    bars: 8
+    # bisher: progPalette(16830, 4, 9)
+
+  - name: "dance dance"
+    bars: 8
+    # bisher: progStrobo(16840, 12, 525, getRandomCRGB())
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progSternNeu(16840, 525, 15, 5, 26, 5, true, 3)
+
+  - name: "chorus instrumental"
+    bars: 4
+    # bisher: progFastBlingBling(8420, 3, 18)
+
+  - name: "FX"
+    bars: 1
+    # bisher: progPalette(2105, 10, 21)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progBlingBlingColoring(16830, 24, 3000)
+
+  - name: "dance dance (2)"
+    bars: 8
+    # bisher: progStrobo(16840, 27, 525, getRandomCRGB())
+
+  - name: "chorus 1 (2)"
+    bars: 8
+    # bisher: progSternNeu(16845, 525, 30, 5, 26, 5, false, 4)
+
+  - name: "synth break"
+    bars: 4
+    # bisher: progRandomLines(8350, 33, 525, true)
+
+  - name: "git vs synth (git)"
+    beats: 2
+    # bisher: progStrobo(1050, 36, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 39)
+
+  - name: "git vs synth (git) (2)"
+    beats: 2
+    # bisher: progStrobo(1050, 42, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (2)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 45)
+
+  - name: "git vs synth (git) (3)"
+    beats: 2
+    # bisher: progStrobo(1050, 48, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (3)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 51)
+
+  - name: "git vs synth (git) (4)"
+    beats: 2
+    # bisher: progStrobo(1055, 54, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (4)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 57)
+
+  - name: "git vs synth (git) (5)"
+    beats: 2
+    # bisher: progStrobo(1055, 60, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (5)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 63)
+
+  - name: "git vs synth (git) (6)"
+    beats: 2
+    # bisher: progStrobo(1055, 66, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (6)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 69)
+
+  - name: "git vs synth (git) (7)"
+    beats: 2
+    # bisher: progStrobo(1055, 72, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (7)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 75)
+
+  - name: "git vs synth (git) (8)"
+    beats: 2
+    # bisher: progStrobo(1055, 78, 50, getRandomCRGB())
+
+  - name: "git vs synth (synth) (8)"
+    beats: 2
+    # bisher: progFastBlingBling(1045, 4, 81)
+
+  - name: "instrumental"
+    bars: 8
+    # bisher: progWaterRipple(16845, 84, 50, true, true)
+
+  - name: "dance dance (3)"
+    bars: 8
+    # bisher: progStrobo(16840, 87, 525, getRandomCRGB())
+
+  - name: "chorus a"
+    bars: 8
+    # bisher: progSternNeu(16845, 525, 90, 5, 26, 5, true, 3)
+
+  - name: "chorus b"
+    bars: 8
+    # bisher: progFastBlingBling(16840, 8, 96)
+
+  - name: "outro"
+    bars: 2
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 10).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

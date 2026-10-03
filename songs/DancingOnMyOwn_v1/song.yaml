@@ -1,0 +1,124 @@
+# Grundstruktur aus dem Excel-Songkalkulator und DancingOnMyOwn() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 259, StartBit 0.125
+# Intro/Trailer: INTROdancing() (#81) springt in diesen Song
+
+id: 8
+name: "Dancing On My Own"
+artist: "Robyn"
+bpm: 122
+beats_per_bar: 4
+midi_offset: 1/8
+
+sections:
+  - name: "black"
+    bars: 3
+    # bisher: progBlack(5655, 5)
+
+  - name: "bass"
+    bars: 8
+    # bisher: progPalette(15740, 8, 10)   (Matrix: progScrollText("Dancing on my own by Robyn", 18500, 90, getRandomColor(), 10))
+
+  - name: "somebody"
+    bars: 8
+    # bisher: progPalette(15735, 4, 15)
+
+  - name: "git steigt ein"
+    bars: 8
+    # bisher: progPalette(15740, 6, 20)
+
+  - name: "yeah i knwo ist stupid"
+    bars: 4
+    # bisher: progPalette(7870, 11, 25)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progMatrixScanner(15735, 30, 26)
+
+  - name: "chorus 1b"
+    bars: 4
+    # bisher: progSternNeu(7870, 490, 35, 5, 26, 5, false, 4)
+
+  - name: "i keep dancing"
+    bars: 4
+    # bisher: progFastBlingBling(7870, 4, 40)
+
+  - name: "pause vor verse 2a"
+    bars: 2
+    # bisher: progBlack(3935, 45)
+
+  - name: "verse 2b"
+    bars: 6
+    # bisher: progBlingBlingColoring(19670, 55, 3000)
+    # ! im alten Code ein einziger Part mit den folgenden 1
+
+  - name: "bridge"
+    bars: 4
+
+  - name: "chorus 1 (2)"
+    bars: 8
+    # bisher: progMatrixScanner(15735, 60, 26)
+
+  - name: "chorus 1b (2)"
+    bars: 4
+    # bisher: progSternNeu(7870, 490, 65, 5, 26, 5, true, 3)
+
+  - name: "i keep dancing (2)"
+    bars: 4
+    # bisher: progFastBlingBling(7870, 4, 70)
+
+  - name: "instrumental"
+    bars: 8
+    # bisher: progPalette(15740, 9, 75)
+
+  - name: "so far away"
+    bars: 8
+    # bisher: matrixMovieFX(15735, 80, 100, 6)
+
+  - name: "im in the corner"
+    bars: 3
+    # bisher: progBlack(5900, 85)
+
+  - name: "snarewirbel"
+    bars: 1
+    # bisher: progStrobo(1970, 90, 50, getRandomCRGB())
+
+  - name: "chorus 1 (3)"
+    bars: 4
+    # bisher: progWaterRipple(7870, 95, 50, true, true)
+
+  - name: "i keep dancing (3)"
+    bars: 4
+    # bisher: progFastBlingBling(7865, 4, 100)
+
+  - name: "chorus 1 (4)"
+    bars: 8
+    # bisher: progSternNeu(15740, 490, 105, 5, 26, 5, false, 4)
+
+  - name: "chorus 1b (3)"
+    bars: 4
+    # bisher: progFastBlingBling(7870, 4, 110)
+
+  - name: "i keep dancing (4)"
+    bars: 4
+    # bisher: progSternNeu(7865, 490, 115, 5, 26, 5, true, 3)
+
+  - name: "i keep dancing (5)"
+    bars: 8
+    # bisher: progFastBlingBling(15740, 8, 120)
+
+  - name: "instrumental (2)"
+    bars: 8
+    # bisher: progWaterRipple(15740, 127, 50, true, true)
+
+  - name: "outro"
+    bars: 2
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 8).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

@@ -1,0 +1,93 @@
+# Grundstruktur aus dem Excel-Songkalkulator und Titanium() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1, StartBit 1 - 02.05.2021: FERTIG! +6.5.21: millis optimiert!
+
+id: 11
+name: "Titanium"
+artist: "David Guetta"
+bpm: 126
+beats_per_bar: 4
+midi_offset: 0
+
+sections:
+  - name: "text"
+    bars: 6
+    beats: 1
+    # bisher: progBlack(6000, 5)   (Matrix: progScrollText("Titanium by David Guetta", 14900, 75, getRandomColor(), 5))
+    # bisher: progCircles(14950, 10, 475)
+    # ! der alte Code teilt diese 2 Parts anders auf (Summe identisch)
+
+  - name: "intro"
+    bars: 4
+    beats: 3
+
+  - name: "v1: u shout it out"
+    bars: 8
+    # bisher: progPalette(15240, 6, 15)
+
+  - name: "v1: im criticised"
+    bars: 8
+    # bisher: progPalette(15240, 3, 20)
+
+  - name: "im bulletproof"
+    bars: 8
+    # bisher: progMatrixScanner(15235, 25, 20)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progFullColors(15240, 30, 475)
+
+  - name: "bridge"
+    bars: 4
+    # bisher: progFastBlingBling(7620, 4, 32)
+    # ! Excel: 8 Takte, der alte Code ist anders
+
+  - name: "half time"
+    bars: 4
+    # bisher: progMatrixScanner(7620, 35, 20)
+
+  - name: "v2: cut me down"
+    bars: 8
+    # bisher: progPalette(15235, 9, 40)
+
+  - name: "v2: race your voice"
+    bars: 8
+    # bisher: progWaterRipple(15240, 45, 50, true, false)
+
+  - name: "im bulletproof (2)"
+    bars: 8
+    # bisher: progMatrixScanner(15235, 50, 20)
+
+  - name: "chorus 2"
+    bars: 8
+    # bisher: progFullColors(15240, 55, 475)
+
+  - name: "bridge (2)"
+    bars: 7
+    beats: 3
+    # bisher: progFastBlingBling(14760, 8, 60)
+
+  - name: "Pause: STONE HEART .."
+    bars: 8
+    beats: 1
+    # bisher: progBlack(15715, 65)
+
+  - name: "chorus 3"
+    bars: 16
+    # bisher: progFastBlingBling(30480, 1, 75, 1, 100, 2000)
+
+  - name: "bridge triolisch"
+    bars: 7
+    # bisher: progStrobo(13330, 80, 175, 255, 255, 255)
+
+  - name: "matrix"
+    bars: 4
+    # bisher: matrixMovieFX(7620, 85, 100, 6)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 11).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

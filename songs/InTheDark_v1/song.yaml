@@ -1,0 +1,71 @@
+# Grundstruktur aus dem Excel-Songkalkulator und InTheDark() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1323, StartBit 0.375 - fertig am 16.09.2023
+
+id: 13
+name: "In The Dark"
+artist: "Purple Disco Machine"
+bpm: 116
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "BLACK"
+    bars: 4
+    # bisher: progBlack(7500, 5)   (Matrix: progScrollText("In the dark by Purple Disco Machine", 23000, 90, getRandomColor(), 4))
+
+  - name: "intro+verse 1"
+    bars: 16
+    # bisher: progBlingBlingColoring(33090, 10, 5000)
+
+  - name: "bridge 1"
+    bars: 8
+    # bisher: progFullColors(16550, 12, 515)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progSternNeu(16550, 1035, 14, 5, 26, 5, true, 3)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progPalette(16540, 4, 16)
+
+  - name: "bridge 2"
+    bars: 8
+    # bisher: progRandomLines(16550, 18, 515, true)
+
+  - name: "chorus 2"
+    bars: 8
+    # bisher: progSternNeu(16550, 1035, 20, 5, 26, 5, false, 4)
+    # ! der alte Code setzt hier Marker: markerLED5 = ESaite_Cis; markerLED6 = 0
+
+  - name: "am i going under"
+    bars: 8
+    # bisher: progWaterRipple(16550, 22, 50, true, false)
+    # ! der alte Code setzt hier Marker: markerLED5 = ESaite_Cis; markerLED6 = ESaite_Dis
+
+  - name: "bass solo"
+    bars: 8
+    # bisher: progMatrixHorizontal(16550, 24, 70, true)
+    # ! der alte Code setzt hier Marker: markerLED5 = 0; markerLED6 = ESaite_Dis
+
+  - name: "chrous 3"
+    bars: 8
+    # bisher: progSternNeu(16550, 515, 26, 5, 26, 5, true, 3)
+    # ! der alte Code setzt hier Marker: markerLED5 = 0; markerLED6 = 0
+
+  - name: "chorus 4"
+    bars: 8
+    # bisher: progFastBlingBling(16550, 8, 28)
+
+  - name: "fade out"
+    bars: 3
+    # bisher: progBlingBlingColoring(6200, 30, 5000)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 13) und direkt in einzelnen Parts (siehe '# !' oben).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

@@ -1,0 +1,181 @@
+# Grundstruktur aus dem Excel-Songkalkulator und NoRoots() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 696, StartBit 0.25
+
+id: 6
+name: "No Roots"
+artist: "Alice Merton"
+bpm: 116
+beats_per_bar: 4
+midi_offset: 1/4
+
+sections:
+  - name: "klick"
+    bars: 3
+    beats: 2.5
+    # bisher: progBlack(6985, 1)   (Matrix: progScrollText("No Roots by Alice Merton", 15260, 75, getRandomColor(), 3))
+
+  - name: "git"
+    beats: 1.5
+    # bisher: progStrobo(775, 2, 50, getRandomCRGB())
+
+  - name: "intro1"
+    bars: 3
+    beats: 2.5
+    # bisher: progPalette(7500, 7, 3)
+
+  - name: "git (2)"
+    beats: 1.5
+    # bisher: progStrobo(775, 4, 50, getRandomCRGB())
+
+  - name: "verse 1a"
+    bars: 2
+    # bisher: progPalette(4135, 6, 5)
+
+  - name: "verse 1b"
+    bars: 8
+    # bisher: progPalette(16555, 8, 6)
+
+  - name: "verse 1b (2)"
+    bars: 8
+    # bisher: progCircles(16550, 7, 260, false)
+
+  - name: "bridge"
+    bars: 3
+    beats: 3.3
+    # bisher: progWaterRipple(7915, 8, 50, true, true)
+
+  - name: "ROOTS 1"
+    beats: 2.7
+    # bisher: progStrobo(1395, 9, 50, getRandomCRGB())   (Matrix: progShowROOTS(1395, 9))
+
+  - name: "chorus a"
+    bars: 1
+    beats: 1.3
+    # bisher: progFullColors(2745, 10, 515)
+
+  - name: "ROOTS 2"
+    beats: 2.7
+    # bisher: progStrobo(1395, 11, 50, getRandomCRGB())   (Matrix: progShowROOTS(1395, 11))
+
+  - name: "chorus a (2)"
+    bars: 1
+    beats: 2
+    # bisher: progFullColors(3100, 12, 515)
+
+  - name: "chorus rooooots"
+    bars: 3
+    beats: 3
+    # bisher: progFastBlingBling(7750, 7, 13)
+
+  - name: "ROOTS 1 (2)"
+    beats: 3
+    # bisher: progStrobo(1550, 14, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 14))
+
+  - name: "chorus a (3)"
+    bars: 1
+    beats: 1
+    # bisher: progFullColors(2575, 15, 515)
+
+  - name: "ROOTS 2 (2)"
+    beats: 3
+    # bisher: progStrobo(1550, 16, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 16))
+
+  - name: "chorus a (4)"
+    bars: 1
+    beats: 2
+    # bisher: progFullColors(3100, 18, 515)
+
+  - name: "chorus rooooots (2)"
+    bars: 4
+    # bisher: progFastBlingBling(8275, 7, 20)
+
+  - name: "verse 2a"
+    bars: 8
+    # bisher: progWaterRipple(16550, 25, 50, true, true)
+
+  - name: "verse 2b"
+    bars: 8
+    # bisher: progCircles(16550, 27, 515)
+
+  - name: "bridge (2)"
+    bars: 3
+    beats: 3
+    # bisher: progPalette(7750, 4, 29)
+
+  - name: "ROOTS 1 (3)"
+    beats: 3
+    # bisher: progStrobo(1550, 31, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 31))
+
+  - name: "chorus a (5)"
+    bars: 1
+    beats: 1
+    # bisher: progFullColors(2575, 33, 515)
+
+  - name: "ROOTS 2 (3)"
+    beats: 3
+    # bisher: progStrobo(1550, 35, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 35))
+
+  - name: "chorus a (6)"
+    bars: 1
+    beats: 2
+    # bisher: progFullColors(3100, 37, 515)
+
+  - name: "chorus rooooots (3)"
+    bars: 3
+    beats: 3
+    # bisher: progFastBlingBling(7750, 7, 39)
+
+  - name: "ROOTS 1 (4)"
+    beats: 3
+    # bisher: progStrobo(1550, 41, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 41))
+
+  - name: "chorus a (7)"
+    bars: 1
+    beats: 1
+    # bisher: progFullColors(2575, 43, 515)
+
+  - name: "ROOTS 2 (4)"
+    beats: 3
+    # bisher: progStrobo(1550, 45, 50, getRandomCRGB())   (Matrix: progShowROOTS(1550, 45))
+
+  - name: "chorus a (8)"
+    bars: 1
+    beats: 2
+    # bisher: progFullColors(3100, 47, 515)
+
+  - name: "chorus rooooots (4)"
+    bars: 4
+    # bisher: progFastBlingBling(8275, 7, 49)
+
+  - name: "zwischenspiel"
+    bars: 9
+    # bisher: matrixMovieFX(18600, 51, 100, 6)
+
+  - name: "solo"
+    bars: 8
+    # bisher: progMatrixScanner(16550, 53, 15)
+
+  - name: "chorus"
+    bars: 4
+    # bisher: progSternNeu(8275, 500, 55, 5, 26, 5, true, 3)
+
+  - name: "chorus (2)"
+    bars: 4
+    # bisher: progFastBlingBling(8275, 7, 57)
+
+  - name: "chorus (3)"
+    bars: 4
+    # bisher: progWaterRipple(8275, 59, 50, true, false)
+
+  - name: "chorus (4)"
+    bars: 4
+    # bisher: progFastBlingBling(8275, 12, 61)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 6).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

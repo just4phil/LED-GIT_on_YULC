@@ -1,0 +1,91 @@
+# Grundstruktur aus dem Excel-Songkalkulator und Abcdefu() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1214, StartBit 0.25
+
+id: 15
+name: "abcdefu"
+artist: "Gayle"
+bpm: 128
+beats_per_bar: 4
+midi_offset: 1/4
+end_black_ms: 10315
+
+sections:
+  - name: "pause"
+    bars: 3
+    beats: 3
+    bpm: 110
+    # bisher: progBlack(1000, 3)
+    # bisher: progBlingBlingColoring(23545, 4, 3000)
+    # ! der alte Code teilt diese 2 Parts anders auf (Summe identisch)
+
+  - name: "intro"
+    bars: 7
+    beats: 3
+    bpm: 110
+
+  - name: "strobe"
+    beats: 2
+    bpm: 110
+    # bisher: progStrobo(1090, 6, 75, 255, 255, 255)
+
+  - name: "verse 1a"
+    bars: 8
+    # bisher: progPalette(15000, 1, 8)
+
+  - name: "verse 1b"
+    bars: 8
+    # bisher: progMatrixScanner(15000, 10, 1)
+
+  - name: "i was into you"
+    bars: 8
+    # bisher: progPalette(15000, 3, 15)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progFullColors(15000, 20, 470)
+
+  - name: "na na na na"
+    bars: 4
+    # bisher: progSternNeu(7500, 468, 25, 5, 26, 5, false, 4)
+
+  - name: "verse 2"
+    bars: 3
+    # bisher: progBlingBlingColoring(5625, 30, 5000)
+
+  - name: "STOP"
+    bars: 1
+    # bisher: progBlack(1875, 35)
+
+  - name: "verse 2 weiter"
+    bars: 4
+    # bisher: progBlingBlingColoring(7500, 40, 5000)
+
+  - name: "i was into you (2)"
+    bars: 8
+    # bisher: progWaterRipple(15000, 45, 50, true, false)
+
+  - name: "chorus 2"
+    bars: 8
+    # bisher: progFullColors(15000, 50, 468)
+
+  - name: "na na na na (2)"
+    bars: 8
+    # bisher: progSternNeu(15000, 468, 55, 5, 26, 5, true, 4)
+
+  - name: "chorus 3"
+    bars: 8
+    # bisher: progFastBlingBling(15000, 4, 60)
+
+  - name: "triolen"
+    bars: 2
+    beats: 2
+    # bisher: progStrobo(4690, 65, 155, 255, 255, 255)
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 15).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

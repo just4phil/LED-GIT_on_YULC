@@ -1,0 +1,103 @@
+# Grundstruktur aus dem Excel-Songkalkulator und Tellittomyheart() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 1545, StartBit 0.375 - DONE 06.09.2024 ACHTUNG: BASIERT AUF DER LP16 DATEI SONAR
+
+id: 21
+name: "Tell It To My Heart"
+artist: "Taylor Dayne"
+bpm: 118
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 4
+    # bisher: progBlack(7375, 5)   (Matrix: progScrollText("Tell it to my heart by Taylor Dayne", 23645, 90, getRandomColor(), 10))
+
+  - name: "intro chorus"
+    bars: 8
+    # bisher: progSternNeu(16270, 1015, 10, 5, 26, 5, false, 4)
+
+  - name: "verse"
+    bars: 8
+    # bisher: progFullColors(16270, 15, 510)
+
+  - name: "bridge"
+    bars: 7
+    # bisher: progPalette(14240, 4, 20)
+
+  - name: "pause (2)"
+    beats: 2
+    # bisher: progBlack(1015, 25)
+
+  - name: "snareauftakt"
+    beats: 2
+    # bisher: progStrobo(1015, 30, 65, 255, 255, 255)
+
+  - name: "chorus 1"
+    bars: 8
+    # bisher: progSternNeu(16275, 1015, 35, 20, 26, 5, true, 3)
+
+  - name: "verse 2"
+    bars: 8
+    # bisher: progRandomLines(16270, 40, 510, false)
+
+  - name: "bridge (2)"
+    bars: 7
+    # bisher: progPalette(14235, 3, 45)
+
+  - name: "pause (3)"
+    beats: 2
+    # bisher: progBlack(1020, 50)
+
+  - name: "snareauftakt (2)"
+    beats: 2
+    # bisher: progStrobo(1015, 55, 65, 255, 255, 255)
+
+  - name: "chorus 2"
+    bars: 8
+    # bisher: progFastBlingBling(16270, 8, 60)
+
+  - name: "SOLO"
+    bars: 8
+    # bisher: progWaterRipple(16270, 65, 50, true, true)   (Matrix: progOutline(16270, 65, 75))
+
+  - name: "love on the run"
+    bars: 8
+    # bisher: progWaterRipple(16275, 70, 50, true, false)
+
+  - name: "pause (4)"
+    beats: 2
+    # bisher: progBlack(1015, 75)
+
+  - name: "snareauftakt (3)"
+    beats: 2
+    # bisher: progStrobo(1015, 80, 65, 255, 255, 255)
+
+  - name: "chorus 3"
+    bars: 8
+    # bisher: progSternNeu(16275, 510, 85, 5, 26, 5, true, 3)
+
+  - name: "chorus 4"
+    bars: 8
+    # bisher: progFastBlingBling(16270, 8, 90)
+
+  - name: "outro F"
+    beats: 2
+    # bisher: progStrobo(1015, 95, 95, 255, 255, 255)
+
+  - name: "outro G"
+    beats: 2
+    # bisher: progStrobo(1020, 105, 65, 255, 255, 255)
+
+  - name: "outro A"
+    bars: 2
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 21).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).

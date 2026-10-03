@@ -1,0 +1,186 @@
+# Grundstruktur aus dem Excel-Songkalkulator und BillyJean() in src/songs.cpp (tools/excel2song.py, 03.10.2026).
+# Die Längen entsprechen dem alten, live erprobten Code. Zeilen mit '# !' bitte prüfen.
+# '# bisher:' zeigt den Effekt des alten Codes auf der Gitarre - nur zur Orientierung, der Generator liest das nicht.
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+# Excel: StartTakt 2334, StartBit 0.375 - ACHTUNG: BASIERT AUF: ALLE_SONGS
+
+id: 28
+name: "Billie Jean"
+artist: "Michael Jackson"
+bpm: 128
+beats_per_bar: 4
+midi_offset: 3/8
+
+sections:
+  - name: "pause"
+    bars: 3
+    # bisher: progBlack(4922, 5)   (Matrix: progScrollText("Billie Jean by Michael Jackson", 19922, 75, getRandomColor(), 12))
+
+  - name: "drums intro"
+    bars: 4
+    # bisher: progRandomLines(7500, 10, 938, true)
+
+  - name: "bass intro"
+    bars: 4
+    # bisher: progRandomLines(7500, 12, 460, true)
+
+  - name: "synth intro"
+    bars: 4
+    # bisher: progRandomLines(7500, 14, 460, false)
+
+  - name: "verse 1"
+    bars: 4
+    # bisher: progFullColors(7500, 16, 938)
+
+  - name: "i am the one"
+    bars: 8
+    # bisher: progRandomLines(15000, 18, 460, true)
+
+  - name: "verse 2"
+    bars: 4
+    # bisher: progFullColors(7500, 20, 938)
+
+  - name: "i am the one (2)"
+    bars: 4
+    # bisher: progRandomLines(7500, 22, 460, true)
+
+  - name: "people alwys told me"
+    bars: 7
+    beats: 2
+    # bisher: progPalette(14063, 10, 24)
+
+  - name: "strobe"
+    beats: 2
+    # bisher: progStrobo(938, 26, 80, getRandomCRGB())
+
+  - name: "chorus 1"
+    bars: 4
+    # bisher: progSternNeu(7500, 460, 28, 5, 26, 5, true, 3)
+
+  - name: "i am the one (3)"
+    bars: 2
+    # bisher: progFullColors(3750, 30, 460)
+
+  - name: "chorus weiter"
+    bars: 2
+    # bisher: progSternNeu(3750, 460, 32, 5, 26, 5, false, 4)
+
+  - name: "i am the one (4)"
+    bars: 2
+    # bisher: progMatrixScanner(3750, 34, 18)
+
+  - name: "instrumental"
+    bars: 2
+    # bisher: progFastBlingBling(3750, 5, 36)
+
+  - name: "verse 2 a"
+    bars: 4
+    # bisher: progFullColors(7500, 38, 460)
+
+  - name: "i am the one (5)"
+    bars: 6
+    beats: 2
+    # bisher: progRandomLines(12188, 40, 460, true)
+
+  - name: "do think twice!!"
+    bars: 1
+    beats: 2
+    # bisher: progFastBlingBling(2813, 5, 42)
+
+  - name: "verse 2 b"
+    bars: 4
+    # bisher: progFullColors(7500, 44, 460)
+
+  - name: "i ma the one"
+    bars: 2
+    beats: 2
+    # bisher: progRandomLines(4688, 46, 460, true)
+
+  - name: "BABY!!!"
+    bars: 1
+    beats: 2
+    # bisher: progFastBlingBling(2813, 5, 48)
+
+  - name: "people always told me"
+    bars: 7
+    beats: 2
+    # bisher: progPalette(14063, 11, 50)
+
+  - name: "heyhey"
+    beats: 2
+    # bisher: progStrobo(938, 52, 80, getRandomCRGB())
+
+  - name: "chorus 2a"
+    bars: 4
+    # bisher: progSternNeu(7500, 460, 54, 5, 26, 5, true, 3)
+
+  - name: "i am the one (6)"
+    bars: 4
+    # bisher: progRandomLines(7500, 56, 460, true)
+
+  - name: "chorus 2b"
+    bars: 4
+    # bisher: progSternNeu(7500, 460, 58, 5, 26, 5, false, 4)
+
+  - name: "i am the one (7)"
+    bars: 6
+    # bisher: progRandomLines(11250, 60, 460, true)
+
+  - name: "instrumental (2)"
+    bars: 2
+    # bisher: progFastBlingBling(3750, 5, 62)
+
+  - name: "solo a"
+    bars: 8
+    # bisher: progWaterRipple(15000, 64, 50, true, true)
+
+  - name: "the ONE …..halftime"
+    bars: 2
+    # bisher: progMatrixHorizontal(3750, 66, 70, true)
+
+  - name: "instrumental (3)"
+    bars: 2
+    # bisher: progFastBlingBling(3750, 5, 68)
+
+  - name: "STOP"
+    bars: 1
+    beats: 2
+    # bisher: progBlack(2813, 70)
+
+  - name: "STROBE"
+    beats: 2
+    # bisher: progStrobo(938, 72, 80, getRandomCRGB())
+
+  - name: "chorus 3a"
+    bars: 2
+    # bisher: progSternNeu(3750, 460, 74, 5, 26, 5, true, 3)
+
+  - name: "i am the one (8)"
+    bars: 2
+    # bisher: progRandomLines(3750, 76, 460, true)
+
+  - name: "intrumental"
+    bars: 2
+    # bisher: progFastBlingBling(3750, 5, 78)
+
+  - name: "i am the one (9)"
+    bars: 2
+    # bisher: progPalette(3750, 4, 80)
+
+  - name: "intrumental (2)"
+    bars: 2
+    # bisher: progRandomLines(3750, 82, 460, true)
+
+  - name: "outro"
+    bars: 7
+    # bisher: progFastBlingBling(13125, 2, 86, 1, 20, 938)
+
+  - name: "not my lover"
+    bars: 1
+    # ! nur im Excel - der alte Code geht hier schon in Schwarz
+
+# Bund-Marker: im alten Code in src/markerLEDs.cpp (setMarkerLEDs, Song 28).
+# Beim Umstellen auf den Generator müssen sie 1:1 übernommen werden (markers: in dieser Datei).
