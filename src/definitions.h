@@ -177,9 +177,9 @@
 	#if defined(SCROLLMATRIX)
 		#define DEFAULT_BRIGHTNESS	30
 	#elif defined(LAMPE1)
-		#define DEFAULT_BRIGHTNESS	100		
+		#define DEFAULT_BRIGHTNESS	200		
 	#elif defined(LAMPE2)
-		#define DEFAULT_BRIGHTNESS	100		
+		#define DEFAULT_BRIGHTNESS	200		
 	#else	
 		#define DEFAULT_BRIGHTNESS	48	// solange die stromversorgung nicht ausreichend ist
 	#endif	
