@@ -42,9 +42,11 @@ Vor die Befehle `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore` setzen. `<Song>` 
 1. **`song.yaml`**: liegt sie schon vor, lesen. Sonst kommt die Struktur aus der **Struktur-Tabelle des Users**
    (Standardweg - er schneidet die Parts selbst für die Show, mit den Taktnummern aus dem DAW):
    `tools/.venv/Scripts/python tools/struktur2song.py <Song>_v1 --neu` legt `quelle/struktur.xlsx` an (Kopie von
-   `songs/struktur-vorlage.xlsx`; Kopf:
-   Titel, Interpret, Song-ID, BPM, StartTakt, StartBit; pro Part: Name, bis Takt, optional Energie, Effektidee,
-   Beschreibung, Akkorde, BPM). Der User füllt sie aus, dann `tools/.venv/Scripts/python tools/struktur2song.py <Song>`
+   `songs/struktur-vorlage.xlsx`). Format = der Excel-Songkalkulator des Users, ein Song pro Datei; er legt die
+   Tabelle meist selbst dort ab - nie ein anderes Format verlangen. Kopf: Midi-StartNummer (= Song-ID), Interpret
+   (A2), Titel (A3), BPM, StartTakt, StartBit; pro Part: Songpart, bis takt, optional Energie 0-5, Effektidee,
+   Beschreibung, BPM, Akkorde - erkannt an der Beschriftung, die ms-Spalten werden ignoriert, ein Schluss-BLACK in
+   der letzten Zeile wird nicht als Part übernommen. Dann `tools/.venv/Scripts/python tools/struktur2song.py <Song>`
    → `song.yaml` (StartBit 0,125/0,25/0,375 → `midi_offset` 1/8, 1/4, 3/8; Effektidee → `idea`). Die
    Konsolentabelle (Takte, Start/Dauer in ms) dem User zeigen.
    Die Taktzählung des Users ist die verlässlichste Quelle. Struktur NICHT aus dem Audio raten: ein Versuch an
@@ -169,8 +171,13 @@ Muss ein Abschnitt für einen Akzent geteilt werden (mehr als ein `tail`), den U
 ## Dramaturgie-Regeln
 
 Messwerte → Wahl (`power` 0-5, `build`/`drive`/`brightness`/`lowend`/`mood` aus der Analyse; ohne Audio aus
-dem Musikverständnis des Songs ableiten). Alle Masters sind stark limitiert: `power` ist in 1,5-dB-Stufen
-unter dem lautesten Abschnitt (≥ 4 Takte) skaliert; bei knappen Entscheidungen auch `loudness_db` direkt vergleichen:
+dem Musikverständnis des Songs ableiten). `power` ist in 1,5-dB-Stufen unter dem lautesten Abschnitt (≥ 4 Takte)
+skaliert (gilt mit und ohne Loudness-Maximizer); bei knappen Entscheidungen auch `loudness_db` direkt vergleichen.
+
+**`energy` des Users hat immer Vorrang vor dem gemessenen `power`.** Hat ein Part in `song.yaml` ein `energy`,
+gilt in der Tabelle unten dieser Wert anstelle von `power` - auch wenn die Messung deutlich abweicht (dichte
+Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts ohne `energy`; die übrigen Messwerte
+(`build`, `drive`, `brightness`, `lowend`, Akzente) verfeinern die Wahl innerhalb der vom User gesetzten Energie:
 
 | Situation | Szene / FX |
 |---|---|

@@ -31,7 +31,9 @@ from songgen import ROOT, SONG_FILE, SongError, find_audio, find_song_dir, secti
 SR = 22050
 HOP = 512
 SILENT_DB = -30		# Part gilt als still, wenn sein Mittel so weit unter dem lautesten Moment liegt
-DB_PER_POWER = 1.5	# Masters sind stark limitiert: pro 1,5 dB unter dem lautesten Part eine Power-Stufe weniger
+DB_PER_POWER = 1.5	# pro 1,5 dB unter dem lautesten Part eine Power-Stufe weniger. Gilt mit und ohne Loudness-Maximizer:
+					# gemessen an 20 MP3s (03.10.2026) sind Exporte ohne Maximizer nur insgesamt ca. 5 dB leiser, die
+					# Abstände zwischen den Parts sind gleich klein - und alle Pegel hier sind relativ zum lautesten Frame
 
 # Krumhansl-Profile für Dur/Moll-Tendenz
 MAJOR = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])

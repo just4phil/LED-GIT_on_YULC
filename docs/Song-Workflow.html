@@ -206,7 +206,7 @@ PY=tools/.venv/Scripts/python                         <span class="c"># Abkürzu
     Nach <code>songs/SuchAShame_v1/quelle/</code> kopieren: genau die Version, die live läuft, mit demselben Tempo und derselben Stille am Anfang. MP3s werden nicht versioniert. Ein Chord-Sheet braucht es nicht mehr.</li>
 
   <li><b>Struktur eintragen und <code>song.yaml</code> erzeugen</b><span class="who du">du</span><span class="who tool">struktur2song</span><br>
-    <code>struktur.xlsx</code> in Excel ausfüllen: Titel, Interpret, Song-ID, BPM, StartTakt, StartBit und pro Part den Namen und „bis Takt“ (Erklärung in <a href="#struktur">„Die Struktur-Tabelle“</a>). Die Parts schneidest du so, wie du sie für die Show brauchst. Speichern, dann:
+    <code>struktur.xlsx</code> in Excel ausfüllen – das Format ist das deines Songkalkulators: Midi-StartNummer, Interpret, Titel, BPM, StartTakt, StartBit und pro Part „Songpart“ und „bis takt“ (Erklärung in <a href="#struktur">„Die Struktur-Tabelle“</a>). Die Parts schneidest du so, wie du sie für die Show brauchst. Speichern, dann:
 <pre><code>$PY tools/struktur2song.py such</code></pre>
     Schreibt <code>songs/SuchAShame_v1/song.yaml</code> mit Takten je Part, deinen Einschätzungen und einem Marker-Vorschlag (wenn Akkorde eingetragen sind).<br>
     <b>Alternative mit Chord-Sheet:</b> <code>sheet2song.py</code> schätzt die Takte aus Sheet und MP3 (<a href="#sheet2song">Abschnitt 4</a>). Das passt nur, wenn das Sheet so geschnitten ist wie die Show, und ist bei langsamen Akkordwechseln unzuverlässig.</li>
@@ -298,28 +298,29 @@ git commit -m "Song Such A Shame"</code></pre>
 </ol>
 
 <h3 id="struktur">Die Struktur-Tabelle (<code>quelle/struktur.xlsx</code>)</h3>
-<p>Die Tabelle ist der schlanke Nachfolger des Excel-Songkalkulators. Du trägst nur ein, was du selbst weißt. Millisekunden und Rundung übernimmt der Generator: er rechnet jede Part-Grenze aus der absoluten Zeit, dadurch entsteht keine Abweichung, die sich aufsummiert.</p>
+<p>Die Tabelle hat das Format deines Excel-Songkalkulators, ein Song pro Datei. Das Werkzeug liest nur die unten genannten Felder und erkennt sie an ihrer Beschriftung, nicht an der Position; alle anderen Spalten (ms, sekunden, millis akkum …) bleiben deine Kontrollrechnung und werden ignoriert. Millisekunden und Rundung übernimmt der Generator: er rechnet jede Part-Grenze aus der absoluten Zeit, dadurch entsteht keine Abweichung, die sich aufsummiert.</p>
 <div class="tablewrap"><table>
 <tr><th>Feld im Kopf</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td>Titel, Interpret</td><td>Titel ja</td><td>Daraus wird der Lauftext „Titel by Interpret“.</td></tr>
-<tr><td>Song-ID</td><td>ja</td><td>1..127, siehe Schritt 1.</td></tr>
-<tr><td>BPM</td><td>ja</td><td>Tempo des Songs.</td></tr>
-<tr><td>StartTakt</td><td>ja</td><td>Taktnummer im DAW-Projekt, in der das Start-MIDI liegt.</td></tr>
-<tr><td>StartBit</td><td>nein (0)</td><td>Wie weit das MIDI nach dem Taktanfang kommt, als Bruchteil des Takts: 0,125 → <code>midi_offset: 1/8</code>, 0,25 → <code>1/4</code>, 0,375 → <code>3/8</code>.</td></tr>
-<tr><td>Audio</td><td>nein</td><td>Dateiname der MP3 in <code>quelle/</code>. Leer: die einzige MP3 im Ordner.</td></tr>
+<tr><td>Midi-StartNummer (A1, Wert in B1)</td><td>ja</td><td>Die Song-ID, 1..127, siehe Schritt 1.</td></tr>
+<tr><td>Interpret (A2), Titel (A3)</td><td>Titel ja</td><td>Ohne Beschriftung: die ersten beiden Texte in Spalte A, erst Interpret, dann Titel. Daraus wird der Lauftext „Titel by Interpret“.</td></tr>
+<tr><td>BPM (Wert darunter)</td><td>ja</td><td>Tempo des Songs.</td></tr>
+<tr><td>StartTakt (Wert darunter)</td><td>ja</td><td>Taktnummer im DAW-Projekt, in der das Start-MIDI liegt.</td></tr>
+<tr><td>StartBit (Wert daneben)</td><td>nein (0)</td><td>Wie weit das MIDI nach dem Taktanfang kommt, als Bruchteil des Takts: 0,125 → <code>midi_offset: 1/8</code>, 0,25 → <code>1/4</code>, 0,375 → <code>3/8</code>.</td></tr>
+<tr><td>Audio (optional ergänzen)</td><td>nein</td><td>Dateiname der MP3 in <code>quelle/</code>. Fehlt das Feld: die einzige MP3 im Ordner.</td></tr>
 </table></div>
+<p>Ein Wert steht rechts neben seiner Beschriftung oder, wenn dort nichts steht, darunter.</p>
 <div class="tablewrap"><table>
 <tr><th>Spalte pro Part</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td>Part</td><td>ja</td><td>Name. Kommt er mehrfach vor, hängt das Werkzeug <code>(2)</code>, <code>(3)</code> an.</td></tr>
-<tr><td>bis Takt</td><td>ja</td><td>Taktnummer im DAW, an der der Part endet (= Anfang des nächsten). Halbe Takte als Komma-Zahl, z. B. 2269,5. Der erste Part beginnt am StartTakt.</td></tr>
-<tr><td>Takte</td><td></td><td>Formel, nur zur Kontrolle.</td></tr>
+<tr><td>Songpart</td><td>ja</td><td>Name. Kommt er mehrfach vor, hängt das Werkzeug <code>(2)</code>, <code>(3)</code> an.</td></tr>
+<tr><td>bis takt</td><td>ja</td><td>Taktnummer im DAW, an der der Part endet (= Anfang des nächsten). Halbe Takte als Komma-Zahl, z. B. 2269,5. Der erste Part beginnt bei StartTakt + StartBit.</td></tr>
+<tr><td>von takt</td><td></td><td>Nur Gegenprobe: passt der Wert nicht zum „bis takt“ der Zeile davor, warnt das Werkzeug. Gerechnet wird immer mit „bis takt“.</td></tr>
 <tr><td>Energie 0-5</td><td>nein</td><td>wird <code>energy</code>.</td></tr>
 <tr><td>Effektidee</td><td>nein</td><td>frei formuliert („weißer Strobo auf den Auftakt“), wird <code>idea</code>. Claude setzt sie in der Show um.</td></tr>
 <tr><td>Beschreibung</td><td>nein</td><td>was musikalisch passiert, wird <code>description</code>.</td></tr>
-<tr><td>Akkorde</td><td>nein</td><td>klingende Akkorde, z. B. <code>Am F C G</code>. Nur für den Bund-Marker-Vorschlag.</td></tr>
-<tr><td>BPM</td><td>nein</td><td>nur bei Tempowechsel: Tempo dieses Parts.</td></tr>
+<tr><td>BPM</td><td>nein</td><td>Tempo dieses Parts. Wird nur übernommen, wenn es vom BPM im Kopf abweicht (Tempowechsel).</td></tr>
+<tr><td>Akkorde (optional ergänzen)</td><td>nein</td><td>klingende Akkorde, z. B. <code>Am F C G</code>. Nur für den Bund-Marker-Vorschlag.</td></tr>
 </table></div>
-<p>Kein Schluss-Black eintragen: nach dem letzten Part hängt der Generator 10 s Schwarz an.</p>
+<p><b>Schluss-Black:</b> Heißt die letzte Zeile „BLACK“ (auch „fini“, „ende“), wird sie nicht als Part übernommen, denn nach dem letzten Part hängt der Generator selbst 10 s Schwarz an. Steht in „ms gerundet!!“ dieser Zeile ein anderer Wert als 10000, kommt er als <code>end_black_ms</code> in die <code>song.yaml</code>. Die „pause“ am Anfang bleibt ein normaler Part.</p>
 <div class="ok"><b>Deine <code>song.yaml</code> wird nie überschrieben.</b> Gibt es sie schon, schreibt <code>struktur2song.py</code> sein Ergebnis als <code>song.vorschlag.yaml</code> daneben.</div>
 
 <h2 id="sheet2song">4 · sheet2song: Struktur aus Sheet + Audio (Alternative)</h2>
@@ -453,7 +454,7 @@ git commit -m "Song Such A Shame"</code></pre>
 <p>Misst pro Part, relativ zum Song, und schreibt <code>audio-analyse/analysis.yaml</code> plus das Bild <code>audio-analyse/analysis.png</code> in den Song-Ordner. <code>song.yaml</code> wird nur gelesen. Einziges Argument ist der Song-Ordner, Optionen gibt es nicht. Die MP3 kommt aus dem Feld <code>audio</code>, sonst nimmt das Tool die einzige MP3 im Ordner.</p>
 <div class="tablewrap"><table>
 <tr><th>Wert</th><th>Bedeutung</th><th>Nutzen für die Show</th></tr>
-<tr><td><code>power</code> 0–5</td><td>Lautheit. 5 = lautester Part (ab 4 Takten), je 1,5 dB leiser eine Stufe weniger, 0 = still. Feste dB-Stufen, weil alle Masters stark limitiert sind.</td><td>Energie der Szene</td></tr>
+<tr><td><code>power</code> 0–5</td><td>Lautheit. 5 = lautester Part (ab 4 Takten), je 1,5 dB leiser eine Stufe weniger, 0 = still. Feste dB-Stufen, weil die Parts in deinen Exporten dicht beieinander liegen. Das gilt mit und ohne Loudness-Maximizer: ohne ist die MP3 nur insgesamt rund 5 dB leiser, und alle Pegel werden relativ zum lautesten Moment des Songs gemessen.</td><td>Energie der Szene</td></tr>
 <tr><td><code>loudness_db</code></td><td>mittlerer Pegel relativ zum lautesten Moment</td><td>bei knappen Entscheidungen</td></tr>
 <tr><td><code>build</code> −1…+1</td><td>Lautstärkeverlauf im Part (+ = steigert sich)</td><td>Buildup-Szenen</td></tr>
 <tr><td><code>drive</code> 0–1</td><td>rhythmische Dichte + perkussiver Anteil</td><td>ruhig oder treibend</td></tr>
@@ -759,7 +760,7 @@ $PY tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <h2 id="dateien">14 · Dateien</h2>
 <div class="tablewrap"><table>
 <tr><th>Pfad</th><th>Inhalt</th></tr>
-<tr><td><code>songs/struktur-vorlage.xlsx</code></td><td>leere Struktur-Tabelle; <code>struktur2song.py --neu</code> kopiert sie in den Song-Ordner. Überschriften in Zeile 9 und die Beschriftungen im Kopf nicht umbenennen</td></tr>
+<tr><td><code>songs/struktur-vorlage.xlsx</code></td><td>leere Struktur-Tabelle; <code>struktur2song.py --neu</code> kopiert sie in den Song-Ordner. Du kannst sie durch deine eigene Tabelle ersetzen; die Beschriftungen im Kopf und die Überschriften „Songpart“ / „bis takt“ nicht umbenennen</td></tr>
 <tr><td><code>tools/struktur2song.py</code></td><td>Struktur-Tabelle <code>quelle/struktur.xlsx</code> → <code>song.yaml</code> (nur wenn noch keine da ist, sonst <code>song.vorschlag.yaml</code>); <code>--neu</code> legt die Vorlage an</td></tr>
 <tr><td><code>tools/sheet2song.py</code></td><td>Alternative: Sheet (XML) + MP3 → <code>song.yaml</code> (nur wenn noch keine da ist, sonst <code>song.vorschlag.yaml</code>)</td></tr>
 <tr><td><code>tools/excel2song.py</code></td><td>einmalige Übernahme der alten Songs aus dem Excel-Songkalkulator und <code>src/songs.cpp</code>; Archiv der Tabelle in <code>docs/songkalkulator/</code></td></tr>

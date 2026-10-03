@@ -6,10 +6,12 @@ struktur2song.py - song.yaml aus der Struktur-Tabelle des Users (Excel) erzeugen
                                                                        # (Kopie von songs/struktur-vorlage.xlsx)
     tools/.venv/Scripts/python tools/struktur2song.py <Song>           # Tabelle -> song.yaml
 
-Die Tabelle ist der schlanke Nachfolger des Excel-Songkalkulators: der User schneidet die Parts so, wie er sie
-für die Show braucht, und trägt nur ein, was er selbst weiß - Titel, Interpret, Song-ID, BPM, StartTakt/StartBit
-(wo das Start-MIDI im DAW-Projekt liegt) und pro Part "bis Takt" (Taktnummer im DAW, an der der Part endet),
-optional Energie, Effektidee, Beschreibung, Akkorde, Tempowechsel. Millisekunden rechnet songgen.py.
+Die Tabelle hat das Format des Excel-Songkalkulators (ein Song pro Datei): oben Midi-StartNummer (= Song-ID),
+Interpret (A2), Titel (A3), BPM, StartTakt und StartBit (wo das Start-MIDI im DAW-Projekt liegt), darunter die
+Kopfzeile mit "Songpart" und "bis takt" und pro Zeile ein Part. Gelesen werden nur Songpart, bis takt, Energie 0-5,
+Effektidee, Beschreibung, BPM (Tempowechsel) und - falls vorhanden - Akkorde; die Millisekunden-Spalten sind nur
+für den User, Millisekunden rechnet songgen.py. Kopf und Spalten werden an ihrer Beschriftung erkannt, nicht an
+der Position. Ein Schluss-Black in der letzten Zeile wird nicht als Part übernommen (der Generator hängt ihn an).
 
 Schreibt songs/<Song>/song.yaml - aber NUR, wenn es die Datei noch nicht gibt. Eine vorhandene song.yaml
 gehört dem User und wird nie überschrieben: das Ergebnis landet dann als Vorschlag in song.vorschlag.yaml
@@ -33,27 +35,31 @@ TABLE_FILE = "struktur.xlsx"
 TEMPLATE = SONGS_DIR / "struktur-vorlage.xlsx"	# Vorlage im Repo; --neu kopiert sie (der User darf sie anpassen)
 PROPOSAL_FILE = "song.vorschlag.yaml"	# Ergebnis, wenn es schon eine song.yaml gibt (die wird nie überschrieben)
 SHEET = "Struktur"
-HEAD = [	# (Zeile, Beschriftung, Schlüssel, Erklärung)
-	(1, "Titel", "name", ""),
-	(2, "Interpret", "artist", ""),
-	(3, "Song-ID", "id", "MIDI CC#0, 1..127 - freie Nummer oder die des alten Songs, den diese Fassung ersetzt"),
-	(4, "BPM", "bpm", ""),
-	(5, "StartTakt", "starttakt", "Taktnummer im DAW-Projekt, in der das Start-MIDI liegt"),
-	(6, "StartBit", "startbit", "wie weit das MIDI nach dem Taktanfang kommt, als Bruchteil des Takts: 0,125 = 1/8 · 0,25 = 1/4 · 0,375 = 3/8"),
-	(7, "Audio", "audio", "optional: Dateiname der MP3 in quelle/ (leer = die einzige MP3 im Ordner)"),
+# Kopf: Beschriftung (klein) -> Schlüssel. Der Wert steht rechts daneben oder, wenn dort nichts steht, darunter.
+# Interpret und Titel brauchen keine Beschriftung: die ersten beiden freien Texte in Spalte A.
+HEAD_LABELS = {"midi-startnummer": "id", "song-id": "id", "bpm": "bpm", "starttakt": "starttakt", "startbit": "startbit",
+			   "audio": "audio", "titel": "name", "interpret": "artist"}
+# Part-Zeilen: Überschrift (klein) -> Schlüssel; alle anderen Spalten (ms, sekunden, millis akkum ...) werden ignoriert
+COL_LABELS = {"songpart": "name", "part": "name", "bis takt": "bis", "von takt": "von", "energie 0-5": "energy",
+			  "energie": "energy", "effektidee": "idea", "beschreibung": "description", "akkorde": "chords", "bpm": "bpm",
+			  "ms gerundet!!": "ms_rounded", "ms gerundet": "ms_rounded"}
+END_NAMES = ("black", "fini", "finito", "ende", "back to default")	# so heißt der Schluss-Black in der letzten Zeile
+END_BLACK_MS = 10000	# Standard des Generators
+COLS = [	# Vorlage: Kopfzeile wie im Songkalkulator (Überschrift, Breite)
+	("Songpart", 30), ("ms gerundet!!", 13), ("Effektidee", 28), ("ms", 10), ("Energie 0-5", 12), (" (+ zu schnell)", 13),
+	("BPM", 8), ("von takt", 10), ("bis takt", 10), ("takte", 8), ("sek/takt", 9), ("sekunden", 10), ("millis", 10),
+	("millis akkum", 13), ("millis akkum", 13), ("Beschreibung", 44),
 ]
-COLS = [	# (Überschrift, Schlüssel, Breite)
-	("Part", "name", 30), ("bis Takt", "bis", 10), ("Takte", None, 8), ("Energie 0-5", "energy", 12),
-	("Effektidee", "idea", 40), ("Beschreibung", "description", 44), ("Akkorde", "chords", 22), ("BPM", "bpm", 8),
-]
-HEADER_ROW = 9
-FIRST_ROW = HEADER_ROW + 1
-ROWS = 80		# so viele Part-Zeilen bekommt die Vorlage (mit Formel in "Takte")
+HEADER_ROW = 7
+FIRST_ROW = HEADER_ROW + 2
+ROWS = 80		# so viele Part-Zeilen bekommt die Vorlage (mit Formeln)
 NOTES = [
-	"Parts so schneiden, wie du sie für die Show brauchst. 'bis Takt' = Taktnummer im DAW, an der der Part endet",
-	"(= Anfang des nächsten). Halbe Takte als Komma-Zahl: 2269,5. Der erste Part beginnt am StartTakt.",
-	"'Takte' rechnet nur zur Kontrolle. Kein Schluss-Black eintragen: 10 s Schwarz hängt der Generator an.",
-	"BPM in der Part-Zeile nur bei Tempowechsel. Akkorde (z. B. Am F C G) nur für den Bund-Marker-Vorschlag.",
+	"Parts so schneiden, wie du sie für die Show brauchst. 'bis takt' = Taktnummer im DAW, an der der Part endet",
+	"(= Anfang des nächsten). Halbe Takte als Komma-Zahl: 2269,5. Der erste Part beginnt bei StartTakt + StartBit.",
+	"Das Werkzeug liest nur Songpart, bis takt, Energie, Effektidee, Beschreibung und BPM (bei Tempowechsel überschreiben).",
+	"Alle ms-Spalten rechnen nur zur Kontrolle. Ein Schluss-Black in der letzten Zeile wird nicht als Part übernommen:",
+	"der Generator hängt 10 s Schwarz an (steht in 'ms gerundet!!' etwas anderes, gilt dieser Wert).",
+	"Optional: eine Spalte 'Akkorde' (z. B. Am F C G) für den Bund-Marker-Vorschlag, ein Feld 'Audio' im Kopf für die MP3.",
 ]
 
 NOTE_IDX = {"C": 0, "C#": 1, "DB": 1, "D": 2, "D#": 3, "EB": 3, "E": 4, "F": 5, "F#": 6, "GB": 6,
@@ -71,23 +77,32 @@ def write_template(path):
 	ws.title = SHEET
 	bold, grey = Font(bold=True), Font(color="808080", italic=True)
 	fill = PatternFill("solid", fgColor="DDEBF7")
-	for row, label, _key, hint in HEAD:
-		ws.cell(row, 1, label).font = bold
-		ws.cell(row, 2).fill = fill
-		ws.cell(row, 3, hint).font = grey
-	for c, (title, _key, width) in enumerate(COLS, 1):
+	for ref, label_text in (("A1", "Midi-StartNummer"), ("A4", "BPM"), ("C4", "StartTakt"), ("B6", "StartBit")):
+		ws[ref].value, ws[ref].font = label_text, bold
+	for ref in ("B1", "A2", "A3", "A5", "C5", "C6"):
+		ws[ref].fill = fill
+	for ref, hint in (("C1", "Song-ID: MIDI CC#0, 1..127 - freie Nummer oder die des alten Songs, den diese Fassung ersetzt"),
+					  ("C2", "<- A2: Interpret"), ("C3", "<- A3: Titel"),
+					  ("D5", "Taktnummer im DAW-Projekt, in der das Start-MIDI liegt"),
+					  ("D6", "wie weit das MIDI nach dem Taktanfang kommt, als Bruchteil des Takts: 0,125 = 1/8 · 0,25 = 1/4 · 0,375 = 3/8")):
+		ws[ref].value, ws[ref].font = hint, grey
+	for c, (title, width) in enumerate(COLS, 1):
 		cell = ws.cell(HEADER_ROW, c, title)
 		cell.font = bold
 		cell.fill = PatternFill("solid", fgColor="BDD7EE")
 		ws.column_dimensions[get_column_letter(c)].width = width
 	for r in range(FIRST_ROW, FIRST_ROW + ROWS):
-		prev = "$B$5" if r == FIRST_ROW else f"B{r - 1}"
-		ws.cell(r, 3, f'=IF(B{r}="","",B{r}-{prev})').font = grey
-		for c in (5, 6):
-			ws.cell(r, c).alignment = Alignment(wrap_text=True, vertical="top")
+		von = "$C$5+$C$6" if r == FIRST_ROW else f"I{r - 1}"
+		akkum = f"M{r}" if r == FIRST_ROW else f"N{r - 1}+M{r}"
+		for col, formula in (("D", f"M{r}"), ("G", "$A$5"), ("H", von), ("J", f"I{r}-H{r}"), ("K", f"240/G{r}"),
+							 ("L", f"J{r}*K{r}"), ("M", f"L{r}*1000"), ("N", akkum)):
+			ws[f"{col}{r}"].value = f'=IF(I{r}="","",{formula})'
+			ws[f"{col}{r}"].font = Font() if col == "G" else grey
+		for col in ("C", "P"):
+			ws[f"{col}{r}"].alignment = Alignment(wrap_text=True, vertical="top")
 	ws.cell(FIRST_ROW, 1, "pause")
-	for i, text in enumerate(NOTES):
-		ws.cell(FIRST_ROW + i, len(COLS) + 2, text).font = grey
+	for i, note in enumerate(NOTES):
+		ws.cell(FIRST_ROW + i, len(COLS) + 2, note).font = grey
 	ws.freeze_panes = ws.cell(FIRST_ROW, 2)
 	path.parent.mkdir(parents=True, exist_ok=True)
 	wb.save(path)
@@ -116,54 +131,98 @@ def text(v):
 	return "" if v is None else " ".join(str(v).split())
 
 
+def label(v):
+	return text(v).lower().rstrip(":").strip() if isinstance(v, str) else ""
+
+
+def empty(v):
+	return v is None or (isinstance(v, str) and not v.strip())
+
+
 def read_table(path):
 	wb = openpyxl.load_workbook(path, data_only=True)
 	ws = wb[SHEET] if SHEET in wb.sheetnames else wb.active
-	head = {key: ws.cell(row, 2).value for row, _label, key, _hint in HEAD}
-	song = {"name": text(head["name"]), "artist": text(head["artist"]), "audio": text(head["audio"])}
+	header_row, cols = None, {}
+	for row in ws.iter_rows():
+		found = {}
+		for c in row:
+			found.setdefault(COL_LABELS.get(label(c.value)), c.column)
+		if "name" in found and "bis" in found:
+			header_row, cols = row[0].row, found
+			break
+	if header_row is None:
+		raise SongError("Kopfzeile der Parts nicht gefunden - es braucht die Spalten 'Songpart' und 'bis takt'")
+
+	head, used = {}, set()
+	for row in ws.iter_rows(max_row=header_row - 1):
+		for c in row:
+			key = HEAD_LABELS.get(label(c.value))
+			if not key:
+				continue
+			used.add(c.coordinate)
+			for cand in (ws.cell(c.row, c.column + 1), ws.cell(c.row + 1, c.column)):	# Wert rechts daneben, sonst darunter
+				if key not in head and cand.row < header_row and not empty(cand.value) and label(cand.value) not in HEAD_LABELS:
+					head[key] = cand.value
+					used.add(cand.coordinate)
+	free = [text(ws.cell(r, 1).value) for r in range(1, header_row)
+			if isinstance(ws.cell(r, 1).value, str) and not empty(ws.cell(r, 1).value) and ws.cell(r, 1).coordinate not in used]
+	if "name" not in head and len(free) >= 2:	# ohne Beschriftung: erst Interpret, dann Titel
+		head.setdefault("artist", free[0])
+		head["name"] = free[1]
+	elif "name" not in head and free:
+		head["name"] = free[0]
+	song = {"name": text(head.get("name")), "artist": text(head.get("artist")), "audio": text(head.get("audio")), "warnings": []}
 	if not song["name"]:
-		raise SongError("Titel fehlt")
-	song["id"] = int(number(head["id"], "Song-ID"))
-	song["bpm"] = number(head["bpm"], "BPM")
-	start = number(head["starttakt"], "StartTakt")
-	startbit = number(head["startbit"] if head["startbit"] not in (None, "") else 0, "StartBit", allow_fraction=True)
+		raise SongError("Titel fehlt (Spalte A über 'BPM': erst Interpret, darunter Titel)")
+	song["id"] = int(number(head.get("id"), "Midi-StartNummer (Song-ID)"))
+	song["bpm"] = number(head.get("bpm"), "BPM")
+	start = number(head.get("starttakt"), "StartTakt")
+	startbit = number(head.get("startbit", 0), "StartBit", allow_fraction=True)
 	if start != int(start) or not 0 <= startbit < 1:
 		raise SongError("StartTakt muss eine ganze Taktnummer sein, StartBit der Bruchteil dahinter (0 bis unter 1)")
 	song["starttakt"], song["startbit"] = int(start), startbit
 
-	keys = {title: key for title, key, _w in COLS}
-	cols = {keys[text(c.value)]: c.column for c in ws[HEADER_ROW] if text(c.value) in keys and keys[text(c.value)]}
-	for need in ("name", "bis"):
-		if need not in cols:
-			raise SongError(f"Spalte '{'Part' if need == 'name' else 'bis Takt'}' fehlt in Zeile {HEADER_ROW}")
 	parts, prev, seen = [], float(start), {}
-	for r in range(FIRST_ROW, ws.max_row + 1):
+	for r in range(header_row + 1, ws.max_row + 1):
 		get = lambda k: ws.cell(r, cols[k]).value if k in cols else None  # noqa: E731
 		name, bis = text(get("name")), get("bis")
-		if not name and bis in (None, ""):
+		if not name and empty(bis):
 			continue
 		if not name:
 			raise SongError(f"Zeile {r}: Partname fehlt")
-		if bis in (None, ""):
+		if empty(bis):
 			if not parts and name == "pause":
 				continue	# unausgefüllte Vorlage
-			raise SongError(f"Zeile {r} '{name}': 'bis Takt' fehlt (bei Formeln: Datei einmal in Excel speichern)")
-		bis = number(bis, f"Zeile {r} '{name}': bis Takt")
+			raise SongError(f"Zeile {r} '{name}': 'bis takt' fehlt (bei Formeln: Datei einmal in Excel speichern)")
+		bis = number(bis, f"Zeile {r} '{name}': bis takt")
 		if bis <= prev:
-			raise SongError(f"Zeile {r} '{name}': bis Takt {fmt(bis)} liegt nicht nach {fmt(prev)}")
-		seen[name.lower()] = seen.get(name.lower(), 0) + 1
-		p = {"name": name if seen[name.lower()] == 1 else f"{name} ({seen[name.lower()]})", "von": prev, "bis": bis,
-			 "bars": round(bis - prev, 4), "idea": text(get("idea")), "description": text(get("description")), "chords": text(get("chords"))}
-		if get("energy") not in (None, ""):
+			raise SongError(f"Zeile {r} '{name}': bis takt {fmt(bis)} liegt nicht nach {fmt(prev)}")
+		von, expect = get("von"), prev + (startbit if not parts else 0)
+		if isinstance(von, (int, float)) and abs(von - expect) > 1e-6:
+			song["warnings"].append(f"Zeile {r} '{name}': 'von takt' {fmt(von)} passt nicht zum Ende davor ({fmt(expect)}) - "
+									f"gerechnet wird mit 'bis takt'")
+		p = {"name": name, "row": r, "von": prev, "bis": bis, "bars": round(bis - prev, 4), "ms_rounded": get("ms_rounded"),
+			 "idea": text(get("idea")), "description": text(get("description")), "chords": text(get("chords"))}
+		if not empty(get("energy")):
 			p["energy"] = int(number(get("energy"), f"Zeile {r} '{name}': Energie"))
 			if not 0 <= p["energy"] <= 5:
 				raise SongError(f"Zeile {r} '{name}': Energie {p['energy']} liegt nicht in 0..5")
-		if get("bpm") not in (None, ""):
+		if not empty(get("bpm")):
 			p["bpm"] = number(get("bpm"), f"Zeile {r} '{name}': BPM")
 		parts.append(p)
 		prev = bis
+	if len(parts) > 1 and parts[-1]["name"].lower().startswith(END_NAMES):	# Schluss-Black: hängt der Generator an
+		black = parts.pop()
+		ms = black["ms_rounded"]
+		song["end_black_ms"] = int(round(ms)) if isinstance(ms, (int, float)) and ms > 0 else END_BLACK_MS
+		song["end_black_row"] = f"Zeile {black['row']} '{black['name']}'"
 	if not parts:
 		raise SongError("keine Parts eingetragen")
+	for p in parts:		# eindeutige Namen
+		key = p["name"].lower()
+		seen[key] = seen.get(key, 0) + 1
+		if seen[key] > 1:
+			p["name"] = f"{p['name']} ({seen[key]})"
 	song["parts"] = parts
 	return song
 
@@ -225,7 +284,7 @@ def marker_lines(song, song_file):
 			return [m.group(0).rstrip("\n")], "aus der vorhandenen song.yaml übernommen (unverändert)"
 	if not counts:
 		return ["# Bund-Marker: noch keine. Akkorde in der Tabelle eintragen (Spalte Akkorde) oder hier markers: ergänzen."], \
-			"keine (Spalte Akkorde ist leer)"
+			"keine (Spalte Akkorde fehlt oder ist leer)"
 	names, notes = mk.propose(counts)
 	return mk.yaml_block(names, notes, chords_text), "VORSCHLAG: " + ", ".join(f"{n} ({mk.FRET[n]}. Bund)" for n in names)
 
@@ -258,6 +317,8 @@ def render(song, song_dir, table, is_proposal):
 		f"id: {song['id']}", f"name: {ystr(song['name'])}", f"artist: {ystr(song['artist'])}", f"bpm: {fmt(song['bpm'])}",
 		"beats_per_bar: 4",
 	] + offset_lines(song)
+	if song.get("end_black_ms", END_BLACK_MS) != END_BLACK_MS:
+		lines.append(f"end_black_ms: {song['end_black_ms']}")
 	if audio:
 		lines += [f"audio: {audio.relative_to(song_dir).as_posix()}",
 				  "# audio_beat1_ms: 0          # wo Takt 1 in der MP3 liegt - songanalyze.py schätzt es, wenn die Zeile fehlt"]
@@ -280,8 +341,8 @@ def render(song, song_dir, table, is_proposal):
 def timeline_table(song):
 	"""Kontrollausgabe wie im alten Kalkulator: Takte und Millisekunden ab dem Start-MIDI (so rechnet songgen.py)."""
 	sixteenths = song["startbit"] * 16
-	gen = {"bpm": song["bpm"], "sections": [dict({"name": p["name"], "bars": p["bars"]}, **({"bpm": p["bpm"]} if "bpm" in p else {}))
-											 for p in song["parts"]]}
+	gen = {"bpm": song["bpm"], "end_black_ms": song.get("end_black_ms", END_BLACK_MS),
+		   "sections": [dict({"name": p["name"], "bars": p["bars"]}, **({"bpm": p["bpm"]} if "bpm" in p else {})) for p in song["parts"]]}
 	if abs(sixteenths - round(sixteenths)) > 1e-6:
 		gen["midi_offset_ms"] = song["startbit"] * 240000.0 / song["parts"][0].get("bpm", song["bpm"])
 	else:
@@ -293,7 +354,11 @@ def timeline_table(song):
 		print(f"  {p['name'][:32]:<32} {fmt(von):>8} {fmt(p['bis']):>8} {fmt(p['bis'] - von):>7} {t['start']:>9} {t['dur']:>9}")
 	total = sum(p["bars"] for p in song["parts"])
 	print(f"  {len(song['parts'])} Parts, {fmt(total)} Takte, {timeline[len(song['parts']) - 1]['start'] + timeline[len(song['parts']) - 1]['dur']} ms "
-		  f"(+ 10 s Schwarz am Ende)")
+		  f"(+ {fmt(gen['end_black_ms'] / 1000)} s Schwarz am Ende)")
+	if "end_black_row" in song:
+		print(f"  {song['end_black_row']} ist der Schluss-Black: kein eigener Part, der Generator hängt ihn an")
+	for w in song["warnings"]:
+		print(f"  ! {w}")
 
 
 def main():
