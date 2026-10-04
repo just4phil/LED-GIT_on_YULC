@@ -4132,26 +4132,37 @@ void pipelineDemo() {
 
 	switch (prog) {
 
-	//--- NEU (steht immer am Anfang, damit man es beim Testen sofort sieht; ältere Bausteine rücken dahinter) ---
-	case 0:		// FX_CUT, ausgestanzter Text: die Buchstaben sind dunkel, das Farbband leuchtet drumherum (nur Matrix)
+	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
+	case 0:		// Feuer: muss auf der Matrix von unten aufsteigen (stand dort auf dem Kopf)
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_FIRE, 8000, 1, bpm);
+		break;
+
+	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
+	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
+		fxTextUnder(120);
 		fxTextBegin();
-		progText("TEXT CUT OUT", 8000, 2, 1000, CRGB::White);
-		fxTextEnd(255, FX_CUT);
+		progText("TEXT ON TOP", 8000, 2, 1000, CRGB::White);
+		fxTextEnd();
 #endif
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 2, bpm);
+		fxLayerEnd(FX_ADD);
 		scene(SCENE_PALETTE, 8000, 2, bpm);
 		fxLayerFlush();
 		break;
 
-	case 2:		// zum Vergleich FX_MASK: das Farbband ist nur in den Buchstaben zu sehen, der Rest ist schwarz (nur Matrix)
+	// danach geht es mit Part 2 (Text als Maske) und den Parts 82-88 (Ebene gezielt steuern) weiter, dann erst mit Part 3
+	case 2:		// Text als FX_MASK: das Farbband ist nur in den Buchstaben zu sehen, der Rest ist schwarz (nur Matrix); weiter mit Part 82
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerBegin();
-		progText("TEXT AS MASK", 8000, 3, 1000, CRGB::White);
+		progText("TEXT AS MASK", 8000, 82, 1000, CRGB::White);
 		fxLayerEnd(FX_MASK);
 #endif
-		scene(SCENE_PALETTE, 8000, 3, bpm);
+		scene(SCENE_PALETTE, 8000, 82, bpm);
 		fxLayerFlush();
 		break;
 
@@ -4234,13 +4245,13 @@ void pipelineDemo() {
 		fxTransition(TRANS_FADE, 2000);
 		fxPulse(bpm, 100);
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, 82, bpm);
+		scene(SCENE_SPARKLE, 8000, 90, bpm);
 		fxLayerEnd(FX_ADD, 200);
-		scene(SCENE_PALETTE, 8000, 82, bpm);
+		scene(SCENE_PALETTE, 8000, 90, bpm);
 		fxLayerFlush();
 		break;
 
-	//--- Ebene gezielt steuern: nur die Ebene ändert sich, der Effekt darunter bleibt ruhig ---
+	//--- Ebene gezielt steuern: nur die Ebene ändert sich, der Effekt darunter bleibt ruhig (läuft direkt nach Part 2, danach Part 3) ---
 	case 82:	// fxLayerPulse: ruhige Fläche, nur das Glitzern pumpt im Beat
 		setColorScheme(SCHEME_ROYAL);
 		fxLayerPulse(bpm, 240);
@@ -4283,24 +4294,20 @@ void pipelineDemo() {
 		fxLayerWindow(4000);
 		fxLayerGate(bpm, 2);
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, 90, bpm);
+		scene(SCENE_SPARKLE, 8000, 3, bpm);
 		fxLayerEnd(FX_ADD);
-		scene(SCENE_PALETTE, 8000, 90, bpm);
+		scene(SCENE_PALETTE, 8000, 3, bpm);
 		fxLayerFlush();
 		break;
 
-	//--- eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts ---
-	case 90:	// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
+	//--- ausgestanzter Text (FX_CUT): die Buchstaben sind dunkel, das Farbband leuchtet drumherum (nur Matrix) ---
+	case 90:
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
-		fxTextUnder(120);
 		fxTextBegin();
-		progText("TEXT ON TOP", 8000, 100, 1000, CRGB::White);
-		fxTextEnd();
+		progText("TEXT CUT OUT", 8000, 100, 1000, CRGB::White);
+		fxTextEnd(255, FX_CUT);
 #endif
-		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, 100, bpm);
-		fxLayerEnd(FX_ADD);
 		scene(SCENE_PALETTE, 8000, 100, bpm);
 		fxLayerFlush();
 		break;

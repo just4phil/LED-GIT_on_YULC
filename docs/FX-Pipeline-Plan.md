@@ -28,23 +28,29 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestan
   - 05.10.2026: „die demo gefällt mir auch" (keine Befunde; ob die Parts 82–88 dabei waren, hat er nicht
     ausdrücklich gesagt). Nach dem Flashen von `6530dc8`: **„der schwarze text kommt gut rüber"** (Song 92,
     Part 0, `FX_CUT`). Zu Part 2 (Maske), Part 90 (Text-Ebene) und zum gedrehten Feuer hat er nichts gesagt.
+  - 05.10.2026, später: „bisher sieht alles gut und ruckelfrei aus", OTA-Update klappt. Welche Parts er dabei
+    gesehen hat, hat er nicht gesagt; die noch offenen stehen deshalb jetzt am Anfang von Song 92 (siehe unten).
 - **Außerhalb der Pipeline (05.10.2026):** OTA wartet nicht mehr 20 s auf fehlende Clients (`83f06d4`): Die
   Gitarre sendet, sobald sich nach dem ersten Client 5 s lang kein weiterer angemeldet hat. Die langen Wartezeiten
-  kamen daher, dass der Bass aus war. Auf der Hardware noch nicht bestätigt.
-- **Regel für Song 92 (User, 05.10.2026):** Neue Bausteine kommen immer an den **Anfang** der Demo (Part 0), der
-  bisherige Neuzugang rückt dann in seinen Block weiter hinten. So sieht man beim Testen sofort, was neu ist.
+  kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
+- **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
+  der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
+  Reihenfolge jetzt: 0 Feuer (auf der Matrix von unten?), 1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt
+  steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter Text (abgenommen), 100 von vorn. Die Part-Nummern
+  sind geblieben, geändert ist nur die Sprungfolge; rund 3:55 Minuten.
 - **In Arbeit:** nichts.
 
 ### Morgen weiter
 
-1. **Kurz nachfragen** (und Befunde zuerst beheben):
-   - Song 92, Part 2 (Farbband nur in den Buchstaben) und Part 90 (Text über Farbband und Glitzern, ruckelt die
-     Matrix mit zwei Ebenen?);
-   - Feuer auf der Matrix: steigt es jetzt von unten auf (Song 91, Parts 55/60, oder `SCENE_FIRE` in #31/#33)?
-   - OTA: startet das Update ohne Bass jetzt nach rund 5 s Stillstand des lila Balkens?
+1. **Kurz nachfragen** (und Befunde zuerst beheben) – steht alles am Anfang von Song 92:
+   - Part 0: steigt das Feuer auf der Matrix von unten auf?
+   - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
+   - Part 2: Farbband nur in den Buchstaben;
+   - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
+     allen Geräten gleichzeitig nach 2 Takten ein.
+   Was abgenommen ist, wieder nach hinten sortieren.
 2. **Phase 3b, Punkt 1** – weiche Farbwechsel im Beat: `fxSoft(percent)` für `progBeatColors`
-   (`SCENE_COLORS`, `SCENE_COLORS_WAVE`), YAML `soft: <Prozent>`; Demo als neuer Part 0 in Song 92 (mit und ohne
-   `soft` nacheinander), der ausgestanzte Text rückt dann in den Block „Text-Ebene" bei Part 90.
+   (`SCENE_COLORS`, `SCENE_COLORS_WAVE`), YAML `soft: <Prozent>`; Demo am Anfang von Song 92 (mit und ohne `soft` nacheinander).
 3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
 4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
    `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
