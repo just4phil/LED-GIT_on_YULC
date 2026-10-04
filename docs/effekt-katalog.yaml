@@ -968,6 +968,9 @@ ausgabestufe:
     fxLayerWindow:    {wirkung: "die Ebene ist nur in einem Zeitfenster des Parts zu sehen (Akzent im letzten Takt ohne eigenen Part)", yaml: "overlay: {..., from: <Beats>, to: <Beats>}", demo: 88, genutzt: 0, urteil: , notiz: }
     fxLayerGate:      {wirkung: "nur die Ebene blitzt im Raster", yaml: "overlay: {..., gate: <pro Beat> | {per_beat: 2, duty: 30}}", demo: 88, genutzt: 0, urteil: , notiz: }
 
+  text_ebene:         # eigene Ebene nur für Text, liegt über Szene und Ebene (nur Matrix)
+    fxText:           {wirkung: "Szene + zweiter Effekt + Text zugleich: der Text liegt zuoberst, alles darunter läuft weiter (auf Wunsch gedimmt)", yaml: "text: {..., over: true, under: <Prozent>} zusammen mit overlay: ...", demo: 90, genutzt: 0, urteil: , notiz: }
+
 # ---------------------------------------------------------------------------------------------------
 # Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen
 # ---------------------------------------------------------------------------------------------------

@@ -11,37 +11,38 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 04.10.2026 (Ende der Session nach Phase 4b Punkt 1)
+Zuletzt aktualisiert: 05.10.2026 (nach Phase 4b Punkt 2)
 
-- **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (`cf720fd`) und
-  Phase 4b Punkt 1 (`85276c8`). Der Abschluss dieser Session (nur dieses Dokument) ist der Commit direkt danach,
-  siehe `git log`. Alle fünf Envs bauen mit dem Stand `85276c8`.
-- **Nicht committet:** `src/todo.txt` und `src/definitions.h` (Änderungen des Users, nicht anfassen). In
-  `definitions.h` ist nur `START_WITH_PIPELINE_DEMO` aktiviert.
+- **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (`cf720fd`),
+  Phase 4b Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene; der Commit mit dem Titel „FX-Pipeline: eigene
+  Text-Ebene", siehe `git log`). Alle fünf Envs bauen mit diesem Stand.
+- **Nicht committet:** nichts. `START_WITH_PIPELINE_DEMO` in `src/definitions.h` hat der User wieder
+  auskommentiert; zum Ansehen der Demo lokal einschalten und nicht committen, oder Song 92 per MIDI CC#0 wählen.
 - **Auf der Hardware gesehen (User, 04.10.2026):** Song #31 All The Things She Said mit Übergängen und Ebene –
   „sehr geil, genau die richtige Richtung". Die alten handgeschriebenen Songs laufen alle noch.
   Song 92 `pipelineDemo` durchgesehen: „sieht sehr geil aus", vor allem die Farbverläufe auf der Matrix und Text
   über anderen Effekten; „für mich sieht alles gut aus", Marker-LEDs stabil. Keine Befunde.
+- **User am 05.10.2026:** „die demo gefällt mir auch" – keine Befunde genannt (ob die Parts 82–88 dabei waren, hat
+  er nicht ausdrücklich gesagt). Dazu außerhalb der Pipeline: OTA wartet nicht mehr 20 s auf fehlende Clients
+  (`83f06d4`).
 - **Wartet auf den User:**
-  1. Alle Geräte mit dem Stand `85276c8` neu flashen und in Song 92 die neuen Parts 82–88 ansehen (ab 2:50; Ebene
-     gezielt steuern, noch nie auf der Hardware gelaufen). Worauf achten: siehe „Verifikation", Punkt 3.
+  1. Alle Geräte neu flashen und in Song 92 den neuen Part 90 ansehen (ab 3:22; Text-Ebene, noch nie auf der
+     Hardware gelaufen). Worauf achten: siehe „Verifikation", Punkt 3. Falls die Parts 82–88 noch nicht bewusst
+     angesehen wurden: dieselbe Gelegenheit.
   2. Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem
-     User; neu ist der Block `ebene_steuern`). Mündlich schon gesagt, aber noch nicht eingetragen: Text über der
+     User; neu ist der Block `text_ebene`). Mündlich schon gesagt, aber noch nicht eingetragen: Text über der
      Szene (`FX_OVER`, Part 74) gefällt sehr gut.
-  3. `START_WITH_PIPELINE_DEMO` in `src/definitions.h` ist beim User lokal aktiv: nicht committen, vor einem
-     OTA-Build wieder auskommentieren (sonst starten alle Geräte mit der Demo statt in der Songpause).
 - **In Arbeit:** nichts.
-- **Nächster Schritt:** Phase 4b, Punkt 2 (eigene Text-Ebene), Entwurf siehe dort. Zu Beginn der nächsten Session
-  den User nach Befunden aus den Parts 82–88 fragen und diese zuerst beheben.
+- **Nächster Schritt:** Phase 3b (Fading-Optionen), Punkt 1 zuerst. Zu Beginn den User nach Befunden aus Part 90
+  fragen und diese zuerst beheben.
 
 Reihenfolge der nächsten Schritte:
 
-1. **Phase 4b, Punkt 2** – eigene Text-Ebene (Punkt 1, Ebene gezielt steuern, ist erledigt)
-2. **Phase 3b** – Fading-Optionen
-3. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
-4. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
-5. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten
-6. **Phase 4b, Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
+1. **Phase 3b** – Fading-Optionen (Phase 4b Punkt 1 und 2 sind erledigt)
+2. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
+3. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
+4. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten
+5. **Phase 4b, Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
    spürbar bremst.
 
 Merge nach `MAIN` erst, wenn der User den Stand auf der Hardware abgenommen hat.
@@ -93,9 +94,9 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
-| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | offen |
+| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | offen, **als Nächstes** |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
-| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 erledigt (Hardware-Test offen), **Punkt 2 als Nächstes** |
+| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt (Hardware-Test offen), Punkt 3 und 4 nach Bedarf |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
 | 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |
@@ -103,7 +104,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
 Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Song 92
-(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 82–88 von Song 92 und die Frame-Zeit-Messung – siehe
+(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 82–90 von Song 92 und die Frame-Zeit-Messung – siehe
 „Verifikation".
 
 ## Phase 0 – Ausgangslage
@@ -232,7 +233,7 @@ solange sich die eine nicht gezielt steuern lässt. Was fehlt, nach Nutzen sorti
 | # | Schritt | Wozu | Stand |
 |---|---|---|---|
 | 1 | Modifikatoren nur für die Ebene bzw. nur für den Effekt darunter; Stärke der Ebene als Verlauf über den Part; Ebene nur in einem Zeitfenster | ruhige Fläche + pumpendes Glitzern; Szene gedimmt, Text voll hell; Ebene baut sich auf; `tail:` ohne eigenen Part | erledigt, Hardware-Test offen |
-| 2 | Zweite, fest für Text reservierte Ebene | Szene + Overlay + Text zugleich (heute bricht der Generator ab: „es gibt nur eine Ebene") | offen |
+| 2 | Zweite, fest für Text reservierte Ebene | Szene + Overlay + Text zugleich | erledigt, Hardware-Test offen |
 | 3 | Ebene läuft über die Part-Grenze weiter, wenn der nächste Part dieselbe Ebene anmeldet | kein Schnitt im Glitzern, wenn darunter weich übergeblendet wird | offen |
 | 4 | Ebene mit eigenem Farbschema (`scheme:` im `overlay:`) | z. B. weißes Glitzern über Neon | offen, erst am Code prüfen |
 
@@ -255,23 +256,29 @@ Zu Punkt 1 (umgesetzt am 04.10.2026):
   neue Schlüssel und Fehlermeldungen im Speicher getestet (kein Song neu generiert). **Nicht geprüft:** das Bild auf
   der Hardware.
 
-Zu Punkt 2 (Entwurf, noch nichts umgesetzt – vor der Umsetzung am Code prüfen):
+Zu Punkt 2 (umgesetzt am 05.10.2026):
 
-- Heute belegt `text: {…, over: true}` die eine Ebene: `apply_texts()` in `tools/songgen.py` trägt den Text als
-  `overlay` mit `mode: over` für die Matrix ein und bricht ab, wenn der Abschnitt schon ein `overlay` hat.
-- Ziel: Text liegt immer zuoberst, darunter Ebene, darunter der Effekt des Parts.
-- Firmware (`src/fxPipeline.cpp`): zweiter Kontext wie `layerBuf` / `layerCtx` nur für Text, z. B.
-  `fxTextBegin()` / `fxTextEnd()`, gemischt nach `applyLayer()` immer deckend (wie `FX_OVER`). Nur auf den
-  Matrix-Geräten nötig; kostet dort einen weiteren Puffer (`NUMMATRIX` × 3 Byte) und einen weiteren Kontext-Wechsel
-  je Durchlauf – mit `debug_fx_frametime` messen.
-- Zu klären: `progText` und der Effekt der Ebene dürfen sich keinen statischen Zustand teilen (gleiche Regel wie
-  „nie derselbe Effekt oben und unten"); wie `fxLayerFlush()` mit zwei Ebenen arbeitet; ob `under` und die übrigen
-  Ebenen-Schlüssel im `text:` dann die Text-Ebene oder die Ebene darunter meinen (Vorschlag: die Text-Ebene; `under`
-  dimmt dann alles unter dem Text).
-- Generator: `apply_texts()` legt den Text in die Text-Ebene statt ins `overlay`; die Sperre „text mit over und
-  overlay zugleich" entfällt. Ohne `overlay` im Abschnitt soll derselbe Code entstehen wie heute, damit bestehende
-  Songs unverändert bleiben – sonst vorher mit dem User klären.
-- Demo: eigener Part in Song 92 (Farbband + Glitzern + Text).
+- Reihenfolge im Bild: Effekt des Parts, darüber die Ebene, zuoberst der Text (deckt wie `FX_OVER`).
+- Firmware (`src/fxPipeline.cpp`): die Ebenen sind jetzt ein Feld `layers[]` (`LAYER_FX`, `LAYER_TEXT`) mit je
+  eigenem Bild, eigenen Zählern und eigenen Modifikatoren (`LayerMod`). `fxTextBegin()` / `fxTextEnd(amount)`,
+  dazu `fxTextWindow`, `fxTextFadeIn/Out`, `fxTextPulse`, `fxTextGate`, `fxTextUnder`. Die Ebenen stehen im `case`
+  nacheinander, nie ineinander; sie teilen sich den Sicherungspuffer für das Bild des unteren Effekts.
+  `fxLayerFlush()` gilt für beide. Die bisherigen `fxLayer…`-Aufrufe verhalten sich unverändert.
+- Festgelegt: Die Ebenen-Schlüssel im `text:` steuern die Text-Ebene; `under` dimmt alles unter dem Text (Effekt
+  des Parts und Ebene). Der Helligkeitsausgleich läuft über alle Ebenen: die hellste gilt, der Rest wird skaliert.
+- Kosten: ein weiterer Puffer `NUMMATRIX` × 3 Byte auf **allen** Geräten (einfacher als ein Matrix-Sonderfall),
+  RAM je Env rund +1,6 kB. Bildzeit auf der Matrix mit zwei Ebenen **nicht gemessen** (`debug_fx_frametime`).
+- Generator (`tools/songgen.py`): `apply_texts()` legt den Text nur dann in die Text-Ebene, wenn der Abschnitt
+  auch ein `overlay` hat (`text_layer_code()`, nur für die Matrix-Geräte). Ohne `overlay` entsteht derselbe Code
+  wie bisher (Text belegt die eine Ebene), bestehende Songs bleiben also gleich. `validate()` meldet, wenn dann
+  `progText` / `progTextScroll` zugleich im `overlay` oder als Effekt des Parts läuft (statischer Zustand).
+  `layer_mod_calls()` erzeugt mit `prefix="fxText"` dieselben Schlüssel für den Text.
+- Demo: Song 92, Part 90 (Farbband + Glitzern + Text „TEXT ON TOP", auf der Matrix alles unter dem Text gedimmt).
+  Part 88 springt jetzt nach 90, die Demo dauert rund 3:30.
+- Geprüft: alle fünf Envs bauen; im Speicher erzeugen #31 und #33 denselben Code wie in `generated.cpp`
+  (#8 Dancing On My Own nicht vergleichbar, dort ist die YAML seit der Generierung geändert); Text + Overlay
+  ergibt die Text-Ebene, auch wenn das Overlay nur auf einzelnen Geräten läuft; beide Fehlerfälle melden sich.
+  Kein Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
 
 Zu Punkt 3 (Grenze): Die Leitlinie „alles aus der Zeit seit Part-Beginn" gilt dann für die Ebene nicht mehr. Ein
 Gerät, das per BLE mitten im Song einsteigt, hat einen anderen Ebenen-Zustand als die übrigen. Bei zufälligen
@@ -339,7 +346,9 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
    - Song 92: jeder Baustein erkennbar; alle Geräte nebeneinander – Übergänge (v. a. `stage_lr`) und `pulse`
      starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts – **Parts 0–80 vom User am
      04.10.2026 ohne Befund durchgesehen**; offen: Parts 82–88 (in 82 pumpt nur das Glitzern, in 86 ist nur das
-     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein);
+     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein) und Part 90
+     (auf der Matrix liegt der Text über Farbband und Glitzern, beides darunter gedimmt und ohne Ruckeln; die
+     übrigen Geräte zeigen Farbband mit Glitzern);
    - Marker-LEDs an Gitarre und Bass sichtbar und flackerfrei, auch während Übergang und Ebene – **vom User am
      04.10.2026 bestätigt**;
    - ein Gerät mitten im Part einschalten (BLE-Einstieg): kein hängender Übergang.

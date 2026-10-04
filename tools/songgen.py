@@ -435,19 +435,20 @@ def effect_token(expr):
 	return m.group(2) if m.group(1) == "scene" and m.group(2) else m.group(1)
 
 
-def layer_mod_calls(spec, part, sec, song, name, errors):
-	"""Schlüssel in overlay:, die nur die Ebene steuern (fxLayer... in fxPipeline.h) -> (C++-Aufrufe, Beschreibungen)."""
+def layer_mod_calls(spec, part, sec, song, name, errors, prefix="fxLayer", label="overlay"):
+	"""Schlüssel in overlay:, die nur die Ebene steuern (fxLayer... in fxPipeline.h) -> (C++-Aufrufe, Beschreibungen).
+	Mit prefix="fxText", label="text" dieselben Schlüssel für die Text-Ebene."""
 	bpm = round(part["bpm"])
 	calls, infos = [], []
 
 	def beats_ms(key, allow_zero=False):
 		beats = spec[key]
 		if isinstance(beats, bool) or not isinstance(beats, (int, float)) or beats < 0 or (beats == 0 and not allow_zero):
-			errors.append(f"{name}: overlay {key} ist eine Angabe in Beats (Zahl {'>= 0' if allow_zero else '> 0'}), nicht '{beats}'")
+			errors.append(f"{name}: {label} {key} ist eine Angabe in Beats (Zahl {'>= 0' if allow_zero else '> 0'}), nicht '{beats}'")
 			return None
 		ms = round(beats * 60000.0 / part["bpm"])
 		if ms > part["dur"]:
-			errors.append(f"{name}: overlay {key} ({ms} ms) liegt hinter dem Part-Ende ({part['dur']} ms)")
+			errors.append(f"{name}: {label} {key} ({ms} ms) liegt hinter dem Part-Ende ({part['dur']} ms)")
 			return None
 		return ms
 
@@ -456,7 +457,7 @@ def layer_mod_calls(spec, part, sec, song, name, errors):
 		v = dict(v) if isinstance(v, dict) else {short: v}
 		unknown = [k for k in v if k not in allowed]
 		if unknown:
-			errors.append(f"{name}: overlay {key} kennt nur {', '.join(allowed)} - unbekannt: {', '.join(map(str, unknown))}")
+			errors.append(f"{name}: {label} {key} kennt nur {', '.join(allowed)} - unbekannt: {', '.join(map(str, unknown))}")
 		return v
 
 	start, end = 0, part["dur"]
@@ -465,14 +466,14 @@ def layer_mod_calls(spec, part, sec, song, name, errors):
 		b = beats_ms("to") if "to" in spec else 0
 		if a is not None and b is not None:
 			if b and b <= a:
-				errors.append(f"{name}: overlay to ({spec['to']} Beats) muss hinter from ({spec.get('from', 0)} Beats) liegen")
+				errors.append(f"{name}: {label} to ({spec['to']} Beats) muss hinter from ({spec.get('from', 0)} Beats) liegen")
 			elif a or b:
 				start, end = a, b or part["dur"]
-				calls.append(f"fxLayerWindow({a}" + (f", {b}" if b else "") + ");")
+				calls.append(f"{prefix}Window({a}" + (f", {b}" if b else "") + ");")
 				infos.append(f"ab {a} ms" + (f" bis {b} ms" if b else ""))
 
 	fades = 0
-	for key, fn, text in (("fade_in", "fxLayerFadeIn", "baut sich {} ms auf"), ("fade_out", "fxLayerFadeOut", "klingt {} ms ab")):
+	for key, fn, text in (("fade_in", prefix + "FadeIn", "baut sich {} ms auf"), ("fade_out", prefix + "FadeOut", "klingt {} ms ab")):
 		if key in spec:
 			ms = beats_ms(key)
 			if ms:
@@ -480,37 +481,37 @@ def layer_mod_calls(spec, part, sec, song, name, errors):
 				calls.append(f"{fn}({ms});")
 				infos.append(text.format(ms))
 	if fades > end - start:
-		errors.append(f"{name}: overlay fade_in + fade_out ({fades} ms) sind länger als das Zeitfenster der Ebene ({end - start} ms)")
+		errors.append(f"{name}: {label} fade_in + fade_out ({fades} ms) sind länger als das Zeitfenster der Ebene ({end - start} ms)")
 
 	if "pulse" in spec:
 		p = sub("pulse", "depth", ("depth", "per"))
 		depth = percent(p.get("depth", 50))
 		beats = per_beats(p.get("per", "beat"), sec, song)
 		if depth is None:
-			errors.append(f"{name}: overlay pulse depth ist eine Angabe in Prozent (0..100), nicht '{p.get('depth')}'")
+			errors.append(f"{name}: {label} pulse depth ist eine Angabe in Prozent (0..100), nicht '{p.get('depth')}'")
 		elif beats is None or float(beats) != int(beats) or beats > 255:
-			errors.append(f"{name}: overlay pulse per '{p.get('per')}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats pro Puls)")
+			errors.append(f"{name}: {label} pulse per '{p.get('per')}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats pro Puls)")
 		elif depth:
-			calls.append(f"fxLayerPulse({bpm}, {depth}" + (f", {int(beats)}" if beats != 1 else "") + ");")
+			calls.append(f"{prefix}Pulse({bpm}, {depth}" + (f", {int(beats)}" if beats != 1 else "") + ");")
 			infos.append(f"pulsiert alle {int(beats)} Beat(s), Tiefe {p.get('depth', 50)} %")
 
 	if "gate" in spec:
 		g = sub("gate", "per_beat", ("per_beat", "duty"))
 		n, duty = g.get("per_beat", 1), g.get("duty", 50)
 		if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 16:
-			errors.append(f"{name}: overlay gate per_beat ist eine ganze Zahl von 1 bis 16 (Blitze pro Beat), nicht '{n}'")
+			errors.append(f"{name}: {label} gate per_beat ist eine ganze Zahl von 1 bis 16 (Blitze pro Beat), nicht '{n}'")
 		elif isinstance(duty, bool) or not isinstance(duty, int) or not 1 <= duty <= 99:
-			errors.append(f"{name}: overlay gate duty ist der Hell-Anteil in Prozent (1..99), nicht '{duty}'")
+			errors.append(f"{name}: {label} gate duty ist der Hell-Anteil in Prozent (1..99), nicht '{duty}'")
 		else:
-			calls.append(f"fxLayerGate({bpm}, {n}" + (f", {duty}" if duty != 50 else "") + ");")
+			calls.append(f"{prefix}Gate({bpm}, {n}" + (f", {duty}" if duty != 50 else "") + ");")
 			infos.append(f"Tor {n}x pro Beat, {duty} % hell")
 
 	if "under" in spec:
 		v = percent(spec["under"])
 		if v is None:
-			errors.append(f"{name}: overlay under ist die Helligkeit des Effekts darunter in Prozent (0..100), nicht '{spec['under']}'")
+			errors.append(f"{name}: {label} under ist die Helligkeit des Effekts darunter in Prozent (0..100), nicht '{spec['under']}'")
 		elif v != 255:
-			calls.append(f"fxLayerUnder({v});")
+			calls.append(f"{prefix}Under({v});")
 			infos.append(f"darunter {spec['under']} %")
 	return calls, infos
 
@@ -603,6 +604,18 @@ def overlay_code(part, song):
 	return pre, post, info, [], calls
 
 
+def text_layer_code(part, song):
+	"""text: {..., over: true} in einem Abschnitt, der auch ein overlay hat: der Text läuft auf den Matrix-Geräten in der
+	eigenen Text-Ebene über Szene und Ebene (fxTextBegin/End in fxPipeline.h) -> (Zeilen vor dem Effekt, Zeilen danach)."""
+	layer = part.get("text_layer")
+	if not layer:
+		return [], []
+	guard = DEVICE_KEYS["matrix"]
+	pre = [f"#if {guard}"] + ["\t\t" + c for c in layer["calls"]]
+	pre += ["\t\tfxTextBegin();", "\t\t" + fill(layer["expr"], part, song), "\t\tfxTextEnd();", "#endif"]
+	return pre, [f"#if {guard}", "\t\tfxLayerFlush();", "#endif"]
+
+
 def fmt_time(ms):
 	return f"{ms // 60000}:{(ms // 1000) % 60:02d}.{ms % 1000:03d}"
 
@@ -664,7 +677,7 @@ def text_call(part, song, widths):
 	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
 	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
 	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). over: true legt den Text über die laufende
-	Szene, statt sie auf der Matrix zu ersetzen."""
+	Szene, statt sie auf der Matrix zu ersetzen - auch zusammen mit overlay: (dann liegt der Text über beidem)."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec["text"]
@@ -719,11 +732,18 @@ def apply_texts(song, timeline):
 			continue
 		if isinstance(sec["text"], dict) and sec["text"].get("over"):
 			# Text als Ebene über der Szene: die Matrix spielt ihre Szene weiter
-			if sec.get("overlay"):
-				raise SongError(f"{sec.get('name')}: text mit over und overlay zugleich - es gibt nur eine Ebene")
 			expr, info = text_call(part, song, widths)
-			part["text_info"] = info + " (über der Szene)"
 			layer_mods = {k: sec["text"][k] for k in LAYER_MOD_KEYS if k in sec["text"]}	# z. B. under: Szene gedimmt, Text voll hell
+			if sec.get("overlay"):
+				# die Ebene ist schon belegt: der Text bekommt die eigene Text-Ebene und liegt über Szene und overlay
+				errors = []
+				calls, infos = layer_mod_calls(layer_mods, part, sec, song, sec.get("name", "?"), errors, prefix="fxText", label="text")
+				if errors:
+					raise SongError("\n".join(errors))
+				part["text_layer"] = {"expr": expr, "calls": calls}
+				part["text_info"] = info + " (über Szene und Ebene" + "".join(", " + t for t in infos) + ")"
+				continue
+			part["text_info"] = info + " (über der Szene)"
 			part["sec"] = dict(sec, overlay=dict({"devices": {"matrix": expr}, "mode": "over"}, **layer_mods))
 			continue
 		devices = dict(sec.get("devices") or {})
@@ -801,7 +821,10 @@ def gen_function(song, timeline, end_case):
 		call = default_call(part, song)
 		devices = sec.get("devices") or {}
 		layer_pre, layer_post = overlay_code(part, song)[:2] if i > 0 else ([], [])
-		lines += layer_pre
+		text_pre, text_post = text_layer_code(part, song) if i > 0 else ([], [])
+		if layer_post == ["\t\tfxLayerFlush();"]:
+			text_post = []	# die Ebene gibt schon auf allen Geräten aus
+		lines += text_pre + layer_pre
 
 		if i == 0 and plans:
 			# Songanfang: Scroll-Geräte zeigen den Titel, alle anderen sind schwarz
@@ -827,7 +850,7 @@ def gen_function(song, timeline, end_case):
 			lines.append("#endif")
 		else:
 			lines.append(f"\t\t{call}")
-		lines += layer_post
+		lines += layer_post + text_post
 		lines.append("\t\tbreak;")
 		lines.append("")
 
@@ -1049,6 +1072,8 @@ def validate(song, timeline):
 					errors.append(f"{name}: overlay - unbekannte Szene {tok}")
 				elif tok in below:
 					errors.append(f"{name}: overlay {tok} läuft schon als Effekt des Parts - oben und unten müssen verschiedene Effekte sein")
+			if part.get("text_layer") and {"progText", "progTextScroll"} & (below | {effect_token(e) for e in layer_calls}):
+				errors.append(f"{name}: text mit over - progText/progTextScroll darf dann nicht zugleich im overlay oder als Effekt des Parts laufen")
 		if round(part["bpm"]) > 255:
 			errors.append(f"{name}: bpm > 255 passt nicht in scene()")
 	return errors

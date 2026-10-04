@@ -33,6 +33,18 @@ static CRGB ledsPrev[NUMMATRIX];	// letztes Bild des alten Parts
 static uint8_t transType = TRANS_CUT;
 static unsigned int transMs = 0;
 
+//--- Ebenen: ein frei belegbarer zweiter Effekt und darüber eine eigene für Text ---
+enum { LAYER_FX = 0, LAYER_TEXT, LAYER_COUNT };
+
+// steuert nur die Stärke einer Ebene (fxLayer… / fxText…)
+struct LayerMod {
+	unsigned int fromMs, toMs;
+	unsigned int fadeInMs, fadeOutMs;
+	uint8_t pulseBpm, pulseDepth, pulseBeats;
+	uint8_t gateBpm, gatePerBeat, gateDuty;
+	uint8_t under;
+};
+
 //--- Modifikatoren ---
 static struct {
 	unsigned int fadeInMs, fadeOutMs;
@@ -44,18 +56,14 @@ static struct {
 	bool span;
 	CRGB tint;
 	uint8_t tintAmount;
-	//--- nur für die Ebene ---
-	unsigned int layerFromMs, layerToMs;
-	unsigned int layerFadeInMs, layerFadeOutMs;
-	uint8_t layerPulseBpm, layerPulseDepth, layerPulseBeats;
-	uint8_t layerGateBpm, layerGatePerBeat, layerGateDuty;
-	uint8_t under;
+	LayerMod layer[LAYER_COUNT];
 } mod;
 static bool modReady = false;
 
 static void resetMods() {
 	memset(&mod, 0, sizeof(mod));
-	mod.dim = mod.stageDim = mod.under = 255;
+	mod.dim = mod.stageDim = 255;
+	for (LayerMod& lm : mod.layer) lm.under = 255;
 	modReady = true;
 }
 
@@ -83,20 +91,30 @@ void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
 void fxTint(CRGB col, uint8_t amount)	{ mod.tint = col; mod.tintAmount = amount; }
 
-void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layerFromMs = fromMillis; mod.layerToMs = toMillis; }
-void fxLayerFadeIn(unsigned int millis)		{ mod.layerFadeInMs = millis; }
-void fxLayerFadeOut(unsigned int millis)	{ mod.layerFadeOutMs = millis; }
-void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats) {
-	mod.layerPulseBpm = bpm;
-	mod.layerPulseDepth = depth;
-	mod.layerPulseBeats = max((uint8_t)1, beats);
+static void setLayerPulse(LayerMod& lm, uint8_t bpm, uint8_t depth, uint8_t beats) {
+	lm.pulseBpm = bpm;
+	lm.pulseDepth = depth;
+	lm.pulseBeats = max((uint8_t)1, beats);
 }
-void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
-	mod.layerGateBpm = bpm;
-	mod.layerGatePerBeat = max((uint8_t)1, perBeat);
-	mod.layerGateDuty = min((uint8_t)100, dutyPercent);
+static void setLayerGate(LayerMod& lm, uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
+	lm.gateBpm = bpm;
+	lm.gatePerBeat = max((uint8_t)1, perBeat);
+	lm.gateDuty = min((uint8_t)100, dutyPercent);
 }
-void fxLayerUnder(uint8_t brightness)	{ mod.under = brightness; }
+
+void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layer[LAYER_FX].fromMs = fromMillis; mod.layer[LAYER_FX].toMs = toMillis; }
+void fxLayerFadeIn(unsigned int millis)		{ mod.layer[LAYER_FX].fadeInMs = millis; }
+void fxLayerFadeOut(unsigned int millis)	{ mod.layer[LAYER_FX].fadeOutMs = millis; }
+void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_FX], bpm, depth, beats); }
+void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_FX], bpm, perBeat, dutyPercent); }
+void fxLayerUnder(uint8_t brightness)		{ mod.layer[LAYER_FX].under = brightness; }
+
+void fxTextWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layer[LAYER_TEXT].fromMs = fromMillis; mod.layer[LAYER_TEXT].toMs = toMillis; }
+void fxTextFadeIn(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeInMs = millis; }
+void fxTextFadeOut(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeOutMs = millis; }
+void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_TEXT], bpm, depth, beats); }
+void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_TEXT], bpm, perBeat, dutyPercent); }
+void fxTextUnder(uint8_t brightness)		{ mod.layer[LAYER_TEXT].under = brightness; }
 
 //==================================================================
 //=========== Ebene: zweiter Effekt mit eigenem Kontext ============
@@ -110,18 +128,22 @@ struct FxContext {
 	bool calculated, stroboIsBlack;
 };
 
-static CRGB layerBuf[NUMMATRIX];	// Bild der Ebene
-static CRGB baseBuf[NUMMATRIX];		// Bild des unteren Effekts, solange die Ebene zeichnet
-static FxContext layerCtx, baseCtx;
-static unsigned int layerLastMs = 0;	// millisCounterForProgChange beim letzten Verlassen der Ebene
-static bool layerCapturing = false;	// zwischen fxLayerBegin() und fxLayerEnd()
-static bool layerUsed = false;		// in diesem Part ist eine Ebene angemeldet
-static bool layerPending = false;	// seit fxLayerEnd() wurde noch nicht ausgegeben
-static uint8_t layerMode = FX_ADD, layerAmount = 255, layerFrom = 0, layerTo = 255;
 // Manche Effekte stellen die Gesamthelligkeit um (progFastBlingBling auf 255). In der Ebene darf das den Effekt darunter
 // nicht mit aufhellen (Stromaufnahme!): die Helligkeit der Ebene wird gemerkt und beim Mischen ausgeglichen.
-static uint8_t layerBright = 255;		// FastLED-Helligkeit, die der Effekt der Ebene eingestellt hat
-static uint8_t brightAtBegin = 255;		// … und die davor
+struct FxLayer {
+	CRGB buf[NUMMATRIX];	// Bild der Ebene
+	FxContext ctx;
+	unsigned int lastMs;	// millisCounterForProgChange beim letzten Verlassen der Ebene
+	bool used;				// in diesem Part ist die Ebene angemeldet
+	bool pending;			// seit dem Ende der Ebene wurde noch nicht ausgegeben
+	uint8_t mode, amount, from, to;
+	uint8_t bright;			// FastLED-Helligkeit, die der Effekt der Ebene eingestellt hat
+};
+static FxLayer layers[LAYER_COUNT];
+static CRGB baseBuf[NUMMATRIX];		// Bild des unteren Effekts, solange eine Ebene zeichnet
+static FxContext baseCtx;
+static int8_t layerCapturing = -1;		// Ebene, die gerade zeichnet (zwischen …Begin() und …End()), sonst -1
+static uint8_t brightAtBegin = 255;		// FastLED-Helligkeit vor dem Effekt der Ebene
 static uint8_t baseBright = 255;		// Helligkeit des unteren Effekts in diesem Durchlauf
 static bool baseBrightKnown = false;
 
@@ -153,52 +175,67 @@ static void writeContext(const FxContext& c, unsigned int elapsed) {
 	interrupts();
 }
 
-static void resetLayer() {
-	memset(layerBuf, 0, sizeof(layerBuf));
-	memset(&layerCtx, 0, sizeof(layerCtx));
-	layerCtx.scrollZaehler = MATRIX_WIDTH + 1;	// wie switchToPart()
-	layerLastMs = 0;
-	layerUsed = layerPending = false;
+static void resetLayers() {
+	for (FxLayer& L : layers) {
+		memset(L.buf, 0, sizeof(L.buf));
+		memset(&L.ctx, 0, sizeof(L.ctx));
+		L.ctx.scrollZaehler = MATRIX_WIDTH + 1;	// wie switchToPart()
+		L.lastMs = 0;
+		L.used = L.pending = false;
+	}
 }
 
-void fxLayerBegin() {
-	if (layerCapturing) return;
+// Die Ebenen zeichnen nacheinander, nie ineinander: jede sichert Bild und Zähler des unteren Effekts und gibt sie zurück.
+static void layerBegin(uint8_t idx) {
+	if (layerCapturing >= 0) return;
+	FxLayer& L = layers[idx];
 	unsigned int now = millisCounterForProgChange;
 	readContext(baseCtx);
 	memcpy(baseBuf, leds, sizeof(baseBuf));
-	if (!layerUsed) {	// erster Durchlauf des Parts: Dauer und Ziel gelten weiter, bis der Effekt der Ebene sie setzt
-		layerCtx.nextChange = baseCtx.nextChange;
-		layerCtx.nextPart = baseCtx.nextPart;
+	if (!L.used) {	// erster Durchlauf des Parts: Dauer und Ziel gelten weiter, bis der Effekt der Ebene sie setzt
+		L.ctx.nextChange = baseCtx.nextChange;
+		L.ctx.nextPart = baseCtx.nextPart;
 	}
-	writeContext(layerCtx, (now >= layerLastMs) ? now - layerLastMs : 0);
-	memcpy(leds, layerBuf, sizeof(layerBuf));
-	layerLastMs = now;
+	writeContext(L.ctx, (now >= L.lastMs) ? now - L.lastMs : 0);
+	memcpy(leds, L.buf, sizeof(L.buf));
+	L.lastMs = now;
 	brightAtBegin = FastLED.getBrightness();
-	layerCapturing = true;
+	layerCapturing = idx;
 }
 
-void fxLayerEnd(uint8_t mode, uint8_t amount, uint8_t from, uint8_t to) {
-	if (!layerCapturing) return;
+static void layerEnd(uint8_t idx, uint8_t mode, uint8_t amount, uint8_t from, uint8_t to) {
+	if (layerCapturing != idx) return;
+	FxLayer& L = layers[idx];
 	unsigned int now = millisCounterForProgChange;
-	unsigned int elapsed = (now >= layerLastMs) ? now - layerLastMs : 0;	// so lange hat der Effekt der Ebene gebraucht
-	readContext(layerCtx);
-	memcpy(layerBuf, leds, sizeof(layerBuf));
-	layerLastMs = now;
+	unsigned int elapsed = (now >= L.lastMs) ? now - L.lastMs : 0;	// so lange hat der Effekt der Ebene gebraucht
+	readContext(L.ctx);
+	memcpy(L.buf, leds, sizeof(L.buf));
+	L.lastMs = now;
 	writeContext(baseCtx, elapsed);
 	memcpy(leds, baseBuf, sizeof(baseBuf));
-	layerBright = FastLED.getBrightness();
+	L.bright = FastLED.getBrightness();
 	FastLED.setBrightness(brightAtBegin);
 	baseBrightKnown = false;
-	layerCapturing = false;
-	layerUsed = layerPending = true;
-	layerMode = mode;
-	layerAmount = amount;
-	layerFrom = from;
-	layerTo = to;
+	layerCapturing = -1;
+	L.used = L.pending = true;
+	L.mode = mode;
+	L.amount = amount;
+	L.from = from;
+	L.to = to;
+}
+
+void fxLayerBegin()	{ layerBegin(LAYER_FX); }
+void fxLayerEnd(uint8_t mode, uint8_t amount, uint8_t from, uint8_t to)	{ layerEnd(LAYER_FX, mode, amount, from, to); }
+void fxTextBegin()	{ layerBegin(LAYER_TEXT); }
+void fxTextEnd(uint8_t amount)	{ layerEnd(LAYER_TEXT, FX_OVER, amount, 0, 255); }
+
+static bool anyLayer(bool FxLayer::*flag) {
+	for (const FxLayer& L : layers) if (L.*flag) return true;
+	return false;
 }
 
 void fxLayerFlush() {
-	if (layerPending) fxPresent();
+	if (anyLayer(&FxLayer::pending)) fxPresent();
 }
 
 //==================================================================
@@ -288,21 +325,21 @@ static uint8_t modBrightness(uint32_t ms) {
 	return v;
 }
 
-// Hüllkurve der Ebene aus Zeitfenster und Ein-/Ausblenden: 0 = Ebene weg, 255 = voll da
-static uint8_t layerEnvelope(uint32_t beatMs) {
-	uint32_t end = mod.layerToMs ? mod.layerToMs : (uint32_t)nextChangeMillis + mod.offsetMs;
-	if (beatMs < mod.layerFromMs) return 0;
-	if (mod.layerToMs && beatMs >= end) return 0;
+// Hüllkurve einer Ebene aus Zeitfenster und Ein-/Ausblenden: 0 = Ebene weg, 255 = voll da
+static uint8_t layerEnvelope(const LayerMod& lm, uint32_t beatMs) {
+	uint32_t end = lm.toMs ? lm.toMs : (uint32_t)nextChangeMillis + mod.offsetMs;
+	if (beatMs < lm.fromMs) return 0;
+	if (lm.toMs && beatMs >= end) return 0;
 	uint8_t v = 255;
-	uint32_t since = beatMs - mod.layerFromMs;
-	if (mod.layerFadeInMs && since < mod.layerFadeInMs) {
-		uint8_t lin = since * 255 / mod.layerFadeInMs;
+	uint32_t since = beatMs - lm.fromMs;
+	if (lm.fadeInMs && since < lm.fadeInMs) {
+		uint8_t lin = since * 255 / lm.fadeInMs;
 		v = scale8(lin, lin);	// quadratisch wie fxFadeIn
 	}
-	if (mod.layerFadeOutMs) {
+	if (lm.fadeOutMs) {
 		uint32_t left = (end > beatMs) ? end - beatMs : 0;
-		if (left < mod.layerFadeOutMs) {
-			uint8_t lin = left * 255 / mod.layerFadeOutMs;
+		if (left < lm.fadeOutMs) {
+			uint8_t lin = left * 255 / lm.fadeOutMs;
 			v = scale8(v, scale8(lin, lin));
 		}
 	}
@@ -338,15 +375,15 @@ static void applyMods(CRGB* buf, uint8_t bright) {
 	}
 }
 
-// legt die Ebene über buf (das Bild des unteren Effekts)
-static void applyLayer(CRGB* buf, uint32_t ms) {
-	//--- Stärke der Ebene aus der Part-Zeit; der Effekt darunter folgt nur der Hüllkurve, nicht Puls und Tor ---
+// legt eine Ebene über buf (das Bild darunter); bright = Gesamthelligkeit, für die buf gerechnet ist
+static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod& lm, uint8_t& bright) {
+	//--- Stärke der Ebene aus der Part-Zeit; das Bild darunter folgt nur der Hüllkurve, nicht Puls und Tor ---
 	uint32_t beatMs = ms + mod.offsetMs;
-	uint8_t env = layerEnvelope(beatMs);
-	uint8_t amount = scale8(layerAmount, env);
-	if (mod.layerPulseBpm) amount = scale8(amount, pulseLevel(beatMs, mod.layerPulseBpm, mod.layerPulseDepth, mod.layerPulseBeats));
-	if (mod.layerGateBpm && !gateOpen(beatMs, mod.layerGateBpm, mod.layerGatePerBeat, mod.layerGateDuty)) amount = 0;
-	uint8_t baseScale = 255 - scale8(255 - mod.under, env);
+	uint8_t env = layerEnvelope(lm, beatMs);
+	uint8_t amount = scale8(L.amount, env);
+	if (lm.pulseBpm) amount = scale8(amount, pulseLevel(beatMs, lm.pulseBpm, lm.pulseDepth, lm.pulseBeats));
+	if (lm.gateBpm && !gateOpen(beatMs, lm.gateBpm, lm.gatePerBeat, lm.gateDuty)) amount = 0;
+	uint8_t baseScale = 255 - scale8(255 - lm.under, env);
 
 	if (amount == 0) {	// Ebene gerade nicht zu sehen: auch ihre Helligkeit gilt dann nicht
 		if (baseScale != 255) {
@@ -356,25 +393,21 @@ static void applyLayer(CRGB* buf, uint32_t ms) {
 	}
 
 	//--- unterschiedliche Gesamthelligkeit oben/unten ausgleichen: die hellere gilt, das andere Bild wird herunterskaliert ---
-	if (!baseBrightKnown) {		// nur einmal je Durchlauf lesen, danach steht hier schon die gemeinsame Helligkeit
-		baseBright = FastLED.getBrightness();
-		baseBrightKnown = true;
-	}
-	if (layerMode != FX_MASK && layerBright != baseBright) {
-		if (layerBright > baseBright) {
-			baseScale = scale8(baseScale, (uint16_t)baseBright * 255 / layerBright);
-			FastLED.setBrightness(layerBright);		// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+	if (L.mode != FX_MASK && L.bright != bright) {
+		if (L.bright > bright) {
+			baseScale = scale8(baseScale, (uint16_t)bright * 255 / L.bright);
+			bright = L.bright;
 		}
-		else amount = scale8(amount, (uint16_t)layerBright * 255 / baseBright);
+		else amount = scale8(amount, (uint16_t)L.bright * 255 / bright);
 	}
 
-	const bool span = (layerFrom > 0 || layerTo < 255);
+	const bool span = (L.from > 0 || L.to < 255);
 	if (span && !pixelPosReady) initPixelPos();
 	for (int i = 0; i < NUMMATRIX; i++) {
 		if (baseScale != 255) buf[i].nscale8_video(baseScale);
-		bool inside = !span || (pixelPos[i] >= layerFrom && pixelPos[i] <= layerTo);
-		CRGB l = inside ? layerBuf[i] : CRGB(CRGB::Black);
-		switch (layerMode) {
+		bool inside = !span || (pixelPos[i] >= L.from && pixelPos[i] <= L.to);
+		CRGB l = inside ? L.buf[i] : CRGB(CRGB::Black);
+		switch (L.mode) {
 		case FX_MAX:
 			if (amount != 255) l.nscale8(amount);
 			buf[i] |= l;	// je Kanal der größere Wert
@@ -391,6 +424,19 @@ static void applyLayer(CRGB* buf, uint32_t ms) {
 			break;
 		}
 	}
+}
+
+// legt alle angemeldeten Ebenen über buf: erst den zweiten Effekt, zuoberst den Text
+static void applyLayers(CRGB* buf, uint32_t ms) {
+	if (!baseBrightKnown) {		// nur einmal je Durchlauf lesen, danach steht in FastLED schon die gemeinsame Helligkeit
+		baseBright = FastLED.getBrightness();
+		baseBrightKnown = true;
+	}
+	uint8_t bright = baseBright;
+	for (int k = 0; k < LAYER_COUNT; k++) {
+		if (layers[k].used) applyLayer(buf, ms, layers[k], mod.layer[k], bright);
+	}
+	if (bright != baseBright) FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 }
 
 // Hash je LED für TRANS_DISSOLVE (auf jedem Gerät fest, sieht zufällig aus)
@@ -486,8 +532,8 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 #endif
 
 void fxPresent() {
-	if (layerCapturing) return;		// der Effekt der Ebene zeichnet nur, ausgegeben wird mit dem unteren Effekt
-	layerPending = false;
+	if (layerCapturing >= 0) return;	// der Effekt der Ebene zeichnet nur, ausgegeben wird mit dem unteren Effekt
+	for (FxLayer& L : layers) L.pending = false;
 
 	#ifdef debug_fx_frametime
 		uint32_t t0 = micros();
@@ -499,9 +545,10 @@ void fxPresent() {
 		uint32_t ms = millisCounterForProgChange;
 		uint8_t bright = modBrightness(ms);
 		bool trans = (transType != TRANS_CUT && ms < transMs);
-		if (trans || modsActive(bright) || layerUsed) {
+		bool layered = anyLayer(&FxLayer::used);
+		if (trans || modsActive(bright) || layered) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
-			if (layerUsed) applyLayer(ledsOut, ms);
+			if (layered) applyLayers(ledsOut, ms);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
 			fxFrame = ledsOut;
@@ -554,9 +601,9 @@ void fxPartReset() {
 	transType = TRANS_CUT;
 	transMs = 0;
 	resetMods();
-	if (layerCapturing) {	// Part-Wechsel mitten in der Ebene (sollte nicht vorkommen): Bild des unteren Effekts zurück
+	if (layerCapturing >= 0) {	// Part-Wechsel mitten in der Ebene (sollte nicht vorkommen): Bild des unteren Effekts zurück
 		memcpy(leds, baseBuf, sizeof(baseBuf));
-		layerCapturing = false;
+		layerCapturing = -1;
 	}
-	resetLayer();
+	resetLayers();
 }

@@ -69,10 +69,13 @@ effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode,
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
 same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
-layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. Everything is
+layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. A second layer reserved
+for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run
+together. Everything is
 computed from the time since part start, so all devices stay in sync regardless of LED count. In generated songs they
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span` (lengths in
-beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene;
+beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene, or the text layer if the
+section also has an `overlay`;
 inside `overlay` the keys `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` steer only the layer).
 
 Plan and working state of this refactoring: `docs/FX-Pipeline-Plan.md` (section "Arbeitsstand"). **Read it before

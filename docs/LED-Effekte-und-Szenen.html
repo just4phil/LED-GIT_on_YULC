@@ -359,7 +359,19 @@
   <tr><td><code>fxLayerGate(bpm, perBeat, duty = 50)</code></td><td><code>gate</code></td><td>Nur die Ebene blitzt im Raster.</td></tr>
   <tr><td><code>fxLayerUnder(brightness)</code></td><td><code>under</code></td><td>Der Effekt darunter wird dunkler, solange die Ebene da ist (Szene gedimmt, Text voll hell). Folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor. <code>fxDim</code> gilt dagegen für das ganze Bild.</td></tr>
 </table></div>
-<p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten. Es gibt eine Ebene pro Part. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
+<p>Über dieser Ebene liegt eine zweite, die für Text reserviert ist. Sie deckt immer, wo sie nicht schwarz ist (wie <code>FX_OVER</code>). So laufen Szene, Ebene und Text zugleich. Die beiden Ebenen stehen nacheinander, nie ineinander:</p>
+<pre><code>case 45: fxTextBegin();   progText("FUN", 11163, 50, 698);      fxTextEnd();
+         fxLayerBegin();  scene(SCENE_SPARKLE, 11163, 50, 86);  fxLayerEnd(FX_ADD);
+         scene(SCENE_GLOW, 11163, 50, 86);
+         fxLayerFlush();  break;</code></pre>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>Wirkung</th></tr>
+  <tr><td><code>fxTextBegin()</code> / <code>fxTextEnd(amount = 255)</code></td><td>Der Effekt dazwischen (<code>progText</code>, <code>progTextScroll</code>) zeichnet in die Text-Ebene. <code>amount</code> = Deckkraft des Texts. <code>fxLayerFlush()</code> gilt für beide Ebenen.</td></tr>
+  <tr><td><code>fxTextWindow</code>, <code>fxTextFadeIn</code>, <code>fxTextFadeOut</code>, <code>fxTextPulse</code>, <code>fxTextGate</code></td><td>Wie die <code>fxLayer…</code>-Funktionen, steuern aber nur den Text.</td></tr>
+  <tr><td><code>fxTextUnder(brightness)</code></td><td>Alles unter dem Text wird dunkler: Effekt des Parts <b>und</b> Ebene.</td></tr>
+</table></div>
+<p>In generierten Songs entsteht die Text-Ebene von selbst, wenn ein Abschnitt <code>text: {…, over: true}</code> <b>und</b> <code>overlay</code> hat; die Ebenen-Schlüssel im <code>text</code> steuern dann den Text. Ohne <code>overlay</code> belegt der Text wie bisher die eine Ebene.</p>
+<p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten; mit Text-Ebene also kein <code>progText</code> / <code>progTextScroll</code> in der Ebene oder als Effekt des Parts. Es gibt eine frei belegbare Ebene pro Part, dazu die Text-Ebene. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
 
 <!-- ===================================================================== -->
 <h2 id="demos">8 · Demo-Songs 90 bis 92</h2>
@@ -397,7 +409,7 @@
   <tr><td>70</td><td>SUNSET</td><td><code>progPalette(8000, PALETTE_SCHEME, 100)</code></td></tr>
 </table></div>
 <div class="tablewrap"><table>
-  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 3:20 min)</th></tr>
+  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 3:30 min)</th></tr>
   <tr><th>Part</th><th>ab</th><th>Baustein</th><th>Was man sehen soll</th></tr>
   <tr><td>0</td><td>0:00</td><td>–</td><td>Farbband warm (FIRE), 4 s Vorlauf</td></tr>
   <tr><th colspan="4">Übergänge: das Farbband wechselt warm ↔ kalt, je 6 s, Übergang 4 Beats</th></tr>
@@ -431,6 +443,8 @@
   <tr><td>84</td><td>2:58</td><td><code>fxLayerFadeIn</code> + <code>fxLayerFadeOut</code></td><td>Glitzern baut sich über 8 Beats auf dem Farbband (SUNSET) auf und klingt in den letzten 4 Beats ab; das Farbband bleibt gleich hell</td></tr>
   <tr><td>86</td><td>3:06</td><td><code>fxLayerUnder(60)</code></td><td>wie Part 74, aber das Farbband ist gedimmt: Text „SCENE DIMMED", Kometen und Leuchtspuren bleiben voll hell</td></tr>
   <tr><td>88</td><td>3:14</td><td><code>fxLayerWindow(4000)</code> + <code>fxLayerGate(bpm, 2)</code></td><td>2 Takte nur das Farbband (NEON), in den letzten 2 Takten blitzt Glitzern in Achteln dazu</td></tr>
+  <tr><th colspan="4">Eigene Text-Ebene, 8 s</th></tr>
+  <tr><td>90</td><td>3:22</td><td><code>fxTextBegin/End</code> + <code>fxTextUnder(120)</code></td><td>Matrix: Text „TEXT ON TOP" über Farbband (SUNSET) <b>und</b> Glitzern, beides unter dem Text gedimmt; übrige Geräte: Farbband mit Glitzern in voller Helligkeit</td></tr>
 </table></div>
 <div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein, für Song 92 mit <code>fx-pipeline</code>. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
 

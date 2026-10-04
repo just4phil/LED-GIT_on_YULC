@@ -4260,6 +4260,22 @@ void pipelineDemo() {
 		fxLayerWindow(4000);
 		fxLayerGate(bpm, 2);
 		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 90, bpm);
+		fxLayerEnd(FX_ADD);
+		scene(SCENE_PALETTE, 8000, 90, bpm);
+		fxLayerFlush();
+		break;
+
+	//--- eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts ---
+	case 90:	// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextUnder(120);
+		fxTextBegin();
+		progText("TEXT ON TOP", 8000, 100, 1000, CRGB::White);
+		fxTextEnd();
+#endif
+		fxLayerBegin();
 		scene(SCENE_SPARKLE, 8000, 100, bpm);
 		fxLayerEnd(FX_ADD);
 		scene(SCENE_PALETTE, 8000, 100, bpm);

@@ -192,8 +192,10 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 - Max. 9 Zeichen pro Wort auf der SCROLLMATRIX, sonst läuft alles als Lauftext (Hinweis in der Ausgabe); nur ASCII.
 - Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
 - `over: true` (z. B. `{words: "FUN", over: true}`) - der Text liegt über der Szene, die Matrix spielt sie weiter.
-  Belegt die Ebene, also nicht zusammen mit `overlay`. Mit `over: true` gelten auch die Schlüssel, die nur die Ebene
-  steuern (siehe unten), z. B. `{words: "FUN", over: true, under: 40}` - Szene gedimmt, Text voll hell.
+  Mit `over: true` gelten auch die Schlüssel, die nur die Ebene steuern (siehe unten), z. B.
+  `{words: "FUN", over: true, under: 40}` - Szene gedimmt, Text voll hell. Geht auch zusammen mit `overlay`: der
+  Text liegt dann in der eigenen Text-Ebene über Szene und Overlay (`under` dimmt beides); im `overlay` darf auf
+  der Matrix dann kein `progText` / `progTextScroll` laufen.
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
 

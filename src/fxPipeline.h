@@ -45,7 +45,7 @@ enum FxLayerMode : uint8_t {
 void fxLayerBegin();	// ab hier zeichnet der folgende Effekt in die Ebene statt auf die LEDs
 void fxLayerEnd(uint8_t mode = FX_ADD, uint8_t amount = 255, uint8_t from = 0, uint8_t to = 255);	// amount = Stärke der Ebene,
 						// from..to = Abschnitt des Geräts (wie fxMaskSpan), in dem die Ebene wirkt
-void fxLayerFlush();	// nach dem unteren Effekt: gibt aus, falls der in diesem Durchlauf selbst nichts ausgegeben hat
+void fxLayerFlush();	// nach dem unteren Effekt (gilt für beide Ebenen): gibt aus, falls der in diesem Durchlauf selbst nichts ausgegeben hat
 						// (Effekte wie progStrobo zeichnen nur bei einem Wechsel - die Ebene soll trotzdem weiterlaufen)
 // Nicht derselbe Effekt oben und unten: die Effekte halten eigenen Zustand in statischen Variablen.
 
@@ -58,6 +58,25 @@ void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Eb
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// nur die Ebene blitzt im Raster (wie fxGate)
 void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die Ebene da ist (255 = unverändert):
 												// folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor
+
+//--- Text-Ebene: liegt immer zuoberst und deckt, wo sie nicht schwarz ist. So geht Szene + Ebene + Text zugleich:
+//
+//   case 45: fxTextBegin(); progText("FUN", 11163, 50, 698); fxTextEnd();
+//            fxLayerBegin(); scene(SCENE_SPARKLE, 11163, 50, 86); fxLayerEnd(FX_ADD);
+//            scene(SCENE_GLOW, 11163, 50, 86);
+//            fxLayerFlush(); break;
+//
+//    Die beiden Ebenen stehen nacheinander, nie ineinander. progText/progTextScroll dann nicht zugleich in der anderen
+//    Ebene oder als Effekt des Parts (statischer Zustand je Effekt). ---
+void fxTextBegin();		// ab hier zeichnet der folgende Effekt (progText, progTextScroll) in die Text-Ebene
+void fxTextEnd(uint8_t amount = 255);	// amount = Deckkraft des Texts
+// wie fxLayer…, steuern aber die Text-Ebene; fxTextUnder dimmt alles unter dem Text (Effekt des Parts + Ebene)
+void fxTextWindow(unsigned int fromMillis, unsigned int toMillis = 0);
+void fxTextFadeIn(unsigned int millis);
+void fxTextFadeOut(unsigned int millis);
+void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);
+void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);
+void fxTextUnder(uint8_t brightness);
 
 //--- Übergänge: so kommt das Bild des neuen Parts ins Bild des alten ---
 enum FxTransition : uint8_t {
