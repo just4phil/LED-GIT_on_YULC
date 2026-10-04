@@ -30,6 +30,9 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestan
     Part 0, `FX_CUT`). Zu Part 2 (Maske), Part 90 (Text-Ebene) und zum gedrehten Feuer hat er nichts gesagt.
   - 05.10.2026, später: „bisher sieht alles gut und ruckelfrei aus", OTA-Update klappt. Welche Parts er dabei
     gesehen hat, hat er nicht gesagt; die noch offenen stehen deshalb jetzt am Anfang von Song 92 (siehe unten).
+  - 05.10.2026, zu Part 88: Das Glitzern unter dem Tor (`fxLayerGate`) blitzt gemeinsam auf – „sieht etwas
+    eigenartig aus, wie ein Wackelkontakt". Angebotener Umbau (88 nur Zeitfenster; Tor an einer geschlossenen
+    Fläche zeigen) abgelehnt: „das passt erstmal". Für Songs merken: Tor nicht auf zufällige Effekte legen.
 - **Außerhalb der Pipeline (05.10.2026):** OTA wartet nicht mehr 20 s auf fehlende Clients (`83f06d4`): Die
   Gitarre sendet, sobald sich nach dem ersten Client 5 s lang kein weiterer angemeldet hat. Die langen Wartezeiten
   kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
