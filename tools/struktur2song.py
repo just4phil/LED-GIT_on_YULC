@@ -193,6 +193,11 @@ def read_table(path):
 		if empty(bis):
 			if not parts and name == "pause":
 				continue	# unausgefüllte Vorlage
+			if parts and name.lower().startswith(END_NAMES):	# Schluss-Black ohne Taktnummer
+				ms = get("ms_rounded")
+				song["end_black_ms"] = int(round(ms)) if isinstance(ms, (int, float)) and ms > 0 else END_BLACK_MS
+				song["end_black_row"] = f"Zeile {r} '{name}'"
+				break
 			raise SongError(f"Zeile {r} '{name}': 'bis takt' fehlt (bei Formeln: Datei einmal in Excel speichern)")
 		bis = number(bis, f"Zeile {r} '{name}': bis takt")
 		if bis <= prev:
@@ -313,6 +318,8 @@ def render(song, song_dir, table, is_proposal):
 		"# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:",
 		"#   energy: 0-5, description, idea, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet",
 		"#   scene: SCENE_..., scheme: SCHEME_..., fx: \"prog...\"  -> feste Vorgabe, hat immer Vorrang vor show.yaml",
+		"#   text: \"FUN\" (pulsiert im Beat; mehrere Wörter: eins pro Beat) oder text: {scroll: \"...\"}  -> Text auf der Matrix",
+		"#   fade: complement  oder  fade: {to: triad|analog|rainbow|SCHEME_..., per: bar, hard: true}  -> Farben wandern im Takt",
 		"",
 		f"id: {song['id']}", f"name: {ystr(song['name'])}", f"artist: {ystr(song['artist'])}", f"bpm: {fmt(song['bpm'])}",
 		"beats_per_bar: 4",
@@ -320,8 +327,7 @@ def render(song, song_dir, table, is_proposal):
 	if song.get("end_black_ms", END_BLACK_MS) != END_BLACK_MS:
 		lines.append(f"end_black_ms: {song['end_black_ms']}")
 	if audio:
-		lines += [f"audio: {audio.relative_to(song_dir).as_posix()}",
-				  "# audio_beat1_ms: 0          # wo Takt 1 in der MP3 liegt - songanalyze.py schätzt es, wenn die Zeile fehlt"]
+		lines += [f"audio: {audio.relative_to(song_dir).as_posix()}"]	# Takt 1 liegt am Anfang der Datei (audio_beat1_ms nur bei Abweichung)
 	lines += ["", "sections:"]
 	for p in song["parts"]:
 		lines.append(f"  - name: {ystr(p['name'])}")

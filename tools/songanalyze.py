@@ -148,16 +148,9 @@ def analyze(song, audio_path, out_yaml, out_png):
 	if "audio_beat1_ms" in song:
 		beat1 = song["audio_beat1_ms"] / 1000.0
 		beat1_src = "YAML (audio_beat1_ms)"
-	else:
-		beat1, conf = estimate_beat1(song, times, rms_db, dur_s)
-		# auf den nächsten erkannten Beat einrasten (genauer als das Frame-Raster)
-		if len(beat_times):
-			nb = beat_times[np.argmin(np.abs(beat_times - beat1))]
-			if abs(nb - beat1) < 0.08:
-				beat1 = float(nb)
-		beat1_src = f"aus Struktur geschätzt (Sicherheit {conf:.1f}, >4 gut) - ggf. audio_beat1_ms setzen"
-		if conf < 4:
-			warnings.append(f"Takt 1 im Audio unsicher geschätzt ({beat1 * 1000:.0f} ms). Bitte prüfen und audio_beat1_ms setzen.")
+	else:	# die Exporte des Users beginnen immer genau auf Takt 1 - nicht schätzen
+		beat1 = 0.0
+		beat1_src = "Anfang der Audiodatei (Standard)"
 
 	sec_t = [beat1 + t / 1000.0 for t in section_times(song)]
 	if sec_t[-1] > dur_s + 0.5:

@@ -368,6 +368,8 @@ def main():
 		"# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:",
 		"#   energy: 0-5, description, mood, instruments, solo  -> Einschätzung, daraus wird die Show abgeleitet",
 		"#   scene: SCENE_..., scheme: SCHEME_..., fx: \"prog...\"  -> feste Vorgabe, hat immer Vorrang vor show.yaml",
+		"#   text: \"FUN\" (pulsiert im Beat; mehrere Wörter: eins pro Beat) oder text: {scroll: \"...\"}  -> Text auf der Matrix",
+		"#   fade: complement  oder  fade: {to: triad|analog|rainbow|SCHEME_..., per: bar, hard: true}  -> Farben wandern im Takt",
 		"",
 		f"id: {args.id}",
 		f"name: {ystr(sheet['title'] or audio.stem)}",

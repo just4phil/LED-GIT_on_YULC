@@ -28,7 +28,7 @@ Die Ergänzungen des Users zu Parts, Stimmungen und Effekten dürfen NIEMALS üb
 - Einzige Ausnahme: `struktur2song.py` und `sheet2song.py` legen `song.yaml` an, wenn es sie noch nicht gibt.
   Gibt es sie, schreiben sie `song.vorschlag.yaml` daneben (nur zum Vergleichen, der Generator ignoriert sie).
 - Gestaltung in `song.yaml` hat immer Vorrang vor `show.yaml`: `scene`/`fx` (dann entfallen auch die
-  `devices`-Overrides der Show für den Part), `scheme`, `tail`, `devices`; auf Song-Ebene `scheme`, `scroll_*`,
+  `devices`-Overrides und das `text` der Show für den Part), `scheme`, `fade`, `tail`, `devices`, `text`; auf Song-Ebene `scheme`, `scroll_*`,
   `end_black_ms`, `function`. Solche Vorgaben nicht in der Show "korrigieren" - sie gelten. Die Show um sie
   herum stimmig gestalten (Kontrast, Steigerung).
 - Die Struktur (Takte, Tempo) steht NUR in `song.yaml`; `songgen.py` verweigert sie in der Show.
@@ -64,8 +64,7 @@ Vor die Befehle `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore` setzen. `<Song>` 
    handgeschriebenen Songs nur nehmen, wenn die neue Fassung ihn ersetzen soll (siehe unten).
    Das BPM kennt der User für jeden Song - immer von ihm nehmen, nie aus dem Audio schätzen.
 2. **Audio analysieren**: `tools/.venv/Scripts/python tools/songanalyze.py <Song>`
-   - Warnungen zuerst klären: Tempo-Drift → Tippfehler im `bpm`? mit dem User klären; unsichere Takt-1-Schätzung → User nach
-     `audio_beat1_ms` fragen; Formgrenze ohne YAML-Grenze → Taktzahlen mit dem User prüfen.
+   - Warnungen zuerst klären: Tempo-Drift → Tippfehler im `bpm`? mit dem User klären; Formgrenze ohne YAML-Grenze → Taktzahlen mit dem User prüfen.
      Die Analyse erneut laufen lassen, bis die Struktur sitzt.
    - Dann `audio-analyse/analysis.yaml` lesen UND `audio-analyse/analysis.png` mit dem Read-Tool ansehen.
 3. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind die Beschreibungen
@@ -114,11 +113,12 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
 Song: `id`, `name`, `artist`, `bpm`, `beats_per_bar` (4), `midi_offset` als Notenwert (`1/8`, `1/16`, `3/16`;
 Viertel = 1 Beat; das MIDI kommt so spät NACH Takt 1 → erster Part entsprechend kürzer; negativ → schwarzer
 Vorlauf; ms werden aus dem Tempo des ersten Abschnitts berechnet; nur im Ausnahmefall `midi_offset_ms`),
-`audio` (relativ zum Song-Ordner, z. B. `quelle/x.mp3`), `audio_beat1_ms`.
+`audio` (relativ zum Song-Ordner, z. B. `quelle/x.mp3`). Takt 1 liegt bei allen Songs direkt am Anfang der
+Audiodatei - nie schätzen oder nachfragen; `audio_beat1_ms` gibt es nur noch für Ausnahmen (Standard 0).
 Abschnitt: `name` (eindeutig), `bars` und/oder `beats`, optional `bpm` / `beats_per_bar` (Tempo-/Taktwechsel).
 Einschätzung (frei): `description`, `energy` 0-5, `idea` (Effektidee des Users in Worten - in der Show
 umsetzen und im `why` nennen), `lyrics`, `instruments`, `solo`, `mood` …
-Feste Vorgabe: `scene`, `fx`, `scheme`, `tail`, `devices` (siehe oben).
+Feste Vorgabe: `scene`, `fx`, `scheme`, `fade`, `tail`, `devices`, `text` (siehe oben).
 `energy` dient auch als Fallback, falls ein Abschnitt in der Show fehlt (0 Black, 1 CALM, 2 VERSE,
 3 BUILDUP, 4-5 DROP).
 
@@ -160,8 +160,28 @@ Standard 90), `end_black_ms` (10000).
 - `scene: SCENE_...` - alle Geräte, jedes in seiner Art (`src/scenes.h`, Umsetzung in `src/scenes.cpp`)
 - `fx: "progX(${dur}, ${next}, ...)"` - ein Effekt für alle Geräte
 
-plus optional `scheme`, `devices` (Overrides), `tail: {beats: N, fx|scene: ...}` (letzte N Beats als
-eigener Part, z. B. Strobo-Absprung), `why`.
+plus optional `scheme`, `fade`, `devices` (Overrides), `tail: {beats: N, fx|scene: ...}` (letzte N Beats als
+eigener Part, z. B. Strobo-Absprung), `text`, `why`.
+
+**`fade:`** - Farbwanderung: die Schemafarben laufen im Takt zu einem Ziel und zurück, synchron auf allen Geräten
+(`setColorFade` in `colorSchemes.h`). Wirkt mit jeder Szene und jedem Effekt, der dem Schema folgt; braucht ein `scheme`.
+- `fade: complement` - zur Gegenfarbe und zurück, ein Takt pro Weg (über den Farbkreis, nicht durch Grau).
+- `fade: {to: complement|triad|analog|rainbow|SCHEME_..., per: beat|half|bar|<Beats>, hard: true}`; `per` = Dauer eines
+  Wegs (Standard `bar`), `hard` = springen statt blenden, `rainbow` läuft immer weiter (per = Zeit je Farbe).
+- Gegen Eintönigkeit in langen einfarbigen Parts (Verse mit `SCHEME_BLUE`/`RED`/`WHITE`): `analog` hält die Stimmung,
+  `complement`/`triad` bringen echte Abwechslung. `per` an der Part-Länge ausrichten (2 Takte bei 8-9 Takten).
+- Wird nicht in den `tail` vererbt. Nicht in Chorus-Parts, die über ihre feste Erkennungsfarbe funktionieren.
+
+**`text:`** - Text auf den Matrix-Geräten, die übrigen Geräte spielen die Szene weiter (nie von Hand
+`progShowText`/`progWordArray` in `devices` schreiben). Zentrierung, Tempo und Farbe macht die Firmware
+(`progText`/`progTextScroll`):
+- `text: "FUN"` - ein Wort pulsiert im Beat; `text: "THEY JUST WANNA HAVE FUN"` - pro Beat das nächste Wort.
+- `text: {words: "...", per: beat|half|bar|<Beats>, color: weiss|rot|...|CRGB::...}`; ohne `color` Schemafarben.
+- `text: {scroll: "..."}` - Lauftext, der genau am Part-Ende fertig ist.
+- Max. 9 Zeichen pro Wort auf der SCROLLMATRIX, sonst läuft alles als Lauftext (Hinweis in der Ausgabe); nur ASCII.
+- Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
+
+Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
 Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms).
 `devices`-Schlüssel: `guitar`, `lamp`, `matrix` oder einzelne Geräte `ANDRESGIT`, `RINASBASS`, `LAMPE1`,
 `LAMPE2`, `SCROLLMATRIX`, `GITBOARD` (Einzelgerät schlägt Klasse). Geräte ohne Override zeigen die Szene.
@@ -188,9 +208,17 @@ Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts o
 | power 4-5, drive hoch | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* |
 | power 5, lowend hoch / Höhepunkt | SCENE_FIRE |
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
+| energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |
+| energy 2-4, Strophe oder Chorus im Beat | SCENE_COLORS (ganze Bühne eine Farbe pro Beat), SCENE_COLORS_WAVE |
+| energy 4-5, Chorus | SCENE_STAR (der Refrain-Look der alten Songs) |
+| energy 5, Action, Höhepunkt am Songende | SCENE_SPARKLE |
 | Akzent `fill_into_next` | `tail` 1-4 Beats: BUILDUP oder progStrobo |
 | Akzent `stop` / `hit_after_stop` | Abschnitt teilen: Black für die Stille, harter Einsatz danach |
 
+- **Auswahl über den Katalog**: `docs/effekt-katalog.yaml` nennt je Effekt/Szene/Palette Wirkung, Energie, Rolle und
+  das Urteil des Users (`urteil`, `notiz`). Vor der Gestaltung lesen; pro Energiestufe gibt es mehrere Szenen -
+  über den Song abwechseln statt immer VERSE/DROP. `urteil: selten/unzufrieden` meiden. Was der User in den alten
+  Songs wofür nahm, steht in `docs/effekt-statistik.md` (`tools/fxstats.py`).
 - **Kontrast**: nie zweimal hintereinander dieselbe Szene mit demselben Schema.
 - **Wiederholung mit Steigerung**: gleiche Formteile (Chorus 1/2/3) erkennbar gleich gestalten, beim
   letzten Chorus eine Stufe mehr (FIRE statt DROP, wärmeres Schema, Strobo-Tail).
@@ -219,5 +247,5 @@ Wirkung pro Geräteklasse), dann:
 2. Umsetzung in `scene()` in `src/scenes.cpp`: gemeinsamer Teil oder je `DEVICE_CLASS`-Block (GUITAR, LAMP,
    MATRIX). Zufall nur über `sharedRand8()` (sonst laufen die Geräte auseinander), Timing nur über
    `millisCounterForProgChange`/`fxBeats()`, nie `delay()`. Farben über `deviceColor()`/`schemeColor()`.
-3. In `docs/LED-Effekte-und-Szenen.html` nachtragen.
+3. In `docs/LED-Effekte-und-Szenen.html` (Tabelle + Bühnen-Vorschau) und `docs/effekt-katalog.yaml` nachtragen.
 4. Alle Geräte bauen (Schritt 5).

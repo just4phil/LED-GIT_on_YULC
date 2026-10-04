@@ -411,7 +411,7 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><th>Du schreibst</th><th>Wirkung</th></tr>
 <tr><td><code>energy</code>, <code>description</code>, <code>mood</code>, <code>instruments</code>, <code>solo</code>, <code>lyrics</code></td><td><b>Einschätzung.</b> Claude leitet daraus die Show ab. Deine Angaben haben Vorrang vor den Messwerten der Analyse.</td></tr>
 <tr><td><code>scene</code> oder <code>fx</code></td><td><b>Feste Vorgabe.</b> Gilt immer, egal was in <code>show.yaml</code> steht. Geräte-Overrides der Show für diesen Part entfallen dann.</td></tr>
-<tr><td><code>scheme</code>, <code>tail</code>, <code>devices</code></td><td><b>Feste Vorgabe</b> für Farbschema, Schluss-Akzent bzw. einzelne Geräte. Der Rest des Parts kommt weiter aus der Show.</td></tr>
+<tr><td><code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code>, <code>text</code></td><td><b>Feste Vorgabe</b> für Farbschema, Farbwanderung, Schluss-Akzent, einzelne Geräte bzw. Text auf der Matrix. Der Rest des Parts kommt weiter aus der Show.</td></tr>
 <tr><td>Song-Ebene: <code>scheme</code>, <code>scroll_text</code>, <code>scroll_title</code>, <code>scroll_delay</code>, <code>end_black_ms</code></td><td>haben ebenfalls Vorrang vor <code>show.yaml</code></td></tr>
 </table></div>
 <p>Der Generator meldet jede übernommene Vorgabe in der Timeline als Hinweis, z. B. <code>'chorus 1': scene, scheme aus song.yaml (Vorrang vor show.yaml)</code>. Schreibweise der Felder wie in <a href="#show">Abschnitt 7</a>.</p>
@@ -426,7 +426,7 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td><code>midi_offset</code></td><td>nein</td><td>0</td><td>Notenwert, wie spät das Start-MIDI nach Takt 1 kommt: <code>1/8</code>, <code>1/16</code>, <code>3/16</code>. Eine Viertel ist ein Beat. Negativ (<code>-1/16</code>) heißt: MIDI kommt vor Takt 1, dann läuft ein schwarzer Vorlauf. Der erste Part wird um den Offset kürzer, alles andere bleibt auf dem Raster.</td></tr>
 <tr><td><code>midi_offset_ms</code></td><td>nein</td><td></td><td>Offset direkt in Millisekunden. Nur im Notfall, ersetzt <code>midi_offset</code>.</td></tr>
 <tr><td><code>audio</code></td><td>nein</td><td>die einzige MP3 im Ordner</td><td>Audiodatei relativ zum Song-Ordner, z. B. <code>quelle/song.mp3</code>. Nur für die Analyse.</td></tr>
-<tr><td><code>audio_beat1_ms</code></td><td>nein</td><td>wird geschätzt</td><td>Position von Takt 1 in der MP3. Nur für die Analyse.</td></tr>
+<tr><td><code>audio_beat1_ms</code></td><td>nein</td><td>0</td><td>Position von Takt 1 in der MP3. Nur für die Analyse und nur nötig, wenn die Datei nicht genau auf Takt 1 beginnt.</td></tr>
 <tr><td><code>sections</code></td><td>ja</td><td></td><td>Liste der Parts in Spielreihenfolge. Der erste Part ist immer schwarz (Start-MIDI).</td></tr>
 <tr><td><code>markers</code></td><td>nein</td><td></td><td>Bund-Marker, siehe <a href="#marker">Abschnitt 13</a>.</td></tr>
 <tr><td><code>scheme</code>, <code>scroll_text</code>, <code>scroll_title</code>, <code>scroll_delay</code>, <code>end_black_ms</code>, <code>function</code></td><td>nein</td><td></td><td>Feste Vorgaben auf Song-Ebene, Bedeutung wie in <a href="#show">Abschnitt 7</a>. Haben Vorrang vor <code>show.yaml</code>.</td></tr>
@@ -446,6 +446,8 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td><code>scheme</code></td><td>nein</td><td>Festes Farbschema für diesen Part.</td></tr>
 <tr><td><code>tail</code></td><td>nein</td><td>Fester Schluss-Akzent, Aufbau wie in <a href="#show">Abschnitt 7</a>.</td></tr>
 <tr><td><code>devices</code></td><td>nein</td><td>Feste Ausnahmen für einzelne Geräte. Werden mit denen der Show zusammengeführt, deine gewinnen.</td></tr>
+<tr><td><code>fade</code></td><td>nein</td><td>Farbwanderung im Takt, z. B. <code>fade: complement</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Deine Angabe gewinnt gegen die der Show.</td></tr>
+<tr><td><code>text</code></td><td>nein</td><td>Text auf der Matrix, z. B. <code>text: "FUN"</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Dein Text gewinnt gegen den der Show.</td></tr>
 <tr><td><code>why</code></td><td>nein</td><td>Kommentar, landet im C++-Code.</td></tr>
 </table></div>
 
@@ -481,6 +483,9 @@ git commit -m "Song Such A Shame"</code></pre>
     <span class="k">scene</span>: SCENE_VERSE
     <span class="k">devices</span>:                        <span class="c"># Ausnahmen für einzelne Geräte</span>
       <span class="k">ANDRESGIT</span>: <span class="s">"progSymmetricVU(${dur}, ${next}, ${bpm})"</span>
+  <span class="k">chorus</span>:
+    <span class="k">scene</span>: SCENE_DROP
+    <span class="k">text</span>: <span class="s">"FUN"</span>                      <span class="c"># Matrix zeigt Text, der Rest die Szene</span>
   <span class="k">bridge hit</span>:
     <span class="k">fx</span>: <span class="s">"progStrobo(${dur}, ${next}, 75, CRGB::White)"</span></code></pre>
 <h3>Felder auf Song-Ebene</h3>
@@ -503,8 +508,21 @@ git commit -m "Song Such A Shame"</code></pre>
   Spotlight: <code>SCENE_SOLO_GIT</code>, <code>SCENE_SOLO_BASS</code>, <code>SCENE_SOLO_DRUMS</code> (Solist voll, Rest atmet dezent)</td></tr>
 <tr><td><code>fx</code></td><td>Beliebiger Effektaufruf für alle Geräte statt einer Szene, z. B. <code>"progStrobo(${dur}, ${next}, 75, CRGB::White)"</code>. Die Funktion muss in einem dieser Header stehen: <code>FXprograms.h</code>, <code>guitarShapeFX.h</code>, <code>scenes.h</code>, <code>matrixFunctions.h</code>, <code>functions.h</code>, <code>colorSchemes.h</code>. Stehen <code>scene</code> und <code>fx</code> beide da, gilt <code>fx</code>.</td></tr>
 <tr><td><code>scheme</code></td><td>Farbschema: <code>SCHEME_FIRE</code>, <code>SCHEME_ICE</code>, <code>SCHEME_NEON</code>, <code>SCHEME_ROYAL</code>, <code>SCHEME_TOXIC</code>, <code>SCHEME_SUNSET</code>, <code>SCHEME_RETRO</code>, <code>SCHEME_WHITE</code>, <code>SCHEME_RED</code>, <code>SCHEME_BLUE</code>, <code>SCHEME_RANDOM</code></td></tr>
+<tr><td><code>fade</code></td><td>Farbwanderung: die Farben des Schemas laufen im Takt zu einem Ziel und wieder zurück, auf allen Geräten gleichzeitig. Funktioniert mit jeder Szene und jedem Effekt, der dem Schema folgt, und braucht ein <code>scheme</code> (nicht <code>SCHEME_RANDOM</code>).<br>
+  <code>fade: complement</code> – zur Gegenfarbe und zurück, ein Takt pro Weg. Der Weg führt über den Farbkreis (Blau über Violett und Rot nach Orange), nicht durch Grau.<br>
+  <code>fade: {to: triad, per: 8}</code> – <code>to</code>: <code>complement</code> (Gegenfarbe), <code>triad</code> (ein Drittel Farbkreis), <code>analog</code> (Nachbarfarbe, dezent), <code>rainbow</code> (läuft immer weiter um den Farbkreis) oder ein zweites Schema wie <code>SCHEME_NEON</code>.<br>
+  <code>per</code>: Dauer eines Wegs – <code>beat</code>, <code>half</code> (2 Beats), <code>bar</code> (Standard) oder eine Zahl in Beats, z. B. <code>8</code> für 2 Takte. Bei <code>rainbow</code> die Zeit von einer Farbe zur nächsten.<br>
+  <code>hard: true</code> – springt im Takt zwischen den beiden Farben, statt weich überzublenden.<br>
+  Weiß bleibt weiß. Ein <code>tail</code> übernimmt die Farbwanderung nicht, er kann ein eigenes <code>fade</code> haben.</td></tr>
 <tr><td><code>devices</code></td><td>Ausnahmen als Effektaufruf je Schlüssel. Geräteklassen: <code>guitar</code>, <code>lamp</code>, <code>matrix</code>. Einzelne Geräte: <code>ANDRESGIT</code>, <code>RINASBASS</code>, <code>LAMPE1</code>, <code>LAMPE2</code>, <code>SCROLLMATRIX</code>, <code>GITBOARD</code>. Ein einzelnes Gerät hat Vorrang vor seiner Klasse. Geräte ohne Eintrag zeigen die Szene.</td></tr>
 <tr><td><code>tail</code></td><td>Die letzten N Beats als eigener Part (Strobo-Absprung, Aufladen vor dem Chorus). Felder: <code>beats</code> (Pflicht, kürzer als der Part) und <code>scene</code> oder <code>fx</code>, dazu wahlweise <code>scheme</code>, <code>devices</code>, <code>why</code>. Ohne eigenes <code>scheme</code> gilt das des Parts. Pro Part ist nur ein <code>tail</code> möglich. Für mehr Akzente den Part in <code>song.yaml</code> teilen.</td></tr>
+<tr><td><code>text</code></td><td>Text auf den Matrix-Geräten, alle anderen Geräte spielen ihre Szene weiter. Position, Tempo und Farbe ergeben sich von selbst:<br>
+  <code>text: "FUN"</code> – ein Wort, zentriert, pulsiert im Beat.<br>
+  <code>text: "THEY JUST WANNA HAVE FUN"</code> – mehrere Wörter, pro Beat das nächste, danach von vorn.<br>
+  <code>text: {words: "HAVE FUN", per: bar}</code> – <code>per</code>: <code>beat</code> (Standard), <code>half</code> (2 Beats), <code>bar</code> (ein Takt) oder eine Zahl in Beats.<br>
+  <code>text: {scroll: "I come home in the morning light"}</code> – Lauftext, der genau am Part-Ende fertig ist (bei langen Parts mehrere Durchläufe).<br>
+  Optional <code>color</code>: <code>weiss</code>, <code>rot</code>, <code>blau</code>, <code>gruen</code>, <code>gelb</code>, <code>orange</code>, <code>pink</code>, <code>lila</code>, <code>cyan</code> oder ein CRGB-Ausdruck; ohne Angabe die Farben des Schemas, bei jedem Wort die nächste.<br>
+  Auf die SCROLLMATRIX passen 9 Zeichen pro Wort; ist ein Wort länger, läuft der ganze Text als Lauftext (der Generator weist darauf hin). Nur ASCII, also <code>ae</code> statt <code>ä</code>. Geht auch im <code>tail</code>. Nicht zusammen mit <code>devices</code> für die Matrix.</td></tr>
 <tr><td><code>why</code></td><td>Begründung, landet als Kommentar im C++-Code.</td></tr>
 </table></div>
 <h3>Platzhalter in <code>fx</code> und <code>devices</code></h3>
@@ -515,7 +533,7 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td><code>${bpm}</code></td><td>Tempo des Parts, gerundet</td></tr>
 <tr><td><code>${beat}</code>, <code>${half}</code>, <code>${bar}</code></td><td>Dauer eines Beats, zweier Beats und eines Takts in ms</td></tr>
 </table></div>
-<div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Song-Datei vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>tail</code> oder <code>devices</code>, gilt deine Angabe und nicht die der Show.</div>
+<div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Song-Datei vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code> oder <code>text</code>, gilt deine Angabe und nicht die der Show.</div>
 
 <h2 id="regeln">8 · Feste Regeln: Anfang &amp; Ende</h2>
 <p>Diese Regeln setzt der Generator automatisch um, genau wie in den handgeschriebenen Songs:</p>
