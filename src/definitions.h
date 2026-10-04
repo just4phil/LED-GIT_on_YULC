@@ -64,6 +64,7 @@
 //---- start a special demo? --------
 //#define START_WITH_FX_DEMO
 //#define START_WITH_SCENE_DEMO
+//#define START_WITH_PIPELINE_DEMO
 //========================================================================================
 
 //------ GERÄTE -------------
@@ -168,6 +169,7 @@
 //#define debug_rotary
 //#define START_WITH_FX_DEMO	// startet direkt mit Song 90 (Demo der neuen guitarShapeFX) statt SONGPAUSE
 //#define START_WITH_SCENE_DEMO	// startet direkt mit Song 91 (Demo der Szenen + Farbschemata) statt SONGPAUSE
+//#define START_WITH_PIPELINE_DEMO	// startet direkt mit Song 92 (Demo der Ausgabestufe: Übergänge, Modifikatoren, Ebene) statt SONGPAUSE
 //-----------------------------------------------------------------------------------------
 
 #ifdef USE_ESP32

@@ -926,6 +926,42 @@ szenen:
     notiz:
 
 # ---------------------------------------------------------------------------------------------------
+# Ausgabestufe (src/fxPipeline.*): Übergänge, Modifikatoren und Ebenen-Modi. Sie wirken auf jeden Effekt.
+#   yaml     so steht es in show.yaml / song.yaml
+#   demo     Part in Song 92 (pipelineDemo), in dem der Baustein allein zu sehen ist
+#   genutzt  Zahl der Parts in generierten Songs (Stand 04.10.2026, nur #31)
+#   urteil / notiz gehören dir
+# ---------------------------------------------------------------------------------------------------
+
+ausgabestufe:
+
+  uebergaenge:
+    TRANS_FADE:       {wirkung: "Kreuzblende vom alten ins neue Bild", yaml: "transition: fade", demo: 5, genutzt: 4, urteil: , notiz: }
+    TRANS_BLACK:      {wirkung: "über Schwarz: alt blendet aus, neu blendet ein", yaml: "transition: black", demo: 10, genutzt: 0, urteil: , notiz: }
+    TRANS_FLASH:      {wirkung: "weißer Blitz auf der Grenze, klingt ins neue Bild ab", yaml: "transition: flash", demo: 15, genutzt: 1, urteil: , notiz: }
+    TRANS_WIPE:       {wirkung: "Kante läuft über das Gerät (Lampe von unten, Gitarre vom Korpus zum Kopf, Matrix von links)", yaml: "transition: wipe", demo: 20, genutzt: 1, urteil: , notiz: }
+    TRANS_WIPE_BACK:  {wirkung: "wie wipe, in Gegenrichtung", yaml: "transition: wipe_back", demo: 25, genutzt: 0, urteil: , notiz: }
+    TRANS_STAGE_LR:   {wirkung: "Geräte wechseln nacheinander von links nach rechts über die Bühne", yaml: "transition: stage_lr", demo: 30, genutzt: 0, urteil: , notiz: }
+    TRANS_STAGE_RL:   {wirkung: "… von rechts nach links", yaml: "transition: stage_rl", demo: 35, genutzt: 0, urteil: , notiz: }
+    TRANS_STAGE_OUT:  {wirkung: "… von der Mitte (Drums) nach außen", yaml: "transition: stage_out", demo: 40, genutzt: 1, urteil: , notiz: }
+    TRANS_DISSOLVE:   {wirkung: "Pixel kippen einzeln ins neue Bild", yaml: "transition: dissolve", demo: 45, genutzt: 1, urteil: , notiz: }
+
+  modifikatoren:
+    fxFadeIn_fxFadeOut: {wirkung: "Helligkeit steigt am Part-Anfang von 0 an bzw. fällt zum Part-Ende auf 0", yaml: "fade_in: <Beats> / fade_out: <Beats>", demo: 50, genutzt: 0, urteil: , notiz: }
+    fxPulse:          {wirkung: "Helligkeit pumpt im Beat (oder über mehrere Beats)", yaml: "pulse: <Prozent> | {depth: , per: }", demo: "52 (Beat), 54 (Takt)", genutzt: 1, urteil: , notiz: }
+    fxGate:           {wirkung: "Strobo-Tor: der laufende Effekt wird im Raster an- und ausgeschaltet", yaml: "gate: <pro Beat> | {per_beat: 2, duty: 30}", demo: 56, genutzt: 0, urteil: , notiz: }
+    fxDim:            {wirkung: "gleichmäßig dunkler", yaml: "dim: <Prozent>", demo: 58, genutzt: 0, urteil: , notiz: }
+    fxTint:           {wirkung: "zieht das Bild zu einer Farbe hin", yaml: "tint: <Farbe> | {color: blau, amount: 50}", demo: 60, genutzt: 0, urteil: , notiz: }
+    fxMaskStage:      {wirkung: "nur bestimmte Geräte leuchten voll, der Rest gedimmt oder schwarz", yaml: "only: guitar | {devices: [guitar], others: 20}", demo: 62, genutzt: 0, urteil: , notiz: }
+    fxMaskSpan:       {wirkung: "nur ein Abschnitt jedes Geräts leuchtet", yaml: "span: [von, bis]", demo: 64, genutzt: 0, urteil: , notiz: }
+
+  ebene:
+    FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }
+    FX_MAX:           {wirkung: "der hellere Pixel gewinnt", yaml: "overlay: {..., mode: max}", demo: 72, genutzt: 0, urteil: , notiz: }
+    FX_OVER:          {wirkung: "die Ebene deckt, wo sie nicht schwarz ist (Text über einer Szene)", yaml: "overlay: {..., mode: over} | text: {..., over: true}", demo: 74, genutzt: 0, urteil: , notiz: }
+    FX_MASK:          {wirkung: "die Ebene ist ein Fenster: der Effekt darunter ist nur dort zu sehen, wo sie hell ist", yaml: "overlay: {..., mode: mask}", demo: 76, genutzt: 0, urteil: , notiz: }
+
+# ---------------------------------------------------------------------------------------------------
 # Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen
 # ---------------------------------------------------------------------------------------------------
 

@@ -219,7 +219,9 @@ void setup() {
 
 	//--- lets get started :) ---
 	songIDbefore = -1;	// zum start darf dies nicht = 0 sein
-	#if defined(START_WITH_SCENE_DEMO)
+	#if defined(START_WITH_PIPELINE_DEMO)
+		switchToSong(92);	// Demo der Ausgabestufe (Übergänge, Modifikatoren, Ebene)
+	#elif defined(START_WITH_SCENE_DEMO)
 		switchToSong(91);	// Demo der Szenen + Farbschemata
 	#elif defined(START_WITH_FX_DEMO)
 		switchToSong(90);	// Demo der guitarShapeFX
@@ -460,6 +462,10 @@ void loop() {
 
 		case 91:
 			szenenDemo();
+			break;
+
+		case 92:
+			pipelineDemo();
 			break;
 
 		case 99:

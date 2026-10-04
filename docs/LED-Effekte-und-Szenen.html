@@ -92,7 +92,7 @@
       <a href="#schemata"><b>5</b>Farbschemata</a>
       <a href="#szenen"><b>6</b>Szenen</a>
       <a href="#primitive"><b>7</b>Primitive für alle Geräte</a>
-      <a href="#demos"><b>8</b>Demo-Songs 90 &amp; 91</a>
+      <a href="#demos"><b>8</b>Demo-Songs 90 bis 92</a>
       <a href="#checkliste"><b>9</b>Kalibrier-Checkliste</a>
       <a href="#dateien"><b>10</b>Dateien &amp; API-Referenz</a>
     </nav>
@@ -353,8 +353,8 @@
 <p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten. Es gibt eine Ebene pro Part. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
 
 <!-- ===================================================================== -->
-<h2 id="demos">8 · Demo-Songs 90 &amp; 91</h2>
-<p>Songwahl per MIDI <b>CC#0</b>. Alternativ startet ein Gerät direkt mit der Demo, wenn in <code>definitions.h</code> <code>START_WITH_FX_DEMO</code> (90) bzw. <code>START_WITH_SCENE_DEMO</code> (91) aktiv ist. Beide Demos laufen in Dauerschleife.</p>
+<h2 id="demos">8 · Demo-Songs 90 bis 92</h2>
+<p>Songwahl per MIDI <b>CC#0</b>. Alternativ startet ein Gerät direkt mit der Demo, wenn in <code>definitions.h</code> <code>START_WITH_FX_DEMO</code> (90), <code>START_WITH_SCENE_DEMO</code> (91) bzw. <code>START_WITH_PIPELINE_DEMO</code> (92) aktiv ist. Alle Demos laufen in Dauerschleife.</p>
 <div class="tablewrap"><table>
   <tr><th colspan="3">Song 90: <code>neueEffekteDemo()</code> (Kontur-Effekte)</th></tr>
   <tr><th>Part</th><th>Aufruf</th><th>Dauer</th></tr>
@@ -387,7 +387,38 @@
   <tr><td>65</td><td>ROYAL</td><td><code>progStrobo(4000, 70, 75, getRandomCRGB())</code> (4 s)</td></tr>
   <tr><td>70</td><td>SUNSET</td><td><code>progPalette(8000, PALETTE_SCHEME, 100)</code></td></tr>
 </table></div>
-<div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
+<div class="tablewrap"><table>
+  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 3:10 min)</th></tr>
+  <tr><th>Part</th><th>ab</th><th>Baustein</th><th>Was man sehen soll</th></tr>
+  <tr><td>0</td><td>0:00</td><td>–</td><td>Farbband warm (FIRE), 4 s Vorlauf</td></tr>
+  <tr><th colspan="4">Übergänge: das Farbband wechselt warm ↔ kalt, je 6 s, Übergang 4 Beats</th></tr>
+  <tr><td>5</td><td>0:04</td><td><code>TRANS_FADE</code></td><td>Kreuzblende nach kalt</td></tr>
+  <tr><td>10</td><td>0:10</td><td><code>TRANS_BLACK</code></td><td>über Schwarz nach warm</td></tr>
+  <tr><td>15</td><td>0:16</td><td><code>TRANS_FLASH</code></td><td>weißer Blitz (1 Beat), klingt ins kalte Bild ab</td></tr>
+  <tr><td>20</td><td>0:22</td><td><code>TRANS_WIPE</code></td><td>Kante läuft über jedes Gerät</td></tr>
+  <tr><td>25</td><td>0:28</td><td><code>TRANS_WIPE_BACK</code></td><td>… in Gegenrichtung</td></tr>
+  <tr><td>30</td><td>0:34</td><td><code>TRANS_STAGE_LR</code></td><td>Geräte wechseln nacheinander von links nach rechts</td></tr>
+  <tr><td>35</td><td>0:40</td><td><code>TRANS_STAGE_RL</code></td><td>… von rechts nach links</td></tr>
+  <tr><td>40</td><td>0:46</td><td><code>TRANS_STAGE_OUT</code></td><td>… von der Mitte nach außen</td></tr>
+  <tr><td>45</td><td>0:52</td><td><code>TRANS_DISSOLVE</code></td><td>Pixel kippen einzeln um</td></tr>
+  <tr><th colspan="4">Modifikatoren auf dem Farbband (SUNSET), je 8 s</th></tr>
+  <tr><td>50</td><td>0:58</td><td><code>fxFadeIn</code> + <code>fxFadeOut</code></td><td>4 Beats einblenden, am Ende 4 Beats ausblenden</td></tr>
+  <tr><td>52</td><td>1:06</td><td><code>fxPulse(bpm, 150)</code></td><td>pumpt auf jeden Beat</td></tr>
+  <tr><td>54</td><td>1:14</td><td><code>fxPulse(bpm, 150, 4)</code></td><td>pumpt einmal pro Takt</td></tr>
+  <tr><td>56</td><td>1:22</td><td><code>fxGate(bpm, 2)</code></td><td>Strobo-Tor in Achteln</td></tr>
+  <tr><td>58</td><td>1:30</td><td><code>fxDim(80)</code></td><td>deutlich dunkler</td></tr>
+  <tr><td>60</td><td>1:38</td><td><code>fxTint(Blue, 150)</code></td><td>Bild zieht nach Blau</td></tr>
+  <tr><td>62</td><td>1:46</td><td><code>fxMaskStage</code></td><td>Gitarre und Bass voll, Lampen und Matrix gedimmt</td></tr>
+  <tr><td>64</td><td>1:54</td><td><code>fxMaskSpan(0, 128)</code></td><td>nur die erste Hälfte jedes Geräts leuchtet</td></tr>
+  <tr><th colspan="4">Ebene, je 8 s</th></tr>
+  <tr><td>70</td><td>2:02</td><td><code>FX_ADD</code></td><td>Glitzern über ruhiger Fläche (GLOW, ROYAL)</td></tr>
+  <tr><td>72</td><td>2:10</td><td><code>FX_MAX</code></td><td>Blitz läuft pro Beat über die Bühne, das Farbband bleibt darunter</td></tr>
+  <tr><td>74</td><td>2:18</td><td><code>FX_OVER</code></td><td>Matrix: Text „TEXT OVER SCENE" über dem Farbband; Gitarre/Bass: rote Kometen; Lampen: weiße Leuchtspuren</td></tr>
+  <tr><td>76</td><td>2:26</td><td><code>FX_MASK</code></td><td>Farbband nur in den fallenden Leuchtspuren sichtbar</td></tr>
+  <tr><td>78</td><td>2:34</td><td><code>FX_ADD</code>, Abschnitt</td><td>Glitzern nur in der zweiten Hälfte jedes Geräts</td></tr>
+  <tr><td>80</td><td>2:42</td><td>Übergang + Puls + Ebene</td><td>Kreuzblende, dann pumpendes Farbband (NEON) mit Glitzern</td></tr>
+</table></div>
+<div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein, für Song 92 mit <code>fx-pipeline</code>. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
 
 <!-- ===================================================================== -->
 <h2 id="checkliste">9 · Kalibrier-Checkliste</h2>
@@ -417,7 +448,7 @@
   <tr><td><code>src/markerLEDs.cpp</code></td><td>Gurt-Override in <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code></td></tr>
   <tr><td><code>src/functions.cpp</code></td><td><code>switchToPart()</code> setzt <code>strapOverride</code> und Farbschema zurück; Zufallsfarben mit Schema</td></tr>
   <tr><td><code>src/FXprograms.cpp/.h</code></td><td>Schema-Anbindung der alten Programme, <code>progStrobo(…, CRGB)</code>, <code>PALETTE_SCHEME</code></td></tr>
-  <tr><td><code>src/songs.cpp/.h</code>, <code>src/main.cpp</code></td><td>Demo-Songs 90/91 und Dispatcher</td></tr>
+  <tr><td><code>src/songs.cpp/.h</code>, <code>src/main.cpp</code></td><td>Demo-Songs 90/91/92 und Dispatcher</td></tr>
 </table></div>
 
 <footer>Stand: 27.09.2026 · Die Vorschauen sind JavaScript-Nachbauten der Firmware-Effekte. Farben und Helligkeit wirken auf echten WS2812B anders.</footer>

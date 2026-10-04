@@ -6,6 +6,7 @@
 #include "guitarShapeFX.h"
 #include "colorSchemes.h"
 #include "scenes.h"
+#include "fxPipeline.h"
 #include "matrixFunctions.h"
 #include "songs_generated.h"	// Part-Nummern der generierten Songs (GEN_...), für Trailer-Einsprünge
 //----------------------------
@@ -4114,6 +4115,107 @@ void szenenDemo() {
 	case 80:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_COLORS_WAVE, 8000, 82, bpm);	break;
 	case 82:	setColorScheme(SCHEME_TOXIC);	scene(SCENE_RAIN,        8000, 84, bpm);	break;
 	case 84:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_PALETTE,     8000, 100, bpm);	break;
+
+	case 100:
+		clearAll();
+		switchToPart(0);	// Demo in Dauerschleife
+		break;
+	}
+}
+
+//#92
+//==== DEMO: Ausgabestufe - alle Übergänge, Modifikatoren und Ebenen-Modi (Songwahl per MIDI CC#0 = 92 oder START_WITH_PIPELINE_DEMO) ====
+// Unten läuft fast immer das Farbband (SCENE_PALETTE): es leuchtet durchgehend, so sieht man den Baustein und nicht die Szene.
+void pipelineDemo() {
+
+	const uint8_t bpm = 120;	// 1 Beat = 500 ms
+
+	switch (prog) {
+
+	//--- Übergänge: das Farbband wechselt zwischen warm (FIRE) und kalt (ICE), der Übergang dauert 4 Beats ---
+	case 0:		setColorScheme(SCHEME_FIRE);	scene(SCENE_PALETTE, 4000,  5, bpm);	break;
+	case 5:		setColorScheme(SCHEME_ICE);		fxTransition(TRANS_FADE, 2000);			scene(SCENE_PALETTE, 6000, 10, bpm);	break;
+	case 10:	setColorScheme(SCHEME_FIRE);	fxTransition(TRANS_BLACK, 2000);		scene(SCENE_PALETTE, 6000, 15, bpm);	break;
+	case 15:	setColorScheme(SCHEME_ICE);		fxTransition(TRANS_FLASH, 500);			scene(SCENE_PALETTE, 6000, 20, bpm);	break;	// Blitz: 1 Beat
+	case 20:	setColorScheme(SCHEME_FIRE);	fxTransition(TRANS_WIPE, 2000);			scene(SCENE_PALETTE, 6000, 25, bpm);	break;
+	case 25:	setColorScheme(SCHEME_ICE);		fxTransition(TRANS_WIPE_BACK, 2000);	scene(SCENE_PALETTE, 6000, 30, bpm);	break;
+	case 30:	setColorScheme(SCHEME_FIRE);	fxTransition(TRANS_STAGE_LR, 2000);		scene(SCENE_PALETTE, 6000, 35, bpm);	break;
+	case 35:	setColorScheme(SCHEME_ICE);		fxTransition(TRANS_STAGE_RL, 2000);		scene(SCENE_PALETTE, 6000, 40, bpm);	break;
+	case 40:	setColorScheme(SCHEME_FIRE);	fxTransition(TRANS_STAGE_OUT, 2000);	scene(SCENE_PALETTE, 6000, 45, bpm);	break;
+	case 45:	setColorScheme(SCHEME_ICE);		fxTransition(TRANS_DISSOLVE, 2000);		scene(SCENE_PALETTE, 6000, 50, bpm);	break;
+
+	//--- Modifikatoren auf dem Farbband ---
+	case 50:	setColorScheme(SCHEME_SUNSET);	fxFadeIn(2000); fxFadeOut(2000);		scene(SCENE_PALETTE, 8000, 52, bpm);	break;
+	case 52:	setColorScheme(SCHEME_SUNSET);	fxPulse(bpm, 150);						scene(SCENE_PALETTE, 8000, 54, bpm);	break;	// pumpt pro Beat
+	case 54:	setColorScheme(SCHEME_SUNSET);	fxPulse(bpm, 150, 4);					scene(SCENE_PALETTE, 8000, 56, bpm);	break;	// pumpt pro Takt
+	case 56:	setColorScheme(SCHEME_SUNSET);	fxGate(bpm, 2);							scene(SCENE_PALETTE, 8000, 58, bpm);	break;	// Strobo-Tor in Achteln
+	case 58:	setColorScheme(SCHEME_SUNSET);	fxDim(80);								scene(SCENE_PALETTE, 8000, 60, bpm);	break;
+	case 60:	setColorScheme(SCHEME_SUNSET);	fxTint(CRGB::Blue, 150);				scene(SCENE_PALETTE, 8000, 62, bpm);	break;
+	case 62:	setColorScheme(SCHEME_SUNSET);	fxMaskStage(DEV_GIT | DEV_BASS, 40);	scene(SCENE_PALETTE, 8000, 64, bpm);	break;	// Gitarre + Bass voll, Rest gedimmt
+	case 64:	setColorScheme(SCHEME_SUNSET);	fxMaskSpan(0, 128);						scene(SCENE_PALETTE, 8000, 70, bpm);	break;	// nur die erste Hälfte jedes Geräts
+
+	//--- Ebene: ein zweiter Effekt über dem Effekt des Parts ---
+	case 70:	// FX_ADD: Glitzern über einer ruhigen Fläche
+		setColorScheme(SCHEME_ROYAL);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 72, bpm);
+		fxLayerEnd(FX_ADD, 150);
+		scene(SCENE_GLOW, 8000, 72, bpm);
+		fxLayerFlush();
+		break;
+
+	case 72:	// FX_MAX: Blitz läuft pro Beat über die Bühne, der hellere Pixel gewinnt
+		setColorScheme(SCHEME_ICE);
+		fxLayerBegin();
+		scene(SCENE_WAVE_LR, 8000, 74, bpm);
+		fxLayerEnd(FX_MAX);
+		scene(SCENE_PALETTE, 8000, 74, bpm);
+		fxLayerFlush();
+		break;
+
+	case 74:	// FX_OVER: die Ebene deckt, wo sie nicht schwarz ist - Text auf der Matrix, Kometen / Leuchtspuren auf den anderen
+		setColorScheme(SCHEME_ICE);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("TEXT OVER SCENE", 8000, 76, 1000, CRGB::White);
+#elif DEVICE_CLASS == CLASS_LAMP
+		progLampRain(8000, 76, 35, CRGB::White);
+#else
+		progCometLoop(8000, 76, 8, 0, true);	// 2 rote Kometen
+#endif
+		fxLayerEnd(FX_OVER);
+		scene(SCENE_PALETTE, 8000, 76, bpm);
+		fxLayerFlush();
+		break;
+
+	case 76:	// FX_MASK: die Ebene ist ein Fenster - das Farbband ist nur in den fallenden Leuchtspuren zu sehen
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerBegin();
+		scene(SCENE_RAIN, 8000, 78, bpm);
+		fxLayerEnd(FX_MASK);
+		scene(SCENE_PALETTE, 8000, 78, bpm);
+		fxLayerFlush();
+		break;
+
+	case 78:	// Ebene nur in einem Abschnitt: Glitzern in der zweiten Hälfte jedes Geräts
+		setColorScheme(SCHEME_ROYAL);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 80, bpm);
+		fxLayerEnd(FX_ADD, 255, 128, 255);
+		scene(SCENE_GLOW, 8000, 80, bpm);
+		fxLayerFlush();
+		break;
+
+	case 80:	// alles zusammen: Übergang + Puls + Ebene
+		setColorScheme(SCHEME_NEON);
+		fxTransition(TRANS_FADE, 2000);
+		fxPulse(bpm, 100);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 100, bpm);
+		fxLayerEnd(FX_ADD, 200);
+		scene(SCENE_PALETTE, 8000, 100, bpm);
+		fxLayerFlush();
+		break;
 
 	case 100:
 		clearAll();

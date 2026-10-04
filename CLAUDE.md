@@ -73,6 +73,10 @@ computed from the time since part start, so all devices stay in sync regardless 
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span` (lengths in
 beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene).
 
+Plan and working state of this refactoring: `docs/FX-Pipeline-Plan.md` (section "Arbeitsstand"). **Read it before
+continuing the work and keep it up to date at every step** - mark a step "in Arbeit" before starting, record result,
+commit and next step when done - so a new session can resume after a crash.
+
 ### Timing
 A hardware timer (`TimerFunctions.h`) fires every 2 ms and sets `flag_processFastLED = true`. The main loop only runs the LED switch-case when that flag is set, keeping millisecond counters accurate. All effect timing uses `millisCounterTimer`, `millisCounterForProgChange`, etc. — never `delay()`.
 The loop notices a part change a few ms late (one pass incl. `FastLED.show()`). For generated songs

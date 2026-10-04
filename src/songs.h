@@ -442,3 +442,8 @@ void neueEffekteDemo();
  * @brief Demo der Szenen + Farbschemata auf allen Geräten (Song-ID 91, läuft in Dauerschleife)
  */
 void szenenDemo();
+
+/**
+ * @brief Demo der Ausgabestufe: alle Übergänge, Modifikatoren und Ebenen-Modi (Song-ID 92, läuft in Dauerschleife)
+ */
+void pipelineDemo();
