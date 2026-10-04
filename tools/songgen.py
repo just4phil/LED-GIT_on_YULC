@@ -786,6 +786,27 @@ def find_audio(song, song_dir):
 	return found[0].resolve() if len(found) == 1 else None
 
 
+NOTE_AFTER_QUOTE = re.compile(r'^(\s*(?:-\s+)?[\w ]+:\s*)"([^"]*)"[ \t]*([^\s#].*?)\s*$')
+
+
+def read_song_yaml(path):
+	"""song.yaml lesen. Der User schreibt Anmerkungen gern hinter den Wert (idea: "ruhig" -> mehr Bewegung);
+	das ist kein gültiges YAML, deshalb wird der Rest der Zeile vorher in den Text hineingezogen."""
+	lines = []
+	for line in path.read_text(encoding="utf-8").splitlines():
+		m = NOTE_AFTER_QUOTE.match(line)
+		if m:
+			rest = m.group(3).replace("\\", "/").replace('"', "'")
+			line = f'{m.group(1)}"{m.group(2)} {rest}"'
+		lines.append(line)
+	try:
+		return yaml.safe_load("\n".join(lines))
+	except yaml.YAMLError as e:
+		mark = getattr(e, "problem_mark", None)
+		where = f" Zeile {mark.line + 1}" if mark else ""
+		raise SongError(f"{path.parent.name}/{path.name}{where}: kein gültiges YAML ({getattr(e, 'problem', e)})")
+
+
 def load_song(song_dir, song_path=None, show_path=None):
 	"""song.yaml + show.yaml eines Ordners laden und zusammenführen (beide Dateien werden nur gelesen)."""
 	song_path = song_path or song_dir / SONG_FILE
@@ -793,7 +814,7 @@ def load_song(song_dir, song_path=None, show_path=None):
 	label = f"{song_dir.name}/{SONG_FILE}"
 	if not song_path.exists():
 		raise SongError(f"{label} fehlt")
-	song = yaml.safe_load(song_path.read_text(encoding="utf-8"))
+	song = read_song_yaml(song_path)
 	song["_dir"] = song_dir.name
 	for req in ("id", "name", "bpm", "sections"):
 		if req not in song:

@@ -26,7 +26,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from songgen import ROOT, SONG_FILE, SongError, find_audio, find_song_dir, section_times, section_bpm, section_beats  # noqa: E402
+from songgen import ROOT, SONG_FILE, SongError, find_audio, find_song_dir, read_song_yaml, section_times, section_bpm, section_beats  # noqa: E402
 
 SR = 22050
 HOP = 512
@@ -393,7 +393,7 @@ def main():
 	if not path.exists():
 		print(f"FEHLER: {path.relative_to(ROOT)} fehlt", file=sys.stderr)
 		return 1
-	song = yaml.safe_load(path.read_text(encoding="utf-8"))
+	song = read_song_yaml(path)
 	audio = find_audio(song, song_dir)
 	if audio is None:
 		print(f"FEHLER: Audiodatei nicht gefunden (audio: {song.get('audio')}) - MP3 nach songs/{song_dir.name}/quelle/ legen", file=sys.stderr)
