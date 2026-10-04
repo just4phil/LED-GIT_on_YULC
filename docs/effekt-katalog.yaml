@@ -1,0 +1,938 @@
+# Effekt-Katalog: Steckbriefe aller Effekte, Paletten und Szenen
+#
+# Zweck: Effekte nach WIRKUNG auswählen statt nach Gewohnheit. Für einen Part sucht man über
+# energie + rolle + bewegung die Kandidaten und nimmt nicht immer denselben Griff.
+#
+# Stand der Einträge: von Claude aus dem Code (src/FXprograms.*, guitarShapeFX.*, scenes.*) und aus der
+# Auswertung der alten Songs (docs/effekt-statistik.md, tools/fxstats.py) VORGEFÜLLT. energie, rolle und
+# traegt_takte sind Schätzungen - nur du hast die Effekte live gesehen. Bitte korrigieren und vor allem
+# `urteil` und `notiz` ausfüllen; die beiden Felder gehören dir und werden von Claude nicht überschrieben.
+#
+# Felder
+#   wirkung       ein Satz: was man sieht
+#   art           raster  = rechnet im Matrix-Raster. Auf Gitarre/Bass entsteht daraus ein eigenes Muster entlang
+#                           der Kontur - oft ein Glücksfall (Stern, MatrixHorizontal sehen dort sehr geil aus)
+#                 strip   = schreibt direkt in die LED-Kette, läuft auf jedem Gerät gleich gut
+#                 kontur  = nutzt die Form der Gitarre (Zonen, Abstand zum Kopf, XY)
+#                 lampe   = für die vertikalen Lampen gebaut
+#                 text    = nur Matrix-Geräte
+#   rolle         flaeche   trägt einen ganzen Part
+#                 akzent    kurz, 1-4 Beats bis 1-2 Takte
+#                 aufbau    steigert sich auf ein Ziel hin
+#                 uebergang verbindet zwei Parts
+#                 stille    Schwarz oder fast nichts
+#   energie       [von, bis] auf der Skala 0-5 aus song.yaml
+#   bewegung      statisch | pulsierend | fliessend | wandernd | funkelnd | rotierend | flackernd
+#   beat          fest = läuft taktgenau über bpm | param = ein Zeitwert lässt sich auf Beat/Takt setzen | frei
+#   farbe         schema = folgt dem Farbschema | zufall = Zufallsfarben (mit Schema: aus dem Schema) |
+#                 eigen = feste eigene Farben | param = Farbe als Parameter
+#   traegt_takte  wie lange der Effekt trägt, bevor er eintönig wird (Schätzung aus den alten Songs)
+#   alt           Nutzung in den 21 alten Songs: Parts / Takte / wofür / typische Parameter
+#   regler        die Parameter, die den Charakter ändern
+#   urteil        DEIN Feld: gern | ok | selten | unzufrieden | nicht mehr   (Stand: deine Erläuterung vom 04.10.2026)
+#   notiz         DEIN Feld: was dir live auffällt
+
+effekte:
+
+  # ---------- Arbeitspferde der alten Songs (93 % der Spielzeit) ----------
+
+  progSternNeu:
+    wirkung: "Stern mit 4-8 Strahlen dreht sich, Farbe wechselt im Beat; mit wander zieht die Mitte ihre Bahn"
+    art: raster
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: rotierend
+    beat: param          # msForColorChange
+    farbe: zufall
+    traegt_takte: "8-16"
+    alt: {parts: 57, takte: 406, wofuer: "DER Chorus-Effekt (45 von 99 Chorus-Parts)",
+          parameter: "Farbwechsel 1 Beat (31x) oder 2 Beats (19x); reduceSpeed 5; wander true/false etwa gleich oft; 3 oder 4 Arm-Paare"}
+    regler: "msForColorChange (1 Beat = treibend, 2 Beats/1 Takt = ruhiger), wander, numArms"
+    urteil: gern
+    notiz: "für die Matrix entwickelt, sieht aber auch auf den Gitarren sehr geil aus - gern für Refrains"
+
+  progStern:
+    wirkung: "Vorgänger von progSternNeu ohne Wandern und ohne wählbare Arme"
+    art: raster
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: rotierend
+    beat: param
+    farbe: zufall
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "in den übernommenen Songs durch progSternNeu ersetzt"}
+    urteil: gern
+    notiz: "wie progSternNeu: Matrix-Effekt, der auf den Gitarren sehr geil aussieht - Refrains"
+
+  progFastBlingBling:
+    wirkung: "Ganz schnelle zufällige Einzelblitze - da geht die Post ab; Dichte über anzahl"
+    art: strip
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: funkelnd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "1-8, selten 16"
+    alt: {parts: 82, takte: 375, wofuer: "Chorus (26), Instrumental (13), Outro (6), Übergänge (7); der vielseitigste Effekt",
+          parameter: "anzahl 8 (23x), 4 (20x), 6 (14x), 2 (8x); selten mit addLEDs = wächst über den Part an"}
+    regler: "anzahl: 2 = dezent, 4-6 = mittel, 8+ = intensiv; addLEDs/maxLEDs/delay = Steigerung im Part"
+    urteil: gern
+    notiz: "Highlight! Für Refrains mit richtig Action und für den Höhepunkt am Songende"
+
+  progPalette:
+    wirkung: "Farbband läuft über alle LEDs; Aussehen hängt ganz von der Palette ab - siehe Abschnitt paletten"
+    art: strip
+    rolle: [flaeche]
+    energie: [1, 4]
+    bewegung: fliessend
+    beat: frei
+    farbe: eigen         # nur Palette 4 und 20 folgen dem Schema
+    traegt_takte: "8-12"
+    alt: {parts: 54, takte: 355, wofuer: "Verse (17), Bridge (7), Intro (7); fast nie im Chorus (1)",
+          parameter: "12 verschiedene Paletten, am häufigsten 4, 6, 3, 9, 2"}
+    regler: "nur paletteID. Kein Tempo- und kein Fade-Parameter (siehe Hinweise unter paletten)"
+    urteil: gern
+    notiz: "sehr schöne Farbverläufe; die Paletten einzeln anschauen (Farben, Tempo, mit/ohne Fades)"
+
+  progRandomLines:
+    wirkung: "Zufällige Linien in Zufallsfarbe; clearEach=true: je Schritt eine neue Linie, false: Linien stapeln sich"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 4]
+    bewegung: pulsierend
+    beat: param          # msForChange
+    farbe: zufall
+    traegt_takte: "4-12"
+    alt: {parts: 37, takte: 221, wofuer: "Verse (11), Intro (5), Textzeilen (16)",
+          parameter: "Wechsel fast immer 1 Beat (29x); clearEach true (25x) / false (12x)"}
+    regler: "msForChange (Beat-Raster), clearEach: true = klar und rhythmisch, false = füllt sich, aufbauend"
+    urteil: ok
+    notiz: "gut, wenn es korrekt zum Takt läuft; mit sehr schnellem Wechsel auch für schnelle Refrains"
+
+  progWaterRipple:
+    wirkung: "Ringe breiten sich wie Wassertropfen aus, weiches Nachleuchten"
+    art: raster
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: fliessend
+    beat: frei
+    farbe: param         # baseColor oder Schema/Verlauf
+    traegt_takte: "8-12"
+    alt: {parts: 29, takte: 211, wofuer: "Solo (5), Verse (5), ruhige Textzeilen (10); in 20 von 21 Songs je 1-2x",
+          parameter: "Tempo 50; mit Verlauf; Tropfen mal aus der Mitte, mal zufällig"}
+    regler: "msToReduceSpeed (25-30 schnell, 50 normal, 70 ruhig), spawnAtCenter, baseColor/useGradient"
+    urteil: gern
+    notiz: "neu mit KI entwickelt, sehr geil"
+
+  progStrobo:
+    wirkung: "Alle LEDs blitzen an/aus"
+    art: strip
+    rolle: [akzent, uebergang]
+    energie: [4, 5]
+    bewegung: flackernd
+    beat: param          # del
+    farbe: param
+    traegt_takte: "meist 1, bis 2"
+    alt: {parts: 92, takte: 203, wofuer: "Übergang (19), Akzent (15), Hook-Zeilen (30); steht am häufigsten direkt vor dem Chorus",
+          parameter: "del 50 ms (33x) = Flimmern; 1 Beat / 1/2 Beat (15x) = Schläge im Takt; Zufallsfarbe (68x) oder weiß (22x)"}
+    regler: "del: 50-65 = Flimmern, 100-120 = hart, 1/2 oder 1 Beat = Akzente auf die Zählzeit; weiß = härter als farbig"
+    urteil: gern
+    notiz: "für Übergänge, auch mal im Refrain oder wenn triolisch gespielt wird; alle Geräte"
+
+  progFullColors:
+    wirkung: "Alle LEDs einfarbig, Farbe springt im Beat"
+    art: strip
+    rolle: [flaeche]
+    energie: [2, 5]
+    bewegung: pulsierend
+    beat: param          # del
+    farbe: zufall
+    traegt_takte: "4-8"
+    alt: {parts: 35, takte: 175, wofuer: "Chorus (17) und Verse (10); zweitwichtigster Chorus-Effekt nach Strobo-Absprung",
+          parameter: "Wechsel 1 Beat (24x) oder 2 Beats (11x)"}
+    regler: "del = 1 Beat (treibend) oder 2 Beats (getragen)"
+    urteil: gern
+    notiz: "gut mit kurzen Wechseln im Takt; je nach Wechseltempo in allen Songteilen; alle Geräte. WUNSCH: Fading-Option ergänzen"
+
+  progBlack:
+    wirkung: "Alles aus"
+    art: strip
+    rolle: [stille]
+    energie: [0, 0]
+    bewegung: statisch
+    beat: frei
+    farbe: eigen
+    traegt_takte: "beliebig"
+    alt: {parts: 42, takte: 124, wofuer: "Pause am Songanfang (26), Stopps im Song (7)"}
+    urteil:
+    notiz:
+
+  progMatrixScanner:
+    wirkung: "Leuchtlinie fährt hin und her (Scanner)"
+    art: raster
+    rolle: [flaeche, aufbau]
+    energie: [2, 4]
+    bewegung: wandernd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "8-12"
+    alt: {parts: 16, takte: 118, wofuer: "Verse (4), Textzeilen vor dem Chorus (7)",
+          parameter: "reduceSpeed sehr unterschiedlich: 7 bis 30"}
+    regler: "reduceSpeed: unter 15 schnell, 18-20 normal, 30 ruhig"
+    urteil: ok
+    notiz: "ganz nett: Balken wandert hin und her, gern für Strophen"
+
+  progBlingBlingColoring:
+    wirkung: "Gerät füllt sich langsam LED für LED mit einer Farbe und fadet dann langsam zur nächsten"
+    art: strip
+    rolle: [flaeche]
+    energie: [1, 2]
+    bewegung: funkelnd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "8-16"
+    alt: {parts: 16, takte: 114, wofuer: "Intro (5), Verse (6), Outro (4): der ruhige Rahmen um den Song",
+          parameter: "Farbwechsel 3000 oder 5000 ms"}
+    regler: "msForColorChange (3-6 s), msToReduceSpeed"
+    urteil: gern
+    notiz: "super für ruhige Strophen, langsame Intros und Outros; funktioniert auf allen Geräten"
+
+  # ---------- alte Effekte, selten oder nie in den Songs ----------
+
+  matrixMovieFX:
+    wirkung: "Fallende Zeichen-Spuren wie im Film Matrix"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: param
+    traegt_takte: "8"
+    alt: {parts: 5, takte: 37, wofuer: "Instrumental, Break"}
+    regler: "reduceSpeed, baseColor, maxActive"
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progMatrixHorizontal:
+    wirkung: "Spuren laufen waagerecht durch, verblassen nach Weiß"
+    art: raster
+    rolle: [flaeche, uebergang]
+    energie: [1, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: param
+    traegt_takte: "1-2, selten 8"
+    alt: {parts: 5, takte: 20, wofuer: "kurze Übergänge", parameter: "reduceSpeed 70, Zufallsfarbe"}
+    urteil: gern
+    notiz: "sehr geiler Effekt; für die Matrix entwickelt, kommt auch auf der Gitarre sehr geil - gern für ruhigere Szenen"
+
+  progMatrixVertical:
+    wirkung: "wie progMatrixHorizontal, senkrecht (auf der SCROLLMATRIX unsinnig)"
+    art: raster
+    rolle: [flaeche, uebergang]
+    energie: [1, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: param
+    traegt_takte: "1-8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "sehr geiler Effekt; für die Matrix entwickelt, kommt auch auf der Gitarre sehr geil - gern für ruhigere Szenen"
+
+  progCircles:
+    wirkung: "Kreise wachsen von zufälligen Punkten nach außen"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 4]
+    bewegung: pulsierend
+    beat: param
+    farbe: zufall
+    traegt_takte: "8"
+    alt: {parts: 3, takte: 24, wofuer: "nur Verse", parameter: "Wechsel 1 Beat"}
+    urteil: ok
+    notiz: "gut, wenn es korrekt zum Takt läuft; mit sehr schnellem Wechsel auch für schnelle Refrains"
+
+  progMovingLines:
+    wirkung: "Linien wandern über die Fläche"
+    art: raster
+    rolle: [uebergang]
+    energie: [2, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "1-4"
+    alt: {parts: 1, takte: 1}
+    urteil: selten
+    notiz: "eher ein bisschen langweilig"
+
+  progOutline:
+    wirkung: "Lauflicht mit Schweif um den Rand"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0, wofuer: "nur auf der Matrix, während die Gitarre progPalette/WaterRipple zeigte (2x)"}
+    urteil: selten
+    notiz: "eher ein bisschen langweilig"
+
+  progSternschnuppen:
+    wirkung: "Einzelne Sternschnuppen fallen mit Schweif"
+    art: raster
+    rolle: [flaeche]
+    energie: [0, 1]
+    bewegung: wandernd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    urteil: unzufrieden
+    notiz: "gedacht als zweites Preset für die Pausen zwischen den Songs (ganz ruhig, für Gitarren und Lampen, auf der Matrix wohl nicht). Nicht im Einsatz, weil nicht zufrieden - optimieren"
+
+  progFire:
+    wirkung: "Flammen steigen von unten auf (Matrix), wahlweise blau"
+    art: raster
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: flackernd
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_FIRE"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progPlasma:
+    wirkung: "Weiche Farbwolken verschieben sich"
+    art: raster
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: fliessend
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progStarfield:
+    wirkung: "Sterne fliegen aus der Mitte auf den Betrachter zu"
+    art: raster
+    rolle: [flaeche, aufbau]
+    energie: [2, 4]
+    bewegung: wandernd
+    beat: frei
+    farbe: zufall
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_BUILDUP"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progLissajous:
+    wirkung: "Leuchtpunkt zeichnet eine sich drehende Schleifenfigur"
+    art: raster
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: fliessend
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progSineCos:
+    wirkung: "Zwei Wellenlinien (Sinus/Cosinus) laufen gegeneinander"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: fliessend
+    beat: frei
+    farbe: param
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progEqualizer:
+    wirkung: "Springende Pegelbalken (ohne Audio, simuliert)"
+    art: raster
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    beat: frei
+    farbe: zufall
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  # ---------- Kontur-Effekte (neu, nutzen die Form der Gitarre) ----------
+
+  progCometLoop:
+    wirkung: "Komet mit Schweif rast um die Kontur, zu zweit gegenläufig mit Blitz beim Treffen"
+    art: kontur
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: wandernd
+    beat: frei
+    farbe: param
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Solist in SCENE_SOLO_GIT/_BASS"}
+    regler: "msPerStep, hue, twoComets"
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progChargeBlast:
+    wirkung: "Lädt sich von unten bis zur Kopfplatte auf, dann weiße Explosion"
+    art: kontur
+    rolle: [aufbau]
+    energie: [3, 5]
+    bewegung: wandernd
+    beat: param          # chargeMillis = Partdauer -> Explosion auf der Grenze
+    farbe: param
+    traegt_takte: "1-8 (ein Zyklus = ein Aufbau)"
+    alt: {parts: 0, takte: 0, wofuer: "Gitarren-Teil von SCENE_BUILDUP"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progSymmetricVU:
+    wirkung: "Pegelanzeige steigt beidseitig zum Kopf, grün-gelb-rot mit Peak-Punkt"
+    art: kontur
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    beat: fest
+    farbe: eigen
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progShockwave:
+    wirkung: "Ringwellen vom Steg aus: Korpus, Hals, Kopf leuchten nacheinander"
+    art: kontur
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: pulsierend
+    beat: param          # msBetweenWaves = Beat
+    farbe: param
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Gitarren-Teil von SCENE_DROP"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progPlaneWipe:
+    wirkung: "Lichtebene fährt schräg über die Gitarre hin und her (Scanner im Raum)"
+    art: kontur
+    rolle: [flaeche, uebergang]
+    energie: [2, 3]
+    bewegung: wandernd
+    beat: param          # sweepMillis
+    farbe: eigen
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progLightning:
+    wirkung: "Zufällige Segmente blitzen grellweiß mit Nachglühen"
+    art: kontur
+    rolle: [flaeche, akzent]
+    energie: [2, 4]
+    bewegung: flackernd
+    beat: frei
+    farbe: eigen
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0}
+    regler: "chance: 6 = ein Blitz alle 1,7 s (düster), höher = Gewitter"
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progOutlineFire:
+    wirkung: "Feuer läuft beidseitig die Kontur hinauf, Kopfplatte ist die Flammenspitze"
+    art: kontur
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: flackernd
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Gitarren-Teil von SCENE_FIRE"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progZoneBeat:
+    wirkung: "Pro Beat leuchtet die nächste Zone (Kopf, Hals, Horn, Korpus) in neuer Farbe auf"
+    art: kontur
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    beat: fest
+    farbe: schema
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Gitarren-Teil von SCENE_VERSE"}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progHeartbeat:
+    wirkung: "Korpus pulsiert als Doppelschlag, Puls wandert den Hals hoch"
+    art: kontur
+    rolle: [flaeche]
+    energie: [1, 2]
+    bewegung: pulsierend
+    beat: fest
+    farbe: param
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progSpatialRainbow:
+    wirkung: "Regenbogen liegt im Raum auf der Gitarre, dreht um den Korpus oder steigt auf"
+    art: kontur
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: fliessend
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  progFuse:
+    wirkung: "Funke läuft den Gurt hinunter und entzündet die Gitarre"
+    art: kontur
+    rolle: [aufbau]
+    energie: [3, 5]
+    bewegung: wandernd
+    beat: param          # fuseMillis
+    farbe: eigen
+    traegt_takte: "2-4, einmal pro Song"
+    alt: {parts: 0, takte: 0}
+    urteil: gern
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+
+  # ---------- Primitive für alle Geräte / Lampen ----------
+
+  progBreathe:
+    wirkung: "Ganzes Gerät atmet langsam in einer Farbe"
+    art: strip
+    rolle: [flaeche]
+    energie: [1, 1]
+    bewegung: pulsierend
+    beat: param          # periodMillis = 1 Takt
+    farbe: param
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0, wofuer: "SCENE_CALM und die Nicht-Solisten in SCENE_SOLO_*"}
+    urteil:
+    notiz:
+
+  progBeatFlash:
+    wirkung: "Blitz auf jedem Beat, klingt ab; mit Verzögerung pro Gerät wird daraus eine Welle über die Bühne"
+    art: strip
+    rolle: [flaeche, akzent]
+    energie: [3, 5]
+    bewegung: pulsierend
+    beat: fest
+    farbe: param
+    traegt_takte: "2-8"
+    alt: {parts: 0, takte: 0, wofuer: "SCENE_WAVE_*, Lampen in SCENE_DROP"}
+    urteil:
+    notiz:
+
+  progPingPong:
+    wirkung: "Pro Beat leuchtet genau ein Gerät der Bühne, der Rest ist dunkel"
+    art: strip
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: wandernd
+    beat: fest
+    farbe: schema
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0, wofuer: "SCENE_PINGPONG"}
+    urteil:
+    notiz:
+
+  progLampFill:
+    wirkung: "Lampe füllt sich über die Partdauer von unten, am Ende weiße Explosion"
+    art: lampe
+    rolle: [aufbau]
+    energie: [3, 5]
+    bewegung: wandernd
+    beat: fest
+    farbe: param
+    traegt_takte: "1-8"
+    alt: {parts: 0, takte: 0, wofuer: "Lampen-Teil von SCENE_BUILDUP"}
+    urteil:
+    notiz:
+
+  progLampPulse:
+    wirkung: "Leichter Blitz pro Beat, dazu ein Lichtschuss nach oben"
+    art: lampe
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    beat: fest
+    farbe: param
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Lampen-Teil von SCENE_VERSE"}
+    urteil:
+    notiz:
+
+  progLampFire:
+    wirkung: "Feuer brennt die Lampe hinauf"
+    art: lampe
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: flackernd
+    beat: frei
+    farbe: eigen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Lampen-Teil von SCENE_FIRE"}
+    urteil:
+    notiz:
+
+  # ---------- Text (nur Matrix-Geräte; in show.yaml über `text:` statt von Hand) ----------
+
+  progText:
+    wirkung: "Wort pulsiert im Beat bzw. pro Beat das nächste Wort, automatisch zentriert"
+    art: text
+    rolle: [akzent, flaeche]
+    energie: [3, 5]
+    bewegung: pulsierend
+    beat: param
+    farbe: schema
+    traegt_takte: "1-8"
+    alt: {parts: 0, takte: 0, wofuer: "neu; ersetzt progShowText/progWordArray/progBlinkText (alt: 'ROOTS' 8x zum Strobo)"}
+    urteil:
+    notiz:
+
+  progTextScroll:
+    wirkung: "Lauftext, der genau am Part-Ende fertig ist"
+    art: text
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: schema
+    traegt_takte: "4-12"
+    alt: {parts: 0, takte: 0, wofuer: "alt als progScrollText: Songtitel während der Anfangspause (15x)"}
+    urteil:
+    notiz:
+
+
+# ---------------------------------------------------------------------------------------------------
+# Paletten von progPalette(dur, paletteID, next)
+#
+# Hinweise aus dem Code (src/FXprograms.cpp, progPalette / FillLEDsFromPaletteColors):
+# - Es gibt keinen Tempo-Parameter. Alle Paletten laufen gleich schnell; 'slow'/'fast' kommt nur daher,
+#   wie viele Farbwechsel in der Palette stecken (Streifen wirken schnell, weiche Verläufe langsam).
+# - 'mit/ohne Fades' = LINEARBLEND/NOBLEND, fest an die ID gebunden.
+# - Die Beschreibung im Code-Kommentar passt bei 4 und 9/10 nicht zu dem, was der Code lädt - bitte am
+#   Gerät prüfen und `look` korrigieren.
+# - Palette 12 gibt es nicht: der Aufruf zeigt die zuletzt geladene Palette weiter.
+# ---------------------------------------------------------------------------------------------------
+
+paletten:
+  0:
+    code: "RainbowColors, mit Fades"
+    look: "Regenbogen, weich, wirkt langsam"
+    energie: [1, 3]
+    alt: {parts: 0}
+    urteil:
+    notiz:
+  1:
+    code: "RainbowStripeColors, ohne Fades"
+    look: "Regenbogen-Streifen mit schwarzen Lücken, harte Kanten, wirkt schnell"
+    energie: [3, 4]
+    alt: {parts: 2, takte: 16, wofuer: "Verse", songs: "Abcdefu, BeMine"}
+    urteil:
+    notiz:
+  2:
+    code: "RainbowStripeColors, mit Fades"
+    look: "Regenbogen-Streifen mit Lücken, weich überblendet"
+    energie: [2, 4]
+    alt: {parts: 5, takte: 36, wofuer: "Verse (3), Solo, Akzent", songs: "EnjoyTheSilence, Firework, FridayImInLove, SuchAShame"}
+    urteil:
+    notiz:
+  3:
+    code: "lila/grün/schwarz in Zweierblöcken, mit Fades"
+    look: "lila und grüne Balken mit dunklen Lücken"
+    energie: [2, 3]
+    alt: {parts: 7, takte: 49, wofuer: "Verse (4), Bridge", songs: "Abcdefu, Apt, EnjoyTheSilence, FridayImInLove, TellItToMyHeart, Titanium"}
+    urteil:
+    notiz:
+  4:
+    code: "16 Zufallsfarben mit zufälliger Helligkeit, mit Fades; mit aktivem Farbschema: Farben aus dem Schema"
+    look: "jedes Mal anders: bunte, unterschiedlich helle Flecken. Kommentar im Code sagt 'blau/lila/rot/orange' - prüfen"
+    energie: [2, 4]
+    alt: {parts: 12, takte: 76, wofuer: "die meistgenutzte: Verse (3), Bridge (3), Intro (2)", songs: "12 Songs"}
+    urteil:
+    notiz:
+  5:
+    code: "weiß/schwarz gestreift, ohne Fades"
+    look: "weiße Blöcke laufen hart durch"
+    energie: [3, 4]
+    alt: {parts: 2, takte: 15, wofuer: "Bridge, Verse", songs: "Firework, Kids"}
+    urteil:
+    notiz:
+  6:
+    code: "weiß/schwarz gestreift, mit Fades"
+    look: "weiße Wellen, weich an- und abschwellend"
+    energie: [2, 3]
+    alt: {parts: 8, takte: 48, wofuer: "Intro (3), Verse (2)", songs: "8 Songs"}
+    urteil:
+    notiz:
+  7:
+    code: "CloudColors, mit Fades"
+    look: "blau/hellblau/weiß, wolkig, ruhig"
+    energie: [1, 2]
+    alt: {parts: 3, takte: 20, wofuer: "Intro, Verse, Akzent", songs: "Firework, FridayImInLove, NoRoots"}
+    urteil:
+    notiz:
+  8:
+    code: "PartyColors, mit Fades"
+    look: "blau/lila/pink/rot/orange/gelb, satt, ohne Grün"
+    energie: [2, 4]
+    alt: {parts: 3, takte: 20, wofuer: "Intro, Verse, Instrumental", songs: "DancingOnMyOwn, NoRoots, TakeOnMe"}
+    urteil:
+    notiz:
+  9:
+    code: "rot/grau/blau/schwarz, ohne Fades"
+    look: "rot-weiß-blaue Blöcke mit Lücken, hart. Kommentar im Code: 'weiss/blau/beige, interessante Farben'"
+    energie: [3, 4]
+    alt: {parts: 6, takte: 42, wofuer: "Textzeilen (3), Chorus, Bridge, Instrumental", songs: "Apt, DancingOnMyOwn, DontStopTheMusic, IWannaDanceWithSomebody, TakeOnMe, Titanium"}
+    urteil:
+    notiz:
+  10:
+    code: "rot/grau/blau/schwarz, mit Fades"
+    look: "wie 9, weich überblendet"
+    energie: [2, 3]
+    alt: {parts: 2, takte: 8, wofuer: "Akzent, Textzeile", songs: "BillieJean, BloodyMary"}
+    urteil:
+    notiz:
+  11:
+    code: "MatrixColors: dunkelgrün bis fast weiß, mit Fades"
+    look: "grüner Verlauf, der zu Weiß aufhellt"
+    energie: [2, 3]
+    alt: {parts: 3, takte: 20, wofuer: "Textzeilen", songs: "BillieJean, DancingOnMyOwn, ILoveIt"}
+    urteil:
+    notiz:
+  12:
+    code: "NICHT DEFINIERT - zeigt die zuletzt geladene Palette"
+    look: "unbestimmt"
+    alt: {parts: 1, takte: 6, songs: "IWannaDanceWithSomebody ('i need a man')"}
+    urteil:
+    notiz:
+  20:
+    code: "PALETTE_SCHEME: Verlauf über die Farben des aktiven Farbschemas, mit Fades"
+    look: "Farbband in den Schemafarben"
+    energie: [1, 4]
+    alt: {parts: 0}
+    urteil:
+    notiz:
+
+
+# ---------------------------------------------------------------------------------------------------
+# Szenen (src/scenes.cpp): ein Name, jedes Gerät zeigt sein Programm
+# ---------------------------------------------------------------------------------------------------
+
+szenen:
+  SCENE_CALM:
+    wirkung: "alles atmet ruhig; Matrix: langsame Wasserringe"
+    geraete: {gitarre: progBreathe, lampe: progBreathe, matrix: "progWaterRipple langsam"}
+    rolle: [flaeche]
+    energie: [1, 1]
+    bewegung: pulsierend
+    genutzt: 5
+    urteil:
+    notiz:
+  SCENE_VERSE:
+    wirkung: "dezent im Beat: Zonen der Gitarre, Lichtschuss in den Lampen, Matrix-Regen"
+    geraete: {gitarre: progZoneBeat, lampe: progLampPulse, matrix: matrixMovieFX}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    genutzt: 7
+    urteil:
+    notiz:
+  SCENE_BUILDUP:
+    wirkung: "alles lädt sich über den ganzen Part auf, Explosion genau auf der Part-Grenze"
+    geraete: {gitarre: progChargeBlast, lampe: progLampFill, matrix: progStarfield}
+    rolle: [aufbau]
+    energie: [3, 4]
+    bewegung: wandernd
+    genutzt: 7
+    urteil:
+    notiz:
+  SCENE_DROP:
+    wirkung: "volle Energie im Beat: Schockwellen, Beat-Blitze, Wasserringe aus der Mitte"
+    geraete: {gitarre: progShockwave, lampe: progBeatFlash, matrix: "progWaterRipple schnell"}
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: pulsierend
+    genutzt: 9
+    urteil:
+    notiz:
+  SCENE_FIRE:
+    wirkung: "Feuer auf allen Geräten, bei kaltem Schema blau"
+    geraete: {gitarre: progOutlineFire, lampe: progLampFire, matrix: progFire}
+    rolle: [flaeche]
+    energie: [5, 5]
+    bewegung: flackernd
+    genutzt: 3
+    urteil:
+    notiz:
+  SCENE_WAVE_LR:
+    wirkung: "Blitz läuft pro Beat von links nach rechts über die Bühne"
+    geraete: {alle: progBeatFlash}
+    rolle: [flaeche, uebergang]
+    energie: [3, 5]
+    bewegung: wandernd
+    genutzt: 2
+    urteil:
+    notiz:
+  SCENE_WAVE_RL:
+    wirkung: "wie WAVE_LR, von rechts nach links"
+    geraete: {alle: progBeatFlash}
+    rolle: [flaeche, uebergang]
+    energie: [3, 5]
+    bewegung: wandernd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_WAVE_OUT:
+    wirkung: "Blitz läuft pro Beat von der Mitte (Drums) nach außen"
+    geraete: {alle: progBeatFlash}
+    rolle: [flaeche, uebergang]
+    energie: [3, 5]
+    bewegung: wandernd
+    genutzt: 5
+    urteil:
+    notiz:
+  SCENE_PINGPONG:
+    wirkung: "pro Beat leuchtet genau ein Gerät, springt über die Bühne"
+    geraete: {alle: progPingPong}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: wandernd
+    genutzt: 4
+    urteil:
+    notiz:
+  SCENE_SOLO_GIT:
+    wirkung: "Gitarre: zwei Kometen; alle anderen atmen dunkel"
+    geraete: {gitarre: progCometLoop, rest: "progBreathe dunkel"}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: wandernd
+    genutzt: 1
+    urteil:
+    notiz:
+  SCENE_SOLO_BASS:
+    wirkung: "Bass: zwei Kometen; alle anderen atmen dunkel"
+    geraete: {bass: progCometLoop, rest: "progBreathe dunkel"}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: wandernd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_SOLO_DRUMS:
+    wirkung: "Matrix: schnelle Wasserringe; alle anderen atmen dunkel"
+    geraete: {matrix: "progWaterRipple schnell", rest: "progBreathe dunkel"}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: fliessend
+    genutzt: 1
+    urteil:
+    notiz:
+
+  SCENE_STAR:
+    wirkung: "drehender, wandernder Stern auf Gitarre, Bass und Matrix, Farbwechsel pro Beat; Lampen: drei kreisende Lichtpunkte"
+    geraete: {gitarre: "progSternNeu (Werte der alten Refrains)", lampe: progLampSpin, matrix: progSternNeu}
+    rolle: [flaeche]
+    energie: [4, 5]
+    bewegung: rotierend
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_SPARKLE:
+    wirkung: "schnelle Einzelblitze auf allen Geräten, Dichte passend zur LED-Zahl"
+    geraete: {alle: progFastBlingBling}
+    rolle: [flaeche]
+    energie: [5, 5]
+    bewegung: funkelnd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_GLOW:
+    wirkung: "alle Geräte füllen sich langsam mit einer Farbe, alle 2 Takte wechselt die ganze Bühne gemeinsam zur nächsten"
+    geraete: {alle: "progGlow (wie progBlingBlingColoring, gemeinsame Farbe)"}
+    rolle: [flaeche]
+    energie: [1, 2]
+    bewegung: funkelnd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_COLORS:
+    wirkung: "ganze Bühne einfarbig, pro Beat eine neue Farbe"
+    geraete: {alle: "progBeatColors (wie progFullColors, überall dieselbe Farbe)"}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_COLORS_WAVE:
+    wirkung: "wie COLORS, die Farbe wandert pro Beat ein Gerät weiter von links nach rechts"
+    geraete: {alle: progBeatColors}
+    rolle: [flaeche, uebergang]
+    energie: [3, 4]
+    bewegung: wandernd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_RAIN:
+    wirkung: "fallende Leuchtspuren, die nach Weiß aufhellen; ruhig"
+    geraete: {gitarre: progMatrixHorizontal, lampe: progLampRain, matrix: progMatrixHorizontal}
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: wandernd
+    genutzt: 0
+    urteil:
+    notiz:
+  SCENE_PALETTE:
+    wirkung: "ein Farbband in Schemafarben liegt über der ganzen Bühne und läuft in 4 Takten von links nach rechts durch"
+    geraete: {alle: progStageBand}
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: fliessend
+    genutzt: 0
+    urteil:
+    notiz:
+
+# ---------------------------------------------------------------------------------------------------
+# Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen
+# ---------------------------------------------------------------------------------------------------
+
+muster:
+  - "Chorus = progSternNeu (45 von 99), sonst progFastBlingBling (26) oder progFullColors (17). Nie progPalette oder progRandomLines."
+  - "Verse = progPalette (17), progRandomLines (11), progFullColors (10), progBlingBlingColoring (6). Nie progSternNeu."
+  - "Vor dem Chorus steht in der Hälfte der Fälle progStrobo, meist 1 Takt (38 von 75 Übergängen in einen Chorus)."
+  - "Intro/Outro ruhig funkelnd: progBlingBlingColoring, progPalette; Outro oft progFastBlingBling."
+  - "Solo = progWaterRipple (5 von 15): das Solo wurde ruhig und fließend gezeigt, nicht als Höhepunkt."
+  - "Bridge = progPalette (7 von 15): Farbwechsel statt Formwechsel."
+  - "Farbwechsel im Beat: 1 Beat ist Standard (Stern, RandomLines, FullColors), 2 Beats die ruhigere Variante."
+  - "Parts sind im Median 8 Takte lang; kein Flächen-Effekt läuft länger als 16 Takte am Stück."
+
+luecken:
+  - "Geschlossen am 04.10.2026 durch SCENE_STAR, SPARKLE, GLOW, COLORS, COLORS_WAVE, RAIN, PALETTE: Glitzern, Stern, ruhige Flächen, Farbband über die Bühne."
+  - "Offen: progRandomLines/progCircles im Beat, progMatrixScanner und progWaterRipple haben noch keine eigene Szene (WaterRipple nur als Matrix-Teil von CALM/DROP)."
+  - "Offen: progPalette hat kein Tempo und keine Fade-Wahl als Parameter; Palette 12 ist nicht definiert. Die schönen festen Paletten (3, 6, 7, 8, 9/10, 11) gibt es nicht als Szene, SCENE_PALETTE nutzt nur die Schemafarben."
+  - "Offen: Fading-Option für progFullColors / SCENE_COLORS (Wunsch des Users)."
+  - "Offen: progSternschnuppen als ruhiges Pausen-Preset für Gitarren und Lampen überarbeiten."
+  - "Offen: Effekte lassen sich nicht übereinanderlegen (jeder ruft selbst FastLED.show()), z. B. Blitze über einem Farbverlauf."
