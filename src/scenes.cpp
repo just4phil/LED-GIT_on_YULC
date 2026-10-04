@@ -57,6 +57,19 @@ void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned 
 	fxShow();
 }
 
+void progFadeOut(unsigned int durationMillis, byte nextPart, CRGB col) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		unsigned int ms = millisCounterForProgChange;
+		uint8_t lin = (ms < durationMillis) ? 255 - (uint32_t)ms * 255 / durationMillis : 0;
+		uint8_t val = scale8(scale8(lin, lin), 200);	// quadratisch: fällt erst zügig, läuft dann lang und flach aus
+		CRGB c = col;
+		fill_solid(leds, anz_LEDs, val ? c.nscale8_video(val) : CRGB::Black);
+	}
+	fxShow();
+}
+
 void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis) {
 	fxPartStart(durationMillis, nextPart);
 
@@ -318,6 +331,9 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		return;
 	case SCENE_PALETTE:
 		progStageBand(durationMillis, nextPart, beatMs * 16);	// ein Umlauf in 4 Takten
+		return;
+	case SCENE_FADEOUT:
+		progFadeOut(durationMillis, nextPart, me);
 		return;
 	}
 

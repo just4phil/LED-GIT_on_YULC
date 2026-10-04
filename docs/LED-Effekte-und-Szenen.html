@@ -280,6 +280,7 @@
   <tr><td><code>SCENE_COLORS_WAVE</code></td><td colspan="3">wie oben, die Farbe wandert pro Beat ein Gerät weiter von links nach rechts.</td></tr>
   <tr><td><code>SCENE_RAIN</code></td><td><code>progMatrixHorizontal(…, 70, true)</code></td><td><code>progLampRain</code>: drei Leuchtspuren fallen von oben, die Lampen laufen versetzt</td><td><code>progMatrixHorizontal(…, 70, true)</code></td></tr>
   <tr><td><code>SCENE_PALETTE</code></td><td colspan="3">alle: <code>progStageBand</code>. Ein Farbband aus den Schemafarben liegt über der ganzen Bühne, jedes Gerät zeigt sein Fünftel. Das Band läuft in 4 Takten einmal von links nach rechts durch.</td></tr>
+  <tr><td><code>SCENE_FADEOUT</code></td><td colspan="3">alle: <code>progFadeOut</code>. Jedes Gerät leuchtet in seiner Schemafarbe und blendet über die ganze Partdauer weich nach Schwarz aus (erst zügig, dann lang und flach). Für den Schlussakkord; je länger der Part, desto sanfter.</td></tr>
 </table></div>
 <p>Bei STAR, SPARKLE und RAIN würfelt jedes Gerät seine Farben selbst aus dem Farbschema. Bei GLOW, COLORS und PALETTE rechnen alle Geräte dieselbe Farbe aus (<code>sharedColor()</code>): mit Schema die Schemafarben der Reihe nach, ohne Schema weit auseinanderliegende Farbtöne.</p>
 
@@ -740,7 +741,7 @@ const SCENES=[
   ["SCENE_WAVE_LR","Wave →"],["SCENE_WAVE_RL","Wave ←"],["SCENE_WAVE_OUT","Wave ↔"],["SCENE_PINGPONG","PingPong"],
   ["SCENE_SOLO_GIT","Solo Git"],["SCENE_SOLO_BASS","Solo Bass"],["SCENE_SOLO_DRUMS","Solo Drums"],
   ["SCENE_STAR","Star"],["SCENE_SPARKLE","Sparkle"],["SCENE_GLOW","Glow"],["SCENE_COLORS","Colors"],["SCENE_COLORS_WAVE","Colors →"],
-  ["SCENE_RAIN","Rain"],["SCENE_PALETTE","Palette"]];
+  ["SCENE_RAIN","Rain"],["SCENE_PALETTE","Palette"],["SCENE_FADEOUT","Fade out"]];
 const DEVICES=[{name:"Lampe 1",cls:"lamp",pos:0,dev:"LAMPE1"},{name:"Bass",cls:"guitar",pos:1,dev:"BASS"},{name:"Drums (Matrix)",cls:"matrix",pos:2,dev:"DRUMS"},
   {name:"Gitarre",cls:"guitar",pos:3,dev:"GIT"},{name:"Lampe 2",cls:"lamp",pos:4,dev:"LAMPE2"}];
 
@@ -791,6 +792,7 @@ function makeSceneFX(id,d,dur,bpm,sch){
     case "SCENE_COLORS": return lookFX.colors(bpm,d.pos,false,sch);
     case "SCENE_COLORS_WAVE": return lookFX.colors(bpm,d.pos,true,sch);
     case "SCENE_PALETTE": return lookFX.band(bpm,d,sch);
+    case "SCENE_FADEOUT": return {step(ms,L){ const lin=Math.max(0,1-(ms%dur)/dur); fill(L,scale(me,lin*lin*200)); }};
     case "SCENE_STAR": return cls==="lamp"? lookFX.lampSpin(bpm,sch) : lookFX.star(bpm,cls,sch);
     case "SCENE_RAIN": return cls==="lamp"? lookFX.lampRain(d.pos,me) : lookFX.rasterRain(cls,sch);
   }

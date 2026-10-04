@@ -914,6 +914,15 @@ szenen:
     genutzt: 0
     urteil:
     notiz:
+  SCENE_FADEOUT:
+    wirkung: "jedes Gerät in seiner Schemafarbe, blendet über die ganze Partdauer weich nach Schwarz aus"
+    geraete: {alle: progFadeOut}
+    rolle: [uebergang, stille]
+    energie: [0, 1]
+    bewegung: statisch
+    genutzt: 1
+    urteil:
+    notiz:
 
 # ---------------------------------------------------------------------------------------------------
 # Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen

@@ -210,6 +210,7 @@ Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts o
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
 | energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |
 | energy 2-4, Strophe oder Chorus im Beat | SCENE_COLORS (ganze Bühne eine Farbe pro Beat), SCENE_COLORS_WAVE |
+| Schlussakkord klingt aus, "fade out" | SCENE_FADEOUT (blendet über die Partdauer weich nach Schwarz; ab 2 Takten richtig sanft) |
 | energy 4-5, Chorus | SCENE_STAR (der Refrain-Look der alten Songs) |
 | energy 5, Action, Höhepunkt am Songende | SCENE_SPARKLE |
 | Akzent `fill_into_next` | `tail` 1-4 Beats: BUILDUP oder progStrobo |

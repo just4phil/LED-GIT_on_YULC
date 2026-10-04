@@ -42,6 +42,7 @@ enum SceneID : uint8_t {
 	SCENE_COLORS_WAVE,	// wie COLORS, die Farbe wandert pro Beat ein Gerät weiter nach rechts
 	SCENE_RAIN,			// fallende Leuchtspuren (progMatrixHorizontal), ruhig
 	SCENE_PALETTE,		// ein Farbband in Schemafarben läuft von links nach rechts über die ganze Bühne
+	SCENE_FADEOUT,		// jedes Gerät in seiner Schemafarbe, blendet über die ganze Partdauer weich nach Schwarz aus
 };
 
 #define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen
@@ -53,6 +54,7 @@ uint8_t sharedRand8(uint32_t salt);
 
 //--- Primitive für alle Geräte (schreiben in leds[0..anz_LEDs)) ---
 void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned int periodMillis, uint8_t maxVal);
+void progFadeOut(unsigned int durationMillis, byte nextPart, CRGB col);		// einfarbig, blendet über die Partdauer weich aus
 void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis);
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)
