@@ -1,0 +1,9 @@
+zeit: '2026-10-04 15:12:45'
+notiz: 'Neue Struktur aus struktur.xlsx (29 Parts), Show nach den Effektideen des
+  Users: Stern/Drop/Strobo als Motive'
+werkzeug_git: dc7e598 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 2e1bdce924d018ecbd607819031274cc1674b1b6fe68224a78e626b6a1c716b1
+  show.yaml: 0671d852ee3362ee57440ed0ff144f09bb6290bc402616318c002aa22f305a55
+  generated.cpp: 58d389566dfb59bec1d4ab1175f9d51b0dfd5b9a8849bae2c0a245372ff08192

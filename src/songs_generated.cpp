@@ -193,102 +193,176 @@ void gen_AllTheThingsSheSaid() {
 
 	case 0:	// pause  1 T  1744ms  @0:00.000  -- Start-MIDI: alle Geräte schwarz
 #if defined(SCROLLMATRIX)
-		progScrollText("All The Things She Said by t.A.T.u.", 24070, 90, getRandomColor(), 2);	// 1 Durchlauf = 23580 ms
+		progBlack(490, 1);	// Lauftext verzögern, damit er genau an case 20 endet
 #elif defined(GITBOARD)
-		progScrollText("All The Things She Said by t.A.T.u.", 21279, 90, getRandomColor(), 2);	// 1 Durchlauf = 20700 ms
+		progBlack(3370, 1);	// Lauftext verzögern, damit er genau an case 20 endet
 #else
 		progBlack(1744, 5);
 #endif
 		break;
 
 #if defined(SCROLLMATRIX)
-	case 2:	// Rest von 'intro band' ab 0:24.070, Einstieg case 20
-		setColorScheme(SCHEME_BLUE);
-		scene(SCENE_WAVE_OUT, 11163, 20, 86);
+	case 1:	// Lauftext bis 0:24.070, Einstieg case 20
+		progScrollText("All The Things She Said by t.A.T.u.", 23580, 90, getRandomColor(), 20);	// 1 Durchlauf = 23580 ms
 		break;
 #endif
 
 #if defined(GITBOARD)
-	case 2:	// Rest von 'intro band' ab 0:21.279, Einstieg case 20
-		setColorScheme(SCHEME_BLUE);
-		scene(SCENE_WAVE_OUT, 13954, 20, 86);
+	case 1:	// Lauftext bis 0:24.070, Einstieg case 20
+		progScrollText("All The Things She Said by t.A.T.u.", 20700, 90, getRandomColor(), 20);	// 1 Durchlauf = 20700 ms
 		break;
 #endif
 
-	case 5:	// intro  4 T  9768ms  @0:01.744  -- leiser Chant, nur Atmen in Eisblau; Crescendo in den letzten 2 Beats lädt auf und explodiert auf den Band-Einsatz (power 1, build 0.55)
+	case 5:	// synth intro  4 T  9768ms  @0:01.744  -- Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; das Crescendo der letzten 2 Beats (build 0.55) lädt weiß auf und explodiert auf den Band-Einsatz
 		setColorScheme(SCHEME_ICE);
 		scene(SCENE_CALM, 9768, 10, 86);
 		break;
 
-	case 10:	// intro (tail)  2 B  1395ms  @0:11.512
+	case 10:	// synth intro (tail)  2 B  1395ms  @0:11.512
 		setColorScheme(SCHEME_WHITE);
 		scene(SCENE_BUILDUP, 1395, 15, 86);
 		break;
 
-	case 15:	// intro band  8 T  22326ms  @0:12.907  -- Band setzt voll ein (power 5, sehr hell) - Blitze laufen pro Beat von den Drums nach außen, noch kalt
-		setColorScheme(SCHEME_BLUE);
-		scene(SCENE_WAVE_OUT, 22326, 20, 86);
-		break;
-
-	case 20:	// verse 1  9 T  25116ms  @0:35.233  -- rhythmischer Puls, meiste Bewegung im Song (drive 1.0), aber Stimmung bleibt kalt
+	case 15:	// intro: all thet ….  4 T  11163ms  @0:12.907  -- Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - der Stern stellt den Chorus-Look vor, noch in kaltem Eisblau
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 25116, 25, 86);
+		scene(SCENE_STAR, 11163, 20, 86);
 		break;
 
-	case 25:	// chorus 1  8 T  22325ms  @1:00.349  -- erster Chorus: Farbe bricht auf Rot um, volle Energie im Beat
+	case 20:	// intro: this is not enough  4 T  11163ms  @0:24.070  -- Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song
 		setColorScheme(SCHEME_RED);
-		scene(SCENE_DROP, 22325, 30, 86);
+		scene(SCENE_DROP, 11163, 25, 86);
 		break;
 
-	case 30:	// solo  8 T  22326ms  @1:22.674  -- Gitarre im Spotlight, Rest atmet dezent in Blau/Lila
+	case 25:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau, größter Kontrast im Song
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_GLOW, 11162, 30, 86);
+		break;
+
+	case 30:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung, bleiben aber ruhig und kalt (Regen passt zum Song)
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_RAIN, 11163, 35, 86);
+		break;
+
+	case 35:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats auf, Explosion genau auf den Strobo-Schlag
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_BUILDUP, 2093, 40, 86);
+		break;
+
+	case 40:	// übergang zum chorus  1 B  698ms  @0:59.651  -- Idee 'strobo': 1 Beat weißes Flimmern als Absprung in den Chorus
+		progStrobo(698, 45, 60, CRGB::White);
+		break;
+
+	case 45:	// chorus 1  4 T  11163ms  @1:00.349  -- Idee 'action', energy 4: der Stern in Pink/Cyan/Violett, Farbwechsel pro Beat - der Refrain-Look
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_STAR, 11163, 50, 86);
+		break;
+
+	case 50:	// this is not enough  4 T  11162ms  @1:11.512  -- Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5)
+		setColorScheme(SCHEME_RED);
+		scene(SCENE_DROP, 11162, 55, 86);
+		break;
+
+	case 55:	// synth solo a  4 T  11163ms  @1:22.674  -- Idee 'viele farben und im takt': die ganze Bühne einfarbig, pro Beat eine neue freie Zufallsfarbe - der bunteste Part
+		setColorScheme(SCHEME_RANDOM);
+		scene(SCENE_COLORS, 11163, 60, 86);
+		break;
+
+	case 60:	// synth solo b  4 T  11163ms  @1:33.837  -- Idee 'etwas gesteigert auf den takt': gleiche Farben, jetzt wandert die Farbe pro Beat von Gerät zu Gerät über die Bühne
+		setColorScheme(SCHEME_RANDOM);
+		scene(SCENE_COLORS_WAVE, 11163, 65, 86);
+		break;
+
+	case 65:	// verse 2 a  4 T  11163ms  @1:45.000  -- Idee 'ruhig', energy 2: ein Farbband in Blau/Lila/Weiß zieht in 4 Takten einmal über die Bühne - ruhig, aber eine Stufe mehr als Verse 1a
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_SOLO_GIT, 22326, 35, 86);
+		scene(SCENE_PALETTE, 11163, 70, 86);
 		break;
 
-	case 35:	// verse 2a  4 T  11163ms  @1:45.000  -- fast leer (power 1, kaum Bass) - alles zieht sich zurück
+	case 70:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen), gleiche Farben
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE, 5581, 75, 86);
+		break;
+
+	case 75:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen, Explosion auf den Strobo
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_BUILDUP, 4186, 80, 86);
+		break;
+
+	case 80:	// übergang zum chorus (2)  2 B  1396ms  @2:05.930  -- Strobo-Absprung wie beim ersten Mal, hier 2 Beats
+		progStrobo(1396, 85, 60, CRGB::White);
+		break;
+
+	case 85:	// chorus 1 (2)  4 T  11162ms  @2:07.326  -- Chorus erkennbar gleich wie beim ersten Mal
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_STAR, 11162, 90, 86);
+		break;
+
+	case 90:	// this is not enough (2)  4 T  11163ms  @2:18.488  -- Hook-Motiv: Viertel in Rot
+		setColorScheme(SCHEME_RED);
+		scene(SCENE_DROP, 11163, 95, 86);
+		break;
+
+	case 95:	// Mother looking at me  4 T  11163ms  @2:29.651  -- Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet in Blau, auf der Matrix langsame Wasserringe
 		setColorScheme(SCHEME_BLUE);
-		scene(SCENE_CALM, 11163, 40, 86);
+		scene(SCENE_CALM, 11163, 100, 86);
 		break;
 
-	case 40:	// verse 2b  4 T  11163ms  @1:56.163  -- Band wieder voll, Puls wie Verse 1
+	case 100:	// daddy looking at me  2 T  5581ms  @2:40.814  -- Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_RAIN, 5581, 105, 86);
+		break;
+
+	case 105:	// build up  1 T+2 B  4186ms  @2:46.395  -- Idee 'build up': Aufladen wie vor Chorus 2
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 11163, 45, 86);
+		scene(SCENE_BUILDUP, 4186, 110, 86);
 		break;
 
-	case 45:	// chorus 2  8 T  22325ms  @2:07.326  -- Chorus erkennbar gleich wie Chorus 1
-		setColorScheme(SCHEME_RED);
-		scene(SCENE_DROP, 22325, 50, 86);
+	case 110:	// übergang zum chorus (3)  2 B  1396ms  @2:50.581  -- Strobo-Absprung, 2 Beats
+		progStrobo(1396, 115, 60, CRGB::White);
 		break;
 
-	case 50:	// bridge  7 T  19535ms  @2:29.651  -- 'Mother looking at me': leise, aber steigende Spannung (build 0.2) - lädt sich über 7 Takte langsam auf, Explosion genau auf 'Have I crossed the line?'
-		setColorScheme(SCHEME_ICE);
-		scene(SCENE_BUILDUP, 19535, 55, 86);
+	case 115:	// chorus 1 (3)  2 B  1395ms  @2:51.977  -- der Chorus setzt für 2 Beats an - schon in den warmen Farben des Finales
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_STAR, 1395, 120, 86);
 		break;
 
-	case 55:	// bridge hit  1 T  2791ms  @2:49.186  -- ein voller Takt - weißer Strobo als Absprung ins Finale
-		progStrobo(2791, 60, 75, CRGB::White);
+	case 120:	// stop  2 B  1395ms  @2:53.372  -- Idee 'BLACK': 2 Beats Dunkel machen den Wiedereinsatz stärker
+		progBlack(1395, 125);
 		break;
 
-	case 60:	// chorus 3  12 T  27907ms  @2:51.977  -- Finale: Chorus eine Stufe mehr als vorher (Feuer statt Drop); letzte 2 Takte 'This is not enough' springen von Gerät zu Gerät
+	case 125:	// chorus 1 weiter  3 T  8373ms  @2:54.767  -- letzter Chorus eine Stufe wärmer: Stern in Orange/Pink/Lila/Gelb
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_STAR, 8373, 130, 86);
+		break;
+
+	case 130:	// this is not enough (3)  3 T+2 B  9767ms  @3:03.140  -- Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb
 		setColorScheme(SCHEME_FIRE);
-		scene(SCENE_FIRE, 27907, 65, 86);
+		scene(SCENE_DROP, 9767, 135, 86);
 		break;
 
-	case 65:	// chorus 3 (tail)  8 B  5581ms  @3:19.884
+	case 135:	// übergang zum chorus (4)  2 B  1395ms  @3:12.907  -- Idee 'strobe': letzter Absprung
+		progStrobo(1395, 140, 60, CRGB::White);
+		break;
+
+	case 140:	// chrorus 2  2 T  5582ms  @3:14.302  -- Höhepunkt am Songende: 2 Takte schnelle Einzelblitze auf allen Geräten in Feuerfarben, statt ein viertes Mal der Stern
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_SPARKLE, 5582, 145, 86);
+		break;
+
+	case 145:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_DROP, 5581, 150, 86);
+		break;
+
+	case 150:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out': ein Takt rotes Aufatmen und Ausklingen, danach 10 s schwarz
 		setColorScheme(SCHEME_RED);
-		scene(SCENE_PINGPONG, 5581, 70, 86);
+		scene(SCENE_CALM, 2791, 155, 86);
 		break;
 
-	case 70:	// end  1 T  2791ms  @3:25.465  -- Schlussakkord klingt aus, rotes Nachglühen, danach 10 s schwarz
-		setColorScheme(SCHEME_RED);
-		scene(SCENE_CALM, 2791, 75, 86);
+	case 155:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 160);
 		break;
 
-	case 75:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 80);
-		break;
-
-	case 80:
+	case 160:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
@@ -315,6 +389,7 @@ void gen_GirlsJustWannaHaveFun() {
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:26.905, Einstieg case 15
 		setColorScheme(SCHEME_BLUE);
+		setColorFade(FADE_COMPLEMENT, 3810, false, 6667);
 		scene(SCENE_VERSE, 10476, 15, 126);
 		break;
 #endif
@@ -322,6 +397,7 @@ void gen_GirlsJustWannaHaveFun() {
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:24.048, Einstieg case 15
 		setColorScheme(SCHEME_BLUE);
+		setColorFade(FADE_COMPLEMENT, 3810, false, 3810);
 		scene(SCENE_VERSE, 13333, 15, 126);
 		break;
 #endif
@@ -331,8 +407,9 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_WAVE_OUT, 15238, 10, 126);
 		break;
 
-	case 10:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls, dafür einfarbig Blau - größter Kontrast zum bunten Intro
+	case 10:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls; startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück
 		setColorScheme(SCHEME_BLUE);
+		setColorFade(FADE_COMPLEMENT, 3810);
 		scene(SCENE_VERSE, 17143, 15, 126);
 		break;
 
@@ -341,8 +418,9 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_WAVE_OUT, 7619, 20, 126);
 		break;
 
-	case 20:	// verse 2  9 T  17143ms  @0:45.000  -- energy 2: gleicher Puls wie Verse 1, eine Stufe farbiger (Blau + Lila + Weiß)
+	case 20:	// verse 2  9 T  17143ms  @0:45.000  -- energy 2: gleicher Puls wie Verse 1, eine Stufe farbiger (Blau + Lila + Weiß); die Farben wandern alle 2 Takte ein Drittel um den Farbkreis (Blau -> Pink, Lila -> Orange) und zurück
 		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 3810);
 		scene(SCENE_VERSE, 17143, 25, 126);
 		break;
 
@@ -371,8 +449,9 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_PINGPONG, 15238, 50, 126);
 		break;
 
-	case 50:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo
+	case 50:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo, mit derselben Farbwanderung
 		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 3810);
 		scene(SCENE_VERSE, 17143, 55, 126);
 		break;
 

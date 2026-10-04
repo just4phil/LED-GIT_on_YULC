@@ -1,11 +1,13 @@
 # Technische Show (von Claude aus song.yaml + Analyse abgeleitet).
-# Struktur: quelle/struktur.xlsx des Users (30 Parts). Es gelten durchgehend sein energy und seine Effektideen.
+# Struktur: quelle/struktur.xlsx des Users (29 Parts). Es gelten durchgehend sein energy und seine Effektideen.
 # Idee: drei wiederkehrende Motive gliedern den Song -
 #   Chorus "all the things she said"  = drehender Stern (SCENE_STAR)
 #   Hook "this is not enough"         = Schläge auf die Viertel in Rot (SCENE_DROP), jedes Mal gleich
 #   Übergang in den Chorus            = weißer Strobo
 # Farben: A-Moll -> kalt (ICE/ROYAL/BLUE) in Intro, Verses und Bridge, Chorus in NEON, die Hook rot;
 # nach dem Stopp kippt das Finale ins Warme (SUNSET -> FIRE).
+# Abweichung zur Messung: die ersten 4 Takte des Intros sind in der MP3 ein leiser Chant (power 1, -19,9 dB),
+# der User setzt für die ganzen 8 Takte energy 4 "action" -> gilt.
 
 function: gen_AllTheThingsSheSaid
 scheme: SCHEME_ICE
@@ -14,19 +16,10 @@ sections:
   pause:
     fx: "progBlack(${dur}, ${next})"
 
-  synth intro:
-    scene: SCENE_CALM
-    scheme: SCHEME_ICE
-    tail:
-      beats: 2
-      scene: SCENE_BUILDUP
-      scheme: SCHEME_WHITE
-    why: "Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; das Crescendo der letzten 2 Beats (build 0.55) lädt weiß auf und explodiert auf den Band-Einsatz"
-
   "intro: all thet ….":
     scene: SCENE_STAR
     scheme: SCHEME_ICE
-    why: "Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - der Stern stellt den Chorus-Look vor, noch in kaltem Eisblau"
+    why: "Idee 'action', energy 4: das Intro ist die Chorus-Melodie - der Stern stellt den Chorus-Look vor, noch in kaltem Eisblau"
 
   "intro: this is not enough":
     scene: SCENE_DROP

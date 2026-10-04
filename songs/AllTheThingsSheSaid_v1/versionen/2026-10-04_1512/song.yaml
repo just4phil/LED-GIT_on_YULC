@@ -24,13 +24,8 @@ sections:
     energy: 0
     idea: "black"
 
-  - name: "synth intro"
-    bars: 4
-    energy: 1
-    idea: "ruhig nur synths"
-
   - name: "intro: all thet …."
-    bars: 4
+    bars: 8
     energy: 4
     idea: "action"
 

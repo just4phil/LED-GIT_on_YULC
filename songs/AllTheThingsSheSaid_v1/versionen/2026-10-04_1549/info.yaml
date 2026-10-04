@@ -1,0 +1,8 @@
+zeit: '2026-10-04 15:49:47'
+notiz: Synth-Intro ergänzt (4 Takte CALM + Buildup-Tail), Band-Intro auf 4 Takte
+werkzeug_git: dc7e598 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: a7ae13ff3fbbf1050adb9a6485b500fd8da7dc94a2298b89cbe8603d1f382826
+  show.yaml: ec8392e890e102741cfd6a87477f8e646f5cfc80fece2c5b4d5a446a8b41537e
+  generated.cpp: db395d3288e70c4a37359d733e2d25e67506cef0a8288bfeb7d282901cef92fb
