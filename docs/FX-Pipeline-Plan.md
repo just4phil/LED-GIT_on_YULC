@@ -11,38 +11,46 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (nach Phase 4b Punkt 2)
+Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestanztem Text)
 
-- **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (`cf720fd`),
-  Phase 4b Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene; der Commit mit dem Titel „FX-Pipeline: eigene
-  Text-Ebene", siehe `git log`). Alle fünf Envs bauen mit diesem Stand.
-- **Nicht committet:** nichts. `START_WITH_PIPELINE_DEMO` in `src/definitions.h` hat der User wieder
-  auskommentiert; zum Ansehen der Demo lokal einschalten und nicht committen, oder Song 92 per MIDI CC#0 wählen.
-- **Auf der Hardware gesehen (User, 04.10.2026):** Song #31 All The Things She Said mit Übergängen und Ebene –
-  „sehr geil, genau die richtige Richtung". Die alten handgeschriebenen Songs laufen alle noch.
-  Song 92 `pipelineDemo` durchgesehen: „sieht sehr geil aus", vor allem die Farbverläufe auf der Matrix und Text
-  über anderen Effekten; „für mich sieht alles gut aus", Marker-LEDs stabil. Keine Befunde.
-- **User am 05.10.2026:** „die demo gefällt mir auch" – keine Befunde genannt (ob die Parts 82–88 dabei waren, hat
-  er nicht ausdrücklich gesagt). Dazu außerhalb der Pipeline: OTA wartet nicht mehr 20 s auf fehlende Clients
-  (`83f06d4`).
-- **Wartet auf den User:**
-  1. Alle Geräte neu flashen und in Song 92 ansehen: Part 0 (ausgestanzter Text) und Part 2 (Vergleich: Maske)
-     gleich am Anfang, Part 90 (Text-Ebene) am Ende – alle noch nie auf der Hardware gelaufen. Dazu Song 91,
-     Parts 55/60: steigt das Feuer auf der Matrix jetzt von unten auf? Worauf achten: siehe „Verifikation",
-     Punkt 3. Falls die Parts 82–88 noch nicht bewusst angesehen wurden: dieselbe Gelegenheit.
-  2. Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem
-     User; neu ist der Block `text_ebene`). Mündlich schon gesagt, aber noch nicht eingetragen: Text über der
-     Szene (`FX_OVER`, Part 74) gefällt sehr gut.
-- **Dazu am 05.10.2026 auf Wunsch des Users (Commit „FX-Pipeline: ausgestanzter Text", siehe `git log`):**
-  ausgestanzter Text (`FX_CUT`, `fxTextEnd(255, FX_CUT)`, YAML `text: {…, over: true, color: schwarz}` und
-  `overlay: {mode: cut}`); Feuer auf der SCROLLMATRIX gedreht (`progFire` nahm dort y = 0 als unten an, es ist
-  aber oben wie beim Text – der User sah die Säulen von oben kommen); OTA-Firmwares gebaut. Alle fünf Envs bauen,
-  #31 und #33 erzeugen im Speicher denselben Code. **Nicht auf der Hardware gesehen.**
-- **In Arbeit:** nichts.
-- **Nächster Schritt:** Phase 3b (Fading-Optionen), Punkt 1 zuerst. Zu Beginn den User nach Befunden aus den Parts 0, 2 und 90 von Song 92
-  und zum Feuer fragen und diese zuerst beheben.
+- **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
+  Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
+  ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
+  direkt danach, siehe `git log`. Alle fünf Envs bauen mit `6530dc8`; die OTA-Firmwares in `ota/` sind von diesem
+  Stand (Version 1791152126), der User hat sie aufgespielt.
+- **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
+  Nicht committen; vor einem OTA-Build für einen Auftritt wieder auskommentieren (sonst starten alle Geräte mit
+  der Demo statt in der Songpause).
+- **Auf der Hardware gesehen (User):**
+  - 04.10.2026: Song #31 All The Things She Said mit Übergängen und Ebene – „sehr geil, genau die richtige
+    Richtung". Die alten handgeschriebenen Songs laufen alle noch. Song 92, Parts bis 80: „sieht sehr geil aus",
+    vor allem die Farbverläufe auf der Matrix und Text über anderen Effekten; Marker-LEDs stabil. Keine Befunde.
+  - 05.10.2026: „die demo gefällt mir auch" (keine Befunde; ob die Parts 82–88 dabei waren, hat er nicht
+    ausdrücklich gesagt). Nach dem Flashen von `6530dc8`: **„der schwarze text kommt gut rüber"** (Song 92,
+    Part 0, `FX_CUT`). Zu Part 2 (Maske), Part 90 (Text-Ebene) und zum gedrehten Feuer hat er nichts gesagt.
+- **Außerhalb der Pipeline (05.10.2026):** OTA wartet nicht mehr 20 s auf fehlende Clients (`83f06d4`): Die
+  Gitarre sendet, sobald sich nach dem ersten Client 5 s lang kein weiterer angemeldet hat. Die langen Wartezeiten
+  kamen daher, dass der Bass aus war. Auf der Hardware noch nicht bestätigt.
 - **Regel für Song 92 (User, 05.10.2026):** Neue Bausteine kommen immer an den **Anfang** der Demo (Part 0), der
   bisherige Neuzugang rückt dann in seinen Block weiter hinten. So sieht man beim Testen sofort, was neu ist.
+- **In Arbeit:** nichts.
+
+### Morgen weiter
+
+1. **Kurz nachfragen** (und Befunde zuerst beheben):
+   - Song 92, Part 2 (Farbband nur in den Buchstaben) und Part 90 (Text über Farbband und Glitzern, ruckelt die
+     Matrix mit zwei Ebenen?);
+   - Feuer auf der Matrix: steigt es jetzt von unten auf (Song 91, Parts 55/60, oder `SCENE_FIRE` in #31/#33)?
+   - OTA: startet das Update ohne Bass jetzt nach rund 5 s Stillstand des lila Balkens?
+2. **Phase 3b, Punkt 1** – weiche Farbwechsel im Beat: `fxSoft(percent)` für `progBeatColors`
+   (`SCENE_COLORS`, `SCENE_COLORS_WAVE`), YAML `soft: <Prozent>`; Demo als neuer Part 0 in Song 92 (mit und ohne
+   `soft` nacheinander), der ausgestanzte Text rückt dann in den Block „Text-Ebene" bei Part 90.
+3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
+4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
+   `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
+   (`FX_OVER`) gefällt sehr gut, schwarzer Text (`FX_CUT`) „kommt gut rüber".
+5. **Idee zum Anbieten:** ausgestanzten oder überlagerten Text in einem echten Song einsetzen (z. B. ein Hook-Wort
+   im Chorus von #31 oder #33 über `SCENE_PALETTE` / `SCENE_GLOW`) – nur auf Zuruf, `song.yaml` gehört dem User.
 
 Reihenfolge der nächsten Schritte:
 
@@ -112,7 +120,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
 Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Song 92
-(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 0, 2 (ausgestanzter Text, Maske), 82–88 und 90 (Text-Ebene) von Song 92, das gedrehte Feuer und die Frame-Zeit-Messung – siehe
+(Parts 0–80) ohne Befund, Marker stabil, ausgestanzter Text (Part 0) „kommt gut rüber". Offen sind die Parts 2 (Maske), 82–88 und 90 (Text-Ebene) von Song 92, das gedrehte Feuer und die Frame-Zeit-Messung – siehe
 „Verifikation".
 
 ## Phase 0 – Ausgangslage
@@ -287,6 +295,7 @@ Zu Punkt 2 (umgesetzt am 05.10.2026):
   die Text-Ebene über `fxTextEnd(amount, FX_CUT)`. Der Text wird weiß gezeichnet; `color: schwarz` im `text:`
   verlangt `over: true`. Ohne `overlay` läuft er wie bisher über die eine Ebene (`fxLayerEnd(FX_CUT)`). Lesbar
   nur über hellen, gleichmäßigen Flächen. Demo: Song 92, Part 0, daneben Part 2 mit `FX_MASK` zum Vergleich.
+  Vom User am 05.10.2026 auf der Hardware gesehen: „kommt gut rüber".
 - Geprüft: alle fünf Envs bauen; im Speicher erzeugen #31 und #33 denselben Code wie in `generated.cpp`
   (#8 Dancing On My Own nicht vergleichbar, dort ist die YAML seit der Generierung geändert); Text + Overlay
   ergibt die Text-Ebene, auch wenn das Overlay nur auf einzelnen Geräten läuft; beide Fehlerfälle melden sich.
