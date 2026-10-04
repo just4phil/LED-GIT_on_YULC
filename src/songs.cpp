@@ -4132,8 +4132,25 @@ void pipelineDemo() {
 
 	switch (prog) {
 
+	//--- NEU (steht immer am Anfang, damit man es beim Testen sofort sieht; ältere Bausteine rücken dahinter) ---
+	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
+	case 0:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextUnder(120);
+		fxTextBegin();
+		progText("TEXT ON TOP", 8000, 1, 1000, CRGB::White);
+		fxTextEnd();
+#endif
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 1, bpm);
+		fxLayerEnd(FX_ADD);
+		scene(SCENE_PALETTE, 8000, 1, bpm);
+		fxLayerFlush();
+		break;
+
 	//--- Übergänge: das Farbband wechselt zwischen warm (FIRE) und kalt (ICE), der Übergang dauert 4 Beats ---
-	case 0:		setColorScheme(SCHEME_FIRE);	scene(SCENE_PALETTE, 4000,  5, bpm);	break;
+	case 1:		setColorScheme(SCHEME_FIRE);	scene(SCENE_PALETTE, 4000,  5, bpm);	break;
 	case 5:		setColorScheme(SCHEME_ICE);		fxTransition(TRANS_FADE, 2000);			scene(SCENE_PALETTE, 6000, 10, bpm);	break;
 	case 10:	setColorScheme(SCHEME_FIRE);	fxTransition(TRANS_BLACK, 2000);		scene(SCENE_PALETTE, 6000, 15, bpm);	break;
 	case 15:	setColorScheme(SCHEME_ICE);		fxTransition(TRANS_FLASH, 500);			scene(SCENE_PALETTE, 6000, 20, bpm);	break;	// Blitz: 1 Beat
@@ -4259,22 +4276,6 @@ void pipelineDemo() {
 		setColorScheme(SCHEME_NEON);
 		fxLayerWindow(4000);
 		fxLayerGate(bpm, 2);
-		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, 90, bpm);
-		fxLayerEnd(FX_ADD);
-		scene(SCENE_PALETTE, 8000, 90, bpm);
-		fxLayerFlush();
-		break;
-
-	//--- eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts ---
-	case 90:	// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
-		setColorScheme(SCHEME_SUNSET);
-#if DEVICE_CLASS == CLASS_MATRIX
-		fxTextUnder(120);
-		fxTextBegin();
-		progText("TEXT ON TOP", 8000, 100, 1000, CRGB::White);
-		fxTextEnd();
-#endif
 		fxLayerBegin();
 		scene(SCENE_SPARKLE, 8000, 100, bpm);
 		fxLayerEnd(FX_ADD);

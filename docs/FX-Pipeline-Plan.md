@@ -26,15 +26,17 @@ Zuletzt aktualisiert: 05.10.2026 (nach Phase 4b Punkt 2)
   er nicht ausdrücklich gesagt). Dazu außerhalb der Pipeline: OTA wartet nicht mehr 20 s auf fehlende Clients
   (`83f06d4`).
 - **Wartet auf den User:**
-  1. Alle Geräte neu flashen und in Song 92 den neuen Part 90 ansehen (ab 3:22; Text-Ebene, noch nie auf der
-     Hardware gelaufen). Worauf achten: siehe „Verifikation", Punkt 3. Falls die Parts 82–88 noch nicht bewusst
+  1. Alle Geräte neu flashen und in Song 92 den neuen Part 0 ansehen (gleich am Anfang; Text-Ebene, noch nie auf
+     der Hardware gelaufen). Worauf achten: siehe „Verifikation", Punkt 3. Falls die Parts 82–88 noch nicht bewusst
      angesehen wurden: dieselbe Gelegenheit.
   2. Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem
      User; neu ist der Block `text_ebene`). Mündlich schon gesagt, aber noch nicht eingetragen: Text über der
      Szene (`FX_OVER`, Part 74) gefällt sehr gut.
 - **In Arbeit:** nichts.
-- **Nächster Schritt:** Phase 3b (Fading-Optionen), Punkt 1 zuerst. Zu Beginn den User nach Befunden aus Part 90
+- **Nächster Schritt:** Phase 3b (Fading-Optionen), Punkt 1 zuerst. Zu Beginn den User nach Befunden aus Part 0 (Text-Ebene)
   fragen und diese zuerst beheben.
+- **Regel für Song 92 (User, 05.10.2026):** Neue Bausteine kommen immer an den **Anfang** der Demo (Part 0), der
+  bisherige Neuzugang rückt dann in seinen Block weiter hinten. So sieht man beim Testen sofort, was neu ist.
 
 Reihenfolge der nächsten Schritte:
 
@@ -104,7 +106,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
 Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Song 92
-(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 82–90 von Song 92 und die Frame-Zeit-Messung – siehe
+(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 0 (Text-Ebene) und 82–88 von Song 92 und die Frame-Zeit-Messung – siehe
 „Verifikation".
 
 ## Phase 0 – Ausgangslage
@@ -273,8 +275,8 @@ Zu Punkt 2 (umgesetzt am 05.10.2026):
   wie bisher (Text belegt die eine Ebene), bestehende Songs bleiben also gleich. `validate()` meldet, wenn dann
   `progText` / `progTextScroll` zugleich im `overlay` oder als Effekt des Parts läuft (statischer Zustand).
   `layer_mod_calls()` erzeugt mit `prefix="fxText"` dieselben Schlüssel für den Text.
-- Demo: Song 92, Part 90 (Farbband + Glitzern + Text „TEXT ON TOP", auf der Matrix alles unter dem Text gedimmt).
-  Part 88 springt jetzt nach 90, die Demo dauert rund 3:30.
+- Demo: Song 92, Part 0 gleich am Anfang (Farbband + Glitzern + Text „TEXT ON TOP", auf der Matrix alles unter
+  dem Text gedimmt). Der frühere Vorlauf ist Part 1, die Demo dauert rund 3:30.
 - Geprüft: alle fünf Envs bauen; im Speicher erzeugen #31 und #33 denselben Code wie in `generated.cpp`
   (#8 Dancing On My Own nicht vergleichbar, dort ist die YAML seit der Generierung geändert); Text + Overlay
   ergibt die Text-Ebene, auch wenn das Overlay nur auf einzelnen Geräten läuft; beide Fehlerfälle melden sich.
@@ -305,9 +307,10 @@ Zuruf neu generiert.
 ## Phase 5 – Neue Looks
 
 - Erledigt: Demo-Song 92 `pipelineDemo()` (`src/songs.cpp`, MIDI CC#0 = 92 oder `START_WITH_PIPELINE_DEMO`) zeigt
-  jeden Übergang, jeden Modifikator und jeden Ebenen-Modus einzeln, rund 3 Minuten, Dauerschleife. Ablauf:
+  jeden Übergang, jeden Modifikator und jeden Ebenen-Modus einzeln, rund 3:30 Minuten, Dauerschleife. Neue
+  Bausteine stehen immer am Anfang (Part 0). Ablauf:
   `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8. Zum Bewerten: `docs/effekt-katalog.yaml`, Abschnitt
-  `ausgabestufe`. Neue Bausteine (4b, 3b) bekommen dort eigene Parts.
+  `ausgabestufe`. Neue Bausteine (4b, 3b) bekommen dort eigene Parts, zuerst an Part 0.
 - Neue geräteübergreifende Szenen aus Kombinationen, z. B. Atmen + Funkeln, Verse-Puls + Akzent auf der 1, Drop mit
   Strobo-Tor im letzten Takt, Solo über `fxMaskStage` statt Sonderfall.
 - `tail:` wahlweise als Modifikator/Ebene im selben Part (kein eigener `case`, kein Bildsprung). Von Hand geht das
@@ -346,7 +349,7 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
    - Song 92: jeder Baustein erkennbar; alle Geräte nebeneinander – Übergänge (v. a. `stage_lr`) und `pulse`
      starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts – **Parts 0–80 vom User am
      04.10.2026 ohne Befund durchgesehen**; offen: Parts 82–88 (in 82 pumpt nur das Glitzern, in 86 ist nur das
-     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein) und Part 90
+     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein) und Part 0
      (auf der Matrix liegt der Text über Farbband und Glitzern, beides darunter gedimmt und ohne Ruckeln; die
      übrigen Geräte zeigen Farbband mit Glitzern);
    - Marker-LEDs an Gitarre und Bass sichtbar und flackerfrei, auch während Übergang und Ebene – **vom User am
