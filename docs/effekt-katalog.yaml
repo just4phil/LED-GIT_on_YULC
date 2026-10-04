@@ -741,6 +741,7 @@ paletten:
 # Szenen (src/scenes.cpp): ein Name, jedes Gerät zeigt sein Programm
 # ---------------------------------------------------------------------------------------------------
 
+# genutzt = Aufrufe in den generierten Songs (songs/*/generated.cpp, inkl. Tails und Matrix-Wiedereinstieg), Stand 04.10.2026
 szenen:
   SCENE_CALM:
     wirkung: "alles atmet ruhig; Matrix: langsame Wasserringe"
@@ -748,7 +749,7 @@ szenen:
     rolle: [flaeche]
     energie: [1, 1]
     bewegung: pulsierend
-    genutzt: 5
+    genutzt: 6
     urteil:
     notiz:
   SCENE_VERSE:
@@ -757,7 +758,7 @@ szenen:
     rolle: [flaeche]
     energie: [2, 3]
     bewegung: pulsierend
-    genutzt: 7
+    genutzt: 9
     urteil:
     notiz:
   SCENE_BUILDUP:
@@ -775,7 +776,7 @@ szenen:
     rolle: [flaeche]
     energie: [4, 5]
     bewegung: pulsierend
-    genutzt: 9
+    genutzt: 12
     urteil:
     notiz:
   SCENE_FIRE:
@@ -793,7 +794,7 @@ szenen:
     rolle: [flaeche, uebergang]
     energie: [3, 5]
     bewegung: wandernd
-    genutzt: 2
+    genutzt: 4
     urteil:
     notiz:
   SCENE_WAVE_RL:
@@ -802,7 +803,7 @@ szenen:
     rolle: [flaeche, uebergang]
     energie: [3, 5]
     bewegung: wandernd
-    genutzt: 0
+    genutzt: 1
     urteil:
     notiz:
   SCENE_WAVE_OUT:
@@ -811,7 +812,7 @@ szenen:
     rolle: [flaeche, uebergang]
     energie: [3, 5]
     bewegung: wandernd
-    genutzt: 5
+    genutzt: 3
     urteil:
     notiz:
   SCENE_PINGPONG:
@@ -820,7 +821,7 @@ szenen:
     rolle: [flaeche]
     energie: [3, 4]
     bewegung: wandernd
-    genutzt: 4
+    genutzt: 5
     urteil:
     notiz:
   SCENE_SOLO_GIT:
@@ -847,7 +848,7 @@ szenen:
     rolle: [flaeche]
     energie: [3, 4]
     bewegung: fliessend
-    genutzt: 1
+    genutzt: 0
     urteil:
     notiz:
 
@@ -857,7 +858,7 @@ szenen:
     rolle: [flaeche]
     energie: [4, 5]
     bewegung: rotierend
-    genutzt: 0
+    genutzt: 5
     urteil:
     notiz:
   SCENE_SPARKLE:
@@ -866,7 +867,7 @@ szenen:
     rolle: [flaeche]
     energie: [5, 5]
     bewegung: funkelnd
-    genutzt: 0
+    genutzt: 1
     urteil:
     notiz:
   SCENE_GLOW:
@@ -875,7 +876,7 @@ szenen:
     rolle: [flaeche]
     energie: [1, 2]
     bewegung: funkelnd
-    genutzt: 0
+    genutzt: 2
     urteil:
     notiz:
   SCENE_COLORS:
@@ -884,7 +885,7 @@ szenen:
     rolle: [flaeche]
     energie: [3, 4]
     bewegung: pulsierend
-    genutzt: 0
+    genutzt: 1
     urteil:
     notiz:
   SCENE_COLORS_WAVE:
@@ -893,7 +894,7 @@ szenen:
     rolle: [flaeche, uebergang]
     energie: [3, 4]
     bewegung: wandernd
-    genutzt: 0
+    genutzt: 1
     urteil:
     notiz:
   SCENE_RAIN:
@@ -902,7 +903,7 @@ szenen:
     rolle: [flaeche]
     energie: [1, 3]
     bewegung: wandernd
-    genutzt: 0
+    genutzt: 2
     urteil:
     notiz:
   SCENE_PALETTE:
@@ -943,5 +944,6 @@ luecken:
   - "Offen: progRandomLines/progCircles im Beat, progMatrixScanner und progWaterRipple haben noch keine eigene Szene (WaterRipple nur als Matrix-Teil von CALM/DROP)."
   - "Offen: progPalette hat kein Tempo und keine Fade-Wahl als Parameter; Palette 12 ist nicht definiert. Die schönen festen Paletten (3, 6, 7, 8, 9/10, 11) gibt es nicht als Szene, SCENE_PALETTE nutzt nur die Schemafarben."
   - "Offen: Fading-Option für progFullColors / SCENE_COLORS (Wunsch des Users)."
+  - "Geschlossen am 04.10.2026: weiches Ausblenden am Songende (SCENE_FADEOUT / progFadeOut)."
   - "Offen: progSternschnuppen als ruhiges Pausen-Preset für Gitarren und Lampen überarbeiten."
   - "Offen: Effekte lassen sich nicht übereinanderlegen (jeder ruft selbst FastLED.show()), z. B. Blitze über einem Farbverlauf."

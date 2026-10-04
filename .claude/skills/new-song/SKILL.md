@@ -27,6 +27,13 @@ Die Ergänzungen des Users zu Parts, Stimmungen und Effekten dürfen NIEMALS üb
   für einen zweiten Akzent), dem User die konkreten Zeilen im Chat vorschlagen - er trägt sie ein.
 - Einzige Ausnahme: `struktur2song.py` und `sheet2song.py` legen `song.yaml` an, wenn es sie noch nicht gibt.
   Gibt es sie, schreiben sie `song.vorschlag.yaml` daneben (nur zum Vergleichen, der Generator ignoriert sie).
+- Ändert der User später `quelle/struktur.xlsx`: `struktur2song.py` laufen lassen, dem User sagen, was sich
+  gegenüber `song.yaml` geändert hat (`diff`), er übernimmt den Vorschlag selbst. In der Zwischenzeit `show.yaml`
+  schon für die neuen Part-Namen vorbereiten; generieren geht erst nach seiner Übernahme. Auch keine Testkopie
+  von `song.yaml` anlegen (der Hook blockiert das).
+- Der User schreibt Änderungswünsche gern hinter den Wert (`idea: "ruhig" -> zu statisch ...`). Die Werkzeuge
+  lesen das mit (`read_song_yaml` in `songgen.py`). Nach "ich habe Anmerkungen ergänzt": `git diff` auf
+  `song.yaml`, jede Anmerkung in der Show umsetzen und im `why` nennen.
 - Gestaltung in `song.yaml` hat immer Vorrang vor `show.yaml`: `scene`/`fx` (dann entfallen auch die
   `devices`-Overrides und das `text` der Show für den Part), `scheme`, `fade`, `tail`, `devices`, `text`; auf Song-Ebene `scheme`, `scroll_*`,
   `end_black_ms`, `function`. Solche Vorgaben nicht in der Show "korrigieren" - sie gelten. Die Show um sie
@@ -98,6 +105,10 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
    Trailer einen Einstieg mitten in einem Part, diesen per `tail` als eigenen Part abtrennen.
 3. Die Struktur aus den alten Part-Dauern ableiten und die alten Effekte als Geschmacksreferenz lesen (siehe
    Dramaturgie-Regeln).
+4. Will der User den alten Look behalten und nur einzelne Stellen ändern: die alten Aufrufe 1:1 als `fx:` in
+   `show.yaml` übernehmen (stehen als `# bisher:` in der `song.yaml` der alten Songs; Matrix-Zweige unter
+   `devices:`), nur die gewünschten Parts umgestalten. Song für Song, nicht alle auf einmal. Zeilen mit `# !`
+   (alter Code weicht vom Excel ab, oft von Hand verschobene ms) vorher mit dem User klären.
 
 ## Versionen und Restore
 
@@ -226,6 +237,14 @@ Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts o
 - **Bühnenbewegung** (WAVE_LR/RL/OUT, PINGPONG) für Übergänge und Hook-Zeilen, nicht als Dauerzustand.
 - **Farbdramaturgie**: 2-3 Schemata pro Song. `brightness` niedrig → ICE/ROYAL/BLUE, hoch → NEON/SUNSET/FIRE;
   `mood` Moll → eher kalt, Dur → eher warm. Wechsel nur an Formgrenzen. Schemata: `src/colorSchemes.h`.
+- **Nicht in einer Farbe hängen bleiben** (Feedback des Users zu ATTSS, 04.10.2026: "oft viele Blautöne", "etwas
+  statisch"): "Moll → kalt" gilt nur als Ausgangspunkt, nie für die halbe Songlänge. Vor dem Generieren die Schemata
+  aller Parts durchzählen; liegen mehr als etwa ein Drittel der Takte in ICE/BLUE/ROYAL (oder einer anderen
+  Farbfamilie), umverteilen. Ruhige Szenen zeigen pro Gerät nur eine Schemafarbe (CALM, GLOW, PALETTE, RAIN) und
+  wirken über 4+ Takte statisch: dort immer `fade:` setzen (`triad` bringt Blau nach Pink/Orange und zurück).
+  Build-ups in der Farbe des folgenden Chorus, das Intro mit Chorus-Melodie im Chorus-Look.
+- **Parts nie künstlich verkürzen**: die Firmware gleicht bei generierten Songs die Verspätung der Part-Wechsel aus
+  (`isGeneratedSong()`), die Takte aus dem DAW gelten exakt. Konstanter Versatz → `midi_offset`.
 - **Stille ist ein Effekt**: Black vor einem großen Einsatz macht den Einsatz stärker.
 - **Hook-Zeile als Motiv** (aus dem handgeschriebenen `Physical()`): kehrt eine Hook am Ende jedes Blocks
   wieder ("Let's get physical"), bekommt sie jedes Mal denselben kurzen Akzent (1 Takt Strobo), beim ersten
