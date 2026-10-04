@@ -194,7 +194,8 @@
 <h4>API (<code>colorSchemes.h</code>)</h4>
 <div class="tablewrap"><table>
   <tr><th>Funktion</th><th>Beschreibung</th></tr>
-  <tr><td><code>setColorScheme(id)</code> / <code>getColorScheme()</code></td><td>Aktives Schema setzen bzw. lesen.</td></tr>
+  <tr><td><code>setColorScheme(id)</code> / <code>getColorScheme()</code></td><td>Aktives Schema setzen bzw. lesen. Das Setzen schaltet eine Farbwanderung wieder ab.</td></tr>
+  <tr><td><code>setColorFade(to, periodMillis, hard, offsetMillis)</code></td><td>Farbwanderung: alle Schemafarben laufen in <code>periodMillis</code> zum Ziel und wieder zurück, synchron auf allen Geräten (Zeit seit Part-Beginn). <code>to</code>: <code>FADE_COMPLEMENT</code>, <code>FADE_TRIAD</code>, <code>FADE_ANALOG</code>, <code>FADE_RAINBOW</code> (läuft weiter um den Farbkreis) oder ein zweites <code>SCHEME_…</code>. <code>hard = true</code> springt statt zu blenden. Direkt nach <code>setColorScheme()</code> aufrufen. In den Song-YAMLs ist das der Schlüssel <code>fade:</code>.</td></tr>
   <tr><td><code>colorSchemeActive()</code></td><td><code>false</code> bei <code>SCHEME_RANDOM</code>.</td></tr>
   <tr><td><code>CRGB getRandomCRGB()</code></td><td>Zufällige Farbe aus dem Schema. Bei <code>SCHEME_RANDOM</code> genau die alte Logik: <code>CRGB(getRandomColorValue(), getRandomColorValue(), getRandomColorValue())</code>.</td></tr>
   <tr><td><code>CRGB schemeColor(n)</code></td><td>n-te Farbe des Schemas (modulo Anzahl). Ohne Schema: Regenbogen, auf 5 Bühnenpositionen verteilt.</td></tr>
@@ -207,6 +208,7 @@
 <div class="tablewrap"><table>
   <tr><th>Quelle</th><th>Betroffene Programme</th><th>Verhalten mit Schema</th></tr>
   <tr><td><code>getRandomColor()</code>, <code>getRandomColorIncludingBlack()</code></td><td>progScrollText, progShowText, progStern/SternNeu, progCircles, progRandomLines, progMovingLines, progWordArray, progBlinkText, progShowLettersSpread</td><td>Schemafarbe als RGB565, bei <i>IncludingBlack</i> mit 1/8 Chance schwarz.</td></tr>
+  <tr><td><code>schemeColor(n)</code></td><td>progText, progTextScroll (der <code>text:</code>-Schlüssel der Song-YAMLs, siehe <code>docs/Song-Workflow.html</code>)</td><td>bei jedem Wort bzw. Durchlauf die nächste Schemafarbe; mit fester Farbe im Aufruf gilt diese.</td></tr>
   <tr><td>3× <code>getRandomColorValue()</code> → <code>getRandomCRGB()</code></td><td>progBlingBlingColoringSONGPAUSE, progBlingBlingColoring, progFastBlingBling, progFullColors, progOutline (GITBOARD-Pfade)</td><td>ganze Schemafarbe. Bei BlingBlingColoring wird pro Runde eine neue Schemafarbe gezogen statt nur ein Kanal geändert.</td></tr>
   <tr><td><code>progStrobo(…, CRGB col)</code></td><td>neue Überladung; alle 97 Strobo-Aufrufe mit Zufallsfarben in <code>songs.cpp</code> nutzen jetzt <code>getRandomCRGB()</code></td><td>Strobo in Schemafarben</td></tr>
   <tr><td>direkte Zufallspaletten</td><td>progMatrixHorizontal/Vertical (random), matrixMovieFX (random pro Stream), SetupTotallyRandomPalette (progPalette 4), progWaterRipple (random), progStarfield</td><td>Schemafarben statt fester Palette</td></tr>
@@ -252,7 +254,7 @@
     <label>Partdauer <select id="sdur"><option value="4000">4 s</option><option value="8000" selected>8 s</option><option value="16000">16 s</option></select></label>
   </div>
 </div>
-<p class="sub" style="font-size:13px;margin-top:6px">Vereinfacht: Lampen mit 40 statt 94/78 LEDs, der Bass ist als SG-Kontur dargestellt, die Matrix als 54×10-Raster.</p>
+<p class="sub" style="font-size:13px;margin-top:6px">Vereinfacht: Lampen mit 40 statt 94/78 LEDs, der Bass ist als SG-Kontur dargestellt, die Matrix als 54×10-Raster. Bei STAR und RAIN ist die Zuordnung des Rasters auf die Gitarren-Kontur nur angenähert, das echte Muster zeigt erst das Gerät.</p>
 
 <h4>Welches Gerät zeigt was?</h4>
 <div class="tablewrap"><table>
@@ -270,7 +272,16 @@
   <tr><td><code>SCENE_SOLO_GIT</code></td><td>Gitarre: <code>progCometLoop</code> (2 Kometen)<br>Bass: Atmen mit 40/255</td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td></tr>
   <tr><td><code>SCENE_SOLO_BASS</code></td><td>Bass: <code>progCometLoop</code><br>Gitarre: Atmen mit 40/255</td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td></tr>
   <tr><td><code>SCENE_SOLO_DRUMS</code></td><td>Atmen mit 40/255</td><td>Atmen mit 40/255</td><td><code>progWaterRipple</code> schnell, Schemafarben</td></tr>
+  <tr><td colspan="4" style="color:var(--muted)">Bewährte Looks der alten Songs, über alle Geräte abgestimmt:</td></tr>
+  <tr><td><code>SCENE_STAR</code></td><td><code>progSternNeu(…, 1 Beat, …, 5, 26, 5, true, 3)</code>: drehender, wandernder Stern mit den Werten der alten Refrains</td><td><code>progLampSpin</code>: drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat</td><td><code>progSternNeu</code> um die Matrix-Mitte</td></tr>
+  <tr><td><code>SCENE_SPARKLE</code></td><td colspan="3">alle: <code>progFastBlingBling</code>, Anzahl Blitze = <code>anz_LEDs / 20</code> (Gitarre 8, Lampen 3–4, Matrix 27). Für Refrains mit Action und das Finale.</td></tr>
+  <tr><td><code>SCENE_GLOW</code></td><td colspan="3">alle: <code>progGlow</code>. Jedes Gerät füllt sich Pixel für Pixel mit einer Farbe (wie <code>progBlingBlingColoring</code>), alle 2 Takte (mind. 3 s) wechselt die <b>ganze Bühne gemeinsam</b> zur nächsten Farbe.</td></tr>
+  <tr><td><code>SCENE_COLORS</code></td><td colspan="3">alle: <code>progBeatColors</code>. Die ganze Bühne einfarbig, pro Beat eine neue Farbe (wie <code>progFullColors</code>, aber überall dieselbe Farbe).</td></tr>
+  <tr><td><code>SCENE_COLORS_WAVE</code></td><td colspan="3">wie oben, die Farbe wandert pro Beat ein Gerät weiter von links nach rechts.</td></tr>
+  <tr><td><code>SCENE_RAIN</code></td><td><code>progMatrixHorizontal(…, 70, true)</code></td><td><code>progLampRain</code>: drei Leuchtspuren fallen von oben, die Lampen laufen versetzt</td><td><code>progMatrixHorizontal(…, 70, true)</code></td></tr>
+  <tr><td><code>SCENE_PALETTE</code></td><td colspan="3">alle: <code>progStageBand</code>. Ein Farbband aus den Schemafarben liegt über der ganzen Bühne, jedes Gerät zeigt sein Fünftel. Das Band läuft in 4 Takten einmal von links nach rechts durch.</td></tr>
 </table></div>
+<p>Bei STAR, SPARKLE und RAIN würfelt jedes Gerät seine Farben selbst aus dem Farbschema. Bei GLOW, COLORS und PALETTE rechnen alle Geräte dieselbe Farbe aus (<code>sharedColor()</code>): mit Schema die Schemafarben der Reihe nach, ohne Schema weit auseinanderliegende Farbtöne.</p>
 
 <h4>Eigene Szenen ergänzen</h4>
 <ol>
@@ -290,6 +301,12 @@
   <tr><td><code>progLampFill(dur, next, CRGB col)</code></td><td>Lampe füllt sich über <i>Dauer − 600 ms</i> von unten, mit heller Kante und leichtem Flackern. Danach 600 ms weiße Explosion, synchron zu <code>progChargeBlast</code> in <code>SCENE_BUILDUP</code>.</td></tr>
   <tr><td><code>progLampPulse(dur, next, bpm, CRGB col)</code></td><td>Auf jedem Beat ein leichter Flash, dazu ein Lichtschuss mit 6-LED-Schweif, der nach 60 % des Beats oben ankommt.</td></tr>
   <tr><td><code>progLampFire(dur, next, bool blueFire)</code></td><td>1D-Fire2012 von unten nach oben (nutzt <code>fire2012Step</code>).</td></tr>
+  <tr><td><code>progBeatColors(dur, next, bpm, beatsPerColor, bool wave)</code></td><td>Gerät einfarbig in <code>sharedColor()</code>, Wechsel alle <code>beatsPerColor</code> Beats. Mit <code>wave</code> ist jedes Gerät gegenüber dem linken Nachbarn einen Schritt zurück.</td></tr>
+  <tr><td><code>progGlow(dur, next, periodMillis)</code></td><td>Setzt pro 20 ms zufällige Pixel auf die aktuelle Farbe (Menge passend zur LED-Zahl) und löscht jeden dritten Schritt einen. Die Farbe wechselt alle <code>periodMillis</code>, auf allen Geräten gleich.</td></tr>
+  <tr><td><code>progStageBand(dur, next, periodMillis)</code></td><td>Verlauf aus <code>schemePalette()</code>, um <code>STAGE_POS</code> versetzt. Ein Umlauf pro <code>periodMillis</code>. Auf der Matrix spaltenweise.</td></tr>
+  <tr><td><code>progLampSpin(dur, next, bpm)</code></td><td>Lampe: drei Lichtpunkte mit Schweif schwingen gegeneinander versetzt um die Mitte (eine Schwingung pro 2 Beats), Farben aus <code>sharedColor()</code> pro Beat.</td></tr>
+  <tr><td><code>progLampRain(dur, next, msPerStep, CRGB col)</code></td><td>Lampe: drei Spuren mit weißem Kopf und 16 LEDs Schweif fallen von oben nach unten.</td></tr>
+  <tr><td><code>CRGB sharedColor(uint32_t k)</code></td><td>k-te Farbe einer Folge, die auf allen Geräten gleich ist. Aufeinanderfolgende Farben unterscheiden sich immer. Bei einfarbigem Schema wechselt hell/dunkel.</td></tr>
   <tr><td><code>uint8_t sharedRand8(uint32_t salt)</code></td><td>Hash aus <code>songID</code>, <code>prog</code> und <code>salt</code>, ohne Zustand. Gleicher „Zufall“ auf allen Geräten. Bewusst nicht über <code>randomSeed()</code>, weil <code>random()</code> auf jedem Gerät unterschiedlich oft aufgerufen wird.</td></tr>
 </table></div>
 <p>Lampen-Ausrichtung: <code>LAMP_IDX0_AT_BOTTOM</code> (1 = LED 0 unten). Füllt sich eine Lampe von oben, auf 0 setzen.</p>
@@ -456,7 +473,7 @@ const SCHEMES=[
 function Scheme(idx){
   const s=SCHEMES[idx];
   return {
-    idx, active:!!s.c,
+    idx, active:!!s.c, size:s.c?s.c.length:5,
     cold:[2,4,10].includes(idx),
     color(n){ return s.c? s.c[mod(n,s.c.length)] : hsv(mod(n,5)*256/5,255,255); },
     random(){ if(s.c) return s.c[rnd(s.c.length)]; const v=()=>[5,63,127,191,255][rnd(5)]; return [v(),v(),v()]; },
@@ -721,9 +738,43 @@ const mxFX={
 const SCENES=[
   ["SCENE_CALM","Calm"],["SCENE_VERSE","Verse"],["SCENE_BUILDUP","Buildup"],["SCENE_DROP","Drop"],["SCENE_FIRE","Fire"],
   ["SCENE_WAVE_LR","Wave →"],["SCENE_WAVE_RL","Wave ←"],["SCENE_WAVE_OUT","Wave ↔"],["SCENE_PINGPONG","PingPong"],
-  ["SCENE_SOLO_GIT","Solo Git"],["SCENE_SOLO_BASS","Solo Bass"],["SCENE_SOLO_DRUMS","Solo Drums"]];
+  ["SCENE_SOLO_GIT","Solo Git"],["SCENE_SOLO_BASS","Solo Bass"],["SCENE_SOLO_DRUMS","Solo Drums"],
+  ["SCENE_STAR","Star"],["SCENE_SPARKLE","Sparkle"],["SCENE_GLOW","Glow"],["SCENE_COLORS","Colors"],["SCENE_COLORS_WAVE","Colors →"],
+  ["SCENE_RAIN","Rain"],["SCENE_PALETTE","Palette"]];
 const DEVICES=[{name:"Lampe 1",cls:"lamp",pos:0,dev:"LAMPE1"},{name:"Bass",cls:"guitar",pos:1,dev:"BASS"},{name:"Drums (Matrix)",cls:"matrix",pos:2,dev:"DRUMS"},
   {name:"Gitarre",cls:"guitar",pos:3,dev:"GIT"},{name:"Lampe 2",cls:"lamp",pos:4,dev:"LAMPE2"}];
+
+// bewährte Looks: gemeinsame Farbfolge und Nachbau der Raster-Effekte (Gitarre = 22×23-Raster entlang der LED-Kette)
+const sharedSalt=sharedRand(0x5C);
+function sharedColor(k,sch){ if(!sch.active) return hsv(sharedSalt+k*97,255,255); if(sch.size===1) return (k&1)? scale(sch.color(0),70) : sch.color(0); return sch.color(k); }
+function schemePal(sch,idx){ const p=mod(idx,256)*sch.size/256, i=Math.floor(p); return blend(sch.color(i),sch.color(i+1),(p-i)*255); }
+function rasterOf(cls){ return cls==="guitar"? {w:22,h:23,cx:26,cy:5,n:N} : {w:MW,h:MH,cx:26,cy:5,n:MW*MH}; }
+function rasterXY(r,i,cls){ const y=Math.floor(i/r.w), x=i%r.w; return cls==="guitar"&&(y&1)? [r.w-1-x,y] : [x,y]; }
+const lookFX={
+  sparkle:(sch)=>({step(ms,L){ fill(L,BLACK); const n=Math.max(3,Math.floor(L.length/20)); for(let i=0;i<n;i++) L[rnd(L.length)]=sch.random(); }}),
+  glow:(bpm,sch)=>{ let period=60000/bpm*8; while(period<3000) period*=2; let acc=0; const due=every(20);
+    return {step(ms,L){ if(ms<10){ fill(L,BLACK); acc=0; } if(!due(ms)) return; const col=sharedColor(Math.floor(ms/period),sch); acc+=L.length;
+      while(acc>=160){ acc-=160; L[rnd(L.length)]=col; if(rnd(3)===0) L[rnd(L.length)]=BLACK; } }}; },
+  colors:(bpm,pos,wave,sch)=>({step(ms,L){ fill(L,sharedColor(Math.floor(ms*bpm/60000)+(wave?4-pos:0),sch)); }}),
+  band:(bpm,d,sch)=>({step(ms,L){ const period=60000/bpm*16, span=256/5, base=d.pos*span-(ms%period)*256/period;
+      if(d.cls==="matrix"){ for(let x=0;x<MW;x++){ const c=schemePal(sch,base+x*span/MW); for(let y=0;y<MH;y++) L[y*MW+x]=c; } }
+      else for(let i=0;i<L.length;i++) L[i]=schemePal(sch,base+i*span/L.length); }}),
+  star:(bpm,cls,sch)=>{ const r=rasterOf(cls); let c1=sch.random(),c2=sch.random(),beat=-1;
+    return {step(ms,L){ const b=Math.floor(ms*bpm/60000); if(b!==beat){ beat=b; c1=sch.random(); c2=sch.random(); }
+      const st=ms/6, wt=st*0.03, ang=st*0.06, cx=r.cx+(r.w/2-3)*Math.sin(wt), cy=r.cy+(r.h/2-2)*Math.sin(wt*0.7+1.047);
+      for(let i=0;i<L.length;i++){ const [x,y]=rasterXY(r,i,cls); let col=BLACK;
+        for(let a=0;a<3;a++) for(let k=0;k<2;k++){ const an=ang+a*Math.PI/3+k*0.08; if(Math.abs((x-cx)*Math.sin(an)-(y-cy)*Math.cos(an))<0.6) col=k?c2:c1; }
+        L[i]=col; } }}; },
+  rasterRain:(cls,sch)=>{ const r=rasterOf(cls), off=[0,20,15,8,0,14,21,9,1,16,23,11]; let col=sch.active?sch.random():hsv(rnd(256),255,255), lap=-1;
+    return {step(ms,L){ const z=Math.floor(ms/70)%(r.h+24); if(z<lap) col=sch.active?sch.random():hsv(rnd(256),255,255); lap=z;
+      for(let i=0;i<L.length;i++){ const [x,y]=rasterXY(r,i,cls); const head=z-off[(x>>1)%off.length], dist=head-y;
+        L[i]= (x%2===0&&dist>=0&&dist<16)? blend(col,WHITE,Math.max(0,220-dist*40)).map(v=>v*(1-dist/16)) : BLACK; } }}; },
+  lampSpin:(bpm,sch)=>({step(ms,L){ fade(L,50); const period=2*60000/bpm, ph=(ms%period)/period*2*Math.PI, beat=Math.floor(ms*bpm/60000);
+      for(let a=0;a<3;a++){ const h=Math.floor((Math.sin(ph+a*2.09)+1)/2*(L.length-2)); L[h]=L[h+1]=sharedColor(beat+a,sch); } }}),
+  lampRain:(pos,col)=>({step(ms,L){ const tail=16, span=L.length+tail, step=Math.floor(ms/80)+pos*11; fill(L,BLACK);
+      for(let d=0;d<3;d++){ const head=L.length-1-((step+Math.floor(d*span/3))%span);
+        for(let j=0;j<tail;j++){ const h=head+j; if(h>=0&&h<L.length) L[h]= j===0? blend(col,WHITE,200) : scale(col,255-j*15); } } }}),
+};
 
 // Nachbau von scene() in scenes.cpp
 function makeSceneFX(id,d,dur,bpm,sch){
@@ -735,6 +786,13 @@ function makeSceneFX(id,d,dur,bpm,sch){
     case "SCENE_WAVE_RL": return lampFX.beatFlash(bpm,()=>me,(4-d.pos)*STEP);
     case "SCENE_WAVE_OUT": return lampFX.beatFlash(bpm,()=>me,Math.abs(d.pos-2)*STEP);
     case "SCENE_PINGPONG": return pingPong(bpm,d.pos,()=>me);
+    case "SCENE_SPARKLE": return lookFX.sparkle(sch);
+    case "SCENE_GLOW": return lookFX.glow(bpm,sch);
+    case "SCENE_COLORS": return lookFX.colors(bpm,d.pos,false,sch);
+    case "SCENE_COLORS_WAVE": return lookFX.colors(bpm,d.pos,true,sch);
+    case "SCENE_PALETTE": return lookFX.band(bpm,d,sch);
+    case "SCENE_STAR": return cls==="lamp"? lookFX.lampSpin(bpm,sch) : lookFX.star(bpm,cls,sch);
+    case "SCENE_RAIN": return cls==="lamp"? lookFX.lampRain(d.pos,me) : lookFX.rasterRain(cls,sch);
   }
   if(id.startsWith("SCENE_SOLO")){ const who={SCENE_SOLO_GIT:"GIT",SCENE_SOLO_BASS:"BASS",SCENE_SOLO_DRUMS:"DRUMS"}[id]; if(d.dev!==who) return breathe(40); }
   if(cls==="guitar") switch(id){

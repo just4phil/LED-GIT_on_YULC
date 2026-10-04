@@ -33,6 +33,15 @@ enum SceneID : uint8_t {
 	SCENE_SOLO_GIT,
 	SCENE_SOLO_BASS,
 	SCENE_SOLO_DRUMS,
+
+	//--- bewährte Looks der alten Songs, über alle Geräte abgestimmt ---
+	SCENE_STAR,			// drehender Stern (progSternNeu), Farbwechsel pro Beat; Lampen: kreisende Lichtpunkte
+	SCENE_SPARKLE,		// schnelle Einzelblitze (progFastBlingBling), Dichte passend zur LED-Zahl
+	SCENE_GLOW,			// füllt sich langsam mit einer Farbe und wechselt gemeinsam zur nächsten
+	SCENE_COLORS,		// ganze Bühne einfarbig, pro Beat eine neue Farbe
+	SCENE_COLORS_WAVE,	// wie COLORS, die Farbe wandert pro Beat ein Gerät weiter nach rechts
+	SCENE_RAIN,			// fallende Leuchtspuren (progMatrixHorizontal), ruhig
+	SCENE_PALETTE,		// ein Farbband in Schemafarben läuft von links nach rechts über die ganze Bühne
 };
 
 #define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen
@@ -46,8 +55,14 @@ uint8_t sharedRand8(uint32_t salt);
 void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned int periodMillis, uint8_t maxVal);
 void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis);
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)
+void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerColor, bool wave);	// einfarbig, Wechsel im Beat
+void progGlow(unsigned int durationMillis, byte nextPart, unsigned int periodMillis);		// füllt sich Pixel für Pixel, Farbe wechselt alle periodMillis
+void progStageBand(unsigned int durationMillis, byte nextPart, unsigned int periodMillis);	// Farbband über die Bühne, ein Umlauf pro periodMillis
 
 //--- Lampen (vertikaler Strip, LAMP_IDX0_AT_BOTTOM) ---
 void progLampFill(unsigned int durationMillis, byte nextPart, CRGB col);				// füllt sich synchron zum Partfortschritt
 void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);	// Flash + Schuss nach oben auf jedem Beat
 void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire);
+void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm);				// drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat
+void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col);	// Leuchtspuren fallen von oben

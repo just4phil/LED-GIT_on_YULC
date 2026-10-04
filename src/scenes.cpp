@@ -11,6 +11,7 @@ extern CRGB leds[NUMMATRIX];
 extern byte songID;
 extern volatile byte prog;
 extern volatile unsigned int millisCounterForProgChange;
+extern FastLED_NeoMatrix* matrix;
 //---------------------------------------------------------------------
 
 #define SCENE_BLAST_MS	600		// Explosion am Ende von SCENE_BUILDUP (wie BLAST_MILLIS in guitarShapeFX)
@@ -98,6 +99,66 @@ void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	fxShow();
 }
 
+CRGB sharedColor(uint32_t k) {
+	if (!colorSchemeActive()) return CHSV(sharedRand8(0x5C) + k * 97, 255, 255);	// 97/256 Umlauf: Nachbarn liegen weit auseinander
+	if (schemeSize() == 1) {	// einfarbiges Schema: hell/dunkel im Wechsel
+		CRGB c = schemeColor(0);
+		if (k & 1) c.nscale8(70);
+		return c;
+	}
+	return schemeColor(k % schemeSize());
+}
+
+void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerColor, bool wave) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		uint32_t k = fxBeats(bpm) / max((uint8_t)1, beatsPerColor);
+		if (wave) k += STAGE_POSITIONS - 1 - STAGE_POS;	// links ist einen Schritt voraus -> Farbe wandert nach rechts
+		fill_solid(leds, anz_LEDs, sharedColor(k));
+	}
+	fxShow();
+}
+
+static uint16_t glowAcc = 0;
+
+void progGlow(unsigned int durationMillis, byte nextPart, unsigned int periodMillis) {
+	if (fxPartStart(durationMillis, nextPart)) glowAcc = 0;
+
+	if (fxFrameDue(20)) {
+		CRGB col = sharedColor(millisCounterForProgChange / max(1u, periodMillis));
+		// 1 Pixel pro Frame bei 160 LEDs (wie progBlingBlingColoring auf der Gitarre), größere Geräte entsprechend mehr
+		glowAcc += anz_LEDs;
+		while (glowAcc >= 160) {
+			glowAcc -= 160;
+			leds[random16(anz_LEDs)] = col;
+			if (random8(3) == 0) leds[random16(anz_LEDs)] = CRGB::Black;
+		}
+	}
+	fxShow();
+}
+
+void progStageBand(unsigned int durationMillis, byte nextPart, unsigned int periodMillis) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		CRGBPalette16 pal = schemePalette();
+		periodMillis = max(1u, periodMillis);
+		// jedes Gerät zeigt sein Fünftel des Bandes, die Zeit schiebt es nach rechts
+		const uint8_t span = 256 / STAGE_POSITIONS;
+		uint8_t base = STAGE_POS * span - (uint8_t)((uint32_t)(millisCounterForProgChange % periodMillis) * 256 / periodMillis);
+#if DEVICE_CLASS == CLASS_MATRIX
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			CRGB c = ColorFromPalette(pal, base + x * span / MATRIX_WIDTH);
+			for (int y = 0; y < MATRIX_HEIGHT; y++) leds[matrix->XY(x, y)] = c;
+		}
+#else
+		for (int i = 0; i < anz_LEDs; i++) leds[i] = ColorFromPalette(pal, base + i * span / anz_LEDs);
+#endif
+	}
+	fxShow();
+}
+
 //==================================================================
 //=========== Lampen ===============================================
 //==================================================================
@@ -170,6 +231,43 @@ void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire) {
 	fxShow();
 }
 
+void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		fadeToBlackBy(leds, anz_LEDs, 50);
+		unsigned int period = 2 * 60000 / max((uint8_t)1, bpm);	// eine Schwingung pro 2 Beats
+		uint8_t phase = (uint32_t)(millisCounterForProgChange % period) * 256 / period;
+		uint32_t beat = fxBeats(bpm);
+		for (uint8_t a = 0; a < 3; a++) {
+			int h = (int)sin8(phase + a * 85) * (anz_LEDs - 2) / 255;
+			leds[lampLed(h)] = leds[lampLed(h + 1)] = sharedColor(beat + a);
+		}
+	}
+	fxShow();
+}
+
+void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		const int tail = 16, drops = 3;
+		const int span = anz_LEDs + tail;
+		uint32_t step = millisCounterForProgChange / max(1u, msPerStep) + STAGE_POS * 11;	// die Lampen laufen versetzt
+		fill_solid(leds, anz_LEDs, CRGB::Black);
+		for (int d = 0; d < drops; d++) {
+			int head = anz_LEDs - 1 - (int)((step + d * span / drops) % span);
+			for (int j = 0; j < tail; j++) {
+				int h = head + j;
+				if (h < 0 || h >= anz_LEDs) continue;
+				CRGB c = col;
+				leds[lampLed(h)] = (j == 0) ? blend(col, CRGB::White, 200) : c.nscale8(255 - j * 15);
+			}
+		}
+	}
+	fxShow();
+}
+
 //==================================================================
 //=========== Szenen ===============================================
 //==================================================================
@@ -203,6 +301,24 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		}
 		break;	// Solist: geräteabhängig unten
 	}
+	case SCENE_SPARKLE:
+		progFastBlingBling(durationMillis, max(3, anz_LEDs / 20), nextPart);	// Gitarre 8, Lampen 3-4, Matrix 27
+		return;
+	case SCENE_GLOW: {
+		unsigned int period = beatMs * 8;	// Farbwechsel alle 2 Takte, mindestens 3 s
+		while (period < 3000) period *= 2;
+		progGlow(durationMillis, nextPart, period);
+		return;
+	}
+	case SCENE_COLORS:
+		progBeatColors(durationMillis, nextPart, bpm, 1, false);
+		return;
+	case SCENE_COLORS_WAVE:
+		progBeatColors(durationMillis, nextPart, bpm, 1, true);
+		return;
+	case SCENE_PALETTE:
+		progStageBand(durationMillis, nextPart, beatMs * 16);	// ein Umlauf in 4 Takten
+		return;
 	}
 
 	//--- geräteabhängige Umsetzung ---
@@ -214,6 +330,8 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 							durationMillis > 2 * SCENE_BLAST_MS ? durationMillis - SCENE_BLAST_MS : durationMillis, hueOf(me));	break;
 	case SCENE_DROP:	progShockwave(durationMillis, nextPart, beatMs);	break;
 	case SCENE_FIRE:	progOutlineFire(durationMillis, nextPart, 20, isColdScheme());	break;
+	case SCENE_STAR:	progSternNeu(durationMillis, beatMs, nextPart, 5, 26, 5, true, 3);	break;	// Werte der alten Refrains
+	case SCENE_RAIN:	progMatrixHorizontal(durationMillis, nextPart, 70, true);	break;
 	default:			progCometLoop(durationMillis, nextPart, 8, hueOf(me), true);	break;	// Solo
 	}
 
@@ -224,6 +342,8 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_BUILDUP:	progLampFill(durationMillis, nextPart, me);	break;
 	case SCENE_DROP:	progBeatFlash(durationMillis, nextPart, bpm, schemeColor(fxBeats(bpm)), 0);	break;
 	case SCENE_FIRE:	progLampFire(durationMillis, nextPart, isColdScheme());	break;
+	case SCENE_STAR:	progLampSpin(durationMillis, nextPart, bpm);	break;
+	case SCENE_RAIN:	progLampRain(durationMillis, nextPart, 35, me);	break;
 	default:			progLampPulse(durationMillis, nextPart, bpm, me);	break;
 	}
 
@@ -234,6 +354,8 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;
+	case SCENE_STAR:	progSternNeu(durationMillis, beatMs, nextPart, 5, center_x, center_y, true, 3);	break;
+	case SCENE_RAIN:	progMatrixHorizontal(durationMillis, nextPart, 70, true);	break;
 	default:			progWaterRipple(durationMillis, nextPart, 25, false);	break;	// Solo: schnell, Schemafarben
 	}
 #endif

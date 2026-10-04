@@ -28,6 +28,7 @@ extern volatile boolean nextChangeMillisAlreadyCalculated;
 extern const uint8_t mono_bmp[][8];
 extern const uint16_t RGB_bmp[][64];
 extern volatile unsigned int millisToReduceCPUSpeed;
+extern volatile unsigned int millisCounterForProgChange;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
 extern FastLED_NeoMatrix* matrix;
 extern CRGB leds[NUMMATRIX];
@@ -1576,6 +1577,97 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart,
 			FastLED.show();
 		}
 	}
+}
+
+//------ Text für den text:-Schlüssel der Song-YAMLs (tools/songgen.py) ------
+// Position, Farbe und Timing ergeben sich von selbst. Der Stand wird aus der Zeit seit Partbeginn berechnet,
+// dadurch bleibt der Text auch nach einem BLE-Sync mitten im Part im Takt.
+#define TEXT_SCROLL_MS	80		// angestrebte ms pro Pixel beim Lauftext
+static long progTextLastState;	// zuletzt gezeichneter Stand (nur bei Änderung neu zeichnen)
+
+static int textY() {
+	#if defined(GITBOARD)
+		return 13;
+	#else
+		return max(0, (MATRIX_HEIGHT - 7) / 2);
+	#endif
+}
+
+static bool textPartInit(unsigned int durationMillis, byte nextPart) {
+	if (!nextChangeMillisAlreadyCalculated) {
+		FastLED.clear(true);
+		nextChangeMillis = durationMillis;
+		nextSongPart = nextPart;
+		nextChangeMillisAlreadyCalculated = true;
+		progTextLastState = -1000000;
+	}
+	if (LEDsTurnedOff) progTextLastState = -1000000;	// nach dem Wiedereinschalten sofort neu zeichnen
+	return !LEDsTurnedOff;
+}
+
+// Lauftext, der genau am Ende des Parts fertig ist: so viele ganze Durchläufe, dass das Tempo nahe
+// TEXT_SCROLL_MS pro Pixel liegt. col = CRGB::Black -> Farbe aus dem aktiven Schema, pro Durchlauf die nächste.
+void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col) {
+	if (!textPartInit(durationMillis, nextPart) || durationMillis == 0) return;
+
+	long steps = MATRIX_WIDTH - 2 + 6 * (long)strlen(text);		// Pixel für einen Durchlauf
+	long passes = max(1L, ((long)durationMillis + steps * TEXT_SCROLL_MS / 2) / (steps * TEXT_SCROLL_MS));
+	long pos = (long)((uint64_t)millisCounterForProgChange * steps * passes / durationMillis);
+	if (pos == progTextLastState) return;
+	progTextLastState = pos;
+
+	FastLED.setBrightness(BRIGHTNESS);
+	textSetup();
+	matrix->setCursor(MATRIX_WIDTH - 2 - (int)(pos % steps), textY());
+	matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(pos / steps) : col));
+	matrix->print(text);
+	gitBlindingLEDs_OFF_MarkerLEDs_ON();
+	FastLED.show();
+}
+
+// Ein oder mehrere Wörter (durch Leerzeichen getrennt): pro msPerWord erscheint das nächste Wort zentriert,
+// im letzten Viertel ist die Matrix dunkel (ein einzelnes Wort pulsiert so im Takt), nach dem letzten Wort
+// beginnt es von vorn. Passt ein Wort nicht auf die Matrix, läuft der ganze Text als Lauftext.
+// col = CRGB::Black -> Farben des aktiven Schemas, bei jedem Wort die nächste.
+void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col) {
+	int n = 0, longest = 0;
+	for (const char* p = words; *p; ) {
+		while (*p == ' ') p++;
+		int len = 0;
+		while (p[len] && p[len] != ' ') len++;
+		if (len) { n++; longest = max(longest, len); }
+		p += len;
+	}
+	if (longest * 6 - 1 > MATRIX_WIDTH) {
+		progTextScroll(words, durationMillis, nextPart, col);
+		return;
+	}
+	if (!textPartInit(durationMillis, nextPart) || n == 0 || msPerWord == 0) return;
+
+	unsigned int t = millisCounterForProgChange;
+	long slot = t / msPerWord;
+	bool on = (t % msPerWord) < msPerWord - msPerWord / 4;
+	long state = on ? slot : -1;
+	if (state == progTextLastState) return;
+	progTextLastState = state;
+
+	FastLED.setBrightness(BRIGHTNESS);
+	textSetup();
+	if (on) {
+		const char* p = words;
+		int len = 0;
+		for (int i = 0; i <= (int)(slot % n); i++) {	// zum Wort dieses Slots vorrücken
+			p += len;
+			while (*p == ' ') p++;
+			len = 0;
+			while (p[len] && p[len] != ' ') len++;
+		}
+		matrix->setCursor((MATRIX_WIDTH - (len * 6 - 1)) / 2, textY());
+		matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(slot) : col));
+		for (int i = 0; i < len; i++) matrix->print(p[i]);
+	}
+	gitBlindingLEDs_OFF_MarkerLEDs_ON();
+	FastLED.show();
 }
 
 //------ Setup Palette ------

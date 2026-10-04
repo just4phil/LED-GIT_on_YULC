@@ -15,7 +15,7 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     generated.cpp   erzeugter Code dieses Songs
     versionen/<Zeit>/   Kopie von song.yaml + show.yaml + generated.cpp bei jeder Generierung
 Die Struktur steht nur in song.yaml, die Show ordnet per Abschnittsname zu. Gestaltung in song.yaml
-(scene, fx, scheme, devices, tail) hat immer Vorrang vor show.yaml.
+(scene, fx, scheme, fade, devices, tail, text) hat immer Vorrang vor show.yaml.
 
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
@@ -63,6 +63,17 @@ SCROLL_MAX_WAIT_MS = 4000	# so lange darf die Matrix vor dem Lauftext schwarz bl
 BLACK = "progBlack(${dur}, ${next})"
 MAX_PART_MS = 0xFFFFFFFF
 ENERGY_SCENE = {1: "SCENE_CALM", 2: "SCENE_VERSE", 3: "SCENE_BUILDUP", 4: "SCENE_DROP", 5: "SCENE_DROP"}
+
+# text: eines Parts - die Matrix-Geräte zeigen Text (progText/progTextScroll), alle anderen spielen ihre Szene weiter
+MATRIX_KEYS = ("matrix", "SCROLLMATRIX", "GITBOARD")
+TEXT_PER = {"beat": 1, "half": 2}	# Beats pro Wort; "bar" = ein Takt, eine Zahl = so viele Beats
+TEXT_COLORS = {"weiss": "White", "weiß": "White", "white": "White", "rot": "Red", "red": "Red", "blau": "Blue", "blue": "Blue",
+			   "gruen": "Green", "grün": "Green", "green": "Green", "gelb": "Yellow", "yellow": "Yellow", "orange": "Orange",
+			   "pink": "DeepPink", "lila": "Purple", "purple": "Purple", "cyan": "Cyan"}
+
+# fade: eines Parts - die Schemafarben wandern im Takt zu einem Ziel und zurück (setColorFade in colorSchemes.h)
+FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT", "triad": "FADE_TRIAD",
+				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
 
 # Geräte-Overrides: Schlüssel im YAML -> Präprozessor-Bedingung. Einzelgeräte vor Klassen.
 DEVICE_KEYS = {
@@ -232,6 +243,34 @@ def default_call(part, song):
 	return f"scene({scene}, {part['dur']}, {part['next']}, {round(part['bpm'])});"
 
 
+def per_beats(per, sec, song):
+	"""per: beat | half | bar | <Zahl> -> Beats (None, wenn unbekannt)."""
+	bpb = sec.get("beats_per_bar", song.get("beats_per_bar", 4))
+	beats = bpb if per == "bar" else TEXT_PER.get(per, per)
+	if isinstance(beats, bool) or not isinstance(beats, (int, float)) or beats <= 0:
+		return None
+	return beats
+
+
+def fade_spec(sec):
+	spec = sec.get("fade")
+	return spec if isinstance(spec, dict) else {"to": spec}
+
+
+def scheme_lines(part, song, offset=0):
+	"""setColorScheme/setColorFade eines Parts (fade: complement | {to: ..., per: beat|half|bar|<Beats>, hard: true})."""
+	sec = part["sec"]
+	lines = []
+	if sec.get("scheme"):
+		lines.append(f"\t\tsetColorScheme({sec['scheme']});")
+	if sec.get("fade"):
+		spec = fade_spec(sec)
+		to = str(spec.get("to"))
+		ms = round((per_beats(spec.get("per", "bar"), sec, song) or 0) * 60000.0 / part["bpm"])	# ungültiges per meldet validate()
+		lines.append(f"\t\tsetColorFade({FADE_TARGETS.get(to.lower(), to)}, {ms}" + (f", {'true' if spec.get('hard') else 'false'}, {offset}" if offset else ", true" if spec.get("hard") else "") + ");")
+	return lines
+
+
 def fmt_time(ms):
 	return f"{ms // 60000}:{(ms // 1000) % 60:02d}.{ms % 1000:03d}"
 
@@ -289,6 +328,71 @@ def plan_scroll(song, timeline, width):
 	return dict(base, mode="fill", scroll=s2, fill_part=j, fill_dur=end_j - s2, join=nxt)
 
 
+def text_call(part, song, widths):
+	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
+	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
+	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende)."""
+	sec = part["sec"]
+	name = sec.get("name", "?")
+	spec = sec["text"]
+	if not isinstance(spec, dict):
+		spec = {"words": spec}
+	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color")]
+	if unknown or ("words" in spec) == ("scroll" in spec):
+		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color)"
+						+ (f" - unbekannt: {', '.join(unknown)}" if unknown else ""))
+	scroll = "scroll" in spec
+	txt = " ".join(str(spec["scroll"] if scroll else spec["words"]).split())
+	bad = sorted({c for c in txt if not 32 <= ord(c) < 127})
+	if not txt or bad:
+		raise SongError(f"{name}: text " + (f"enthält Zeichen, die die Matrix-Schrift nicht kann: {' '.join(bad)} "
+						"(nur ASCII, also ae/oe/ue statt Umlaut)" if bad else "ist leer"))
+	lit = '"' + txt.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+	color = ""
+	if spec.get("color"):
+		c = str(spec["color"]).strip()
+		if c.lower() in TEXT_COLORS:
+			color = ", CRGB::" + TEXT_COLORS[c.lower()]
+		elif c.startswith("CRGB"):
+			color = ", " + c
+		else:
+			raise SongError(f"{name}: text-Farbe '{c}' unbekannt - {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+
+	if scroll:
+		if "per" in spec:
+			raise SongError(f"{name}: per gilt nur für words, nicht für scroll")
+		return f"progTextScroll({lit}, ${{dur}}, ${{next}}{color})", f'Lauftext "{txt}", endet am Part-Ende'
+
+	per = spec.get("per", "beat")
+	beats = per_beats(per, sec, song)
+	if beats is None:
+		raise SongError(f"{name}: text per '{per}' unbekannt - beat, half, bar oder eine Zahl (Beats pro Wort)")
+	ms = round(beats * 60000.0 / part["bpm"])
+	words = txt.split()
+	info = f'"{txt}": ' + ("pulsiert" if len(words) == 1 else f"{len(words)} Wörter, eins") + f" alle {ms} ms"
+	longest = max(len(w) for w in words)
+	wide = [d for d, w in widths.items() if longest * 6 - 1 > w]
+	if wide:
+		info += f" - ACHTUNG: '{max(words, key=len)}' passt nicht auf {', '.join(wide)}, läuft dort als Lauftext"
+	return f"progText({lit}, ${{dur}}, ${{next}}, {ms}{color})", info
+
+
+def apply_texts(song, timeline):
+	"""text: der Parts als Override für die Matrix-Geräte eintragen (Tails haben ihr eigenes text: oder keins)."""
+	widths = matrix_widths()
+	for part in timeline:
+		sec = part["sec"]
+		if "text" not in sec:
+			continue
+		devices = dict(sec.get("devices") or {})
+		clash = [k for k in MATRIX_KEYS if k in devices]
+		if clash:
+			raise SongError(f"{sec.get('name')}: text und devices.{clash[0]} zugleich - bitte nur eins für die Matrix")
+		devices["matrix"], part["text_info"] = text_call(part, song, widths)
+		part["sec"] = dict(sec, devices=devices)
+
+
 def device_call(part, song, device):
 	"""Aufruf für ein bestimmtes Gerät: Einzelgerät > Geräteklasse > Szene/fx."""
 	devices = part["sec"].get("devices") or {}
@@ -318,9 +422,8 @@ def scroll_code(song, device, plan):
 		fp = dict(plan["fill_part"], dur=plan["fill_dur"], next=join["case"])
 		head.append(scroll(plan["scroll"], 2))
 		extra.append(f"\tcase 2:\t// Rest von '{fp['sec'].get('name')}' ab {fmt_time(plan['scroll'])}, Einstieg case {join['case']}")
-		if fp["sec"].get("scheme"):
-			extra.append(f"\t\tsetColorScheme({fp['sec']['scheme']});")
-		extra += ["\t\t" + device_call(fp, song, device), "\t\tbreak;"]
+		extra += scheme_lines(fp, song, plan["scroll"] - plan["fill_part"]["start"])	# Farbwanderung synchron zu den anderen Geräten
+		extra +=["\t\t" + device_call(fp, song, device), "\t\tbreak;"]
 	return head, extra
 
 
@@ -350,8 +453,7 @@ def gen_function(song, timeline, end_case):
 			comment += f"  -- {sec['why']}"
 		lines.append(f"\tcase {part['case']}:\t// {comment}")
 
-		if sec.get("scheme"):
-			lines.append(f"\t\tsetColorScheme({sec['scheme']});")
+		lines += scheme_lines(part, song)
 
 		call = default_call(part, song)
 		devices = sec.get("devices") or {}
@@ -558,6 +660,20 @@ def validate(song, timeline):
 			errors.append(f"{name}: unbekannte Szene {sec['scene']}")
 		if sec.get("scheme") and sec["scheme"] not in schemes:
 			errors.append(f"{name}: unbekanntes Farbschema {sec['scheme']}")
+		if sec.get("fade"):
+			spec = fade_spec(sec)
+			to = str(spec.get("to"))
+			unknown = [k for k in spec if k not in ("to", "per", "hard")]
+			if unknown:
+				errors.append(f"{name}: fade kennt nur to, per, hard - unbekannt: {', '.join(unknown)}")
+			if to.lower() not in FADE_TARGETS and (to not in schemes or to in ("SCHEME_RANDOM", "SCHEME_COUNT")):
+				errors.append(f"{name}: fade-Ziel '{to}' unbekannt - complement, triad, analog, rainbow oder ein SCHEME_...")
+			if per_beats(spec.get("per", "bar"), sec, song) is None:
+				errors.append(f"{name}: fade per '{spec.get('per')}' unbekannt - beat, half, bar oder eine Zahl (Beats pro Weg)")
+			if not isinstance(spec.get("hard", False), bool):
+				errors.append(f"{name}: fade hard ist true oder false")
+			if (sec.get("scheme") or song.get("scheme") or "SCHEME_RANDOM") == "SCHEME_RANDOM":
+				errors.append(f"{name}: fade braucht ein Farbschema (scheme), mit SCHEME_RANDOM gibt es nichts zu überblenden")
 		for key in (sec.get("devices") or {}):
 			if key not in DEVICE_KEYS:
 				errors.append(f"{name}: unbekannter Geräteschlüssel '{key}' (erlaubt: {', '.join(DEVICE_KEYS)})")
@@ -582,7 +698,7 @@ def pascal(name):
 
 
 SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms")
-SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme")
+SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text")
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
 
 
@@ -614,7 +730,7 @@ def merge_show(song, show):
 			raise SongError(f"{SONG_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
 		if "scene" in user or "fx" in user:
 			# der User legt den Effekt fest -> Effekt und Geräte-Overrides der Show gelten für diesen Part nicht
-			for k in ("scene", "fx", "devices", "why"):
+			for k in ("scene", "fx", "devices", "text", "why"):
 				d.pop(k, None)
 			d["why"] = f"Vorgabe aus {SONG_FILE}"
 		elif "devices" in user:
@@ -630,11 +746,11 @@ def merge_show(song, show):
 def force_black_start(song):
 	"""Mit dem Start-MIDI sind immer erst alle Geräte schwarz: der erste Abschnitt ist immer progBlack."""
 	first = song["sections"][0]
-	design = [k for k in ("scene", "fx", "devices", "tail", "scheme") if k in first and first[k] != BLACK]
+	design = [k for k in ("scene", "fx", "devices", "tail", "scheme", "fade", "text") if k in first and first[k] != BLACK]
 	if design:
 		song.setdefault("_notes", []).append(
 			f"erster Abschnitt '{first['name']}' ist immer BLACK - ignoriert: {', '.join(design)}")
-	for k in ("scene", "devices", "tail", "scheme"):
+	for k in ("scene", "devices", "tail", "scheme", "fade", "text"):
 		first.pop(k, None)
 	first["fx"] = BLACK
 	first.setdefault("why", "Start-MIDI: alle Geräte schwarz")
@@ -713,6 +829,7 @@ def generate(song, others):
 			errors.append(f"Funktionsname {song['function']} hat auch songs/{o['dir']}")
 
 	timeline, end_case = build_timeline(song)
+	apply_texts(song, timeline)
 	if song.get("scroll_text", True):
 		widths = matrix_widths()
 		song["_scroll_plans"] = {d: plan_scroll(song, timeline, widths[d]) for d in SCROLL_DEVICES}
@@ -957,6 +1074,9 @@ def print_timeline(song, timeline):
 		else:
 			how = f"Lauftext {pl['scroll']} ms, dann Rest von '{pl['fill_part']['sec'].get('name')}' ({pl['fill_dur']} ms)"
 		print(f"  {dev:<12} \"{pl['text']}\": {how} -> Einstieg case {pl['join']['case']} @{fmt_time(pl['join']['start'])}")
+	for p in timeline:
+		if p.get("text_info"):
+			print(f"  Text (Matrix) case {p['case']} '{p['sec'].get('name', '')}': {p['text_info']}")
 	for n in song.get("_notes", []):
 		print(f"  Hinweis: {n}")
 	print(f"  Marker: {song.get('_marker_note')}")

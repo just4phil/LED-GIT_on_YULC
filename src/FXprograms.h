@@ -671,6 +671,17 @@ void progWordArray(String words[], int anzWords, int msPerWord, unsigned int dur
 void progBlinkText(String words, unsigned int durationMillis, byte nextPart, unsigned int blinkMs = 300);
 
 /**
+ * @brief Text für den text:-Schlüssel der Song-YAMLs (tools/songgen.py), nur Matrix-Geräte
+ *
+ * progText: ein oder mehrere Wörter (durch Leerzeichen getrennt), pro msPerWord das nächste, automatisch
+ * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext.
+ * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist.
+ * col = CRGB::Black (Standard): Farben des aktiven Schemas.
+ */
+void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col = CRGB::Black);
+void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col = CRGB::Black);
+
+/**
  * @brief Set up current color palette
  * 
  * Initializes the current color palette for palette-based

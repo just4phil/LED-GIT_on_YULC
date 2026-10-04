@@ -4103,7 +4103,16 @@ void szenenDemo() {
 
 	// normale Programme mit Farbschema
 	case 65:	setColorScheme(SCHEME_ROYAL);	progStrobo(4000, 70, 75, getRandomCRGB());		break;
-	case 70:	setColorScheme(SCHEME_SUNSET);	progPalette(8000, PALETTE_SCHEME, 100);			break;
+	case 70:	setColorScheme(SCHEME_SUNSET);	progPalette(8000, PALETTE_SCHEME, 72);			break;
+
+	// bewährte Looks als Szenen
+	case 72:	setColorScheme(SCHEME_NEON);	scene(SCENE_STAR,        8000, 74, bpm);	break;
+	case 74:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_SPARKLE,     8000, 76, bpm);	break;
+	case 76:	setColorScheme(SCHEME_ROYAL);	scene(SCENE_GLOW,       16000, 78, bpm);	break;
+	case 78:	setColorScheme(SCHEME_RETRO);	scene(SCENE_COLORS,      8000, 80, bpm);	break;
+	case 80:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_COLORS_WAVE, 8000, 82, bpm);	break;
+	case 82:	setColorScheme(SCHEME_TOXIC);	scene(SCENE_RAIN,        8000, 84, bpm);	break;
+	case 84:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_PALETTE,     8000, 100, bpm);	break;
 
 	case 100:
 		clearAll();

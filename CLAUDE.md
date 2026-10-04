@@ -91,8 +91,10 @@ One folder per song, e.g. `songs/AllTheThingsSheSaid_v1/` (`_v1` = version of th
 
 **Never write, move or delete `songs/*/song.yaml`** - the user's additions must never be overwritten. A hook
 (`tools/hook_protect_song.py`) and a deny rule in `.claude/settings.json` enforce this; do not work around
-them. Propose changes in chat instead. Design keys in `song.yaml` (`scene`, `fx`, `scheme`, `tail`, `devices`)
-always win over `show.yaml`.
+them. Propose changes in chat instead. Design keys in `song.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`,
+`devices`, `text`) always win over `show.yaml`. `fade:` lets the scheme colours travel in time with the bars to a
+complementary colour or a second scheme and back, in sync on all devices. `text:` puts words or a scroll text on the matrix devices (auto-centred, in
+time with the beat) while the other devices keep playing the scene.
 
 `tools/songgen.py <Song>` generates only the named song, saves a version and assembles
 `src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
