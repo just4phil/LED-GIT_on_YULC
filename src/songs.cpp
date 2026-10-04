@@ -2823,7 +2823,8 @@ void Kids() { // TODO
 
 	case 0:// pause	6795
 		if (LEDGITBOARD) {
-			progScrollText("Kids by MGMT", 11000, 90, getRandomColor(), 2);
+			// 11212 = 6562 + 5 Strobo-Zyklen (2 x 465): die Matrix steigt genau auf einem Zyklusanfang der anderen Geräte ein
+			progScrollText("Kids by MGMT", 11212, 90, getRandomColor(), 2);
 		}
 		else {
 			progBlack(6562, 5); // 6562, da um 235 ms verschoben da mit strobo nicht offbeat ist
@@ -2831,7 +2832,7 @@ void Kids() { // TODO
 		break;
 	
 	case 2: //nur für ledgitboard
-		progStrobo(10797, 10, 460, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(10585, 10, 465, getRandomColor(), getRandomColor(), getRandomColor());	// gleiches del wie case 5, endet wie dort bei 21797
 		break;
 
 	case 5: //synth intro	15000
