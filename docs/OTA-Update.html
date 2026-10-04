@@ -201,7 +201,7 @@ python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur
   <li><b>Geräte einschalten</b> <span class="who du">du</span><br>
     Bass, Lampen, Scrollmatrix laufen normal im Leerlauf (Song 0). Die Gitarre ist noch aus.</li>
   <li><b>Gitarre mit gedrücktem Knopf einschalten</b> <span class="who du">du</span><br>
-    Rotary-Knopf drücken, einschalten, <b>mindestens 1 s</b> halten. Die LEDs der Gitarre werden lila: Sie wartet, bis alle vier Clients verbunden sind. Der lila Balken wächst mit jedem verbundenen Client (max. 20 s).</li>
+    Rotary-Knopf drücken, einschalten, <b>mindestens 1 s</b> halten. Die LEDs der Gitarre werden lila: Sie wartet, bis alle vier Clients verbunden sind. Der lila Balken wächst mit jedem verbundenen Client (max. 20 s). Ist ein Gerät aus, geht es weiter, sobald sich 5 s lang kein weiterer Client mehr angemeldet hat.</li>
   <li><b>Automatisch: Befehl an alle</b> <span class="who geraet">Gitarre</span><br>
     Die Gitarre schaltet alle Clients auf Song 0, schickt 3× den Update-Befehl und startet dann selbst im Update-Modus neu.</li>
   <li><b>Automatisch: jedes Gerät lädt</b> <span class="who geraet">alle Geräte</span><br>
@@ -232,7 +232,8 @@ python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur
   <li><code>otaBootButtonHeld()</code> prüft <code>ROTARY_ENCODER_BUTTON_PIN</code> (GPIO 4, Pull-up, gedrückt = LOW): Bleibt der Knopf 1 s gedrückt → <code>true</code>. Ist er gar nicht gedrückt, kostet das nur ca. 5 ms Startzeit.</li>
   <li><code>midiProxy_initialize_BLE()</code> startet den BLE-Server wie immer, direkt danach <code>midiProxy_broadcastOTA()</code>:
     <ul>
-      <li>wartet, bis <code>subscribedClients</code> ≥ Anzahl erlaubter Clients (4), max. 20 s. Gezählt wird im <code>onSubscribe</code>-Callback: Erst wer Notifications abonniert hat, empfängt den Befehl sicher.</li>
+      <li>wartet, bis <code>subscribedClients</code> ≥ Anzahl erlaubter Clients (4), max. 20 s (<code>OTA_CLIENT_WAIT_MS</code>). Gezählt wird im <code>onSubscribe</code>-Callback: Erst wer Notifications abonniert hat, empfängt den Befehl sicher.</li>
+      <li>bricht das Warten früher ab, wenn mindestens ein Client da ist und sich 5 s lang (<code>OTA_CLIENT_QUIET_MS</code>) kein weiterer angemeldet hat: Die fehlenden Geräte sind dann wohl aus. Solange noch gar kein Client da ist, läuft die volle Zeit.</li>
       <li>sendet msgType 1 / Song 0 (alle auf SONGPAUSE), 500 ms Pause.</li>
       <li>sendet 3× msgType 7 im Abstand von 500 ms (falls eine Notification verloren geht).</li>
       <li>1 s warten, dann <code>otaRequestAndRestart()</code>.</li>
@@ -374,7 +375,8 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <div class="tablewrap"><table>
 <tr><th>Wert</th><th>Wo</th><th>Standard</th><th>Bedeutung</th></tr>
 <tr><td>Knopf-Haltezeit</td><td><code>otaBootButtonHeld()</code></td><td>1000 ms</td><td>So lange muss der Knopf beim Einschalten gedrückt sein</td></tr>
-<tr><td>Warten auf Clients</td><td><code>midiProxy_broadcastOTA()</code></td><td>20 s</td><td>Danach wird auch mit weniger Clients gesendet</td></tr>
+<tr><td><code>OTA_CLIENT_WAIT_MS</code></td><td><code>midiProxyBLEserver_nimBLE.cpp</code></td><td>20 s</td><td>Warten auf Clients; danach wird auch mit weniger Clients gesendet</td></tr>
+<tr><td><code>OTA_CLIENT_QUIET_MS</code></td><td><code>midiProxyBLEserver_nimBLE.cpp</code></td><td>5 s</td><td>Meldet sich nach dem ersten Client so lange kein weiterer an, wird sofort gesendet</td></tr>
 <tr><td>Wiederholungen msgType 7</td><td><code>midiProxy_broadcastOTA()</code></td><td>3 × 500 ms</td><td>Sicherheit gegen verlorene Notifications</td></tr>
 <tr><td><code>OTA_WIFI_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>20 s</td><td>WLAN-Suche</td></tr>
 <tr><td>Anmelde-Timeout je Versuch</td><td><code>otaRun()</code>, <code>wifiMulti.run(8000)</code></td><td>8 s</td><td>Muss für Anmeldung + DHCP reichen, sonst bricht <code>WiFiMulti</code> die laufende Anmeldung mit einem neuen Scan ab</td></tr>
@@ -387,7 +389,8 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <div class="tablewrap"><table>
 <tr><th>Symptom</th><th>Ursache</th><th>Lösung</th></tr>
 <tr><td>Gitarre startet normal, kein Lila</td><td>Knopf zu kurz oder zu spät gedrückt</td><td>Knopf <b>vor</b> dem Einschalten drücken und ≥ 1 s halten</td></tr>
-<tr><td>Lila Balken wird nicht voll, nach 20 s geht es trotzdem weiter</td><td>Ein Client ist aus oder verbindet nicht</td><td>Client einschalten, Vorgang wiederholen. Die schon aktualisierten Geräte zeigen dann nur grün.</td></tr>
+<tr><td>Lila Balken wird nicht voll, nach ca. 5 s Stillstand geht es trotzdem weiter</td><td>Ein Client ist aus oder verbindet nicht</td><td>Client einschalten, Vorgang wiederholen. Die schon aktualisierten Geräte zeigen dann nur grün.</td></tr>
+<tr><td>Ein eingeschalteter Client wird beim Update ausgelassen</td><td>Er hat sich später als 5 s nach dem vorherigen Client angemeldet</td><td>Vorgang wiederholen; bei häufigem Auftreten <code>OTA_CLIENT_QUIET_MS</code> erhöhen</td></tr>
 <tr><td>Ein Client reagiert gar nicht</td><td>Client spielte einen Song (<code>songID ≠ 0</code>) oder hat die OTA-Firmware noch nicht</td><td>Einmal per USB flashen (Kap. 3). Song-Schutz ist normalerweise kein Problem, weil die Gitarre vorher auf Song 0 schaltet.</td></tr>
 <tr><td>Rot: „kein WLAN konfiguriert“</td><td><code>src/secrets.h</code> fehlte beim Build</td><td>Anlegen, neu bauen, <b>einmal per USB</b> flashen (die WLAN-Daten stecken in der Firmware)</td></tr>
 <tr><td>Rot: „WLAN nicht erreichbar“</td><td>SSID/Passwort falsch, 5-GHz-Netz, Hotspot aus</td><td>2,4-GHz-WLAN, Daten in <code>secrets.h</code> prüfen</td></tr>

@@ -28,13 +28,15 @@ alle firmwares neu bauen:
 ==========================
 e:
 cd E:\00_DATEN\PlatformIO\Projects\LED-GIT_on_YULC
-python tools/build_ota.py --serve
-
 Bauen ohne Server: 
-python tools/build_ota.py
+tools\.venv\Scripts\python tools/build_ota.py
+bauen und ausliefern
+tools\.venv\Scripts\python tools/build_ota.py --serve
+nur ausliefern mit 
+tools\.venv\Scripts\python tools/build_ota.py --serve-only
 
-Später ausliefern mit 
-python tools/build_ota.py --serve-only
+
+
 -----------------------------
 s beim Test auf 3/8 hinweist: Die Szenenwechsel sollten genau auf den Taktanfängen der Band liegen. Kommen alle Wechsel gleichmäßig zu früh oder zu spät, liegt es am Offset. Dann gib mir die Richtung und grob, um wie viel es daneben liegt, und ich stelle ihn nach. Liegt nur einzelne Parts daneben, stimmen die Taktzahlen in der YAML nicht.
 =======================================================

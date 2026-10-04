@@ -36,6 +36,9 @@ bool aDeviceConnected = false;
 bool aDeviceDISconnected = false;
 volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications (für OTA-Broadcast)
 
+#define OTA_CLIENT_WAIT_MS      20000   // so lange wartet midiProxy_broadcastOTA() höchstens auf die Clients
+#define OTA_CLIENT_QUIET_MS     5000    // ... und sendet früher, wenn sich so lange kein weiterer Client angemeldet hat
+
 static NimBLEServer* pServer;
 NimBLEService *pService;
 NimBLECharacteristic *pCharacteristic;
@@ -240,7 +243,15 @@ void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
 void midiProxy_broadcastOTA() {
     Serial.println("proxy: OTA für alle Geräte -> warte auf Clients");
     unsigned long start = millis();
-    while (subscribedClients < client_address_count && millis() - start < 20000) {
+    unsigned long lastJoin = start;
+    uint8_t seenClients = 0;
+    while (subscribedClients < client_address_count && millis() - start < OTA_CLIENT_WAIT_MS) {
+        if (subscribedClients != seenClients) {
+            seenClients = subscribedClients;
+            lastJoin = millis();
+        }
+        // kommt nach dem ersten Client länger keiner mehr dazu, ist der Rest wohl aus -> nicht die volle Zeit absitzen
+        if (seenClients > 0 && millis() - lastJoin >= OTA_CLIENT_QUIET_MS) break;
         otaShowStatus(CRGB::Purple, (float)subscribedClients / client_address_count);
         delay(250);
     }
