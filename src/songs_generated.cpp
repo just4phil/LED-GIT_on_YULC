@@ -233,15 +233,17 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_DROP, 11163, 25, 86);
 		break;
 
-	case 25:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück
+	case 25:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück. Übergang: das Rot der Hook blendet über einen Takt weich aus statt hart abzureißen
 		setColorScheme(SCHEME_ICE);
 		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_FADE, 2791);
 		scene(SCENE_GLOW, 11162, 30, 86);
 		break;
 
 	case 30:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_FADE, 1395);
 		scene(SCENE_RAIN, 11163, 35, 86);
 		break;
 
@@ -266,6 +268,7 @@ void gen_AllTheThingsSheSaid() {
 
 	case 55:	// synth solo a  4 T  11163ms  @1:22.674  -- Idee 'viele farben und im takt': die ganze Bühne einfarbig, pro Beat eine neue freie Zufallsfarbe - der bunteste Part
 		setColorScheme(SCHEME_RANDOM);
+		fxTransition(TRANS_STAGE_OUT, 1395);
 		scene(SCENE_COLORS, 11163, 60, 86);
 		break;
 
@@ -277,6 +280,7 @@ void gen_AllTheThingsSheSaid() {
 	case 65:	// verse 2 a  4 T  11163ms  @1:45.000  -- Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_WIPE, 2791);
 		scene(SCENE_GLOW, 11163, 70, 86);
 		break;
 
@@ -308,12 +312,15 @@ void gen_AllTheThingsSheSaid() {
 	case 95:	// Mother looking at me  4 T  11163ms  @2:29.651  -- Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet, auf der Matrix langsame Wasserringe; das Blau wandert über Violett nach Pink und zurück, die Spannung steigt mit
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_DISSOLVE, 2791);
 		scene(SCENE_CALM, 11163, 100, 86);
 		break;
 
 	case 100:	// daddy looking at me  2 T  5581ms  @2:40.814  -- Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu, die Farben wandern jetzt taktweise
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 2791);
+		fxTransition(TRANS_FADE, 1395);
+		fxPulse(86, 102);
 		scene(SCENE_RAIN, 5581, 105, 86);
 		break;
 
@@ -337,6 +344,7 @@ void gen_AllTheThingsSheSaid() {
 
 	case 125:	// chorus 1 weiter  3 T  8373ms  @2:54.767  -- letzter Chorus eine Stufe wärmer: Stern in Orange/Pink/Lila/Gelb
 		setColorScheme(SCHEME_SUNSET);
+		fxTransition(TRANS_FLASH, 698);
 		scene(SCENE_STAR, 8373, 130, 86);
 		break;
 
@@ -361,6 +369,7 @@ void gen_AllTheThingsSheSaid() {
 
 	case 150:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz
 		setColorScheme(SCHEME_RED);
+		fxTransition(TRANS_FADE, 1395);
 		scene(SCENE_FADEOUT, 2791, 155, 86);
 		break;
 

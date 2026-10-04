@@ -1,0 +1,175 @@
+# VORSCHLAG - song.yaml existiert schon und wurde NICHT angefasst. Nur zum Vergleichen,
+# der Generator beachtet diese Datei nicht. Übernimm von Hand, was du brauchst.
+
+# Semantische Songbeschreibung, erzeugt von tools/struktur2song.py aus quelle/struktur.xlsx
+# (StartTakt 3317, StartBit 0.375; Parts bis Takt 3392).
+# Die Technik (Szenen/Farben) leitet Claude in show.yaml ab. Diese Datei hier gehört dir: kein Werkzeug
+# und kein Claude überschreibt sie. Pro Part kannst du ergänzen:
+#   energy: 0-5, description, idea, mood, instruments, solo, lyrics  -> Einschätzung, daraus wird die Show abgeleitet
+#   scene: SCENE_..., scheme: SCHEME_..., fx: "prog..."  -> feste Vorgabe, hat immer Vorrang vor show.yaml
+#   text: "FUN" (pulsiert im Beat; mehrere Wörter: eins pro Beat) oder text: {scroll: "..."}  -> Text auf der Matrix
+#   fade: complement  oder  fade: {to: triad|analog|rainbow|SCHEME_..., per: bar, hard: true}  -> Farben wandern im Takt
+
+id: 31
+name: "All The Things She Said"
+artist: "t.A.T.u."
+bpm: 86
+beats_per_bar: 4
+midi_offset: 3/8
+audio: quelle/ATTSS.mp3
+
+sections:
+  - name: "pause"
+    bars: 1
+    energy: 0
+    idea: "black"
+
+  - name: "synth intro"
+    bars: 4
+    energy: 1
+    idea: "ruhig nur synths" -> hier bitte 1 beat strobe einbauen -> übergang zum nächsten teil
+
+  - name: "intro: all thet …."
+    bars: 4
+    energy: 4
+    idea: "action"
+
+  - name: "intro: this is not enough"
+    bars: 4
+    energy: 5
+    idea: "action stark auf viertel"
+
+  - name: "verse 1a"
+    bars: 4
+    energy: 1
+    idea: "sehr ruhig"
+
+  - name: "verse 1b"
+    bars: 4
+    energy: 2
+    idea: "etwas gesteigert"
+
+  - name: "wiederholung: nobody else"
+    beats: 3
+    energy: 3
+    idea: "build up"
+
+  - name: "übergang zum chorus"
+    beats: 1
+    energy: 5
+    idea: "strobo"
+
+  - name: "chorus 1"
+    bars: 4
+    energy: 4
+    idea: "action"
+
+  - name: "this is not enough"
+    bars: 4
+    energy: 5
+    idea: "action stark auf viertel"
+
+  - name: "synth solo a"
+    bars: 4
+    energy: 4
+    idea: "viele farben und im takt"
+
+  - name: "synth solo b"
+    bars: 4
+    energy: 4
+    idea: "etwas gesteigert auf den takt"
+
+  - name: "verse 2 a"
+    bars: 4
+    energy: 2
+    idea: "ruhig" -> finde ich etwas zu statisch ...hier steht einfach nur blaue farbe.  es fehlt eine langsame transformation oder etwas ähnliches
+
+  - name: "verse 2 b"
+    bars: 2
+    energy: 3
+    idea: "etwas gesteigert"
+
+  - name: "verse 2 b - build up"
+    bars: 1
+    beats: 2
+    energy: 4
+    idea: "build up"
+
+  - name: "übergang zum chorus (2)"
+    beats: 2
+    energy: 5
+    idea: "strobo"
+
+  - name: "chorus 1 (2)"
+    bars: 4
+    energy: 4
+    idea: "action"
+
+  - name: "this is not enough (2)"
+    bars: 4
+    energy: 5
+    idea: "action stark auf viertel"
+
+  - name: "Mother looking at me"
+    bars: 4
+    energy: 1
+    idea: "sehr ruhig"
+
+  - name: "daddy looking at me"
+    bars: 2
+    energy: 2
+    idea: "etwas gesteigert"
+
+  - name: "build up"
+    bars: 1
+    beats: 2
+    energy: 3
+    idea: "build up"
+
+  - name: "übergang zum chorus (3)"
+    beats: 2
+    energy: 5
+    idea: "strobo"
+
+  - name: "chorus 1 (3)"
+    beats: 2
+    energy: 4
+    idea: "action"
+
+  - name: "stop"
+    beats: 2
+    energy: 0
+    idea: "BLACK"
+
+  - name: "chorus 1 weiter"
+    bars: 3
+    energy: 4
+    idea: "action"
+
+  - name: "this is not enough (3)"
+    bars: 3
+    beats: 2
+    energy: 5
+    idea: "action stark auf viertel"
+
+  - name: "übergang zum chorus (4)"
+    beats: 2
+    energy: 4
+    idea: "strobe"
+
+  - name: "chrorus 2"
+    bars: 2
+    energy: 4
+    idea: "action"
+
+  - name: "this is not enough (4)"
+    bars: 2
+    energy: 5
+    idea: "action stark auf viertel"
+
+  - name: "fade out"
+    bars: 1
+    energy: 1
+    idea: "fade out" -> kann man hier richtig schön soft ausblenden? ggf. darf der Teil auch doppelt so lang sein, wenn das hilft
+
+# Bund-Marker: von Hand in src/markerLEDs.cpp gesetzt (case 31), werden dort gepflegt.

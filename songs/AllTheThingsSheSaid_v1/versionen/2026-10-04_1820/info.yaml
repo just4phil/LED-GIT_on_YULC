@@ -1,0 +1,9 @@
+zeit: '2026-10-04 18:20:13'
+notiz: Übergänge (fade, wipe, dissolve, stage_out, flash) und pulse - erster Test
+  der Ausgabestufe
+werkzeug_git: 6df0801
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 0d416d1629a12bfc17c6f21d0a6775be457bdf3c4c9e6b918b44460a73167cdb
+  show.yaml: 496377e975052df1de46842ee36042ff629896f4a482236955518c3b1e1bf868
+  generated.cpp: 4e64de77f61ee8b2621f0ab9dc9dab351f157bf4497893a61b8c2282707aeb9a
