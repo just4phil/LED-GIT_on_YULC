@@ -82,6 +82,9 @@ Update auslösen: die anderen Geräte laufen lassen (ohne aktiven Song), dann di
 
 ======================================================
 
+Falls etwas stört, bringt python tools/build_ota.py --restore 2026-10-04_8 --serve den alten Stand zurück. Wenn nur das Tempo abweicht, reicht es, FX_SKIP_UNCHANGED_FRAMES in definitions.h auszukommentieren und neu zu bauen.
+------------
+
 text FX
 ===========
 Der text:-Schlüssel ist gebaut. Auf der echten Matrix habe ich ihn nicht gesehen: geprüft ist, dass der Generator korrekten Code erzeugt und die Firmware damit kompiliert, wie es aussieht, musst du testen.

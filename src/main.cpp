@@ -15,6 +15,7 @@
 #include "functions.h" 			// randomColorValues // switchToSong // switchToPart
 #include "matrixFunctions.h"
 #include "FXprograms.h"
+#include "fxPipeline.h"
 #include "markerLEDs.h"			// setMarkerLEDs // gitBlindingLEDs_OFF_MarkerLEDs_ON
 #include "songs.h"
 #include "songs_generated.h"		// aus songs/*.yaml, siehe tools/songgen.py
@@ -155,9 +156,9 @@ void setup() {
 
 	#if defined (USE_ESP32)
 		//----- initialize LEDs ---------
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, LEDS_OUT).setCorrection(TypicalLEDStrip);
 		//---use both yulc outputs:
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, LEDS_OUT).setCorrection(TypicalLEDStrip);
 
 	#elif defined (USE_TEENSY)
 		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
@@ -476,8 +477,7 @@ void loop() {
 		}
 
 		if (LEDsTurnedOff) {	// wenn LEDs aus sind (for rotary encoder button push)
-			gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-			FastLED.show();	// MarkerLEDs zeigen
+			fxPresent();	// MarkerLEDs zeigen
 		}
 		//----immmer warn-LEDs blinken lassen, wenn lipovoltage LOW ---
 		// TODO: dies hier nur bei HAS_LIPO_VOLTAGE_CHECK

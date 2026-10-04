@@ -3,6 +3,7 @@
 #include "colors.h"
 #include "definitions.h"
 #include "colorSchemes.h"
+#include "fxPipeline.h"
 
 extern byte markerLED1;
 extern byte markerLED2;
@@ -132,6 +133,7 @@ void resetMarkerLEDs() {
 
 void switchToPart(byte part) {
 
+	fxPartReset();	// merkt sich das letzte Bild für einen Übergang
 	prog = part;
 	nextChangeMillisAlreadyCalculated = false;	// bool wieder fuer naechstes programm freigeben
 	millisCounterTimer = 0;

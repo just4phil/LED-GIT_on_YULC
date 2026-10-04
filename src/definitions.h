@@ -425,6 +425,19 @@
 	#define GUITAR_STRAP_PIN_POS	117	// Konturposition, an der der Gurt ansetzt
 #endif
 
+//==== LED-Ausgabe (fxPipeline.cpp) ======================================================
+#define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
+#define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
+//#define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
+									// ACHTUNG: Effekte mit Schritten < ~16 ms laufen dann schneller -> erst nach Umstellung auf Zeitbasis aktivieren
+//#define debug_fx_frametime		// alle 5 s Bilder/s und Dauer von show() auf Serial
+#ifdef FX_OUTPUT_REAL_LENGTH
+	#define LEDS_OUT	anz_LEDs
+#else
+	#define LEDS_OUT	NUMMATRIX
+#endif
+//---------------------------------------------------------------------------------------
+
 // #ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES GITARRE -------------------
 
 // //neue gummi LEDs auf der neuen GIT (ab 18.02.2025):

@@ -17,6 +17,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "definitions.h"
+#include "fxPipeline.h"
 
 //--- Defaults für Geräte ohne SG-Geometrie (skaliert auf anz_LEDs) ---
 #ifndef GUITAR_HEAD_TIP_IDX

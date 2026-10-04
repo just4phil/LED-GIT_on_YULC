@@ -157,8 +157,7 @@ void fxShow() {
 		clearAll();
 		fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
 	}
-	gitBlindingLEDs_OFF_MarkerLEDs_ON();
-	FastLED.show();
+	fxPresent();
 }
 
 // ms seit dem letzten Beat - exakt über bpm gerechnet (60000 / bpm ist gerundet und läuft pro Beat bis zu 1 ms davon)

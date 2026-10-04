@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <FastLED_NeoMatrix.h>
 #include "markerLEDs.h"
+#include "fxPipeline.h"
 #include "colors.h"
 #include "definitions.h"
 #include "functions.h"
@@ -755,7 +756,7 @@ void count_pixels() {
 				matrix->drawPixel(j, i, i % 3 == 0 ? (uint16_t)LED_BLUE_HIGH : i % 3 == 1 ? (uint16_t)LED_RED_HIGH : (uint16_t)LED_GREEN_HIGH);
 				// depending on the matrix size, it's too slow to display each pixel, so
 				// make the scan init faster. This will however be too fast on a small matrix.
-				matrix->show();
+				fxPresent();
 			}
 		}
 	}
@@ -769,7 +770,7 @@ void display_four_white() {
 		matrix->drawRect(1, 1, MATRIX_WIDTH - 2, MATRIX_HEIGHT - 2, LED_WHITE_MEDIUM);
 		matrix->drawRect(2, 2, MATRIX_WIDTH - 4, MATRIX_HEIGHT - 4, LED_WHITE_LOW);
 		matrix->drawRect(3, 3, MATRIX_WIDTH - 6, MATRIX_HEIGHT - 6, LED_WHITE_VERYLOW);
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -788,7 +789,7 @@ void display_bitmap(uint8_t bmp_num, uint16_t color) {
 		if (bmx >= mw) bmx = 0;
 		if (!bmx) bmy += 8;
 		if (bmy >= mh) bmy = 0;
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -796,7 +797,7 @@ void progDisplay_bitmap(unsigned int durationMillis, byte nextPart, uint8_t bmp_
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear(true);
+		FastLED.clear();
 		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
 		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
@@ -817,11 +818,10 @@ void display_rgbBitmap(uint8_t bmp_num) {
 		if (bmx >= MATRIX_WIDTH) bmx = 0;
 		if (!bmx) bmy += 8;
 		if (bmy >= MATRIX_HEIGHT) bmy = 0;
-		matrix->show();
+		fxPresent();
 
 		if (LEDGITBOARD == false) {
-			gitBlindingLEDs_OFF_MarkerLEDs_ON(); // funktioniert alleine so nicht gut ...zusaetzlich die bitmap editieren und schwarz setzen
-			FastLED.show();
+			fxPresent();
 		}
 	}
 }
@@ -845,7 +845,7 @@ void display_lines() {
 		// Diagonal blue line.
 		matrix->drawLine(0, 0, mw - 1, mh - 1, LED_BLUE_HIGH);
 		matrix->drawLine(0, mh - 1, mw - 1, 0, LED_ORANGE_MEDIUM);
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -856,7 +856,7 @@ void display_boxes() {
 		matrix->drawRect(1, 1, mw - 2, mh - 2, LED_GREEN_MEDIUM);
 		matrix->fillRect(2, 2, mw - 4, mh - 4, LED_RED_HIGH);
 		matrix->fillRect(3, 3, mw - 6, mh - 6, LED_ORANGE_MEDIUM);
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -869,7 +869,7 @@ void display_circles() {
 	matrix->drawCircle(1, MATRIX_HEIGHT - 2, 1, LED_GREEN_LOW);
 	matrix->drawCircle(MATRIX_WIDTH - 2, 1, 1, LED_GREEN_HIGH);
 	if (min(MATRIX_WIDTH, MATRIX_HEIGHT) > 12) matrix->drawCircle(MATRIX_WIDTH / 2 - 1, mh / 2 - 1, min(MATRIX_HEIGHT / 2 - 1, MATRIX_WIDTH / 2 - 1), LED_CYAN_HIGH);
-	matrix->show();
+	fxPresent();
 	}
 }
 
@@ -900,7 +900,7 @@ void display_resolution() {
 			else {
 				// we're not tall enough either, so we wait and display
 				// the 2nd value on top.
-				matrix->show();
+				fxPresent();
 				delay(2000);
 				matrix->clear();
 				matrix->setCursor(MATRIX_WIDTH - 11, 0);
@@ -931,7 +931,7 @@ void display_resolution() {
 			}
 		}
 
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -953,7 +953,7 @@ void display_scrollText() {
 				matrix->setTextColor(LED_ORANGE_HIGH);
 				matrix->print("World");
 			}
-			matrix->show();
+			fxPresent();
 			delay(50);
 		}
 
@@ -965,14 +965,14 @@ void display_scrollText() {
 			matrix->clear();
 			matrix->setCursor(x, MATRIX_WIDTH / 2 - size * 4);
 			matrix->print("Rotate");
-			matrix->show();
+			fxPresent();
 			// note that on a big array the refresh rate from show() will be slow enough that
 			// the delay become irrelevant. This is already true on a 32x32 array.
 			delay(50 / size);
 		}
 		matrix->setRotation(0);
 		matrix->setCursor(0, 0);
-		matrix->show();
+		fxPresent();
 	}
 }
 
@@ -1008,7 +1008,7 @@ void display_panOrBounceBitmap(uint8_t bitmapSize) {
 	#ifdef BM32
 			if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t*)bitmap32, bitmapSize, bitmapSize);
 	#endif
-			matrix->show();
+			fxPresent();
 		}
 
 		// Only pan if the display size is smaller than the pixmap
