@@ -71,6 +71,7 @@ TEXT_PER = {"beat": 1, "half": 2}	# Beats pro Wort; "bar" = ein Takt, eine Zahl 
 TEXT_COLORS = {"weiss": "White", "weiß": "White", "white": "White", "rot": "Red", "red": "Red", "blau": "Blue", "blue": "Blue",
 			   "gruen": "Green", "grün": "Green", "green": "Green", "gelb": "Yellow", "yellow": "Yellow", "orange": "Orange",
 			   "pink": "DeepPink", "lila": "Purple", "purple": "Purple", "cyan": "Cyan"}
+TEXT_CUT_COLORS = ("schwarz", "black", "aus")	# ausgestanzter Text: Buchstaben dunkel, die Szene leuchtet drumherum (FX_CUT)
 
 # fade: eines Parts - die Schemafarben wandern im Takt zu einem Ziel und zurück (setColorFade in colorSchemes.h)
 FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT", "triad": "FADE_TRIAD",
@@ -81,7 +82,7 @@ PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "t
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
-LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK"}	# overlay: mode
+LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK", "cut": "FX_CUT"}	# overlay: mode
 LAYER_MOD_KEYS = ("from", "to", "fade_in", "fade_out", "pulse", "gate", "under")	# steuern nur die Ebene (fxLayer...)
 OVERLAY_KEYS = ("scene", "fx", "mode", "amount", "span", "devices") + LAYER_MOD_KEYS
 DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
@@ -520,7 +521,7 @@ def overlay_code(part, song):
 	"""overlay: eines Parts - ein zweiter Effekt über dem Effekt des Parts (fxLayerBegin/End in fxPipeline.h)
 	-> (Zeilen vor dem Effekt, Zeilen danach, Beschreibung, Fehler, Aufrufe der Ebene).
 	overlay: SCENE_SPARKLE | "progStrobo(${dur}, ${next}, ${beat}, CRGB::White)"
-	overlay: {scene: ... | fx: "...", mode: add|max|over|mask, amount: <Prozent>, span: [von, bis],
+	overlay: {scene: ... | fx: "...", mode: add|max|over|mask|cut, amount: <Prozent>, span: [von, bis],
 	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices
 	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster), fade_in / fade_out: <Beats>,
 	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler)"""
@@ -612,7 +613,7 @@ def text_layer_code(part, song):
 		return [], []
 	guard = DEVICE_KEYS["matrix"]
 	pre = [f"#if {guard}"] + ["\t\t" + c for c in layer["calls"]]
-	pre += ["\t\tfxTextBegin();", "\t\t" + fill(layer["expr"], part, song), "\t\tfxTextEnd();", "#endif"]
+	pre += ["\t\tfxTextBegin();", "\t\t" + fill(layer["expr"], part, song), "\t\tfxTextEnd(255, FX_CUT);" if layer["cut"] else "\t\tfxTextEnd();", "#endif"]
 	return pre, [f"#if {guard}", "\t\tfxLayerFlush();", "#endif"]
 
 
@@ -673,11 +674,17 @@ def plan_scroll(song, timeline, width):
 	return dict(base, mode="fill", scroll=s2, fill_part=j, fill_dur=end_j - s2, join=nxt)
 
 
+def text_is_cut(spec):
+	"""text: {..., color: schwarz} - ausgestanzter Text"""
+	return isinstance(spec, dict) and str(spec.get("color", "")).strip().lower() in TEXT_CUT_COLORS
+
+
 def text_call(part, song, widths):
 	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
 	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
 	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). over: true legt den Text über die laufende
-	Szene, statt sie auf der Matrix zu ersetzen - auch zusammen mit overlay: (dann liegt der Text über beidem)."""
+	Szene, statt sie auf der Matrix zu ersetzen - auch zusammen mit overlay: (dann liegt der Text über beidem).
+	color: schwarz (nur mit over: true) stanzt den Text aus: die Buchstaben sind dunkel, die Szene leuchtet drumherum."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec["text"]
@@ -698,10 +705,15 @@ def text_call(part, song, widths):
 	lit = '"' + txt.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 	color = ""
-	if spec.get("color"):
+	cut = text_is_cut(spec)
+	if cut:
+		if spec.get("over") is not True:
+			raise SongError(f"{name}: schwarzer Text (color: {spec['color']}) braucht over: true - ohne Szene darunter ist er nicht zu sehen")
+		color = ", CRGB::White"	# gezeichnet wird weiß, die Ebene stanzt die Buchstaben aus (FX_CUT)
+	elif spec.get("color"):
 		c = crgb(spec["color"])
 		if c is None:
-			raise SongError(f"{name}: text-Farbe '{spec['color']}' unbekannt - {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+			raise SongError(f"{name}: text-Farbe '{spec['color']}' unbekannt - {', '.join(sorted(TEXT_COLORS))}, schwarz (ausgestanzt, nur mit over) oder ein CRGB-Ausdruck")
 		color = ", " + c
 
 	if scroll:
@@ -733,6 +745,7 @@ def apply_texts(song, timeline):
 		if isinstance(sec["text"], dict) and sec["text"].get("over"):
 			# Text als Ebene über der Szene: die Matrix spielt ihre Szene weiter
 			expr, info = text_call(part, song, widths)
+			cut = text_is_cut(sec["text"])
 			layer_mods = {k: sec["text"][k] for k in LAYER_MOD_KEYS if k in sec["text"]}	# z. B. under: Szene gedimmt, Text voll hell
 			if sec.get("overlay"):
 				# die Ebene ist schon belegt: der Text bekommt die eigene Text-Ebene und liegt über Szene und overlay
@@ -740,11 +753,11 @@ def apply_texts(song, timeline):
 				calls, infos = layer_mod_calls(layer_mods, part, sec, song, sec.get("name", "?"), errors, prefix="fxText", label="text")
 				if errors:
 					raise SongError("\n".join(errors))
-				part["text_layer"] = {"expr": expr, "calls": calls}
-				part["text_info"] = info + " (über Szene und Ebene" + "".join(", " + t for t in infos) + ")"
+				part["text_layer"] = {"expr": expr, "calls": calls, "cut": cut}
+				part["text_info"] = info + (" (ausgestanzt aus Szene und Ebene" if cut else " (über Szene und Ebene") + "".join(", " + t for t in infos) + ")"
 				continue
-			part["text_info"] = info + " (über der Szene)"
-			part["sec"] = dict(sec, overlay=dict({"devices": {"matrix": expr}, "mode": "over"}, **layer_mods))
+			part["text_info"] = info + (" (ausgestanzt aus der Szene)" if cut else " (über der Szene)")
+			part["sec"] = dict(sec, overlay=dict({"devices": {"matrix": expr}, "mode": "cut" if cut else "over"}, **layer_mods))
 			continue
 		devices = dict(sec.get("devices") or {})
 		clash = [k for k in MATRIX_KEYS if k in devices]

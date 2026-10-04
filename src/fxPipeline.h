@@ -41,6 +41,7 @@ enum FxLayerMode : uint8_t {
 	FX_MAX,				// der hellere Pixel gewinnt
 	FX_OVER,			// die Ebene deckt, wo sie nicht schwarz ist (Text über einer Szene)
 	FX_MASK,			// die Ebene ist ein Fenster: wo sie dunkel ist, wird der Effekt darunter dunkel
+	FX_CUT,				// die Ebene stanzt aus: wo sie hell ist, wird der Effekt darunter dunkel (dunkler Text in einer Fläche)
 };
 void fxLayerBegin();	// ab hier zeichnet der folgende Effekt in die Ebene statt auf die LEDs
 void fxLayerEnd(uint8_t mode = FX_ADD, uint8_t amount = 255, uint8_t from = 0, uint8_t to = 255);	// amount = Stärke der Ebene,
@@ -69,7 +70,8 @@ void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die
 //    Die beiden Ebenen stehen nacheinander, nie ineinander. progText/progTextScroll dann nicht zugleich in der anderen
 //    Ebene oder als Effekt des Parts (statischer Zustand je Effekt). ---
 void fxTextBegin();		// ab hier zeichnet der folgende Effekt (progText, progTextScroll) in die Text-Ebene
-void fxTextEnd(uint8_t amount = 255);	// amount = Deckkraft des Texts
+void fxTextEnd(uint8_t amount = 255, uint8_t mode = FX_OVER);	// amount = Deckkraft des Texts; mode FX_CUT = ausgestanzter Text:
+						// die Buchstaben (weiß gezeichnet) sind dunkel, die Szene leuchtet drumherum
 // wie fxLayer…, steuern aber die Text-Ebene; fxTextUnder dimmt alles unter dem Text (Effekt des Parts + Ebene)
 void fxTextWindow(unsigned int fromMillis, unsigned int toMillis = 0);
 void fxTextFadeIn(unsigned int millis);

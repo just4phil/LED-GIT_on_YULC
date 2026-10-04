@@ -67,7 +67,7 @@ frame (`fxFadeIn/Out`, `fxPulse`, `fxGate`, `fxDim`, `fxTint`, `fxMaskStage`, `f
 a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
-(`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
+(`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
 same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
 layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. A second layer reserved
 for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run

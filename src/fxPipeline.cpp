@@ -227,7 +227,7 @@ static void layerEnd(uint8_t idx, uint8_t mode, uint8_t amount, uint8_t from, ui
 void fxLayerBegin()	{ layerBegin(LAYER_FX); }
 void fxLayerEnd(uint8_t mode, uint8_t amount, uint8_t from, uint8_t to)	{ layerEnd(LAYER_FX, mode, amount, from, to); }
 void fxTextBegin()	{ layerBegin(LAYER_TEXT); }
-void fxTextEnd(uint8_t amount)	{ layerEnd(LAYER_TEXT, FX_OVER, amount, 0, 255); }
+void fxTextEnd(uint8_t amount, uint8_t mode)	{ layerEnd(LAYER_TEXT, mode, amount, 0, 255); }
 
 static bool anyLayer(bool FxLayer::*flag) {
 	for (const FxLayer& L : layers) if (L.*flag) return true;
@@ -393,7 +393,7 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 	}
 
 	//--- unterschiedliche Gesamthelligkeit oben/unten ausgleichen: die hellere gilt, das andere Bild wird herunterskaliert ---
-	if (L.mode != FX_MASK && L.bright != bright) {
+	if (L.mode != FX_MASK && L.mode != FX_CUT && L.bright != bright) {	// Maske und Stanze bringen kein eigenes Licht mit
 		if (L.bright > bright) {
 			baseScale = scale8(baseScale, (uint16_t)bright * 255 / L.bright);
 			bright = L.bright;
@@ -417,6 +417,9 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 			break;
 		case FX_MASK:
 			if (inside) buf[i].nscale8(255 - scale8(amount, 255 - l.getLuma()));	// außerhalb des Abschnitts bleibt das Bild
+			break;
+		case FX_CUT:
+			if (l) buf[i].nscale8(255 - scale8(amount, l.getLuma()));
 			break;
 		default:	// FX_ADD
 			if (amount != 255) l.nscale8(amount);

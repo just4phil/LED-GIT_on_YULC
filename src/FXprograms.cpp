@@ -2878,19 +2878,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 			}
 		}
 
-#if defined(SCROLLMATRIX)
-		// y=0 = physisch unten → Hitze steigt zu y=MATRIX_HEIGHT-1 auf
-		for (int y = MATRIX_HEIGHT - 1; y >= 2; y--) {
-			for (int x = 0; x < MATRIX_WIDTH; x++) {
-				heat[y][x] = ((int)heat[y-1][x] + heat[y-2][x] + heat[y-2][x]) / 3;
-			}
-		}
-		if (random(255) < 120) {
-			int fx = random(0, MATRIX_WIDTH);
-			heat[0][fx] = (uint8_t)min((int)255, (int)heat[0][fx] + (int)random(160, 255));
-		}
-#else
-		// y=0 = physisch oben → Hitze steigt zu y=0 auf
+		// y = 0 ist auf allen Matrix-Geräten oben (wie beim Text): Funken entstehen in der untersten Zeile, die Hitze steigt zu y = 0 auf
 		for (int y = 0; y < MATRIX_HEIGHT - 2; y++) {
 			for (int x = 0; x < MATRIX_WIDTH; x++) {
 				heat[y][x] = ((int)heat[y+1][x] + heat[y+2][x] + heat[y+2][x]) / 3;
@@ -2900,7 +2888,6 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 			int fx = random(0, MATRIX_WIDTH);
 			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + (int)random(160, 255));
 		}
-#endif
 
 		if (!LEDsTurnedOff) {
 			for (int y = 0; y < MATRIX_HEIGHT; y++) {

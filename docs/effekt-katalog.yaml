@@ -969,7 +969,8 @@ ausgabestufe:
     fxLayerGate:      {wirkung: "nur die Ebene blitzt im Raster", yaml: "overlay: {..., gate: <pro Beat> | {per_beat: 2, duty: 30}}", demo: 88, genutzt: 0, urteil: , notiz: }
 
   text_ebene:         # eigene Ebene nur für Text, liegt über Szene und Ebene (nur Matrix)
-    fxText:           {wirkung: "Szene + zweiter Effekt + Text zugleich: der Text liegt zuoberst, alles darunter läuft weiter (auf Wunsch gedimmt)", yaml: "text: {..., over: true, under: <Prozent>} zusammen mit overlay: ...", demo: 0, genutzt: 0, urteil: , notiz: }
+    fxText:           {wirkung: "Szene + zweiter Effekt + Text zugleich: der Text liegt zuoberst, alles darunter läuft weiter (auf Wunsch gedimmt)", yaml: "text: {..., over: true, under: <Prozent>} zusammen mit overlay: ...", demo: 90, genutzt: 0, urteil: , notiz: }
+    FX_CUT:           {wirkung: "ausgestanzter Text: die Buchstaben-LEDs sind aus, die Szene leuchtet drumherum (nur über hellen, gleichmäßigen Flächen lesbar)", yaml: "text: {..., over: true, color: schwarz}", demo: "0, zum Vergleich 2 (Szene nur in den Buchstaben, overlay mode: mask)", genutzt: 0, urteil: , notiz: }
 
 # ---------------------------------------------------------------------------------------------------
 # Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen

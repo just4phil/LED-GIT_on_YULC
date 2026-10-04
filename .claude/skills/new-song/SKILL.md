@@ -196,13 +196,16 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
   `{words: "FUN", over: true, under: 40}` - Szene gedimmt, Text voll hell. Geht auch zusammen mit `overlay`: der
   Text liegt dann in der eigenen Text-Ebene über Szene und Overlay (`under` dimmt beides); im `overlay` darf auf
   der Matrix dann kein `progText` / `progTextScroll` laufen.
+- `color: schwarz` (nur mit `over: true`) - ausgestanzter Text: die Buchstaben-LEDs sind aus, die Szene leuchtet
+  drumherum. Nur über hellen, gleichmäßigen Flächen (SCENE_PALETTE, SCENE_GLOW, volle Farben) lesbar, nicht über
+  Glitzern, Regen, Feuer oder Strobo.
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
 
 **Ebene: zweiter Effekt über dem Effekt des Parts** (`overlay`, `fxLayerBegin/End` in `src/fxPipeline.h`):
-- `overlay: SCENE_SPARKLE` oder `{scene: ... | fx: "...", mode: add|max|over|mask, amount: 40, span: [50, 100],
+- `overlay: SCENE_SPARKLE` oder `{scene: ... | fx: "...", mode: add|max|over|mask|cut, amount: 40, span: [50, 100],
   devices: {matrix: SCENE_RAIN}}`. `add` (Standard) addiert auf, Schwarz ist durchsichtig; `max` = hellerer Pixel;
-  `over` deckt; `mask` macht die Ebene zum Fenster auf den Effekt darunter. Ohne `scene`/`fx` läuft die Ebene nur auf
+  `over` deckt; `mask` macht die Ebene zum Fenster auf den Effekt darunter; `cut` stanzt aus (wo die Ebene hell ist, wird es dunkel). Ohne `scene`/`fx` läuft die Ebene nur auf
   den Geräten aus `devices`.
 - Nur die Ebene steuern, der Effekt darunter bleibt (Schlüssel im `overlay`, Längen in Beats, Stärken in Prozent):
   `pulse: 80 | {depth, per}` und `gate: 2 | {per_beat, duty}` (nur die Ebene pumpt/blitzt), `fade_in` / `fade_out`
