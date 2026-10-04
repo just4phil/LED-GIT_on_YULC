@@ -4,10 +4,8 @@
 #   Chorus "all the things she said"  = drehender Stern (SCENE_STAR)
 #   Hook "this is not enough"         = Schläge auf die Viertel in Rot (SCENE_DROP), jedes Mal gleich
 #   Übergang in den Chorus            = weißer Strobo
-# Farben: der Chorus (und das Band-Intro mit derselben Melodie) in NEON, die Hook rot, nach dem Stopp kippt das
-# Finale ins Warme (SUNSET -> FIRE). Verses und Bridge starten kalt (ICE/ROYAL/BLUE, A-Moll), bleiben aber nicht
-# blau stehen: fade lässt die Farben im Takt nach Pink/Orange und zurück wandern (Wunsch des Users: weniger
-# Blau, mehr langsame Verwandlung). Die Build-ups nehmen schon die Farbe des folgenden Chorus an.
+# Farben: A-Moll -> kalt (ICE/ROYAL/BLUE) in Intro, Verses und Bridge, Chorus in NEON, die Hook rot;
+# nach dem Stopp kippt das Finale ins Warme (SUNSET -> FIRE).
 
 function: gen_AllTheThingsSheSaid
 scheme: SCHEME_ICE
@@ -20,14 +18,15 @@ sections:
     scene: SCENE_CALM
     scheme: SCHEME_ICE
     tail:
-      beats: 1
-      fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
-    why: "Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; Wunsch des Users: der letzte Beat ist weißer Strobo als Übergang in den Band-Einsatz"
+      beats: 2
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_WHITE
+    why: "Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; das Crescendo der letzten 2 Beats (build 0.55) lädt weiß auf und explodiert auf den Band-Einsatz"
 
   "intro: all thet ….":
     scene: SCENE_STAR
-    scheme: SCHEME_NEON
-    why: "Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - es ist die Chorus-Melodie, also der Chorus-Look: Stern in Pink/Cyan/Violett"
+    scheme: SCHEME_ICE
+    why: "Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - der Stern stellt den Chorus-Look vor, noch in kaltem Eisblau"
 
   "intro: this is not enough":
     scene: SCENE_DROP
@@ -37,19 +36,17 @@ sections:
   verse 1a:
     scene: SCENE_GLOW
     scheme: SCHEME_ICE
-    fade: {to: triad, per: 8}
-    why: "Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück"
+    why: "Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau, größter Kontrast im Song"
 
   verse 1b:
     scene: SCENE_RAIN
-    scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 8}
-    why: "Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück"
+    scheme: SCHEME_ICE
+    why: "Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung, bleiben aber ruhig und kalt (Regen passt zum Song)"
 
   "wiederholung: nobody else":
     scene: SCENE_BUILDUP
-    scheme: SCHEME_NEON
-    why: "Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag"
+    scheme: SCHEME_ICE
+    why: "Idee 'build up': lädt sich über die 3 Beats auf, Explosion genau auf den Strobo-Schlag"
 
   übergang zum chorus:
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
@@ -76,21 +73,19 @@ sections:
     why: "Idee 'etwas gesteigert auf den takt': gleiche Farben, jetzt wandert die Farbe pro Beat von Gerät zu Gerät über die Bühne"
 
   verse 2 a:
-    scene: SCENE_GLOW
+    scene: SCENE_PALETTE
     scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 8}
-    why: "Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)"
+    why: "Idee 'ruhig', energy 2: ein Farbband in Blau/Lila/Weiß zieht in 4 Takten einmal über die Bühne - ruhig, aber eine Stufe mehr als Verse 1a"
 
   verse 2 b:
     scene: SCENE_VERSE
     scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 4}
-    why: "Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)"
+    why: "Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen), gleiche Farben"
 
   verse 2 b - build up:
     scene: SCENE_BUILDUP
-    scheme: SCHEME_NEON
-    why: "Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo"
+    scheme: SCHEME_ICE
+    why: "Idee 'build up', energy 4: 1,5 Takte Aufladen, Explosion auf den Strobo"
 
   übergang zum chorus (2):
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
@@ -109,19 +104,17 @@ sections:
   Mother looking at me:
     scene: SCENE_CALM
     scheme: SCHEME_BLUE
-    fade: {to: triad, per: 8}
-    why: "Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet, auf der Matrix langsame Wasserringe; das Blau wandert über Violett nach Pink und zurück, die Spannung steigt mit"
+    why: "Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet in Blau, auf der Matrix langsame Wasserringe"
 
   daddy looking at me:
     scene: SCENE_RAIN
     scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 4}
-    why: "Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu, die Farben wandern jetzt taktweise"
+    why: "Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu"
 
   build up:
     scene: SCENE_BUILDUP
-    scheme: SCHEME_SUNSET
-    why: "Idee 'build up': Aufladen wie vor Chorus 2, schon in den warmen Farben des letzten Chorus"
+    scheme: SCHEME_ICE
+    why: "Idee 'build up': Aufladen wie vor Chorus 2"
 
   übergang zum chorus (3):
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
@@ -161,6 +154,6 @@ sections:
     why: "die Hook zum letzten Mal, Viertel in Feuerfarben"
 
   fade out:
-    scene: SCENE_FADEOUT
+    scene: SCENE_CALM
     scheme: SCHEME_RED
-    why: "Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz"
+    why: "Idee 'fade out': ein Takt rotes Aufatmen und Ausklingen, danach 10 s schwarz"

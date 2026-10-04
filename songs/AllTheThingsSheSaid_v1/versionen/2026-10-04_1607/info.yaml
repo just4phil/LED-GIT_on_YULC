@@ -1,0 +1,10 @@
+zeit: '2026-10-04 16:07:26'
+notiz: 'Anmerkungen des Users: Strobo-Beat im Synth-Intro, Verse 2 bewegter (GLOW
+  + fade), weniger Blau (fade triad, Intro/Build-ups in Chorus-Farben), SCENE_FADEOUT
+  am Ende'
+werkzeug_git: 335f000 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 0d416d1629a12bfc17c6f21d0a6775be457bdf3c4c9e6b918b44460a73167cdb
+  show.yaml: ec8392e890e102741cfd6a87477f8e646f5cfc80fece2c5b4d5a446a8b41537e
+  generated.cpp: 4ee37ddf0b63a44dd73dfad49a231113ecd4de10132e68cb17fbaa853b14ebc1

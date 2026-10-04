@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@song_sha 0d416d1629a12bfc17c6f21d0a6775be457bdf3c4c9e6b918b44460a73167cdb
-//@show_sha 79070e1dd40517410fafa106b11ecbafbb9ab0f4af851864dab2c1ff556af6c9
+//@show_sha ec8392e890e102741cfd6a87477f8e646f5cfc80fece2c5b4d5a446a8b41537e
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 5
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 10
@@ -65,18 +65,18 @@ void gen_AllTheThingsSheSaid() {
 		break;
 #endif
 
-	case 5:	// synth intro  4 T  10465ms  @0:01.744  -- Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; Wunsch des Users: der letzte Beat ist weißer Strobo als Übergang in den Band-Einsatz
+	case 5:	// synth intro  4 T  9768ms  @0:01.744  -- Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; das Crescendo der letzten 2 Beats (build 0.55) lädt weiß auf und explodiert auf den Band-Einsatz
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_CALM, 10465, 10, 86);
+		scene(SCENE_CALM, 9768, 10, 86);
 		break;
 
-	case 10:	// synth intro (tail)  1 B  698ms  @0:12.209
-		setColorScheme(SCHEME_ICE);
-		progStrobo(698, 15, 60, CRGB::White);
+	case 10:	// synth intro (tail)  2 B  1395ms  @0:11.512
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 1395, 15, 86);
 		break;
 
-	case 15:	// intro: all thet ….  4 T  11163ms  @0:12.907  -- Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - es ist die Chorus-Melodie, also der Chorus-Look: Stern in Pink/Cyan/Violett
-		setColorScheme(SCHEME_NEON);
+	case 15:	// intro: all thet ….  4 T  11163ms  @0:12.907  -- Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - der Stern stellt den Chorus-Look vor, noch in kaltem Eisblau
+		setColorScheme(SCHEME_ICE);
 		scene(SCENE_STAR, 11163, 20, 86);
 		break;
 
@@ -85,20 +85,18 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_DROP, 11163, 25, 86);
 		break;
 
-	case 25:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück
+	case 25:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau, größter Kontrast im Song
 		setColorScheme(SCHEME_ICE);
-		setColorFade(FADE_TRIAD, 5581);
 		scene(SCENE_GLOW, 11162, 30, 86);
 		break;
 
-	case 30:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück
-		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 5581);
+	case 30:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung, bleiben aber ruhig und kalt (Regen passt zum Song)
+		setColorScheme(SCHEME_ICE);
 		scene(SCENE_RAIN, 11163, 35, 86);
 		break;
 
-	case 35:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag
-		setColorScheme(SCHEME_NEON);
+	case 35:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats auf, Explosion genau auf den Strobo-Schlag
+		setColorScheme(SCHEME_ICE);
 		scene(SCENE_BUILDUP, 2093, 40, 86);
 		break;
 
@@ -126,20 +124,18 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_COLORS_WAVE, 11163, 65, 86);
 		break;
 
-	case 65:	// verse 2 a  4 T  11163ms  @1:45.000  -- Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)
+	case 65:	// verse 2 a  4 T  11163ms  @1:45.000  -- Idee 'ruhig', energy 2: ein Farbband in Blau/Lila/Weiß zieht in 4 Takten einmal über die Bühne - ruhig, aber eine Stufe mehr als Verse 1a
 		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 5581);
-		scene(SCENE_GLOW, 11163, 70, 86);
+		scene(SCENE_PALETTE, 11163, 70, 86);
 		break;
 
-	case 70:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)
+	case 70:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen), gleiche Farben
 		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 2791);
 		scene(SCENE_VERSE, 5581, 75, 86);
 		break;
 
-	case 75:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo
-		setColorScheme(SCHEME_NEON);
+	case 75:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen, Explosion auf den Strobo
+		setColorScheme(SCHEME_ICE);
 		scene(SCENE_BUILDUP, 4186, 80, 86);
 		break;
 
@@ -157,20 +153,18 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_DROP, 11163, 95, 86);
 		break;
 
-	case 95:	// Mother looking at me  4 T  11163ms  @2:29.651  -- Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet, auf der Matrix langsame Wasserringe; das Blau wandert über Violett nach Pink und zurück, die Spannung steigt mit
+	case 95:	// Mother looking at me  4 T  11163ms  @2:29.651  -- Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet in Blau, auf der Matrix langsame Wasserringe
 		setColorScheme(SCHEME_BLUE);
-		setColorFade(FADE_TRIAD, 5581);
 		scene(SCENE_CALM, 11163, 100, 86);
 		break;
 
-	case 100:	// daddy looking at me  2 T  5581ms  @2:40.814  -- Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu, die Farben wandern jetzt taktweise
+	case 100:	// daddy looking at me  2 T  5581ms  @2:40.814  -- Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu
 		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 2791);
 		scene(SCENE_RAIN, 5581, 105, 86);
 		break;
 
-	case 105:	// build up  1 T+2 B  4186ms  @2:46.395  -- Idee 'build up': Aufladen wie vor Chorus 2, schon in den warmen Farben des letzten Chorus
-		setColorScheme(SCHEME_SUNSET);
+	case 105:	// build up  1 T+2 B  4186ms  @2:46.395  -- Idee 'build up': Aufladen wie vor Chorus 2
+		setColorScheme(SCHEME_ICE);
 		scene(SCENE_BUILDUP, 4186, 110, 86);
 		break;
 
@@ -211,9 +205,9 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_DROP, 5581, 150, 86);
 		break;
 
-	case 150:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz
+	case 150:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out': ein Takt rotes Aufatmen und Ausklingen, danach 10 s schwarz
 		setColorScheme(SCHEME_RED);
-		scene(SCENE_FADEOUT, 2791, 155, 86);
+		scene(SCENE_CALM, 2791, 155, 86);
 		break;
 
 	case 155:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
