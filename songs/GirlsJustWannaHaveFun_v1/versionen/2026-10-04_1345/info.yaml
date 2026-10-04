@@ -1,0 +1,8 @@
+zeit: '2026-10-04 13:45:11'
+notiz: 'fade: Farbwanderung in den Verses'
+werkzeug_git: dc7e598 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 47849bf952954a9e0fd18d8a0a0a202fc4c66efdb1ad2d89321f86c8666eead5
+  show.yaml: 83782300f641f7d546341c5cea40e4080e643f1be736eae2f5f94b52dda17826
+  generated.cpp: ed6d2e2b3798ea0e69195dc22528961469e42047077bae9366300e74e538ed69

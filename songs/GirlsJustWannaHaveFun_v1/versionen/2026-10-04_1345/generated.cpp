@@ -45,7 +45,7 @@ void gen_GirlsJustWannaHaveFun() {
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:26.905, Einstieg case 15
 		setColorScheme(SCHEME_BLUE);
-		setColorFade(FADE_COMPLEMENT, 3810, false, 6667);
+		setColorFade(FADE_COMPLEMENT, 3810);
 		scene(SCENE_VERSE, 10476, 15, 126);
 		break;
 #endif
@@ -53,7 +53,7 @@ void gen_GirlsJustWannaHaveFun() {
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:24.048, Einstieg case 15
 		setColorScheme(SCHEME_BLUE);
-		setColorFade(FADE_COMPLEMENT, 3810, false, 3810);
+		setColorFade(FADE_COMPLEMENT, 3810);
 		scene(SCENE_VERSE, 13333, 15, 126);
 		break;
 #endif
