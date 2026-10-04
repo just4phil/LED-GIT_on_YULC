@@ -350,6 +350,15 @@
   <tr><td><code>fxLayerEnd(mode = FX_ADD, amount = 255, from = 0, to = 255)</code></td><td>Schließt die Ebene. <code>FX_ADD</code> (aufaddieren, Schwarz ist durchsichtig), <code>FX_MAX</code> (hellerer Pixel gewinnt), <code>FX_OVER</code> (Ebene deckt, wo sie nicht schwarz ist), <code>FX_MASK</code> (Ebene als Fenster auf den Effekt darunter). <code>amount</code> = Stärke, <code>from</code>/<code>to</code> = Abschnitt des Geräts wie bei <code>fxMaskSpan</code>.</td></tr>
   <tr><td><code>fxLayerFlush()</code></td><td>Nach dem unteren Effekt aufrufen: gibt aus, falls der in diesem Durchlauf selbst nichts ausgegeben hat (Effekte wie <code>progStrobo</code> zeichnen nur bei einem Wechsel), damit die Ebene weiterläuft.</td></tr>
 </table></div>
+<p>Die Ebene lässt sich gezielt steuern, ohne den Effekt darunter anzufassen. Anmeldung wie die Modifikatoren oben im <code>case</code>, bei jedem Durchlauf; alles rechnet aus der Zeit seit Part-Beginn und läuft damit auf allen Geräten gleich. In generierten Songs sind das Schlüssel innerhalb von <code>overlay</code>.</p>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>YAML in <code>overlay</code></th><th>Wirkung</th></tr>
+  <tr><td><code>fxLayerWindow(fromMs, toMs = 0)</code></td><td><code>from</code>, <code>to</code></td><td>Die Ebene ist nur in diesem Zeitfenster des Parts zu sehen (<code>toMs</code> 0 = bis zum Part-Ende). Ihr Effekt läuft trotzdem ab Part-Beginn mit.</td></tr>
+  <tr><td><code>fxLayerFadeIn(ms)</code> / <code>fxLayerFadeOut(ms)</code></td><td><code>fade_in</code> / <code>fade_out</code></td><td>Die Ebene baut sich ab dem Beginn ihres Zeitfensters auf bzw. klingt zu dessen Ende ab.</td></tr>
+  <tr><td><code>fxLayerPulse(bpm, depth, beats = 1)</code></td><td><code>pulse</code></td><td>Nur die Ebene pumpt im Beat, die Fläche darunter bleibt ruhig.</td></tr>
+  <tr><td><code>fxLayerGate(bpm, perBeat, duty = 50)</code></td><td><code>gate</code></td><td>Nur die Ebene blitzt im Raster.</td></tr>
+  <tr><td><code>fxLayerUnder(brightness)</code></td><td><code>under</code></td><td>Der Effekt darunter wird dunkler, solange die Ebene da ist (Szene gedimmt, Text voll hell). Folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor. <code>fxDim</code> gilt dagegen für das ganze Bild.</td></tr>
+</table></div>
 <p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten. Es gibt eine Ebene pro Part. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
 
 <!-- ===================================================================== -->
@@ -388,7 +397,7 @@
   <tr><td>70</td><td>SUNSET</td><td><code>progPalette(8000, PALETTE_SCHEME, 100)</code></td></tr>
 </table></div>
 <div class="tablewrap"><table>
-  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 3:10 min)</th></tr>
+  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 3:20 min)</th></tr>
   <tr><th>Part</th><th>ab</th><th>Baustein</th><th>Was man sehen soll</th></tr>
   <tr><td>0</td><td>0:00</td><td>–</td><td>Farbband warm (FIRE), 4 s Vorlauf</td></tr>
   <tr><th colspan="4">Übergänge: das Farbband wechselt warm ↔ kalt, je 6 s, Übergang 4 Beats</th></tr>
@@ -417,6 +426,11 @@
   <tr><td>76</td><td>2:26</td><td><code>FX_MASK</code></td><td>Farbband nur in den fallenden Leuchtspuren sichtbar</td></tr>
   <tr><td>78</td><td>2:34</td><td><code>FX_ADD</code>, Abschnitt</td><td>Glitzern nur in der zweiten Hälfte jedes Geräts</td></tr>
   <tr><td>80</td><td>2:42</td><td>Übergang + Puls + Ebene</td><td>Kreuzblende, dann pumpendes Farbband (NEON) mit Glitzern</td></tr>
+  <tr><th colspan="4">Ebene gezielt steuern, je 8 s</th></tr>
+  <tr><td>82</td><td>2:50</td><td><code>fxLayerPulse(bpm, 240)</code></td><td>ruhige Fläche (GLOW, ROYAL), nur das Glitzern pumpt auf jeden Beat</td></tr>
+  <tr><td>84</td><td>2:58</td><td><code>fxLayerFadeIn</code> + <code>fxLayerFadeOut</code></td><td>Glitzern baut sich über 8 Beats auf dem Farbband (SUNSET) auf und klingt in den letzten 4 Beats ab; das Farbband bleibt gleich hell</td></tr>
+  <tr><td>86</td><td>3:06</td><td><code>fxLayerUnder(60)</code></td><td>wie Part 74, aber das Farbband ist gedimmt: Text „SCENE DIMMED", Kometen und Leuchtspuren bleiben voll hell</td></tr>
+  <tr><td>88</td><td>3:14</td><td><code>fxLayerWindow(4000)</code> + <code>fxLayerGate(bpm, 2)</code></td><td>2 Takte nur das Farbband (NEON), in den letzten 2 Takten blitzt Glitzern in Achteln dazu</td></tr>
 </table></div>
 <div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein, für Song 92 mit <code>fx-pipeline</code>. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
 

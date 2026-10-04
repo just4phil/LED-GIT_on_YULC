@@ -192,7 +192,8 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 - Max. 9 Zeichen pro Wort auf der SCROLLMATRIX, sonst läuft alles als Lauftext (Hinweis in der Ausgabe); nur ASCII.
 - Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
 - `over: true` (z. B. `{words: "FUN", over: true}`) - der Text liegt über der Szene, die Matrix spielt sie weiter.
-  Belegt die Ebene, also nicht zusammen mit `overlay`.
+  Belegt die Ebene, also nicht zusammen mit `overlay`. Mit `over: true` gelten auch die Schlüssel, die nur die Ebene
+  steuern (siehe unten), z. B. `{words: "FUN", over: true, under: 40}` - Szene gedimmt, Text voll hell.
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
 
@@ -201,6 +202,12 @@ Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jed
   devices: {matrix: SCENE_RAIN}}`. `add` (Standard) addiert auf, Schwarz ist durchsichtig; `max` = hellerer Pixel;
   `over` deckt; `mask` macht die Ebene zum Fenster auf den Effekt darunter. Ohne `scene`/`fx` läuft die Ebene nur auf
   den Geräten aus `devices`.
+- Nur die Ebene steuern, der Effekt darunter bleibt (Schlüssel im `overlay`, Längen in Beats, Stärken in Prozent):
+  `pulse: 80 | {depth, per}` und `gate: 2 | {per_beat, duty}` (nur die Ebene pumpt/blitzt), `fade_in` / `fade_out`
+  (Ebene baut sich auf / klingt ab), `from` / `to` (Ebene nur in diesem Zeitfenster des Parts, Fades beziehen sich
+  darauf), `under: 40` (Effekt darunter gedimmt, solange die Ebene da ist). `pulse`/`gate`/`dim` auf Abschnittsebene
+  wirken dagegen auf das ganze Bild.
+- Damit statt `tail:` möglich: Akzent im letzten Takt als Ebene mit `from`, ohne eigenen Part und ohne Bildsprung.
 - Oben und unten müssen verschiedene Effekte sein (Generator prüft Szenen-/Funktionsnamen; zwei verschiedene Szenen,
   die auf einem Gerät dasselbe Programm nutzen, erkennt er nicht - in `src/scenes.cpp` nachsehen). Eine Ebene pro Part.
 - Naheliegend: dezentes Glitzern (`amount` 30-40) über ruhigen Flächen, Glitzern über der Hook am Songende,

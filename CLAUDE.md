@@ -68,10 +68,12 @@ a part's `case` on every pass, like the colour scheme; `switchToPart()` resets t
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
-same effect above and below (effects keep static state). Everything is
+same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
+layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. Everything is
 computed from the time since part start, so all devices stay in sync regardless of LED count. In generated songs they
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span` (lengths in
-beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene).
+beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene;
+inside `overlay` the keys `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` steer only the layer).
 
 Plan and working state of this refactoring: `docs/FX-Pipeline-Plan.md` (section "Arbeitsstand"). **Read it before
 continuing the work and keep it up to date at every step** - mark a step "in Arbeit" before starting, record result,

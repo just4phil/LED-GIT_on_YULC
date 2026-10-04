@@ -82,6 +82,8 @@ TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
 LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK"}	# overlay: mode
+LAYER_MOD_KEYS = ("from", "to", "fade_in", "fade_out", "pulse", "gate", "under")	# steuern nur die Ebene (fxLayer...)
+OVERLAY_KEYS = ("scene", "fx", "mode", "amount", "span", "devices") + LAYER_MOD_KEYS
 DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
 	"LAMPE1": "DEV_LAMPE1", "LAMPE2": "DEV_LAMPE2", "RINASBASS": "DEV_BASS", "ANDRESGIT": "DEV_GIT",
 	"SCROLLMATRIX": "DEV_DRUMS", "GITBOARD": "DEV_GITBOARD",
@@ -433,12 +435,94 @@ def effect_token(expr):
 	return m.group(2) if m.group(1) == "scene" and m.group(2) else m.group(1)
 
 
+def layer_mod_calls(spec, part, sec, song, name, errors):
+	"""Schlüssel in overlay:, die nur die Ebene steuern (fxLayer... in fxPipeline.h) -> (C++-Aufrufe, Beschreibungen)."""
+	bpm = round(part["bpm"])
+	calls, infos = [], []
+
+	def beats_ms(key, allow_zero=False):
+		beats = spec[key]
+		if isinstance(beats, bool) or not isinstance(beats, (int, float)) or beats < 0 or (beats == 0 and not allow_zero):
+			errors.append(f"{name}: overlay {key} ist eine Angabe in Beats (Zahl {'>= 0' if allow_zero else '> 0'}), nicht '{beats}'")
+			return None
+		ms = round(beats * 60000.0 / part["bpm"])
+		if ms > part["dur"]:
+			errors.append(f"{name}: overlay {key} ({ms} ms) liegt hinter dem Part-Ende ({part['dur']} ms)")
+			return None
+		return ms
+
+	def sub(key, short, allowed):
+		v = spec[key]
+		v = dict(v) if isinstance(v, dict) else {short: v}
+		unknown = [k for k in v if k not in allowed]
+		if unknown:
+			errors.append(f"{name}: overlay {key} kennt nur {', '.join(allowed)} - unbekannt: {', '.join(map(str, unknown))}")
+		return v
+
+	start, end = 0, part["dur"]
+	if "from" in spec or "to" in spec:
+		a = beats_ms("from", allow_zero=True) if "from" in spec else 0
+		b = beats_ms("to") if "to" in spec else 0
+		if a is not None and b is not None:
+			if b and b <= a:
+				errors.append(f"{name}: overlay to ({spec['to']} Beats) muss hinter from ({spec.get('from', 0)} Beats) liegen")
+			elif a or b:
+				start, end = a, b or part["dur"]
+				calls.append(f"fxLayerWindow({a}" + (f", {b}" if b else "") + ");")
+				infos.append(f"ab {a} ms" + (f" bis {b} ms" if b else ""))
+
+	fades = 0
+	for key, fn, text in (("fade_in", "fxLayerFadeIn", "baut sich {} ms auf"), ("fade_out", "fxLayerFadeOut", "klingt {} ms ab")):
+		if key in spec:
+			ms = beats_ms(key)
+			if ms:
+				fades += ms
+				calls.append(f"{fn}({ms});")
+				infos.append(text.format(ms))
+	if fades > end - start:
+		errors.append(f"{name}: overlay fade_in + fade_out ({fades} ms) sind länger als das Zeitfenster der Ebene ({end - start} ms)")
+
+	if "pulse" in spec:
+		p = sub("pulse", "depth", ("depth", "per"))
+		depth = percent(p.get("depth", 50))
+		beats = per_beats(p.get("per", "beat"), sec, song)
+		if depth is None:
+			errors.append(f"{name}: overlay pulse depth ist eine Angabe in Prozent (0..100), nicht '{p.get('depth')}'")
+		elif beats is None or float(beats) != int(beats) or beats > 255:
+			errors.append(f"{name}: overlay pulse per '{p.get('per')}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats pro Puls)")
+		elif depth:
+			calls.append(f"fxLayerPulse({bpm}, {depth}" + (f", {int(beats)}" if beats != 1 else "") + ");")
+			infos.append(f"pulsiert alle {int(beats)} Beat(s), Tiefe {p.get('depth', 50)} %")
+
+	if "gate" in spec:
+		g = sub("gate", "per_beat", ("per_beat", "duty"))
+		n, duty = g.get("per_beat", 1), g.get("duty", 50)
+		if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 16:
+			errors.append(f"{name}: overlay gate per_beat ist eine ganze Zahl von 1 bis 16 (Blitze pro Beat), nicht '{n}'")
+		elif isinstance(duty, bool) or not isinstance(duty, int) or not 1 <= duty <= 99:
+			errors.append(f"{name}: overlay gate duty ist der Hell-Anteil in Prozent (1..99), nicht '{duty}'")
+		else:
+			calls.append(f"fxLayerGate({bpm}, {n}" + (f", {duty}" if duty != 50 else "") + ");")
+			infos.append(f"Tor {n}x pro Beat, {duty} % hell")
+
+	if "under" in spec:
+		v = percent(spec["under"])
+		if v is None:
+			errors.append(f"{name}: overlay under ist die Helligkeit des Effekts darunter in Prozent (0..100), nicht '{spec['under']}'")
+		elif v != 255:
+			calls.append(f"fxLayerUnder({v});")
+			infos.append(f"darunter {spec['under']} %")
+	return calls, infos
+
+
 def overlay_code(part, song):
 	"""overlay: eines Parts - ein zweiter Effekt über dem Effekt des Parts (fxLayerBegin/End in fxPipeline.h)
 	-> (Zeilen vor dem Effekt, Zeilen danach, Beschreibung, Fehler, Aufrufe der Ebene).
 	overlay: SCENE_SPARKLE | "progStrobo(${dur}, ${next}, ${beat}, CRGB::White)"
 	overlay: {scene: ... | fx: "...", mode: add|max|over|mask, amount: <Prozent>, span: [von, bis],
-	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices"""
+	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices
+	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster), fade_in / fade_out: <Beats>,
+	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler)"""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec.get("overlay")
@@ -447,9 +531,9 @@ def overlay_code(part, song):
 	if not isinstance(spec, dict):
 		spec = {"scene": spec} if str(spec).startswith("SCENE_") else {"fx": spec}
 	errors = []
-	unknown = [k for k in spec if k not in ("scene", "fx", "mode", "amount", "span", "devices")]
+	unknown = [k for k in spec if k not in OVERLAY_KEYS]
 	if unknown:
-		errors.append(f"{name}: overlay kennt nur scene, fx, mode, amount, span, devices - unbekannt: {', '.join(map(str, unknown))}")
+		errors.append(f"{name}: overlay kennt nur {', '.join(OVERLAY_KEYS)} - unbekannt: {', '.join(map(str, unknown))}")
 	if spec.get("scene") and spec.get("fx"):
 		errors.append(f"{name}: overlay hat scene UND fx - bitte nur eins")
 
@@ -485,6 +569,7 @@ def overlay_code(part, song):
 	ab = [percent(v) for v in span] if isinstance(span, (list, tuple)) and len(span) == 2 else [None]
 	if None in ab or ab[0] >= ab[1]:
 		errors.append(f"{name}: overlay span ist [von, bis] in Prozent entlang des Geräts, z. B. [50, 100] - nicht '{span}'")
+	mod_calls, mod_infos = layer_mod_calls(spec, part, sec, song, name, errors)
 	if errors:
 		return [], [], None, errors, []
 
@@ -496,6 +581,7 @@ def overlay_code(part, song):
 
 	guard = None if default else " || ".join(f"({DEVICE_KEYS[k]})" if len(ordered) > 1 else DEVICE_KEYS[k] for k, _ in ordered)
 	pre = [f"#if {guard}"] if guard else []
+	pre += ["\t\t" + c for c in mod_calls]
 	pre.append("\t\tfxLayerBegin();")
 	if ordered and (default or len(ordered) > 1):
 		for j, (key, expr) in enumerate(ordered):
@@ -513,7 +599,7 @@ def overlay_code(part, song):
 
 	calls = ([default] if default else []) + [e for _, e in ordered]
 	what = ", ".join(([effect_token(default)] if default else []) + [f"{k}: {effect_token(e)}" for k, e in ordered])
-	info = f"Ebene {what} ({mode}" + (f", {spec['amount']} %" if "amount" in spec else "") + (f", Bereich {span[0]}-{span[1]} %" if "span" in spec else "") + ")"
+	info = f"Ebene {what} ({mode}" + (f", {spec['amount']} %" if "amount" in spec else "") + (f", Bereich {span[0]}-{span[1]} %" if "span" in spec else "") + "".join(", " + t for t in mod_infos) + ")"
 	return pre, post, info, [], calls
 
 
@@ -584,7 +670,7 @@ def text_call(part, song, widths):
 	spec = sec["text"]
 	if not isinstance(spec, dict):
 		spec = {"words": spec}
-	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "over")]
+	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "over") + (LAYER_MOD_KEYS if spec.get("over") is True else ())]
 	if not isinstance(spec.get("over", False), bool):
 		raise SongError(f"{name}: text over ist true oder false")
 	if unknown or ("words" in spec) == ("scroll" in spec):
@@ -637,7 +723,8 @@ def apply_texts(song, timeline):
 				raise SongError(f"{sec.get('name')}: text mit over und overlay zugleich - es gibt nur eine Ebene")
 			expr, info = text_call(part, song, widths)
 			part["text_info"] = info + " (über der Szene)"
-			part["sec"] = dict(sec, overlay={"devices": {"matrix": expr}, "mode": "over"})
+			layer_mods = {k: sec["text"][k] for k in LAYER_MOD_KEYS if k in sec["text"]}	# z. B. under: Szene gedimmt, Text voll hell
+			part["sec"] = dict(sec, overlay=dict({"devices": {"matrix": expr}, "mode": "over"}, **layer_mods))
 			continue
 		devices = dict(sec.get("devices") or {})
 		clash = [k for k in MATRIX_KEYS if k in devices]

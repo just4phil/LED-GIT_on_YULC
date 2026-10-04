@@ -4211,8 +4211,57 @@ void pipelineDemo() {
 		fxTransition(TRANS_FADE, 2000);
 		fxPulse(bpm, 100);
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, 100, bpm);
+		scene(SCENE_SPARKLE, 8000, 82, bpm);
 		fxLayerEnd(FX_ADD, 200);
+		scene(SCENE_PALETTE, 8000, 82, bpm);
+		fxLayerFlush();
+		break;
+
+	//--- Ebene gezielt steuern: nur die Ebene ändert sich, der Effekt darunter bleibt ruhig ---
+	case 82:	// fxLayerPulse: ruhige Fläche, nur das Glitzern pumpt im Beat
+		setColorScheme(SCHEME_ROYAL);
+		fxLayerPulse(bpm, 240);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 84, bpm);
+		fxLayerEnd(FX_ADD);
+		scene(SCENE_GLOW, 8000, 84, bpm);
+		fxLayerFlush();
+		break;
+
+	case 84:	// fxLayerFadeIn/Out: das Glitzern baut sich über 8 Beats auf und klingt in den letzten 4 wieder ab
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(4000);
+		fxLayerFadeOut(2000);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 86, bpm);
+		fxLayerEnd(FX_ADD);
+		scene(SCENE_PALETTE, 8000, 86, bpm);
+		fxLayerFlush();
+		break;
+
+	case 86:	// fxLayerUnder: wie Part 74, aber das Farbband darunter ist gedimmt - die Ebene bleibt voll hell
+		setColorScheme(SCHEME_ICE);
+		fxLayerUnder(60);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("SCENE DIMMED", 8000, 88, 1000, CRGB::White);
+#elif DEVICE_CLASS == CLASS_LAMP
+		progLampRain(8000, 88, 35, CRGB::White);
+#else
+		progCometLoop(8000, 88, 8, 0, true);	// 2 rote Kometen
+#endif
+		fxLayerEnd(FX_OVER);
+		scene(SCENE_PALETTE, 8000, 88, bpm);
+		fxLayerFlush();
+		break;
+
+	case 88:	// fxLayerWindow + fxLayerGate: erst nur das Farbband, in den letzten 2 Takten blitzt Glitzern in Achteln dazu
+		setColorScheme(SCHEME_NEON);
+		fxLayerWindow(4000);
+		fxLayerGate(bpm, 2);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 8000, 100, bpm);
+		fxLayerEnd(FX_ADD);
 		scene(SCENE_PALETTE, 8000, 100, bpm);
 		fxLayerFlush();
 		break;

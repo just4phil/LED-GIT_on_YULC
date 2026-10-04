@@ -13,21 +13,23 @@ kann.
 
 Zuletzt aktualisiert: 04.10.2026
 
-- **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (Commit direkt danach,
-  siehe `git log`). Alle fünf Envs bauen.
-- **Nicht committet:** `src/todo.txt` (Änderung des Users, nicht anfassen).
+- **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (`cf720fd`) und
+  Phase 4b Punkt 1 (Commit „FX-Pipeline: Ebene gezielt steuern", siehe `git log`). Alle fünf Envs bauen.
+- **Nicht committet:** `src/todo.txt` und `src/definitions.h` (Änderungen des Users, nicht anfassen).
 - **Auf der Hardware gesehen (User, 04.10.2026):** Song #31 All The Things She Said mit Übergängen und Ebene –
   „sehr geil, genau die richtige Richtung". Die alten handgeschriebenen Songs laufen alle noch.
-- **Wartet auf den User:** Song 92 `pipelineDemo` durchsehen (Ablauf: `docs/LED-Effekte-und-Szenen.html`,
-  Abschnitt 8) und die Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten. Noch nie auf der
-  Hardware gelaufen waren davor: `TRANS_BLACK`, `WIPE_BACK`, `STAGE_LR/RL`, `gate`, `dim`, `tint`, `only`, `span`,
-  `fade_in/out`, `FX_MAX/OVER/MASK`.
+  Song 92 `pipelineDemo` durchgesehen: „sieht sehr geil aus", vor allem die Farbverläufe auf der Matrix und Text
+  über anderen Effekten; „für mich sieht alles gut aus", Marker-LEDs stabil. Keine Befunde.
+- **Wartet auf den User:** die neuen Parts 82–88 von Song 92 auf der Hardware ansehen (Ebene gezielt steuern,
+  noch nie auf der Hardware gelaufen; dafür neu flashen). Bausteine in `docs/effekt-katalog.yaml` unter
+  `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem User). `START_WITH_PIPELINE_DEMO` in
+  `src/definitions.h` ist beim User lokal aktiv (nicht committen, vor einem OTA-Build wieder auskommentieren).
 - **In Arbeit:** nichts.
-- **Nächster Schritt:** Phase 4b, Punkt 1 (Modifikatoren je Ebene). Befunde aus dem Test von Song 92 zuerst beheben.
+- **Nächster Schritt:** Phase 4b, Punkt 2 (eigene Text-Ebene). Befunde aus den Parts 82–88 zuerst beheben.
 
 Reihenfolge der nächsten Schritte:
 
-1. **Phase 4b, Punkt 1 und 2** – Ebene gezielt steuern, eigene Text-Ebene
+1. **Phase 4b, Punkt 2** – eigene Text-Ebene (Punkt 1, Ebene gezielt steuern, ist erledigt)
 2. **Phase 3b** – Fading-Optionen
 3. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
 4. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
@@ -86,15 +88,16 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | offen |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
-| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | **als Nächstes** |
+| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 erledigt (Hardware-Test offen), **Punkt 2 als Nächstes** |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
 | 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |
 
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
-Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus. Offen sind der
-Durchlauf von Song 92 und die Frame-Zeit-Messung – siehe „Verifikation".
+Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Song 92
+(Parts 0–80) ohne Befund, Marker stabil. Offen sind die Parts 82–88 von Song 92 und die Frame-Zeit-Messung – siehe
+„Verifikation".
 
 ## Phase 0 – Ausgangslage
 
@@ -221,22 +224,29 @@ solange sich die eine nicht gezielt steuern lässt. Was fehlt, nach Nutzen sorti
 
 | # | Schritt | Wozu | Stand |
 |---|---|---|---|
-| 1 | Modifikatoren nur für die Ebene bzw. nur für den Effekt darunter; Stärke der Ebene als Verlauf über den Part; Ebene nur in einem Zeitfenster | ruhige Fläche + pumpendes Glitzern; Szene gedimmt, Text voll hell; Ebene baut sich auf; `tail:` ohne eigenen Part | offen |
+| 1 | Modifikatoren nur für die Ebene bzw. nur für den Effekt darunter; Stärke der Ebene als Verlauf über den Part; Ebene nur in einem Zeitfenster | ruhige Fläche + pumpendes Glitzern; Szene gedimmt, Text voll hell; Ebene baut sich auf; `tail:` ohne eigenen Part | erledigt, Hardware-Test offen |
 | 2 | Zweite, fest für Text reservierte Ebene | Szene + Overlay + Text zugleich (heute bricht der Generator ab: „es gibt nur eine Ebene") | offen |
 | 3 | Ebene läuft über die Part-Grenze weiter, wenn der nächste Part dieselbe Ebene anmeldet | kein Schnitt im Glitzern, wenn darunter weich übergeblendet wird | offen |
 | 4 | Ebene mit eigenem Farbschema (`scheme:` im `overlay:`) | z. B. weißes Glitzern über Neon | offen, erst am Code prüfen |
 
-Zu Punkt 1 (Entwurf, vor der Umsetzung festlegen):
+Zu Punkt 1 (umgesetzt am 04.10.2026):
 
-- Heute wirken `fxPulse`, `fxGate`, `fxDim`, `fxFadeIn/Out` auf das gemischte Bild; die Stärke der Ebene ist fest.
-- Neu: die Stärke der Ebene wird aus der Part-Zeit gerechnet (Puls, Tor, Ein-/Ausblenden, Zeitfenster von–bis in
-  Beats). Dazu ein Dimmen nur für den Effekt darunter.
+- `fxPulse`, `fxGate`, `fxDim`, `fxFadeIn/Out` wirken weiter auf das gemischte Bild.
+- Neu in `fxPipeline`: `fxLayerWindow(fromMs, toMs)`, `fxLayerFadeIn/Out(ms)`, `fxLayerPulse(bpm, depth, beats)`,
+  `fxLayerGate(bpm, perBeat, duty)` rechnen die Stärke der Ebene aus der Part-Zeit; `fxLayerUnder(wert)` dimmt nur
+  den Effekt darunter. Anmeldung oben im `case` wie die übrigen Modifikatoren, `fxPartReset()` setzt sie zurück.
 - Kein zusätzlicher Puffer, reine Rechnung aus der Zeit seit Part-Beginn → bleibt auf allen Geräten synchron.
-- YAML: Schlüssel innerhalb von `overlay:` (z. B. `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`);
-  `validate()` prüft Bereiche. Doku in `Song-Workflow.html`, `LED-Effekte-und-Szenen.html`, Skill `new-song`,
-  `CLAUDE.md`.
-- Das Dimmen nur für den Effekt darunter bekommt einen **eigenen Schlüssel** (Vorschlag: `under: <Prozent>` im
-  `overlay:`). `dim` auf Abschnittsebene gilt schon für das ganze Bild und behält diese Bedeutung.
+  Puls und Tor teilen sich die Rechnung mit `fxPulse`/`fxGate` (`pulseLevel()`, `gateOpen()`).
+- Festgelegt: Ein-/Ausblenden bezieht sich auf das Zeitfenster der Ebene. `under` folgt Zeitfenster und
+  Ein-/Ausblenden (außerhalb des Fensters ist der Effekt darunter voll hell), aber nicht Puls und Tor – sonst würde
+  die Fläche gegenläufig pumpen. Der Effekt der Ebene läuft auch außerhalb des Fensters mit (Zähler bleiben im Takt).
+- YAML: Schlüssel innerhalb von `overlay:` – `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under`
+  (`layer_mod_calls()` in `tools/songgen.py` prüft Bereiche). Dieselben Schlüssel gelten in `text:` mit `over: true`.
+  `dim` auf Abschnittsebene gilt weiter für das ganze Bild.
+- Demo: Song 92, Parts 82 (Puls), 84 (Ein-/Ausblenden), 86 (`under`), 88 (Zeitfenster + Tor).
+- Geprüft: alle fünf Envs bauen; Song #31 erzeugt ohne die neuen Schlüssel dieselben Zeilen wie in `generated.cpp`;
+  neue Schlüssel und Fehlermeldungen im Speicher getestet (kein Song neu generiert). **Nicht geprüft:** das Bild auf
+  der Hardware.
 
 Zu Punkt 3 (Grenze): Die Leitlinie „alles aus der Zeit seit Part-Beginn" gilt dann für die Ebene nicht mehr. Ein
 Gerät, das per BLE mitten im Song einsteigt, hat einen anderen Ebenen-Zustand als die übrigen. Bei zufälligen
@@ -251,7 +261,9 @@ Nicht in 4b: derselbe Effekt oben und unten, weiterlaufender alter Effekt im Üb
 ## Schlüssel in song.yaml / show.yaml
 
 `tools/songgen.py` kennt je Abschnitt: `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`,
-`span` und `overlay`; `text: {…, over: true}` legt Text über die Szene. Längen in Beats, Stärken in Prozent. Wie alle
+`span` und `overlay`; `text: {…, over: true}` legt Text über die Szene. Innerhalb von `overlay` (und `text` mit
+`over`) steuern `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` nur die Ebene. Längen in Beats, Stärken
+in Prozent. Wie alle
 Design-Schlüssel gewinnt `song.yaml` vor `show.yaml`. Einzelheiten: `docs/Song-Workflow.html`,
 `.claude/skills/new-song/SKILL.md`.
 
@@ -266,7 +278,8 @@ Zuruf neu generiert.
   `ausgabestufe`. Neue Bausteine (4b, 3b) bekommen dort eigene Parts.
 - Neue geräteübergreifende Szenen aus Kombinationen, z. B. Atmen + Funkeln, Verse-Puls + Akzent auf der 1, Drop mit
   Strobo-Tor im letzten Takt, Solo über `fxMaskStage` statt Sonderfall.
-- `tail:` wahlweise als Modifikator/Ebene im selben Part (kein eigener `case`, kein Bildsprung).
+- `tail:` wahlweise als Modifikator/Ebene im selben Part (kein eigener `case`, kein Bildsprung). Von Hand geht das
+  seit 4b Punkt 1 über `overlay: {…, from: <Beats>}`; eine automatische Umsetzung von `tail:` gibt es noch nicht.
 - Neue Szenen in `docs/effekt-katalog.yaml` zum Bewerten aufnehmen.
 
 ## Phase 6 – Optional
@@ -299,8 +312,11 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
 3. Auf der Hardware:
    - handgeschriebene Songs gegen den Stand von `MAIN` – **vom User am 04.10.2026 bestätigt, laufen alle**;
    - Song 92: jeder Baustein erkennbar; alle Geräte nebeneinander – Übergänge (v. a. `stage_lr`) und `pulse`
-     starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts;
-   - Marker-LEDs an Gitarre und Bass sichtbar und flackerfrei, auch während Übergang und Ebene;
+     starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts – **Parts 0–80 vom User am
+     04.10.2026 ohne Befund durchgesehen**; offen: Parts 82–88 (in 82 pumpt nur das Glitzern, in 86 ist nur das
+     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein);
+   - Marker-LEDs an Gitarre und Bass sichtbar und flackerfrei, auch während Übergang und Ebene – **vom User am
+     04.10.2026 bestätigt**;
    - ein Gerät mitten im Part einschalten (BLE-Einstieg): kein hängender Übergang.
    - Messung, falls etwas ruckelt und vor Phase 0c – ohne Dateiänderung per USB:
      `$env:PLATFORMIO_BUILD_FLAGS='-Ddebug_fx_frametime'; pio run -e scrollmatrix -t upload`, dann Monitor.

@@ -44,12 +44,18 @@ static struct {
 	bool span;
 	CRGB tint;
 	uint8_t tintAmount;
+	//--- nur für die Ebene ---
+	unsigned int layerFromMs, layerToMs;
+	unsigned int layerFadeInMs, layerFadeOutMs;
+	uint8_t layerPulseBpm, layerPulseDepth, layerPulseBeats;
+	uint8_t layerGateBpm, layerGatePerBeat, layerGateDuty;
+	uint8_t under;
 } mod;
 static bool modReady = false;
 
 static void resetMods() {
 	memset(&mod, 0, sizeof(mod));
-	mod.dim = mod.stageDim = 255;
+	mod.dim = mod.stageDim = mod.under = 255;
 	modReady = true;
 }
 
@@ -76,6 +82,21 @@ void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
 void fxTint(CRGB col, uint8_t amount)	{ mod.tint = col; mod.tintAmount = amount; }
+
+void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layerFromMs = fromMillis; mod.layerToMs = toMillis; }
+void fxLayerFadeIn(unsigned int millis)		{ mod.layerFadeInMs = millis; }
+void fxLayerFadeOut(unsigned int millis)	{ mod.layerFadeOutMs = millis; }
+void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats) {
+	mod.layerPulseBpm = bpm;
+	mod.layerPulseDepth = depth;
+	mod.layerPulseBeats = max((uint8_t)1, beats);
+}
+void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
+	mod.layerGateBpm = bpm;
+	mod.layerGatePerBeat = max((uint8_t)1, perBeat);
+	mod.layerGateDuty = min((uint8_t)100, dutyPercent);
+}
+void fxLayerUnder(uint8_t brightness)	{ mod.under = brightness; }
 
 //==================================================================
 //=========== Ebene: zweiter Effekt mit eigenem Kontext ============
@@ -226,6 +247,22 @@ static uint8_t easeInOut(uint8_t t) {
 	return ease8InOutQuad(t);
 }
 
+// Puls: 255 auf dem Schlag, fällt bis auf (255 - depth) ab; ein Puls dauert beats Beats
+static uint8_t pulseLevel(uint32_t beatMs, uint8_t bpm, uint8_t depth, uint8_t beats) {
+	// Phase exakt über bpm rechnen (wie fxBeatPhase)
+	uint32_t span = 60000UL * beats;
+	uint32_t t = ((uint64_t)beatMs * bpm) % span;
+	uint8_t fall = (uint64_t)t * 255 / span;	// 0 auf dem Schlag, 255 kurz vor dem nächsten
+	return 255 - scale8(depth, ease8InOutQuad(fall));
+}
+
+// Strobo-Tor: offen im ersten duty-Anteil jedes Rasterschritts
+static bool gateOpen(uint32_t beatMs, uint8_t bpm, uint8_t perBeat, uint8_t duty) {
+	// Phase im Raster exakt über bpm rechnen (wie fxBeatPhase), sonst läuft das Tor gegen den Beat
+	uint32_t slots = (uint64_t)beatMs * bpm * perBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
+	return slots % 100 < duty;
+}
+
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen
 static uint8_t modBrightness(uint32_t ms) {
 	if (!modReady) resetMods();
@@ -246,17 +283,28 @@ static uint8_t modBrightness(uint32_t ms) {
 			v = scale8(v, scale8(lin, lin));
 		}
 	}
-	if (mod.pulseBpm) {
-		// Phase exakt über bpm rechnen (wie fxBeatPhase), ein Puls dauert pulseBeats Beats
-		uint32_t span = 60000UL * mod.pulseBeats;
-		uint32_t t = ((uint64_t)beatMs * mod.pulseBpm) % span;
-		uint8_t fall = (uint64_t)t * 255 / span;	// 0 auf dem Schlag, 255 kurz vor dem nächsten
-		v = scale8(v, 255 - scale8(mod.pulseDepth, ease8InOutQuad(fall)));
+	if (mod.pulseBpm) v = scale8(v, pulseLevel(beatMs, mod.pulseBpm, mod.pulseDepth, mod.pulseBeats));
+	if (mod.gateBpm && !gateOpen(beatMs, mod.gateBpm, mod.gatePerBeat, mod.gateDuty)) v = 0;
+	return v;
+}
+
+// Hüllkurve der Ebene aus Zeitfenster und Ein-/Ausblenden: 0 = Ebene weg, 255 = voll da
+static uint8_t layerEnvelope(uint32_t beatMs) {
+	uint32_t end = mod.layerToMs ? mod.layerToMs : (uint32_t)nextChangeMillis + mod.offsetMs;
+	if (beatMs < mod.layerFromMs) return 0;
+	if (mod.layerToMs && beatMs >= end) return 0;
+	uint8_t v = 255;
+	uint32_t since = beatMs - mod.layerFromMs;
+	if (mod.layerFadeInMs && since < mod.layerFadeInMs) {
+		uint8_t lin = since * 255 / mod.layerFadeInMs;
+		v = scale8(lin, lin);	// quadratisch wie fxFadeIn
 	}
-	if (mod.gateBpm) {
-		// Phase im Raster exakt über bpm rechnen (wie fxBeatPhase), sonst läuft das Tor gegen den Beat
-		uint32_t slots = (uint64_t)beatMs * mod.gateBpm * mod.gatePerBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
-		if (slots % 100 >= mod.gateDuty) v = 0;
+	if (mod.layerFadeOutMs) {
+		uint32_t left = (end > beatMs) ? end - beatMs : 0;
+		if (left < mod.layerFadeOutMs) {
+			uint8_t lin = left * 255 / mod.layerFadeOutMs;
+			v = scale8(v, scale8(lin, lin));
+		}
 	}
 	return v;
 }
@@ -291,17 +339,30 @@ static void applyMods(CRGB* buf, uint8_t bright) {
 }
 
 // legt die Ebene über buf (das Bild des unteren Effekts)
-static void applyLayer(CRGB* buf) {
+static void applyLayer(CRGB* buf, uint32_t ms) {
+	//--- Stärke der Ebene aus der Part-Zeit; der Effekt darunter folgt nur der Hüllkurve, nicht Puls und Tor ---
+	uint32_t beatMs = ms + mod.offsetMs;
+	uint8_t env = layerEnvelope(beatMs);
+	uint8_t amount = scale8(layerAmount, env);
+	if (mod.layerPulseBpm) amount = scale8(amount, pulseLevel(beatMs, mod.layerPulseBpm, mod.layerPulseDepth, mod.layerPulseBeats));
+	if (mod.layerGateBpm && !gateOpen(beatMs, mod.layerGateBpm, mod.layerGatePerBeat, mod.layerGateDuty)) amount = 0;
+	uint8_t baseScale = 255 - scale8(255 - mod.under, env);
+
+	if (amount == 0) {	// Ebene gerade nicht zu sehen: auch ihre Helligkeit gilt dann nicht
+		if (baseScale != 255) {
+			for (int i = 0; i < NUMMATRIX; i++) buf[i].nscale8_video(baseScale);
+		}
+		return;
+	}
+
 	//--- unterschiedliche Gesamthelligkeit oben/unten ausgleichen: die hellere gilt, das andere Bild wird herunterskaliert ---
 	if (!baseBrightKnown) {		// nur einmal je Durchlauf lesen, danach steht hier schon die gemeinsame Helligkeit
 		baseBright = FastLED.getBrightness();
 		baseBrightKnown = true;
 	}
-	uint8_t amount = layerAmount;
-	uint8_t baseScale = 255;
 	if (layerMode != FX_MASK && layerBright != baseBright) {
 		if (layerBright > baseBright) {
-			baseScale = (uint16_t)baseBright * 255 / layerBright;
+			baseScale = scale8(baseScale, (uint16_t)baseBright * 255 / layerBright);
 			FastLED.setBrightness(layerBright);		// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 		}
 		else amount = scale8(amount, (uint16_t)layerBright * 255 / baseBright);
@@ -440,7 +501,7 @@ void fxPresent() {
 		bool trans = (transType != TRANS_CUT && ms < transMs);
 		if (trans || modsActive(bright) || layerUsed) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
-			if (layerUsed) applyLayer(ledsOut);
+			if (layerUsed) applyLayer(ledsOut, ms);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
 			fxFrame = ledsOut;

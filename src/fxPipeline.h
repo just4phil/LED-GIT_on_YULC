@@ -49,6 +49,16 @@ void fxLayerFlush();	// nach dem unteren Effekt: gibt aus, falls der in diesem D
 						// (Effekte wie progStrobo zeichnen nur bei einem Wechsel - die Ebene soll trotzdem weiterlaufen)
 // Nicht derselbe Effekt oben und unten: die Effekte halten eigenen Zustand in statischen Variablen.
 
+//--- Ebene gezielt steuern: wirken nur auf die Stärke der Ebene, der Effekt darunter bleibt ruhig. Anmeldung wie die
+//    Modifikatoren oben im case (bei jedem Durchlauf); alles aus der Zeit seit Part-Beginn -> auf allen Geräten gleich ---
+void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis = 0);	// Ebene nur in diesem Zeitfenster des Parts (toMillis 0 = bis zum Part-Ende)
+void fxLayerFadeIn(unsigned int millis);		// Ebene baut sich ab dem Beginn ihres Zeitfensters auf
+void fxLayerFadeOut(unsigned int millis);		// Ebene klingt zum Ende ihres Zeitfensters ab
+void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Ebene pumpt im Beat (wie fxPulse)
+void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// nur die Ebene blitzt im Raster (wie fxGate)
+void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die Ebene da ist (255 = unverändert):
+												// folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor
+
 //--- Übergänge: so kommt das Bild des neuen Parts ins Bild des alten ---
 enum FxTransition : uint8_t {
 	TRANS_CUT = 0,		// harter Schnitt (Standard)

@@ -961,6 +961,13 @@ ausgabestufe:
     FX_OVER:          {wirkung: "die Ebene deckt, wo sie nicht schwarz ist (Text über einer Szene)", yaml: "overlay: {..., mode: over} | text: {..., over: true}", demo: 74, genutzt: 0, urteil: , notiz: }
     FX_MASK:          {wirkung: "die Ebene ist ein Fenster: der Effekt darunter ist nur dort zu sehen, wo sie hell ist", yaml: "overlay: {..., mode: mask}", demo: 76, genutzt: 0, urteil: , notiz: }
 
+  ebene_steuern:      # wirken nur auf die Ebene, der Effekt darunter bleibt ruhig
+    fxLayerPulse:     {wirkung: "nur die Ebene pumpt im Beat (pumpendes Glitzern über ruhiger Fläche)", yaml: "overlay: {..., pulse: <Prozent> | {depth: , per: }}", demo: 82, genutzt: 0, urteil: , notiz: }
+    fxLayerFadeIn_fxLayerFadeOut: {wirkung: "die Ebene baut sich auf bzw. klingt ab, der Effekt darunter bleibt gleich hell", yaml: "overlay: {..., fade_in: <Beats>, fade_out: <Beats>}", demo: 84, genutzt: 0, urteil: , notiz: }
+    fxLayerUnder:     {wirkung: "der Effekt darunter ist gedimmt, solange die Ebene da ist (Szene dunkel, Text voll hell)", yaml: "overlay: {..., under: <Prozent>} | text: {..., over: true, under: <Prozent>}", demo: 86, genutzt: 0, urteil: , notiz: }
+    fxLayerWindow:    {wirkung: "die Ebene ist nur in einem Zeitfenster des Parts zu sehen (Akzent im letzten Takt ohne eigenen Part)", yaml: "overlay: {..., from: <Beats>, to: <Beats>}", demo: 88, genutzt: 0, urteil: , notiz: }
+    fxLayerGate:      {wirkung: "nur die Ebene blitzt im Raster", yaml: "overlay: {..., gate: <pro Beat> | {per_beat: 2, duty: 30}}", demo: 88, genutzt: 0, urteil: , notiz: }
+
 # ---------------------------------------------------------------------------------------------------
 # Muster aus den alten Songs (docs/effekt-statistik.md) - dein Geschmack in Zahlen
 # ---------------------------------------------------------------------------------------------------
