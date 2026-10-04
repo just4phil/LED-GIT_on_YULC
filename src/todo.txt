@@ -80,6 +80,32 @@ python tools/build_ota.py --serve-only
 
 Update auslösen: die anderen Geräte laufen lassen (ohne aktiven Song), dann die Gitarre mit gedrücktem Rotary-Knopf einschalten.
 
+======================================================
+
+text FX
+===========
+Der text:-Schlüssel ist gebaut. Auf der echten Matrix habe ich ihn nicht gesehen: geprüft ist, dass der Generator korrekten Code erzeugt und die Firmware damit kompiliert, wie es aussieht, musst du testen.
+
+So schreibst du es, in song.yaml oder ich in show.yaml (deins gewinnt):
+
+    text: "FUN"                                   # ein Wort, zentriert, pulsiert im Beat
+    text: "THEY JUST WANNA HAVE FUN"              # pro Beat das nächste Wort, dann von vorn
+    text: {words: "HAVE FUN", per: bar, color: weiss}   # per: beat | half | bar | Zahl in Beats
+    text: {scroll: "I come home in the morning light"}  # Lauftext, endet genau am Part-Ende
+
+- Nur die Matrix zeigt Text, alle anderen Geräte spielen die Szene des Parts weiter.
+- Farbe: ohne color die Farben des Schemas, bei jedem Wort die nächste.
+- Wortlänge: auf die SCROLLMATRIX passen 9 Zeichen pro Wort. Ist ein Wort länger, läuft der ganze Text als Lauftext; der Generator weist in der Ausgabe darauf hin.
+- Keine Umlaute: die Matrix-Schrift kann nur ASCII, der Generator bricht sonst mit einer klaren Meldung ab.
+- Im tail geht es auch, z. B. ein „GO" auf den Strobo-Takt vor dem Chorus.
+- Pulsieren: im letzten Viertel jedes Wort-Slots ist die Matrix dunkel. Falls dir das bei mehreren Wörtern zu unruhig ist, sag es, das ist eine Zeile.
+
+Dein aktueller Song ist unverändert: der Generator erzeugt für „Girls just wanna have fun" exakt denselben Code wie vorher. Text habe ich dort noch nicht eingebaut, die Firmwares in ota/ sind deshalb noch die alten.
+
+Geändert sind FXprograms.cpp/.h (zwei neue Funktionen progText und progTextScroll, die alten Text-Funktionen bleiben), songgen.py, dazu Song-Workflow, Effekte-Doku, Skill, CLAUDE.md und der Hinweiskommentar in neuen song.yaml-Vorlagen. Committet ist noch nichts davon.
+
+Zum Ausprobieren würde ich im Chorus text: "FUN" und im Finale text: "THEY JUST WANNA HAVE FUN" setzen. Soll ich das in die Show eintragen und neu bauen?
+
 
 =======================================================
 TODO
