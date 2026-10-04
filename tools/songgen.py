@@ -15,7 +15,8 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     generated.cpp   erzeugter Code dieses Songs
     versionen/<Zeit>/   Kopie von song.yaml + show.yaml + generated.cpp bei jeder Generierung
 Die Struktur steht nur in song.yaml, die Show ordnet per Abschnittsname zu. Gestaltung in song.yaml
-(scene, fx, scheme, fade, devices, tail, text) hat immer Vorrang vor show.yaml.
+(scene, fx, scheme, fade, devices, tail, text, dazu Übergang und Modifikatoren: transition, fade_in, fade_out,
+pulse, gate, dim, tint, only, span) hat immer Vorrang vor show.yaml.
 
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
@@ -74,6 +75,17 @@ TEXT_COLORS = {"weiss": "White", "weiß": "White", "white": "White", "rot": "Red
 # fade: eines Parts - die Schemafarben wandern im Takt zu einem Ziel und zurück (setColorFade in colorSchemes.h)
 FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT", "triad": "FADE_TRIAD",
 				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
+
+# Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
+PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span")
+TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
+			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
+			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
+DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
+	"LAMPE1": "DEV_LAMPE1", "LAMPE2": "DEV_LAMPE2", "RINASBASS": "DEV_BASS", "ANDRESGIT": "DEV_GIT",
+	"SCROLLMATRIX": "DEV_DRUMS", "GITBOARD": "DEV_GITBOARD",
+	"guitar": "DEV_GIT | DEV_BASS", "lamp": "DEV_LAMPE1 | DEV_LAMPE2", "matrix": "DEV_DRUMS | DEV_GITBOARD",
+}
 
 # Geräte-Overrides: Schlüssel im YAML -> Präprozessor-Bedingung. Einzelgeräte vor Klassen.
 DEVICE_KEYS = {
@@ -271,6 +283,147 @@ def scheme_lines(part, song, offset=0):
 	return lines
 
 
+def crgb(color):
+	"""Farbname (rot, blau, ...) oder CRGB-Ausdruck -> C++-Ausdruck, None wenn unbekannt."""
+	c = str(color).strip()
+	if c.lower() in TEXT_COLORS:
+		return "CRGB::" + TEXT_COLORS[c.lower()]
+	return c if c.startswith("CRGB") else None
+
+
+def percent(v):
+	"""Prozent 0..100 -> 0..255, None wenn ungültig."""
+	if isinstance(v, bool) or not isinstance(v, (int, float)) or not 0 <= v <= 100:
+		return None
+	return round(v * 255 / 100)
+
+
+def pipeline_calls(part, song, offset=0):
+	"""Übergang und Modifikatoren eines Parts (fxPipeline.h) -> (C++-Zeilen, Beschreibungen, Fehler).
+	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
+	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
+	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
+	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
+	sec = part["sec"]
+	name = sec.get("name", "?")
+	bpm = round(part["bpm"])
+	calls, infos, errors = [], [], []
+
+	def as_dict(key, short, allowed):
+		spec = sec[key]
+		spec = dict(spec) if isinstance(spec, dict) else {short: spec}
+		unknown = [k for k in spec if k not in allowed]
+		if unknown:
+			errors.append(f"{name}: {key} kennt nur {', '.join(allowed)} - unbekannt: {', '.join(map(str, unknown))}")
+		return spec
+
+	def beats_ms(key, beats):
+		if isinstance(beats, bool) or not isinstance(beats, (int, float)) or beats <= 0:
+			errors.append(f"{name}: {key} ist eine Länge in Beats (Zahl > 0), nicht '{beats}'")
+			return None
+		ms = round(beats * 60000.0 / part["bpm"])
+		if not offset and ms > part["dur"]:
+			errors.append(f"{name}: {key} ({ms} ms) ist länger als der Part ({part['dur']} ms)")
+			return None
+		return ms
+
+	def pct(key, v):
+		p = percent(v)
+		if p is None:
+			errors.append(f"{name}: {key} ist eine Angabe in Prozent (0..100), nicht '{v}'")
+		return p
+
+	if "transition" in sec:
+		spec = as_dict("transition", "type", ("type", "beats"))
+		typ = str(spec.get("type", "")).lower()
+		if typ not in TRANSITIONS:
+			errors.append(f"{name}: transition '{spec.get('type')}' unbekannt - {', '.join(TRANSITIONS)}")
+		elif TRANSITIONS[typ]:
+			ms = beats_ms("transition beats", spec.get("beats", 1))
+			if ms and not offset:
+				calls.append(f"fxTransition({TRANSITIONS[typ]}, {ms});")
+				infos.append(f"Übergang {typ} {ms} ms")
+
+	timed = False	# FadeIn/Pulse/Gate hängen an der Zeit seit Part-Beginn
+	if "fade_in" in sec:
+		ms = beats_ms("fade_in", sec["fade_in"])
+		if ms and offset < ms:
+			calls.append(f"fxFadeIn({ms});")
+			infos.append(f"blendet {ms} ms ein")
+			timed = True
+	if "fade_out" in sec:
+		ms = beats_ms("fade_out", sec["fade_out"])
+		if ms:
+			calls.append(f"fxFadeOut({ms});")
+			infos.append(f"blendet die letzten {ms} ms aus")
+
+	if "pulse" in sec:
+		spec = as_dict("pulse", "depth", ("depth", "per"))
+		depth = pct("pulse depth", spec.get("depth", 50))
+		beats = per_beats(spec.get("per", "beat"), sec, song)
+		if beats is None or float(beats) != int(beats) or beats > 255:
+			errors.append(f"{name}: pulse per '{spec.get('per')}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats pro Puls)")
+		elif depth:
+			calls.append(f"fxPulse({bpm}, {depth}" + (f", {int(beats)}" if beats != 1 else "") + ");")
+			infos.append(f"pulsiert alle {int(beats)} Beat(s), Tiefe {spec.get('depth', 50)} %")
+			timed = True
+
+	if "gate" in sec:
+		spec = as_dict("gate", "per_beat", ("per_beat", "duty"))
+		n, duty = spec.get("per_beat", 1), spec.get("duty", 50)
+		if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 16:
+			errors.append(f"{name}: gate per_beat ist eine ganze Zahl von 1 bis 16 (Blitze pro Beat), nicht '{n}'")
+		elif isinstance(duty, bool) or not isinstance(duty, int) or not 1 <= duty <= 99:
+			errors.append(f"{name}: gate duty ist der Hell-Anteil in Prozent (1..99), nicht '{duty}'")
+		else:
+			calls.append(f"fxGate({bpm}, {n}" + (f", {duty}" if duty != 50 else "") + ");")
+			infos.append(f"Tor {n}x pro Beat, {duty} % hell")
+			timed = True
+
+	if "dim" in sec:
+		v = pct("dim", sec["dim"])
+		if v is not None:
+			calls.append(f"fxDim({v});")
+			infos.append(f"Helligkeit {sec['dim']} %")
+
+	if "tint" in sec:
+		spec = as_dict("tint", "color", ("color", "amount"))
+		col = crgb(spec.get("color", ""))
+		amount = pct("tint amount", spec.get("amount", 50))
+		if col is None:
+			errors.append(f"{name}: tint-Farbe '{spec.get('color')}' unbekannt - {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+		elif amount:
+			calls.append(f"fxTint({col}, {amount});")
+			infos.append(f"Farbstich {spec.get('color')} {spec.get('amount', 50)} %")
+
+	if "only" in sec:
+		spec = sec["only"] if isinstance(sec["only"], dict) else {"devices": sec["only"]}
+		unknown = [k for k in spec if k not in ("devices", "others")]
+		devs = spec.get("devices")
+		devs = [devs] if isinstance(devs, str) else list(devs or [])
+		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
+		others = pct("only others", spec.get("others", 0))
+		if unknown or bad or not devs:
+			errors.append(f"{name}: only braucht Geräte aus {', '.join(DEVICE_MASKS)} (dazu others in Prozent)"
+						  + (f" - unbekannt: {', '.join(map(str, unknown)) or ', '.join(bad)}" if unknown or bad else ""))
+		elif others is not None:
+			calls.append(f"fxMaskStage({' | '.join(DEVICE_MASKS[d] for d in devs)}" + (f", {others}" if others else "") + ");")
+			infos.append(f"nur {', '.join(devs)}" + (f", Rest {spec['others']} %" if others else ", Rest aus"))
+
+	if "span" in sec:
+		span = sec["span"]
+		ab = [percent(v) for v in span] if isinstance(span, (list, tuple)) and len(span) == 2 else [None]
+		if None in ab or ab[0] >= ab[1]:
+			errors.append(f"{name}: span ist [von, bis] in Prozent entlang des Geräts, z. B. [0, 50] - nicht '{span}'")
+		else:
+			calls.append(f"fxMaskSpan({ab[0]}, {ab[1]});")
+			infos.append(f"nur Bereich {span[0]}-{span[1]} % des Geräts")
+
+	if offset and timed:
+		calls.append(f"fxTimeOffset({offset});")
+	return ["\t\t" + c for c in calls], infos, errors
+
+
 def fmt_time(ms):
 	return f"{ms // 60000}:{(ms // 1000) % 60:02d}.{ms % 1000:03d}"
 
@@ -351,13 +504,10 @@ def text_call(part, song, widths):
 
 	color = ""
 	if spec.get("color"):
-		c = str(spec["color"]).strip()
-		if c.lower() in TEXT_COLORS:
-			color = ", CRGB::" + TEXT_COLORS[c.lower()]
-		elif c.startswith("CRGB"):
-			color = ", " + c
-		else:
-			raise SongError(f"{name}: text-Farbe '{c}' unbekannt - {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+		c = crgb(spec["color"])
+		if c is None:
+			raise SongError(f"{name}: text-Farbe '{spec['color']}' unbekannt - {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+		color = ", " + c
 
 	if scroll:
 		if "per" in spec:
@@ -423,6 +573,7 @@ def scroll_code(song, device, plan):
 		head.append(scroll(plan["scroll"], 2))
 		extra.append(f"\tcase 2:\t// Rest von '{fp['sec'].get('name')}' ab {fmt_time(plan['scroll'])}, Einstieg case {join['case']}")
 		extra += scheme_lines(fp, song, plan["scroll"] - plan["fill_part"]["start"])	# Farbwanderung synchron zu den anderen Geräten
+		extra += pipeline_calls(fp, song, plan["scroll"] - plan["fill_part"]["start"])[0]
 		extra +=["\t\t" + device_call(fp, song, device), "\t\tbreak;"]
 	return head, extra
 
@@ -454,6 +605,7 @@ def gen_function(song, timeline, end_case):
 		lines.append(f"\tcase {part['case']}:\t// {comment}")
 
 		lines += scheme_lines(part, song)
+		lines += pipeline_calls(part, song)[0]
 
 		call = default_call(part, song)
 		devices = sec.get("devices") or {}
@@ -674,6 +826,7 @@ def validate(song, timeline):
 				errors.append(f"{name}: fade hard ist true oder false")
 			if (sec.get("scheme") or song.get("scheme") or "SCHEME_RANDOM") == "SCHEME_RANDOM":
 				errors.append(f"{name}: fade braucht ein Farbschema (scheme), mit SCHEME_RANDOM gibt es nichts zu überblenden")
+		errors += pipeline_calls(part, song)[2]
 		for key in (sec.get("devices") or {}):
 			if key not in DEVICE_KEYS:
 				errors.append(f"{name}: unbekannter Geräteschlüssel '{key}' (erlaubt: {', '.join(DEVICE_KEYS)})")
@@ -698,7 +851,7 @@ def pascal(name):
 
 
 SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms")
-SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text")
+SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text") + PIPELINE_KEYS
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
 
 
@@ -746,12 +899,13 @@ def merge_show(song, show):
 def force_black_start(song):
 	"""Mit dem Start-MIDI sind immer erst alle Geräte schwarz: der erste Abschnitt ist immer progBlack."""
 	first = song["sections"][0]
-	design = [k for k in ("scene", "fx", "devices", "tail", "scheme", "fade", "text") if k in first and first[k] != BLACK]
+	design = [k for k in SECTION_DESIGN_KEYS if k in first and first[k] != BLACK]
 	if design:
 		song.setdefault("_notes", []).append(
 			f"erster Abschnitt '{first['name']}' ist immer BLACK - ignoriert: {', '.join(design)}")
-	for k in ("scene", "devices", "tail", "scheme", "fade", "text"):
-		first.pop(k, None)
+	for k in SECTION_DESIGN_KEYS:
+		if k != "fx":
+			first.pop(k, None)
 	first["fx"] = BLACK
 	first.setdefault("why", "Start-MIDI: alle Geräte schwarz")
 
@@ -1109,6 +1263,10 @@ def print_timeline(song, timeline):
 	for p in timeline:
 		if p.get("text_info"):
 			print(f"  Text (Matrix) case {p['case']} '{p['sec'].get('name', '')}': {p['text_info']}")
+	for p in timeline:
+		infos = pipeline_calls(p, song)[1]
+		if infos:
+			print(f"  Ausgabe case {p['case']} '{p['sec'].get('name', '')}': {', '.join(infos)}")
 	for n in song.get("_notes", []):
 		print(f"  Hinweis: {n}")
 	print(f"  Marker: {song.get('_marker_note')}")

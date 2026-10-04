@@ -46,11 +46,13 @@ void fxTransition(uint8_t type, unsigned int durationMillis);
 //--- Modifikatoren: wirken auf das fertige Bild des laufenden Effekts ---
 void fxFadeIn(unsigned int millis);				// Helligkeit steigt am Part-Anfang von 0 an
 void fxFadeOut(unsigned int millis);			// Helligkeit fällt in den letzten millis des Parts auf 0
-void fxPulse(uint8_t bpm, uint8_t depth);		// pumpt im Beat: hell auf dem Schlag, fällt bis auf (255 - depth) ab
+void fxPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);	// pumpt im Beat: hell auf dem Schlag, fällt bis auf (255 - depth) ab; ein Puls = beats Beats
 void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// Strobo-Tor: perBeat-mal pro Beat an/aus
 void fxDim(uint8_t brightness);					// gleichmäßig dunkler (255 = unverändert)
 void fxMaskStage(uint8_t devMask, uint8_t others = 0);	// nur Geräte aus devMask (DEV_…) leuchten voll, der Rest mit others
 void fxMaskSpan(uint8_t from, uint8_t to);		// nur ein Abschnitt des Geräts leuchtet (0..255 entlang der Wipe-Richtung)
 void fxTint(CRGB col, uint8_t amount);			// zieht das Bild zur Farbe hin (255 = einfarbig)
+void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
+												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 
 uint8_t fxPixelPos(uint16_t i);		// Lage einer LED entlang der Wipe-Richtung (0..255), für eigene Effekte

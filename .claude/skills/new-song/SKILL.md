@@ -172,7 +172,7 @@ Standard 90), `end_black_ms` (10000).
 - `fx: "progX(${dur}, ${next}, ...)"` - ein Effekt für alle Geräte
 
 plus optional `scheme`, `fade`, `devices` (Overrides), `tail: {beats: N, fx|scene: ...}` (letzte N Beats als
-eigener Part, z. B. Strobo-Absprung), `text`, `why`.
+eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifikatoren (siehe unten).
 
 **`fade:`** - Farbwanderung: die Schemafarben laufen im Takt zu einem Ziel und zurück, synchron auf allen Geräten
 (`setColorFade` in `colorSchemes.h`). Wirkt mit jeder Szene und jedem Effekt, der dem Schema folgt; braucht ein `scheme`.
@@ -193,6 +193,23 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`.
 - Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
+
+**Übergang und Modifikatoren** (Ausgabestufe `src/fxPipeline.h`) - wirken auf das fertige Bild, mit jeder Szene und
+jedem Effekt kombinierbar, synchron auf allen Geräten. Längen in Beats, Stärken in Prozent. Gelten nur für den Part,
+in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
+- `transition: fade` oder `{type: ..., beats: 2}` (Standard 1 Beat) - so kommt der Part aus dem Bild des vorigen:
+  `cut` (Standard), `fade`, `black`, `flash`, `wipe`, `wipe_back`, `stage_lr`, `stage_rl`, `stage_out`, `dissolve`.
+- `fade_in: <Beats>` / `fade_out: <Beats>` - Helligkeit von/nach Schwarz (nicht mit der Farbwanderung `fade` verwechseln).
+  Mit `tail` endet `fade_out` vor dem Tail.
+- `pulse: 50` oder `{depth: 50, per: beat|half|bar|<Beats>}` - Helligkeit pumpt im Beat.
+- `gate: 2` oder `{per_beat: 2, duty: 30}` - Strobo-Tor über dem laufenden Effekt.
+- `dim: 60` - Part auf 60 % Helligkeit. `tint: rot` oder `{color: rot, amount: 40}` - Farbstich.
+- `only: [guitar, LAMPE1]` oder `{devices: [...], others: 15}` - nur diese Geräte leuchten voll (Schlüssel wie `devices`).
+- `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
+
+Noch nicht auf der Bühne erprobt (Stand 04.10.2026): zurückhaltend einsetzen, bis der User die Wirkung gesehen und im
+Katalog bewertet hat. Naheliegend: `fade` zwischen ruhigen Parts statt hartem Schnitt, `flash` in den Chorus, `stage_*`
+vor einem Solo, `fade_out` am Songende, `pulse` gegen statische ruhige Szenen, `only` für Solo-Momente.
 Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms).
 `devices`-Schlüssel: `guitar`, `lamp`, `matrix` oder einzelne Geräte `ANDRESGIT`, `RINASBASS`, `LAMPE1`,
 `LAMPE2`, `SCROLLMATRIX`, `GITBOARD` (Einzelgerät schlägt Klasse). Geräte ohne Override zeigen die Szene.

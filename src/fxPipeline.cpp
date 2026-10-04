@@ -28,7 +28,8 @@ static unsigned int transMs = 0;
 //--- Modifikatoren ---
 static struct {
 	unsigned int fadeInMs, fadeOutMs;
-	uint8_t pulseBpm, pulseDepth;
+	unsigned int offsetMs;
+	uint8_t pulseBpm, pulseDepth, pulseBeats;
 	uint8_t gateBpm, gatePerBeat, gateDuty;
 	uint8_t dim, stageDim;
 	uint8_t spanFrom, spanTo;
@@ -51,7 +52,11 @@ void fxTransition(uint8_t type, unsigned int durationMillis) {
 
 void fxFadeIn(unsigned int millis)	{ mod.fadeInMs = millis; }
 void fxFadeOut(unsigned int millis)	{ mod.fadeOutMs = millis; }
-void fxPulse(uint8_t bpm, uint8_t depth)	{ mod.pulseBpm = bpm; mod.pulseDepth = depth; }
+void fxPulse(uint8_t bpm, uint8_t depth, uint8_t beats) {
+	mod.pulseBpm = bpm;
+	mod.pulseDepth = depth;
+	mod.pulseBeats = max((uint8_t)1, beats);
+}
 void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 	mod.gateBpm = bpm;
 	mod.gatePerBeat = max((uint8_t)1, perBeat);
@@ -59,6 +64,7 @@ void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 }
 // alle Anmeldungen setzen nur Werte: sie werden bei jedem Loop-Durchlauf wiederholt
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
+void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
 void fxTint(CRGB col, uint8_t amount)	{ mod.tint = col; mod.tintAmount = amount; }
@@ -114,8 +120,10 @@ static uint8_t modBrightness(uint32_t ms) {
 	if (!modReady) resetMods();
 	uint8_t v = scale8(mod.dim, mod.stageDim);
 
-	if (mod.fadeInMs && ms < mod.fadeInMs) {
-		uint8_t lin = ms * 255 / mod.fadeInMs;
+	uint32_t beatMs = ms + mod.offsetMs;	// Zeit seit dem Beginn des Parts auf den anderen Geräten
+
+	if (mod.fadeInMs && beatMs < mod.fadeInMs) {
+		uint8_t lin = beatMs * 255 / mod.fadeInMs;
 		v = scale8(v, scale8(lin, lin));	// quadratisch: wirkt für das Auge gleichmäßig
 	}
 	if (mod.fadeOutMs) {
@@ -128,14 +136,15 @@ static uint8_t modBrightness(uint32_t ms) {
 		}
 	}
 	if (mod.pulseBpm) {
-		uint32_t period = 60000 / mod.pulseBpm;
-		uint32_t t = fxBeatPhase(ms, mod.pulseBpm);
-		uint8_t fall = min((uint32_t)255, t * 255 / period);	// 0 auf dem Schlag, 255 kurz vor dem nächsten
+		// Phase exakt über bpm rechnen (wie fxBeatPhase), ein Puls dauert pulseBeats Beats
+		uint32_t span = 60000UL * mod.pulseBeats;
+		uint32_t t = ((uint64_t)beatMs * mod.pulseBpm) % span;
+		uint8_t fall = (uint64_t)t * 255 / span;	// 0 auf dem Schlag, 255 kurz vor dem nächsten
 		v = scale8(v, 255 - scale8(mod.pulseDepth, ease8InOutQuad(fall)));
 	}
 	if (mod.gateBpm) {
 		// Phase im Raster exakt über bpm rechnen (wie fxBeatPhase), sonst läuft das Tor gegen den Beat
-		uint32_t slots = (uint64_t)ms * mod.gateBpm * mod.gatePerBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
+		uint32_t slots = (uint64_t)beatMs * mod.gateBpm * mod.gatePerBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
 		if (slots % 100 >= mod.gateDuty) v = 0;
 	}
 	return v;

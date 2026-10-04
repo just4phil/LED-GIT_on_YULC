@@ -317,9 +317,26 @@
   <tr><th>Funktion</th><th>Beschreibung</th></tr>
   <tr><td><code>bool fxPartStart(dur, next)</code></td><td>Setzt beim ersten Aufruf eines Parts Dauer und nächsten Part, löscht die LEDs, initialisiert die Geometrie und gibt <code>true</code> zurück. Genau dann gehört der Effekt-Zustand zurückgesetzt.</td></tr>
   <tr><td><code>bool fxFrameDue(ms)</code></td><td>Frame-Takt über <code>millisToReduceCPUSpeed</code>, holt nicht endlos nach.</td></tr>
-  <tr><td><code>void fxShow()</code></td><td>Beachtet <code>LEDsTurnedOff</code>, setzt Marker, ruft <code>FastLED.show()</code>. In jedem Durchlauf aufrufen, sonst flackern die Marker.</td></tr>
+  <tr><td><code>void fxShow()</code></td><td>Beachtet <code>LEDsTurnedOff</code> und gibt über <code>fxPresent()</code> aus (Ausgabestufe, siehe unten). In jedem Durchlauf aufrufen, sonst flackern die Marker.</td></tr>
   <tr><td><code>uint32_t fxBeats(bpm)</code></td><td>Beats seit Partbeginn, ohne Überlauf.</td></tr>
   <tr><td><code>loopToLed(k)</code>, <code>ledToLoop(i)</code>, <code>zoneOfLoop(k)</code>, <code>setMirrored(d, col)</code>, <code>fillZone(zone, col)</code>, <code>fire2012Step(heat, len)</code></td><td>Geometrie-Helper für eigene Effekte.</td></tr>
+</table></div>
+
+<h4>Ausgabestufe: Übergänge und Modifikatoren (<code>fxPipeline.h</code>)</h4>
+<p>Alle Effekte, alte wie neue, geben über <code>fxPresent()</code> aus. Das ist die einzige Stelle mit <code>FastLED.show()</code>: Sie mischt das Bild in einer Kopie (<code>leds[]</code> bleibt unverfälscht, Effekte mit Nachleuchten behalten ihren Zustand), setzt die Marker und sendet. Ein unverändertes Bild wird nicht noch einmal gesendet (<code>FX_SKIP_UNCHANGED_FRAMES</code> in <code>definitions.h</code>, spätestens alle <code>FX_KEEPALIVE_MS</code> trotzdem), damit der Loop frei bleibt.</p>
+<p>Übergang und Modifikatoren werden wie das Farbschema oben im <code>case</code> angemeldet, bei jedem Durchlauf. <code>switchToPart()</code> setzt sie zurück, ohne Anmeldung verhält sich ein Part wie bisher. Alles rechnet aus der Zeit seit Part-Beginn und läuft deshalb auf allen Geräten gleich. In generierten Songs schreibt man sie nicht von Hand, sondern über die Schlüssel in <code>song.yaml</code>/<code>show.yaml</code> (siehe <code>docs/Song-Workflow.html</code>, Abschnitt 7).</p>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>YAML-Schlüssel</th><th>Wirkung</th></tr>
+  <tr><td><code>fxTransition(type, ms)</code></td><td><code>transition</code></td><td>Die ersten <code>ms</code> des Parts kommt das neue Bild aus dem letzten Bild des alten Parts: <code>TRANS_FADE</code> (Kreuzblende), <code>TRANS_BLACK</code> (über Schwarz), <code>TRANS_FLASH</code> (weißer Blitz, klingt ab), <code>TRANS_WIPE</code> / <code>TRANS_WIPE_BACK</code> (Kante läuft über das Gerät: Lampe von unten, Gitarre vom Korpus zum Kopf, Matrix von links), <code>TRANS_STAGE_LR</code> / <code>_RL</code> / <code>_OUT</code> (die Geräte wechseln nacheinander über die Bühne), <code>TRANS_DISSOLVE</code> (Pixel kippen einzeln um).</td></tr>
+  <tr><td><code>fxFadeIn(ms)</code>, <code>fxFadeOut(ms)</code></td><td><code>fade_in</code>, <code>fade_out</code></td><td>Helligkeit steigt am Part-Anfang von 0 an bzw. fällt in den letzten <code>ms</code> auf 0.</td></tr>
+  <tr><td><code>fxPulse(bpm, depth, beats = 1)</code></td><td><code>pulse</code></td><td>Helligkeit pumpt: voll auf dem Schlag, fällt bis auf <code>255 − depth</code>. Ein Puls dauert <code>beats</code> Beats.</td></tr>
+  <tr><td><code>fxGate(bpm, perBeat, duty = 50)</code></td><td><code>gate</code></td><td>Strobo-Tor: <code>perBeat</code>-mal pro Beat an und aus, <code>duty</code> = Hell-Anteil in Prozent.</td></tr>
+  <tr><td><code>fxDim(brightness)</code></td><td><code>dim</code></td><td>Gleichmäßig dunkler (255 = unverändert).</td></tr>
+  <tr><td><code>fxTint(CRGB col, amount)</code></td><td><code>tint</code></td><td>Zieht das Bild zur Farbe hin (255 = einfarbig), die Helligkeit jedes Pixels bleibt.</td></tr>
+  <tr><td><code>fxMaskStage(devMask, others = 0)</code></td><td><code>only</code></td><td>Nur die Geräte aus <code>devMask</code> (<code>DEV_…</code>) leuchten voll, der Rest mit <code>others</code>.</td></tr>
+  <tr><td><code>fxMaskSpan(from, to)</code></td><td><code>span</code></td><td>Nur ein Abschnitt des Geräts leuchtet (0–255 entlang der Wipe-Richtung).</td></tr>
+  <tr><td><code>fxTimeOffset(ms)</code></td><td>(automatisch)</td><td>Für den Rest-Part der Matrix nach dem Lauftext: der Part läuft auf den anderen Geräten schon <code>ms</code> länger, FadeIn, Pulse und Gate rechnen ab dort und bleiben im Beat.</td></tr>
+  <tr><td><code>uint8_t fxPixelPos(i)</code></td><td></td><td>Lage einer LED entlang der Wipe-Richtung (0–255), für eigene Effekte.</td></tr>
 </table></div>
 
 <!-- ===================================================================== -->
@@ -380,6 +397,7 @@
 <div class="tablewrap"><table>
   <tr><th>Datei</th><th>Inhalt</th></tr>
   <tr><td><code>src/guitarShapeFX.cpp/.h</code></td><td>Geometrie (Umriss, XY, Zonen), Grundgerüst <code>fx*</code>, 11 Kontur-Effekte, Gurt-Puffer</td></tr>
+  <tr><td><code>src/fxPipeline.cpp/.h</code></td><td>Ausgabestufe <code>fxPresent()</code>: Übergänge zwischen Parts, Modifikatoren, Marker, <code>FastLED.show()</code></td></tr>
   <tr><td><code>src/colorSchemes.cpp/.h</code></td><td>Farbschemata, <code>getRandomCRGB</code>, <code>deviceColor</code>, <code>schemePalette</code></td></tr>
   <tr><td><code>src/scenes.cpp/.h</code></td><td><code>scene()</code>, Primitive, Lampen-Effekte, <code>sharedRand8</code></td></tr>
   <tr><td><code>src/definitions.h</code></td><td>Geräte-Identität (<code>DEV_*</code>, <code>STAGE_POS</code>, <code>DEVICE_CLASS</code>), Geometrie-Defines, Start-Demos</td></tr>
