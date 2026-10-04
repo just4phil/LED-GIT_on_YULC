@@ -52,6 +52,10 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestan
    - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
      allen Geräten gleichzeitig nach 2 Takten ein.
    Was abgenommen ist, wieder nach hinten sortieren.
+   - **Merker des Users (05.10.2026):** `progFire` auf der Matrix – die Feuersäulen doppeln, also immer zwei
+     Spalten für eine Säule. Eine Spalte breit sehen sie im Vergleich zu den beiden Lampen sehr dünn aus. Umsetzung:
+     Hitze nur für jede zweite Spalte rechnen (`MATRIX_WIDTH / 2` Säulen) und beim Zeichnen je zwei Spalten füllen;
+     Tempo und Funkenrate dabei gleich lassen. Danach in Song 92, Part 0 ansehen.
 2. **Phase 3b, Punkt 1** – weiche Farbwechsel im Beat: `fxSoft(percent)` für `progBeatColors`
    (`SCENE_COLORS`, `SCENE_COLORS_WAVE`), YAML `soft: <Prozent>`; Demo am Anfang von Song 92 (mit und ohne `soft` nacheinander).
 3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
