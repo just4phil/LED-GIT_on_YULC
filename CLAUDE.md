@@ -64,10 +64,14 @@ contour effects). It mixes transition + modifiers into a copy (`leds[]` stays un
 ### Output stage (`fxPipeline.cpp/.h`)
 Transitions between parts (`fxTransition`: fade, black, flash, wipe, stage, dissolve) and modifiers on the finished
 frame (`fxFadeIn/Out`, `fxPulse`, `fxGate`, `fxDim`, `fxTint`, `fxMaskStage`, `fxMaskSpan`) are registered at the top of
-a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. Everything is
+a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. A second
+effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
+buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
+(`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
+same effect above and below (effects keep static state). Everything is
 computed from the time since part start, so all devices stay in sync regardless of LED count. In generated songs they
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span` (lengths in
-beats, strengths in percent).
+beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene).
 
 ### Timing
 A hardware timer (`TimerFunctions.h`) fires every 2 ms and sets `flag_processFastLED = true`. The main loop only runs the LED switch-case when that flag is set, keeping millisecond counters accurate. All effect timing uses `millisCounterTimer`, `millisCounterForProgChange`, etc. — never `delay()`.
@@ -87,7 +91,7 @@ MIDI CC#0 = song select, CC#32 = part select (handled in `midi_in.h`). The proxy
 | `main.cpp` | `setup()` + `loop()`, global state variables |
 | `songs.cpp/.h` | One function per song, calls FX primitives |
 | `FXprograms.cpp/.h` | Reusable visual effects (strobe, water, palette, text…) |
-| `fxPipeline.cpp/.h` | Output stage `fxPresent()`: transitions, modifiers, markers, the only `FastLED.show()` for effects |
+| `fxPipeline.cpp/.h` | Output stage `fxPresent()`: layer (second effect), transitions, modifiers, markers, the only `FastLED.show()` for effects |
 | `markerLEDs.cpp/.h` | Fret-position marker LED overlay |
 | `matrixFunctions.cpp/.h` | Matrix drawing helpers (lines, circles, etc.) |
 | `TimerFunctions.cpp/.h` | 2 ms hardware timer, all timing flags |
@@ -108,7 +112,7 @@ One folder per song, e.g. `songs/AllTheThingsSheSaid_v1/` (`_v1` = version of th
 **Never write, move or delete `songs/*/song.yaml`** - the user's additions must never be overwritten. A hook
 (`tools/hook_protect_song.py`) and a deny rule in `.claude/settings.json` enforce this; do not work around
 them. Propose changes in chat instead. Design keys in `song.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`,
-`devices`, `text` and the output-stage keys above) always win over `show.yaml`. `fade:` lets the scheme colours travel in time with the bars to a
+`devices`, `text`, `overlay` and the output-stage keys above) always win over `show.yaml`. `fade:` lets the scheme colours travel in time with the bars to a
 complementary colour or a second scheme and back, in sync on all devices. `text:` puts words or a scroll text on the matrix devices (auto-centred, in
 time with the beat) while the other devices keep playing the scene.
 

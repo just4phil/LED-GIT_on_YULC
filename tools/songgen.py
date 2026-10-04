@@ -15,8 +15,8 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     generated.cpp   erzeugter Code dieses Songs
     versionen/<Zeit>/   Kopie von song.yaml + show.yaml + generated.cpp bei jeder Generierung
 Die Struktur steht nur in song.yaml, die Show ordnet per Abschnittsname zu. Gestaltung in song.yaml
-(scene, fx, scheme, fade, devices, tail, text, dazu Übergang und Modifikatoren: transition, fade_in, fade_out,
-pulse, gate, dim, tint, only, span) hat immer Vorrang vor show.yaml.
+(scene, fx, scheme, fade, devices, tail, text, overlay, dazu Übergang und Modifikatoren: transition, fade_in,
+fade_out, pulse, gate, dim, tint, only, span) hat immer Vorrang vor show.yaml.
 
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
@@ -81,6 +81,7 @@ PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "t
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
+LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK"}	# overlay: mode
 DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
 	"LAMPE1": "DEV_LAMPE1", "LAMPE2": "DEV_LAMPE2", "RINASBASS": "DEV_BASS", "ANDRESGIT": "DEV_GIT",
 	"SCROLLMATRIX": "DEV_DRUMS", "GITBOARD": "DEV_GITBOARD",
@@ -424,6 +425,98 @@ def pipeline_calls(part, song, offset=0):
 	return ["\t\t" + c for c in calls], infos, errors
 
 
+def effect_token(expr):
+	"""Woran man einen Effekt erkennt: der Szenenname bei scene(...), sonst der Funktionsname."""
+	m = re.match(r"\s*(\w+)\s*\(\s*(\w+)?", str(expr))
+	if not m:
+		return None
+	return m.group(2) if m.group(1) == "scene" and m.group(2) else m.group(1)
+
+
+def overlay_code(part, song):
+	"""overlay: eines Parts - ein zweiter Effekt über dem Effekt des Parts (fxLayerBegin/End in fxPipeline.h)
+	-> (Zeilen vor dem Effekt, Zeilen danach, Beschreibung, Fehler, Aufrufe der Ebene).
+	overlay: SCENE_SPARKLE | "progStrobo(${dur}, ${next}, ${beat}, CRGB::White)"
+	overlay: {scene: ... | fx: "...", mode: add|max|over|mask, amount: <Prozent>, span: [von, bis],
+	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices"""
+	sec = part["sec"]
+	name = sec.get("name", "?")
+	spec = sec.get("overlay")
+	if not spec:
+		return [], [], None, [], []
+	if not isinstance(spec, dict):
+		spec = {"scene": spec} if str(spec).startswith("SCENE_") else {"fx": spec}
+	errors = []
+	unknown = [k for k in spec if k not in ("scene", "fx", "mode", "amount", "span", "devices")]
+	if unknown:
+		errors.append(f"{name}: overlay kennt nur scene, fx, mode, amount, span, devices - unbekannt: {', '.join(map(str, unknown))}")
+	if spec.get("scene") and spec.get("fx"):
+		errors.append(f"{name}: overlay hat scene UND fx - bitte nur eins")
+
+	def call(v):
+		v = str(v)
+		if v.startswith("SCENE_"):
+			return f"scene({v}, {part['dur']}, {part['next']}, {round(part['bpm'])});"
+		try:
+			return fill(v, part, song)
+		except SongError as e:
+			errors.append(f"{name}: overlay - {e}")
+			return v
+
+	default = call(spec["scene"]) if spec.get("scene") else call(spec["fx"]) if spec.get("fx") else None
+	devices = spec.get("devices") or {}
+	if not isinstance(devices, dict):
+		errors.append(f"{name}: overlay devices ist eine Zuordnung Gerät: Effekt, z. B. {{matrix: SCENE_SPARKLE}}")
+		devices = {}
+	bad = [str(k) for k in devices if k not in DEVICE_KEYS]
+	if bad:
+		errors.append(f"{name}: overlay devices - unbekannter Geräteschlüssel {', '.join(bad)} (erlaubt: {', '.join(DEVICE_KEYS)})")
+	ordered = sorted(((k, call(v)) for k, v in devices.items() if k in DEVICE_KEYS), key=lambda kv: list(DEVICE_KEYS).index(kv[0]))
+	if default is None and not ordered:
+		errors.append(f"{name}: overlay braucht scene, fx oder devices")
+
+	mode = str(spec.get("mode", "add")).lower()
+	if mode not in LAYER_MODES:
+		errors.append(f"{name}: overlay mode '{spec.get('mode')}' unbekannt - {', '.join(LAYER_MODES)}")
+	amount = percent(spec.get("amount", 100))
+	if amount is None:
+		errors.append(f"{name}: overlay amount ist eine Angabe in Prozent (0..100), nicht '{spec.get('amount')}'")
+	span = spec.get("span", [0, 100])
+	ab = [percent(v) for v in span] if isinstance(span, (list, tuple)) and len(span) == 2 else [None]
+	if None in ab or ab[0] >= ab[1]:
+		errors.append(f"{name}: overlay span ist [von, bis] in Prozent entlang des Geräts, z. B. [50, 100] - nicht '{span}'")
+	if errors:
+		return [], [], None, errors, []
+
+	args = [LAYER_MODES[mode]]
+	if amount != 255 or ab != [0, 255]:
+		args.append(str(amount))
+	if ab != [0, 255]:
+		args += [str(ab[0]), str(ab[1])]
+
+	guard = None if default else " || ".join(f"({DEVICE_KEYS[k]})" if len(ordered) > 1 else DEVICE_KEYS[k] for k, _ in ordered)
+	pre = [f"#if {guard}"] if guard else []
+	pre.append("\t\tfxLayerBegin();")
+	if ordered and (default or len(ordered) > 1):
+		for j, (key, expr) in enumerate(ordered):
+			pre += [f"#{'if' if j == 0 else 'elif'} {DEVICE_KEYS[key]}", f"\t\t{expr}"]
+		if default:
+			pre += ["#else", f"\t\t{default}"]
+		pre.append("#endif")
+	else:
+		pre.append(f"\t\t{default or ordered[0][1]}")
+	pre.append(f"\t\tfxLayerEnd({', '.join(args)});")
+	post = ["\t\tfxLayerFlush();"]
+	if guard:
+		pre.append("#endif")
+		post = [f"#if {guard}"] + post + ["#endif"]
+
+	calls = ([default] if default else []) + [e for _, e in ordered]
+	what = ", ".join(([effect_token(default)] if default else []) + [f"{k}: {effect_token(e)}" for k, e in ordered])
+	info = f"Ebene {what} ({mode}" + (f", {spec['amount']} %" if "amount" in spec else "") + (f", Bereich {span[0]}-{span[1]} %" if "span" in spec else "") + ")"
+	return pre, post, info, [], calls
+
+
 def fmt_time(ms):
 	return f"{ms // 60000}:{(ms // 1000) % 60:02d}.{ms % 1000:03d}"
 
@@ -484,15 +577,18 @@ def plan_scroll(song, timeline, width):
 def text_call(part, song, widths):
 	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
 	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
-	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende)."""
+	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). over: true legt den Text über die laufende
+	Szene, statt sie auf der Matrix zu ersetzen."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec["text"]
 	if not isinstance(spec, dict):
 		spec = {"words": spec}
-	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color")]
+	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "over")]
+	if not isinstance(spec.get("over", False), bool):
+		raise SongError(f"{name}: text over ist true oder false")
 	if unknown or ("words" in spec) == ("scroll" in spec):
-		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color)"
+		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color, over)"
 						+ (f" - unbekannt: {', '.join(unknown)}" if unknown else ""))
 	scroll = "scroll" in spec
 	txt = " ".join(str(spec["scroll"] if scroll else spec["words"]).split())
@@ -534,6 +630,14 @@ def apply_texts(song, timeline):
 	for part in timeline:
 		sec = part["sec"]
 		if "text" not in sec:
+			continue
+		if isinstance(sec["text"], dict) and sec["text"].get("over"):
+			# Text als Ebene über der Szene: die Matrix spielt ihre Szene weiter
+			if sec.get("overlay"):
+				raise SongError(f"{sec.get('name')}: text mit over und overlay zugleich - es gibt nur eine Ebene")
+			expr, info = text_call(part, song, widths)
+			part["text_info"] = info + " (über der Szene)"
+			part["sec"] = dict(sec, overlay={"devices": {"matrix": expr}, "mode": "over"})
 			continue
 		devices = dict(sec.get("devices") or {})
 		clash = [k for k in MATRIX_KEYS if k in devices]
@@ -609,6 +713,8 @@ def gen_function(song, timeline, end_case):
 
 		call = default_call(part, song)
 		devices = sec.get("devices") or {}
+		layer_pre, layer_post = overlay_code(part, song)[:2] if i > 0 else ([], [])
+		lines += layer_pre
 
 		if i == 0 and plans:
 			# Songanfang: Scroll-Geräte zeigen den Titel, alle anderen sind schwarz
@@ -634,6 +740,7 @@ def gen_function(song, timeline, end_case):
 			lines.append("#endif")
 		else:
 			lines.append(f"\t\t{call}")
+		lines += layer_post
 		lines.append("\t\tbreak;")
 		lines.append("")
 
@@ -837,6 +944,24 @@ def validate(song, timeline):
 				errors.append(f"{name}: fx '{e}' ist kein Funktionsaufruf")
 			elif fn.group(1) not in funcs:
 				errors.append(f"{name}: Funktion {fn.group(1)} nicht in den Headern gefunden")
+		layer_errors, layer_calls = overlay_code(part, song)[3:]
+		errors += layer_errors
+		if layer_calls:
+			try:
+				below = {effect_token(default_call(part, song))} | {effect_token(e) for e in (sec.get("devices") or {}).values()}
+			except SongError:
+				below = set()	# fehlende Gestaltung meldet die Generierung selbst
+			for e in layer_calls:
+				fn = re.match(r"\s*(\w+)\s*\(", e)
+				tok = effect_token(e)
+				if not fn:
+					errors.append(f"{name}: overlay '{e}' ist kein Funktionsaufruf und keine SCENE_...")
+				elif fn.group(1) not in funcs:
+					errors.append(f"{name}: overlay - Funktion {fn.group(1)} nicht in den Headern gefunden")
+				elif fn.group(1) == "scene" and tok not in scenes:
+					errors.append(f"{name}: overlay - unbekannte Szene {tok}")
+				elif tok in below:
+					errors.append(f"{name}: overlay {tok} läuft schon als Effekt des Parts - oben und unten müssen verschiedene Effekte sein")
 		if round(part["bpm"]) > 255:
 			errors.append(f"{name}: bpm > 255 passt nicht in scene()")
 	return errors
@@ -851,7 +976,7 @@ def pascal(name):
 
 
 SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms")
-SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text") + PIPELINE_KEYS
+SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text", "overlay") + PIPELINE_KEYS
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
 
 
@@ -883,7 +1008,7 @@ def merge_show(song, show):
 			raise SongError(f"{SONG_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
 		if "scene" in user or "fx" in user:
 			# der User legt den Effekt fest -> Effekt und Geräte-Overrides der Show gelten für diesen Part nicht
-			for k in ("scene", "fx", "devices", "text", "why"):
+			for k in ("scene", "fx", "devices", "text", "overlay", "why"):
 				d.pop(k, None)
 			d["why"] = f"Vorgabe aus {SONG_FILE}"
 		elif "devices" in user:
@@ -1263,6 +1388,10 @@ def print_timeline(song, timeline):
 	for p in timeline:
 		if p.get("text_info"):
 			print(f"  Text (Matrix) case {p['case']} '{p['sec'].get('name', '')}': {p['text_info']}")
+	for p in timeline[1:]:
+		info = overlay_code(p, song)[2]
+		if info:
+			print(f"  {info} case {p['case']} '{p['sec'].get('name', '')}'")
 	for p in timeline:
 		infos = pipeline_calls(p, song)[1]
 		if infos:

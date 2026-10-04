@@ -946,4 +946,4 @@ luecken:
   - "Offen: Fading-Option für progFullColors / SCENE_COLORS (Wunsch des Users)."
   - "Geschlossen am 04.10.2026: weiches Ausblenden am Songende (SCENE_FADEOUT / progFadeOut)."
   - "Offen: progSternschnuppen als ruhiges Pausen-Preset für Gitarren und Lampen überarbeiten."
-  - "Offen: Effekte lassen sich nicht übereinanderlegen (jeder ruft selbst FastLED.show()), z. B. Blitze über einem Farbverlauf."
+  - "Geschlossen am 04.10.2026: Effekte lassen sich übereinanderlegen (overlay in show.yaml/song.yaml, fxLayerBegin/End), z. B. Glitzern über einer ruhigen Fläche. Eine Ebene pro Part, oben und unten verschiedene Effekte."

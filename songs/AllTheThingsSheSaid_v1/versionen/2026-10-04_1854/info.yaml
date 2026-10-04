@@ -1,0 +1,8 @@
+zeit: '2026-10-04 18:54:27'
+notiz: ''
+werkzeug_git: ac501fd + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: 0d416d1629a12bfc17c6f21d0a6775be457bdf3c4c9e6b918b44460a73167cdb
+  show.yaml: c64420cc77727ce84229bc2b433900670d84cd293c61ba14214c1c6c492e1109
+  generated.cpp: ae3533eab39209ee1732d82ccfa6598466332fdf7cd46da1276fbea305848116

@@ -339,6 +339,19 @@
   <tr><td><code>uint8_t fxPixelPos(i)</code></td><td></td><td>Lage einer LED entlang der Wipe-Richtung (0–255), für eigene Effekte.</td></tr>
 </table></div>
 
+<h4>Ebene: zwei Effekte übereinander (<code>fxPipeline.h</code>)</h4>
+<p>Ein zweiter Effekt läuft zwischen <code>fxLayerBegin()</code> und <code>fxLayerEnd()</code> in einem eigenen Kontext: eigenes Bild und eigene Kopie der Zähler, die sich die Effekte sonst teilen (<code>zaehler</code>, <code>millisCounterTimer</code>, <code>millisToReduceCPUSpeed</code>, <code>nextChangeMillis</code> …). Sein <code>fxPresent()</code> gibt nichts aus. Danach läuft der Effekt des Parts wie gewohnt; <code>fxPresent()</code> legt die Ebene über sein Bild, dann folgen Modifikatoren, Übergang, Marker und Ausgabe. In generierten Songs kommt das aus dem YAML-Schlüssel <code>overlay</code>.</p>
+<pre><code>case 45: fxLayerBegin();  scene(SCENE_SPARKLE, 11163, 50, 86);  fxLayerEnd(FX_ADD, 150);
+         scene(SCENE_GLOW, 11163, 50, 86);
+         fxLayerFlush();  break;</code></pre>
+<div class="tablewrap"><table>
+  <tr><th>Funktion</th><th>Wirkung</th></tr>
+  <tr><td><code>fxLayerBegin()</code></td><td>Ab hier zeichnet der folgende Effekt in die Ebene.</td></tr>
+  <tr><td><code>fxLayerEnd(mode = FX_ADD, amount = 255, from = 0, to = 255)</code></td><td>Schließt die Ebene. <code>FX_ADD</code> (aufaddieren, Schwarz ist durchsichtig), <code>FX_MAX</code> (hellerer Pixel gewinnt), <code>FX_OVER</code> (Ebene deckt, wo sie nicht schwarz ist), <code>FX_MASK</code> (Ebene als Fenster auf den Effekt darunter). <code>amount</code> = Stärke, <code>from</code>/<code>to</code> = Abschnitt des Geräts wie bei <code>fxMaskSpan</code>.</td></tr>
+  <tr><td><code>fxLayerFlush()</code></td><td>Nach dem unteren Effekt aufrufen: gibt aus, falls der in diesem Durchlauf selbst nichts ausgegeben hat (Effekte wie <code>progStrobo</code> zeichnen nur bei einem Wechsel), damit die Ebene weiterläuft.</td></tr>
+</table></div>
+<p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten. Es gibt eine Ebene pro Part. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
+
 <!-- ===================================================================== -->
 <h2 id="demos">8 · Demo-Songs 90 &amp; 91</h2>
 <p>Songwahl per MIDI <b>CC#0</b>. Alternativ startet ein Gerät direkt mit der Demo, wenn in <code>definitions.h</code> <code>START_WITH_FX_DEMO</code> (90) bzw. <code>START_WITH_SCENE_DEMO</code> (91) aktiv ist. Beide Demos laufen in Dauerschleife.</p>
@@ -397,7 +410,7 @@
 <div class="tablewrap"><table>
   <tr><th>Datei</th><th>Inhalt</th></tr>
   <tr><td><code>src/guitarShapeFX.cpp/.h</code></td><td>Geometrie (Umriss, XY, Zonen), Grundgerüst <code>fx*</code>, 11 Kontur-Effekte, Gurt-Puffer</td></tr>
-  <tr><td><code>src/fxPipeline.cpp/.h</code></td><td>Ausgabestufe <code>fxPresent()</code>: Übergänge zwischen Parts, Modifikatoren, Marker, <code>FastLED.show()</code></td></tr>
+  <tr><td><code>src/fxPipeline.cpp/.h</code></td><td>Ausgabestufe <code>fxPresent()</code>: Ebene (zweiter Effekt), Übergänge zwischen Parts, Modifikatoren, Marker, <code>FastLED.show()</code></td></tr>
   <tr><td><code>src/colorSchemes.cpp/.h</code></td><td>Farbschemata, <code>getRandomCRGB</code>, <code>deviceColor</code>, <code>schemePalette</code></td></tr>
   <tr><td><code>src/scenes.cpp/.h</code></td><td><code>scene()</code>, Primitive, Lampen-Effekte, <code>sharedRand8</code></td></tr>
   <tr><td><code>src/definitions.h</code></td><td>Geräte-Identität (<code>DEV_*</code>, <code>STAGE_POS</code>, <code>DEVICE_CLASS</code>), Geometrie-Defines, Start-Demos</td></tr>

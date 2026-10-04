@@ -191,8 +191,20 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 - `text: {scroll: "..."}` - Lauftext, der genau am Part-Ende fertig ist.
 - Max. 9 Zeichen pro Wort auf der SCROLLMATRIX, sonst läuft alles als Lauftext (Hinweis in der Ausgabe); nur ASCII.
 - Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
+- `over: true` (z. B. `{words: "FUN", over: true}`) - der Text liegt über der Szene, die Matrix spielt sie weiter.
+  Belegt die Ebene, also nicht zusammen mit `overlay`.
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
+
+**Ebene: zweiter Effekt über dem Effekt des Parts** (`overlay`, `fxLayerBegin/End` in `src/fxPipeline.h`):
+- `overlay: SCENE_SPARKLE` oder `{scene: ... | fx: "...", mode: add|max|over|mask, amount: 40, span: [50, 100],
+  devices: {matrix: SCENE_RAIN}}`. `add` (Standard) addiert auf, Schwarz ist durchsichtig; `max` = hellerer Pixel;
+  `over` deckt; `mask` macht die Ebene zum Fenster auf den Effekt darunter. Ohne `scene`/`fx` läuft die Ebene nur auf
+  den Geräten aus `devices`.
+- Oben und unten müssen verschiedene Effekte sein (Generator prüft Szenen-/Funktionsnamen; zwei verschiedene Szenen,
+  die auf einem Gerät dasselbe Programm nutzen, erkennt er nicht - in `src/scenes.cpp` nachsehen). Eine Ebene pro Part.
+- Naheliegend: dezentes Glitzern (`amount` 30-40) über ruhigen Flächen, Glitzern über der Hook am Songende,
+  Text über der Szene. Noch nicht auf der Bühne erprobt (Stand 04.10.2026): zurückhaltend einsetzen.
 
 **Übergang und Modifikatoren** (Ausgabestufe `src/fxPipeline.h`) - wirken auf das fertige Bild, mit jeder Szene und
 jedem Effekt kombinierbar, synchron auf allen Geräten. Längen in Beats, Stärken in Prozent. Gelten nur für den Part,

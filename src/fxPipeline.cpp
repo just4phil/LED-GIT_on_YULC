@@ -14,6 +14,14 @@ extern FastLED_NeoMatrix* matrix;
 extern volatile boolean LEDsTurnedOff;
 extern volatile unsigned int millisCounterForProgChange;
 extern volatile unsigned int nextChangeMillis;
+extern volatile unsigned int millisCounterTimer;
+extern volatile unsigned int millisToReduceCPUSpeed;
+extern volatile boolean nextChangeMillisAlreadyCalculated;
+extern volatile byte nextSongPart;
+extern int zaehler;
+extern int progScrollTextZaehler;
+extern int progBlingBlingColoring_rounds;
+extern boolean progStroboIsBlack;
 //---------------------------------------------------------------------
 
 const CRGB* fxFrame = leds;
@@ -68,6 +76,109 @@ void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
 void fxTint(CRGB col, uint8_t amount)	{ mod.tint = col; mod.tintAmount = amount; }
+
+//==================================================================
+//=========== Ebene: zweiter Effekt mit eigenem Kontext ============
+//==================================================================
+
+// alles, was sich die Effekte teilen: Bild (leds[] dient auch als Nachleucht-Speicher) und die Zähler aus switchToPart()
+struct FxContext {
+	unsigned int timer, reduceSpeed, nextChange;
+	int zaehler, scrollZaehler, blingRounds;
+	byte nextPart;
+	bool calculated, stroboIsBlack;
+};
+
+static CRGB layerBuf[NUMMATRIX];	// Bild der Ebene
+static CRGB baseBuf[NUMMATRIX];		// Bild des unteren Effekts, solange die Ebene zeichnet
+static FxContext layerCtx, baseCtx;
+static unsigned int layerLastMs = 0;	// millisCounterForProgChange beim letzten Verlassen der Ebene
+static bool layerCapturing = false;	// zwischen fxLayerBegin() und fxLayerEnd()
+static bool layerUsed = false;		// in diesem Part ist eine Ebene angemeldet
+static bool layerPending = false;	// seit fxLayerEnd() wurde noch nicht ausgegeben
+static uint8_t layerMode = FX_ADD, layerAmount = 255, layerFrom = 0, layerTo = 255;
+// Manche Effekte stellen die Gesamthelligkeit um (progFastBlingBling auf 255). In der Ebene darf das den Effekt darunter
+// nicht mit aufhellen (Stromaufnahme!): die Helligkeit der Ebene wird gemerkt und beim Mischen ausgeglichen.
+static uint8_t layerBright = 255;		// FastLED-Helligkeit, die der Effekt der Ebene eingestellt hat
+static uint8_t brightAtBegin = 255;		// … und die davor
+static uint8_t baseBright = 255;		// Helligkeit des unteren Effekts in diesem Durchlauf
+static bool baseBrightKnown = false;
+
+static void readContext(FxContext& c) {
+	noInterrupts();
+	c.timer = millisCounterTimer;
+	c.reduceSpeed = millisToReduceCPUSpeed;
+	c.nextChange = nextChangeMillis;
+	c.nextPart = nextSongPart;
+	c.calculated = nextChangeMillisAlreadyCalculated;
+	interrupts();
+	c.zaehler = zaehler;
+	c.scrollZaehler = progScrollTextZaehler;
+	c.blingRounds = progBlingBlingColoring_rounds;
+	c.stroboIsBlack = progStroboIsBlack;
+}
+
+static void writeContext(const FxContext& c, unsigned int elapsed) {
+	zaehler = c.zaehler;
+	progScrollTextZaehler = c.scrollZaehler;
+	progBlingBlingColoring_rounds = c.blingRounds;
+	progStroboIsBlack = c.stroboIsBlack;
+	noInterrupts();
+	millisCounterTimer = c.timer + elapsed;		// die Zähler laufen weiter, während der andere Kontext aktiv ist
+	millisToReduceCPUSpeed = c.reduceSpeed + elapsed;
+	nextChangeMillis = c.nextChange;
+	nextSongPart = c.nextPart;
+	nextChangeMillisAlreadyCalculated = c.calculated;
+	interrupts();
+}
+
+static void resetLayer() {
+	memset(layerBuf, 0, sizeof(layerBuf));
+	memset(&layerCtx, 0, sizeof(layerCtx));
+	layerCtx.scrollZaehler = MATRIX_WIDTH + 1;	// wie switchToPart()
+	layerLastMs = 0;
+	layerUsed = layerPending = false;
+}
+
+void fxLayerBegin() {
+	if (layerCapturing) return;
+	unsigned int now = millisCounterForProgChange;
+	readContext(baseCtx);
+	memcpy(baseBuf, leds, sizeof(baseBuf));
+	if (!layerUsed) {	// erster Durchlauf des Parts: Dauer und Ziel gelten weiter, bis der Effekt der Ebene sie setzt
+		layerCtx.nextChange = baseCtx.nextChange;
+		layerCtx.nextPart = baseCtx.nextPart;
+	}
+	writeContext(layerCtx, (now >= layerLastMs) ? now - layerLastMs : 0);
+	memcpy(leds, layerBuf, sizeof(layerBuf));
+	layerLastMs = now;
+	brightAtBegin = FastLED.getBrightness();
+	layerCapturing = true;
+}
+
+void fxLayerEnd(uint8_t mode, uint8_t amount, uint8_t from, uint8_t to) {
+	if (!layerCapturing) return;
+	unsigned int now = millisCounterForProgChange;
+	unsigned int elapsed = (now >= layerLastMs) ? now - layerLastMs : 0;	// so lange hat der Effekt der Ebene gebraucht
+	readContext(layerCtx);
+	memcpy(layerBuf, leds, sizeof(layerBuf));
+	layerLastMs = now;
+	writeContext(baseCtx, elapsed);
+	memcpy(leds, baseBuf, sizeof(baseBuf));
+	layerBright = FastLED.getBrightness();
+	FastLED.setBrightness(brightAtBegin);
+	baseBrightKnown = false;
+	layerCapturing = false;
+	layerUsed = layerPending = true;
+	layerMode = mode;
+	layerAmount = amount;
+	layerFrom = from;
+	layerTo = to;
+}
+
+void fxLayerFlush() {
+	if (layerPending) fxPresent();
+}
 
 //==================================================================
 //=========== Lage der LEDs entlang der Wipe-Richtung ==============
@@ -179,6 +290,48 @@ static void applyMods(CRGB* buf, uint8_t bright) {
 	}
 }
 
+// legt die Ebene über buf (das Bild des unteren Effekts)
+static void applyLayer(CRGB* buf) {
+	//--- unterschiedliche Gesamthelligkeit oben/unten ausgleichen: die hellere gilt, das andere Bild wird herunterskaliert ---
+	if (!baseBrightKnown) {		// nur einmal je Durchlauf lesen, danach steht hier schon die gemeinsame Helligkeit
+		baseBright = FastLED.getBrightness();
+		baseBrightKnown = true;
+	}
+	uint8_t amount = layerAmount;
+	uint8_t baseScale = 255;
+	if (layerMode != FX_MASK && layerBright != baseBright) {
+		if (layerBright > baseBright) {
+			baseScale = (uint16_t)baseBright * 255 / layerBright;
+			FastLED.setBrightness(layerBright);		// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+		}
+		else amount = scale8(amount, (uint16_t)layerBright * 255 / baseBright);
+	}
+
+	const bool span = (layerFrom > 0 || layerTo < 255);
+	if (span && !pixelPosReady) initPixelPos();
+	for (int i = 0; i < NUMMATRIX; i++) {
+		if (baseScale != 255) buf[i].nscale8_video(baseScale);
+		bool inside = !span || (pixelPos[i] >= layerFrom && pixelPos[i] <= layerTo);
+		CRGB l = inside ? layerBuf[i] : CRGB(CRGB::Black);
+		switch (layerMode) {
+		case FX_MAX:
+			if (amount != 255) l.nscale8(amount);
+			buf[i] |= l;	// je Kanal der größere Wert
+			break;
+		case FX_OVER:
+			if (l) buf[i] = (amount == 255) ? l : blend(buf[i], l, amount);
+			break;
+		case FX_MASK:
+			if (inside) buf[i].nscale8(255 - scale8(amount, 255 - l.getLuma()));	// außerhalb des Abschnitts bleibt das Bild
+			break;
+		default:	// FX_ADD
+			if (amount != 255) l.nscale8(amount);
+			buf[i] += l;
+			break;
+		}
+	}
+}
+
 // Hash je LED für TRANS_DISSOLVE (auf jedem Gerät fest, sieht zufällig aus)
 static inline uint8_t pixelHash(uint16_t i) {
 	uint16_t h = i * 40503u;
@@ -272,6 +425,9 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 #endif
 
 void fxPresent() {
+	if (layerCapturing) return;		// der Effekt der Ebene zeichnet nur, ausgegeben wird mit dem unteren Effekt
+	layerPending = false;
+
 	#ifdef debug_fx_frametime
 		uint32_t t0 = micros();
 	#endif
@@ -282,8 +438,9 @@ void fxPresent() {
 		uint32_t ms = millisCounterForProgChange;
 		uint8_t bright = modBrightness(ms);
 		bool trans = (transType != TRANS_CUT && ms < transMs);
-		if (trans || modsActive(bright)) {
+		if (trans || modsActive(bright) || layerUsed) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
+			if (layerUsed) applyLayer(ledsOut);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
 			fxFrame = ledsOut;
@@ -336,4 +493,9 @@ void fxPartReset() {
 	transType = TRANS_CUT;
 	transMs = 0;
 	resetMods();
+	if (layerCapturing) {	// Part-Wechsel mitten in der Ebene (sollte nicht vorkommen): Bild des unteren Effekts zurück
+		memcpy(leds, baseBuf, sizeof(baseBuf));
+		layerCapturing = false;
+	}
+	resetLayer();
 }

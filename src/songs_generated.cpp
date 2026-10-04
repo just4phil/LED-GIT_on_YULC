@@ -281,7 +281,11 @@ void gen_AllTheThingsSheSaid() {
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 5581);
 		fxTransition(TRANS_WIPE, 2791);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 11163, 70, 86);
+		fxLayerEnd(FX_ADD, 89);
 		scene(SCENE_GLOW, 11163, 70, 86);
+		fxLayerFlush();
 		break;
 
 	case 70:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)
@@ -362,9 +366,13 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_SPARKLE, 5582, 145, 86);
 		break;
 
-	case 145:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben
+	case 145:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter
 		setColorScheme(SCHEME_FIRE);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 5581, 150, 86);
+		fxLayerEnd(FX_ADD, 153);
 		scene(SCENE_DROP, 5581, 150, 86);
+		fxLayerFlush();
 		break;
 
 	case 150:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz

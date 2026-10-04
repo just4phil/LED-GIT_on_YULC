@@ -14,6 +14,13 @@
  *            fxPulse(122, 120);				// Helligkeit pumpt im Beat
  *            scene(SCENE_DROP, 15737, 35, 122); break;
  *
+ * Zwei Effekte übereinander: der obere läuft zwischen fxLayerBegin() und fxLayerEnd() in einem eigenen Kontext
+ * (eigenes Bild, eigene Zähler), der untere danach wie gewohnt:
+ *
+ *   case 45: fxLayerBegin(); scene(SCENE_SPARKLE, 11163, 50, 86); fxLayerEnd(FX_ADD, 150);
+ *            scene(SCENE_GLOW, 11163, 50, 86);
+ *            fxLayerFlush(); break;
+ *
  * Alles rechnet aus der Zeit seit Part-Beginn -> läuft auf allen Geräten gleich, unabhängig von der LED-Zahl.
  * switchToPart() setzt Übergang und Modifikatoren zurück; ohne Anmeldung verhält sich ein Part wie bisher.
  */
@@ -27,6 +34,20 @@
 void fxPresent();				// einzige Stelle mit FastLED.show(): mischen, Marker setzen, ausgeben
 void fxPartReset();				// von switchToPart(): Bild des alten Parts merken, Übergang + Modifikatoren zurücksetzen
 extern const CRGB* fxFrame;		// das Bild, das gitBlindingLEDs_OFF_MarkerLEDs_ON() auf die Ausgänge kopiert
+
+//--- Ebene: ein zweiter Effekt über dem Effekt des Parts ---
+enum FxLayerMode : uint8_t {
+	FX_ADD = 0,			// aufaddieren, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)
+	FX_MAX,				// der hellere Pixel gewinnt
+	FX_OVER,			// die Ebene deckt, wo sie nicht schwarz ist (Text über einer Szene)
+	FX_MASK,			// die Ebene ist ein Fenster: wo sie dunkel ist, wird der Effekt darunter dunkel
+};
+void fxLayerBegin();	// ab hier zeichnet der folgende Effekt in die Ebene statt auf die LEDs
+void fxLayerEnd(uint8_t mode = FX_ADD, uint8_t amount = 255, uint8_t from = 0, uint8_t to = 255);	// amount = Stärke der Ebene,
+						// from..to = Abschnitt des Geräts (wie fxMaskSpan), in dem die Ebene wirkt
+void fxLayerFlush();	// nach dem unteren Effekt: gibt aus, falls der in diesem Durchlauf selbst nichts ausgegeben hat
+						// (Effekte wie progStrobo zeichnen nur bei einem Wechsel - die Ebene soll trotzdem weiterlaufen)
+// Nicht derselbe Effekt oben und unten: die Effekte halten eigenen Zustand in statischen Variablen.
 
 //--- Übergänge: so kommt das Bild des neuen Parts ins Bild des alten ---
 enum FxTransition : uint8_t {
