@@ -1047,6 +1047,16 @@ def write_if_changed(path, text):
 		path.write_text(text, encoding="utf-8")
 
 
+def gen_is_generated(frags):
+	"""isGeneratedSong(): bei diesen Songs nimmt main.cpp die Verspätung eines Part-Wechsels in den nächsten Part mit."""
+	cases = ["\tcase " + ": case ".join(str(f["id"]) for f in frags) + ":", "\t\treturn true;"] if frags else []
+	return "\n".join(["//==================================================================",
+					  "// Generierte Songs haben eine exakte Timeline (kein von Hand verkürzter Part): main.cpp gleicht bei ihnen",
+					  "// die Verspätung jedes Part-Wechsels aus, damit sich über den Song kein Versatz zum Klick aufsummiert",
+					  "//==================================================================",
+					  "bool isGeneratedSong(byte songID) {", "\tswitch (songID) {"] + cases + ["\t}", "\treturn false;", "}"])
+
+
 def assemble():
 	"""src/songs_generated.cpp/.h + Block in main.cpp aus den generated.cpp aller Song-Ordner bauen.
 	Der Code jedes Songs wird unverändert übernommen, hier wird nichts neu generiert."""
@@ -1059,11 +1069,12 @@ def assemble():
 			seen[key] = f["dir"]
 
 	write_if_changed(OUT_CPP, CPP_HEADER + "\n" + "\n\n".join(f["code"] for f in frags) + "\n\n"
-					 + gen_markers([f["markers"] for f in frags if f["markers"]]) + "\n")
+					 + gen_markers([f["markers"] for f in frags if f["markers"]]) + "\n\n" + gen_is_generated(frags) + "\n")
 
 	h = ["// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern", "#pragma once", "",
 		 "#include <Arduino.h>", "",
-		 "void setGeneratedMarkerLEDs(byte songID, byte partID);\t// Marker der generierten Songs", ""]
+		 "void setGeneratedMarkerLEDs(byte songID, byte partID);\t// Marker der generierten Songs",
+		 "bool isGeneratedSong(byte songID);\t// exakte Timeline -> main.cpp gleicht die Verspätung der Part-Wechsel aus", ""]
 	for f in frags:
 		h.append(f"void {f['function']}();\t// #{f['id']} {f['name']}")
 	if any(f["parts"] for f in frags):

@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 void setGeneratedMarkerLEDs(byte songID, byte partID);	// Marker der generierten Songs
+bool isGeneratedSong(byte songID);	// exakte Timeline -> main.cpp gleicht die Verspätung der Part-Wechsel aus
 
 void gen_DancingOnMyOwn();	// #8 Dancing On My Own
 void gen_AllTheThingsSheSaid();	// #31 All The Things She Said

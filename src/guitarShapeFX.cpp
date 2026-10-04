@@ -161,6 +161,12 @@ void fxShow() {
 	FastLED.show();
 }
 
+// ms seit dem letzten Beat - exakt über bpm gerechnet (60000 / bpm ist gerundet und läuft pro Beat bis zu 1 ms davon)
+unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm) {
+	if (bpm == 0) bpm = 1;
+	return ((uint32_t)ms * bpm % 60000) / bpm;
+}
+
 // Beats seit Partbeginn (bpm), ohne Überlauf
 uint32_t fxBeats(uint8_t bpm) {
 	return (uint32_t)((uint64_t)millisCounterForProgChange * bpm / 60000);
@@ -551,7 +557,7 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 
 	if (fxFrameDue(10)) {
 		unsigned int period = 60000 / max((uint8_t)1, bpm);
-		unsigned int t = millisCounterForProgChange % period;
+		unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 
 		int lub = 255 - (int)t * 255 / 150;
 		int dub = (t >= HEART_DUB_MS) ? 200 - (int)(t - HEART_DUB_MS) * 200 / 180 : 0;

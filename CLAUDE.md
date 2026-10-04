@@ -59,6 +59,9 @@ Three CRGB arrays in `main.cpp`:
 
 ### Timing
 A hardware timer (`TimerFunctions.h`) fires every 2 ms and sets `flag_processFastLED = true`. The main loop only runs the LED switch-case when that flag is set, keeping millisecond counters accurate. All effect timing uses `millisCounterTimer`, `millisCounterForProgChange`, etc. — never `delay()`.
+The loop notices a part change a few ms late (one pass incl. `FastLED.show()`). For generated songs
+(`isGeneratedSong()`, assembled by `songgen.py`) `loop()` carries that lateness into the next part so it cannot add
+up over a song; hand-written songs keep the old behaviour because their part lengths were tuned by hand.
 
 ### Song / part state machine
 `switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The main loop `switch(songID)` dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.

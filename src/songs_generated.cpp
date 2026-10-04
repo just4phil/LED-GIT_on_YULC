@@ -528,3 +528,15 @@ void setGeneratedMarkerLEDs(byte songID, byte partID) {
 	}
 #endif
 }
+
+//==================================================================
+// Generierte Songs haben eine exakte Timeline (kein von Hand verkürzter Part): main.cpp gleicht bei ihnen
+// die Verspätung jedes Part-Wechsels aus, damit sich über den Song kein Versatz zum Klick aufsummiert
+//==================================================================
+bool isGeneratedSong(byte songID) {
+	switch (songID) {
+	case 8: case 31: case 33:
+		return true;
+	}
+	return false;
+}

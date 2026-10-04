@@ -294,7 +294,17 @@ void loop() {
 			informServerOnNextChange(nextSongPart);	// BT BLE Client: sync LEDs to server on request
 		#endif
 
+		// Der Wechsel wird hier erst einige ms nach der Part-Grenze bemerkt (ein Loop-Durchlauf mit FastLED.show()).
+		// Generierte Songs haben eine exakte Timeline: die Verspätung in den nächsten Part mitnehmen, sonst summiert
+		// sie sich über 30 Parts zu einem sichtbaren Versatz. Alte Songs bleiben, wie sie von Hand abgestimmt sind.
+		unsigned int late = 0;
+		if (isGeneratedSong(songID) && millisCounterForProgChange >= nextChangeMillis) late = millisCounterForProgChange - nextChangeMillis;
 		switchToPart(nextSongPart);
+		if (late > 0 && late < 500) {
+			noInterrupts();
+			millisCounterForProgChange += late;
+			interrupts();
+		}
 	}
 	
 	//--- check if LEDs should be on ----

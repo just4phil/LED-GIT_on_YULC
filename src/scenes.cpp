@@ -76,7 +76,7 @@ void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 	if (fxFrameDue(10)) {
 		unsigned int period = 60000 / max((uint8_t)1, bpm);
 		unsigned int ms = millisCounterForProgChange;
-		uint8_t env = (ms >= delayMillis) ? flashEnvelope((ms - delayMillis) % period, period) : 0;
+		uint8_t env = (ms >= delayMillis) ? flashEnvelope(fxBeatPhase(ms - delayMillis, bpm), period) : 0;
 		CRGB c = col;
 		fill_solid(leds, anz_LEDs, c.nscale8(env));
 	}
@@ -103,7 +103,7 @@ void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		CRGB c = CRGB::Black;
 		if (pingPongPos == STAGE_POS) {
 			unsigned int period = 60000 / max((uint8_t)1, bpm);
-			unsigned int t = millisCounterForProgChange % period;
+			unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 			c = deviceColor();
 			c.nscale8(255 - t * 200 / period);	// hell rein, bis zum nächsten Beat abklingen
 		}
@@ -213,7 +213,7 @@ void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 
 	if (fxFrameDue(10)) {
 		unsigned int period = 60000 / max((uint8_t)1, bpm);
-		unsigned int t = millisCounterForProgChange % period;
+		unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 
 		CRGB base = col;
 		fill_solid(leds, anz_LEDs, base.nscale8(max((uint8_t)8, scale8(flashEnvelope(t, period), 100))));

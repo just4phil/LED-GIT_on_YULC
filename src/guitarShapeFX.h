@@ -64,6 +64,7 @@ void fire2012Step(uint8_t* heat, int len);
 bool fxPartStart(unsigned int durationMillis, byte nextPart);	// true beim ersten Aufruf eines Parts
 bool fxFrameDue(unsigned int ms);								// true, wenn der nächste Frame fällig ist
 void fxShow();													// Marker + FastLED.show(), beachtet LEDsTurnedOff
+unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm);				// ms seit dem letzten Beat, ohne Rundungsdrift
 uint32_t fxBeats(uint8_t bpm);									// Beats seit Partbeginn		// ein Fire2012-Schritt, heat[0] = unten
 extern const CRGBPalette16 outlineBlueFire_p;
 
