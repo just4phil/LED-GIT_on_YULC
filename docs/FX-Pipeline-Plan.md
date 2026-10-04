@@ -11,21 +11,28 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 04.10.2026
+Zuletzt aktualisiert: 04.10.2026 (Ende der Session nach Phase 4b Punkt 1)
 
 - **Branch:** `fx-pipeline`. Phasen 1–4 sind committet (`05e5873`), dazu der Demo-Song 92 (`cf720fd`) und
-  Phase 4b Punkt 1 (Commit „FX-Pipeline: Ebene gezielt steuern", siehe `git log`). Alle fünf Envs bauen.
-- **Nicht committet:** `src/todo.txt` und `src/definitions.h` (Änderungen des Users, nicht anfassen).
+  Phase 4b Punkt 1 (`85276c8`). Der Abschluss dieser Session (nur dieses Dokument) ist der Commit direkt danach,
+  siehe `git log`. Alle fünf Envs bauen mit dem Stand `85276c8`.
+- **Nicht committet:** `src/todo.txt` und `src/definitions.h` (Änderungen des Users, nicht anfassen). In
+  `definitions.h` ist nur `START_WITH_PIPELINE_DEMO` aktiviert.
 - **Auf der Hardware gesehen (User, 04.10.2026):** Song #31 All The Things She Said mit Übergängen und Ebene –
   „sehr geil, genau die richtige Richtung". Die alten handgeschriebenen Songs laufen alle noch.
   Song 92 `pipelineDemo` durchgesehen: „sieht sehr geil aus", vor allem die Farbverläufe auf der Matrix und Text
   über anderen Effekten; „für mich sieht alles gut aus", Marker-LEDs stabil. Keine Befunde.
-- **Wartet auf den User:** die neuen Parts 82–88 von Song 92 auf der Hardware ansehen (Ebene gezielt steuern,
-  noch nie auf der Hardware gelaufen; dafür neu flashen). Bausteine in `docs/effekt-katalog.yaml` unter
-  `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem User). `START_WITH_PIPELINE_DEMO` in
-  `src/definitions.h` ist beim User lokal aktiv (nicht committen, vor einem OTA-Build wieder auskommentieren).
+- **Wartet auf den User:**
+  1. Alle Geräte mit dem Stand `85276c8` neu flashen und in Song 92 die neuen Parts 82–88 ansehen (ab 2:50; Ebene
+     gezielt steuern, noch nie auf der Hardware gelaufen). Worauf achten: siehe „Verifikation", Punkt 3.
+  2. Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder `urteil` / `notiz` gehören dem
+     User; neu ist der Block `ebene_steuern`). Mündlich schon gesagt, aber noch nicht eingetragen: Text über der
+     Szene (`FX_OVER`, Part 74) gefällt sehr gut.
+  3. `START_WITH_PIPELINE_DEMO` in `src/definitions.h` ist beim User lokal aktiv: nicht committen, vor einem
+     OTA-Build wieder auskommentieren (sonst starten alle Geräte mit der Demo statt in der Songpause).
 - **In Arbeit:** nichts.
-- **Nächster Schritt:** Phase 4b, Punkt 2 (eigene Text-Ebene). Befunde aus den Parts 82–88 zuerst beheben.
+- **Nächster Schritt:** Phase 4b, Punkt 2 (eigene Text-Ebene), Entwurf siehe dort. Zu Beginn der nächsten Session
+  den User nach Befunden aus den Parts 82–88 fragen und diese zuerst beheben.
 
 Reihenfolge der nächsten Schritte:
 
@@ -247,6 +254,24 @@ Zu Punkt 1 (umgesetzt am 04.10.2026):
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt ohne die neuen Schlüssel dieselben Zeilen wie in `generated.cpp`;
   neue Schlüssel und Fehlermeldungen im Speicher getestet (kein Song neu generiert). **Nicht geprüft:** das Bild auf
   der Hardware.
+
+Zu Punkt 2 (Entwurf, noch nichts umgesetzt – vor der Umsetzung am Code prüfen):
+
+- Heute belegt `text: {…, over: true}` die eine Ebene: `apply_texts()` in `tools/songgen.py` trägt den Text als
+  `overlay` mit `mode: over` für die Matrix ein und bricht ab, wenn der Abschnitt schon ein `overlay` hat.
+- Ziel: Text liegt immer zuoberst, darunter Ebene, darunter der Effekt des Parts.
+- Firmware (`src/fxPipeline.cpp`): zweiter Kontext wie `layerBuf` / `layerCtx` nur für Text, z. B.
+  `fxTextBegin()` / `fxTextEnd()`, gemischt nach `applyLayer()` immer deckend (wie `FX_OVER`). Nur auf den
+  Matrix-Geräten nötig; kostet dort einen weiteren Puffer (`NUMMATRIX` × 3 Byte) und einen weiteren Kontext-Wechsel
+  je Durchlauf – mit `debug_fx_frametime` messen.
+- Zu klären: `progText` und der Effekt der Ebene dürfen sich keinen statischen Zustand teilen (gleiche Regel wie
+  „nie derselbe Effekt oben und unten"); wie `fxLayerFlush()` mit zwei Ebenen arbeitet; ob `under` und die übrigen
+  Ebenen-Schlüssel im `text:` dann die Text-Ebene oder die Ebene darunter meinen (Vorschlag: die Text-Ebene; `under`
+  dimmt dann alles unter dem Text).
+- Generator: `apply_texts()` legt den Text in die Text-Ebene statt ins `overlay`; die Sperre „text mit over und
+  overlay zugleich" entfällt. Ohne `overlay` im Abschnitt soll derselbe Code entstehen wie heute, damit bestehende
+  Songs unverändert bleiben – sonst vorher mit dem User klären.
+- Demo: eigener Part in Song 92 (Farbband + Glitzern + Text).
 
 Zu Punkt 3 (Grenze): Die Leitlinie „alles aus der Zeit seit Part-Beginn" gilt dann für die Ebene nicht mehr. Ein
 Gerät, das per BLE mitten im Song einsteigt, hat einen anderen Ebenen-Zustand als die übrigen. Bei zufälligen
