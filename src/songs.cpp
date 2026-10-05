@@ -4133,7 +4133,7 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
-	case 0:		// Feuer: muss auf der Matrix von unten aufsteigen (stand dort auf dem Kopf), die Säulen sind dort 2 Spalten breit
+	case 0:		// Feuer: auf der Matrix feste Flammen an zufälligen Plätzen, die nur ihre Höhe ändern (von unten, unter der Oberkante)
 		setColorScheme(SCHEME_FIRE);
 		scene(SCENE_FIRE, 8000, 6, bpm);
 		break;

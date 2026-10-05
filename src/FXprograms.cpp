@@ -2849,18 +2849,20 @@ void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int redu
 //=========== progFire =============================================
 //==================================================================
 
-// Auf den Matrix-Geräten ist eine Feuersäule 2 Spalten breit: eine Spalte wirkt neben den Lampen zu dünn
-#if DEVICE_CLASS == CLASS_MATRIX
-	#define FIRE_COL_WIDTH	2
-#else
-	#define FIRE_COL_WIDTH	1
-#endif
-#define FIRE_COLS	((MATRIX_WIDTH + FIRE_COL_WIDTH - 1) / FIRE_COL_WIDTH)
-#define FIRE_COOLING	(650 / MATRIX_HEIGHT)	// größte Abkühlung je Schritt, an die Höhe angepasst: die Flammen enden unterhalb der Oberkante
-#define FIRE_HEAT_GAIN	140		// Prozent: schiebt den Farbverlauf nach oben (mehr Weiß und Gelb am Fuß, Rot erst an der Spitze)
+// Feste Flammen: die Plätze werden beim Part-Start einmal ausgewürfelt, danach brennt jede Flamme an ihrem Platz und
+// ändert nur ihre Höhe (wie auf den Lampen). Eine Flamme ist 4 Pixel breit: 2 Pixel Kern, links und rechts je 1 Pixel
+// Flanke, die 2 Zeilen niedriger ist - so läuft die Flamme nach oben spitz zu.
+#define MFIRE_FLAMES	((MATRIX_WIDTH / 6) > 0 ? (MATRIX_WIDTH / 6) : 1)
+#define MFIRE_SLOT		(MATRIX_WIDTH / MFIRE_FLAMES)	// jede Flamme hat ihren Abschnitt, darin liegt sie zufällig
+#define MFIRE_COOLING	(1200 / MATRIX_HEIGHT)	// größte Abkühlung je Schritt, an die Höhe angepasst: die Flammen enden unterhalb der Oberkante
+#define MFIRE_SPARKING	120		// Chance (von 255) je Schritt und Flamme auf neue Glut am Fuß
+#define MFIRE_EMBER		90		// der Fuß glüht immer mindestens so heiß: keine Flamme geht ganz aus
+#define MFIRE_HEAT_GAIN	110		// Prozent: schiebt den Farbverlauf nach oben (mehr Weiß und Gelb am Fuß, Rot erst an der Spitze)
+#define MFIRE_FLANK_DROP	2	// um so viele Zeilen ist die Flanke niedriger als der Kern
 
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire) {
-	static uint8_t heat[MATRIX_HEIGHT][FIRE_COLS];
+	static uint8_t heat[MFIRE_FLAMES][MATRIX_HEIGHT + MFIRE_FLANK_DROP];	// [Flamme][0 = unten], oben Platz für die Flanke
+	static uint8_t flameX[MFIRE_FLAMES];	// linke Flanke jeder Flamme
 
 	static const CRGBPalette16 BlueFire_p = {
 		CRGB::Black,     CRGB::Black,       CRGB(0,0,50),    CRGB(0,0,110),
@@ -2875,39 +2877,38 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 		nextChangeMillisAlreadyCalculated = true;
 		millisCounterTimer = 0;
 		memset(heat, 0, sizeof(heat));
+		for (int f = 0; f < MFIRE_FLAMES; f++) {
+			flameX[f] = f * MFIRE_SLOT + random(0, max(1, MFIRE_SLOT - 3));
+		}
 	}
 
 	if (millisCounterTimer >= reduceSpeed) {
 		millisCounterTimer -= reduceSpeed;
 
-		// 1. Cool down every cell
-		for (int y = 0; y < MATRIX_HEIGHT; y++) {
-			for (int x = 0; x < FIRE_COLS; x++) {
-				int c = random(0, FIRE_COOLING);
-				heat[y][x] = (heat[y][x] > c) ? (uint8_t)(heat[y][x] - c) : 0;
-			}
-		}
-
-		// y = 0 ist auf allen Matrix-Geräten oben (wie beim Text): Funken entstehen in der untersten Zeile, die Hitze steigt zu y = 0 auf
-		for (int y = 0; y < MATRIX_HEIGHT - 2; y++) {
-			for (int x = 0; x < FIRE_COLS; x++) {
-				heat[y][x] = ((int)heat[y+1][x] + heat[y+2][x] + heat[y+2][x]) / 3;
-			}
-		}
-		// die zweite Zeile von unten übernimmt die Glut der untersten (blieb sonst dunkel, darüber kam nur 2/3 der Hitze an)
-		for (int x = 0; x < FIRE_COLS; x++) heat[MATRIX_HEIGHT-2][x] = heat[MATRIX_HEIGHT-1][x];
-		if (random(255) < 120) {
-			int fx = random(0, FIRE_COLS);
-			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + (int)random(160, 255));
+		for (int f = 0; f < MFIRE_FLAMES; f++) {
+			uint8_t* h = heat[f];
+			for (int y = 0; y < MATRIX_HEIGHT; y++) h[y] = qsub8(h[y], random8(0, MFIRE_COOLING));
+			for (int y = MATRIX_HEIGHT - 1; y >= 2; y--) h[y] = (h[y-1] + h[y-2] + h[y-2]) / 3;	// Hitze steigt auf
+			h[1] = h[0];
+			if (random8() < MFIRE_SPARKING) h[0] = qadd8(h[0], random8(160, 255));
+			if (h[0] < MFIRE_EMBER) h[0] = MFIRE_EMBER;
 		}
 
 		if (!LEDsTurnedOff) {
 			for (int y = 0; y < MATRIX_HEIGHT; y++) {
-				for (int x = 0; x < MATRIX_WIDTH; x++) {
-					uint8_t h = min(255, heat[y][x / FIRE_COL_WIDTH] * FIRE_HEAT_GAIN / 100);
-					CRGB c = blueFire ? ColorFromPalette(BlueFire_p, h)
-					                  : HeatColor(h);
-					matrix->drawPixel(x, y, c);
+				for (int x = 0; x < MATRIX_WIDTH; x++) matrix->drawPixel(x, y, CRGB(0, 0, 0));
+			}
+			// y = 0 ist auf allen Matrix-Geräten oben (wie beim Text): die Flammen stehen auf der untersten Zeile
+			for (int f = 0; f < MFIRE_FLAMES; f++) {
+				for (int i = 0; i < 4; i++) {
+					int x = flameX[f] + i;
+					if (x >= MATRIX_WIDTH) break;
+					bool flank = (i == 0 || i == 3);
+					for (int y = 0; y < MATRIX_HEIGHT; y++) {
+						uint8_t v = min(255, heat[f][y + (flank ? MFIRE_FLANK_DROP : 0)] * MFIRE_HEAT_GAIN / 100);
+						CRGB c = blueFire ? ColorFromPalette(BlueFire_p, v) : HeatColor(v);
+						matrix->drawPixel(x, MATRIX_HEIGHT - 1 - y, c);
+					}
 				}
 			}
 			fxPresent();

@@ -292,7 +292,7 @@ effekte:
     notiz: "gedacht als zweites Preset für die Pausen zwischen den Songs (ganz ruhig, für Gitarren und Lampen, auf der Matrix wohl nicht). Nicht im Einsatz, weil nicht zufrieden - optimieren"
 
   progFire:
-    wirkung: "Flammen steigen von unten auf (Matrix, Säulen 2 Spalten breit), wahlweise blau"
+    wirkung: "feste Flammen an zufälligen Plätzen, die nur ihre Höhe ändern (Matrix, je 4 Pixel breit, spitz zulaufend), wahlweise blau"
     art: raster
     rolle: [flaeche]
     energie: [4, 5]

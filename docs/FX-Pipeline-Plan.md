@@ -18,7 +18,7 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791226134, mit der Feuer-Korrektur unten,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791226409, mit dem neuen Feuer unten,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
@@ -57,8 +57,18 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
      geschoben. Danach der User: „besser, aber jetzt fast etwas zu hoch skaliert", das Feuer soll ganz auf die
      10 Zeilen passen. Deshalb kühlt es jetzt stärker ab: `FIRE_COOLING` = 650 / `MATRIX_HEIGHT` (65 statt 40 bei
      10 Zeilen); in der Simulation erreicht nur noch selten ein roter Rest die oberste Zeile, Weiß bleibt in den
-     unteren vier. **Offen:** passt die Höhe auf der Hardware? Sonst `FIRE_COOLING` (höher = kleiner) oder
-     `FIRE_HEAT_GAIN` (100 = ohne Anhebung) in `src/FXprograms.cpp` nachstellen.
+     unteren vier.
+   - Feuer, dritte Rückmeldung (05.10.2026): Auf den Lampen brennt das Feuer an einer Stelle und ändert nur die
+     Höhe, auf der Matrix wechselte es dauernd den Platz – „unruhig, man kann die Flammen nie wirklich sehen".
+     Wunsch: Plätze einmal auswürfeln, nur dort brennen lassen. Umgesetzt: `progFire` ist neu geschrieben mit
+     festen Flammen (`MFIRE_…` in `src/FXprograms.cpp`): `MATRIX_WIDTH / 6` Flammen (9 auf der Scrollmatrix), jede
+     in ihrem 6-Pixel-Abschnitt an zufälligem Platz (beim Part-Start gewürfelt), 4 Pixel breit (2 Pixel Kern,
+     je 1 Pixel Flanke, die 2 Zeilen niedriger ist → spitz zulaufend). Jede Flamme rechnet ihr eigenes Fire2012
+     mit Dauerglut am Fuß (`MFIRE_EMBER`). Simulation für 10 Zeilen: Kern 3 bis 9 Zeilen hoch (Median 6), Flanke
+     1 bis 7, oberste Zeile nur in 3 % der Bilder an, unten weiß, Mitte gelb, Spitze rot. Die Werte `FIRE_COOLING` /
+     `FIRE_HEAT_GAIN` von vorher gibt es nicht mehr. **Offen:** Bild auf der Hardware – Zahl, Breite und Höhe der
+     Flammen (Stellgrößen: Teiler 6 in `MFIRE_FLAMES`, `MFIRE_COOLING` höher = kleiner, `MFIRE_SPARKING`,
+     `MFIRE_HEAT_GAIN`).
    - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
      gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
    - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
@@ -66,8 +76,6 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
    - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
      allen Geräten gleichzeitig nach 2 Takten ein.
    Was abgenommen ist, wieder nach hinten sortieren.
-   - Erledigt (Merker des Users vom 05.10.2026): `progFire` rechnet auf den Matrix-Geräten nur noch
-     `MATRIX_WIDTH / 2` Säulen und füllt je zwei Spalten (`FIRE_COL_WIDTH` in `src/FXprograms.cpp`).
 2. **Phase 3b, Punkt 1 – Rest:** `fxSoft` auch für `progFullColors` / `progSternNeu`, soweit ohne Eingriff in
    den Ablauf möglich – erst nach dem Urteil des Users zu den Parts 6–9.
 3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
