@@ -18,7 +18,7 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791223913,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791224289, mit der Feuer-Korrektur unten,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
@@ -50,8 +50,12 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
 ### Morgen weiter
 
 1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht alles am Anfang von Song 92:
-   - Part 0: steigt das Feuer auf der Matrix von unten auf? Sind die doppelt breiten Säulen dick genug, passt die
-     Dichte (Funkenrate ist gleich geblieben, verteilt sich aber auf halb so viele Säulen)?
+   - Part 0, Feuer auf der Matrix – Rückmeldung des Users vom 05.10.2026: „die Säulen sind dick genug und richtig
+     herum", aber nur etwa 1 Pixel Weiß am Fuß, der Balken fast komplett rot. Ursache war ein Fehler in `progFire`:
+     die zweite Zeile von unten wurde nie mit Hitze versorgt (blieb dunkel), darüber kamen nur 2/3 der Hitze an.
+     Behoben (Zeile übernimmt die Glut der untersten) und der Farbverlauf mit `FIRE_HEAT_GAIN` 140 % nach oben
+     geschoben; in der Simulation jetzt Weiß am Fuß, Gelb in der Mitte, Rot an der Spitze. **Offen:** passt der
+     Verlauf auf der Hardware? Sonst `FIRE_HEAT_GAIN` in `src/FXprograms.cpp` nachstellen (100 = ohne Anhebung).
    - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
      gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
    - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?

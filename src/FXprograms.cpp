@@ -2856,6 +2856,7 @@ void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int redu
 	#define FIRE_COL_WIDTH	1
 #endif
 #define FIRE_COLS	((MATRIX_WIDTH + FIRE_COL_WIDTH - 1) / FIRE_COL_WIDTH)
+#define FIRE_HEAT_GAIN	140		// Prozent: schiebt den Farbverlauf nach oben (mehr Weiß und Gelb am Fuß, Rot erst an der Spitze)
 
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire) {
 	static uint8_t heat[MATRIX_HEIGHT][FIRE_COLS];
@@ -2892,6 +2893,8 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 				heat[y][x] = ((int)heat[y+1][x] + heat[y+2][x] + heat[y+2][x]) / 3;
 			}
 		}
+		// die zweite Zeile von unten übernimmt die Glut der untersten (blieb sonst dunkel, darüber kam nur 2/3 der Hitze an)
+		for (int x = 0; x < FIRE_COLS; x++) heat[MATRIX_HEIGHT-2][x] = heat[MATRIX_HEIGHT-1][x];
 		if (random(255) < 120) {
 			int fx = random(0, FIRE_COLS);
 			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + (int)random(160, 255));
@@ -2900,7 +2903,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 		if (!LEDsTurnedOff) {
 			for (int y = 0; y < MATRIX_HEIGHT; y++) {
 				for (int x = 0; x < MATRIX_WIDTH; x++) {
-					uint8_t h = heat[y][x / FIRE_COL_WIDTH];
+					uint8_t h = min(255, heat[y][x / FIRE_COL_WIDTH] * FIRE_HEAT_GAIN / 100);
 					CRGB c = blueFire ? ColorFromPalette(BlueFire_p, h)
 					                  : HeatColor(h);
 					matrix->drawPixel(x, y, c);
