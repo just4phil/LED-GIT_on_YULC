@@ -11,111 +11,72 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (Blinder heller und länger gebaut, warten auf den Hardware-Test)
+Zuletzt aktualisiert: 05.10.2026 (Ende der Session: Phase 3b und der Blinder sind gebaut und abgenommen)
 
-- **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
-  Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
-  ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
-  direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
-  einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791231324, mit hellerem Blinder,
-  mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
-  aufgespielt und nicht gesehen.**
-- **Nicht committet:** nichts. `START_WITH_PIPELINE_DEMO` hat der User in `src/definitions.h` wieder ausgeschaltet
-  (am 05.10.2026, spätestens seit Firmware 1791229972): die Geräte starten in der Songpause, Song 92 wird per MIDI CC#0 = 92
-  gewählt.
-- **Auf der Hardware gesehen (User):**
-  - 04.10.2026: Song #31 All The Things She Said mit Übergängen und Ebene – „sehr geil, genau die richtige
-    Richtung". Die alten handgeschriebenen Songs laufen alle noch. Song 92, Parts bis 80: „sieht sehr geil aus",
-    vor allem die Farbverläufe auf der Matrix und Text über anderen Effekten; Marker-LEDs stabil. Keine Befunde.
-  - 05.10.2026: „die demo gefällt mir auch" (keine Befunde; ob die Parts 82–88 dabei waren, hat er nicht
-    ausdrücklich gesagt). Nach dem Flashen von `6530dc8`: **„der schwarze text kommt gut rüber"** (Song 92,
-    Part 0, `FX_CUT`). Zu Part 2 (Maske), Part 90 (Text-Ebene) und zum gedrehten Feuer hat er nichts gesagt.
-  - 05.10.2026, später: „bisher sieht alles gut und ruckelfrei aus", OTA-Update klappt. Welche Parts er dabei
-    gesehen hat, hat er nicht gesagt; die noch offenen stehen deshalb jetzt am Anfang von Song 92 (siehe unten).
-  - 05.10.2026, zu Part 88: Das Glitzern unter dem Tor (`fxLayerGate`) blitzt gemeinsam auf – „sieht etwas
-    eigenartig aus, wie ein Wackelkontakt". Angebotener Umbau (88 nur Zeitfenster; Tor an einer geschlossenen
-    Fläche zeigen) abgelehnt: „das passt erstmal". Für Songs merken: Tor nicht auf zufällige Effekte legen.
-- **Außerhalb der Pipeline (05.10.2026):** OTA wartet nicht mehr 20 s auf fehlende Clients (`83f06d4`): Die
-  Gitarre sendet, sobald sich nach dem ersten Client 5 s lang kein weiterer angemeldet hat. Die langen Wartezeiten
-  kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
-- **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
-  der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
-  **Nummern (User, 05.10.2026):** Vor jedem noch nicht abgenommenen Part zeigt die Matrix 3 s lang seine Nummer
-  (`demoNumber()`, Part `DEMO_NR(n)` = 110 + n springt danach in Part n; Part 0 zeigt die Nummer des ersten Parts).
-  Worauf bei welcher Nummer zu achten ist, steht je Part in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8 –
-  bei jedem neuen Baustein dort genau eintragen. Abgenommenes läuft ohne Nummer.
-  Reihenfolge jetzt: mit Nummer 17, 19, 22 Blinder auf allen Geräten; danach ohne Nummer 21 Blinder auf den Lampen,
-  1 Text-Ebene,
-  18, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 18 ist der harte Vergleich), 13, 14, 16 `progPalette`
-  (13 ist der alte Aufruf zum Vergleich), 6–9 weiche Farbwechsel (`fxSoft`; Part 6 ist der harte Vergleich),
-  2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
-  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 5:45 Minuten.
-- **Feuer abgenommen (User, 05.10.2026):** zu den festen Flammen auf der Matrix (`a9b5152`): „ja mega! das war
-  genau die richtige Entscheidung!! das sieht jetzt richtig klasse aus!!!" Werte in `MFIRE_…` so lassen.
-- **Phase 3b Punkt 2 und 3 gebaut (05.10.2026):** `fxSmooth(ms)` / YAML `smooth: <Beats>` und `progPalette` mit Tempo
-  und Fade, Commit „FX-Pipeline: Nachleuchten (fxSmooth), progPalette mit Tempo und Fade" (siehe `git log`). Alle
-  fünf Envs bauen. **Vom User noch nicht gesehen.**
-- **Abgenommen (User, 05.10.2026):** „alle Effekte sehen sehr gut aus und alle sind verwendbar!" – gilt für
-  `fxSmooth` (Parts 18, 4, 11, 12), `progPalette` mit Tempo und Fade (13, 14, 16), `fxSoft` (6–9), Text als Maske
-  (2) und Ebene gezielt steuern (82–88). Besonders: „sehr cool finde ich auch 9, wo die Farben von Gerät zu Gerät
-  faden" (`SCENE_COLORS_WAVE` mit `soft`). Damit ist **Phase 3b abgenommen**, ebenso Phase 4b Punkt 1.
-- **Befund Text-Ebene (Part 1):** weißer Text ist auf den hellen Hintergründen schlecht lesbar – „da müsste man die
-  Hintergrund-LEDs deutlich dunkler machen oder die Farben sehr kontrastreich/komplementär". Umgesetzt: Demo Part 1
-  mit `fxTextUnder(40)` statt 120 (rund 15 % statt 47 %); der Generator dimmt bei `text: {…, over: true}` ohne
-  `under:` jetzt von sich aus auf 15 % (`TEXT_OVER_UNDER` in `tools/songgen.py`; kein bestehender Song nutzt
-  `over`, also keine Änderung an generiertem Code). Part 1 steht deshalb wieder vorn mit Nummer. Die Variante
-  „Komplementärfarbe" ist nicht gebaut – erst abwarten, ob das Abdunkeln reicht.
-- **Neuer Baustein Blinder (Idee des Users, 05.10.2026):** `fxBlinder(atMs, lenMs, amount, col, devMask)` einmalig,
-  `fxBlinderBeat(bpm, everyBeats, lenMs, amount, col, devMask, atMs)` im Raster; YAML `blinder:`. Liegt in
-  `fxPresent()` zuoberst (nach Modifikatoren und Übergang), blendet die echten LEDs zur Blinder-Farbe hin
-  (`FX_BLINDER_WARM` = warmes Weiß), voll im ersten Viertel der Länge, dann quadratisch abklingend; Phase im Raster
-  exakt über bpm, also auf allen Geräten gleich. Ein Blinder je Part. Demo: Song 92, Parts 17 (jede 1), 19
-  (einmal, lang), 21 (nur Lampen, weiß). Geprüft: alle fünf Envs bauen, YAML-Formen und Fehlermeldungen im Speicher,
-  Song #31 erzeugt denselben Code. **Nicht geprüft:** das Bild auf der Hardware, die Stromaufnahme bei vollem Weiß
-  auf allen Geräten (wie bei `TRANS_FLASH` nur über die Gesamthelligkeit begrenzt).
-- **Rückmeldung zu Blinder und Text (User, 05.10.2026):** Part 1 (Text, Szene auf 15 %): „sieht jetzt deutlich
-  besser aus" – abgenommen, die Komplementärfarben-Variante entfällt. Part 21 (Blinder nur auf den Lampen):
-  „gefallen mir auch gut, kann man gut für rhythmische Sachen verwenden" – abgenommen. Part 17 (alle Geräte, jede 1,
-  1 Beat): „zu kurz und zu dezent". Part 19 (einmalig über `SCENE_COLORS`): „bemerkt man praktisch gar nicht", passt
-  evtl. nicht auf Vollfarben, „vielleicht mal auf Palette oder einem anderen Prog ausprobieren".
-- **Ursache und Umbau:** Der Blinder blendete nur zur Blinder-Farbe hin, in der normalen Gesamthelligkeit. Gitarre
-  und Bass laufen mit `DEFAULT_BRIGHTNESS` 48, die Matrix mit 80, die Lampen mit 200 – deshalb wirkte er nur auf den
-  Lampen. Jetzt hebt `applyBlinder()` die Gesamthelligkeit an und rechnet das Bild des Effekts im selben Maß
-  herunter (der Effekt bleibt gleich hell). Grenze ohne `FX_BLINDER_BRIGHTNESS`: nie mehr Strom als ein voll weißes
-  Bild in der normalen Helligkeit, also bei warmem Weiß rund 1,7-fach (Gitarre 48 → 80, Matrix 80 → 134, Lampen
-  200 → 255), bei reinem Weiß keine Anhebung (Part 21 bleibt, wie abgenommen). Mit `#define FX_BLINDER_BRIGHTNESS`
-  in `src/definitions.h` (auskommentiert) lässt sich die Helligkeit im Blinder fest höher setzen – **nur wenn die
-  Stromversorgung reicht**, das hat der User noch nicht bestätigt. Dazu: voll hell in der ersten Hälfte der Länge
-  (vorher ein Viertel). Nebenwirkung: Marker-LEDs und Gurt sind während des Blinders im selben Maß heller.
-  Demo: 17 mit 2 Beats, 19 jetzt über `SCENE_GLOW` mit 3 s, neu 22 über `SCENE_RAIN` (dunkler Effekt).
-  **Nicht geprüft:** das Bild auf der Hardware.
-- **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
+- **Branch:** `fx-pipeline`, alles committet (siehe `git log`). Die Commits dieser Session:
+  `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
+  Demo-Reihenfolge, `e4d7b17` Nachleuchten (`fxSmooth`) und `progPalette` mit Tempo und Fade, `5071e72` Nummern
+  vor den offenen Parts, `2b902e8` Blinder und dunklerer Text-Hintergrund, `58860ba` Blinder heller und länger;
+  danach der Abschluss-Commit mit dieser Doku.
+- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Abschluss-Commit (Version 1791231881);
+  ältere Stände liegen in `ota/backup/2026-10-05_4` bis `_6`. `START_WITH_PIPELINE_DEMO` ist in
+  `src/definitions.h` aus (der User hat es am 05.10.2026 wieder ausgeschaltet): die Geräte starten in der
+  Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
+- **In Arbeit:** nichts. **Offen beim User:** nichts – alle Parts von Song 92 sind abgenommen.
 
-### Morgen weiter
+### Vom User abgenommen (alles auf der Hardware gesehen)
 
-1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht mit Nummer am Anfang von Song 92:
-   - Parts 17, 19, 22 (Blinder auf allen Geräten): jetzt hell und lang genug? Auf welchem Effekt passt er am besten?
-     Flackert etwas oder startet ein Gerät neu (Strom)? Wenn er auf Gitarre/Bass/Matrix noch zu dezent ist: fragen,
-     ob die Stromversorgung mehr hergibt, dann `FX_BLINDER_BRIGHTNESS` setzen (oder je Gerät einen eigenen Wert).
-   Was abgenommen ist, nach hinten sortieren (dort ohne Nummer).
-2. **Phase 3b ist abgenommen.** `fxSoft` für `progFullColors` / `progSternNeu` entfällt: `smooth:` leistet dort
-   dasselbe, ohne die Effekte anzufassen.
-3. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen. `progPalette` hat mit
-   dem Tempo-Parameter schon eine Zeitbasis; offen ist dort nur, ob der alte Aufruf (3 Parameter) umgestellt wird.
-4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
-   `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
-   (`FX_OVER`) gefällt sehr gut, schwarzer Text (`FX_CUT`) „kommt gut rüber".
-5. **Idee zum Anbieten:** ausgestanzten oder überlagerten Text in einem echten Song einsetzen (z. B. ein Hook-Wort
-   im Chorus von #31 oder #33 über `SCENE_PALETTE` / `SCENE_GLOW`) – nur auf Zuruf, `song.yaml` gehört dem User.
+- 04.10.2026: Song #31 All The Things She Said mit Übergängen und Ebene – „sehr geil, genau die richtige
+  Richtung". Die alten handgeschriebenen Songs laufen alle noch. Song 92, Parts bis 80: „sieht sehr geil aus", vor
+  allem die Farbverläufe auf der Matrix und Text über anderen Effekten; Marker-LEDs stabil.
+- 05.10.2026: ausgestanzter Text (`FX_CUT`, Part 90): „der schwarze Text kommt gut rüber". „Bisher sieht alles gut
+  und ruckelfrei aus", OTA-Update klappt (`83f06d4`: die Gitarre wartet nicht mehr 20 s auf fehlende Clients).
+- 05.10.2026, Part 88: Das Glitzern unter dem Tor (`fxLayerGate`) blitzt gemeinsam auf – „sieht etwas eigenartig
+  aus, wie ein Wackelkontakt", aber „das passt erstmal". Für Songs merken: Tor nicht auf zufällige Effekte legen.
+- 05.10.2026, Feuer auf der Matrix (Part 92): erst „dick genug und richtig herum", aber fast nur rot (Fehler: die
+  zweite Zeile bekam nie Hitze), dann „fast etwas zu hoch skaliert", dann der Wunsch nach festen Plätzen wie auf den
+  Lampen. Ergebnis mit festen Flammen (`a9b5152`): „ja mega! das war genau die richtige Entscheidung!! das sieht
+  jetzt richtig klasse aus!!!" Werte in `MFIRE_…` (`src/FXprograms.cpp`) so lassen.
+- 05.10.2026, Phase 3b und Ebene: „alle Effekte sehen sehr gut aus und alle sind verwendbar!" – `fxSmooth` (Parts
+  18, 4, 11, 12), `progPalette` mit Tempo und Fade (13, 14, 16), `fxSoft` (6–9), Text als Maske (2), Ebene gezielt
+  steuern (82–88). Besonders: „sehr cool finde ich auch 9, wo die Farben von Gerät zu Gerät faden"
+  (`SCENE_COLORS_WAVE` mit `soft`).
+- 05.10.2026, Text-Ebene (Part 1): weißer Text war auf hellem Hintergrund schlecht lesbar. Mit der Szene auf
+  rund 15 % (`fxTextUnder(40)`): „sieht jetzt deutlich besser aus". Der Generator dimmt bei
+  `text: {…, over: true}` ohne `under:` deshalb von sich aus auf 15 % (`TEXT_OVER_UNDER` in `tools/songgen.py`).
+  Die Variante mit Komplementärfarben ist nicht gebaut und nicht mehr nötig.
+- 05.10.2026, Blinder (Idee des Users): nur auf den Lampen (Part 21) „gefallen mir auch gut, kann man gut für
+  rhythmische Sachen verwenden". Auf allen Geräten zuerst „zu kurz und zu dezent" bzw. „bemerkt man praktisch gar
+  nicht"; nach dem Umbau (heller, länger, andere Effekte darunter; Parts 17, 19, 22): „ja top!! gefällt mir gut".
+  Einzelheiten im Abschnitt „Blinder".
 
-Reihenfolge der nächsten Schritte:
+### Regeln für Song 92 (User, 05.10.2026)
 
-1. **Phase 3b** – Fading-Optionen: erledigt und abgenommen
-2. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
-3. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
-4. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten
-5. **Phase 4b, Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
+- Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang** der Demo, Abgenommenes rückt nach hinten.
+- Vor jedem noch nicht abgenommenen Part zeigt die Matrix 3 s lang seine Nummer (`demoNumber()`; Part `DEMO_NR(n)`
+  = 110 + n zeigt die Nummer und springt in Part n; Part 0 zeigt die Nummer des ersten offenen Parts). Abgenommenes
+  läuft ohne Nummer.
+- Zu jedem offenen Part steht in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8, **genau**, worauf zu achten ist
+  (nummerierte Prüfpunkte); im Chat dieselbe Liste in Kurzform.
+- Derzeit ist nichts offen: Part 0 springt direkt in Part 17. Reihenfolge: 17, 19, 22 Blinder, 21 Blinder auf den
+  Lampen, 1 Text-Ebene, 18, 4, 11, 12 Nachleuchten, 13, 14, 16 `progPalette`, 6–9 weiche Farbwechsel, 2 Text als
+  Maske, 82–88 Ebene gezielt steuern, 3 Vorlauf, 5–45 Übergänge, 50–64 Modifikatoren, 70–80 Ebene, 90
+  ausgestanzter Text, 92 Feuer, 100 von vorn; rund 5:42 Minuten.
+
+### Als Nächstes
+
+1. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor die Bildzeit mit `debug_fx_frametime` messen (auch mit
+   `fxSmooth` und zwei Ebenen auf der Matrix – bisher nur nach Augenschein „ruckelfrei"). `progPalette` hat mit dem
+   Tempo-Parameter schon eine Zeitbasis; offen ist dort nur, ob der alte Aufruf (3 Parameter) umgestellt wird.
+2. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten.
+3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
+   `smooth`, Text über der Szene, ausgestanzter Text) sind noch in keinem Song eingesetzt – nur auf Zuruf,
+   `song.yaml` gehört dem User. Naheliegend: Blinder auf Chorus-Einsätze, `soft` auf `SCENE_COLORS_WAVE`.
+4. **Offene Frage Blinder:** Reicht die Stromversorgung von Gitarre, Bass und Matrix für mehr Helligkeit im Blinder?
+   Dann `FX_BLINDER_BRIGHTNESS` in `src/definitions.h` setzen (heute auskommentiert, siehe Abschnitt „Blinder").
+5. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
+   `urteil` / `notiz` gehören ihm; seine mündlichen Urteile stehen oben).
+6. **Phase 4b Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
    spürbar bremst.
 
 Merge nach `MAIN` erst, wenn der User den Stand auf der Hardware abgenommen hat.
@@ -164,20 +125,21 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 0 | Baseline bauen, Frame-Zeit messbar machen | gebaut; Messung auf der Hardware offen |
 | 0b | Nur echte LED-Zahl senden | Schalter vorhanden, **aus** – wartet auf 0c |
 | 0c | Schrittweise Effekte auf Zeitbasis | offen, **als Nächstes** |
+| – | Blinder (`fxBlinder`), Idee des Users | erledigt und abgenommen (`2b902e8`, `58860ba`) |
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
-| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | erledigt, vom User am 05.10.2026 abgenommen |
+| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | erledigt und abgenommen (`4ec18e1`, `e4d7b17`) |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
-| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 abgenommen, Punkt 3 und 4 nach Bedarf |
-| 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92, Blinder), Szenen offen |
+| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt und abgenommen, Punkt 3 und 4 nach Bedarf |
+| 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen; neue Bausteine noch in keinem Song |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
 | 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |
 
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
-Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Song 92
-(Parts 0–80) ohne Befund, Marker stabil, ausgestanzter Text (Part 0) „kommt gut rüber". Offen sind die Parts 2 (Maske), 82–88 und 90 (Text-Ebene) von Song 92, das gedrehte Feuer und die Frame-Zeit-Messung – siehe
+Alle fünf Geräte-Envs bauen. Auf der Hardware bestätigt: alte Songs laufen, Song #31 sieht gut aus, Marker stabil,
+alle Parts von Song 92 sind abgenommen (Stand 05.10.2026). Offen ist nur die Frame-Zeit-Messung – siehe
 „Verifikation".
 
 ## Phase 0 – Ausgangslage
@@ -295,7 +257,7 @@ Zu Punkt 1 (umgesetzt am 05.10.2026 für `progBeatColors`):
 - Demo: Song 92, Parts 6 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code wie in `generated.cpp`; `soft` auf
   einem COLORS-Abschnitt erzeugt `fxSoft(40);`, auf `SCENE_CALM` den Fehler; falsche Werte werden gemeldet. Kein
-  Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
+  Song neu generiert. Vom User am 05.10.2026 auf der Hardware abgenommen.
 - `progFullColors` / `progSternNeu`: nicht eigens umgebaut, dort hilft `fxSmooth` (Punkt 2).
 
 Zu Punkt 2 (umgesetzt am 05.10.2026):
@@ -313,7 +275,7 @@ Zu Punkt 2 (umgesetzt am 05.10.2026):
 - YAML: `smooth: <Beats>` auf Abschnittsebene (`pipeline_calls()` in `tools/songgen.py`).
 - Demo: Song 92, Parts 18 (`progFullColors` hart, 4 s), 4 (250 ms), 11 (1000 ms), 12 (`SCENE_PINGPONG`, 300 ms).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code; `smooth: 1` ergibt `fxSmooth(698);`,
-  ein negativer Wert den Fehler. Kein Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
+  ein negativer Wert den Fehler. Kein Song neu generiert. Vom User am 05.10.2026 auf der Hardware abgenommen.
 
 Zu Punkt 3 (umgesetzt am 05.10.2026):
 
@@ -325,7 +287,40 @@ Zu Punkt 3 (umgesetzt am 05.10.2026):
   sehen aus wie bisher. `FXprograms.h` bindet dafür jetzt `colorSchemes.h` ein.
 - In YAML ohne eigenen Schlüssel: `fx: "progPalette(${dur}, 8, ${next}, 4000, PAL_BLEND_ON)"`.
 - Demo: Song 92, Parts 13 (alter Aufruf, 4 s), 14 (8 s je Durchlauf), 16 (1,5 s, harte Kanten).
-- **Nicht geprüft:** das Bild auf der Hardware.
+- Vom User am 05.10.2026 auf der Hardware abgenommen.
+
+## Blinder
+
+Idee des Users vom 05.10.2026: wie die Blinder einer Lightshow – große helle Strahler, die effektmäßig sehr hell
+aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
+
+- Firmware (`src/fxPipeline.cpp/.h`): `fxBlinder(atMs, lenMs, amount = 255, col = FX_BLINDER_WARM, devMask = DEV_ALL)`
+  einmal im Part, `fxBlinderBeat(bpm, everyBeats, lenMs, amount, col, devMask, atMs = 0)` im Raster. Anmeldung wie
+  die Modifikatoren oben im `case`, `fxPartReset()` setzt zurück. Ein Blinder je Part.
+- Verlauf (`blinderLevel()`): voll hell in der ersten Hälfte von `lenMs`, danach quadratisch abklingend. Im Raster
+  wird die Phase exakt über bpm gerechnet, alles aus der Zeit seit Part-Beginn (mit `fxTimeOffset`) – auf allen
+  Geräten gleich.
+- Ausgabe (`applyBlinder()`): liegt in `fxPresent()` zuoberst, nach Ebenen, Modifikatoren und Übergang – Tor, Dimmen
+  und `only` nehmen ihn also nicht weg. Er blendet die echten LEDs (`anz_LEDs`) zur Blinder-Farbe hin.
+- **Helligkeit:** Der erste Versuch blendete nur in der normalen Gesamthelligkeit und war auf Gitarre, Bass
+  (`DEFAULT_BRIGHTNESS` 48) und Matrix (80) kaum zu sehen, nur auf den Lampen (200). Jetzt steigt im Blinder die
+  Gesamthelligkeit, und das Bild des Effekts wird im selben Maß heruntergerechnet (der Effekt bleibt gleich hell).
+  Grenze: nie mehr Strom als ein voll weißes Bild in der normalen Helligkeit – bei warmem Weiß
+  (`FX_BLINDER_WARM` = 255/150/50) rund 1,7-fach (Gitarre 48 → 80, Matrix 80 → 134, Lampen 200 → 255), bei reinem
+  Weiß keine Anhebung. Mit `#define FX_BLINDER_BRIGHTNESS` in `src/definitions.h` (auskommentiert) lässt sich die
+  Helligkeit im Blinder fest höher setzen – **nur wenn die Stromversorgung aller Geräte reicht**; das ist nicht
+  geklärt und nicht getestet.
+- Nebenwirkung: Marker-LEDs und Gurt sind während eines Blinders im selben Maß heller (sie hängen an der
+  Gesamthelligkeit).
+- YAML (`pipeline_calls()` in `tools/songgen.py`): `blinder: bar` (auch `beat`, `half`, Zahl in Beats) oder
+  `blinder: {every: …, at: <Beats>, len: <Beats>, amount: <Prozent>, color: warm|<Farbe>, devices: [...]}`; ohne
+  `every` einmalig bei `at`. Standard: `len` 1 Beat, `amount` 100, `color` warm, alle Geräte.
+- Demo: Song 92, Parts 17 (jede 1, 2 Beats, über dem Farbband), 19 (einmal, 3 s, über `SCENE_GLOW`), 22 (jede 1 über
+  `SCENE_RAIN`), 21 (nur die Lampen, weiß, alle 2 Beats).
+- Erfahrung für Songs: auf allen Geräten ab 2 Beats Länge, am stärksten über dunklen oder ruhigen Effekten, schwach
+  über vollflächigen Farbwechseln (`SCENE_COLORS`); nur auf den Lampen und kurz für Rhythmisches.
+- Geprüft: alle fünf Envs bauen; YAML-Formen und Fehlermeldungen im Speicher; Song #31 erzeugt denselben Code; vom
+  User auf der Hardware abgenommen. **Nicht gemessen:** die Stromaufnahme.
 
 ## Phase 4 – Ebene (einfacher als geplant)
 
@@ -350,8 +345,8 @@ solange sich die eine nicht gezielt steuern lässt. Was fehlt, nach Nutzen sorti
 
 | # | Schritt | Wozu | Stand |
 |---|---|---|---|
-| 1 | Modifikatoren nur für die Ebene bzw. nur für den Effekt darunter; Stärke der Ebene als Verlauf über den Part; Ebene nur in einem Zeitfenster | ruhige Fläche + pumpendes Glitzern; Szene gedimmt, Text voll hell; Ebene baut sich auf; `tail:` ohne eigenen Part | erledigt, Hardware-Test offen |
-| 2 | Zweite, fest für Text reservierte Ebene | Szene + Overlay + Text zugleich | erledigt, Hardware-Test offen |
+| 1 | Modifikatoren nur für die Ebene bzw. nur für den Effekt darunter; Stärke der Ebene als Verlauf über den Part; Ebene nur in einem Zeitfenster | ruhige Fläche + pumpendes Glitzern; Szene gedimmt, Text voll hell; Ebene baut sich auf; `tail:` ohne eigenen Part | erledigt und abgenommen |
+| 2 | Zweite, fest für Text reservierte Ebene | Szene + Overlay + Text zugleich | erledigt und abgenommen |
 | 3 | Ebene läuft über die Part-Grenze weiter, wenn der nächste Part dieselbe Ebene anmeldet | kein Schnitt im Glitzern, wenn darunter weich übergeblendet wird | offen |
 | 4 | Ebene mit eigenem Farbschema (`scheme:` im `overlay:`) | z. B. weißes Glitzern über Neon | offen, erst am Code prüfen |
 
@@ -371,8 +366,8 @@ Zu Punkt 1 (umgesetzt am 04.10.2026):
   `dim` auf Abschnittsebene gilt weiter für das ganze Bild.
 - Demo: Song 92, Parts 82 (Puls), 84 (Ein-/Ausblenden), 86 (`under`), 88 (Zeitfenster + Tor).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt ohne die neuen Schlüssel dieselben Zeilen wie in `generated.cpp`;
-  neue Schlüssel und Fehlermeldungen im Speicher getestet (kein Song neu generiert). **Nicht geprüft:** das Bild auf
-  der Hardware.
+  neue Schlüssel und Fehlermeldungen im Speicher getestet (kein Song neu generiert). Vom User am 05.10.2026 auf
+  der Hardware abgenommen.
 
 Zu Punkt 2 (umgesetzt am 05.10.2026):
 
@@ -401,7 +396,7 @@ Zu Punkt 2 (umgesetzt am 05.10.2026):
 - Geprüft: alle fünf Envs bauen; im Speicher erzeugen #31 und #33 denselben Code wie in `generated.cpp`
   (#8 Dancing On My Own nicht vergleichbar, dort ist die YAML seit der Generierung geändert); Text + Overlay
   ergibt die Text-Ebene, auch wenn das Overlay nur auf einzelnen Geräten läuft; beide Fehlerfälle melden sich.
-  Kein Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
+  Kein Song neu generiert. Vom User am 05.10.2026 auf der Hardware abgenommen (Text nach dem Abdunkeln der Szene auf 15 %).
 
 Zu Punkt 3 (Grenze): Die Leitlinie „alles aus der Zeit seit Part-Beginn" gilt dann für die Ebene nicht mehr. Ein
 Gerät, das per BLE mitten im Song einsteigt, hat einen anderen Ebenen-Zustand als die übrigen. Bei zufälligen
@@ -428,10 +423,11 @@ Zuruf neu generiert.
 ## Phase 5 – Neue Looks
 
 - Erledigt: Demo-Song 92 `pipelineDemo()` (`src/songs.cpp`, MIDI CC#0 = 92 oder `START_WITH_PIPELINE_DEMO`) zeigt
-  jeden Übergang, jeden Modifikator und jeden Ebenen-Modus einzeln, rund 3:45 Minuten, Dauerschleife. Neue
-  Bausteine stehen immer am Anfang (Part 0). Ablauf:
+  jeden Übergang, jeden Modifikator, jeden Ebenen-Modus und die neuen Bausteine (Blinder, Nachleuchten, weiche
+  Farbwechsel, Text-Ebene, Feuer) einzeln, rund 5:42 Minuten, Dauerschleife. Neue Bausteine stehen immer am
+  Anfang, mit Nummer auf der Matrix (siehe „Regeln für Song 92"). Ablauf:
   `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8. Zum Bewerten: `docs/effekt-katalog.yaml`, Abschnitt
-  `ausgabestufe`. Neue Bausteine (4b, 3b) bekommen dort eigene Parts, zuerst an Part 0.
+  `ausgabestufe`. Neue Bausteine bekommen dort eigene Parts, zuerst am Anfang.
 - Neue geräteübergreifende Szenen aus Kombinationen, z. B. Atmen + Funkeln, Verse-Puls + Akzent auf der 1, Drop mit
   Strobo-Tor im letzten Takt, Solo über `fxMaskStage` statt Sonderfall.
 - `tail:` wahlweise als Modifikator/Ebene im selben Part (kein eigener `case`, kein Bildsprung). Von Hand geht das
@@ -468,12 +464,8 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
 3. Auf der Hardware:
    - handgeschriebene Songs gegen den Stand von `MAIN` – **vom User am 04.10.2026 bestätigt, laufen alle**;
    - Song 92: jeder Baustein erkennbar; alle Geräte nebeneinander – Übergänge (v. a. `stage_lr`) und `pulse`
-     starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts – **Parts 0–80 vom User am
-     04.10.2026 ohne Befund durchgesehen**; offen: Parts 82–88 (in 82 pumpt nur das Glitzern, in 86 ist nur das
-     Farbband dunkler, in 88 setzt das Glitzern auf allen Geräten gleichzeitig nach 2 Takten ein), Part 0 (dunkle
-     Buchstaben im Farbband lesbar?), Part 2 (Farbband nur in den Buchstaben) und Part 90
-     (auf der Matrix liegt der Text über Farbband und Glitzern, beides darunter gedimmt und ohne Ruckeln; die
-     übrigen Geräte zeigen Farbband mit Glitzern);
+     starten, enden und schlagen gleichzeitig; in den Ebenen-Parts ruckelt nichts – **alle Parts vom User bis zum
+     05.10.2026 abgenommen** (siehe Arbeitsstand);
    - Marker-LEDs an Gitarre und Bass sichtbar und flackerfrei, auch während Übergang und Ebene – **vom User am
      04.10.2026 bestätigt**;
    - ein Gerät mitten im Part einschalten (BLE-Einstieg): kein hängender Übergang.

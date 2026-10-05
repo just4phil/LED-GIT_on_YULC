@@ -4131,7 +4131,7 @@ void szenenDemo() {
 #define DEMO_NR_BASE	110
 #define DEMO_NR(part)	(DEMO_NR_BASE + (part))
 
-static void demoNumber(byte part) {
+[[maybe_unused]] static void demoNumber(byte part) {
 #if DEVICE_CLASS == CLASS_MATRIX
 	static char nr[4];
 	snprintf(nr, sizeof(nr), "%d", part);
@@ -4153,14 +4153,15 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
-	case 0:		demoNumber(17);																						break;	// die Demo beginnt mit der Nummer des ersten Parts
-
-	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt (hebt die Gesamthelligkeit an)
-	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_PALETTE, 8000, DEMO_NR(19), bpm);	break;	// auf jede 1 ein Blinder, 2 Beats lang
-	case 19:	setColorScheme(SCHEME_ROYAL);	fxBlinder(4000, 3000);			scene(SCENE_GLOW,    8000, DEMO_NR(22), bpm);	break;	// ein einzelner langer Blinder nach 2 Takten über einer ruhigen Fläche
-	case 22:	setColorScheme(SCHEME_TOXIC);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_RAIN,    8000, 21, bpm);			break;	// Blinder über einem dunklen Effekt (fallende Leuchtspuren)
+	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 17. Derzeit ist nichts offen:
+	case 0:		switchToPart(17);	break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
+	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt (hebt die Gesamthelligkeit an)
+	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_PALETTE, 8000, 19, bpm);	break;	// auf jede 1 ein Blinder, 2 Beats lang
+	case 19:	setColorScheme(SCHEME_ROYAL);	fxBlinder(4000, 3000);			scene(SCENE_GLOW,    8000, 22, bpm);	break;	// ein einzelner langer Blinder nach 2 Takten über einer ruhigen Fläche
+	case 22:	setColorScheme(SCHEME_TOXIC);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_RAIN,    8000, 21, bpm);	break;	// Blinder über einem dunklen Effekt (fallende Leuchtspuren)
 	case 21:	setColorScheme(SCHEME_ICE);		fxBlinderBeat(bpm, 2, 300, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);			// nur die Lampen blenden: weiß, alle 2 Beats
 				scene(SCENE_PALETTE, 8000, 1, bpm);	break;
 

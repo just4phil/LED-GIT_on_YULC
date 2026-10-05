@@ -241,7 +241,9 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Ein Blinder je Abschnitt. Urteil des Users
   (05.10.2026): nur auf den Lampen (`devices: [LAMPE1, LAMPE2]`, kurz, weiß) gut für Rhythmisches; auf allen Geräten
   war er mit 1 Beat „zu kurz und zu dezent" - dort `len` ab 2 Beats, und er wirkt über dunklen oder ruhigen Effekten
-  stärker als über vollflächigen Farbwechseln (`SCENE_COLORS`).
+  stärker als über vollflächigen Farbwechseln (`SCENE_COLORS`). So (2 Beats, über Farbband, ruhiger Fläche oder
+  Leuchtspuren) hat er ihn abgenommen: „ja top!! gefällt mir gut". Der Blinder ist heller als der Effekt (er hebt
+  die Gesamthelligkeit an), `color: weiss` bringt diese Anhebung nicht mit - `warm` ist deshalb die kräftigere Wahl.
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
   Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.
