@@ -4133,8 +4133,19 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
+	// fxSmooth: Nachleuchten - ein alter Effekt mit harten Farbsprüngen, erst wie bisher, dann träge
+	case 0:		setColorScheme(SCHEME_NEON);								progFullColors(4000, 4, 500);			break;	// hart wie bisher
+	case 4:		setColorScheme(SCHEME_NEON);	fxSmooth(250);				progFullColors(8000, 11, 500);			break;	// Sprung wird zur kurzen Blende (halber Beat)
+	case 11:	setColorScheme(SCHEME_NEON);	fxSmooth(1000);				progFullColors(8000, 12, 500);			break;	// sehr träge: die Farben verschwimmen
+	case 12:	setColorScheme(SCHEME_SUNSET);	fxSmooth(300);				scene(SCENE_PINGPONG, 8000, 13, bpm);	break;	// Ping-Pong glüht nach statt zu springen
+
+	// progPalette mit Tempo und Fade: erst der alte Aufruf, dann dieselbe Palette langsam und weich, dann schnell mit harten Kanten
+	case 13:	progPalette(4000, 8, 14);									break;	// wie bisher (Tempo hängt vom Gerät ab)
+	case 14:	progPalette(8000, 8, 16, 8000);								break;	// ein Durchlauf in 8 s, auf allen Geräten gleich schnell
+	case 16:	progPalette(8000, 8, 6, 1500, PAL_BLEND_OFF);				break;	// ein Durchlauf in 1,5 s, harte Kanten
+
 	// fxSoft: weiche Farbwechsel im Beat - erst hart zum Vergleich, dann immer weicher; danach weiter mit Part 1
-	case 0:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
+	case 6:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
 	case 7:		setColorScheme(SCHEME_RETRO);	fxSoft(30);					scene(SCENE_COLORS,      8000, 8, bpm);	break;	// Farbe steht, blendet im letzten Drittel des Beats
 	case 8:		setColorScheme(SCHEME_RETRO);	fxSoft(100);				scene(SCENE_COLORS,      8000, 9, bpm);	break;	// fließt durchgehend von Farbe zu Farbe
 	case 9:		setColorScheme(SCHEME_SUNSET);	fxSoft(60);					scene(SCENE_COLORS_WAVE, 8000, 1, bpm);	break;	// wandernde Farbe, weich

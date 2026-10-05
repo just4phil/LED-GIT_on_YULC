@@ -232,6 +232,11 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
 - `soft: 30` - weiche Farbwechsel im Beat, nur mit `SCENE_COLORS` / `SCENE_COLORS_WAVE` (sonst Fehler): die Farbe blendet
   im letzten Anteil des Beats in die nächste, `soft: 100` fließt durchgehend. Ohne `soft` harter Sprung wie bisher.
+- `smooth: 0.5` - Nachleuchten für jeden Effekt (Länge in Beats, bis ein Sprung vollzogen ist): macht harte Wechsel
+  alter Effekte (`progFullColors`, `progSternNeu`) zu Blenden. Wirkt nicht auf `overlay` und `text`. Ab etwa einem
+  Beat verschwimmt der Takt - für Beat-Effekte kurz halten (0.25 bis 0.5).
+- `progPalette` als `fx:` kennt Tempo und Fade: `progPalette(${dur}, 8, ${next}, <ms je Durchlauf>, PAL_BLEND_ON|PAL_BLEND_OFF)`.
+  Mit Tempo läuft die Palette auf allen Geräten gleich schnell (der alte Aufruf mit 3 Parametern hängt vom Gerät ab).
 
 Noch nicht auf der Bühne erprobt (Stand 04.10.2026): zurückhaltend einsetzen, bis der User die Wirkung gesehen und im
 Katalog bewertet hat. Naheliegend: `fade` zwischen ruhigen Parts statt hartem Schnitt, `flash` in den Chorus, `stage_*`

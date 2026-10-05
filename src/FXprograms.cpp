@@ -1743,7 +1743,7 @@ void FillLEDsFromPaletteColors(uint8_t colorInd, char speed) {
 void FillLEDsFromPaletteColors(uint8_t colorInd) {
 	FillLEDsFromPaletteColors(colorInd, 3);
 }
-void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) {
+void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, unsigned int cycleMillis, uint8_t blend) {
 
 //0 rainbow slow
 //1 rainbow fast (ohne fades)
@@ -1823,16 +1823,28 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) 
 			currentBlending = LINEARBLEND;
 			break;
 		}
+		if (blend == PAL_BLEND_ON) currentBlending = LINEARBLEND;
+		else if (blend == PAL_BLEND_OFF) currentBlending = NOBLEND;
 	}
 	//---------------------------------------------------------------------
 
-	zaehler++;
-	if (zaehler > 1000) zaehler = 0;	// der wert 1000 beinflusst  die geschwindigkeit
-	FillLEDsFromPaletteColors(zaehler);	// hier wird schon intern LEDsTurnedOff abgefragt
+	if (cycleMillis) {
+		// Tempo als Parameter: Lage in der Palette aus der Zeit seit Part-Beginn (auf allen Geräten gleich, kein Sprung)
+		FillLEDsFromPaletteColors((uint8_t)((uint64_t)millisCounterForProgChange * 256 / cycleMillis));
+	}
+	else {
+		zaehler++;
+		if (zaehler > 1000) zaehler = 0;	// der wert 1000 beinflusst  die geschwindigkeit
+		FillLEDsFromPaletteColors(zaehler);	// hier wird schon intern LEDsTurnedOff abgefragt
+	}
 
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 		fxPresent();
 	}
+}
+
+void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) {
+	progPalette(durationMillis, paletteID, nextPart, 0, PAL_BLEND_AUTO);
 }
 
 extern const TProgmemRGBPalette16 matrixColors FL_PROGMEM =

@@ -11,14 +11,14 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, warten auf den Hardware-Test)
+Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`, `progPalette`-Parameter; warten auf den Hardware-Test)
 
 - **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
   Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791226638, Feuer am Ende der Demo,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791227199, mit `fxSmooth` und den `progPalette`-Parametern,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
@@ -41,11 +41,15 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
   kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
 - **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
   der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
-  Reihenfolge jetzt: 0 und 7–9 weiche Farbwechsel (`fxSoft`; Part 0 ist der harte Vergleich, vorher Part 6),
+  Reihenfolge jetzt: 0, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 0 ist der harte Vergleich), 13, 14, 16 `progPalette`
+  (13 ist der alte Aufruf zum Vergleich), 6–9 weiche Farbwechsel (`fxSoft`; Part 6 ist der harte Vergleich),
   1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
-  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 4:20 Minuten.
+  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 5:10 Minuten.
 - **Feuer abgenommen (User, 05.10.2026):** zu den festen Flammen auf der Matrix (`a9b5152`): „ja mega! das war
   genau die richtige Entscheidung!! das sieht jetzt richtig klasse aus!!!" Werte in `MFIRE_…` so lassen.
+- **Phase 3b Punkt 2 und 3 gebaut (05.10.2026):** `fxSmooth(ms)` / YAML `smooth: <Beats>` und `progPalette` mit Tempo
+  und Fade, Commit „FX-Pipeline: Nachleuchten (fxSmooth), progPalette mit Tempo und Fade" (siehe `git log`). Alle
+  fünf Envs bauen. **Vom User noch nicht gesehen.**
 - **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
 
 ### Morgen weiter
@@ -70,16 +74,22 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
      `FIRE_HEAT_GAIN` von vorher gibt es nicht mehr. **Offen:** Bild auf der Hardware – Zahl, Breite und Höhe der
      Flammen (Stellgrößen: Teiler 6 in `MFIRE_FLAMES`, `MFIRE_COOLING` höher = kleiner, `MFIRE_SPARKING`,
      `MFIRE_HEAT_GAIN`). **Erledigt, abgenommen** (siehe oben).
-   - Parts 0 und 7–9 (`fxSoft`): 0 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
+   - Parts 0, 4, 11, 12 (`fxSmooth`): 0 `progFullColors` hart zum Vergleich, 4 mit 250 ms, 11 mit 1000 ms, 12 Ping-Pong
+     mit 300 ms. Sieht die Blende auf allen Geräten gleich aus (Matrix gegen Lampen)? Welche Länge gefällt? Ruckelt
+     die Matrix (jedes Bild ändert sich, also wird jedes gesendet)?
+   - Parts 13, 14, 16 (`progPalette`): 13 alter Aufruf, 14 ein Durchlauf in 8 s, 16 in 1,5 s mit harten Kanten. Läuft
+     die Palette in 14 und 16 auf allen Geräten gleich schnell?
+   - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
      gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
    - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
    - Part 2: Farbband nur in den Buchstaben;
    - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
      allen Geräten gleichzeitig nach 2 Takten ein.
    Was abgenommen ist, wieder nach hinten sortieren.
-2. **Phase 3b, Punkt 1 – Rest:** `fxSoft` auch für `progFullColors` / `progSternNeu`, soweit ohne Eingriff in
-   den Ablauf möglich – erst nach dem Urteil des Users zu den Parts 0 und 7–9.
-3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
+2. **Phase 3b ist damit gebaut.** `fxSoft` für `progFullColors` / `progSternNeu` entfällt voraussichtlich: `smooth:`
+   leistet dort dasselbe, ohne die Effekte anzufassen – erst das Urteil des Users zu den Parts 4 und 11 abwarten.
+3. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen. `progPalette` hat mit
+   dem Tempo-Parameter schon eine Zeitbasis; offen ist dort nur, ob der alte Aufruf (3 Parameter) umgestellt wird.
 4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
    `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
    (`FX_OVER`) gefällt sehr gut, schwarzer Text (`FX_CUT`) „kommt gut rüber".
@@ -88,7 +98,7 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
 
 Reihenfolge der nächsten Schritte:
 
-1. **Phase 3b** – Fading-Optionen (Phase 4b Punkt 1 und 2 sind erledigt)
+1. **Phase 3b** – Fading-Optionen: gebaut, Abnahme auf der Hardware offen
 2. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
 3. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
 4. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten
@@ -140,11 +150,11 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 |---|---|---|
 | 0 | Baseline bauen, Frame-Zeit messbar machen | gebaut; Messung auf der Hardware offen |
 | 0b | Nur echte LED-Zahl senden | Schalter vorhanden, **aus** – wartet auf 0c |
-| 0c | Schrittweise Effekte auf Zeitbasis | offen |
+| 0c | Schrittweise Effekte auf Zeitbasis | offen, **als Nächstes** |
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
-| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | Punkt 1 für `progBeatColors` erledigt (Hardware-Test offen), Punkt 2 und 3 **als Nächstes** |
+| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | Punkt 1 (`progBeatColors`), 2 und 3 erledigt, Hardware-Test offen |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
 | 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt (Hardware-Test offen), Punkt 3 und 4 nach Bedarf |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen |
@@ -273,7 +283,36 @@ Zu Punkt 1 (umgesetzt am 05.10.2026 für `progBeatColors`):
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code wie in `generated.cpp`; `soft` auf
   einem COLORS-Abschnitt erzeugt `fxSoft(40);`, auf `SCENE_CALM` den Fehler; falsche Werte werden gemeldet. Kein
   Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
-- Offen: `progFullColors` / `progSternNeu`.
+- `progFullColors` / `progSternNeu`: nicht eigens umgebaut, dort hilft `fxSmooth` (Punkt 2).
+
+Zu Punkt 2 (umgesetzt am 05.10.2026):
+
+- `fxSmooth(ms)` in `src/fxPipeline.cpp` (`applySmooth()`): zeitlicher Tiefpass auf dem Bild des Effekts, **vor** den
+  Ebenen. Ebene und Text bleiben scharf, ebenso Puls, Tor, Ein-/Ausblenden und der Übergang. `ms` = Zeit, nach der
+  ein Sprung zu 95 % vollzogen ist.
+- Der Blendfaktor kommt aus der echten Zeit seit dem letzten Bild (`1 − e^(−3·dt/ms)`), also gleiche Wirkung bei
+  jeder Bildrate und LED-Zahl. Das träge Bild liegt in 8.8-Festkomma (`smoothAcc`, `NUMMATRIX` × 6 Byte statt der
+  geplanten × 3), sonst kämen kleine Schritte je Bild nicht an. RAM je Env rund +3 kB.
+- Der erste Moment eines Parts startet beim letzten Bild des alten Parts (`ledsPrev`), wirkt also wie eine kurze
+  Kreuzblende in den Part. Folge: ein harter Einsatz auf der 1 wird mit `smooth` weich.
+- Mit `smooth` ändert sich fast jedes Bild → `FX_SKIP_UNCHANGED_FRAMES` spart nichts mehr. Bildzeit auf der Matrix
+  **nicht gemessen**.
+- YAML: `smooth: <Beats>` auf Abschnittsebene (`pipeline_calls()` in `tools/songgen.py`).
+- Demo: Song 92, Parts 0 (`progFullColors` hart, 4 s), 4 (250 ms), 11 (1000 ms), 12 (`SCENE_PINGPONG`, 300 ms).
+- Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code; `smooth: 1` ergibt `fxSmooth(698);`,
+  ein negativer Wert den Fehler. Kein Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
+
+Zu Punkt 3 (umgesetzt am 05.10.2026):
+
+- Neuer Aufruf `progPalette(dur, paletteID, next, cycleMillis, blend = PAL_BLEND_AUTO)`. `cycleMillis` = Dauer eines
+  Durchlaufs der Palette an einer LED, gerechnet aus der Zeit seit Part-Beginn (auf allen Geräten gleich schnell,
+  kein Sprung beim Zählerüberlauf). `blend`: `PAL_BLEND_AUTO` (wie zur ID festgelegt), `PAL_BLEND_ON`,
+  `PAL_BLEND_OFF` (`enum PaletteBlend` in `src/colorSchemes.h`).
+- Der alte Aufruf mit 3 Parametern ist unverändert (zählt weiter pro Durchlauf) – die 129 Aufrufe in `songs.cpp`
+  sehen aus wie bisher. `FXprograms.h` bindet dafür jetzt `colorSchemes.h` ein.
+- In YAML ohne eigenen Schlüssel: `fx: "progPalette(${dur}, 8, ${next}, 4000, PAL_BLEND_ON)"`.
+- Demo: Song 92, Parts 13 (alter Aufruf, 4 s), 14 (8 s je Durchlauf), 16 (1,5 s, harte Kanten).
+- **Nicht geprüft:** das Bild auf der Hardware.
 
 ## Phase 4 – Ebene (einfacher als geplant)
 

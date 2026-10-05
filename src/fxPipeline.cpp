@@ -29,6 +29,11 @@ const CRGB* fxFrame = leds;
 static CRGB ledsOut[NUMMATRIX];		// gemischtes Bild (nur benutzt, solange ein Übergang/Modifikator aktiv ist)
 static CRGB ledsPrev[NUMMATRIX];	// letztes Bild des alten Parts
 
+//--- Nachleuchten (fxSmooth): träges Bild in 8.8-Festkomma, damit auch kleine Schritte je Bild ankommen ---
+static uint16_t smoothAcc[NUMMATRIX][3];
+static bool smoothSeeded = false;
+static uint32_t smoothAtMs = 0;
+
 //--- Übergang ---
 static uint8_t transType = TRANS_CUT;
 static unsigned int transMs = 0;
@@ -49,6 +54,7 @@ struct LayerMod {
 static struct {
 	unsigned int fadeInMs, fadeOutMs;
 	unsigned int offsetMs;
+	unsigned int smoothMs;
 	uint8_t pulseBpm, pulseDepth, pulseBeats;
 	uint8_t gateBpm, gatePerBeat, gateDuty;
 	uint8_t dim, stageDim;
@@ -88,6 +94,7 @@ void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 // alle Anmeldungen setzen nur Werte: sie werden bei jedem Loop-Durchlauf wiederholt
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
 void fxSoft(uint8_t percent)	{ mod.soft = min((uint8_t)100, percent); }
+void fxSmooth(unsigned int millis)	{ mod.smoothMs = millis; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -389,6 +396,30 @@ static void applyMods(CRGB* buf, uint8_t bright) {
 	}
 }
 
+// Nachleuchten: zieht das träge Bild ein Stück zum Bild des Effekts (buf) und schreibt es nach buf.
+// Der Anteil kommt aus der echten Zeit seit dem letzten Bild -> gleiche Wirkung bei jeder Bildrate und LED-Zahl.
+static void applySmooth(CRGB* buf) {
+	uint32_t now = millis();
+	if (!smoothSeeded) {	// erster Durchlauf des Parts: beim letzten Bild des alten Parts anfangen
+		for (int i = 0; i < NUMMATRIX; i++) {
+			for (int c = 0; c < 3; c++) smoothAcc[i][c] = (uint16_t)ledsPrev[i].raw[c] << 8;
+		}
+		smoothSeeded = true;
+		smoothAtMs = now;
+	}
+	uint32_t dt = min(now - smoothAtMs, (uint32_t)200);
+	smoothAtMs = now;
+	int32_t a = 32768.0f * (1.0f - expf(-3.0f * dt / mod.smoothMs));	// nach smoothMs sind 95 % erreicht
+	for (int i = 0; i < NUMMATRIX; i++) {
+		for (int c = 0; c < 3; c++) {
+			int32_t acc = smoothAcc[i][c];
+			acc += ((((int32_t)buf[i].raw[c] << 8) - acc) * a + 16384) >> 15;
+			smoothAcc[i][c] = acc;
+			buf[i].raw[c] = (acc + 128) >> 8;
+		}
+	}
+}
+
 // legt eine Ebene über buf (das Bild darunter); bright = Gesamthelligkeit, für die buf gerechnet ist
 static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod& lm, uint8_t& bright) {
 	//--- Stärke der Ebene aus der Part-Zeit; das Bild darunter folgt nur der Hüllkurve, nicht Puls und Tor ---
@@ -563,8 +594,9 @@ void fxPresent() {
 		uint8_t bright = modBrightness(ms);
 		bool trans = (transType != TRANS_CUT && ms < transMs);
 		bool layered = anyLayer(&FxLayer::used);
-		if (trans || modsActive(bright) || layered) {
+		if (trans || modsActive(bright) || layered || mod.smoothMs) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
+			if (mod.smoothMs) applySmooth(ledsOut);
 			if (layered) applyLayers(ledsOut, ms);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
@@ -617,6 +649,7 @@ void fxPartReset() {
 	fxFrame = leds;
 	transType = TRANS_CUT;
 	transMs = 0;
+	smoothSeeded = false;
 	resetMods();
 	if (layerCapturing >= 0) {	// Part-Wechsel mitten in der Ebene (sollte nicht vorkommen): Bild des unteren Effekts zurück
 		memcpy(leds, baseBuf, sizeof(baseBuf));

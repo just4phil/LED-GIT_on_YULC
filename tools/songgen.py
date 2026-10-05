@@ -78,7 +78,7 @@ FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT"
 				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
 
 # Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
-PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft")
+PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth")
 SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors")	# nur diese Effekte werten soft: (fxSoft) aus
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
@@ -308,7 +308,7 @@ def pipeline_calls(part, song, offset=0):
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
-	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)
+	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)     smooth: <Beats> (Nachleuchten)
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -432,6 +432,12 @@ def pipeline_calls(part, song, offset=0):
 		elif v:
 			calls.append(f"fxSoft({v});")
 			infos.append(f"Farbwechsel weich ({v} % des Schritts)")
+
+	if "smooth" in sec:
+		ms = beats_ms("smooth", sec["smooth"])
+		if ms:
+			calls.append(f"fxSmooth({ms});")
+			infos.append(f"leuchtet {ms} ms nach")
 
 	if offset and timed:
 		calls.append(f"fxTimeOffset({offset});")

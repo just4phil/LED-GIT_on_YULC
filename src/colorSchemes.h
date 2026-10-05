@@ -20,6 +20,9 @@
 
 #define PALETTE_SCHEME	20	// Paletten-ID für progPalette: Verlauf aus den Farben des aktiven Schemas
 
+// Fade einer Palette in progPalette: wie zur Paletten-ID festgelegt, immer weich (LINEARBLEND) oder immer hart (NOBLEND)
+enum PaletteBlend : uint8_t { PAL_BLEND_AUTO = 0, PAL_BLEND_ON, PAL_BLEND_OFF };
+
 enum ColorSchemeID : uint8_t {
 	SCHEME_RANDOM = 0,	// wie bisher: freie Zufallsfarben
 	SCHEME_FIRE,		// rot, orange, gelb

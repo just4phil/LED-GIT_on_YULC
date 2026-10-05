@@ -26,6 +26,7 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include "colorSchemes.h"
 
 //==================================================================
 //=========== FX programs ==========================================
@@ -795,6 +796,15 @@ void FillLEDsFromPaletteColors(uint8_t colorInd);
  * @see FillLEDsFromPaletteColors()
  */
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
+
+/**
+ * @brief Palette mit Tempo und Fade als Parameter
+ *
+ * @param cycleMillis Dauer eines Durchlaufs der Palette an einer LED. Rechnet aus der Zeit seit Part-Beginn:
+ *                    läuft auf allen Geräten gleich schnell und ohne Sprung. 0 = wie der alte Aufruf (pro Durchlauf gezählt)
+ * @param blend (colorSchemes.h) PAL_BLEND_AUTO (wie zur paletteID festgelegt), PAL_BLEND_ON (weiche Übergänge), PAL_BLEND_OFF (harte Kanten)
+ */
+void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, unsigned int cycleMillis, uint8_t blend = PAL_BLEND_AUTO);
 
 /**
  * @brief Horizontal matrix scan effect with speed control

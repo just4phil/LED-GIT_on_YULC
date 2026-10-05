@@ -107,6 +107,9 @@ void fxTint(CRGB col, uint8_t amount);			// zieht das Bild zur Farbe hin (255 = 
 void fxSoft(uint8_t percent);					// weiche Farbwechsel im Beat: im letzten percent-Anteil eines Farbschritts blendet der Effekt
 												// zur nächsten Farbe (100 = durchgehend). Wirkt nur auf Effekte, die es auswerten (progBeatColors)
 uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep = 1);	// für diese Effekte: Anteil der nächsten Farbe (0 = noch die alte, 255 = fast die neue)
+void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts folgt träge, ein Sprung ist nach millis zu 95 % vollzogen.
+												// Macht harte Wechsel alter Effekte zu Blenden. Wirkt auf den Effekt des Parts, nicht auf Ebene und Text;
+												// Puls, Tor und Ein-/Ausblenden bleiben scharf. Rechnet mit der echten Zeit je Bild -> auf allen Geräten gleich
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 
