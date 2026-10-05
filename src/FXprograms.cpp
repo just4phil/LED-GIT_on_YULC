@@ -464,13 +464,19 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
 		//---- jetzt LEDs ausgeben
-		clearAll();
 		//BRIGHTNESS = 255;	// nicht BRIGHTNESS überschreiben, sondern besser direkt setzen
 		FastLED.setBrightness(255); //brightness erhöhen...aber nicht zu hoch!
 
-		//set random pixel to defined color
-		for (int i = 0; i < actualAnzahlLEDs; i++) {
-			leds[random(0, anz_LEDs)] = getRandomCRGB(); //LED_RED_HIGH;
+		// neu würfeln höchstens alle FX_REF_FRAME_MS (früher: in jedem Bild) - das Funkeln bleibt gleich schnell, wenn show() schneller wird
+		static unsigned int blingTick = 0;
+		unsigned int tick = millisCounterForProgChange / FX_REF_FRAME_MS + 1;
+		if (tick != blingTick) {
+			blingTick = tick;
+			clearAll();
+			//set random pixel to defined color
+			for (int i = 0; i < actualAnzahlLEDs; i++) {
+				leds[random(0, anz_LEDs)] = getRandomCRGB(); //LED_RED_HIGH;
+			}
 		}
 		fxPresent();
 	} // TODO: Checken ob das hier auch hin muss:

@@ -19,11 +19,14 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   Demo-Reihenfolge, `e4d7b17` Nachleuchten (`fxSmooth`) und `progPalette` mit Tempo und Fade, `5071e72` Nummern
   vor den offenen Parts, `2b902e8` Blinder und dunklerer Text-Hintergrund, `58860ba` Blinder heller und länger;
   danach der Abschluss-Commit mit dieser Doku.
-- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand Phase 0c (`88135b3`, Version
-  1791234906); der abgenommene Stand davor liegt in `ota/backup/2026-10-05_7`. `START_WITH_PIPELINE_DEMO` ist in
-  `src/definitions.h` aus: die Geräte starten in der Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. **Phase 0c ist gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
-- **Offen beim User:** nichts. Entscheidung zu Phase 0b steht aus (siehe „Als Nächstes").
+- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand Phase 0b (Version 1791236857,
+  `FX_OUTPUT_REAL_LENGTH` an). Rückweg: der abgenommene Stand Phase 0c liegt in `ota/backup/2026-10-05_8`
+  (`python tools/build_ota.py --restore 2026-10-05_8`), oder den Schalter in `src/definitions.h` auskommentieren
+  und neu bauen. `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per MIDI CC#0 = 92 gewählt.
+- **In Arbeit:** nichts. Phase 0c ist abgenommen, **Phase 0b ist gebaut** (06.10.2026, Branch `lib-cleanup`).
+- **Offen beim User:** Phase 0b auf der Hardware abnehmen – alle Geräte per OTA updaten, dann Songs ansehen wie
+  bei 0c. Achten auf: Tempo aller Effekte unverändert (v. a. Funkeln `progFastBlingBling`, Strobo, Farbband),
+  Gleichlauf, Gurt und beide Lampenstreifen leuchten vollständig, Marker-LEDs ruhig, keine Störpixel.
 - `lib-cleanup` (Aufräumen `2692a3b` + Phase 0c `88135b3`) ist noch nicht nach `MAIN` gemergt.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
@@ -71,8 +74,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 
 ### Als Nächstes
 
-2. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten; vorher prüfen, was an `DATA_PIN_2` von Lampen und Matrix
-   hängt (siehe „Risiken"). Erwartung: `show()` auf der Gitarre rund 5 ms statt 15,6 ms.
+2. **Phase 0b abnehmen** (User, siehe oben). Danach optional nachmessen (`debug_fx_frametime` auf der Gitarre:
+   erwartet `show()` rund 5 ms statt 15,6 ms) und `lib-cleanup` nach `MAIN` mergen.
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
    `smooth`, Text über der Szene, ausgestanzter Text) sind noch in keinem Song eingesetzt – nur auf Zuruf,
    `song.yaml` gehört dem User. Naheliegend: Blinder auf Chorus-Einsätze, `soft` auf `SCENE_COLORS_WAVE`.
@@ -128,7 +131,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 0 | Baseline bauen, Frame-Zeit messbar machen | erledigt, gemessen am 06.10.2026 (Matrix, Gitarre) |
-| 0b | Nur echte LED-Zahl senden | Schalter vorhanden, **aus** – als Nächstes, nach der Abnahme von 0c |
+| 0b | Nur echte LED-Zahl senden | gebaut und eingeschaltet (06.10.2026), Abnahme auf der Hardware offen |
 | 0c | Schrittweise Effekte auf Zeitbasis | erledigt und abgenommen (`88135b3`, 06.10.2026) |
 | – | Blinder (`fxBlinder`), Idee des Users | erledigt und abgenommen (`2b902e8`, `58860ba`) |
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
@@ -182,6 +185,18 @@ Der Schalter sendet nur `anz_LEDs`. Er ist aus, weil er nicht verhaltensneutral 
   alten Songs von Hand abgestimmt sind.
 
 Deshalb zuerst Phase 0c.
+
+Eingeschaltet am 06.10.2026 (auf Wunsch des Users, nach der Abnahme von 0c):
+
+- Vorher alle Effekte durchgesehen, die ohne Zeitsteuerung in jedem Durchlauf würfeln, abdunkeln oder zählen
+  (`src/FXprograms.cpp`, `guitarShapeFX.cpp`, `scenes.cpp`). Einziger Fund: **`progFastBlingBling`** (115 Aufrufe)
+  würfelte das Funkeln in jedem Bild neu – jetzt höchstens alle `FX_REF_FRAME_MS`. Szenen und Kontur-Effekte
+  laufen alle über `fxFrameDue()` (seit 0c mindestens 16 ms).
+- Ausgang 2 geprüft (Auskunft des Users): nichts wird abgeschnitten, siehe „Risiken".
+- RAM je Env rund 2–3 kB weniger (Vergleichspuffer `sent1`/`sent2` nur noch in echter Länge).
+- **Nicht gemessen:** die neue Dauer von `show()` (kein Gerät am USB). **Nicht auf der Hardware geprüft.**
+- Ausweg: `#define FX_OUTPUT_REAL_LENGTH` auskommentieren und neu bauen – dann werden wieder 506 LEDs je Bild
+  gesendet wie zuvor; die Umbauten aus 0c bleiben wirksam und sind in beiden Fällen gleich.
 
 ## Phase 0c – Schrittweise Effekte auf Zeitbasis
 
@@ -530,6 +545,6 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
 - **Ausgang 2** (Auskunft des Users, 06.10.2026): Lampen – zwei gleiche Streifen an beiden Ausgängen; Gitarre und
   Bass – der Gurt (Gitarre 57 LEDs, Bass „ein paar weniger", nicht gezählt; `anz_LEDs_STRAP` steht auf geschätzten
   60); Matrix – Ausgang 2 ungenutzt. Alle liegen unter `anz_LEDs`, die echte Länge schneidet also nichts ab.
-- **Phase 0b – nicht geprüfte Effekte:** Effekte, die in jedem Durchlauf würfeln oder abdunkeln (Glitzern, Regen,
-  `fadeToBlackBy` ohne Zeitsteuerung), sind in 0c nicht untersucht. Sie würden mit kürzerem `show()` dichter bzw.
-  schneller. Vor 0b durchsehen; danach ist eine neue Abnahme aller Songs nötig.
+- **Phase 0b:** Die Durchsicht der Effekte war eine Code-Durchsicht (Suche nach ungesteuerten Zufalls-, Dimm- und
+  Zählschritten), kein Test jedes Effekts. Ein übersehener Effekt liefe auf Gitarre, Bass und Lampen schneller –
+  bei der Abnahme darauf achten.

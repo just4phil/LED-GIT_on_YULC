@@ -434,8 +434,9 @@
 //==== LED-Ausgabe (fxPipeline.cpp) ======================================================
 #define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
-//#define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
-									// ACHTUNG: Effekte mit Schritten < ~16 ms laufen dann schneller -> erst nach Umstellung auf Zeitbasis aktivieren
+#define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
+									// Bei Problemen auskommentieren und neu bauen -> wieder 506 LEDs je Bild wie früher.
+									// Effekte hängen seit Phase 0c nicht mehr am Bildtakt (FX_REF_FRAME_MS).
 #define FX_REF_FRAME_MS		16		// kleinster Schritt bildgetakteter Effekte = Bildzeit von Gitarre/Bass/Lampen mit 506 gesendeten LEDs
 									// (gemessen 06.10.2026: show() 15,6 ms -> 62 Bilder/s). Hält deren Tempo, wenn show() schneller wird.
 #define FX_MAX_CATCHUP		4		// so viele versäumte Schritte holt ein Effekt in einem Bild höchstens nach, der Rest verfällt
