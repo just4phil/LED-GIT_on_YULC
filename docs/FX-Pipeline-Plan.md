@@ -11,13 +11,16 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestanztem Text)
+Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, warten auf den Hardware-Test)
 
 - **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
   Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
-  direkt danach, siehe `git log`. Alle fünf Envs bauen mit `6530dc8`; die OTA-Firmwares in `ota/` sind von diesem
-  Stand (Version 1791152126), der User hat sie aufgespielt.
+  direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
+  einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791223913,
+  mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
+  aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
   Nicht committen; vor einem OTA-Build für einen Auftritt wieder auskommentieren (sonst starten alle Geräte mit
   der Demo statt in der Songpause).
@@ -38,26 +41,28 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session nach Text-Ebene und ausgestan
   kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
 - **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
   der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
-  Reihenfolge jetzt: 0 Feuer (auf der Matrix von unten?), 1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt
-  steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter Text (abgenommen), 100 von vorn. Die Part-Nummern
-  sind geblieben, geändert ist nur die Sprungfolge; rund 3:55 Minuten.
-- **In Arbeit:** nichts.
+  Reihenfolge jetzt: 0 Feuer (auf der Matrix von unten, Säulen doppelt breit?), 6–9 weiche Farbwechsel (`fxSoft`),
+  1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
+  Text (abgenommen), 100 von vorn. Bestehende Part-Nummern sind geblieben, geändert ist nur die Sprungfolge;
+  rund 4:20 Minuten.
+- **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
 
 ### Morgen weiter
 
-1. **Kurz nachfragen** (und Befunde zuerst beheben) – steht alles am Anfang von Song 92:
-   - Part 0: steigt das Feuer auf der Matrix von unten auf?
+1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht alles am Anfang von Song 92:
+   - Part 0: steigt das Feuer auf der Matrix von unten auf? Sind die doppelt breiten Säulen dick genug, passt die
+     Dichte (Funkenrate ist gleich geblieben, verteilt sich aber auf halb so viele Säulen)?
+   - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
+     gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
    - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
    - Part 2: Farbband nur in den Buchstaben;
    - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
      allen Geräten gleichzeitig nach 2 Takten ein.
    Was abgenommen ist, wieder nach hinten sortieren.
-   - **Merker des Users (05.10.2026):** `progFire` auf der Matrix – die Feuersäulen doppeln, also immer zwei
-     Spalten für eine Säule. Eine Spalte breit sehen sie im Vergleich zu den beiden Lampen sehr dünn aus. Umsetzung:
-     Hitze nur für jede zweite Spalte rechnen (`MATRIX_WIDTH / 2` Säulen) und beim Zeichnen je zwei Spalten füllen;
-     Tempo und Funkenrate dabei gleich lassen. Danach in Song 92, Part 0 ansehen.
-2. **Phase 3b, Punkt 1** – weiche Farbwechsel im Beat: `fxSoft(percent)` für `progBeatColors`
-   (`SCENE_COLORS`, `SCENE_COLORS_WAVE`), YAML `soft: <Prozent>`; Demo am Anfang von Song 92 (mit und ohne `soft` nacheinander).
+   - Erledigt (Merker des Users vom 05.10.2026): `progFire` rechnet auf den Matrix-Geräten nur noch
+     `MATRIX_WIDTH / 2` Säulen und füllt je zwei Spalten (`FIRE_COL_WIDTH` in `src/FXprograms.cpp`).
+2. **Phase 3b, Punkt 1 – Rest:** `fxSoft` auch für `progFullColors` / `progSternNeu`, soweit ohne Eingriff in
+   den Ablauf möglich – erst nach dem Urteil des Users zu den Parts 6–9.
 3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
 4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
    `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
@@ -123,7 +128,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
-| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | offen, **als Nächstes** |
+| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | Punkt 1 für `progBeatColors` erledigt (Hardware-Test offen), Punkt 2 und 3 **als Nächstes** |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
 | 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt (Hardware-Test offen), Punkt 3 und 4 nach Bedarf |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen |
@@ -237,6 +242,22 @@ Punkt 1 rechnet aus `fxBeatPhase()`, also aus der Zeit seit Part-Beginn – auf 
 einen weiteren Puffer (`NUMMATRIX` × 3 Byte).
 
 Abnahme: Parts in Song 92 mit und ohne `soft` bzw. `smooth` nebeneinander; alte Aufrufe von `progPalette` unverändert.
+
+Zu Punkt 1 (umgesetzt am 05.10.2026 für `progBeatColors`):
+
+- `fxSoft(percent)` wird wie die Modifikatoren oben im `case` angemeldet und von `fxPartReset()` zurückgesetzt. Es
+  wirkt aber nicht in der Ausgabestufe, sondern im Effekt: der fragt mit `fxSoftBlend(bpm, beatsPerStep)` den Anteil
+  der nächsten Farbe ab (0 bis kurz vor dem Ende des Farbschritts, dann mit `ease8InOutQuad` bis 255) und mischt
+  `sharedColor(k)` mit `sharedColor(k + 1)`. Kein Puffer, gerechnet wie `fxBeats()` aus der Zeit seit Part-Beginn.
+- `percent` = Anteil des Farbschritts, in dem geblendet wird: 30 = Farbe steht, blendet im letzten Drittel;
+  100 = fließt durchgehend. Ohne Anmeldung unverändert harter Sprung.
+- YAML: `soft: <Prozent>` (ganze Zahl 0..100) auf Abschnittsebene. `validate()` meldet einen Fehler, wenn im
+  Abschnitt weder `SCENE_COLORS` / `SCENE_COLORS_WAVE` noch `progBeatColors` läuft (`SOFT_EFFECTS`).
+- Demo: Song 92, Parts 6 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
+- Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code wie in `generated.cpp`; `soft` auf
+  einem COLORS-Abschnitt erzeugt `fxSoft(40);`, auf `SCENE_CALM` den Fehler; falsche Werte werden gemeldet. Kein
+  Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
+- Offen: `progFullColors` / `progSternNeu`.
 
 ## Phase 4 – Ebene (einfacher als geplant)
 

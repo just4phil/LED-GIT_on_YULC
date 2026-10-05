@@ -4133,10 +4133,16 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
-	case 0:		// Feuer: muss auf der Matrix von unten aufsteigen (stand dort auf dem Kopf)
+	case 0:		// Feuer: muss auf der Matrix von unten aufsteigen (stand dort auf dem Kopf), die Säulen sind dort 2 Spalten breit
 		setColorScheme(SCHEME_FIRE);
-		scene(SCENE_FIRE, 8000, 1, bpm);
+		scene(SCENE_FIRE, 8000, 6, bpm);
 		break;
+
+	// fxSoft: weiche Farbwechsel im Beat - erst hart zum Vergleich, dann immer weicher; danach weiter mit Part 1
+	case 6:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
+	case 7:		setColorScheme(SCHEME_RETRO);	fxSoft(30);					scene(SCENE_COLORS,      8000, 8, bpm);	break;	// Farbe steht, blendet im letzten Drittel des Beats
+	case 8:		setColorScheme(SCHEME_RETRO);	fxSoft(100);				scene(SCENE_COLORS,      8000, 9, bpm);	break;	// fließt durchgehend von Farbe zu Farbe
+	case 9:		setColorScheme(SCHEME_SUNSET);	fxSoft(60);					scene(SCENE_COLORS_WAVE, 8000, 1, bpm);	break;	// wandernde Farbe, weich
 
 	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
 	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
@@ -4154,7 +4160,7 @@ void pipelineDemo() {
 		fxLayerFlush();
 		break;
 
-	// danach geht es mit Part 2 (Text als Maske) und den Parts 82-88 (Ebene gezielt steuern) weiter, dann erst mit Part 3
+	// nach Part 1 geht es mit Part 2 (Text als Maske) und den Parts 82-88 (Ebene gezielt steuern) weiter, dann erst mit Part 3
 	case 2:		// Text als FX_MASK: das Farbband ist nur in den Buchstaben zu sehen, der Rest ist schwarz (nur Matrix); weiter mit Part 82
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX

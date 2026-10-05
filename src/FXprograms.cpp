@@ -2849,8 +2849,16 @@ void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int redu
 //=========== progFire =============================================
 //==================================================================
 
+// Auf den Matrix-Geräten ist eine Feuersäule 2 Spalten breit: eine Spalte wirkt neben den Lampen zu dünn
+#if DEVICE_CLASS == CLASS_MATRIX
+	#define FIRE_COL_WIDTH	2
+#else
+	#define FIRE_COL_WIDTH	1
+#endif
+#define FIRE_COLS	((MATRIX_WIDTH + FIRE_COL_WIDTH - 1) / FIRE_COL_WIDTH)
+
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire) {
-	static uint8_t heat[MATRIX_HEIGHT][MATRIX_WIDTH];
+	static uint8_t heat[MATRIX_HEIGHT][FIRE_COLS];
 
 	static const CRGBPalette16 BlueFire_p = {
 		CRGB::Black,     CRGB::Black,       CRGB(0,0,50),    CRGB(0,0,110),
@@ -2872,7 +2880,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 
 		// 1. Cool down every cell
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
-			for (int x = 0; x < MATRIX_WIDTH; x++) {
+			for (int x = 0; x < FIRE_COLS; x++) {
 				int c = random(0, 40);
 				heat[y][x] = (heat[y][x] > c) ? (uint8_t)(heat[y][x] - c) : 0;
 			}
@@ -2880,20 +2888,21 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 
 		// y = 0 ist auf allen Matrix-Geräten oben (wie beim Text): Funken entstehen in der untersten Zeile, die Hitze steigt zu y = 0 auf
 		for (int y = 0; y < MATRIX_HEIGHT - 2; y++) {
-			for (int x = 0; x < MATRIX_WIDTH; x++) {
+			for (int x = 0; x < FIRE_COLS; x++) {
 				heat[y][x] = ((int)heat[y+1][x] + heat[y+2][x] + heat[y+2][x]) / 3;
 			}
 		}
 		if (random(255) < 120) {
-			int fx = random(0, MATRIX_WIDTH);
+			int fx = random(0, FIRE_COLS);
 			heat[MATRIX_HEIGHT-1][fx] = (uint8_t)min(255, (int)heat[MATRIX_HEIGHT-1][fx] + (int)random(160, 255));
 		}
 
 		if (!LEDsTurnedOff) {
 			for (int y = 0; y < MATRIX_HEIGHT; y++) {
 				for (int x = 0; x < MATRIX_WIDTH; x++) {
-					CRGB c = blueFire ? ColorFromPalette(BlueFire_p, heat[y][x])
-					                  : HeatColor(heat[y][x]);
+					uint8_t h = heat[y][x / FIRE_COL_WIDTH];
+					CRGB c = blueFire ? ColorFromPalette(BlueFire_p, h)
+					                  : HeatColor(h);
 					matrix->drawPixel(x, y, c);
 				}
 			}

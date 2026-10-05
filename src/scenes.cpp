@@ -126,9 +126,13 @@ void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uin
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
-		uint32_t k = fxBeats(bpm) / max((uint8_t)1, beatsPerColor);
+		beatsPerColor = max((uint8_t)1, beatsPerColor);
+		uint32_t k = fxBeats(bpm) / beatsPerColor;
 		if (wave) k += STAGE_POSITIONS - 1 - STAGE_POS;	// links ist einen Schritt voraus -> Farbe wandert nach rechts
-		fill_solid(leds, anz_LEDs, sharedColor(k));
+		CRGB c = sharedColor(k);
+		uint8_t next = fxSoftBlend(bpm, beatsPerColor);	// fxSoft(): zum Ende des Schritts in die nächste Farbe blenden
+		if (next) c = blend(c, sharedColor(k + 1), next);
+		fill_solid(leds, anz_LEDs, c);
 	}
 	fxShow();
 }

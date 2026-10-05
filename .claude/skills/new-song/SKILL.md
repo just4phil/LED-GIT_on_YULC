@@ -230,6 +230,8 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `dim: 60` - Part auf 60 % Helligkeit. `tint: rot` oder `{color: rot, amount: 40}` - Farbstich.
 - `only: [guitar, LAMPE1]` oder `{devices: [...], others: 15}` - nur diese Geräte leuchten voll (Schlüssel wie `devices`).
 - `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
+- `soft: 30` - weiche Farbwechsel im Beat, nur mit `SCENE_COLORS` / `SCENE_COLORS_WAVE` (sonst Fehler): die Farbe blendet
+  im letzten Anteil des Beats in die nächste, `soft: 100` fließt durchgehend. Ohne `soft` harter Sprung wie bisher.
 
 Noch nicht auf der Bühne erprobt (Stand 04.10.2026): zurückhaltend einsetzen, bis der User die Wirkung gesehen und im
 Katalog bewertet hat. Naheliegend: `fade` zwischen ruhigen Parts statt hartem Schnitt, `flash` in den Chorus, `stage_*`

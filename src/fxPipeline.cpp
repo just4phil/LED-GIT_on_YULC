@@ -52,6 +52,7 @@ static struct {
 	uint8_t pulseBpm, pulseDepth, pulseBeats;
 	uint8_t gateBpm, gatePerBeat, gateDuty;
 	uint8_t dim, stageDim;
+	uint8_t soft;
 	uint8_t spanFrom, spanTo;
 	bool span;
 	CRGB tint;
@@ -86,6 +87,7 @@ void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 }
 // alle Anmeldungen setzen nur Werte: sie werden bei jedem Loop-Durchlauf wiederholt
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
+void fxSoft(uint8_t percent)	{ mod.soft = min((uint8_t)100, percent); }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -298,6 +300,18 @@ static bool gateOpen(uint32_t beatMs, uint8_t bpm, uint8_t perBeat, uint8_t duty
 	// Phase im Raster exakt über bpm rechnen (wie fxBeatPhase), sonst läuft das Tor gegen den Beat
 	uint32_t slots = (uint64_t)beatMs * bpm * perBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
 	return slots % 100 < duty;
+}
+
+// Weicher Farbwechsel: wie weit der Effekt im laufenden Farbschritt schon zur nächsten Farbe geblendet hat.
+// Rechnet wie fxBeats() aus der Zeit seit Part-Beginn -> auf allen Geräten gleich.
+uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
+	if (!modReady) resetMods();
+	if (mod.soft == 0) return 0;
+	uint32_t span = 60000UL * max((uint8_t)1, beatsPerStep);
+	uint32_t t = ((uint64_t)millisCounterForProgChange * bpm) % span;	// Lage im Farbschritt
+	uint32_t start = span / 100 * (100 - mod.soft);						// ab hier wird geblendet
+	if (t < start) return 0;
+	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
 }
 
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen

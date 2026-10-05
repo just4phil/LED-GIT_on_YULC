@@ -292,7 +292,7 @@ effekte:
     notiz: "gedacht als zweites Preset für die Pausen zwischen den Songs (ganz ruhig, für Gitarren und Lampen, auf der Matrix wohl nicht). Nicht im Einsatz, weil nicht zufrieden - optimieren"
 
   progFire:
-    wirkung: "Flammen steigen von unten auf (Matrix), wahlweise blau"
+    wirkung: "Flammen steigen von unten auf (Matrix, Säulen 2 Spalten breit), wahlweise blau"
     art: raster
     rolle: [flaeche]
     energie: [4, 5]
@@ -954,6 +954,7 @@ ausgabestufe:
     fxTint:           {wirkung: "zieht das Bild zu einer Farbe hin", yaml: "tint: <Farbe> | {color: blau, amount: 50}", demo: 60, genutzt: 0, urteil: , notiz: }
     fxMaskStage:      {wirkung: "nur bestimmte Geräte leuchten voll, der Rest gedimmt oder schwarz", yaml: "only: guitar | {devices: [guitar], others: 20}", demo: 62, genutzt: 0, urteil: , notiz: }
     fxMaskSpan:       {wirkung: "nur ein Abschnitt jedes Geräts leuchtet", yaml: "span: [von, bis]", demo: 64, genutzt: 0, urteil: , notiz: }
+    fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne", genutzt: 0, urteil: , notiz: }
 
   ebene:
     FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }
@@ -990,7 +991,7 @@ luecken:
   - "Geschlossen am 04.10.2026 durch SCENE_STAR, SPARKLE, GLOW, COLORS, COLORS_WAVE, RAIN, PALETTE: Glitzern, Stern, ruhige Flächen, Farbband über die Bühne."
   - "Offen: progRandomLines/progCircles im Beat, progMatrixScanner und progWaterRipple haben noch keine eigene Szene (WaterRipple nur als Matrix-Teil von CALM/DROP)."
   - "Offen: progPalette hat kein Tempo und keine Fade-Wahl als Parameter; Palette 12 ist nicht definiert. Die schönen festen Paletten (3, 6, 7, 8, 9/10, 11) gibt es nicht als Szene, SCENE_PALETTE nutzt nur die Schemafarben."
-  - "Offen: Fading-Option für progFullColors / SCENE_COLORS (Wunsch des Users)."
+  - "Teilweise geschlossen am 05.10.2026: Fading-Option für SCENE_COLORS / SCENE_COLORS_WAVE (soft: <Prozent>, fxSoft). Offen bleibt progFullColors / progSternNeu."
   - "Geschlossen am 04.10.2026: weiches Ausblenden am Songende (SCENE_FADEOUT / progFadeOut)."
   - "Offen: progSternschnuppen als ruhiges Pausen-Preset für Gitarren und Lampen überarbeiten."
   - "Geschlossen am 04.10.2026: Effekte lassen sich übereinanderlegen (overlay in show.yaml/song.yaml, fxLayerBegin/End), z. B. Glitzern über einer ruhigen Fläche. Eine Ebene pro Part, oben und unten verschiedene Effekte."

@@ -78,7 +78,8 @@ FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT"
 				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
 
 # Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
-PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span")
+PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft")
+SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors")	# nur diese Effekte werten soft: (fxSoft) aus
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
@@ -307,6 +308,7 @@ def pipeline_calls(part, song, offset=0):
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
+	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -422,6 +424,14 @@ def pipeline_calls(part, song, offset=0):
 		else:
 			calls.append(f"fxMaskSpan({ab[0]}, {ab[1]});")
 			infos.append(f"nur Bereich {span[0]}-{span[1]} % des Geräts")
+
+	if "soft" in sec:
+		v = sec["soft"]
+		if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 100:
+			errors.append(f"{name}: soft ist der weiche Anteil eines Farbschritts in Prozent (ganze Zahl 0..100), nicht '{v}'")
+		elif v:
+			calls.append(f"fxSoft({v});")
+			infos.append(f"Farbwechsel weich ({v} % des Schritts)")
 
 	if offset and timed:
 		calls.append(f"fxTimeOffset({offset});")
@@ -1069,6 +1079,14 @@ def validate(song, timeline):
 				errors.append(f"{name}: Funktion {fn.group(1)} nicht in den Headern gefunden")
 		layer_errors, layer_calls = overlay_code(part, song)[3:]
 		errors += layer_errors
+		if sec.get("soft"):
+			try:
+				used = {effect_token(default_call(part, song))}
+			except SongError:
+				used = set()	# fehlende Gestaltung meldet die Generierung selbst
+			used |= {effect_token(e) for e in (sec.get("devices") or {}).values()} | {effect_token(e) for e in layer_calls}
+			if used and not used & set(SOFT_EFFECTS):
+				errors.append(f"{name}: soft wirkt nur auf {', '.join(SOFT_EFFECTS)} - hier läuft keiner davon")
 		if layer_calls:
 			try:
 				below = {effect_token(default_call(part, song))} | {effect_token(e) for e in (sec.get("devices") or {}).values()}
