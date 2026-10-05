@@ -634,6 +634,8 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 #endif
 
 #ifdef debug_fx_frametime
+	extern byte songID;
+	extern volatile byte prog;
 	static uint32_t dbgShows = 0, dbgSkipped = 0, dbgShowMicros = 0, dbgMixMicros = 0, dbgSince = 0;
 #endif
 
@@ -695,7 +697,7 @@ void fxPresent() {
 		dbgShowMicros += micros() - t1;
 		dbgShows++;
 		if (millis() - dbgSince >= 5000) {
-			Serial.printf("FX %s: %lu Bilder/s, show %lu us, mischen %lu us, %lu/s übersprungen\n", DEVICE_NAME,
+			Serial.printf("FX %s Song %u Part %u: %lu Bilder/s, show %lu us, mischen %lu us, %lu/s übersprungen\n", DEVICE_NAME, (unsigned)songID, (unsigned)prog,
 				(unsigned long)(dbgShows / 5), (unsigned long)(dbgShowMicros / max((uint32_t)1, dbgShows)),
 				(unsigned long)(dbgMixMicros / max((uint32_t)1, dbgShows + dbgSkipped)), (unsigned long)(dbgSkipped / 5));
 			dbgShows = dbgSkipped = dbgShowMicros = dbgMixMicros = 0;

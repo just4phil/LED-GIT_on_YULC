@@ -23,8 +23,14 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   ältere Stände liegen in `ota/backup/2026-10-05_4` bis `_6`. `START_WITH_PIPELINE_DEMO` ist in
   `src/definitions.h` aus (der User hat es am 05.10.2026 wieder ausgeschaltet): die Geräte starten in der
   Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. Das Aufräumen der Libraries ist erledigt (siehe Phase 7); `lib-cleanup` ist noch nicht
-  nach `MAIN` gemergt. **Offen beim User:** nichts – alle Parts von Song 92 sind abgenommen.
+- **In Arbeit (06.10.2026): Phase 0c, Schritt 1 – Bildzeit messen.** Messzeile in `fxPresent()` um Song und Part
+  ergänzt (nur im Zweig `debug_fx_frametime`, noch nicht committet). Mess-Firmware auf der Matrix (USB, COM12):
+  `PLATFORMIO_BUILD_FLAGS='-Ddebug_fx_frametime -DSTART_WITH_PIPELINE_DEMO'`. Danach dieselbe Messung auf der
+  Gitarre, dann Werte unter „Phase 0" eintragen und die Effekte nach der Liste in „Phase 0c" umstellen.
+  Matrix ist gemessen (Werte unter „Phase 0") und hat wieder die normale Firmware (per USB, Stand `lib-cleanup`).
+  **Wichtig:** Nach der Messung muss auch die Gitarre wieder die normale Firmware bekommen.
+  Das Aufräumen der Libraries ist erledigt (`2692a3b`, siehe Phase 7); `lib-cleanup` ist noch nicht nach `MAIN`
+  gemergt. **Offen beim User:** nichts – alle Parts von Song 92 sind abgenommen.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
 
@@ -151,7 +157,16 @@ alle Parts von Song 92 sind abgenommen (Stand 05.10.2026). Offen ist nur die Fra
   lampe1 1 158 953 / 61 196, lampe2 1 158 945 / 61 084, scrollmatrix 1 165 973 / 65 980 Byte.
 - `#define debug_fx_frametime`: alle 5 s Bilder/s, Dauer von `show()`, Dauer des Mischens und übersprungene Bilder
   auf Serial.
-- Offen: Messwerte je Gerät aufnehmen und hier eintragen.
+- **Messung Scrollmatrix (540 LEDs), 06.10.2026**, ein Durchlauf von Song 92, 77 Messfenster zu 5 s:
+  - `show()` dauert konstant 16,62–16,67 ms, unabhängig vom Part.
+  - Mischen (Ebene, Text-Ebene, Nachleuchten, Übergang, Blinder) im Mittel höchstens 0,53 ms je Durchlauf
+    (Part 1, Text-Ebene); meist 0,01–0,25 ms. Die Ausgabestufe bremst also nicht – Phase 7 ist dafür nicht nötig.
+  - Höchstens 55 Bilder/s (rund 18 ms je Bild: 16,65 ms senden + Loop im 2-ms-Raster des Timers).
+  - `FX_SKIP_UNCHANGED_FRAMES` greift oft: in ruhigen Parts 200–360 übersprungene Bilder/s, der Loop läuft dann
+    mit 240–370 Durchläufen/s.
+  - Nicht sauber messbar: Parts unter 5 s (z. B. 13, alter `progPalette`-Aufruf) – das Fenster reicht in den
+    Nachbar-Part.
+- Offen: dieselbe Messung auf der Gitarre (506 LEDs gesendet).
 
 ## Phase 0b – Ausgabelänge (`FX_OUTPUT_REAL_LENGTH`)
 
