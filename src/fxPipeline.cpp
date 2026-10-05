@@ -50,6 +50,14 @@ struct LayerMod {
 	uint8_t under;
 };
 
+struct BlinderMod {
+	unsigned int atMs, lenMs;	// lenMs 0 = kein Blinder
+	uint8_t bpm, every;			// every 0 = einmalig
+	uint8_t amount;
+	bool here;					// dieses Gerät blendet mit
+	CRGB col;
+};
+
 //--- Modifikatoren ---
 static struct {
 	unsigned int fadeInMs, fadeOutMs;
@@ -64,6 +72,7 @@ static struct {
 	CRGB tint;
 	uint8_t tintAmount;
 	LayerMod layer[LAYER_COUNT];
+	BlinderMod blinder;
 } mod;
 static bool modReady = false;
 
@@ -95,6 +104,18 @@ void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
 void fxSoft(uint8_t percent)	{ mod.soft = min((uint8_t)100, percent); }
 void fxSmooth(unsigned int millis)	{ mod.smoothMs = millis; }
+void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount, CRGB col, uint8_t devMask, unsigned int atMillis) {
+	mod.blinder.atMs = atMillis;
+	mod.blinder.lenMs = lenMillis;
+	mod.blinder.bpm = max((uint8_t)1, bpm);
+	mod.blinder.every = everyBeats;
+	mod.blinder.amount = amount;
+	mod.blinder.here = isDev(devMask);
+	mod.blinder.col = col;
+}
+void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount, CRGB col, uint8_t devMask) {
+	fxBlinderBeat(1, 0, lenMillis, amount, col, devMask, atMillis);
+}
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -319,6 +340,26 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 	uint32_t start = span / 100 * (100 - mod.soft);						// ab hier wird geblendet
 	if (t < start) return 0;
 	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
+}
+
+// Blinder: Stärke 0..255 zur Zeit beatMs - voll im ersten Viertel, danach quadratisch abklingend
+static uint8_t blinderLevel(uint32_t beatMs) {
+	const BlinderMod& b = mod.blinder;
+	if (!b.lenMs || !b.here || beatMs < b.atMs) return 0;
+	uint32_t t = beatMs - b.atMs;
+	if (b.every) {	// im Raster wiederholen, Phase exakt über bpm (wie fxBeatPhase)
+		t = (((uint64_t)t * b.bpm) % (60000UL * b.every)) / b.bpm;
+	}
+	else if (t >= b.lenMs) return 0;
+	if (t >= b.lenMs) return 0;
+	uint32_t hold = b.lenMs / 4;
+	if (t < hold) return b.amount;
+	uint8_t lin = 255 - (t - hold) * 255 / (b.lenMs - hold);
+	return scale8(b.amount, scale8(lin, lin));
+}
+
+static void applyBlinder(CRGB* buf, uint8_t level) {
+	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], mod.blinder.col, level);	// nur echte LEDs (Stromaufnahme!)
 }
 
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen
@@ -594,12 +635,14 @@ void fxPresent() {
 		uint8_t bright = modBrightness(ms);
 		bool trans = (transType != TRANS_CUT && ms < transMs);
 		bool layered = anyLayer(&FxLayer::used);
-		if (trans || modsActive(bright) || layered || mod.smoothMs) {
+		uint8_t blinder = blinderLevel(ms + mod.offsetMs);
+		if (trans || modsActive(bright) || layered || mod.smoothMs || blinder) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
 			if (mod.smoothMs) applySmooth(ledsOut);
 			if (layered) applyLayers(ledsOut, ms);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
+			if (blinder) applyBlinder(ledsOut, blinder);
 			fxFrame = ledsOut;
 		}
 	}

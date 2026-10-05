@@ -4153,49 +4153,57 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
-	// fxSmooth: Nachleuchten - ein alter Effekt mit harten Farbsprüngen, erst wie bisher, dann träge
-	case 0:		demoNumber(18);																						break;	// die Demo beginnt mit der Nummer des ersten Parts
-	case 18:	setColorScheme(SCHEME_NEON);								progFullColors(4000, DEMO_NR(4), 500);	break;	// hart wie bisher
-	case 4:		setColorScheme(SCHEME_NEON);	fxSmooth(250);				progFullColors(8000, DEMO_NR(11), 500);			break;	// Sprung wird zur kurzen Blende (halber Beat)
-	case 11:	setColorScheme(SCHEME_NEON);	fxSmooth(1000);				progFullColors(8000, DEMO_NR(12), 500);			break;	// sehr träge: die Farben verschwimmen
-	case 12:	setColorScheme(SCHEME_SUNSET);	fxSmooth(300);				scene(SCENE_PINGPONG, 8000, DEMO_NR(13), bpm);	break;	// Ping-Pong glüht nach statt zu springen
+	case 0:		demoNumber(17);																						break;	// die Demo beginnt mit der Nummer des ersten Parts
 
-	// progPalette mit Tempo und Fade: erst der alte Aufruf, dann dieselbe Palette langsam und weich, dann schnell mit harten Kanten
-	case 13:	progPalette(4000, 8, DEMO_NR(14));									break;	// wie bisher (Tempo hängt vom Gerät ab)
-	case 14:	progPalette(8000, 8, DEMO_NR(16), 8000);								break;	// ein Durchlauf in 8 s, auf allen Geräten gleich schnell
-	case 16:	progPalette(8000, 8, DEMO_NR(6), 1500, PAL_BLEND_OFF);				break;	// ein Durchlauf in 1,5 s, harte Kanten
-
-	// fxSoft: weiche Farbwechsel im Beat - erst hart zum Vergleich, dann immer weicher; danach weiter mit Part 1
-	case 6:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, DEMO_NR(7), bpm);	break;	// hart wie bisher
-	case 7:		setColorScheme(SCHEME_RETRO);	fxSoft(30);					scene(SCENE_COLORS,      8000, DEMO_NR(8), bpm);	break;	// Farbe steht, blendet im letzten Drittel des Beats
-	case 8:		setColorScheme(SCHEME_RETRO);	fxSoft(100);				scene(SCENE_COLORS,      8000, DEMO_NR(9), bpm);	break;	// fließt durchgehend von Farbe zu Farbe
-	case 9:		setColorScheme(SCHEME_SUNSET);	fxSoft(60);					scene(SCENE_COLORS_WAVE, 8000, DEMO_NR(1), bpm);	break;	// wandernde Farbe, weich
+	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt
+	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 500);	scene(SCENE_PALETTE, 8000, DEMO_NR(19), bpm);	break;	// auf jede 1 ein kurzer warmweißer Blinder
+	case 19:	setColorScheme(SCHEME_NEON);	fxBlinder(4000, 2000);		scene(SCENE_COLORS,  8000, DEMO_NR(21), bpm);	break;	// ein einzelner langer Blinder nach 2 Takten
+	case 21:	setColorScheme(SCHEME_ICE);		fxBlinderBeat(bpm, 2, 300, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);			// nur die Lampen blenden: weiß, alle 2 Beats
+				scene(SCENE_PALETTE, 8000, DEMO_NR(1), bpm);	break;
 
 	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
-	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text gedimmt)
+	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text stark gedimmt, sonst ist er nicht lesbar)
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
-		fxTextUnder(120);
+		fxTextUnder(40);
 		fxTextBegin();
-		progText("TEXT ON TOP", 8000, DEMO_NR(2), 1000, CRGB::White);
+		progText("TEXT ON TOP", 8000, 18, 1000, CRGB::White);
 		fxTextEnd();
 #endif
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, DEMO_NR(2), bpm);
+		scene(SCENE_SPARKLE, 8000, 18, bpm);
 		fxLayerEnd(FX_ADD);
-		scene(SCENE_PALETTE, 8000, DEMO_NR(2), bpm);
+		scene(SCENE_PALETTE, 8000, 18, bpm);
 		fxLayerFlush();
 		break;
 
-	// nach Part 1 geht es mit Part 2 (Text als Maske) und den Parts 82-88 (Ebene gezielt steuern) weiter, dann erst mit Part 3
+	//--- ABGENOMMEN (ohne Nummer) ---
+	// fxSmooth: Nachleuchten - ein alter Effekt mit harten Farbsprüngen, erst wie bisher, dann träge
+	case 18:	setColorScheme(SCHEME_NEON);								progFullColors(4000, 4, 500);	break;	// hart wie bisher
+	case 4:		setColorScheme(SCHEME_NEON);	fxSmooth(250);				progFullColors(8000, 11, 500);			break;	// Sprung wird zur kurzen Blende (halber Beat)
+	case 11:	setColorScheme(SCHEME_NEON);	fxSmooth(1000);				progFullColors(8000, 12, 500);			break;	// sehr träge: die Farben verschwimmen
+	case 12:	setColorScheme(SCHEME_SUNSET);	fxSmooth(300);				scene(SCENE_PINGPONG, 8000, 13, bpm);	break;	// Ping-Pong glüht nach statt zu springen
+
+	// progPalette mit Tempo und Fade: erst der alte Aufruf, dann dieselbe Palette langsam und weich, dann schnell mit harten Kanten
+	case 13:	progPalette(4000, 8, 14);									break;	// wie bisher (Tempo hängt vom Gerät ab)
+	case 14:	progPalette(8000, 8, 16, 8000);								break;	// ein Durchlauf in 8 s, auf allen Geräten gleich schnell
+	case 16:	progPalette(8000, 8, 6, 1500, PAL_BLEND_OFF);				break;	// ein Durchlauf in 1,5 s, harte Kanten
+
+	// fxSoft: weiche Farbwechsel im Beat - erst hart zum Vergleich, dann immer weicher; danach weiter mit Part 2
+	case 6:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
+	case 7:		setColorScheme(SCHEME_RETRO);	fxSoft(30);					scene(SCENE_COLORS,      8000, 8, bpm);	break;	// Farbe steht, blendet im letzten Drittel des Beats
+	case 8:		setColorScheme(SCHEME_RETRO);	fxSoft(100);				scene(SCENE_COLORS,      8000, 9, bpm);	break;	// fließt durchgehend von Farbe zu Farbe
+	case 9:		setColorScheme(SCHEME_SUNSET);	fxSoft(60);					scene(SCENE_COLORS_WAVE, 8000, 2, bpm);	break;	// wandernde Farbe, weich
+
+	// nach Part 9 geht es mit Part 2 (Text als Maske) und den Parts 82-88 (Ebene gezielt steuern) weiter, dann erst mit Part 3
 	case 2:		// Text als FX_MASK: das Farbband ist nur in den Buchstaben zu sehen, der Rest ist schwarz (nur Matrix); weiter mit Part 82
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerBegin();
-		progText("TEXT AS MASK", 8000, DEMO_NR(82), 1000, CRGB::White);
+		progText("TEXT AS MASK", 8000, 82, 1000, CRGB::White);
 		fxLayerEnd(FX_MASK);
 #endif
-		scene(SCENE_PALETTE, 8000, DEMO_NR(82), bpm);
+		scene(SCENE_PALETTE, 8000, 82, bpm);
 		fxLayerFlush();
 		break;
 
@@ -4289,9 +4297,9 @@ void pipelineDemo() {
 		setColorScheme(SCHEME_ROYAL);
 		fxLayerPulse(bpm, 240);
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, DEMO_NR(84), bpm);
+		scene(SCENE_SPARKLE, 8000, 84, bpm);
 		fxLayerEnd(FX_ADD);
-		scene(SCENE_GLOW, 8000, DEMO_NR(84), bpm);
+		scene(SCENE_GLOW, 8000, 84, bpm);
 		fxLayerFlush();
 		break;
 
@@ -4300,9 +4308,9 @@ void pipelineDemo() {
 		fxLayerFadeIn(4000);
 		fxLayerFadeOut(2000);
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 8000, DEMO_NR(86), bpm);
+		scene(SCENE_SPARKLE, 8000, 86, bpm);
 		fxLayerEnd(FX_ADD);
-		scene(SCENE_PALETTE, 8000, DEMO_NR(86), bpm);
+		scene(SCENE_PALETTE, 8000, 86, bpm);
 		fxLayerFlush();
 		break;
 
@@ -4311,14 +4319,14 @@ void pipelineDemo() {
 		fxLayerUnder(60);
 		fxLayerBegin();
 #if DEVICE_CLASS == CLASS_MATRIX
-		progText("SCENE DIMMED", 8000, DEMO_NR(88), 1000, CRGB::White);
+		progText("SCENE DIMMED", 8000, 88, 1000, CRGB::White);
 #elif DEVICE_CLASS == CLASS_LAMP
-		progLampRain(8000, DEMO_NR(88), 35, CRGB::White);
+		progLampRain(8000, 88, 35, CRGB::White);
 #else
-		progCometLoop(8000, DEMO_NR(88), 8, 0, true);	// 2 rote Kometen
+		progCometLoop(8000, 88, 8, 0, true);	// 2 rote Kometen
 #endif
 		fxLayerEnd(FX_OVER);
-		scene(SCENE_PALETTE, 8000, DEMO_NR(88), bpm);
+		scene(SCENE_PALETTE, 8000, 88, bpm);
 		fxLayerFlush();
 		break;
 

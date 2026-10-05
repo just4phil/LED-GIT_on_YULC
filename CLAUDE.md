@@ -67,7 +67,8 @@ frame (`fxFadeIn/Out`, `fxPulse`, `fxGate`, `fxDim`, `fxTint`, `fxMaskStage`, `f
 a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. `fxSoft(percent)`
 is registered the same way but is evaluated by the effect itself (`progBeatColors` blends to the next colour at the end
 of each beat, via `fxSoftBlend()`). `fxSmooth(ms)` is a temporal low-pass on the part's effect (below the layers) that
-turns hard jumps of old effects into blends. A second
+turns hard jumps of old effects into blends. `fxBlinder` / `fxBlinderBeat` flash a stage-blinder (warm white) on top of
+everything, once or on a beat grid, on all or selected devices. A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
@@ -76,7 +77,7 @@ layer's strength, `fxLayerUnder` dims only the effect below while the layer is p
 for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run
 together. Everything is
 computed from the time since part start, so all devices stay in sync regardless of LED count. In generated songs they
-come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span`, `soft`, `smooth` (lengths in
+come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span`, `soft`, `smooth`, `blinder` (lengths in
 beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene, or the text layer if the
 section also has an `overlay`;
 inside `overlay` the keys `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` steer only the layer).

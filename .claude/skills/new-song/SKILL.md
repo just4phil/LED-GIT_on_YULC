@@ -235,6 +235,13 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `smooth: 0.5` - Nachleuchten für jeden Effekt (Länge in Beats, bis ein Sprung vollzogen ist): macht harte Wechsel
   alter Effekte (`progFullColors`, `progSternNeu`) zu Blenden. Wirkt nicht auf `overlay` und `text`. Ab etwa einem
   Beat verschwimmt der Takt - für Beat-Effekte kurz halten (0.25 bis 0.5).
+- `blinder: bar` oder `{every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss|...,
+  devices: [LAMPE1, LAMPE2]}` - helles Aufblenden wie ein Bühnen-Blinder über dem laufenden Effekt (Idee des Users).
+  Ohne `every` einmalig bei `at` (z. B. auf den Chorus-Einsatz `{at: 0, len: 2}`). Sparsam einsetzen: Akzent auf
+  Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Ein Blinder je Abschnitt.
+- Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
+  (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
+  Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.
 - `progPalette` als `fx:` kennt Tempo und Fade: `progPalette(${dur}, 8, ${next}, <ms je Durchlauf>, PAL_BLEND_ON|PAL_BLEND_OFF)`.
   Mit Tempo läuft die Palette auf allen Geräten gleich schnell (der alte Aufruf mit 3 Parametern hängt vom Gerät ab).
 

@@ -11,19 +11,19 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`, `progPalette`-Parameter; warten auf den Hardware-Test)
+Zuletzt aktualisiert: 05.10.2026 (Phase 3b abgenommen; Blinder und dunklerer Text-Hintergrund gebaut, warten auf den Hardware-Test)
 
 - **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
   Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791229972, mit Nummern vor den offenen Parts,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791230813, mit Blinder und dunklerem Text-Hintergrund,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
-- **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
-  Nicht committen; vor einem OTA-Build für einen Auftritt wieder auskommentieren (sonst starten alle Geräte mit
-  der Demo statt in der Songpause).
+- **Nicht committet:** nichts. `START_WITH_PIPELINE_DEMO` hat der User in `src/definitions.h` wieder ausgeschaltet
+  (am 05.10.2026, spätestens seit Firmware 1791229972): die Geräte starten in der Songpause, Song 92 wird per MIDI CC#0 = 92
+  gewählt.
 - **Auf der Hardware gesehen (User):**
   - 04.10.2026: Song #31 All The Things She Said mit Übergängen und Ebene – „sehr geil, genau die richtige
     Richtung". Die alten handgeschriebenen Songs laufen alle noch. Song 92, Parts bis 80: „sieht sehr geil aus",
@@ -45,53 +45,44 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`
   (`demoNumber()`, Part `DEMO_NR(n)` = 110 + n springt danach in Part n; Part 0 zeigt die Nummer des ersten Parts).
   Worauf bei welcher Nummer zu achten ist, steht je Part in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8 –
   bei jedem neuen Baustein dort genau eintragen. Abgenommenes läuft ohne Nummer.
-  Reihenfolge jetzt: 18, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 18 ist der harte Vergleich), 13, 14, 16 `progPalette`
+  Reihenfolge jetzt: mit Nummer 17, 19, 21 Blinder und 1 Text-Ebene (dunklerer Hintergrund); danach ohne Nummer
+  18, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 18 ist der harte Vergleich), 13, 14, 16 `progPalette`
   (13 ist der alte Aufruf zum Vergleich), 6–9 weiche Farbwechsel (`fxSoft`; Part 6 ist der harte Vergleich),
-  1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
-  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 6 Minuten.
+  2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
+  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 5:45 Minuten.
 - **Feuer abgenommen (User, 05.10.2026):** zu den festen Flammen auf der Matrix (`a9b5152`): „ja mega! das war
   genau die richtige Entscheidung!! das sieht jetzt richtig klasse aus!!!" Werte in `MFIRE_…` so lassen.
 - **Phase 3b Punkt 2 und 3 gebaut (05.10.2026):** `fxSmooth(ms)` / YAML `smooth: <Beats>` und `progPalette` mit Tempo
   und Fade, Commit „FX-Pipeline: Nachleuchten (fxSmooth), progPalette mit Tempo und Fade" (siehe `git log`). Alle
   fünf Envs bauen. **Vom User noch nicht gesehen.**
+- **Abgenommen (User, 05.10.2026):** „alle Effekte sehen sehr gut aus und alle sind verwendbar!" – gilt für
+  `fxSmooth` (Parts 18, 4, 11, 12), `progPalette` mit Tempo und Fade (13, 14, 16), `fxSoft` (6–9), Text als Maske
+  (2) und Ebene gezielt steuern (82–88). Besonders: „sehr cool finde ich auch 9, wo die Farben von Gerät zu Gerät
+  faden" (`SCENE_COLORS_WAVE` mit `soft`). Damit ist **Phase 3b abgenommen**, ebenso Phase 4b Punkt 1.
+- **Befund Text-Ebene (Part 1):** weißer Text ist auf den hellen Hintergründen schlecht lesbar – „da müsste man die
+  Hintergrund-LEDs deutlich dunkler machen oder die Farben sehr kontrastreich/komplementär". Umgesetzt: Demo Part 1
+  mit `fxTextUnder(40)` statt 120 (rund 15 % statt 47 %); der Generator dimmt bei `text: {…, over: true}` ohne
+  `under:` jetzt von sich aus auf 15 % (`TEXT_OVER_UNDER` in `tools/songgen.py`; kein bestehender Song nutzt
+  `over`, also keine Änderung an generiertem Code). Part 1 steht deshalb wieder vorn mit Nummer. Die Variante
+  „Komplementärfarbe" ist nicht gebaut – erst abwarten, ob das Abdunkeln reicht.
+- **Neuer Baustein Blinder (Idee des Users, 05.10.2026):** `fxBlinder(atMs, lenMs, amount, col, devMask)` einmalig,
+  `fxBlinderBeat(bpm, everyBeats, lenMs, amount, col, devMask, atMs)` im Raster; YAML `blinder:`. Liegt in
+  `fxPresent()` zuoberst (nach Modifikatoren und Übergang), blendet die echten LEDs zur Blinder-Farbe hin
+  (`FX_BLINDER_WARM` = warmes Weiß), voll im ersten Viertel der Länge, dann quadratisch abklingend; Phase im Raster
+  exakt über bpm, also auf allen Geräten gleich. Ein Blinder je Part. Demo: Song 92, Parts 17 (jede 1), 19
+  (einmal, lang), 21 (nur Lampen, weiß). Geprüft: alle fünf Envs bauen, YAML-Formen und Fehlermeldungen im Speicher,
+  Song #31 erzeugt denselben Code. **Nicht geprüft:** das Bild auf der Hardware, die Stromaufnahme bei vollem Weiß
+  auf allen Geräten (wie bei `TRANS_FLASH` nur über die Gesamthelligkeit begrenzt).
 - **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
 
 ### Morgen weiter
 
-1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht alles am Anfang von Song 92:
-   - Part 0, Feuer auf der Matrix – Rückmeldung des Users vom 05.10.2026: „die Säulen sind dick genug und richtig
-     herum", aber nur etwa 1 Pixel Weiß am Fuß, der Balken fast komplett rot. Ursache war ein Fehler in `progFire`:
-     die zweite Zeile von unten wurde nie mit Hitze versorgt (blieb dunkel), darüber kamen nur 2/3 der Hitze an.
-     Behoben (Zeile übernimmt die Glut der untersten) und der Farbverlauf mit `FIRE_HEAT_GAIN` 140 % nach oben
-     geschoben. Danach der User: „besser, aber jetzt fast etwas zu hoch skaliert", das Feuer soll ganz auf die
-     10 Zeilen passen. Deshalb kühlt es jetzt stärker ab: `FIRE_COOLING` = 650 / `MATRIX_HEIGHT` (65 statt 40 bei
-     10 Zeilen); in der Simulation erreicht nur noch selten ein roter Rest die oberste Zeile, Weiß bleibt in den
-     unteren vier.
-   - Feuer, dritte Rückmeldung (05.10.2026): Auf den Lampen brennt das Feuer an einer Stelle und ändert nur die
-     Höhe, auf der Matrix wechselte es dauernd den Platz – „unruhig, man kann die Flammen nie wirklich sehen".
-     Wunsch: Plätze einmal auswürfeln, nur dort brennen lassen. Umgesetzt: `progFire` ist neu geschrieben mit
-     festen Flammen (`MFIRE_…` in `src/FXprograms.cpp`): `MATRIX_WIDTH / 6` Flammen (9 auf der Scrollmatrix), jede
-     in ihrem 6-Pixel-Abschnitt an zufälligem Platz (beim Part-Start gewürfelt), 4 Pixel breit (2 Pixel Kern,
-     je 1 Pixel Flanke, die 2 Zeilen niedriger ist → spitz zulaufend). Jede Flamme rechnet ihr eigenes Fire2012
-     mit Dauerglut am Fuß (`MFIRE_EMBER`). Simulation für 10 Zeilen: Kern 3 bis 9 Zeilen hoch (Median 6), Flanke
-     1 bis 7, oberste Zeile nur in 3 % der Bilder an, unten weiß, Mitte gelb, Spitze rot. Die Werte `FIRE_COOLING` /
-     `FIRE_HEAT_GAIN` von vorher gibt es nicht mehr. **Offen:** Bild auf der Hardware – Zahl, Breite und Höhe der
-     Flammen (Stellgrößen: Teiler 6 in `MFIRE_FLAMES`, `MFIRE_COOLING` höher = kleiner, `MFIRE_SPARKING`,
-     `MFIRE_HEAT_GAIN`). **Erledigt, abgenommen** (siehe oben).
-   - Parts 18, 4, 11, 12 (`fxSmooth`): 18 `progFullColors` hart zum Vergleich, 4 mit 250 ms, 11 mit 1000 ms, 12 Ping-Pong
-     mit 300 ms. Sieht die Blende auf allen Geräten gleich aus (Matrix gegen Lampen)? Welche Länge gefällt? Ruckelt
-     die Matrix (jedes Bild ändert sich, also wird jedes gesendet)?
-   - Parts 13, 14, 16 (`progPalette`): 13 alter Aufruf, 14 ein Durchlauf in 8 s, 16 in 1,5 s mit harten Kanten. Läuft
-     die Palette in 14 und 16 auf allen Geräten gleich schnell?
-   - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
-     gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
-   - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
-   - Part 2: Farbband nur in den Buchstaben;
-   - Parts 82–88: in 82 pumpt nur das Glitzern, in 86 ist nur das Farbband dunkler, in 88 setzt das Glitzern auf
-     allen Geräten gleichzeitig nach 2 Takten ein.
-   Was abgenommen ist, wieder nach hinten sortieren.
-2. **Phase 3b ist damit gebaut.** `fxSoft` für `progFullColors` / `progSternNeu` entfällt voraussichtlich: `smooth:`
-   leistet dort dasselbe, ohne die Effekte anzufassen – erst das Urteil des Users zu den Parts 4 und 11 abwarten.
+1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht mit Nummer am Anfang von Song 92:
+   - Parts 17, 19, 21 (Blinder): hell genug, Länge, Farbe (warmweiß), lieber alle Geräte oder nur die Lampen?
+   - Part 1 (Text-Ebene): ist der Text mit dem auf 15 % gedimmten Hintergrund gut lesbar, erkennt man die Szene noch?
+   Was abgenommen ist, nach hinten sortieren (dort ohne Nummer).
+2. **Phase 3b ist abgenommen.** `fxSoft` für `progFullColors` / `progSternNeu` entfällt: `smooth:` leistet dort
+   dasselbe, ohne die Effekte anzufassen.
 3. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen. `progPalette` hat mit
    dem Tempo-Parameter schon eine Zeitbasis; offen ist dort nur, ob der alte Aufruf (3 Parameter) umgestellt wird.
 4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
@@ -102,7 +93,7 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`
 
 Reihenfolge der nächsten Schritte:
 
-1. **Phase 3b** – Fading-Optionen: gebaut, Abnahme auf der Hardware offen
+1. **Phase 3b** – Fading-Optionen: erledigt und abgenommen
 2. **Phase 0c** – schrittweise Effekte auf Zeitbasis; davor mit `debug_fx_frametime` messen
 3. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten
 4. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten
@@ -158,10 +149,10 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
-| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | Punkt 1 (`progBeatColors`), 2 und 3 erledigt, Hardware-Test offen |
+| 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | erledigt, vom User am 05.10.2026 abgenommen |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
-| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt (Hardware-Test offen), Punkt 3 und 4 nach Bedarf |
-| 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen |
+| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 abgenommen, Punkt 2 gebaut (Lesbarkeit des Texts nach dem Abdunkeln offen), Punkt 3 und 4 nach Bedarf |
+| 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92, Blinder), Szenen offen |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
 | 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |
 

@@ -110,6 +110,12 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep = 1);	// für diese Effekt
 void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts folgt träge, ein Sprung ist nach millis zu 95 % vollzogen.
 												// Macht harte Wechsel alter Effekte zu Blenden. Wirkt auf den Effekt des Parts, nicht auf Ebene und Text;
 												// Puls, Tor und Ein-/Ausblenden bleiben scharf. Rechnet mit der echten Zeit je Bild -> auf allen Geräten gleich
+//--- Blinder: helles Aufblenden wie bei einem Bühnen-Blinder, punktuell über dem laufenden Effekt. Voll hell im ersten
+//    Viertel von lenMillis, klingt dann ab; liegt über allem (auch über Tor, Dimmen und Übergang) ---
+#define FX_BLINDER_WARM	CRGB(255, 150, 50)	// warmes Weiß wie ein Halogen-Blinder
+void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM, uint8_t devMask = DEV_ALL);	// einmal im Part
+void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM,
+				   uint8_t devMask = DEV_ALL, unsigned int atMillis = 0);	// alle everyBeats Beats, erstmals bei atMillis
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 

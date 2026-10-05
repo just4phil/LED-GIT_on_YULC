@@ -71,6 +71,7 @@ TEXT_PER = {"beat": 1, "half": 2}	# Beats pro Wort; "bar" = ein Takt, eine Zahl 
 TEXT_COLORS = {"weiss": "White", "weiß": "White", "white": "White", "rot": "Red", "red": "Red", "blau": "Blue", "blue": "Blue",
 			   "gruen": "Green", "grün": "Green", "green": "Green", "gelb": "Yellow", "yellow": "Yellow", "orange": "Orange",
 			   "pink": "DeepPink", "lila": "Purple", "purple": "Purple", "cyan": "Cyan"}
+TEXT_OVER_UNDER = 15		# Prozent: so hell bleibt die Szene unter einem Text mit over: true, wenn kein under: angegeben ist
 TEXT_CUT_COLORS = ("schwarz", "black", "aus")	# ausgestanzter Text: Buchstaben dunkel, die Szene leuchtet drumherum (FX_CUT)
 
 # fade: eines Parts - die Schemafarben wandern im Takt zu einem Ziel und zurück (setColorFade in colorSchemes.h)
@@ -78,7 +79,7 @@ FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT"
 				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
 
 # Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
-PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth")
+PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth", "blinder")
 SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors")	# nur diese Effekte werten soft: (fxSoft) aus
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
@@ -309,6 +310,7 @@ def pipeline_calls(part, song, offset=0):
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
 	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)     smooth: <Beats> (Nachleuchten)
+	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -432,6 +434,41 @@ def pipeline_calls(part, song, offset=0):
 		elif v:
 			calls.append(f"fxSoft({v});")
 			infos.append(f"Farbwechsel weich ({v} % des Schritts)")
+
+	if "blinder" in sec:
+		spec = as_dict("blinder", "every", ("every", "at", "len", "amount", "color", "devices"))
+		ok = True
+		every = 0
+		if "every" in spec:
+			every = per_beats(spec["every"], sec, song)
+			if every is None or float(every) != int(every) or not 1 <= every <= 255:
+				errors.append(f"{name}: blinder every '{spec['every']}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats zwischen zwei Blindern)")
+				ok = False
+		at = spec.get("at", 0)
+		if isinstance(at, bool) or not isinstance(at, (int, float)) or at < 0:
+			errors.append(f"{name}: blinder at ist der Zeitpunkt in Beats ab Part-Beginn (Zahl >= 0), nicht '{at}'")
+			ok = False
+		len_ms = beats_ms("blinder len", spec.get("len", 1))
+		amount = pct("blinder amount", spec.get("amount", 100))
+		color = str(spec.get("color", "warm")).strip()
+		col = "FX_BLINDER_WARM" if color.lower() == "warm" else crgb(color)
+		if col is None:
+			errors.append(f"{name}: blinder-Farbe '{color}' unbekannt - warm, {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+		devs = spec.get("devices")
+		devs = [devs] if isinstance(devs, str) else list(devs or [])
+		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
+		if bad:
+			errors.append(f"{name}: blinder devices kennt nur {', '.join(DEVICE_MASKS)} - unbekannt: {', '.join(bad)}")
+		if ok and len_ms and amount and col and not bad:
+			at_ms = round(at * 60000.0 / part["bpm"])
+			mask = " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL"
+			if every:
+				calls.append(f"fxBlinderBeat({bpm}, {int(every)}, {len_ms}, {amount}, {col}, {mask}, {at_ms});")
+				infos.append(f"Blinder alle {int(every)} Beat(s), {len_ms} ms" + (f", nur {', '.join(devs)}" if devs else ""))
+			else:
+				calls.append(f"fxBlinder({at_ms}, {len_ms}, {amount}, {col}, {mask});")
+				infos.append(f"Blinder bei {at_ms} ms, {len_ms} ms lang" + (f", nur {', '.join(devs)}" if devs else ""))
+			timed = True
 
 	if "smooth" in sec:
 		ms = beats_ms("smooth", sec["smooth"])
@@ -763,6 +800,8 @@ def apply_texts(song, timeline):
 			expr, info = text_call(part, song, widths)
 			cut = text_is_cut(sec["text"])
 			layer_mods = {k: sec["text"][k] for k in LAYER_MOD_KEYS if k in sec["text"]}	# z. B. under: Szene gedimmt, Text voll hell
+			if not cut:
+				layer_mods.setdefault("under", TEXT_OVER_UNDER)	# über einer hellen Szene ist Text sonst nicht lesbar
 			if sec.get("overlay"):
 				# die Ebene ist schon belegt: der Text bekommt die eigene Text-Ebene und liegt über Szene und overlay
 				errors = []
