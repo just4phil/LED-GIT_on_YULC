@@ -19,10 +19,9 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   Demo-Reihenfolge, `e4d7b17` Nachleuchten (`fxSmooth`) und `progPalette` mit Tempo und Fade, `5071e72` Nummern
   vor den offenen Parts, `2b902e8` Blinder und dunklerer Text-Hintergrund, `58860ba` Blinder heller und länger;
   danach der Abschluss-Commit mit dieser Doku.
-- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Abschluss-Commit (Version 1791231881);
-  ältere Stände liegen in `ota/backup/2026-10-05_4` bis `_6`. `START_WITH_PIPELINE_DEMO` ist in
-  `src/definitions.h` aus (der User hat es am 05.10.2026 wieder ausgeschaltet): die Geräte starten in der
-  Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
+- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand Phase 0c (`88135b3`, Version
+  1791234906); der abgenommene Stand davor liegt in `ota/backup/2026-10-05_7`. `START_WITH_PIPELINE_DEMO` ist in
+  `src/definitions.h` aus: die Geräte starten in der Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
 - **In Arbeit:** nichts. **Phase 0c ist gebaut** (06.10.2026, Branch `lib-cleanup`), Bildzeit auf Matrix und
   Gitarre gemessen (Werte unter „Phase 0"). Beide Geräte haben nach der Messung wieder normale Firmware bekommen.
 - **Offen beim User:** Phase 0c auf der Hardware abnehmen – Song 92, Parts 23, 24, 26, 27 (stehen am Anfang, mit
