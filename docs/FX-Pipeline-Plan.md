@@ -22,12 +22,9 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand Phase 0c (`88135b3`, Version
   1791234906); der abgenommene Stand davor liegt in `ota/backup/2026-10-05_7`. `START_WITH_PIPELINE_DEMO` ist in
   `src/definitions.h` aus: die Geräte starten in der Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. **Phase 0c ist gebaut** (06.10.2026, Branch `lib-cleanup`), Bildzeit auf Matrix und
-  Gitarre gemessen (Werte unter „Phase 0"). Beide Geräte haben nach der Messung wieder normale Firmware bekommen.
-- **Offen beim User:** Phase 0c auf der Hardware abnehmen – Song 92, Parts 23, 24, 26, 27 (stehen am Anfang, mit
-  Nummer; Prüfpunkte in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8) und ein, zwei alte Songs mit
-  `progPalette` / `progSternNeu`. Danach Phase 0b einschalten.
-- `lib-cleanup` (Aufräumen `2692a3b` + Phase 0c) ist noch nicht nach `MAIN` gemergt.
+- **In Arbeit:** nichts. **Phase 0c ist gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
+- **Offen beim User:** nichts. Entscheidung zu Phase 0b steht aus (siehe „Als Nächstes").
+- `lib-cleanup` (Aufräumen `2692a3b` + Phase 0c `88135b3`) ist noch nicht nach `MAIN` gemergt.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
 
@@ -55,6 +52,9 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   nicht"; nach dem Umbau (heller, länger, andere Effekte darunter; Parts 17, 19, 22): „ja top!! gefällt mir gut".
   Einzelheiten im Abschnitt „Blinder".
 
+- 06.10.2026, Phase 0c (fester 16-ms-Schritt): „ich habe mir einige songs angeschaut und es sieht alles top aus.
+  deutlich besser als vorher und 100% synchron. richtig super!"
+
 ### Regeln für Song 92 (User, 05.10.2026)
 
 - Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang** der Demo, Abgenommenes rückt nach hinten.
@@ -63,15 +63,14 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   läuft ohne Nummer.
 - Zu jedem offenen Part steht in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8, **genau**, worauf zu achten ist
   (nummerierte Prüfpunkte); im Chat dieselbe Liste in Kurzform.
-- Offen (Phase 0c): 23 `progPalette` alter Aufruf, 24 `progSternNeu`, 26 `progMatrixScanner`, 27 `progCometLoop`,
-  je 12 s mit Nummer davor. Danach die abgenommenen: 17, 19, 22 Blinder, 21 Blinder auf den
+- Derzeit ist nichts offen: Part 0 springt direkt in Part 23. Reihenfolge: 23, 24, 26, 27 Phase 0c (`progPalette`
+  alter Aufruf, `progSternNeu`, `progMatrixScanner`, `progCometLoop`), 17, 19, 22 Blinder, 21 Blinder auf den
   Lampen, 1 Text-Ebene, 18, 4, 11, 12 Nachleuchten, 13, 14, 16 `progPalette`, 6–9 weiche Farbwechsel, 2 Text als
   Maske, 82–88 Ebene gezielt steuern, 3 Vorlauf, 5–45 Übergänge, 50–64 Modifikatoren, 70–80 Ebene, 90
-  ausgestanzter Text, 92 Feuer, 100 von vorn; rund 6:42 Minuten.
+  ausgestanzter Text, 92 Feuer, 100 von vorn; rund 6:30 Minuten.
 
 ### Als Nächstes
 
-1. **Phase 0c abnehmen** (User, siehe oben). Bei Auffälligkeiten: `FX_REF_FRAME_MS` in `src/definitions.h`.
 2. **Phase 0b** – `FX_OUTPUT_REAL_LENGTH` einschalten; vorher prüfen, was an `DATA_PIN_2` von Lampen und Matrix
    hängt (siehe „Risiken"). Erwartung: `show()` auf der Gitarre rund 5 ms statt 15,6 ms.
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
@@ -130,7 +129,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 |---|---|---|
 | 0 | Baseline bauen, Frame-Zeit messbar machen | erledigt, gemessen am 06.10.2026 (Matrix, Gitarre) |
 | 0b | Nur echte LED-Zahl senden | Schalter vorhanden, **aus** – als Nächstes, nach der Abnahme von 0c |
-| 0c | Schrittweise Effekte auf Zeitbasis | gebaut (06.10.2026), Abnahme auf der Hardware offen |
+| 0c | Schrittweise Effekte auf Zeitbasis | erledigt und abgenommen (`88135b3`, 06.10.2026) |
 | – | Blinder (`fxBlinder`), Idee des Users | erledigt und abgenommen (`2b902e8`, `58860ba`) |
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
 | 2 | Übergänge zwischen Parts | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
@@ -213,7 +212,7 @@ Umgesetzt am 06.10.2026:
 - Unverändert: alle Effekte mit Schritten ab 20 ms (Strobo, Farbwechsel, Lauftext, Wasser, Linien …) – sie halten
   ihr Tempo über den Restbetrag im Zähler schon heute. Ohne Zeitsteuerung bleiben `progBlack`, `progTestRange`,
   `progRunningPixel` (unkritisch).
-- Geprüft: alle fünf Envs bauen. **Nicht auf der Hardware geprüft.**
+- Geprüft: alle fünf Envs bauen. Vom User am 06.10.2026 auf der Hardware abgenommen (mehrere Songs).
 
 Abnahme: Song 92, Parts 23–27; ein handgeschriebener Song mit `progPalette` läuft auf Matrix und Gitarre gleich
 schnell und auf der Gitarre so schnell wie vorher; danach bleibt das mit `FX_OUTPUT_REAL_LENGTH` so.
@@ -528,5 +527,9 @@ ist nur der GFX-Stapel (Adafruit_GFX, Framebuffer GFX, FastLED_NeoMatrix und dam
   Phase 0c wieder.
 - **Bildrate auf der Matrix** mit Ebene und Übergang: mit `debug_fx_frametime` messen.
 - **`FX_OUTPUT_REAL_LENGTH` zu früh aktiviert:** Effekte laufen je Gerät unterschiedlich schnell (siehe 0b/0c).
-- **Ausgang 2:** Mit echter Länge bekommt auch der Gurt nur `anz_LEDs` LEDs – vorher prüfen, was an den Lampen
-  und der Matrix an `DATA_PIN_2` hängt.
+- **Ausgang 2** (Auskunft des Users, 06.10.2026): Lampen – zwei gleiche Streifen an beiden Ausgängen; Gitarre und
+  Bass – der Gurt (Gitarre 57 LEDs, Bass „ein paar weniger", nicht gezählt; `anz_LEDs_STRAP` steht auf geschätzten
+  60); Matrix – Ausgang 2 ungenutzt. Alle liegen unter `anz_LEDs`, die echte Länge schneidet also nichts ab.
+- **Phase 0b – nicht geprüfte Effekte:** Effekte, die in jedem Durchlauf würfeln oder abdunkeln (Glitzern, Regen,
+  `fadeToBlackBy` ohne Zeitsteuerung), sind in 0c nicht untersucht. Sie würden mit kürzerem `show()` dichter bzw.
+  schneller. Vor 0b durchsehen; danach ist eine neue Abnahme aller Songs nötig.

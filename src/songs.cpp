@@ -4154,15 +4154,16 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 17.
-	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell
-	case 0:		demoNumber(23);											break;	// die Demo beginnt mit der Nummer des ersten Parts
-	case 23:	progPalette(12000, 8, DEMO_NR(24));						break;	// alter Aufruf: Farbband
-	case 24:	progSternNeu(12000, 500, DEMO_NR(26), 5);				break;	// drehender Stern, Schritt 5 ms
-	case 26:	progMatrixScanner(12000, DEMO_NR(27), 7);				break;	// Scanner, Schritt 7 ms
-	case 27:	progCometLoop(12000, 17, 8, 0, false);					break;	// ein roter Komet, Schritt 8 ms
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23. Derzeit ist nichts offen:
+	case 0:		switchToPart(23);	break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
+	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell
+	case 23:	progPalette(12000, 8, 24);								break;	// alter Aufruf: Farbband
+	case 24:	progSternNeu(12000, 500, 26, 5);						break;	// drehender Stern, Schritt 5 ms
+	case 26:	progMatrixScanner(12000, 27, 7);						break;	// Scanner, Schritt 7 ms
+	case 27:	progCometLoop(12000, 17, 8, 0, false);					break;	// ein roter Komet, Schritt 8 ms
+
 	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt (hebt die Gesamthelligkeit an)
 	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_PALETTE, 8000, 19, bpm);	break;	// auf jede 1 ein Blinder, 2 Beats lang
 	case 19:	setColorScheme(SCHEME_ROYAL);	fxBlinder(4000, 3000);			scene(SCENE_GLOW,    8000, 22, bpm);	break;	// ein einzelner langer Blinder nach 2 Takten über einer ruhigen Fläche
