@@ -954,7 +954,7 @@ ausgabestufe:
     fxTint:           {wirkung: "zieht das Bild zu einer Farbe hin", yaml: "tint: <Farbe> | {color: blau, amount: 50}", demo: 60, genutzt: 0, urteil: , notiz: }
     fxMaskStage:      {wirkung: "nur bestimmte Geräte leuchten voll, der Rest gedimmt oder schwarz", yaml: "only: guitar | {devices: [guitar], others: 20}", demo: 62, genutzt: 0, urteil: , notiz: }
     fxMaskSpan:       {wirkung: "nur ein Abschnitt jedes Geräts leuchtet", yaml: "span: [von, bis]", demo: 64, genutzt: 0, urteil: , notiz: }
-    fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne", genutzt: 0, urteil: , notiz: }
+    fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 0 ohne", genutzt: 0, urteil: , notiz: }
 
   ebene:
     FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }

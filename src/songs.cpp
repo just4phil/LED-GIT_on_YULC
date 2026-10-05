@@ -4133,13 +4133,8 @@ void pipelineDemo() {
 	switch (prog) {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
-	case 0:		// Feuer: auf der Matrix feste Flammen an zufälligen Plätzen, die nur ihre Höhe ändern (von unten, unter der Oberkante)
-		setColorScheme(SCHEME_FIRE);
-		scene(SCENE_FIRE, 8000, 6, bpm);
-		break;
-
 	// fxSoft: weiche Farbwechsel im Beat - erst hart zum Vergleich, dann immer weicher; danach weiter mit Part 1
-	case 6:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
+	case 0:		setColorScheme(SCHEME_RETRO);								scene(SCENE_COLORS,      4000, 7, bpm);	break;	// hart wie bisher
 	case 7:		setColorScheme(SCHEME_RETRO);	fxSoft(30);					scene(SCENE_COLORS,      8000, 8, bpm);	break;	// Farbe steht, blendet im letzten Drittel des Beats
 	case 8:		setColorScheme(SCHEME_RETRO);	fxSoft(100);				scene(SCENE_COLORS,      8000, 9, bpm);	break;	// fließt durchgehend von Farbe zu Farbe
 	case 9:		setColorScheme(SCHEME_SUNSET);	fxSoft(60);					scene(SCENE_COLORS_WAVE, 8000, 1, bpm);	break;	// wandernde Farbe, weich
@@ -4311,11 +4306,17 @@ void pipelineDemo() {
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxTextBegin();
-		progText("TEXT CUT OUT", 8000, 100, 1000, CRGB::White);
+		progText("TEXT CUT OUT", 8000, 92, 1000, CRGB::White);
 		fxTextEnd(255, FX_CUT);
 #endif
-		scene(SCENE_PALETTE, 8000, 100, bpm);
+		scene(SCENE_PALETTE, 8000, 92, bpm);
 		fxLayerFlush();
+		break;
+
+	//--- Feuer (abgenommen) ---
+	case 92:	// Feuer: auf der Matrix feste Flammen an zufälligen Plätzen, die nur ihre Höhe ändern (von unten, unter der Oberkante)
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_FIRE, 8000, 100, bpm);
 		break;
 
 	case 100:

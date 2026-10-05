@@ -18,7 +18,7 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791226409, mit dem neuen Feuer unten,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791226638, Feuer am Ende der Demo,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
@@ -41,10 +41,11 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
   kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
 - **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
   der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
-  Reihenfolge jetzt: 0 Feuer (auf der Matrix von unten, Säulen doppelt breit?), 6–9 weiche Farbwechsel (`fxSoft`),
+  Reihenfolge jetzt: 0 und 7–9 weiche Farbwechsel (`fxSoft`; Part 0 ist der harte Vergleich, vorher Part 6),
   1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
-  Text (abgenommen), 100 von vorn. Bestehende Part-Nummern sind geblieben, geändert ist nur die Sprungfolge;
-  rund 4:20 Minuten.
+  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 4:20 Minuten.
+- **Feuer abgenommen (User, 05.10.2026):** zu den festen Flammen auf der Matrix (`a9b5152`): „ja mega! das war
+  genau die richtige Entscheidung!! das sieht jetzt richtig klasse aus!!!" Werte in `MFIRE_…` so lassen.
 - **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
 
 ### Morgen weiter
@@ -68,8 +69,8 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
      1 bis 7, oberste Zeile nur in 3 % der Bilder an, unten weiß, Mitte gelb, Spitze rot. Die Werte `FIRE_COOLING` /
      `FIRE_HEAT_GAIN` von vorher gibt es nicht mehr. **Offen:** Bild auf der Hardware – Zahl, Breite und Höhe der
      Flammen (Stellgrößen: Teiler 6 in `MFIRE_FLAMES`, `MFIRE_COOLING` höher = kleiner, `MFIRE_SPARKING`,
-     `MFIRE_HEAT_GAIN`).
-   - Parts 6–9 (`fxSoft`): 6 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
+     `MFIRE_HEAT_GAIN`). **Erledigt, abgenommen** (siehe oben).
+   - Parts 0 und 7–9 (`fxSoft`): 0 hart zum Vergleich, 7 mit 30 %, 8 mit 100 %, 9 Welle mit 60 %. Blenden alle Geräte
      gleichzeitig? Welcher Anteil gefällt (als Richtwert für Songs)?
    - Part 1: Text über Farbband und Glitzern, ruckelt die Matrix mit zwei Ebenen?
    - Part 2: Farbband nur in den Buchstaben;
@@ -77,7 +78,7 @@ Zuletzt aktualisiert: 05.10.2026 (doppelte Feuersäulen und `fxSoft` gebaut, war
      allen Geräten gleichzeitig nach 2 Takten ein.
    Was abgenommen ist, wieder nach hinten sortieren.
 2. **Phase 3b, Punkt 1 – Rest:** `fxSoft` auch für `progFullColors` / `progSternNeu`, soweit ohne Eingriff in
-   den Ablauf möglich – erst nach dem Urteil des Users zu den Parts 6–9.
+   den Ablauf möglich – erst nach dem Urteil des Users zu den Parts 0 und 7–9.
 3. **Phase 3b, Punkt 2 und 3** – Nachleuchten (`fxSmooth`), `progPalette`-Parameter.
 4. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
    `urteil` / `notiz` gehören ihm). Mündlich schon gesagt, aber nicht eingetragen: Text über der Szene
@@ -268,7 +269,7 @@ Zu Punkt 1 (umgesetzt am 05.10.2026 für `progBeatColors`):
   100 = fließt durchgehend. Ohne Anmeldung unverändert harter Sprung.
 - YAML: `soft: <Prozent>` (ganze Zahl 0..100) auf Abschnittsebene. `validate()` meldet einen Fehler, wenn im
   Abschnitt weder `SCENE_COLORS` / `SCENE_COLORS_WAVE` noch `progBeatColors` läuft (`SOFT_EFFECTS`).
-- Demo: Song 92, Parts 6 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
+- Demo: Song 92, Parts 0 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code wie in `generated.cpp`; `soft` auf
   einem COLORS-Abschnitt erzeugt `fxSoft(40);`, auf `SCENE_CALM` den Fehler; falsche Werte werden gemeldet. Kein
   Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
