@@ -31,7 +31,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   ein und sehr langsam aus" im Part „the ONE …..halftime"; Demo 92 Part 28 zeigt ihn (offen, steht am Anfang).
   „solo a" ist ein Bass-Solo (Angabe des Users): `SCENE_SOLO_BASS`. Alle fünf Envs bauen; die OTA-Firmwares in
   `ota/` sind von diesem Stand (Version 1791238956), der Stand davor (1791238006) liegt in `ota/backup/2026-10-06_2`.
-  Nächster Schritt: Urteil des Users zu Demo 92 Part 28 (`fxBlinderShape`) abwarten, Rückmeldungen einarbeiten.
+  Der Blinder mit eigenem Verlauf ist abgenommen (06.10.2026: „ja der blinder ist sehr cool“), Demo-Part 28 steht
+  jetzt ohne Nummer hinter den anderen Blindern. Nächster Schritt: weitere Rückmeldungen zu Song 28 einarbeiten.
 - **Offen beim User:** Entscheidung, welche alten Songs zuerst neu aufgesetzt werden (siehe „Als Nächstes" 1).
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
@@ -79,10 +80,9 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   läuft ohne Nummer.
 - Zu jedem offenen Part steht in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8, **genau**, worauf zu achten ist
   (nummerierte Prüfpunkte); im Chat dieselbe Liste in Kurzform.
-- Offen ist Part 28 (Blinder mit eigenem Verlauf, `fxBlinderShape`): Part 0 zeigt die Nummer 28, danach Part 23.
-  Reihenfolge: 28, dann 23, 24, 26, 27 Phase 0c (`progPalette`
+- Derzeit ist nichts offen: Part 0 springt direkt in Part 23. Reihenfolge: 23, 24, 26, 27 Phase 0c (`progPalette`
   alter Aufruf, `progSternNeu`, `progMatrixScanner`, `progCometLoop`), 17, 19, 22 Blinder, 21 Blinder auf den
-  Lampen, 1 Text-Ebene, 18, 4, 11, 12 Nachleuchten, 13, 14, 16 `progPalette`, 6–9 weiche Farbwechsel, 2 Text als
+  Lampen, 28 Blinder mit eigenem Verlauf, 1 Text-Ebene, 18, 4, 11, 12 Nachleuchten, 13, 14, 16 `progPalette`, 6–9 weiche Farbwechsel, 2 Text als
   Maske, 82–88 Ebene gezielt steuern, 3 Vorlauf, 5–45 Übergänge, 50–64 Modifikatoren, 70–80 Ebene, 90
   ausgestanzter Text, 92 Feuer, 100 von vorn; rund 6:40 Minuten.
 
@@ -367,7 +367,7 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
   `attackMs` linear ein, steht `holdMs` voll und klingt über den Rest von `lenMs` quadratisch ab. Ohne den Aufruf
   bleibt alles wie bisher. YAML: `attack` / `hold` in Beats im `blinder`; `attack` + `hold` müssen kürzer sein als
   `len`. Erster Einsatz: Billie Jean, „the ONE …..halftime" (`{at: 0, len: 8, attack: 0.5, hold: 0}` über
-  `SCENE_CALM` auf 50 %). Demo: Song 92, Part 28. Noch nicht abgenommen.
+  `SCENE_CALM` auf 50 %). Demo: Song 92, Part 28. Abgenommen am 06.10.2026: „ja der blinder ist sehr cool“.
 - Ausgabe (`applyBlinder()`): liegt in `fxPresent()` zuoberst, nach Ebenen, Modifikatoren und Übergang – Tor, Dimmen
   und `only` nehmen ihn also nicht weg. Er blendet die echten LEDs (`anz_LEDs`) zur Blinder-Farbe hin.
 - **Helligkeit:** Der erste Versuch blendete nur in der normalen Gesamthelligkeit und war auf Gitarre, Bass

@@ -246,7 +246,7 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   die Gesamthelligkeit an), `color: weiss` bringt diese Anhebung nicht mit - `warm` ist deshalb die kräftigere Wahl.
   Eigener Verlauf (06.10.2026, Idee des Users „fadet schnell ein und sehr langsam aus"): `attack: <Beats>` blendet ein
   statt aufzuspringen, `hold: <Beats>` (Standard 0) steht voll, der Rest von `len` klingt ab - z. B.
-  `{at: 0, len: 8, attack: 0.5}` über einem 2-Takte-Part. Noch nicht auf der Bühne abgenommen (Demo 92, Part 28).
+  `{at: 0, len: 8, attack: 0.5}` über einem 2-Takte-Part. Vom User abgenommen (06.10.2026: „sehr cool“; Demo 92, Part 28).
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
   Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.

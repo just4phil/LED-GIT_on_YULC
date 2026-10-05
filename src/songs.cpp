@@ -4160,10 +4160,8 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23.
-	case 0:		demoNumber(28);		break;
-	// fxBlinderShape: Blinder mit eigenem Verlauf - blendet schnell ein (1/2 Beat) und klingt sehr lang aus (Idee des Users, Billie Jean)
-	case 28:	setColorScheme(SCHEME_ROYAL);	fxDim(128);	fxBlinderBeat(bpm, 8, 4000);	fxBlinderShape(250);	scene(SCENE_CALM, 8000, 23, bpm);	break;	// alle 2 Takte ein Blinder über dunklem Atmen
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23. Derzeit ist nichts offen:
+	case 0:		switchToPart(23);	break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell
@@ -4177,7 +4175,9 @@ void pipelineDemo() {
 	case 19:	setColorScheme(SCHEME_ROYAL);	fxBlinder(4000, 3000);			scene(SCENE_GLOW,    8000, 22, bpm);	break;	// ein einzelner langer Blinder nach 2 Takten über einer ruhigen Fläche
 	case 22:	setColorScheme(SCHEME_TOXIC);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_RAIN,    8000, 21, bpm);	break;	// Blinder über einem dunklen Effekt (fallende Leuchtspuren)
 	case 21:	setColorScheme(SCHEME_ICE);		fxBlinderBeat(bpm, 2, 300, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);			// nur die Lampen blenden: weiß, alle 2 Beats
-				scene(SCENE_PALETTE, 8000, 1, bpm);	break;
+				scene(SCENE_PALETTE, 8000, 28, bpm);	break;
+	// fxBlinderShape: Blinder mit eigenem Verlauf - blendet schnell ein (1/2 Beat) und klingt sehr lang aus (Idee des Users, Billie Jean)
+	case 28:	setColorScheme(SCHEME_ROYAL);	fxDim(128);	fxBlinderBeat(bpm, 8, 4000);	fxBlinderShape(250);	scene(SCENE_CALM, 8000, 1, bpm);	break;	// alle 2 Takte ein Blinder über dunklem Atmen
 
 	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
 	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text stark gedimmt, sonst ist er nicht lesbar)
