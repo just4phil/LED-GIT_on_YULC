@@ -1,0 +1,234 @@
+# Technische Show (von Claude aus song.yaml abgeleitet, 06.10.2026). Ohne Audio-Analyse: es liegt keine MP3 in quelle/.
+# Struktur: song.yaml des Users (Längen aus dem alten, live erprobten BillyJean()). Der alte Code bleibt in src/songs.cpp.
+# Idee: vier wiederkehrende Motive gliedern den Song -
+#   "i am the one" (9x)        = die Leuchtplatten aus dem Video: pro Beat leuchtet ein anderes Gerät (SCENE_PINGPONG,
+#                                weiß schon im Schlagzeug-Intro),
+#                                im Chorus-Block wandert stattdessen die Farbe weich von Gerät zu Gerät (COLORS_WAVE + soft)
+#   Chorus                     = drehender Stern (SCENE_STAR), ab Chorus 2 blitzen die Lampen weiß auf 2 und 4 (Snare)
+#   Instrumental-Zwischenspiel = schnelle Einzelblitze (SCENE_SPARKLE), wie im alten Code
+#   Rufe "do think twice" / "BABY" = Schläge auf die Viertel in Rot (SCENE_DROP)
+# Farben: Intro und Verses kühl und dunkel (WHITE, ROYAL, RETRO = rot/weiß/blau), der Pre-Chorus warm (SUNSET), der
+# Chorus in NEON. Nach dem Stopp kippt das Finale ins Warme (SUNSET -> FIRE).
+# Neu in diesem Song: der Blinder mit eigenem Verlauf (Idee des Users in "the ONE …..halftime") und der Blinder nur auf
+# den Lampen als Backbeat im Chorus.
+
+function: gen_BillieJean
+scheme: SCHEME_ROYAL
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  drums intro:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_WHITE
+    why: "nur das Schlagzeug spielt: die Leuchtplatten aus dem Video - pro Beat leuchtet genau ein Gerät weiß auf, der Rest ist dunkel (die Matrix zeigt hier noch den Lauftext)"
+
+  bass intro:
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_RETRO
+    transition: {type: fade, beats: 2}
+    why: "die Basslinie setzt ein: zwei Kometen laufen um den Bass, der Rest bleibt dunkel - jetzt mit Farbe (Rot/Weiß/Blau)"
+
+  synth intro:
+    scene: SCENE_GLOW
+    scheme: SCHEME_ROYAL
+    transition: {type: stage_out, beats: 2}
+    fade: {to: triad, per: 8}
+    why: "die Synth-Akkorde kommen dazu: die ganze Bühne füllt sich Pixel für Pixel, von der Mitte aus; Blau/Lila wandern über 2 Takte nach Pink/Orange und zurück"
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "Gesang setzt ein: dezenter Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix)"
+
+  i am the one:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_RETRO
+    why: "Motiv Leuchtplatten: pro Beat leuchtet genau ein Gerät in Rot, Weiß oder Blau, der Rest ist dunkel (alt: progRandomLines im Beat)"
+
+  verse 2:
+    scene: SCENE_RAIN
+    scheme: SCHEME_NEON
+    transition: {type: fade, beats: 2}
+    why: "zweite Strophe mit anderem Look: fallende Leuchtspuren in Pink/Cyan/Violett statt Blau"
+
+  i am the one (2):
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_RETRO
+    why: "Motiv Leuchtplatten wie beim ersten Mal"
+
+  people alwys told me:
+    scene: SCENE_PALETTE
+    scheme: SCHEME_SUNSET
+    transition: {type: fade, beats: 2}
+    overlay: {scene: SCENE_SPARKLE, amount: 50, fade_in: 26}
+    why: "Pre-Chorus (alt: progPalette): warmes Farbband läuft über die ganze Bühne; darüber baut sich über den ganzen Part ein Glitzern auf - die Spannung steigt bis zum Strobo"
+
+  strobe:
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "2 Beats weißes Flimmern als Absprung in den Chorus (wie im alten Code)"
+
+  chorus 1:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    why: "Chorus: drehender Stern in Pink/Cyan/Violett, Farbwechsel pro Beat - der Refrain-Look"
+
+  i am the one (3):
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Motiv Leuchtplatten im Chorus: alle Geräte leuchten, die Farbe wandert pro Beat weich ein Gerät weiter"
+
+  chorus weiter:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    why: "Chorus geht weiter: wieder der Stern"
+
+  i am the one (4):
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Motiv Leuchtplatten im Chorus, wie zwei Takte vorher"
+
+  instrumental:
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_ROYAL
+    why: "Motiv Zwischenspiel: schnelle Einzelblitze, schon in den Farben der nächsten Strophe"
+
+  verse 2 a:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    fade: {to: triad, per: 8}
+    why: "Strophe wie verse 1, dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück"
+
+  i am the one (5):
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_RETRO
+    why: "Motiv Leuchtplatten"
+
+  "do think twice!!":
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Ruf: Schläge auf die Viertel in Rot (alt: progFastBlingBling)"
+
+  verse 2 b:
+    scene: SCENE_RAIN
+    scheme: SCHEME_NEON
+    transition: {type: fade, beats: 2}
+    why: "Strophe wie verse 2: Leuchtspuren in Pink/Cyan/Violett, das Rot blendet weich aus"
+
+  i ma the one:
+    scene: SCENE_PINGPONG
+    scheme: SCHEME_RETRO
+    why: "Motiv Leuchtplatten"
+
+  "BABY!!!":
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Ruf wie 'do think twice': Viertel in Rot"
+
+  people always told me:
+    scene: SCENE_PALETTE
+    scheme: SCHEME_SUNSET
+    transition: {type: fade, beats: 2}
+    overlay: {scene: SCENE_SPARKLE, amount: 50, fade_in: 26}
+    why: "Pre-Chorus erkennbar wie beim ersten Mal: warmes Farbband, das Glitzern baut sich auf"
+
+  heyhey:
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Strobo-Absprung in den Chorus"
+
+  chorus 2a:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder: {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Chorus 2 eine Stufe mehr: derselbe Stern, dazu blitzen die beiden Lampen weiß auf 2 und 4 (Snare)"
+
+  i am the one (6):
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Motiv Leuchtplatten im Chorus: Farbe wandert weich von Gerät zu Gerät"
+
+  chorus 2b:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder: {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Stern mit Lampen-Backbeat wie chorus 2a"
+
+  i am the one (7):
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    soft: 30
+    why: "Motiv gesteigert (6 Takte): jetzt wechselt die ganze Bühne gemeinsam pro Beat die Farbe, mit kurzer Blende"
+
+  instrumental (2):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    why: "Motiv Zwischenspiel: Einzelblitze"
+
+  solo a:
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_SUNSET
+    transition: {type: stage_rl, beats: 2}
+    why: "Bass-Solo (Angabe des Users): zwei Kometen laufen um den Bass, alle anderen atmen dunkel in warmen Farben; der Übergang läuft über die Bühne zum Bass hin (alt: progWaterRipple)"
+
+  "the ONE …..halftime":
+    scene: SCENE_CALM
+    scheme: SCHEME_ROYAL
+    dim: 50
+    blinder: {at: 0, len: 8, attack: 0.5, hold: 0}
+    why: "Idee des Users 'BLINDER fadet schnell ein und sehr langsam aus': der Blinder blendet in einem halben Beat auf allen Geräten auf und klingt dann über die ganzen 2 Takte ab; darunter atmet die Bühne dunkel in Blau/Lila und kommt langsam hervor"
+
+  instrumental (3):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_ROYAL
+    why: "Motiv Zwischenspiel: Einzelblitze, noch kühl - danach der Stopp"
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Stopp: 1,5 Takte Dunkel machen den letzten Einsatz stärker"
+
+  STROBE:
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Strobo-Absprung in den letzten Chorus"
+
+  chorus 3a:
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    blinder: {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "letzter Chorus eine Stufe wärmer: Stern in Orange/Pink/Lila/Gelb, Lampen-Backbeat bleibt"
+
+  i am the one (8):
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_SUNSET
+    soft: 60
+    why: "Motiv Leuchtplatten in den warmen Farben des Finales"
+
+  intrumental:
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    why: "Motiv Zwischenspiel, jetzt in Feuerfarben"
+
+  i am the one (9):
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_SUNSET
+    soft: 60
+    why: "Motiv Leuchtplatten zum letzten Mal"
+
+  intrumental (2):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    why: "Einzelblitze in Feuerfarben, Anlauf zum Outro"
+
+  outro:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    transition: flash
+    why: "Höhepunkt am Songende: Feuer auf allen Geräten, mit weißem Blitz auf den Einsatz (alt: anwachsendes progFastBlingBling)"
+
+  not my lover:
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_RED
+    why: "letzte Zeile: Rot blendet über den Takt weich nach Schwarz aus, danach 10 s schwarz (der alte Code war hier schon dunkel)"

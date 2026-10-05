@@ -958,6 +958,7 @@ ausgabestufe:
     fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne", genutzt: 0, urteil: , notiz: }
     fxSmooth:         {wirkung: "Nachleuchten für jeden Effekt: harte Wechsel werden zu Blenden, ohne den Effekt anzufassen (z. B. progFullColors, progSternNeu)", yaml: "smooth: <Beats>", demo: "4 (250 ms), 11 (1000 ms), 12 (Ping-Pong); zum Vergleich 18 ohne", genutzt: 0, urteil: , notiz: }
     fxBlinder:        {wirkung: "Blinder: helles, warmweißes Aufblenden über dem laufenden Effekt (heller als der Effekt), einmalig oder im Raster, auf allen oder einzelnen Geräten", yaml: "blinder: bar | {every: , at: , len: , amount: , color: , devices: }", demo: "17 (jede 1), 19 (einmal, lang), 22 (über dunklem Effekt), 21 (nur Lampen)", genutzt: 0, urteil: , notiz: }
+    fxBlinderShape:   {wirkung: "Blinder mit eigenem Verlauf: blendet schnell ein und klingt sehr lang aus (statt aufzuspringen und halb so lang zu stehen)", yaml: "blinder: {at: , len: , attack: <Beats>, hold: <Beats>}", demo: "28", genutzt: 1, urteil: , notiz: }
 
   ebene:
     FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }

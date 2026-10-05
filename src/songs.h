@@ -398,7 +398,7 @@ void IWannaDanceWithSomebody();
  * @see switchToSong()
  */
 // #28 BillyJean();
-void BillyJean();
+//void BillyJean();	// ersetzt durch gen_BillieJean() (songs_generated.h), alter Code auskommentiert in songs.cpp
 
 
 /**

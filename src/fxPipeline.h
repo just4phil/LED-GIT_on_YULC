@@ -124,6 +124,8 @@ uint8_t fxStepsDue(volatile unsigned int& counter, unsigned int stepMs);
 void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM, uint8_t devMask = DEV_ALL);	// einmal im Part
 void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM,
 				   uint8_t devMask = DEV_ALL, unsigned int atMillis = 0);	// alle everyBeats Beats, erstmals bei atMillis
+void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis = 0);	// eigener Verlauf für den Blinder des Parts: blendet über attackMillis
+												// ein, steht holdMillis voll und klingt über den Rest von lenMillis ab (langes, weiches Ausblenden)
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 

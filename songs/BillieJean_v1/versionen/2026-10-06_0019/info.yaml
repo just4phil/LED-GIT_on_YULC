@@ -1,0 +1,9 @@
+zeit: '2026-10-06 00:19:43'
+notiz: 'Erste generierte Show: Leuchtplatten-Motiv (PINGPONG), Stern-Chorus mit Lampen-Backbeat,
+  Blinder mit langem Ausblenden in ''the ONE halftime'''
+werkzeug_git: cdf5ee4 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: d25c38dceef4a66914e931876c8f1422a6bd3fb917d6afa0caeeed9d2c20f1e0
+  show.yaml: c6054884fc9b6c34a74fe2c15d8d2cc681867948691104cd692ad2844b4c5613
+  generated.cpp: f729b6c8dbdf09a248e2ccf16b2e0d2be49b333ce6b47c29105f23f87b8e5066

@@ -56,6 +56,8 @@ struct BlinderMod {
 	uint8_t amount;
 	bool here;					// dieses Gerät blendet mit
 	CRGB col;
+	bool shaped;				// eigener Verlauf (fxBlinderShape), sonst: erste Hälfte voll, dann abklingend
+	unsigned int attackMs, holdMs;
 };
 
 //--- Modifikatoren ---
@@ -115,6 +117,11 @@ void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint
 }
 void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount, CRGB col, uint8_t devMask) {
 	fxBlinderBeat(1, 0, lenMillis, amount, col, devMask, atMillis);
+}
+void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis) {
+	mod.blinder.shaped = true;
+	mod.blinder.attackMs = attackMillis;
+	mod.blinder.holdMs = holdMillis;
 }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
@@ -342,7 +349,8 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
 }
 
-// Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend
+// Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend.
+// Mit fxBlinderShape: blendet über attackMs ein, steht holdMs voll und klingt über den Rest von lenMs ab
 static uint8_t blinderLevel(uint32_t beatMs) {
 	const BlinderMod& b = mod.blinder;
 	if (!b.lenMs || !b.here || beatMs < b.atMs) return 0;
@@ -353,7 +361,11 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 	else if (t >= b.lenMs) return 0;
 	if (t >= b.lenMs) return 0;
 	uint32_t hold = b.lenMs / 2;
-	if (t < hold) return b.amount;
+	if (b.shaped) {
+		if (t < b.attackMs) return scale8(b.amount, t * 255 / b.attackMs);
+		hold = (uint32_t)b.attackMs + b.holdMs;
+	}
+	if (t < hold || hold >= b.lenMs) return b.amount;
 	uint8_t lin = 255 - (t - hold) * 255 / (b.lenMs - hold);
 	return scale8(b.amount, scale8(lin, lin));
 }

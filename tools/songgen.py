@@ -311,6 +311,7 @@ def pipeline_calls(part, song, offset=0):
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
 	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)     smooth: <Beats> (Nachleuchten)
 	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
+		attack: <Beats> (blendet ein statt aufzuspringen), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -436,7 +437,7 @@ def pipeline_calls(part, song, offset=0):
 			infos.append(f"Farbwechsel weich ({v} % des Schritts)")
 
 	if "blinder" in sec:
-		spec = as_dict("blinder", "every", ("every", "at", "len", "amount", "color", "devices"))
+		spec = as_dict("blinder", "every", ("every", "at", "len", "amount", "color", "devices", "attack", "hold"))
 		ok = True
 		every = 0
 		if "every" in spec:
@@ -459,6 +460,17 @@ def pipeline_calls(part, song, offset=0):
 		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
 		if bad:
 			errors.append(f"{name}: blinder devices kennt nur {', '.join(DEVICE_MASKS)} - unbekannt: {', '.join(bad)}")
+		shape = None
+		if "attack" in spec or "hold" in spec:
+			sh = [spec.get("attack", 0), spec.get("hold", 0)]
+			if any(isinstance(v, bool) or not isinstance(v, (int, float)) or v < 0 for v in sh):
+				errors.append(f"{name}: blinder attack / hold sind Längen in Beats (Zahl >= 0)")
+				ok = False
+			else:
+				shape = [round(v * 60000.0 / part["bpm"]) for v in sh]
+				if len_ms and sum(shape) >= len_ms:
+					errors.append(f"{name}: blinder attack + hold ({sum(sh)} Beats) müssen kürzer sein als len - der Rest ist das Ausblenden")
+					ok = False
 		if ok and len_ms and amount and col and not bad:
 			at_ms = round(at * 60000.0 / part["bpm"])
 			mask = " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL"
@@ -468,6 +480,9 @@ def pipeline_calls(part, song, offset=0):
 			else:
 				calls.append(f"fxBlinder({at_ms}, {len_ms}, {amount}, {col}, {mask});")
 				infos.append(f"Blinder bei {at_ms} ms, {len_ms} ms lang" + (f", nur {', '.join(devs)}" if devs else ""))
+			if shape:
+				calls.append(f"fxBlinderShape({shape[0]}, {shape[1]});")
+				infos.append(f"Blinder blendet {shape[0]} ms ein, {shape[1]} ms voll, {len_ms - sum(shape)} ms aus")
 			timed = True
 
 	if "smooth" in sec:

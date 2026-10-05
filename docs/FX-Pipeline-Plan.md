@@ -23,6 +23,15 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
 - **In Arbeit:** nichts. Phase 0c und **Phase 0b sind gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
+- **Gebaut und committet (06.10.2026, abends, Commit „Billie Jean: generierte Show …“); vom User gesehen: „geil!“:** neue Show für
+  #28 Billie Jean (`songs/BillieJean_v1/show.yaml`, Version `2026-10-06_0022`, generiert mit
+  `tools/songgen.py BillieJean`). Der alte `BillyJean()` steht auf Wunsch des Users auskommentiert (mit Verweis auf
+  die generierte Fassung) in `src/songs.cpp`, ebenso die Deklaration in `songs.h` und der Aufruf in `main.cpp` case 28; die Timeline ist ms-genau die des alten Codes. Dazu der Blinder mit eigenem
+  Verlauf (`fxBlinderShape(attackMs, holdMs)`, YAML `attack` / `hold`) für die Idee des Users „Blinder fadet schnell
+  ein und sehr langsam aus" im Part „the ONE …..halftime"; Demo 92 Part 28 zeigt ihn (offen, steht am Anfang).
+  „solo a" ist ein Bass-Solo (Angabe des Users): `SCENE_SOLO_BASS`. Alle fünf Envs bauen; die OTA-Firmwares in
+  `ota/` sind von diesem Stand (Version 1791238956), der Stand davor (1791238006) liegt in `ota/backup/2026-10-06_2`.
+  Nächster Schritt: Urteil des Users zu Demo 92 Part 28 (`fxBlinderShape`) abwarten, Rückmeldungen einarbeiten.
 - **Offen beim User:** Entscheidung, welche alten Songs zuerst neu aufgesetzt werden (siehe „Als Nächstes" 1).
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
@@ -70,16 +79,17 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   läuft ohne Nummer.
 - Zu jedem offenen Part steht in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8, **genau**, worauf zu achten ist
   (nummerierte Prüfpunkte); im Chat dieselbe Liste in Kurzform.
-- Derzeit ist nichts offen: Part 0 springt direkt in Part 23. Reihenfolge: 23, 24, 26, 27 Phase 0c (`progPalette`
+- Offen ist Part 28 (Blinder mit eigenem Verlauf, `fxBlinderShape`): Part 0 zeigt die Nummer 28, danach Part 23.
+  Reihenfolge: 28, dann 23, 24, 26, 27 Phase 0c (`progPalette`
   alter Aufruf, `progSternNeu`, `progMatrixScanner`, `progCometLoop`), 17, 19, 22 Blinder, 21 Blinder auf den
   Lampen, 1 Text-Ebene, 18, 4, 11, 12 Nachleuchten, 13, 14, 16 `progPalette`, 6–9 weiche Farbwechsel, 2 Text als
   Maske, 82–88 Ebene gezielt steuern, 3 Vorlauf, 5–45 Übergänge, 50–64 Modifikatoren, 70–80 Ebene, 90
-  ausgestanzter Text, 92 Feuer, 100 von vorn; rund 6:30 Minuten.
+  ausgestanzter Text, 92 Feuer, 100 von vorn; rund 6:40 Minuten.
 
 ### Als Nächstes
 
-1. **Alte Songs auf exakte Zeiten bringen.** Handgeschrieben und von Hand abgestimmt sind noch 21 Songs
-   (generiert: #8, #31, #33; #2 Physical hat eine `show.yaml`, aber keinen generierten Code). Für alle liegt eine
+1. **Alte Songs auf exakte Zeiten bringen.** Handgeschrieben und von Hand abgestimmt sind noch 20 Songs
+   (generiert: #8, #28, #31, #33; #2 Physical hat eine `show.yaml`, aber keinen generierten Code). Für alle liegt eine
    `song.yaml` in `songs/<Song>/`. Weg: je Song mit `tools/songgen.py` generieren (exakte Timeline aus BPM und
    Takten, die Verspätung am Part-Wechsel wird mitgenommen), Marker und Trailer übernehmen. Reihenfolge nach Zuruf.
 2. Optional nachmessen (`debug_fx_frametime` auf der Gitarre: erwartet `show()` rund 5 ms statt 15,6 ms).
@@ -353,6 +363,11 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
 - Verlauf (`blinderLevel()`): voll hell in der ersten Hälfte von `lenMs`, danach quadratisch abklingend. Im Raster
   wird die Phase exakt über bpm gerechnet, alles aus der Zeit seit Part-Beginn (mit `fxTimeOffset`) – auf allen
   Geräten gleich.
+- Eigener Verlauf (06.10.2026): `fxBlinderShape(attackMs, holdMs = 0)` im selben Part – der Blinder blendet über
+  `attackMs` linear ein, steht `holdMs` voll und klingt über den Rest von `lenMs` quadratisch ab. Ohne den Aufruf
+  bleibt alles wie bisher. YAML: `attack` / `hold` in Beats im `blinder`; `attack` + `hold` müssen kürzer sein als
+  `len`. Erster Einsatz: Billie Jean, „the ONE …..halftime" (`{at: 0, len: 8, attack: 0.5, hold: 0}` über
+  `SCENE_CALM` auf 50 %). Demo: Song 92, Part 28. Noch nicht abgenommen.
 - Ausgabe (`applyBlinder()`): liegt in `fxPresent()` zuoberst, nach Ebenen, Modifikatoren und Übergang – Tor, Dimmen
   und `only` nehmen ihn also nicht weg. Er blendet die echten LEDs (`anz_LEDs`) zur Blinder-Farbe hin.
 - **Helligkeit:** Der erste Versuch blendete nur in der normalen Gesamthelligkeit und war auf Gitarre, Bass

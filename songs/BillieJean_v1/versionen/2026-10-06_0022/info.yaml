@@ -1,0 +1,8 @@
+zeit: '2026-10-06 00:22:28'
+notiz: 'solo a ist ein Bass-Solo: SCENE_SOLO_BASS, Übergang stage_rl'
+werkzeug_git: cdf5ee4 + lokale Änderungen in tools/ oder src/
+code_passt_zu_yaml: true
+sha256:
+  song.yaml: d25c38dceef4a66914e931876c8f1422a6bd3fb917d6afa0caeeed9d2c20f1e0
+  show.yaml: 4caccd1770e050e2190da0cf1e4761d92e846d8311324856c08661ac3a34c636
+  generated.cpp: 54701bf248049f669e2f76c6bc304bc427de1fee39291feb0e276e117cc370cc

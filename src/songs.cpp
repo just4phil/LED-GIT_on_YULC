@@ -3431,6 +3431,11 @@ void IWannaDanceWithSomebody() {
 }
 
 //#28 BillyJean  128 BPM  half=938ms  quarter=460ms  (fertiggestellt 01.05.2026)
+// ERSETZT (06.10.2026) durch die generierte Fassung gen_BillieJean() in songs_generated.cpp
+// (Quelle: songs/BillieJean_v1/song.yaml + show.yaml, erzeugt mit tools/songgen.py BillieJean; Aufruf in main.cpp case 28).
+// Der alte Code bleibt hier auskommentiert als Referenz stehen. Zurück zur alten Show: Kommentar hier und die Deklaration
+// in songs.h wieder aktivieren, in main.cpp case 28 BillyJean() statt gen_BillieJean() aufrufen.
+/*
 void BillyJean() {
 
 	switch (prog) {
@@ -3617,6 +3622,7 @@ void BillyJean() {
 		break;
 	}
 }
+*/
 
 //#29 Maniac  157 BPM  half=756ms  quarter=376ms  (fertiggestellt 01.05.2026)
 // ---------------------- TO BE DELETED !!!! -> wir nutzen Maniac T-1!! --------------
@@ -4154,8 +4160,10 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23. Derzeit ist nichts offen:
-	case 0:		switchToPart(23);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23.
+	case 0:		demoNumber(28);		break;
+	// fxBlinderShape: Blinder mit eigenem Verlauf - blendet schnell ein (1/2 Beat) und klingt sehr lang aus (Idee des Users, Billie Jean)
+	case 28:	setColorScheme(SCHEME_ROYAL);	fxDim(128);	fxBlinderBeat(bpm, 8, 4000);	fxBlinderShape(250);	scene(SCENE_CALM, 8000, 23, bpm);	break;	// alle 2 Takte ein Blinder über dunklem Atmen
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell
