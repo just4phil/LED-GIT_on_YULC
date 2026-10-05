@@ -140,6 +140,7 @@ sections:
   - name: "the ONE …..halftime"
     bars: 2
     # bisher: progMatrixHorizontal(3750, 66, 70, true)
+    idea: "neu: BLINDER fadet schnell ein und sehr langsam aus"
 
   - name: "instrumental (3)"
     bars: 2
