@@ -13,19 +13,17 @@ kann.
 
 Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf Branch `lib-cleanup`)
 
-- **Branch:** `lib-cleanup` (von `MAIN`). `fx-pipeline` ist am 06.10.2026 per Fast-Forward nach `MAIN` gemergt
-  und gepusht (`13cda8e`). Die Commits der Session vom 05.10.2026:
+- **Branch:** `MAIN`. `fx-pipeline` (`13cda8e`) und `lib-cleanup` (Aufräumen, Phase 0c, Phase 0b) sind am
+  06.10.2026 per Fast-Forward nach `MAIN` gemergt und gepusht. Die Commits der Session vom 05.10.2026:
   `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
   Demo-Reihenfolge, `e4d7b17` Nachleuchten (`fxSmooth`) und `progPalette` mit Tempo und Fade, `5071e72` Nummern
   vor den offenen Parts, `2b902e8` Blinder und dunklerer Text-Hintergrund, `58860ba` Blinder heller und länger;
   danach der Abschluss-Commit mit dieser Doku.
-- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand Phase 0b (Version 1791236857,
-  `FX_OUTPUT_REAL_LENGTH` an). Rückweg: der abgenommene Stand Phase 0c liegt in `ota/backup/2026-10-05_8`
-  (`python tools/build_ota.py --restore 2026-10-05_8`), oder den Schalter in `src/definitions.h` auskommentieren
-  und neu bauen. `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per MIDI CC#0 = 92 gewählt.
+- **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
+  `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
+  MIDI CC#0 = 92 gewählt.
 - **In Arbeit:** nichts. Phase 0c und **Phase 0b sind gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
 - **Offen beim User:** Entscheidung, welche alten Songs zuerst neu aufgesetzt werden (siehe „Als Nächstes" 1).
-- `lib-cleanup` (Aufräumen `2692a3b` + Phase 0c `88135b3`) ist noch nicht nach `MAIN` gemergt.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
 
@@ -59,7 +57,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - 06.10.2026, Phase 0b (echte LED-Zahl): „eigentlich sieht es ziemlich gut aus". Zwei Beobachtungen:
   - Titanium (#11), Intro: die Kreise kommen „sehr schnell", in einem anderen Song „sehen sie ok aus". Am Code
     geprüft: `progCircles(14950, 10, 475)` – ein Kreis je Beat bei 126 BPM, Schritt 475 ms, von 0b/0c nicht berührt
-    (andere Songs: 435–600 ms). Kein Fehler gefunden; falls es stört, im Song auf 950 ms (jeder zweite Beat) stellen.
+    (andere Songs: 435–600 ms). Kein Fehler gefunden. Der User hat den Wert selbst auf 952 ms gestellt (jeder
+    zweite Beat).
   - Einige alte Songs liegen jetzt „etwas neben dem Klick", weil ihre Part-Längen von Hand gegen die frühere
     Latenz abgestimmt waren. „Das ist jetzt nicht mehr nötig und eher kontraproduktiv."
 
@@ -83,8 +82,7 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
    (generiert: #8, #31, #33; #2 Physical hat eine `show.yaml`, aber keinen generierten Code). Für alle liegt eine
    `song.yaml` in `songs/<Song>/`. Weg: je Song mit `tools/songgen.py` generieren (exakte Timeline aus BPM und
    Takten, die Verspätung am Part-Wechsel wird mitgenommen), Marker und Trailer übernehmen. Reihenfolge nach Zuruf.
-2. Optional nachmessen (`debug_fx_frametime` auf der Gitarre: erwartet `show()` rund 5 ms statt 15,6 ms) und
-   `lib-cleanup` nach `MAIN` mergen.
+2. Optional nachmessen (`debug_fx_frametime` auf der Gitarre: erwartet `show()` rund 5 ms statt 15,6 ms).
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
    `smooth`, Text über der Szene, ausgestanzter Text) sind noch in keinem Song eingesetzt – nur auf Zuruf,
    `song.yaml` gehört dem User. Naheliegend: Blinder auf Chorus-Einsätze, `soft` auf `SCENE_COLORS_WAVE`.

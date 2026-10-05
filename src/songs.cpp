@@ -1724,10 +1724,10 @@ void Titanium() {
 
 	case 5:// intro	9050
 		if (LEDGITBOARD) {
-			progCircles(6050, 10, 475);
+			progCircles(6050, 10, 952);
 		}
 		else {
-			progCircles(14950, 10, 475);
+			progCircles(14950, 10, 952);
 		}		
 		break;
 
