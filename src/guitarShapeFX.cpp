@@ -145,6 +145,7 @@ bool fxPartStart(unsigned int durationMillis, byte nextPart) {
 
 // true, wenn seit dem letzten Frame mindestens ms vergangen sind
 bool fxFrameDue(unsigned int ms) {
+	if (ms < FX_REF_FRAME_MS) ms = FX_REF_FRAME_MS;	// kürzere Schritte liefen bisher im Bildtakt - Tempo unabhängig von show() halten
 	if (millisToReduceCPUSpeed < ms) return false;
 	unsigned int rest = millisToReduceCPUSpeed - ms;
 	millisToReduceCPUSpeed = (rest > ms) ? 0 : rest;	// nicht endlos nachholen

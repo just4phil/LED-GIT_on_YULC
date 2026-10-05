@@ -115,6 +115,12 @@ void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts fol
 //    die Gesamthelligkeit an (der Effekt darunter bleibt gleich hell): ohne FX_BLINDER_BRIGHTNESS (definitions.h) nur so
 //    weit, wie es ein voll weißes Bild in der normalen Helligkeit an Strom braucht ---
 #define FX_BLINDER_WARM	CRGB(255, 150, 50)	// warmes Weiß wie ein Halogen-Blinder
+
+// Fällige Schritte eines schrittweisen Effekts seit dem letzten Aufruf (zieht sie vom Zähler ab). Schritte unter
+// FX_REF_FRAME_MS zählen als FX_REF_FRAME_MS: so schnell liefen sie bisher faktisch (ein Schritt je Bild), und so
+// bleibt ihr Tempo auf jedem Gerät gleich, egal wie lange show() dauert. Ist ein Bild länger als ein Schritt
+// (Matrix), kommen mehrere Schritte zurück.
+uint8_t fxStepsDue(volatile unsigned int& counter, unsigned int stepMs);
 void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM, uint8_t devMask = DEV_ALL);	// einmal im Part
 void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM,
 				   uint8_t devMask = DEV_ALL, unsigned int atMillis = 0);	// alle everyBeats Beats, erstmals bei atMillis

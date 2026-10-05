@@ -4154,8 +4154,13 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 17. Derzeit ist nichts offen:
-	case 0:		switchToPart(17);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 17.
+	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell
+	case 0:		demoNumber(23);											break;	// die Demo beginnt mit der Nummer des ersten Parts
+	case 23:	progPalette(12000, 8, DEMO_NR(24));						break;	// alter Aufruf: Farbband
+	case 24:	progSternNeu(12000, 500, DEMO_NR(26), 5);				break;	// drehender Stern, Schritt 5 ms
+	case 26:	progMatrixScanner(12000, DEMO_NR(27), 7);				break;	// Scanner, Schritt 7 ms
+	case 27:	progCometLoop(12000, 17, 8, 0, false);					break;	// ein roter Komet, Schritt 8 ms
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt (hebt die Gesamthelligkeit an)

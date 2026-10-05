@@ -336,8 +336,7 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		}
 	}
 
-	if (millisCounterTimer >= 10) {	// zeit fürs dimmen der leds
-		millisCounterTimer -= 10;
+	for (uint8_t steps = fxStepsDue(millisCounterTimer, 10); steps > 0; steps--) {	// zeit fürs dimmen der leds
 		
 		//--- aktive LEDs langsam dimmen ---
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
@@ -629,8 +628,12 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 	reduceSpeed = 1;
 #endif 
 
-	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer -= reduceSpeed;
+	uint8_t steps = fxStepsDue(millisCounterTimer, reduceSpeed);
+	if (steps) {
+		for (; steps > 1; steps--) {	// versäumte Schritte nachholen (nur die Position)
+			if (!scannerGoesBack) { if (++zaehler >= MATRIX_WIDTH + 6) scannerGoesBack = true; }
+			else if (--zaehler <= -6) scannerGoesBack = false;
+		}
 
 		clearAll();
 
@@ -877,11 +880,14 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
 		}
 	}
 
-	if (millisToReduceCPUSpeed > reduceSpeed) {
-		millisToReduceCPUSpeed -= reduceSpeed;
-
+	uint8_t steps = fxStepsDue(millisToReduceCPUSpeed, reduceSpeed);
+	if (steps) {
 		if (!LEDsTurnedOff) {
 			clearAll();
+
+			// versäumte Schritte nachholen
+			sternAngle = fmodf(sternAngle + 0.06f * (steps - 1), (float)M_PI);
+			if (wander) sternWanderT += 0.03f * (steps - 1);
 
 			float cx = cx_base;
 			float cy = cy_base;
@@ -1833,8 +1839,8 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 		FillLEDsFromPaletteColors((uint8_t)((uint64_t)millisCounterForProgChange * 256 / cycleMillis));
 	}
 	else {
-		zaehler++;
-		if (zaehler > 1000) zaehler = 0;	// der wert 1000 beinflusst  die geschwindigkeit
+		// ein Schritt je FX_REF_FRAME_MS aus der Zeit seit Part-Beginn (früher: ein Schritt je Bild) - auf allen Geräten gleich schnell
+		zaehler = (millisCounterForProgChange / FX_REF_FRAME_MS + 1) % 1001;	// der wert 1000 beinflusst  die geschwindigkeit
 		FillLEDsFromPaletteColors(zaehler);	// hier wird schon intern LEDsTurnedOff abgefragt
 	}
 

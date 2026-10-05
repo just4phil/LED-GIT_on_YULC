@@ -436,6 +436,9 @@
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
 //#define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
 									// ACHTUNG: Effekte mit Schritten < ~16 ms laufen dann schneller -> erst nach Umstellung auf Zeitbasis aktivieren
+#define FX_REF_FRAME_MS		16		// kleinster Schritt bildgetakteter Effekte = Bildzeit von Gitarre/Bass/Lampen mit 506 gesendeten LEDs
+									// (gemessen 06.10.2026: show() 15,6 ms -> 62 Bilder/s). Hält deren Tempo, wenn show() schneller wird.
+#define FX_MAX_CATCHUP		4		// so viele versäumte Schritte holt ein Effekt in einem Bild höchstens nach, der Rest verfällt
 //#define debug_fx_frametime		// alle 5 s Bilder/s und Dauer von show() auf Serial
 #ifdef FX_OUTPUT_REAL_LENGTH
 	#define LEDS_OUT	anz_LEDs

@@ -639,6 +639,14 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 	static uint32_t dbgShows = 0, dbgSkipped = 0, dbgShowMicros = 0, dbgMixMicros = 0, dbgSince = 0;
 #endif
 
+uint8_t fxStepsDue(volatile unsigned int& counter, unsigned int stepMs) {
+	if (stepMs < FX_REF_FRAME_MS) stepMs = FX_REF_FRAME_MS;
+	unsigned int n = counter / stepMs;
+	if (n == 0) return 0;
+	counter -= n * stepMs;
+	return (n > FX_MAX_CATCHUP) ? FX_MAX_CATCHUP : (uint8_t)n;
+}
+
 void fxPresent() {
 	if (layerCapturing >= 0) return;	// der Effekt der Ebene zeichnet nur, ausgegeben wird mit dem unteren Effekt
 	for (FxLayer& L : layers) L.pending = false;
