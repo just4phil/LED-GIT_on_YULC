@@ -2856,6 +2856,7 @@ void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int redu
 	#define FIRE_COL_WIDTH	1
 #endif
 #define FIRE_COLS	((MATRIX_WIDTH + FIRE_COL_WIDTH - 1) / FIRE_COL_WIDTH)
+#define FIRE_COOLING	(650 / MATRIX_HEIGHT)	// größte Abkühlung je Schritt, an die Höhe angepasst: die Flammen enden unterhalb der Oberkante
 #define FIRE_HEAT_GAIN	140		// Prozent: schiebt den Farbverlauf nach oben (mehr Weiß und Gelb am Fuß, Rot erst an der Spitze)
 
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire) {
@@ -2882,7 +2883,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 		// 1. Cool down every cell
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			for (int x = 0; x < FIRE_COLS; x++) {
-				int c = random(0, 40);
+				int c = random(0, FIRE_COOLING);
 				heat[y][x] = (heat[y][x] > c) ? (uint8_t)(heat[y][x] - c) : 0;
 			}
 		}
