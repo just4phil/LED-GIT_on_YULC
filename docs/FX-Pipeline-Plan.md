@@ -23,10 +23,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   `FX_OUTPUT_REAL_LENGTH` an). Rückweg: der abgenommene Stand Phase 0c liegt in `ota/backup/2026-10-05_8`
   (`python tools/build_ota.py --restore 2026-10-05_8`), oder den Schalter in `src/definitions.h` auskommentieren
   und neu bauen. `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. Phase 0c ist abgenommen, **Phase 0b ist gebaut** (06.10.2026, Branch `lib-cleanup`).
-- **Offen beim User:** Phase 0b auf der Hardware abnehmen – alle Geräte per OTA updaten, dann Songs ansehen wie
-  bei 0c. Achten auf: Tempo aller Effekte unverändert (v. a. Funkeln `progFastBlingBling`, Strobo, Farbband),
-  Gleichlauf, Gurt und beide Lampenstreifen leuchten vollständig, Marker-LEDs ruhig, keine Störpixel.
+- **In Arbeit:** nichts. Phase 0c und **Phase 0b sind gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
+- **Offen beim User:** Entscheidung, welche alten Songs zuerst neu aufgesetzt werden (siehe „Als Nächstes" 1).
 - `lib-cleanup` (Aufräumen `2692a3b` + Phase 0c `88135b3`) ist noch nicht nach `MAIN` gemergt.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
@@ -58,6 +56,13 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - 06.10.2026, Phase 0c (fester 16-ms-Schritt): „ich habe mir einige songs angeschaut und es sieht alles top aus.
   deutlich besser als vorher und 100% synchron. richtig super!"
 
+- 06.10.2026, Phase 0b (echte LED-Zahl): „eigentlich sieht es ziemlich gut aus". Zwei Beobachtungen:
+  - Titanium (#11), Intro: die Kreise kommen „sehr schnell", in einem anderen Song „sehen sie ok aus". Am Code
+    geprüft: `progCircles(14950, 10, 475)` – ein Kreis je Beat bei 126 BPM, Schritt 475 ms, von 0b/0c nicht berührt
+    (andere Songs: 435–600 ms). Kein Fehler gefunden; falls es stört, im Song auf 950 ms (jeder zweite Beat) stellen.
+  - Einige alte Songs liegen jetzt „etwas neben dem Klick", weil ihre Part-Längen von Hand gegen die frühere
+    Latenz abgestimmt waren. „Das ist jetzt nicht mehr nötig und eher kontraproduktiv."
+
 ### Regeln für Song 92 (User, 05.10.2026)
 
 - Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang** der Demo, Abgenommenes rückt nach hinten.
@@ -74,8 +79,12 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 
 ### Als Nächstes
 
-2. **Phase 0b abnehmen** (User, siehe oben). Danach optional nachmessen (`debug_fx_frametime` auf der Gitarre:
-   erwartet `show()` rund 5 ms statt 15,6 ms) und `lib-cleanup` nach `MAIN` mergen.
+1. **Alte Songs auf exakte Zeiten bringen.** Handgeschrieben und von Hand abgestimmt sind noch 21 Songs
+   (generiert: #8, #31, #33; #2 Physical hat eine `show.yaml`, aber keinen generierten Code). Für alle liegt eine
+   `song.yaml` in `songs/<Song>/`. Weg: je Song mit `tools/songgen.py` generieren (exakte Timeline aus BPM und
+   Takten, die Verspätung am Part-Wechsel wird mitgenommen), Marker und Trailer übernehmen. Reihenfolge nach Zuruf.
+2. Optional nachmessen (`debug_fx_frametime` auf der Gitarre: erwartet `show()` rund 5 ms statt 15,6 ms) und
+   `lib-cleanup` nach `MAIN` mergen.
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
    `smooth`, Text über der Szene, ausgestanzter Text) sind noch in keinem Song eingesetzt – nur auf Zuruf,
    `song.yaml` gehört dem User. Naheliegend: Blinder auf Chorus-Einsätze, `soft` auf `SCENE_COLORS_WAVE`.
@@ -131,7 +140,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | Phase | Inhalt | Stand |
 |---|---|---|
 | 0 | Baseline bauen, Frame-Zeit messbar machen | erledigt, gemessen am 06.10.2026 (Matrix, Gitarre) |
-| 0b | Nur echte LED-Zahl senden | gebaut und eingeschaltet (06.10.2026), Abnahme auf der Hardware offen |
+| 0b | Nur echte LED-Zahl senden | erledigt und abgenommen (`44a25fe`, 06.10.2026) |
 | 0c | Schrittweise Effekte auf Zeitbasis | erledigt und abgenommen (`88135b3`, 06.10.2026) |
 | – | Blinder (`fxBlinder`), Idee des Users | erledigt und abgenommen (`2b902e8`, `58860ba`) |
 | 1 | Gemeinsame Ausgabestufe `fxPresent()` | erledigt (`b431103`) |
@@ -194,7 +203,8 @@ Eingeschaltet am 06.10.2026 (auf Wunsch des Users, nach der Abnahme von 0c):
   laufen alle über `fxFrameDue()` (seit 0c mindestens 16 ms).
 - Ausgang 2 geprüft (Auskunft des Users): nichts wird abgeschnitten, siehe „Risiken".
 - RAM je Env rund 2–3 kB weniger (Vergleichspuffer `sent1`/`sent2` nur noch in echter Länge).
-- **Nicht gemessen:** die neue Dauer von `show()` (kein Gerät am USB). **Nicht auf der Hardware geprüft.**
+- **Nicht gemessen:** die neue Dauer von `show()` (kein Gerät am USB). Vom User am 06.10.2026 auf der Hardware
+  abgenommen.
 - Ausweg: `#define FX_OUTPUT_REAL_LENGTH` auskommentieren und neu bauen – dann werden wieder 506 LEDs je Bild
   gesendet wie zuvor; die Umbauten aus 0c bleiben wirksam und sind in beiden Fällen gleich.
 
