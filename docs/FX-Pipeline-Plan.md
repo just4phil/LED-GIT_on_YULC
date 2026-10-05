@@ -11,14 +11,14 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (Phase 3b abgenommen; Blinder und dunklerer Text-Hintergrund gebaut, warten auf den Hardware-Test)
+Zuletzt aktualisiert: 05.10.2026 (Blinder heller und länger gebaut, warten auf den Hardware-Test)
 
 - **Branch:** `fx-pipeline`. Committet sind die Phasen 1–4 (`05e5873`), der Demo-Song 92 (`cf720fd`), Phase 4b
   Punkt 1 (`85276c8`) und Punkt 2 (eigene Text-Ebene, `e71ac9c`), die Demo-Reihenfolge (`ac60a78`) und der
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791230813, mit Blinder und dunklerem Text-Hintergrund,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791231324, mit hellerem Blinder,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nichts. `START_WITH_PIPELINE_DEMO` hat der User in `src/definitions.h` wieder ausgeschaltet
@@ -45,7 +45,8 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b abgenommen; Blinder und dunklerer Tex
   (`demoNumber()`, Part `DEMO_NR(n)` = 110 + n springt danach in Part n; Part 0 zeigt die Nummer des ersten Parts).
   Worauf bei welcher Nummer zu achten ist, steht je Part in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8 –
   bei jedem neuen Baustein dort genau eintragen. Abgenommenes läuft ohne Nummer.
-  Reihenfolge jetzt: mit Nummer 17, 19, 21 Blinder und 1 Text-Ebene (dunklerer Hintergrund); danach ohne Nummer
+  Reihenfolge jetzt: mit Nummer 17, 19, 22 Blinder auf allen Geräten; danach ohne Nummer 21 Blinder auf den Lampen,
+  1 Text-Ebene,
   18, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 18 ist der harte Vergleich), 13, 14, 16 `progPalette`
   (13 ist der alte Aufruf zum Vergleich), 6–9 weiche Farbwechsel (`fxSoft`; Part 6 ist der harte Vergleich),
   2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
@@ -73,13 +74,30 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b abgenommen; Blinder und dunklerer Tex
   (einmal, lang), 21 (nur Lampen, weiß). Geprüft: alle fünf Envs bauen, YAML-Formen und Fehlermeldungen im Speicher,
   Song #31 erzeugt denselben Code. **Nicht geprüft:** das Bild auf der Hardware, die Stromaufnahme bei vollem Weiß
   auf allen Geräten (wie bei `TRANS_FLASH` nur über die Gesamthelligkeit begrenzt).
+- **Rückmeldung zu Blinder und Text (User, 05.10.2026):** Part 1 (Text, Szene auf 15 %): „sieht jetzt deutlich
+  besser aus" – abgenommen, die Komplementärfarben-Variante entfällt. Part 21 (Blinder nur auf den Lampen):
+  „gefallen mir auch gut, kann man gut für rhythmische Sachen verwenden" – abgenommen. Part 17 (alle Geräte, jede 1,
+  1 Beat): „zu kurz und zu dezent". Part 19 (einmalig über `SCENE_COLORS`): „bemerkt man praktisch gar nicht", passt
+  evtl. nicht auf Vollfarben, „vielleicht mal auf Palette oder einem anderen Prog ausprobieren".
+- **Ursache und Umbau:** Der Blinder blendete nur zur Blinder-Farbe hin, in der normalen Gesamthelligkeit. Gitarre
+  und Bass laufen mit `DEFAULT_BRIGHTNESS` 48, die Matrix mit 80, die Lampen mit 200 – deshalb wirkte er nur auf den
+  Lampen. Jetzt hebt `applyBlinder()` die Gesamthelligkeit an und rechnet das Bild des Effekts im selben Maß
+  herunter (der Effekt bleibt gleich hell). Grenze ohne `FX_BLINDER_BRIGHTNESS`: nie mehr Strom als ein voll weißes
+  Bild in der normalen Helligkeit, also bei warmem Weiß rund 1,7-fach (Gitarre 48 → 80, Matrix 80 → 134, Lampen
+  200 → 255), bei reinem Weiß keine Anhebung (Part 21 bleibt, wie abgenommen). Mit `#define FX_BLINDER_BRIGHTNESS`
+  in `src/definitions.h` (auskommentiert) lässt sich die Helligkeit im Blinder fest höher setzen – **nur wenn die
+  Stromversorgung reicht**, das hat der User noch nicht bestätigt. Dazu: voll hell in der ersten Hälfte der Länge
+  (vorher ein Viertel). Nebenwirkung: Marker-LEDs und Gurt sind während des Blinders im selben Maß heller.
+  Demo: 17 mit 2 Beats, 19 jetzt über `SCENE_GLOW` mit 3 s, neu 22 über `SCENE_RAIN` (dunkler Effekt).
+  **Nicht geprüft:** das Bild auf der Hardware.
 - **In Arbeit:** nichts. Es wartet der Hardware-Test des Users (siehe unten, Punkt 1).
 
 ### Morgen weiter
 
 1. **Rückmeldung des Users abwarten** (und Befunde zuerst beheben) – steht mit Nummer am Anfang von Song 92:
-   - Parts 17, 19, 21 (Blinder): hell genug, Länge, Farbe (warmweiß), lieber alle Geräte oder nur die Lampen?
-   - Part 1 (Text-Ebene): ist der Text mit dem auf 15 % gedimmten Hintergrund gut lesbar, erkennt man die Szene noch?
+   - Parts 17, 19, 22 (Blinder auf allen Geräten): jetzt hell und lang genug? Auf welchem Effekt passt er am besten?
+     Flackert etwas oder startet ein Gerät neu (Strom)? Wenn er auf Gitarre/Bass/Matrix noch zu dezent ist: fragen,
+     ob die Stromversorgung mehr hergibt, dann `FX_BLINDER_BRIGHTNESS` setzen (oder je Gerät einen eigenen Wert).
    Was abgenommen ist, nach hinten sortieren (dort ohne Nummer).
 2. **Phase 3b ist abgenommen.** `fxSoft` für `progFullColors` / `progSternNeu` entfällt: `smooth:` leistet dort
    dasselbe, ohne die Effekte anzufassen.
@@ -151,7 +169,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 3 | Modifikatoren | erledigt (Firmware `b431103`, YAML-Schlüssel `6df0801`) |
 | 3b | Fading-Optionen: weiche Farbwechsel, Nachleuchten, `progPalette`-Parameter | erledigt, vom User am 05.10.2026 abgenommen |
 | 4 | Zweiter Effekt als Ebene | erledigt (`05e5873`) |
-| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 abgenommen, Punkt 2 gebaut (Lesbarkeit des Texts nach dem Abdunkeln offen), Punkt 3 und 4 nach Bedarf |
+| 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 abgenommen, Punkt 3 und 4 nach Bedarf |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92, Blinder), Szenen offen |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
 | 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |

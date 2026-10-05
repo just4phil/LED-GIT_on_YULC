@@ -342,7 +342,7 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
 }
 
-// Blinder: Stärke 0..255 zur Zeit beatMs - voll im ersten Viertel, danach quadratisch abklingend
+// Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend
 static uint8_t blinderLevel(uint32_t beatMs) {
 	const BlinderMod& b = mod.blinder;
 	if (!b.lenMs || !b.here || beatMs < b.atMs) return 0;
@@ -352,14 +352,31 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 	}
 	else if (t >= b.lenMs) return 0;
 	if (t >= b.lenMs) return 0;
-	uint32_t hold = b.lenMs / 4;
+	uint32_t hold = b.lenMs / 2;
 	if (t < hold) return b.amount;
 	uint8_t lin = 255 - (t - hold) * 255 / (b.lenMs - hold);
 	return scale8(b.amount, scale8(lin, lin));
 }
 
+// Der Blinder leuchtet heller als der Effekt: die Gesamthelligkeit steigt, das Bild des Effekts wird im selben Maß
+// heruntergerechnet und bleibt so gleich hell. Ohne FX_BLINDER_BRIGHTNESS steigt sie nur so weit, dass der Blinder nie mehr
+// Strom zieht als ein voll weißes Bild in der normalen Helligkeit (warmes Weiß: rund 1,7-fach).
 static void applyBlinder(CRGB* buf, uint8_t level) {
-	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], mod.blinder.col, level);	// nur echte LEDs (Stromaufnahme!)
+	const CRGB col = mod.blinder.col;
+	const uint8_t base = FastLED.getBrightness();
+	#ifdef FX_BLINDER_BRIGHTNESS
+		uint8_t peak = max(base, (uint8_t)FX_BLINDER_BRIGHTNESS);
+	#else
+		uint16_t sum = col.r + col.g + col.b;
+		uint8_t peak = sum ? min((uint32_t)255, (uint32_t)base * 765 / sum) : base;
+	#endif
+	uint8_t bright = base + (uint16_t)(peak - base) * level / 255;
+	if (bright != base) {
+		uint8_t keep = (uint16_t)base * 255 / bright;
+		for (int i = 0; i < NUMMATRIX; i++) buf[i].nscale8(keep);
+		FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+	}
+	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], col, level);	// nur echte LEDs (Stromaufnahme!)
 }
 
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen

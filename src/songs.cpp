@@ -4155,11 +4155,14 @@ void pipelineDemo() {
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	case 0:		demoNumber(17);																						break;	// die Demo beginnt mit der Nummer des ersten Parts
 
-	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt
-	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 500);	scene(SCENE_PALETTE, 8000, DEMO_NR(19), bpm);	break;	// auf jede 1 ein kurzer warmweißer Blinder
-	case 19:	setColorScheme(SCHEME_NEON);	fxBlinder(4000, 2000);		scene(SCENE_COLORS,  8000, DEMO_NR(21), bpm);	break;	// ein einzelner langer Blinder nach 2 Takten
+	// fxBlinder: helles Aufblenden wie ein Bühnen-Blinder, punktuell über dem laufenden Effekt (hebt die Gesamthelligkeit an)
+	case 17:	setColorScheme(SCHEME_ROYAL);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_PALETTE, 8000, DEMO_NR(19), bpm);	break;	// auf jede 1 ein Blinder, 2 Beats lang
+	case 19:	setColorScheme(SCHEME_ROYAL);	fxBlinder(4000, 3000);			scene(SCENE_GLOW,    8000, DEMO_NR(22), bpm);	break;	// ein einzelner langer Blinder nach 2 Takten über einer ruhigen Fläche
+	case 22:	setColorScheme(SCHEME_TOXIC);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_RAIN,    8000, 21, bpm);			break;	// Blinder über einem dunklen Effekt (fallende Leuchtspuren)
+
+	//--- ABGENOMMEN (ohne Nummer) ---
 	case 21:	setColorScheme(SCHEME_ICE);		fxBlinderBeat(bpm, 2, 300, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);			// nur die Lampen blenden: weiß, alle 2 Beats
-				scene(SCENE_PALETTE, 8000, DEMO_NR(1), bpm);	break;
+				scene(SCENE_PALETTE, 8000, 1, bpm);	break;
 
 	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
 	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text stark gedimmt, sonst ist er nicht lesbar)
@@ -4177,7 +4180,6 @@ void pipelineDemo() {
 		fxLayerFlush();
 		break;
 
-	//--- ABGENOMMEN (ohne Nummer) ---
 	// fxSmooth: Nachleuchten - ein alter Effekt mit harten Farbsprüngen, erst wie bisher, dann träge
 	case 18:	setColorScheme(SCHEME_NEON);								progFullColors(4000, 4, 500);	break;	// hart wie bisher
 	case 4:		setColorScheme(SCHEME_NEON);	fxSmooth(250);				progFullColors(8000, 11, 500);			break;	// Sprung wird zur kurzen Blende (halber Beat)

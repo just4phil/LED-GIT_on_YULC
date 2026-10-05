@@ -238,7 +238,10 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `blinder: bar` oder `{every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss|...,
   devices: [LAMPE1, LAMPE2]}` - helles Aufblenden wie ein Bühnen-Blinder über dem laufenden Effekt (Idee des Users).
   Ohne `every` einmalig bei `at` (z. B. auf den Chorus-Einsatz `{at: 0, len: 2}`). Sparsam einsetzen: Akzent auf
-  Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Ein Blinder je Abschnitt.
+  Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Ein Blinder je Abschnitt. Urteil des Users
+  (05.10.2026): nur auf den Lampen (`devices: [LAMPE1, LAMPE2]`, kurz, weiß) gut für Rhythmisches; auf allen Geräten
+  war er mit 1 Beat „zu kurz und zu dezent" - dort `len` ab 2 Beats, und er wirkt über dunklen oder ruhigen Effekten
+  stärker als über vollflächigen Farbwechseln (`SCENE_COLORS`).
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
   Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.
