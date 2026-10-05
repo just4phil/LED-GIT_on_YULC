@@ -18,7 +18,7 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`
   ausgestanzte Text samt gedrehtem Feuer (`6530dc8`). Der Abschluss dieser Session (nur Doku) ist der Commit
   direkt danach, siehe `git log`. Danach: doppelte Feuersäulen auf der Matrix und Phase 3b Punkt 1 (`fxSoft`) in
   einem Commit („FX-Pipeline: weiche Farbwechsel (fxSoft), Feuersäulen auf der Matrix doppelt breit", siehe
-  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791227199, mit `fxSmooth` und den `progPalette`-Parametern,
+  `git log`). Alle fünf Envs bauen damit; die OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791229972, mit Nummern vor den offenen Parts,
   mit `START_WITH_PIPELINE_DEMO`), der Stand davor liegt in `ota/backup/2026-10-05_4`. **Vom User noch nicht
   aufgespielt und nicht gesehen.**
 - **Nicht committet:** nur `src/definitions.h` – dort hat der User `START_WITH_PIPELINE_DEMO` lokal eingeschaltet.
@@ -41,10 +41,14 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`
   kamen daher, dass der Bass aus war. Vom User bestätigt: „ota update klappt auch".
 - **Regel für Song 92 (User, 05.10.2026):** Neue und noch nicht abgenommene Bausteine stehen immer am **Anfang**
   der Demo, Abgenommenes rückt in seinen Block weiter hinten. So sieht man beim Testen sofort, was offen ist.
-  Reihenfolge jetzt: 0, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 0 ist der harte Vergleich), 13, 14, 16 `progPalette`
+  **Nummern (User, 05.10.2026):** Vor jedem noch nicht abgenommenen Part zeigt die Matrix 3 s lang seine Nummer
+  (`demoNumber()`, Part `DEMO_NR(n)` = 110 + n springt danach in Part n; Part 0 zeigt die Nummer des ersten Parts).
+  Worauf bei welcher Nummer zu achten ist, steht je Part in `docs/LED-Effekte-und-Szenen.html`, Abschnitt 8 –
+  bei jedem neuen Baustein dort genau eintragen. Abgenommenes läuft ohne Nummer.
+  Reihenfolge jetzt: 18, 4, 11, 12 Nachleuchten (`fxSmooth`; Part 18 ist der harte Vergleich), 13, 14, 16 `progPalette`
   (13 ist der alte Aufruf zum Vergleich), 6–9 weiche Farbwechsel (`fxSoft`; Part 6 ist der harte Vergleich),
   1 Text-Ebene, 2 Text als Maske, 82–88 Ebene gezielt steuern, dann 3 (Vorlauf), 5–80 wie bisher, 90 ausgestanzter
-  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 5:10 Minuten.
+  Text (abgenommen), 92 Feuer (abgenommen, vorher Part 0), 100 von vorn; rund 6 Minuten.
 - **Feuer abgenommen (User, 05.10.2026):** zu den festen Flammen auf der Matrix (`a9b5152`): „ja mega! das war
   genau die richtige Entscheidung!! das sieht jetzt richtig klasse aus!!!" Werte in `MFIRE_…` so lassen.
 - **Phase 3b Punkt 2 und 3 gebaut (05.10.2026):** `fxSmooth(ms)` / YAML `smooth: <Beats>` und `progPalette` mit Tempo
@@ -74,7 +78,7 @@ Zuletzt aktualisiert: 05.10.2026 (Phase 3b komplett gebaut: `fxSoft`, `fxSmooth`
      `FIRE_HEAT_GAIN` von vorher gibt es nicht mehr. **Offen:** Bild auf der Hardware – Zahl, Breite und Höhe der
      Flammen (Stellgrößen: Teiler 6 in `MFIRE_FLAMES`, `MFIRE_COOLING` höher = kleiner, `MFIRE_SPARKING`,
      `MFIRE_HEAT_GAIN`). **Erledigt, abgenommen** (siehe oben).
-   - Parts 0, 4, 11, 12 (`fxSmooth`): 0 `progFullColors` hart zum Vergleich, 4 mit 250 ms, 11 mit 1000 ms, 12 Ping-Pong
+   - Parts 18, 4, 11, 12 (`fxSmooth`): 18 `progFullColors` hart zum Vergleich, 4 mit 250 ms, 11 mit 1000 ms, 12 Ping-Pong
      mit 300 ms. Sieht die Blende auf allen Geräten gleich aus (Matrix gegen Lampen)? Welche Länge gefällt? Ruckelt
      die Matrix (jedes Bild ändert sich, also wird jedes gesendet)?
    - Parts 13, 14, 16 (`progPalette`): 13 alter Aufruf, 14 ein Durchlauf in 8 s, 16 in 1,5 s mit harten Kanten. Läuft
@@ -279,7 +283,7 @@ Zu Punkt 1 (umgesetzt am 05.10.2026 für `progBeatColors`):
   100 = fließt durchgehend. Ohne Anmeldung unverändert harter Sprung.
 - YAML: `soft: <Prozent>` (ganze Zahl 0..100) auf Abschnittsebene. `validate()` meldet einen Fehler, wenn im
   Abschnitt weder `SCENE_COLORS` / `SCENE_COLORS_WAVE` noch `progBeatColors` läuft (`SOFT_EFFECTS`).
-- Demo: Song 92, Parts 0 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
+- Demo: Song 92, Parts 6 (hart, 4 s), 7 (30 %), 8 (100 %), 9 (Welle, 60 %).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code wie in `generated.cpp`; `soft` auf
   einem COLORS-Abschnitt erzeugt `fxSoft(40);`, auf `SCENE_CALM` den Fehler; falsche Werte werden gemeldet. Kein
   Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
@@ -298,7 +302,7 @@ Zu Punkt 2 (umgesetzt am 05.10.2026):
 - Mit `smooth` ändert sich fast jedes Bild → `FX_SKIP_UNCHANGED_FRAMES` spart nichts mehr. Bildzeit auf der Matrix
   **nicht gemessen**.
 - YAML: `smooth: <Beats>` auf Abschnittsebene (`pipeline_calls()` in `tools/songgen.py`).
-- Demo: Song 92, Parts 0 (`progFullColors` hart, 4 s), 4 (250 ms), 11 (1000 ms), 12 (`SCENE_PINGPONG`, 300 ms).
+- Demo: Song 92, Parts 18 (`progFullColors` hart, 4 s), 4 (250 ms), 11 (1000 ms), 12 (`SCENE_PINGPONG`, 300 ms).
 - Geprüft: alle fünf Envs bauen; Song #31 erzeugt im Speicher denselben Code; `smooth: 1` ergibt `fxSmooth(698);`,
   ein negativer Wert den Fehler. Kein Song neu generiert. **Nicht geprüft:** das Bild auf der Hardware.
 

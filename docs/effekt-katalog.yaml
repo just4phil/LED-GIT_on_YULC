@@ -956,7 +956,7 @@ ausgabestufe:
     fxMaskStage:      {wirkung: "nur bestimmte Geräte leuchten voll, der Rest gedimmt oder schwarz", yaml: "only: guitar | {devices: [guitar], others: 20}", demo: 62, genutzt: 0, urteil: , notiz: }
     fxMaskSpan:       {wirkung: "nur ein Abschnitt jedes Geräts leuchtet", yaml: "span: [von, bis]", demo: 64, genutzt: 0, urteil: , notiz: }
     fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne", genutzt: 0, urteil: , notiz: }
-    fxSmooth:         {wirkung: "Nachleuchten für jeden Effekt: harte Wechsel werden zu Blenden, ohne den Effekt anzufassen (z. B. progFullColors, progSternNeu)", yaml: "smooth: <Beats>", demo: "4 (250 ms), 11 (1000 ms), 12 (Ping-Pong); zum Vergleich 0 ohne", genutzt: 0, urteil: , notiz: }
+    fxSmooth:         {wirkung: "Nachleuchten für jeden Effekt: harte Wechsel werden zu Blenden, ohne den Effekt anzufassen (z. B. progFullColors, progSternNeu)", yaml: "smooth: <Beats>", demo: "4 (250 ms), 11 (1000 ms), 12 (Ping-Pong); zum Vergleich 18 ohne", genutzt: 0, urteil: , notiz: }
 
   ebene:
     FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }
