@@ -241,7 +241,7 @@
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
-#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX UND OHNE neomatrix_config!!!
+#define LEDMATRIX			// => auf TEENSY läuft auch alles OHNE LEDMATRIX
 
 #define green2 				255	//byte green2;
 #define SECONDSFORVOLTAGE	1

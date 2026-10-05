@@ -11,9 +11,10 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 05.10.2026 (Ende der Session: Phase 3b und der Blinder sind gebaut und abgenommen)
+Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf Branch `lib-cleanup`)
 
-- **Branch:** `fx-pipeline`, alles committet (siehe `git log`). Die Commits dieser Session:
+- **Branch:** `lib-cleanup` (von `MAIN`). `fx-pipeline` ist am 06.10.2026 per Fast-Forward nach `MAIN` gemergt
+  und gepusht (`13cda8e`). Die Commits der Session vom 05.10.2026:
   `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
   Demo-Reihenfolge, `e4d7b17` Nachleuchten (`fxSmooth`) und `progPalette` mit Tempo und Fade, `5071e72` Nummern
   vor den offenen Parts, `2b902e8` Blinder und dunklerer Text-Hintergrund, `58860ba` Blinder heller und länger;
@@ -22,7 +23,8 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session: Phase 3b und der Blinder sin
   ältere Stände liegen in `ota/backup/2026-10-05_4` bis `_6`. `START_WITH_PIPELINE_DEMO` ist in
   `src/definitions.h` aus (der User hat es am 05.10.2026 wieder ausgeschaltet): die Geräte starten in der
   Songpause, Song 92 wird per MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. **Offen beim User:** nichts – alle Parts von Song 92 sind abgenommen.
+- **In Arbeit:** nichts. Das Aufräumen der Libraries ist erledigt (siehe Phase 7); `lib-cleanup` ist noch nicht
+  nach `MAIN` gemergt. **Offen beim User:** nichts – alle Parts von Song 92 sind abgenommen.
 
 ### Vom User abgenommen (alles auf der Hardware gesehen)
 
@@ -79,7 +81,8 @@ Zuletzt aktualisiert: 05.10.2026 (Ende der Session: Phase 3b und der Blinder sin
 6. **Phase 4b Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
    spürbar bremst.
 
-Merge nach `MAIN` erst, wenn der User den Stand auf der Hardware abgenommen hat.
+Merge nach `MAIN` erst, wenn der User den Stand auf der Hardware abgenommen hat (`fx-pipeline`: erledigt am
+06.10.2026). `lib-cleanup` ändert die Firmware nicht und braucht keine Abnahme auf der Hardware.
 
 So geht es nach einem Absturz weiter: `git status` und `git log --oneline -5` mit diesem Abschnitt vergleichen; steht
 unter „In Arbeit" etwas, zuerst den Zustand im Arbeitsverzeichnis prüfen (baut es?), dann dort fortsetzen.
@@ -134,7 +137,7 @@ Code: `src/fxPipeline.h/.cpp`. Schalter: Block „LED-Ausgabe" am Ende von `src/
 | 4b | Ebene ausbauen: eigene Modifikatoren, Text-Ebene, über Part-Grenzen, eigene Farbe | Punkt 1 und 2 erledigt und abgenommen, Punkt 3 und 4 nach Bedarf |
 | 5 | Neue Looks aus Kombinationen | begonnen (#31, Demo-Song 92), Szenen offen; neue Bausteine noch in keinem Song |
 | 6 | Kreuzblende mit weiterlaufendem altem Effekt | offen, nur bei Bedarf |
-| 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | offen, nach 0c/0b |
+| 7 | Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel | Aufräumen erledigt (06.10.2026); eigene Zeichenschicht zurückgestellt, nur bei Bedarf |
 
 Der Stand steht nur hier und im Arbeitsstand, nicht in den Überschriften der Phasen.
 
@@ -442,6 +445,23 @@ Zuruf neu generiert.
   Zähler unterschiedlich vor).
 
 ## Phase 7 – Bibliotheken harmonisieren: eigene Zeichenschicht statt GFX-Stapel
+
+Stand 06.10.2026, Branch `lib-cleanup`:
+
+- **Geprüft:** Laut `firmware.map` (scrollmatrix) linkt der GFX-Stapel nur rund 5 kB von 1,17 MB (Adafruit GFX
+  3,8 kB, Framebuffer GFX 1,1 kB, FastLED NeoMatrix 0,2 kB); BusIO, Wire und SPI linken 0 Byte. Genutzt werden 297
+  `matrix->`-Aufrufe, fast nur `drawPixel` (83), `drawLine` (73) und Text (rund 80).
+- **Erledigt:** `Adafruit SSD1306`, `Wire@2.0.0` und `Wifi@2.0.0` aus den `lib_deps` gestrichen (SSD1306 war
+  nirgends eingebunden, die beiden anderen findet PlatformIO als Framework-Libs selbst). Toter Code gelöscht:
+  `src/LEDMatrix.cpp/.h`, `src/neomatrix_config.h`, `src/AiEsp32RotaryEncoderNumberSelector.cpp` (leer),
+  `src/Test_connect_to_widi_master.txt`. BusIO bleibt, weil `Adafruit_GFX.h` es einbindet.
+- **Geprüft:** Alle fünf Envs bauen mit byte-genau derselben Größe wie vorher (Flash / RAM): andresgit
+  1 178 353 / 76 564, rinasbass 1 178 737 / 77 012, lampe1 1 166 717 / 75 604, lampe2 1 166 713 / 75 492,
+  scrollmatrix 1 175 281 / 80 924. Das Teensy-Env ist in den `lib_deps` mitgezogen, aber nicht gebaut.
+- **Zurückgestellt:** die eigene Zeichenschicht (unten). Sie bringt weder Flash noch Bildrate (die Zeit geht in
+  `FastLED.show()`), kostet aber eine neue Abnahme, weil Linien, Text und die Farbumrechnung RGB565 → RGB
+  pixelgleich bleiben müssen. Nur bei konkretem Bedarf: die Messung zeigt eine Bremse durch die Ebene, oder ein
+  eigener Font ist gewünscht. Dann mit Vergleichstest (alte und neue Zeichenschicht pixelweise auf dem Gerät).
 
 Entscheidung vom 04.10.2026: **später**, nach 4b, 0c und 0b. Gründe: Der GFX-Stapel kostet Flash und Build-Zeit, aber
 keine Bildzeit; er blockiert die Ebene nicht; und weil die Methodennamen bleiben sollen, wächst bis dahin keine
