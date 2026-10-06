@@ -36,7 +36,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
      Song-Verteiler selbst aus (`main.cpp`); ein Effekt darf deshalb ohne eigenes `if (!LEDsTurnedOff)` malen und
      mit `fxShow()` enden - sichtbar bleibt dasselbe (schwarz + Marker);
   3. Effekte familienweise auf die Bausteine umstellen und auf `fxBasic` / `fxMatrixShapes` / `fxText` /
-     `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - offen,
+     `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - **in Arbeit:
+     `fxMatrixSim` (Fire, Plasma, Starfield, Lissajous, SineCos, Equalizer, WaterRipple)**,
      braucht je Familie einen Blick auf die Hardware;
   4. optional: Überladungen durch Vorgabe-Argumente ersetzen, `progMatrixHorizontal` / `Vertical` zusammenlegen.
 - **Gebaut und committet am 06.10.2026 (drei Commits auf `MAIN`: „Song-Werkzeuge: Excel-Tabelle …", „Songs: Struktur-Tabelle
