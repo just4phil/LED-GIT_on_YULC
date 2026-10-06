@@ -31,6 +31,11 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
     gehört zu Schritt 4 (Vorgabe-Argumente);
   - `src/definitions.h`: `mw` / `mh` / `NUMPIXELS` mit „TODO: ausmerzen", auskommentierter Block `GITMARKER_GIT1`;
   - `getRandomColorIncludingBlack()` ist fast eine Kopie von `getRandomColor()` (`src/functions.cpp`).
+  - Aus `songs_plan.md` (02.05.2026, gelöscht wie `SONG_SETUP_GUIDE.md`): in `src/songs.cpp` stehen noch vier als
+    „TO BE DELETED" markierte Stellen (#5, #18, #19 Hot n Cold, eine Maniac-Fassung). Vor dem Löschen prüfen, ob sie
+    noch von `main.cpp`, `markerLEDs.cpp` oder per `switchToPart()` aus einem anderen Song erreicht werden. Eigener
+    Schritt, nur auf Zuruf. Für eine Neugestaltung notiert: #26 hat eine sehr dichte Strobo-Kette, #29 nutzt
+    Strobo als Dauer-Textur.
   Ebenfalls gelöscht (Entscheidung des Users): `docs/runtime-switch-gitboard-andresgit.html` (Teensy/Gitboard wird
   nicht mehr gebaut) und der Ordner `src/SKILLS/` (`LED_Effekt_System_Analyse.md`, `Switch-Case_SKILL.md` - Anleitung
   für handgeschriebene Songs, abgelöst durch Tabelle + `show.yaml` + `songgen.py`); der Skill `new-song` verweist
