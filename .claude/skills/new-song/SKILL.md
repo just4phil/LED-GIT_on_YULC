@@ -313,8 +313,8 @@ mehr. Die Effektidee geht immer vor der Tabelle unten:
   Gestaltung lesen (die Spalte „bisher" der Tabelle zeigt den alten Effekt je Part). Springt ein anderer Song per `switchToPart(n)` hinein
   oder setzt der alte Code Marker-LEDs inline, dem User sagen, was beim Umstieg angepasst werden muss.
 - **Geräte-Overrides** sparsam und begründet (z. B. Gitarre bekommt eigenes VU, wenn sie einsetzt).
-  Effekte und ihre Parameter: `src/FXprograms.h`, `src/guitarShapeFX.h`, Faustregeln in
-  `src/SKILLS/Switch-Case_SKILL.md`. `progScrollText`/Matrix-Effekte nur auf `matrix`/`GITBOARD`.
+  Effekte und ihre Parameter: `src/FXprograms.h`, `src/guitarShapeFX.h`; welcher Effekt wofür taugt, steht in
+  `docs/effekt-katalog.yaml` (Urteile des Users). `progScrollText`/Matrix-Effekte nur auf `matrix`/`GITBOARD`.
 
 ## Neue Szenen
 
