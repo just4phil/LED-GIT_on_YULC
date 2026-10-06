@@ -1,157 +1,76 @@
 #ifdef USE_ESP32
 //----------------------------
+//=====================================================================
+// rotaryEncoder.h - der Drehknopf mit Taster am Gerät
+//=====================================================================
+// Nur auf Geräten mit HAS_ROTARY_ENCODER. Ein "Rotary Encoder" ist ein endlos drehbarer Knopf, der
+// beim Drehen Impulse liefert (links/rechts) und sich zusätzlich drücken lässt.
+//
+// Was der Knopf macht:
+//   drehen              Helligkeit einstellen (2..255). Ganz zurückgedreht (Wert 2) = LEDs aus,
+//                       nur die Bund-Marker leuchten noch.
+//   kurz drücken        Abgleich über Bluetooth:
+//                         am Proxy (Gitarre): alle Clients auf Song + Part des Proxys zwingen
+//                         an einem Client:    Song + Part vom Proxy holen
+//   Doppelklick         nur am Proxy: Song + Part von einem Client übernehmen
+//   lang drücken (1 s)  Not-Aus: zurück auf Song 0 (Pause); der Proxy nimmt alle Clients mit
+//   beim Einschalten gedrückt halten (nur Proxy): Firmware-Update aller Geräte (otaUpdate.h)
+//
+// Die Erkennung der Drehimpulse übernimmt die Bibliothek AiEsp32RotaryEncoder (liegt als Quelltext
+// in src/, fremder Code, unverändert).
+
 /**
- * @brief Interrupt Service Routine for encoder rotation
- * 
- * This ISR handles encoder rotation detection by reading encoder
- * state, determining rotation direction, and updating internal
- * counter.
- * 
- * Attributes:
- * - IRAM_ATTR: Places function in IRAM for faster interrupt response
- * 
- * Interrupt Trigger:
- * - Edge-triggered on CLK pin changes
- * - Called on each encoder step
- * 
- * State Detection:
- * - Compares current state to previous state
- * - Determines direction (clockwise/counter-clockwise)
- * - Updates encoder position
- * 
- * @note Keep ISR minimal (no blocking operations)
- * @note Use volatile variables for shared data
- * @note Called by hardware interrupt
- * 
- * @see rotary_initialize()
- * @see rotary_loop()
+ * @brief Interrupt-Routine für das Drehen des Knopfs
+ *
+ * Wird vom Mikrocontroller sofort aufgerufen, wenn sich das Signal an einem der beiden Dreh-Pins
+ * ändert, und reicht das Ereignis nur an die Bibliothek weiter. So geht kein Schritt verloren,
+ * auch wenn das Hauptprogramm gerade ein Bild sendet.
+ *
+ * @note IRAM_ATTR: Funktion liegt im RAM (bei Interrupt-Routinen auf dem ESP32 Pflicht).
  */
 void IRAM_ATTR readEncoderISR();    // Function required for interrupts
 
 /**
- * @brief Initialize rotary encoder for manual control
- * 
- * This function sets up rotary encoder by configuring encoder
- * pins (CLK, DT, SW), setting up interrupt handlers,
- * configuring button detection, and setting encoder parameters.
- * 
- * Pin Configuration:
- * - Button pin (SW): Short/long press detection
- * - CLK pin (B): Clock signal for rotation
- * - DT pin (A): Direction signal for rotation
- * - VCC pin: -1 (powered directly to 3.3V)
- * 
- * Encoder Parameters:
- * - Steps per detent: 4
- * - Encoder type: Quadrature encoder
- * 
- * Interrupt Handlers:
- * - readEncoderISR(): Called on encoder rotation
- * - Button press: Polling or interrupt-based
- * 
- * Side Effects:
- * - Configures GPIO pins
- * - Enables interrupts
- * - Initializes encoder library
- * 
- * @note Only active when HAS_ROTARY_ENCODER is defined
- * @note Uses AiEsp32RotaryEncoder library
- * @note Works in both directions
- * 
- * @see rotary_loop()
- * @see readEncoderISR()
- * @see rotary_onButtonClick()
+ * @brief Drehknopf einrichten (einmal aus setup())
+ *
+ * Legt das Encoder-Objekt mit den Pins aus definitions.h an (ROTARY_ENCODER_A_PIN, _B_PIN,
+ * _BUTTON_PIN), meldet die Interrupt-Routine an und stellt den Wertebereich für die Helligkeit
+ * ein: 2..255, Startwert DEFAULT_BRIGHTNESS, ohne Beschleunigung und ohne Überlauf.
  */
 void rotary_initialize();
 
 /**
- * @brief Handle short button press event
- * 
- * This function handles short button presses (<1 second duration)
- * by triggering a switch to the currently selected song and
- * resetting the long press flag.
- * 
- * Behavior:
- * - Reads current encoder value as song ID
- * - Calls switchToSong(songID)
- * - Clears encoderButtonLongPress flag
- * 
- * Side Effects:
- * - Calls switchToSong()
- * - Resets button state
- * 
- * @note Called by rotary encoder library
- * @note Song ID range: 0-26
- * @note Invalid IDs fall through to defaultLoop()
- * 
- * @see rotary_loop()
- * @see rotary_onButtonClick()
- * @see switchToSong()
+ * @brief Reaktion auf einen kurzen Klick: Abgleich anstoßen
+ *
+ * - Proxy:  setzt forceLEDsync -> alle Clients springen auf Song + Part des Proxys
+ * - Client: setzt needLEDsync  -> der Client holt Song + Part vom Proxy
+ *
+ * Ausgeführt wird der Abgleich in den Bluetooth-Dateien; hier wird nur der Merker gesetzt.
  */
 void on_button_short_click();
 
 /**
- * @brief Handle button press events
- * 
- * This function handles all button press events by detecting
- * press duration and routing to appropriate handler.
- * 
- * Press Duration Detection:
- * - Short press: < 1 second -> on_button_short_click()
- * - Long press: > 1 second -> Emergency stop
- * 
- * Long Press Behavior:
- * - Sets encoderButtonLongPress = true
- * - Triggers emergency stop in main loop
- * - Clears flag after processing
- * 
- * Side Effects:
- * - May set encoderButtonLongPress
- * - May call on_button_short_click()
- * 
- * @note Called by rotary encoder library
- * @note Main loop handles encoderButtonLongPress
- * 
- * @see rotary_loop()
- * @see on_button_short_click()
+ * @brief Den Taster auswerten (kurz / doppelt / lang)
+ *
+ * Wird bei jedem loop()-Durchlauf aufgerufen und merkt sich, seit wann der Taster gedrückt ist:
+ * - länger als 1 s gehalten: setzt encoderButtonLongPress (Not-Aus, ausgeführt in loop()).
+ *   Danach ist der Taster 3 s gesperrt, damit ein langer Druck nicht mehrfach auslöst.
+ * - losgelassen nach mindestens 50 ms: zählt als Klick. Ob es ein einzelner Klick oder ein
+ *   Doppelklick war, entscheidet rotary_loop() erst 800 ms später.
+ *
+ * Die 50 ms sind die "Entprellung": ein mechanischer Taster liefert beim Drücken für wenige
+ * Millisekunden ein flatterndes Signal, das sonst als mehrere Klicks gezählt würde.
  */
 //void on_button_long_click();
 void rotary_onButtonClick();
 
 /**
- * @brief Process rotary encoder input
- * 
- * This function handles rotary encoder operations including reading
- * encoder position, detecting rotation direction, handling button
- * presses, and updating song selection or brightness.
- * 
- * Rotation Behavior:
- * - Clockwise: Increment song ID (or brightness)
- * - Counter-clockwise: Decrement song ID (or brightness)
- * - Range: 0-26 for songs, 4-255 for brightness
- * 
- * Button Behavior:
- * - Short press (<1 second): Switch to selected song
- * - Long press (>1 second): Emergency stop (song 0)
- * - Hold + rotate: Adjust brightness
- * 
- * Brightness Control Mode:
- * - Activate: Hold button while turning
- * - Direction: Increase/decrease brightness
- * - Range: 4 (dim) to 255 (bright)
- * 
- * Side Effects:
- * - May call switchToSong()
- * - May set encoderButtonLongPress flag
- * - May update global BRIGHTNESS
- * 
- * @note Only active when HAS_ROTARY_ENCODER is defined
- * @note Called every main loop iteration
- * @note Debounces button input
- * 
- * @see rotary_initialize()
- * @see on_button_short_click()
- * @see rotary_onButtonClick()
+ * @brief Den Drehknopf abfragen (bei jedem loop()-Durchlauf)
+ *
+ * - wurde gedreht: neue Helligkeit übernehmen; beim kleinsten Wert (2) LEDsTurnedOff setzen
+ * - Taster auswerten (rotary_onButtonClick)
+ * - 800 ms nach dem letzten Klick: kurzen Klick oder Doppelklick ausführen
+ * - 3 s nach einem langen Druck: Taster wieder freigeben
  */
 void rotary_loop();
 //--------

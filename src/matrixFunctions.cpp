@@ -16,6 +16,21 @@ extern volatile byte nextSongPart;
 extern volatile boolean nextChangeMillisAlreadyCalculated;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 
+//=====================================================================
+// matrixFunctions.cpp - Bilder und Testmuster für die LED-Fläche
+//=====================================================================
+// Der größte Teil dieser Datei stammt aus dem Beispielprogramm der Bibliothek FastLED_NeoMatrix (daher die
+// englischen Kommentare) und wurde nur an das Projekt angepasst. Enthalten sind:
+//   1. kleine Bilder ("Bitmaps") als Zahlentabellen: einfarbige 8x8-Muster (mono_bmp) und bunte (RGB_bmp)
+//   2. nur für das alte GITBOARD: myRemapFn(), die Umrechnung x/y -> LED-Nummer für dessen unregelmäßige Form
+//   3. Funktionen, die diese Bilder und einige Testmuster (Linien, Rechtecke, Kreise, Lauftext) anzeigen
+// In den Songs wird davon kaum etwas benutzt; die Datei dient vor allem zum Testen einer LED-Fläche.
+// Die display_...-Funktionen malen EIN Bild und geben es sofort aus; sie haben (anders als die prog...-Effekte)
+// keine Dauer und keinen Folge-Part.
+
+// Einfarbige 8x8-Bilder: jede Zeile ist ein Byte, jedes Bit ein Pixel (1 = an, 0 = aus). Die Schreibweise
+// B10101010 zeigt die 8 Pixel der Zeile direkt als Muster. PROGMEM legt die Tabelle im Programmspeicher (Flash)
+// ab statt im knappen Arbeitsspeicher.
 static const uint8_t PROGMEM mono_bmp[][8] = {
 {   // 0: checkered 1
 	B10101010,
@@ -71,6 +86,10 @@ static const uint8_t PROGMEM mono_bmp[][8] = {
 	//============================================================================= war frueher mal in LEDMatrix.h
 	//========== Andres remapping function für das LED-GIT-BOARD =================
 	//============================================================================
+	// Das Gitboard hat die Form einer Gitarre: seine LEDs füllen das Rechteck von 22 x 23 Plätzen nicht aus, und
+	// jede Zeile hat unterschiedlich viele LEDs. Diese Funktion ist die von Hand erstellte Landkarte: für jeden
+	// Platz (x, y) liefert sie die Nummer der LED im Streifen - oder MISSING_LED, wenn dort keine LED sitzt
+	// (die Bibliothek malt dann ins Leere). Aufbau: äußeres switch = Zeile y, inneres switch = Spalte x.
 	const int MISSING_LED = 300;
 	uint16_t myRemapFn(uint16_t x, uint16_t y) {
 
@@ -721,6 +740,10 @@ static const uint8_t PROGMEM mono_bmp[][8] = {
 
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
+// Die bunten Bilder in RGB_bmp haben je Farbe nur 4 Bit und die Reihenfolge Blau-Grün-Rot (z.B. 0xF00 = volles
+// Blau). Die Matrix-Bibliothek erwartet 5 Bit Rot, 6 Bit Grün, 5 Bit Blau (RGB565). Diese Funktion rechnet ein
+// Bild Pixel für Pixel um und zeichnet es an die Stelle x/y. w/h = Breite/Höhe des Bildes.
+// "& 0xF00" schneidet die 4 Bit einer Farbe heraus, ">> 8" schiebt sie an den Anfang, map() streckt den Bereich.
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t* bitmap, int16_t w, int16_t h) {
 	// work around "a15 cannot be used in asm here" compiler bug when using an array on ESP8266
 	// uint16_t RGB_bmp_fixed[w * h];
@@ -774,6 +797,8 @@ void display_four_white() {
 	}
 }
 
+// Ein einfarbiges 8x8-Bild (Nummer bmp_num aus mono_bmp) in der Farbe color zeichnen. Jeder Aufruf setzt das
+// Bild 8 Pixel weiter (zeilenweise über die Fläche), bmx/bmy merken sich die nächste Stelle.
 void display_bitmap(uint8_t bmp_num, uint16_t color) {
 	static uint16_t bmx, bmy;
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -793,6 +818,7 @@ void display_bitmap(uint8_t bmp_num, uint16_t color) {
 	}
 }
 
+// display_bitmap als Effekt für einen Song-Part: zeigt das Bild einmal zu Beginn und lässt es für die Dauer stehen.
 void progDisplay_bitmap(unsigned int durationMillis, byte nextPart, uint8_t bmp_num, uint16_t color) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
@@ -809,6 +835,7 @@ void progDisplay_bitmap(unsigned int durationMillis, byte nextPart, uint8_t bmp_
 	//---------------------------------------------------------------------
 }
 
+// Dasselbe mit einem bunten 8x8-Bild aus RGB_bmp
 void display_rgbBitmap(uint8_t bmp_num) {
 	static uint16_t bmx, bmy;
 
@@ -826,6 +853,7 @@ void display_rgbBitmap(uint8_t bmp_num) {
 	}
 }
 
+// Testmuster: sich kreuzende Linien in vier Helligkeitsstufen je Farbe
 void display_lines() {
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 		matrix->clear();
@@ -849,6 +877,7 @@ void display_lines() {
 	}
 }
 
+// Testmuster: ineinanderliegende Rechtecke
 void display_boxes() {
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 		matrix->clear();
@@ -860,6 +889,7 @@ void display_boxes() {
 	}
 }
 
+// Testmuster: Kreise
 void display_circles() {
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 	matrix->clear();
@@ -873,6 +903,7 @@ void display_circles() {
 	}
 }
 
+// Testmuster: schreibt die Größe der Fläche (Breite x Höhe) als Text
 void display_resolution() {
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 		matrix->setTextSize(1);
@@ -935,6 +966,9 @@ void display_resolution() {
 	}
 }
 
+// Testmuster: Lauftext-Demo der Bibliothek ("Hello" / "World", danach gedreht "Rotate").
+// ACHTUNG: läuft als Ganzes in einem Aufruf durch und benutzt delay() - blockiert das Programm für mehrere
+// Sekunden (kein MIDI, kein Bluetooth). Nur zum Testen, nie in einem Song.
 void display_scrollText() {
 	uint8_t size = max(int(MATRIX_WIDTH / 8), 1);
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -979,6 +1013,10 @@ void display_scrollText() {
 // Scroll within big bitmap so that all of it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
+// ACHTUNG: auch diese Funktion läuft 200 Schritte in einem Aufruf durch und benutzt delay() - nur zum Testen.
+// Trick der Rechnung: Positionen und Geschwindigkeiten werden mit 16 multipliziert gespeichert ("<< 4") und erst
+// zum Zeichnen wieder durch 16 geteilt (">> 4"). So sind Bewegungen von Bruchteilen eines Pixels je Schritt
+// möglich, ohne Kommazahlen zu verwenden.
 void display_panOrBounceBitmap(uint8_t bitmapSize) {
 	// keep integer math, deal with values 16 times too big
 	// start by showing upper left of big bitmap or centering if the display is big

@@ -9,6 +9,13 @@
  * Farben kommen aus dem aktiven Farbschema (colorSchemes.h), jedes Gerät nutzt deviceColor().
  *
  * Bühne (STAGE_POS): 0 Lampe1 - 1 Bass - 2 Drums/Matrix - 3 Gitarre - 4 Lampe2
+ *
+ * Die Parameter von scene(): Szene, Länge des Parts in ms, Nummer des Folge-Parts, Tempo in Beats pro Minute.
+ * Im Beispiel oben: Part 40 zeigt 8000 ms lang SCENE_BUILDUP bei Tempo 128, danach folgt Part 45.
+ *
+ * "enum" (unten) ist eine Aufzählung: die Namen stehen für fortlaufende Nummern (SCENE_CALM = 0,
+ * SCENE_VERSE = 1 ...). Im Code immer die Namen verwenden, nie die Nummern.
+ * In generierten Songs kommen die Szenen aus dem Schlüssel "scene:" der show.yaml (tools/songgen.py).
  */
 #pragma once
 

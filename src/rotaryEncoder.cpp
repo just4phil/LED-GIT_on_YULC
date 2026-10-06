@@ -16,20 +16,25 @@ extern boolean needLEDsync;
 extern boolean forceLEDsync;
 extern volatile bool syncProgWithNextChange;
 //---------------------------------
-AiEsp32RotaryEncoder *rotaryEncoder;
-AiEsp32RotaryEncoderNumberSelector numberSelector;
+//=====================================================================
+// rotaryEncoder.cpp - Drehknopf mit Taster (Bedienung: siehe rotaryEncoder.h)
+//=====================================================================
+AiEsp32RotaryEncoder *rotaryEncoder;				// das Encoder-Objekt der Bibliothek (zählt die Drehschritte)
+AiEsp32RotaryEncoderNumberSelector numberSelector;	// Helfer der Bibliothek: macht aus den Drehschritten einen Wert in einem festen Bereich
 
 //paramaters for button
 unsigned int shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
-unsigned int timeBetweenDoubleClicks = 800;
-unsigned int longPressAfterMiliseconds = 1000;  //how long čong
+unsigned int timeBetweenDoubleClicks = 800;		// so lange wird nach einem Klick auf einen zweiten gewartet (ms)
+unsigned int longPressAfterMiliseconds = 1000;  // ab dieser Haltedauer gilt ein Druck als "lang" (ms)
 
-static unsigned long lastTimeShortClick = 0;
-static unsigned long lastTimeLongPress = 0;
-static bool wasButtonDown = false;
-static bool shortClickHappened = false;
-static bool wasButtonDownFIRST = false;
-static bool wasButtonDownSECOND = false;
+// Zustand der Klick-Erkennung. millis() liefert die Millisekunden seit dem Einschalten; hier ist es erlaubt,
+// weil es um die Bedienung geht und nicht um das Timing der Show.
+static unsigned long lastTimeShortClick = 0;	// Zeitpunkt des letzten Klicks
+static unsigned long lastTimeLongPress = 0;		// Zeitpunkt des letzten langen Drucks
+static bool wasButtonDown = false;				// war der Taster beim letzten Nachsehen gedrückt?
+static bool shortClickHappened = false;			// es gab einen Klick, der noch nicht ausgeführt ist
+static bool wasButtonDownFIRST = false;			// erster Klick erkannt
+static bool wasButtonDownSECOND = false;		// zweiter Klick erkannt -> Doppelklick
 //---------------------------------
 
 void IRAM_ATTR readEncoderISR() {    // Function required for interupts
@@ -37,13 +42,15 @@ void IRAM_ATTR readEncoderISR() {    // Function required for interupts
 } 
 
 void rotary_initialize() {
-    
+
+	// Encoder-Objekt anlegen: Pins für Drehrichtung A/B und Taster, -1 = keine eigene Versorgungsleitung
 	rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
 	numberSelector = AiEsp32RotaryEncoderNumberSelector();
 
 	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
 	rotaryEncoder->setup(readEncoderISR);
+	// Beschleunigung aus: ein Schritt am Knopf ist immer genau ein Schritt im Wert, egal wie schnell man dreht
 	rotaryEncoder->setAcceleration(0);
 	rotaryEncoder->disableAcceleration();
 
@@ -83,8 +90,10 @@ void rotary_initialize() {
 	numberSelector.setValue - sets initial value    
 	*/
 	//numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
+	// Wertebereich der Helligkeit: 255 bis 2 in Schritten von -1 (die vertauschten Grenzen und der negative
+	// Schritt kehren die Drehrichtung um), kein Überlauf am Ende. Der Wert 2 bedeutet "LEDs aus" (rotary_loop).
 	numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
-	numberSelector.setValue(DEFAULT_BRIGHTNESS);
+	numberSelector.setValue(DEFAULT_BRIGHTNESS);	// Startwert = Grundhelligkeit des Geräts
 }
 
 void on_button_short_click() {
@@ -128,9 +137,12 @@ void on_button_double_click() {
 	// }
 //} 
 
+// Taster auswerten. Wird sehr oft aufgerufen; aus "gedrückt seit wann" und "wieder losgelassen" werden
+// hier die Ereignisse langer Druck und Klick abgeleitet (Erklärung: rotaryEncoder.h).
 void rotary_onButtonClick() {
 
-	static unsigned long lastTimeButtonDown = 0;
+	// "static" innerhalb einer Funktion: die Variable behält ihren Wert bis zum nächsten Aufruf
+	static unsigned long lastTimeButtonDown = 0;	// Zeitpunkt, zu dem der Taster heruntergedrückt wurde
 
 	bool isEncoderButtonDown = rotaryEncoder->isEncoderButtonDown();
 
@@ -151,10 +163,11 @@ void rotary_onButtonClick() {
 			} 
 		}
 		
-		return;
+		return;	// solange gedrückt ist, gibt es sonst nichts zu tun
 	}
 
 	//--- button is up
+	// Der Taster wurde gerade losgelassen (und es war kein langer Druck): das ist ein Klick.
 
 	if (wasButtonDown && !encoderButtonNotAvailable) {
 
@@ -179,9 +192,9 @@ void rotary_onButtonClick() {
 	wasButtonDown = false;
 }
 
-void rotary_loop() {	
+void rotary_loop() {
 
-	int16_t encoderDelta = rotaryEncoder->encoderChanged();
+	int16_t encoderDelta = rotaryEncoder->encoderChanged();	// um wie viele Schritte wurde seit dem letzten Mal gedreht? (0 = gar nicht)
 
 	// When getting value
 	if (encoderDelta != 0) {		
@@ -197,6 +210,8 @@ void rotary_loop() {
 	}
 	rotary_onButtonClick();
 
+	// Erst wenn nach einem Klick 800 ms lang kein weiterer kam, steht fest, ob es ein einzelner Klick
+	// oder ein Doppelklick war. Deshalb reagiert der kurze Klick mit dieser kleinen Verzögerung.
 	if (shortClickHappened) {
 		if (millis() - lastTimeShortClick >= timeBetweenDoubleClicks) {
 

@@ -12,6 +12,9 @@
  *                progStrobo(...); break;
  *
  * switchToPart() setzt das Schema auf SCHEME_RANDOM zurück -> Songs ohne Schema verhalten sich wie bisher.
+ * Deshalb muss ein Song sein Schema bei JEDEM Durchlauf neu setzen (wie im Beispiel), nicht nur einmal.
+ *
+ * Wie es innen funktioniert und wie man ein neues Schema anlegt: colorSchemes.cpp.
  */
 #pragma once
 

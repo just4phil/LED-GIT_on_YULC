@@ -36,12 +36,17 @@ import sys
 import time
 from pathlib import Path
 
+# --- Feste Einstellungen ---
+# Path(__file__) ist diese Datei selbst; zweimal ".parent" führt von tools/build_ota.py zum Projektordner.
 ROOT = Path(__file__).resolve().parent.parent
-OTA_DIR = ROOT / "ota"
+OTA_DIR = ROOT / "ota"          # hier liegt die fertige Firmware, je Gerät ein Unterordner
+# Die Geräte = Namen der PlatformIO-Umgebungen in platformio.ini = DEVICE_NAME in src/definitions.h.
+# Kommt ein Gerät dazu, muss es an allen drei Stellen gleich heißen (und docs/OTA-Update.html mitziehen).
 DEVICES = ["andresgit", "rinasbass", "lampe1", "lampe2", "scrollmatrix"]
-PORT = 8080
+PORT = 8080                     # Port des Webservers; muss zu OTA_PORT in src/secrets.h passen
 
 
+# Sucht das Programm "pio" (PlatformIO): erst im Suchpfad, dann am üblichen Installationsort unter Windows.
 def find_pio():
     for cand in ("pio", "platformio", str(Path.home() / ".platformio/penv/Scripts/pio.exe")):
         if shutil.which(cand) or Path(cand).exists():
@@ -49,6 +54,8 @@ def find_pio():
     sys.exit("PlatformIO (pio) nicht gefunden")
 
 
+# Kurze Kennung des aktuellen Git-Stands (z.B. "2253fd7"); ein "+" am Ende heißt: es gibt Änderungen, die noch
+# nicht committet sind. Nur zur Information in version.json - für das Update zählt allein die Versionsnummer.
 def git_hash():
     try:
         h = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
@@ -59,10 +66,12 @@ def git_hash():
         return "unknown"
 
 
+# Die Geräte, für die in ota/ schon eine Firmware liegt
 def current_devices():
     return [d for d in DEVICES if (OTA_DIR / d / "version.json").exists()]
 
 
+# Freier Ordnername für ein Backup von heute: ota/backup/2026-10-06, beim zweiten am selben Tag ..._2, dann ..._3
 def backup_dir_for_today():
     base = OTA_DIR / "backup" / time.strftime("%Y-%m-%d")
     target, n = base, 2
@@ -72,6 +81,7 @@ def backup_dir_for_today():
     return target
 
 
+# Den bisherigen Stand aus ota/ sichern, bevor er überschrieben wird - auf Wunsch bzw. nach Rückfrage.
 def maybe_backup(answer):
     """answer: True/False = vorab per Option entschieden, None = fragen."""
     present = current_devices()
@@ -93,6 +103,7 @@ def maybe_backup(answer):
     print(f"Backup: {len(present)} Geräte -> {target.relative_to(ROOT)}")
 
 
+# Ein Backup wieder nach ota/ kopieren, damit die Geräte es laden.
 def restore(name):
     src = OTA_DIR / "backup" / name
     devices = [d for d in DEVICES if (src / d / "firmware.bin").exists()]
@@ -113,8 +124,11 @@ def restore(name):
     print(f"Wiederhergestellt mit neuer Version {version}")
 
 
+# Firmware für die genannten Geräte bauen und mit version.json in ota/<gerät>/ ablegen.
 def build(devices):
-    version = str(int(time.time()))
+    version = str(int(time.time()))             # Versionsnummer = jetzige Zeit in Sekunden seit 1970
+    # Die Version wird als Umgebungsvariable an PlatformIO übergeben; tools/fw_version.py liest sie beim Bauen
+    # aus und trägt sie in die Firmware ein. So bekommen alle Geräte dieses Laufs dieselbe Nummer.
     env = dict(os.environ, FW_VERSION=version)
     cmd = [find_pio(), "run"]
     for d in devices:
@@ -130,11 +144,14 @@ def build(devices):
         out = OTA_DIR / d
         out.mkdir(parents=True, exist_ok=True)
         (out / "firmware.bin").write_bytes(data)
+        # md5 = Prüfsumme der Datei: das Gerät rechnet sie nach dem Laden nach und verwirft eine beschädigte Datei
         info = {"version": int(version), "git": git, "md5": hashlib.md5(data).hexdigest(), "size": len(data)}
         (out / "version.json").write_text(json.dumps(info, indent=1) + "\n", encoding="utf-8")
         print(f"  {d:13s} {len(data) / 1024:7.0f} KB  -> ota/{d}/")
 
 
+# Die Netzwerk-Adressen dieses Rechners (ohne 127.x.x.x = "nur ich selbst") - eine davon muss als OTA_SERVER
+# in src/secrets.h stehen.
 def local_ips():
     ips = set()
     try:
@@ -145,6 +162,8 @@ def local_ips():
     return sorted(ip for ip in ips if not ip.startswith("127."))
 
 
+# Einfacher Webserver, der den Ordner ota/ ausliefert. Läuft, bis man ihn mit Strg+C beendet.
+# "0.0.0.0" heißt: auf allen Netzwerkanschlüssen des Rechners erreichbar.
 def serve():
     if not OTA_DIR.exists():
         sys.exit("ota/ fehlt - erst bauen")
@@ -160,6 +179,7 @@ def serve():
             pass
 
 
+# Hauptprogramm: Optionen der Kommandozeile auswerten (argparse) und die passenden Schritte ausführen.
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("devices", nargs="*", metavar="gerät", help="Standard: alle (" + ", ".join(DEVICES) + ")")

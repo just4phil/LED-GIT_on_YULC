@@ -5,6 +5,14 @@
 #include "colorSchemes.h"
 #include "fxPipeline.h"
 
+//=====================================================================
+// functions.cpp - Zufallsfarben und der Song-/Part-Wechsel
+//=====================================================================
+// Beschreibung der Funktionen: siehe functions.h.
+//
+// "extern" heißt: diese Variable wird hier nur benutzt, angelegt ist sie in einer anderen Datei
+// (die meisten in main.cpp, die Effekt-Zähler in FXprograms.cpp). So greifen alle Dateien auf
+// dieselbe eine Variable zu.
 extern byte markerLED1;
 extern byte markerLED2;
 extern byte markerLED3;
@@ -35,6 +43,8 @@ extern bool strapOverride;
 //=====================================================================
 
 int getRandomColorValue() {	// dies erzeugt einen random-farb-anteil rot, grün oder blau
+	// Achtung bei random(a, b): die Untergrenze a ist dabei, die Obergrenze b NICHT.
+	// random(1, 6) liefert also 1, 2, 3, 4 oder 5.
 	int farbZahl = random(1, 6);
     int farbe = 0;
     switch (farbZahl) {
@@ -58,7 +68,10 @@ int getRandomColorValue() {	// dies erzeugt einen random-farb-anteil rot, grün 
 }
 
 int getRandomColor() { // dies erzeugt einen random color wert für die indexed colors:
+	// Hat der Part ein Farbschema, kommt die Farbe von dort (toRGB565 wandelt die FastLED-Farbe CRGB
+	// in den 16-Bit-Farbwert um, den die Matrix-Funktionen erwarten).
 	if (colorSchemeActive()) return toRGB565(getRandomCRGB());
+	// random(1, 7) liefert 1..6 - der case 7 (Rot) unten wird deshalb nie erreicht.
 	int farbZahl = random(1, 7);
 	int farbe = LED_BLACK;
 	switch (farbZahl) {
@@ -88,7 +101,10 @@ int getRandomColor() { // dies erzeugt einen random color wert für die indexed 
 }
 
 int getRandomColorIncludingBlack() {
+	// Mit Farbschema: in 1 von 8 Fällen Schwarz, sonst eine Schemafarbe.
+	// Schreibweise "Bedingung ? A : B" = "wenn Bedingung, dann A, sonst B".
 	if (colorSchemeActive()) return (random(0, 8) == 0) ? LED_BLACK : toRGB565(getRandomCRGB());
+	// random(1, 9) liefert 1..8, hier sind also alle acht cases erreichbar (8 = Schwarz).
 	int farbZahl = random(1, 9);
 	int farbe = LED_BLACK;
 	switch (farbZahl) {
@@ -120,6 +136,8 @@ int getRandomColorIncludingBlack() {
 	return farbe;
 }
 
+// Alle sieben Bund-Marker löschen (0 = kein Marker). Der neue Song setzt seine Marker danach
+// über setMarkerLEDs() (markerLEDs.cpp) wieder.
 void resetMarkerLEDs() {
 	//---- reset markerLEDs
 	markerLED1 = 0;
@@ -131,38 +149,46 @@ void resetMarkerLEDs() {
 	markerLED7 = 0;
 }
 
+// Part-Wechsel: stellt alles auf "Anfang eines Parts". Wird aufgerufen von loop() (automatischer Wechsel
+// nach Ablauf der Part-Länge), von MIDI/Bluetooth (Wechsel von außen) und von switchToSong().
 void switchToPart(byte part) {
 
-	fxPartReset();	// merkt sich das letzte Bild für einen Übergang
+	fxPartReset();	// merkt sich das letzte Bild für einen Übergang und löscht Übergang/Modifikatoren des alten Parts (fxPipeline.cpp)
 	prog = part;
+	// Jeder Part legt beim ERSTEN Durchlauf seine Länge (nextChangeMillis) und den Folge-Part fest und
+	// setzt dann dieses Flag. Hier wird es gelöscht, damit der neue Part das wieder tun darf.
 	nextChangeMillisAlreadyCalculated = false;	// bool wieder fuer naechstes programm freigeben
-	millisCounterTimer = 0;
+	millisCounterTimer = 0;				// Zeit für die Effekte: beginnt bei jedem Part neu
 	millisToReduceCPUSpeed = 0;
-	millisCounterForProgChange = 0;
-	zaehler = 0;	// globalen zaehler auf null
-	progScrollTextZaehler = MATRIX_WIDTH + 1;
+	millisCounterForProgChange = 0;		// Zeit seit Part-Beginn: bestimmt, wann der nächste Wechsel fällig ist
+	zaehler = 0;	// globalen zaehler auf null (Schrittzähler vieler Effekte)
+	progScrollTextZaehler = MATRIX_WIDTH + 1;	// Lauftext startet rechts außerhalb des sichtbaren Bereichs
 
-	//--- initializeValues ---
+	//--- initializeValues --- (Zustände einzelner Effekte aus FXprograms.cpp)
 	progBlingBlingColoring_rounds = 0;
 	progStroboIsBlack = false;
-	strapOverride = false;
+	strapOverride = false;	// der Gurt zeigt wieder dasselbe wie das Instrument
 	setColorScheme(SCHEME_RANDOM);	// Songs setzen ihr Schema bei jedem Durchlauf neu
 
+	// Den Wechsel-Auftrag des Timers quittieren (sonst würde loop() sofort noch einmal wechseln)
 	flag_switchToNextSongPart = false;
 }
 
+// Song-Wechsel: neuer Song beginnt immer bei Part 0.
 void switchToSong(byte song) {
 
 	//---- reset markerLEDs
 	resetMarkerLEDs();
 
 	//--- start song ----
-	songIDbefore = songID;
+	songIDbefore = songID;	// den bisherigen Song merken
 	songID = song;
 	switchToPart(0);
 }
 
 //--- For emidiate SYNC ---
+// Sofortiger Sprung in Song UND Part (Abgleich über Bluetooth). Anders als switchToSong() wird
+// songIDbefore hier nicht verändert.
 void switchToSongAndPart(byte song, byte part) {
 	
 	//---- reset markerLEDs

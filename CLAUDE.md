@@ -22,6 +22,15 @@ pio device monitor -e esp32-s3-devkitc-1
 
 There are no unit tests in this project.
 
+## Comments (binding)
+
+All source files in `src/` and `tools/` carry detailed German inline comments written for hobby programmers
+(what, why, units, how files work together; C++/Python idioms explained where they appear). **Whenever code
+changes, update the comments in the same change** - function descriptions, file headers and the explanations in
+the matching `.h` file included. New code gets comments in the same style. Generated files
+(`src/songs_generated.*`, `songs/*/generated.cpp`) are never commented by hand - change the text the generator
+emits (`tools/songgen.py`). `AiEsp32RotaryEncoder*` is third-party code and stays as it is.
+
 ## Device Selection (critical before building)
 
 Preferred: one PlatformIO env per device sets the device via `-D` flag — `andresgit`, `rinasbass`,

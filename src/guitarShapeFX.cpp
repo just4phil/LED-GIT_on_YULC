@@ -16,6 +16,28 @@ extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterForProgChange;
 //---------------------------------------------------------------------
 
+//=====================================================================
+// guitarShapeFX.cpp - Effekte, die der Form der Gitarre folgen
+//=====================================================================
+// Der LED-Streifen läuft als geschlossene Schleife einmal um die Gitarre. Die Nummer einer LED im Streifen
+// sagt aber wenig darüber, WO sie sitzt. Diese Datei rechnet deshalb in drei anschaulicheren Größen:
+//
+//   Konturposition k   Schritte entlang der Schleife, gezählt ab der Spitze der Kopfplatte (k = 0).
+//                      loopToLed(k) macht daraus die LED-Nummer, ledToLoop(i) rechnet zurück.
+//   Abstand d          Entfernung von der Kopfspitze, egal auf welcher Seite. d = 0 ist der Kopf,
+//                      d = LOOP_HALF der gegenüberliegende Punkt unten am Korpus. setMirrored(d, farbe)
+//                      setzt die beiden LEDs links und rechts im Abstand d -> symmetrische Effekte.
+//   Ort x/y            Lage jeder LED im Raum (0..255), gewonnen aus einem Foto der Gitarre. Damit laufen
+//                      Wellen und Lichtebenen quer durch den Raum statt nur am Streifen entlang.
+//
+// Außerdem stehen hier die Grundbausteine ALLER neueren Effekte (auch der Szenen):
+// fxPartStart(), fxFrameDue(), fxShow(), fxBeats(), fxBeatPhase().
+//
+// Bass und Lampen benutzen dieselben Funktionen; ihre Geometrie wird aus der Gitarre hochgerechnet
+// (Vorgabewerte in guitarShapeFX.h).
+
+// Der Gurt (zweiter LED-Ausgang) zeigt normalerweise dasselbe Bild wie das Instrument. Setzt ein Effekt
+// strapOverride = true, bekommt der Gurt stattdessen das eigene Bild ledsStrap[] (siehe progFuse).
 bool strapOverride = false;
 CRGB ledsStrap[anz_LEDs_STRAP];
 
@@ -37,28 +59,34 @@ static const int16_t outlinePx[][2] = {
 static const int16_t bridgePx[2]     = {235, 1085};	// Zentrum der Shockwave
 static const int16_t bodyCenterPx[2] = {200, 1130};	// Drehpunkt des Regenbogens
 
+// Die folgenden Tabellen berechnet initGuitarShape() einmal; die Effekte lesen dann nur noch darin nach.
 static uint8_t ledX[anz_LEDs];			// 0..255, gleiche Skalierung für x und y
 static uint8_t ledY[anz_LEDs];
 static uint8_t ledDistBridge[anz_LEDs];	// Abstand zum Steg (0..255 = maximaler Abstand)
 static uint8_t ledAngle[anz_LEDs];		// Winkel um den Korpusmittelpunkt (0..255)
-static bool shapeReady = false;
+static bool shapeReady = false;			// true, sobald die Tabellen berechnet sind
 
 //==================================================================
 //=========== Helper ===============================================
 //==================================================================
 
+// Konturposition -> LED-Nummer. k darf auch negativ oder größer als anz_LEDs sein: "%" (Rest der Division)
+// wickelt es auf die Schleife; weil der Rest in C++ negativ sein kann, wird dann eine Runde addiert.
 uint16_t loopToLed(int k) {
 	int i = (GUITAR_HEAD_TIP_IDX + GUITAR_LOOP_DIR * k) % anz_LEDs;
 	if (i < 0) i += anz_LEDs;
 	return i;
 }
 
+// LED-Nummer -> Konturposition (die Umkehrung von loopToLed)
 uint16_t ledToLoop(uint16_t i) {
 	int k = ((int)i - GUITAR_HEAD_TIP_IDX) * GUITAR_LOOP_DIR % anz_LEDs;
 	if (k < 0) k += anz_LEDs;
 	return k;
 }
 
+// In welcher Zone der Gitarre (Kopf, Hals, Horn, Korpus ...) liegt die Konturposition k?
+// Die Grenzen stehen als ZONE_..._START in definitions.h.
 uint8_t zoneOfLoop(uint16_t k) {
 	if (k < ZONE_NECK_LOW_START || k >= ZONE_HEAD_UP_START) return ZONE_HEAD;
 	if (k < ZONE_HORN_LOW_START) return ZONE_NECK_LOW;
@@ -68,20 +96,27 @@ uint8_t zoneOfLoop(uint16_t k) {
 	return ZONE_NECK_UP;
 }
 
+// Beide LEDs im Abstand d von der Kopfspitze setzen: einmal +d (eine Seite), einmal -d (andere Seite)
 void setMirrored(uint16_t dFromHead, CRGB col) {
 	leds[loopToLed(dFromHead)]  = col;
 	leds[loopToLed(-(int)dFromHead)] = col;
 }
 
+// Eine ganze Zone einfärben
 void fillZone(uint8_t zone, CRGB col) {
 	for (int k = 0; k < anz_LEDs; k++) {
 		if (zoneOfLoop(k) == zone) leds[loopToLed(k)] = col;
 	}
 }
 
+// Berechnet für jede LED ihren Ort (ledX/ledY), ihren Abstand zum Steg und ihren Winkel um die Korpusmitte.
+// Idee: Der Umriss ist als Folge von Eckpunkten bekannt (outlinePx). Die LEDs sitzen in gleichen Abständen
+// auf dem Streifen - also wird der Umriss abgeschritten und alle (Gesamtlänge / anz_LEDs) eine LED gesetzt.
+// Läuft nur einmal (beim ersten Effekt), deshalb sind die langsamen Kommazahlen (float) hier in Ordnung.
 void initGuitarShape() {
-	const int nPts = sizeof(outlinePx) / sizeof(outlinePx[0]);
+	const int nPts = sizeof(outlinePx) / sizeof(outlinePx[0]);	// Anzahl der Eckpunkte
 
+	// Schritt 1: Länge jedes Teilstücks (Satz des Pythagoras), Gesamtlänge und die äußersten x/y-Werte
 	float segLen[nPts];
 	float total = 0;
 	int16_t minX = 32767, maxX = -32768, minY = 32767, maxY = -32768;
@@ -93,18 +128,18 @@ void initGuitarShape() {
 		minX = min(minX, a[0]); maxX = max(maxX, a[0]);
 		minY = min(minY, a[1]); maxY = max(maxY, a[1]);
 	}
-	float scale = 255.0f / (float)max(maxX - minX, maxY - minY);
+	float scale = 255.0f / (float)max(maxX - minX, maxY - minY);	// Foto-Pixel -> 0..255 (ein Faktor für x und y: keine Verzerrung)
 
 	// LEDs gleichmäßig entlang des Umrisses verteilen
-	int p = 0;
-	float segStart = 0;
+	int p = 0;				// Nummer des Teilstücks, auf dem wir gerade sind
+	float segStart = 0;		// Weg bis zum Anfang dieses Teilstücks
 	for (int k = 0; k < anz_LEDs; k++) {
-		float s = total * k / anz_LEDs;
+		float s = total * k / anz_LEDs;	// so weit liegt LED k vom Startpunkt entfernt
 		while (p < nPts - 1 && s > segStart + segLen[p]) {
 			segStart += segLen[p];
 			p++;
 		}
-		float f = (segLen[p] > 0) ? (s - segStart) / segLen[p] : 0;
+		float f = (segLen[p] > 0) ? (s - segStart) / segLen[p] : 0;	// Anteil 0..1 innerhalb des Teilstücks (von Eckpunkt a nach b)
 		const int16_t* a = outlinePx[p];
 		const int16_t* b = outlinePx[(p + 1) % nPts];
 		float px = a[0] + (b[0] - a[0]) * f;
@@ -122,6 +157,7 @@ void initGuitarShape() {
 	for (int i = 0; i < anz_LEDs; i++) {
 		dist[i] = sqrtf((ledX[i] - bx) * (ledX[i] - bx) + (ledY[i] - by) * (ledY[i] - by));
 		maxDist = max(maxDist, dist[i]);
+		// atan2 liefert den Winkel der Richtung "Korpusmitte -> LED" im Bogenmaß; danach auf 0..255 umgerechnet
 		float ang = atan2f(ledY[i] - cy, ledX[i] - cx);	// -PI..PI
 		ledAngle[i] = (uint8_t)((ang + PI) * 256.0f / (2 * PI));
 	}
@@ -131,9 +167,16 @@ void initGuitarShape() {
 	shapeReady = true;
 }
 
+//==================================================================
+//=========== Grundbausteine aller neueren Effekte =================
+//==================================================================
+
 // Standard-Teil: Dauer + nächsten Part merken; liefert true beim ersten Aufruf eines Parts
+// Hintergrund: Ein Effekt wird während seines Parts viele hundert Mal aufgerufen. Nur beim allerersten Mal
+// (das Flag ist dann noch false, switchToPart() hat es gelöscht) wird die Länge des Parts und der Folge-Part
+// eingetragen und das Bild gelöscht. Der Timer wechselt dann von selbst, sobald die Länge erreicht ist.
 bool fxPartStart(unsigned int durationMillis, byte nextPart) {
-	if (nextChangeMillisAlreadyCalculated) return false;
+	if (nextChangeMillisAlreadyCalculated) return false;	// schon erledigt: nichts tun
 	nextChangeMillis = durationMillis;
 	nextSongPart = nextPart;
 	nextChangeMillisAlreadyCalculated = true;
@@ -144,6 +187,8 @@ bool fxPartStart(unsigned int durationMillis, byte nextPart) {
 }
 
 // true, wenn seit dem letzten Frame mindestens ms vergangen sind
+// Der Ersatz für delay(ms): statt zu warten, fragt der Effekt bei jedem Durchlauf "ist mein nächstes Bild schon
+// dran?". millisToReduceCPUSpeed wird vom Timer hochgezählt; ist genug Zeit vergangen, wird sie hier abgezogen.
 bool fxFrameDue(unsigned int ms) {
 	if (ms < FX_REF_FRAME_MS) ms = FX_REF_FRAME_MS;	// kürzere Schritte liefen bisher im Bildtakt - Tempo unabhängig von show() halten
 	if (millisToReduceCPUSpeed < ms) return false;
@@ -153,6 +198,8 @@ bool fxFrameDue(unsigned int ms) {
 }
 
 // dies hier immer callen, sonst fallen die MarkerLEDs kurz aus
+// (auch in Durchläufen, in denen kein neues Bild gemalt wurde). Sind die LEDs abgeschaltet (Not-Aus, Akku leer),
+// wird das Bild vorher gelöscht - dann leuchten nur noch die Marker.
 void fxShow() {
 	if (LEDsTurnedOff) {
 		clearAll();
@@ -162,6 +209,8 @@ void fxShow() {
 }
 
 // ms seit dem letzten Beat - exakt über bpm gerechnet (60000 / bpm ist gerundet und läuft pro Beat bis zu 1 ms davon)
+// Beispiel bpm 128: ein Beat dauert 468,75 ms. Mit gerundeten 468 ms läge man nach 100 Beats schon 75 ms daneben.
+// Deshalb wird erst mit bpm multipliziert und der Rest zu 60000 genommen, und erst am Schluss geteilt.
 unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm) {
 	if (bpm == 0) bpm = 1;
 	return ((uint32_t)ms * bpm % 60000) / bpm;
@@ -176,8 +225,14 @@ uint32_t fxBeats(uint8_t bpm) {
 //=========== 1: Comet Loop ========================================
 //==================================================================
 
-static int cometPos = 0;
+// Zu den Überschriften der Effekte: die ausführliche Beschreibung jedes Effekts steht in guitarShapeFX.h.
+// Viele Effekte gibt es zweimal: einmal mit allen Parametern und einmal kurz nur mit (Dauer, Folge-Part) -
+// die Kurzform ruft die lange mit bewährten Vorgabewerten auf. Gleicher Name mit verschiedenen Parametern
+// heißt in C++ "Überladen".
 
+static int cometPos = 0;	// Konturposition des Kometen
+
+// msPerStep = ms je LED-Schritt (kleiner = schneller), hue = Farbton 0..255, twoComets = zweiter Komet gegenläufig
 void progCometLoop(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, uint8_t hue, bool twoComets) {
 	if (fxPartStart(durationMillis, nextPart)) cometPos = 0;
 
@@ -207,21 +262,22 @@ void progCometLoop(unsigned int durationMillis, byte nextPart) {
 //=========== 2: Charge & Blast ====================================
 //==================================================================
 
-#define BLAST_MILLIS	600
+#define BLAST_MILLIS	600		// Dauer der Explosion in ms
 
+// chargeMillis = Dauer des Aufladens. Der Zyklus Aufladen + Explosion wiederholt sich, solange der Part läuft.
 void progChargeBlast(unsigned int durationMillis, byte nextPart, unsigned int chargeMillis, uint8_t hue) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
-		unsigned int t = millisCounterForProgChange % (chargeMillis + BLAST_MILLIS);
+		unsigned int t = millisCounterForProgChange % (chargeMillis + BLAST_MILLIS);	// Zeit innerhalb des laufenden Zyklus
 		fill_solid(leds, anz_LEDs, CRGB::Black);
 
 		if (t < chargeMillis) {
 			// Aufladen: Pegel steigt beidseitig von unten zum Kopf
-			int level = (long)t * (LOOP_HALF + 1) / chargeMillis;
+			int level = (long)t * (LOOP_HALF + 1) / chargeMillis;	// Füllstand: 0 = leer, LOOP_HALF = bis zum Kopf
 			for (int fromBottom = 0; fromBottom < level; fromBottom++) {
-				uint8_t val = 50 + 150 * fromBottom / LOOP_HALF + random8(40);
-				bool edge = fromBottom >= level - 2;
+				uint8_t val = 50 + 150 * fromBottom / LOOP_HALF + random8(40);	// nach oben heller, dazu etwas Flackern
+				bool edge = fromBottom >= level - 2;	// die obersten zwei LEDs = helle Kante
 				setMirrored(LOOP_HALF - fromBottom, edge ? CRGB(CHSV(hue, 60, 255)) : CRGB(CHSV(hue, 255, val)));
 			}
 			// Kopfplatte glüht immer stärker vor
@@ -230,8 +286,8 @@ void progChargeBlast(unsigned int durationMillis, byte nextPart, unsigned int ch
 		else {
 			// Explosion: Weißer Blitz läuft vom Kopf nach unten und klingt ab
 			unsigned int tb = t - chargeMillis;
-			int front = (long)tb * LOOP_HALF / 250;
-			uint8_t fade = 255 - (long)tb * 255 / BLAST_MILLIS;
+			int front = (long)tb * LOOP_HALF / 250;				// so weit ist der Blitz gelaufen (in 250 ms einmal ganz herum)
+			uint8_t fade = 255 - (long)tb * 255 / BLAST_MILLIS;	// insgesamt wird es über die Explosionsdauer dunkler
 			for (int d = 0; d <= LOOP_HALF && d <= front; d++) {
 				uint8_t val = scale8(fade, 255 - d * 150 / LOOP_HALF);
 				setMirrored(d, CHSV(hue, min(255, d * 6), val));
@@ -250,10 +306,12 @@ void progChargeBlast(unsigned int durationMillis, byte nextPart) {
 //=========== 3: Symmetric VU ======================================
 //==================================================================
 
+// Sieht aus wie die Pegelanzeige ("VU-Meter") einer Stereoanlage. Es wird KEIN Ton gemessen: der Pegel wird
+// im Beat und per Zufall angestoßen und fällt dann von selbst wieder ab.
 static uint8_t vuLevel = 0;		// 0..255
-static uint8_t vuPeak = 0;
+static uint8_t vuPeak = 0;		// Spitzenwert: bleibt kurz stehen und sinkt dann langsam (der weiße Punkt)
 static uint8_t vuPeakHold = 0;	// Frames
-static uint32_t vuLastBeat = 0;
+static uint32_t vuLastBeat = 0;	// Nummer des letzten Beats, der schon einen Anstoß gegeben hat
 
 void progSymmetricVU(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	if (fxPartStart(durationMillis, nextPart)) {
@@ -273,12 +331,14 @@ void progSymmetricVU(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 			}
 		}
 		if (random8() < 10) vuLevel = max(vuLevel, random8(80, 210));
+		// Pegel fällt pro Bild auf 243/255 ab, aber nie unter einen langsam wabernden Grundpegel
+		// (inoise8 = "Rauschen": zufällig wirkende, aber weich verlaufende Werte)
 		vuLevel = max(scale8(vuLevel, 243), (uint8_t)(inoise8(ms / 3) / 2));
 
 		// Peak-Hold
 		if (vuLevel >= vuPeak) { vuPeak = vuLevel; vuPeakHold = 40; }
 		else if (vuPeakHold > 0) vuPeakHold--;
-		else vuPeak = qsub8(vuPeak, 3);
+		else vuPeak = qsub8(vuPeak, 3);	// qsub8 = Subtraktion, die bei 0 stehen bleibt statt "unten herum" zu 255 zu werden
 
 		fill_solid(leds, anz_LEDs, CRGB::Black);
 		int n = (long)vuLevel * (LOOP_HALF + 1) / 256;
@@ -304,11 +364,14 @@ void progSymmetricVU(unsigned int durationMillis, byte nextPart) {
 #define SHOCK_TRAVEL_MS		900		// Zeit bis zum entferntesten Punkt (Kopfplatte)
 #define SHOCK_WIDTH			22		// Ringbreite in Abstandseinheiten (0..255)
 
-static unsigned int shockBirth[SHOCK_MAX_WAVES];
-static bool shockActive[SHOCK_MAX_WAVES];
+// Bis zu vier Wellen können gleichzeitig unterwegs sein. Jede merkt sich nur, wann sie entstanden ist;
+// ihr Radius ergibt sich daraus bei jedem Bild neu.
+static unsigned int shockBirth[SHOCK_MAX_WAVES];	// Zeitpunkt der Entstehung (ms seit Part-Beginn)
+static bool shockActive[SHOCK_MAX_WAVES];			// ist dieser Platz gerade belegt?
 static CRGB shockColor[SHOCK_MAX_WAVES];
-static unsigned int shockLastSpawn = 0;
+static unsigned int shockLastSpawn = 0;				// wann die letzte Welle gestartet wurde
 
+// Die gemeinsame Arbeit der beiden progShockwave-Varianten (feste Farbe oder Zufallsfarben)
 static void progShockwaveImpl(unsigned int durationMillis, byte nextPart, unsigned int msBetweenWaves, bool randomColor, CRGB col) {
 	if (fxPartStart(durationMillis, nextPart)) {
 		for (int w = 0; w < SHOCK_MAX_WAVES; w++) shockActive[w] = false;
@@ -334,13 +397,13 @@ static void progShockwaveImpl(unsigned int durationMillis, byte nextPart, unsign
 		for (int w = 0; w < SHOCK_MAX_WAVES; w++) {
 			if (!shockActive[w]) continue;
 			unsigned int age = ms - shockBirth[w];
-			int radius = (long)age * 255 / SHOCK_TRAVEL_MS;
-			if (radius > 255 + SHOCK_WIDTH) { shockActive[w] = false; continue; }
+			int radius = (long)age * 255 / SHOCK_TRAVEL_MS;	// Radius der Welle wächst mit ihrem Alter
+			if (radius > 255 + SHOCK_WIDTH) { shockActive[w] = false; continue; }	// über die Gitarre hinaus: Platz freigeben
 
 			uint8_t lifeFade = 255 - min(160L, (long)age * 160 / SHOCK_TRAVEL_MS);
 			for (int i = 0; i < anz_LEDs; i++) {
-				int delta = abs((int)ledDistBridge[i] - radius);
-				if (delta >= SHOCK_WIDTH) continue;
+				int delta = abs((int)ledDistBridge[i] - radius);	// wie weit liegt die LED vom Wellenkamm entfernt?
+				if (delta >= SHOCK_WIDTH) continue;					// zu weit: die Welle berührt sie nicht
 				CRGB c = shockColor[w];
 				c.nscale8(scale8(255 - delta * 255 / SHOCK_WIDTH, lifeFade));
 				leds[i] += c;
@@ -366,9 +429,12 @@ void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBe
 
 static uint8_t wipeProj[anz_LEDs];	// Position jeder LED entlang der Wisch-Richtung (0..255)
 
+// sweepMillis = Dauer einer Fahrt, angleDeg = Richtung in Grad (Vorgaben WIPE_ANGLE_... in guitarShapeFX.h)
 void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg) {
 	if (fxPartStart(durationMillis, nextPart)) {
-		float a = angleDeg * PI / 180.0f;
+		// Einmal zu Part-Beginn: für jede LED ausrechnen, wie weit sie in Wisch-Richtung liegt ("Projektion":
+		// x * cos + y * sin), und das Ergebnis auf 0..255 bringen. Danach genügt ein Vergleich pro LED.
+		float a = angleDeg * PI / 180.0f;	// Grad -> Bogenmaß
 		float ca = cosf(a), sa = sinf(a);
 		float proj[anz_LEDs];
 		float pMin = 1e9, pMax = -1e9;
@@ -388,8 +454,8 @@ void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int swee
 		unsigned int phase = ms % sweepMillis;
 		// hin und zurück, Ebene startet/endet knapp außerhalb der Gitarre
 		int pos = (long)phase * (255 + 2 * WIPE_WIDTH) / sweepMillis - WIPE_WIDTH;
-		if (sweep & 1) pos = 255 - pos;
-		uint8_t hue = sweep * 48;
+		if (sweep & 1) pos = 255 - pos;	// jede zweite Fahrt (ungerade Nummer) läuft rückwärts
+		uint8_t hue = sweep * 48;		// jede Fahrt in einem neuen Farbton
 
 		fadeToBlackBy(leds, anz_LEDs, 45);
 		for (int i = 0; i < anz_LEDs; i++) {
@@ -405,10 +471,11 @@ void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int swee
 //=========== 6: Lightning =========================================
 //==================================================================
 
-static int boltStart, boltLen;
-static bool boltBig;
-static uint8_t boltFlashesLeft = 0;
-static unsigned int boltNextFlash = 0;
+// Ein Blitz besteht aus 2 bis 4 kurzen Zuckungen an derselben Stelle
+static int boltStart, boltLen;			// Anfang (Konturposition) und Länge des Blitzes
+static bool boltBig;					// großer Blitz durch den ganzen Hals statt eines kurzen Stücks
+static uint8_t boltFlashesLeft = 0;		// so viele Zuckungen stehen noch aus (0 = kein Blitz aktiv)
+static unsigned int boltNextFlash = 0;	// Zeitpunkt der nächsten Zuckung
 
 void progLightning(unsigned int durationMillis, byte nextPart, uint8_t chance) {
 	if (fxPartStart(durationMillis, nextPart)) boltFlashesLeft = 0;
@@ -459,21 +526,27 @@ void progLightning(unsigned int durationMillis, byte nextPart) {
 #define FIRE_COOLING	70
 #define FIRE_SPARKING	120
 
-static uint8_t fireHeat[2][FIRE_CELLS];
+static uint8_t fireHeat[2][FIRE_CELLS];	// [Seite][0 = unten .. LOOP_HALF = Kopf]
 
+// Ein Schritt der bekannten Feuer-Simulation "Fire2012" (aus den FastLED-Beispielen). heat[] enthält die
+// "Temperatur" jeder Zelle, heat[0] ist unten. Drei Schritte:
 void fire2012Step(uint8_t* heat, int len) {
+	// 1. jede Zelle kühlt ein wenig ab (zufällig stark -> Flackern)
 	for (int c = 0; c < len; c++) {
 		heat[c] = qsub8(heat[c], random8(0, (FIRE_COOLING * 10) / len + 2));
 	}
+	// 2. Hitze steigt auf: jede Zelle bekommt den Mittelwert der Zellen unter ihr
 	for (int c = len - 1; c >= 2; c--) {
 		heat[c] = (heat[c - 1] + heat[c - 2] + heat[c - 2]) / 3;
 	}
+	// 3. ab und zu zündet ganz unten ein neuer Funke
 	if (random8() < FIRE_SPARKING) {
 		int y = random8(7);
 		heat[y] = qadd8(heat[y], random8(160, 255));
 	}
-}	// [Seite][0 = unten .. LOOP_HALF = Kopf]
+}
 
+// Farbverlauf für blaues Feuer: von Schwarz (kalt) über Blau bis Weiß (heiß)
 const CRGBPalette16 outlineBlueFire_p = {
 	CRGB::Black,     CRGB::Black,       CRGB(0,0,50),     CRGB(0,0,110),
 	CRGB(0,0,180),   CRGB(0,50,210),    CRGB(0,100,240),  CRGB(0,170,255),
@@ -509,9 +582,9 @@ void progOutlineFire(unsigned int durationMillis, byte nextPart) {
 //=========== 8: Zone Beat =========================================
 //==================================================================
 
-static CRGB zoneCol[ZONE_COUNT];
-static uint8_t zoneVal[ZONE_COUNT];
-static uint32_t zoneLastBeat = 0;
+static CRGB zoneCol[ZONE_COUNT];	// aktuelle Farbe jeder Zone
+static uint8_t zoneVal[ZONE_COUNT];	// aktuelle Helligkeit jeder Zone (klingt nach dem Aufleuchten ab)
+static uint32_t zoneLastBeat = 0;	// letzter schon verarbeiteter Beat
 
 void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	if (fxPartStart(durationMillis, nextPart)) {
@@ -535,6 +608,7 @@ void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 				zoneVal[opp] = 255;
 			}
 		}
+		// alle Zonen klingen ab, aber nicht unter eine Grundhelligkeit von 25
 		for (int z = 0; z < ZONE_COUNT; z++) zoneVal[z] = max((uint8_t)25, scale8(zoneVal[z], 240));
 
 		for (int k = 0; k < anz_LEDs; k++) {
@@ -559,6 +633,7 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 		unsigned int period = 60000 / max((uint8_t)1, bpm);
 		unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 
+		// Ein Herzschlag sind zwei Schläge kurz hintereinander ("lub-dub"): der erste voll, der zweite etwas schwächer
 		int lub = 255 - (int)t * 255 / 150;
 		int dub = (t >= HEART_DUB_MS) ? 200 - (int)(t - HEART_DUB_MS) * 200 / 180 : 0;
 		uint8_t env = max(8, max(lub, dub));
@@ -600,7 +675,7 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 //=========== 10: Regenbogen im Raum ===============================
 //==================================================================
 
-static uint8_t rainbowOffset = 0;
+static uint8_t rainbowOffset = 0;	// verschiebt den Regenbogen pro Schritt um einen Farbton weiter
 
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating, unsigned int msPerStep) {
 	fxPartStart(durationMillis, nextPart);
@@ -626,13 +701,14 @@ void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotatin
 
 #define FUSE_BURN_MS	1500	// bis das Feuer einmal um die Gitarre gelaufen ist
 
+// Rechnet die Position am Gurt in die LED-Nummer um (je nachdem, an welchem Ende LED 0 sitzt)
 static uint16_t strapLed(int s) {	// s = 0 an der Schulter .. anz_LEDs_STRAP-1 an der Gitarre
 	return STRAP_IDX0_AT_GUITAR ? (anz_LEDs_STRAP - 1 - s) : s;
 }
 
 void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMillis) {
 	if (fxPartStart(durationMillis, nextPart)) fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
-	strapOverride = true;
+	strapOverride = true;	// der Gurt zeigt ab jetzt ledsStrap[] (bei jedem Durchlauf neu setzen; switchToPart() nimmt es zurück)
 
 	if (fxFrameDue(10)) {
 		unsigned int ms = millisCounterForProgChange;

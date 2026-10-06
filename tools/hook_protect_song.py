@@ -12,6 +12,8 @@ import json
 import re
 import sys
 
+# Die Suchmuster ("reguläre Ausdrücke"), an denen ein Schreibversuch erkannt wird.
+# NAME = einer der beiden geschützten Dateinamen, END = "hier endet das Argument" (Ende des Befehls oder ; & | )).
 NAME = r"(?:song\.yaml|struktur\.xlsx)"
 END = r"""["']?\s*($|[;&|)])"""
 WRITE_PATTERNS = [
@@ -25,6 +27,9 @@ WRITE_PATTERNS = [
 ]
 
 
+# Claude Code ruft dieses Skript vor jedem Werkzeug-Aufruf auf und übergibt die Beschreibung des Aufrufs als JSON
+# auf der Standardeingabe: welches Werkzeug (tool_name) mit welchen Angaben (tool_input).
+# Rückgabe 0 = erlaubt, 2 = blockiert.
 def main():
 	try:
 		data = json.load(sys.stdin)

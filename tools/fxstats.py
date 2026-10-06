@@ -18,15 +18,19 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+# Damit "import struktur" die Nachbardatei tools/struktur.py findet, egal von wo das Skript gestartet wird
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import struktur as st  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent		# Projektordner
 SONGS_DIR = ROOT / "songs"
+# Aus diesen Dateien werden die Parameternamen der Effekte gelesen. ACHTUNG: gesucht werden dort Zeilen der Form
+# "void progXyz(...);" - jede Deklaration muss deshalb in EINER Zeile stehen bleiben.
 HEADERS = [ROOT / "src" / n for n in ("FXprograms.h", "guitarShapeFX.h", "scenes.h")]
 OUT = ROOT / "docs" / "effekt-statistik.md"
 
 # Part-Typ aus dem Namen des Abschnitts; die erste passende Regel gilt
+# Je Zeile: (Typ, Suchmuster). Im Suchmuster trennt "|" Alternativen, "^" heißt "am Anfang des Namens".
 PART_TYPES = [
 	("solo", r"solo"),
 	("pause", r"^pause|^black$|klick"),
@@ -44,10 +48,12 @@ PART_TYPES = [
 OTHER = "textzeile"		# Abschnitte, die nach einer Textzeile/Hook benannt sind
 TYPE_ORDER = ["pause", "intro", "verse", "prechorus", "chorus", "bridge", "solo", "instrumental",
 			  "break", "uebergang", "akzent", "outro", OTHER]
+# Notenwerte in Beats, um Millisekunden-Angaben lesbar zu machen ("410 ms bei 146 BPM = 1 Beat")
 BEAT_FRACTIONS = [(0.125, "1/8 Beat"), (0.25, "1/4 Beat"), (0.5, "1/2 Beat"), (1, "1 Beat"), (2, "2 Beats"),
 				  (4, "1 Takt"), (8, "2 Takte"), (16, "4 Takte")]
 
 
+# Ordnet einen Part anhand seines Namens einem Typ zu ("Chorus 2" -> "chorus")
 def part_type(name):
 	n = name.lower()
 	for typ, pat in PART_TYPES:
@@ -118,6 +124,7 @@ def load_signatures():
 	return sigs
 
 
+# Zu einem Aufruf die passende Deklaration finden und die Namen der benutzten Parameter liefern.
 def param_names(sigs, fx, args):
 	# bei Überladungen mit gleicher Anzahl entscheidet, ob true/false auf einen bool-Parameter trifft
 	best, best_score = None, -1
@@ -172,16 +179,19 @@ def in_beats(value_ms, bpm):
 	return None
 
 
+# Eine Tabelle im Markdown-Format: Kopfzeile, Trennzeile, dann die Datenzeilen
 def table(header, rows):
 	out = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
 	out += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
 	return out
 
 
+# Die n häufigsten Einträge eines Zählers als Text: "chorus (45), intro (3)"
 def top(counter, n=4):
 	return ", ".join(f"{k} ({v})" for k, v in counter.most_common(n))
 
 
+# Baut den ganzen Bericht als Text zusammen (Liste von Zeilen L, am Ende zu einem Text verbunden).
 def report(parts, sigs):
 	L = []
 	songs = sorted({p["song"] for p in parts})
@@ -285,6 +295,7 @@ def report(parts, sigs):
 	return "\n".join(L) + "\n"
 
 
+# Hauptprogramm: Tabellen lesen, Bericht bauen, ausgeben oder nach docs/effekt-statistik.md schreiben.
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	ap.add_argument("--stdout", action="store_true", help="Bericht nur ausgeben, nichts schreiben")

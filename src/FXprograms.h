@@ -1,27 +1,32 @@
 /**
  * @file FXprograms.h
- * @brief Visual effects and animation programs for LED matrix
- * 
- * This file declares functions for various LED visual effects and animations.
- * These include color palettes, geometric patterns, text display, and
- * dynamic effects like blinking, strobing, and particle animations.
- * 
- * Effect Categories:
- * - Basic Effects: clear, blink, strobe
- * - Geometric Patterns: circles, lines, outlines, scanner
- * - Particle Effects: bling bling, stars, meteor shower
- * - Text Effects: static text, scrolling text, word arrays
- * - Palette Effects: color gradients, palette transitions
- * - Matrix Effects: horizontal/vertical scanning
- * 
- * Animation Control:
- * - Duration-based: Effects run for specified time in milliseconds
- * - Next Part: Automatic transition to next song part after effect
- * - Speed Control: Reduce speed parameter for timing control
- * - Color Control: RGB color parameters for custom colors
- * 
- * @note Most effects are time-limited and auto-transition
- * @see FXprograms.cpp for implementation
+ * @brief Die Effekt-Sammlung: alle "prog..."-Funktionen, die ein Song aufrufen kann
+ *
+ * Diese Datei ist das Inhaltsverzeichnis der Effekte. Wie die Effekte innen aufgebaut sind,
+ * ist am Anfang von FXprograms.cpp erklärt.
+ *
+ * So ruft ein Song einen Effekt auf (ein "case" = ein Part des Songs):
+ *
+ *   case 3: progStrobo(8000, 4, 120, 255, 0, 0); break;
+ *
+ * heißt: in Part 3 läuft 8000 ms lang ein rotes Strobo (120 ms an, 120 ms aus), danach folgt Part 4.
+ *
+ * Die ersten Parameter sind bei (fast) allen Effekten gleich:
+ *   durationMillis  Länge des Parts in Millisekunden
+ *   nextPart        Nummer des Parts, der danach folgt
+ * Dahinter kommen die Einstellungen des jeweiligen Effekts. Häufige Namen:
+ *   reduceSpeed / msToReduceSpeed / del   Wartezeit in ms zwischen zwei Schritten (größer = langsamer)
+ *   msForColorChange / msForChange        ms zwischen zwei Farb- bzw. Bildwechseln (oft die Länge eines Beats)
+ *   col (int)                             Farbe als 16-Bit-Wert aus colors.h (LED_RED_HIGH ...), für Text und Linien
+ *   CRGB                                  Farbe als CRGB(rot, gruen, blau), je 0..255
+ *
+ * Viele Effekte gibt es mehrfach mit gleichem Namen und unterschiedlich vielen Parametern: die kurzen
+ * Fassungen benutzen Vorgabewerte. "= 30" hinter einem Parameter ist ebenfalls ein Vorgabewert.
+ *
+ * Farben: Effekte, die "Zufallsfarben" verwenden, nehmen ihre Farben aus dem Farbschema des Parts,
+ * wenn eines gesetzt ist (colorSchemes.h).
+ *
+ * Welche Effekte sich bewährt haben, steht in docs/effekt-katalog.yaml.
  */
 
 #include <Arduino.h>
@@ -32,6 +37,7 @@
 //=========== FX programs ==========================================
 //==================================================================
 
+// (Auskommentiert: frühere Paletten-Definitionen. Die gültigen stehen in FXprograms.cpp.)
 // const TProgmemPalette16 myRedWhiteBluePalette_p =
 // {
 // 	CRGB::Red,
@@ -88,284 +94,133 @@
 // CRGB getMatrixColor(int index);
 //------------------------------------------------------------------
 
+//==================================================================
+//=========== Grundfunktionen ======================================
+//==================================================================
+
 /**
- * @brief Clear all LEDs to off state
- * 
- * Turns off all LEDs in the matrix by setting all colors to black.
- * 
- * Side Effects:
- * - Sets all LEDs to LED_BLACK
- * - Updates LED buffer immediately
- * 
- * @see FastLED.show()
+ * @brief Bild löschen: alle LEDs im Arbeitspuffer leds[] auf Schwarz
+ *
+ * Löscht nur den Puffer. Sichtbar wird das erst mit der nächsten Ausgabe (fxPresent()).
  */
 void clearAll();
 
 /**
- * @brief Set effect duration and next part transition
- * 
- * Configures the duration for the current effect and specifies which
- * part to transition to after completion.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @note Used internally by effect programs
- * @see TimerFunctions.cpp
+ * @brief Länge des Parts und Folge-Part festlegen, ohne einen Effekt zu starten
+ *
+ * Das ist der "Standard-Teil", den jeder Effekt beim ersten Aufruf in einem Part selbst erledigt,
+ * als eigene Funktion - für Song-Parts, die ihr Bild selbst malen statt einen Effekt aufzurufen.
+ * Wirkt nur beim ersten Aufruf im Part und löscht dabei das Bild.
  */
 void setDurationAndNextPart(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Low voltage warning blink effect
- * 
- * Displays a blinking warning pattern when battery voltage is low.
- * Blinks red LEDs at specified delay interval.
- * 
- * @param del Delay between blinks in milliseconds
- * 
- * Side Effects:
- * - Displays red warning pattern
- * - Blinks at specified interval
- * 
- * @see lipoVoltageCheck.cpp
+ * @brief Alte Akku-Warnung: eine rote LED blinkt im Abstand von del ms
+ *
+ * Die heutige Warnung steht in loop() (main.cpp); diese Funktion ist ein Überbleibsel.
  */
 void progBlinkLowVoltage(unsigned int del);
 
+//==================================================================
+//=========== Glitzern und Flächen =================================
+//==================================================================
+
 /**
- * @brief Meteor shower effect (shooting stars)
- * 
- * Creates a meteor shower animation with stars falling randomly
- * across the display. Stars fade out as they fall.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msToReduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Random star appearances at top
- * - Stars fall downward
- * - Trail effect as stars move
- * - Random star colors
- * 
- * @see progBlingBlingColoring()
+ * @brief Sternschnuppen
+ *
+ * Eine gelb-orange Leuchtspur (10 LEDs: heller Kopf, Schweif) wandert den Streifen entlang und
+ * verglüht. Alle 3 Sekunden startet an zufälliger Stelle eine neue.
+ *
+ * @param msToReduceSpeed ms je Schritt (größer = langsamer)
  */
 void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
 
 /**
- * @brief Bling bling coloring effect for song pause
- * 
- * Displays a dynamic coloring effect during song pause. LEDs
- * randomly turn on and off with the same color, changing
- * one color component periodically.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msToReduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Random LEDs turn on with same color
- * - Some LEDs randomly turn off
- * - Color components change periodically
- * - Continuous animation
- * 
- * @note Specifically for SONGPAUSE state
+ * @brief Ruhiges Glitzern für die Pause zwischen den Songs
+ *
+ * Alle msToReduceSpeed ms leuchtet eine zufällige LED in einer Zufallsfarbe auf und verglimmt
+ * langsam. Höchstens 50 LEDs glimmen gleichzeitig.
  */
 void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed);
 
 /**
- * @brief Bling bling coloring effect with speed control
- * 
- * LEDs randomly turn on and off with the same color. Every
- * few seconds, one of the three RGB color components is
- * randomly changed to create color shifting effects.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForColorChange Interval between color changes in milliseconds
- * @param msToReduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Random LED activation with same color
- * - Random LED deactivation
- * - Periodic color component changes
- * - Smooth color transitions
- * 
- * @see progBlingBlingColoringSONGPAUSE()
+ * @brief Das Gerät füllt sich langsam mit einer Farbe, die nach und nach in die nächste übergeht
+ *
+ * In jedem Schritt wird eine zufällige LED in der aktuellen Farbe eingeschaltet (und in einem von
+ * drei Fällen eine andere gelöscht). Nach msForColorChange ms ändert sich die Farbe: ohne Farbschema
+ * nur einer der drei Farbanteile, mit Farbschema kommt eine neue Schemafarbe.
+ *
+ * @param msForColorChange ms zwischen zwei Farbwechseln
+ * @param msToReduceSpeed  ms zwischen zwei neuen LEDs (Kurzform: 20)
  */
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed);
-
-/**
- * @brief Bling bling coloring effect (simplified)
- * 
- * Simplified version without speed reduction parameter.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForColorChange Interval between color changes in milliseconds
- * 
- * @see progBlingBlingColoring()
- */
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange);
 
 /**
- * @brief Fast bling bling effect with advanced control
- * 
- * Rapid LED activation effect with control over number of LEDs
- * to add and maximum LED count. Adds LEDs incrementally
- * with specified delay.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param anzahl Number of LED activation cycles
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param addLEDs Number of LEDs to add per cycle
- * @param maxLEDs Maximum number of LEDs to activate
- * @param delayForAddingLEDs Delay between LED additions in milliseconds
- * 
- * Visual Effect:
- * - Rapid LED activation
- * - Incremental LED addition
- * - Controlled LED count
- * - Random LED positions
- * 
- * @see progFastBlingBling()
+ * @brief Schnelles, nervöses Funkeln
+ *
+ * In jedem Bild leuchten "anzahl" zufällige LEDs in Zufallsfarben, im nächsten Bild andere.
+ * Der Effekt stellt die Gesamthelligkeit auf 255 (es leuchten nur wenige LEDs gleichzeitig).
+ *
+ * @param anzahl             Anzahl gleichzeitig leuchtender LEDs
+ * @param addLEDs            optional: so viele LEDs kommen bei jeder Steigerung dazu (0 = keine Steigerung)
+ * @param maxLEDs            Obergrenze für die Steigerung
+ * @param delayForAddingLEDs ms zwischen zwei Steigerungen
  */
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart, byte addLEDs, byte maxLEDs, unsigned int delayForAddingLEDs);
-
-/**
- * @brief Fast bling bling effect (simplified)
- * 
- * Simplified version using default parameters for LED addition
- * and maximum LED count.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param anzahl Number of LED activation cycles
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @see progFastBlingBling()
- */
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart);
 
 /**
- * @brief Full color sweep effect
- * 
- * Sweeps through all colors in the color spectrum across
- * the entire LED matrix. Creates a rainbow-like wave effect.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param del Delay between color changes in milliseconds
- * 
- * Visual Effect:
- * - Full spectrum color sweep
- * - Smooth color transitions
- * - Entire matrix affected
- * - Continuous wave animation
+ * @brief Alle LEDs in derselben Zufallsfarbe, alle del ms eine neue Farbe
+ *
+ * @param del ms zwischen zwei Farbwechseln (z.B. die Länge eines Beats)
  */
 void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del);
 
 /**
- * @brief Strobe effect with custom color
- * 
- * Rapid on/off flashing (strobe) effect with specified RGB
- * color. Creates high-frequency flashing animation.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param del Delay between flashes in milliseconds
- * @param red Red component (0-255)
- * @param green Green component (0-255)
- * @param blue Blue component (0-255)
- * 
- * Visual Effect:
- * - Rapid on/off flashing
- * - Custom RGB color
- * - High contrast animation
- * - Attention-grabbing
- * 
- * @note Use caution with epilepsy-inducing content
+ * @brief Strobo: alle LEDs blitzen im Wechsel an und aus
+ *
+ * @param del             ms je Phase (del ms an, del ms aus)
+ * @param red,green,blue  Farbe der hellen Phase (je 0..255) - oder als CRGB in der zweiten Fassung
+ * @param invertPhase     true = beginnt mit der anderen Phase; so blitzen zwei Geräte abwechselnd
  */
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue, bool invertPhase = false);
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, CRGB col, bool invertPhase = false);	// z.B. mit getRandomCRGB()
 
-/**
- * @brief Matrix scanner effect with speed control
- * 
- * Creates a scanning line effect across the matrix, similar
- * to classic sci-fi scanners. Line moves horizontally or
- * vertically depending on configuration.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Scanning line across matrix
- * - Smooth movement
- * - Single row/column illuminated
- * - Continuous scanning
- * 
- * @see progMatrixScanner()
- */
-void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
+//==================================================================
+//=========== Figuren (zeichnen über x/y) ==========================
+//==================================================================
+// Auf den LED-Flächen ergeben sie echte Figuren; auf Gitarre, Bass und Lampen wirken sie als bewegte Muster.
 
 /**
- * @brief Matrix scanner effect (simplified)
- * 
- * Simplified version using default speed.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @see progMatrixScanner()
+ * @brief Scanner: ein senkrechter Lichtbalken (rot-weiß-rot) fährt über die Fläche hin und her
+ *
+ * @param reduceSpeed ms je Schritt (Kurzform: 0 = so schnell wie möglich)
  */
+void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
 void progMatrixScanner(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Starburst/Star pattern with color change and speed control
- * 
- * Displays an animated star pattern that changes colors over time.
- * Stars pulse and rotate with specified timing.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param msForColorChange Interval between color changes in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Animated star pattern
- * - Color transitions
- * - Pulsing animation
- * - Rotating elements
- * 
- * @see progStern()
+ * @brief Drehender Stern aus Linien durch die Mitte (alte Fassung mit fest einprogrammierten Stellungen)
+ *
+ * @param msForColorChange ms zwischen zwei Farbwechseln (0 = kein Farbwechsel)
+ * @param reduceSpeed      ms je Drehschritt
+ *
+ * ACHTUNG: Reihenfolge der Parameter - bei der langen Fassung steht msForColorChange VOR nextPart.
  */
 void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed);
-
-/**
- * @brief Starburst/Star pattern with speed control
- * 
- * Simplified version with default color change interval.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * @see progStern()
- */
 void progStern(unsigned int durationMillis, unsigned char nextPart, unsigned char reduceSpeed);
-
-/**
- * @brief Starburst/Star pattern (simplified)
- * 
- * Simplified version using default speed.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @see progStern()
- */
 void progStern(unsigned int durationMillis, unsigned char nextPart);
 
+/**
+ * @brief Drehender Stern, neue Fassung (mit Sinus/Kosinus berechnet)
+ *
+ * @param msForColorChange ms zwischen zwei Farbwechseln (0 = keiner)
+ * @param reduceSpeed      ms je Drehschritt
+ * @param cx, cy           Mitte des Sterns (ohne Angabe: Mitte der Fläche)
+ * @param wander           true = die Mitte wandert in einer geschwungenen Bahn über die Fläche
+ * @param numArms          Anzahl der Linien (2 = Kreuz mit 4 Zacken, 3 = 6 Zacken ...)
+ */
 // Trig-basierte Version: sin/cos-Berechnung, variable Mitte, opt. Lissajous-Wanderung
 // numArms = Anzahl Arm-Paare (2 = Kreuz/X, 3 = 6-zackig, ...)
 void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed);
@@ -374,305 +229,110 @@ void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, un
 void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed, int cx, int cy, bool wander, byte numArms);
 
 /**
- * @brief Black screen effect
- * 
- * Turns off all LEDs for specified duration. Creates a pause
- * or blackout effect between animations.
- * 
- * @param durationMillis Duration of black screen in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * Visual Effect:
- * - All LEDs off
- * - Complete blackout
- * - Silent pause
- * 
- * @see clearAll()
+ * @brief Dunkel: alle LEDs aus für die Dauer des Parts (Pausen, Stopps). Die Bund-Marker leuchten weiter.
  */
 void progBlack(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Expanding circles effect with clear option
- * 
- * Creates expanding circle patterns from center or random positions.
- * Circles grow outward and fade.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForChange Interval between circle creations in milliseconds
- * @param clearEach If true, clear display between circles
- * 
- * Visual Effect:
- * - Expanding circles
- * - Centered or random origin
- * - Fading as they expand
- * - Optional clear between circles
- * 
- * @see progCircles()
+ * @brief Kreise: alle msForChange ms ein gefüllter Kreis an zufälliger Stelle, in zufälliger Größe und Farbe
+ *
+ * @param clearEach true (Kurzform) = vorher löschen, es ist immer nur ein Kreis zu sehen;
+ *                  false = die Kreise überlagern sich, auch schwarze Kreise kommen vor
  */
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
-
-/**
- * @brief Expanding circles effect (simplified)
- * 
- * Simplified version without clear option.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForChange Interval between circle creations in milliseconds
- * 
- * @see progCircles()
- */
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange);
 
 /**
- * @brief Random lines effect with clear option
- * 
- * Draws random lines across the matrix. Lines appear at
- * random positions with random colors and angles.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForChange Interval between line drawings in milliseconds
- * @param clearEach If true, clear display between lines
- * 
- * Visual Effect:
- * - Random line positions
- * - Random line angles
- * - Random line colors
- * - Optional clear between lines
- * 
- * @see progRandomLines()
+ * @brief Zufallslinien: alle msForChange ms ein neuer, 3 Pixel breiter Balken von oben nach unten
+ *
+ * Anfang (oberer Rand) und Ende (unterer Rand) werden jedes Mal neu ausgewürfelt.
+ *
+ * @param clearEach wie bei progCircles
  */
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
-
-/**
- * @brief Random lines effect (simplified)
- * 
- * Simplified version without clear option.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param msForChange Interval between line drawings in milliseconds
- * 
- * @see progRandomLines()
- */
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange);
 
 /**
- * @brief Moving lines effect with speed control
- * 
- * Creates moving line patterns that travel across the matrix.
- * Lines move horizontally or vertically.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Moving line patterns
- * - Horizontal or vertical movement
- * - Continuous animation
- * - Multiple lines possible
- * 
- * @see progMovingLines()
+ * @brief Wandernde Linie: eine Linie in wechselnder Zufallsfarbe schwenkt wie ein Scheibenwischer über die Fläche
+ *
+ * @param reduceSpeed ms je Schritt (Kurzform: 0)
  */
 void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
-
-/**
- * @brief Moving lines effect (simplified)
- * 
- * Simplified version using default speed.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @see progMovingLines()
- */
 void progMovingLines(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Outline/border effect with speed control
- * 
- * Creates a moving outline around the matrix border. The outline
- * traces the perimeter with a trail effect.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Perimeter tracing
- * - Trail effect
- * - Border animation
- * - Continuous movement
- * 
- * @see progOutline()
+ * @brief Rahmen: ein Rahmen wächst von innen nach außen und wieder zurück (nur für die LED-Flächen)
+ *
+ * Die LEDs der einzelnen Rahmen stehen als feste Listen in FXprograms.cpp (outlinePath1..9).
+ *
+ * @param reduceSpeed ms je Schritt (Kurzform: 0)
  */
 void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed);
-
-/**
- * @brief Outline/border effect (simplified)
- * 
- * Simplified version using default speed.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * @see progOutline()
- */
 void progOutline(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Running pixel effect
- * 
- * Creates a single running pixel that moves across the matrix
- * in a pattern (snake-like or random walk).
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * Visual Effect:
- * - Single pixel movement
- * - Snake-like pattern
- * - Trail effect
- * 
- * @note Currently marked as TODO: needs fixing
+ * @brief Test: ein roter Punkt läuft über alle Pixel der Fläche
+ *
+ * ACHTUNG: blockiert das Programm, solange der Punkt läuft. Nur zum Testen der Verdrahtung, nicht in Songs.
  */
 void progRunningPixel(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Test range effect
- * 
- * Tests LED range by illuminating LEDs sequentially from
- * start to end. Used for verifying LED connectivity
- * and identifying defective LEDs.
- * 
- * @param durationMillis Duration of test in milliseconds
- * @param nextPart Part ID to transition to after test (0-255)
- * 
- * Visual Effect:
- * - Sequential LED illumination
- * - Single LED at a time
- * - Covers full range
- * 
- * @note Useful for hardware testing
+ * @brief Test: alle LEDs des Geräts (0 .. anz_LEDs-1) leuchten in einer festen Farbe
+ *
+ * Zeigt, ob anz_LEDs in definitions.h stimmt und alle LEDs funktionieren.
  */
 void progTestRange(unsigned int durationMillis, byte nextPart);
 
+//==================================================================
+//=========== Text (nur auf den LED-Flächen lesbar) ================
+//==================================================================
+// Ein Zeichen ist 6 Pixel breit (5 + 1 Abstand) und 8 hoch.
+
 /**
- * @brief Display static text
- * 
- * Displays static text at specified position on the matrix.
- * Text remains visible for duration.
- * 
- * @param words Text string to display
- * @param durationMillis Duration of display in milliseconds
- * @param pos_x X position for text (pixels)
- * @param pos_y Y position for text (pixels)
- * @param col Color index or RGB565 color value
- * @param nextPart Part ID to transition to after display (0-255)
- * 
- * Visual Effect:
- * - Static text display
- * - Custom position
- * - Custom color
- * - Non-scrolling
- * 
- * @note Requires font support
- * @see progScrollText()
+ * @brief Stehender Text an fester Stelle
+ *
+ * @param words        der Text
+ * @param pos_x, pos_y linke obere Ecke des Texts in Pixeln
+ * @param col          Farbe als 16-Bit-Wert (colors.h)
  */
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart);
 
 /**
- * @brief Display scrolling text
- * 
- * Displays scrolling text that moves horizontally across the
- * matrix. Text scrolls from right to left.
- * 
- * @param words Text string to display
- * @param durationMillis Duration of display in milliseconds
- * @param delay Delay between scroll steps in milliseconds
- * @param col Color index or RGB565 color value
- * @param nextPart Part ID to transition to after display (0-255)
- * 
- * Visual Effect:
- * - Horizontal scrolling
- * - Right to left movement
- * - Custom color
- * - Continuous loop
- * 
- * @note Requires font support
- * @see progShowText()
+ * @brief Lauftext von rechts nach links; ist er durchgelaufen, beginnt er von vorn
+ *
+ * @param delay ms je Pixel-Schritt (kleiner = schneller)
+ * @param col   Farbe als 16-Bit-Wert (colors.h)
  */
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart);
 
 /**
- * @brief Display root note positions
- * 
- * Shows current song's root note positions on the fretboard.
- * Highlights relevant fret positions for the current song.
- * 
- * @param durationMillis Duration of display in milliseconds
- * @param nextPart Part ID to transition to after display (0-255)
- * 
- * Visual Effect:
- * - Fret position highlighting
- * - Song-specific patterns
- * - Root note indicators
- * 
- * @see markerLEDs.cpp
+ * @brief Zeigt die Buchstaben "RooTs" verteilt in Zufallsfarben (alter Aufruf, ruft progShowLettersSpread auf)
  */
 void progShowROOTS(unsigned int durationMillis, byte nextPart);
 // Buchstaben gleichmäßig verteilt, jeder in Zufallsfarbe — generische Version von progShowROOTS
+// msDelay = ms, nach denen die Buchstaben neu (in neuen Farben, leicht verwackelt) gezeichnet werden
 void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPart, unsigned int msDelay = 500);
 
 /**
- * @brief Display word array
- * 
- * Displays a sequence of words, each shown for a specified
- * duration. Useful for displaying lyrics or announcements.
- * 
- * @param words Array of text strings to display
- * @param anzWords Number of words in array
- * @param msPerWord Duration to display each word in milliseconds
- * @param durationMillis Total duration of effect in milliseconds
- * @param col Color index or RGB565 color value
- * @param nextPart Part ID to transition to after display (0-255)
- * 
- * Visual Effect:
- * - Sequential word display
- * - Timed transitions
- * - Custom color
- * - Word-by-word presentation
- * 
- * @note Useful for lyrics or announcements
+ * @brief Wörter einer Liste nacheinander zeigen (z.B. eine Textzeile im Rhythmus)
+ *
+ * @param words     Liste der Wörter
+ * @param anzWords  Anzahl der Wörter in der Liste
+ * @param msPerWord so lange bleibt jedes Wort stehen
+ * @param col       Farbe als 16-Bit-Wert (colors.h)
  */
 void progWordArray(String words[], int anzWords, int msPerWord, unsigned int durationMillis, int col, byte nextPart);
 
 /**
- * @brief Blink text effect
- * 
- * Displays text that blinks on and off at a regular interval.
- * Creates attention-grabbing effect for important messages.
- * 
- * @param words Text string to display
- * @param durationMillis Duration of effect in milliseconds
- * @param col Color index or RGB565 color value
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * Visual Effect:
- * - Text blinking
- * - On/off cycle
- * - Custom color
- * - Attention-grabbing
- * 
- * @see progShowText()
+ * @brief Blinkender, mittig gesetzter Text in einer Zufallsfarbe
+ *
+ * @param blinkMs ms je Phase (blinkMs an, blinkMs aus)
  */
 void progBlinkText(String words, unsigned int durationMillis, byte nextPart, unsigned int blinkMs = 300);
 
 /**
- * @brief Text für den text:-Schlüssel der Song-YAMLs (tools/songgen.py), nur Matrix-Geräte
+ * @brief Text für den text:-Schlüssel der show.yaml generierter Songs (tools/songgen.py), nur Matrix-Geräte
  *
  * progText: ein oder mehrere Wörter (durch Leerzeichen getrennt), pro msPerWord das nächste, automatisch
  * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext.
@@ -682,118 +342,47 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart, uns
 void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col = CRGB::Black);
 void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col = CRGB::Black);
 
+//==================================================================
+//=========== Paletten (Farbverläufe) ==============================
+//==================================================================
+// Eine Palette ist ein Farbverlauf aus 16 Stützfarben. Der Paletten-Effekt legt ihn über den LED-Streifen
+// und schiebt ihn mit der Zeit weiter.
+
 /**
- * @brief Set up current color palette
- * 
- * Initializes the current color palette for palette-based
- * effects. Loads palette configuration from predefined
- * palettes.
- * 
- * Side Effects:
- * - Sets currentPalette variable
- * - Prepares palette for use
- * 
- * @see SetupTotallyRandomPalette()
- * @see SetupBlackAndWhiteStripedPalette()
- * @see SetupPurpleAndGreenPalette()
+ * @brief Start-Palette beim Einschalten setzen (Regenbogen, weiche Übergänge). Aufruf einmal aus setup().
  */
 void setupCurrentPalette();
 
-/**
- * @brief Create totally random color palette
- * 
- * Fills palette with completely random colors. Each of the
- * 16 palette entries gets a random RGB color.
- * 
- * Side Effects:
- * - Modifies currentPalette
- * - All entries randomized
- * 
- * @note Creates chaotic, vibrant color schemes
- * @see setupCurrentPalette()
- */
+/** @brief Die aktuelle Palette mit 16 Zufallsfarben füllen (mit aktivem Farbschema: Farben aus dem Schema) */
 void SetupTotallyRandomPalette();
 
-/**
- * @brief Create black and white striped palette
- * 
- * Sets up a palette with alternating black and white stripes.
- * Creates high-contrast pattern effect.
- * 
- * Side Effects:
- * - Modifies currentPalette
- * - Black/white pattern
- * 
- * @note High contrast, no colors
- * @see setupCurrentPalette()
- */
+/** @brief Die aktuelle Palette auf schwarz-weiße Streifen setzen (jede vierte Stützfarbe weiß) */
 void SetupBlackAndWhiteStripedPalette();
 
-/**
- * @brief Create purple and green striped palette
- * 
- * Sets up a palette with alternating purple and green stripes.
- * Creates complementary color pattern effect.
- * 
- * Side Effects:
- * - Modifies currentPalette
- * - Purple/green pattern
- * 
- * @note Complementary color scheme
- * @see setupCurrentPalette()
- */
+/** @brief Die aktuelle Palette auf grün-lila Streifen mit schwarzen Lücken setzen */
 void SetupPurpleAndGreenPalette();
 
 /**
- * @brief Fill LEDs from palette colors with speed control
- * 
- * Fills all LEDs with colors from the current palette.
- * Colors cycle through palette at specified speed.
- * 
- * @param colorInd Starting color index in palette (0-15)
- * @param speed Color cycling speed (larger = faster)
- * 
- * Visual Effect:
- * - Palette-based colors
- * - Color cycling
- * - All LEDs affected
- * - Smooth transitions
- * 
- * @see FillLEDsFromPaletteColors()
- * @see progPalette()
+ * @brief Den Verlauf der aktuellen Palette über alle LEDs legen (Hilfsfunktion von progPalette)
+ *
+ * @param colorInd Stelle im Verlauf (0..255) für die erste LED
+ * @param speed    um so viel rückt die Stelle von LED zu LED weiter: größer = der Verlauf wiederholt
+ *                 sich öfter auf dem Streifen (Kurzform: 3)
  */
 void FillLEDsFromPaletteColors(uint8_t colorInd, char speed);
-
-/**
- * @brief Fill LEDs from palette colors (simplified)
- * 
- * Simplified version using default cycling speed.
- * 
- * @param colorInd Starting color index in palette (0-15)
- * 
- * @see FillLEDsFromPaletteColors()
- */
 void FillLEDsFromPaletteColors(uint8_t colorInd);
 
 /**
- * @brief Palette cycling effect
- * 
- * Displays a palette-based color cycling effect. Colors
- * transition smoothly through the palette entries.
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param paletteID Palette ID to use (0-2)
- *   - 0: Totally random
- *   - 1: Black and white striped
- *   - 2: Purple and green striped
- * @param nextPart Part ID to transition to after effect (0-255)
- * 
- * Visual Effect:
- * - Smooth color transitions
- * - Palette-based colors
- * - Continuous cycling
- * 
- * @see FillLEDsFromPaletteColors()
+ * @brief Paletten-Effekt: ein Farbverlauf wandert über den Streifen
+ *
+ * @param paletteID wählt den Verlauf:
+ *    0 Regenbogen, weich                    6 schwarz/weiß, weich
+ *    1 Regenbogen-Streifen, harte Kanten    7 Wolken (blau/weiß), weich
+ *    2 Regenbogen-Streifen, weich           8 Party (blau/lila/rot/orange), weich
+ *    3 grün/lila, weich                     9 rot/weiß/blau, harte Kanten
+ *    4 Zufallsfarben, weich                10 rot/weiß/blau, weich
+ *    5 schwarz/weiß, harte Kanten          11 Grüntöne ("Matrix"), weich
+ *   20 (PALETTE_SCHEME) Verlauf aus den Farben des aktiven Farbschemas
  */
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
 
@@ -806,23 +395,17 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
  */
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, unsigned int cycleMillis, uint8_t blend = PAL_BLEND_AUTO);
 
+//==================================================================
+//=========== "Matrix"-Regen (wie im gleichnamigen Film) ===========
+//==================================================================
+
 /**
- * @brief Horizontal matrix scan effect with speed control
- * 
- * Creates a horizontal scanning effect where rows light up
- * sequentially from top to bottom (or reverse).
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Horizontal row scanning
- * - Top to bottom movement
- * - Sequential row illumination
- * - Continuous cycle
- * 
- * @see progMatrixHorizontal()
+ * @brief Matrix-Regen, alte Fassung: Leuchtspuren mit Schweif laufen in jeder zweiten Spalte
+ *
+ * @param reduceSpeed    ms je Schritt (Kurzformen: 100)
+ * @param baseColor      Grundfarbe der Spuren (Kurzform ohne Farbe: Grün)
+ * @param useRandomColor Fassung mit wechselnder Farbe: bei jedem neuen Umlauf eine neue Farbe
+ *                       (der Wert selbst wird nicht ausgewertet - schon die Angabe wählt diese Fassung)
  */
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor);
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
@@ -830,22 +413,7 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, boolean us
 void progMatrixHorizontal(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Vertical matrix scan effect with speed control
- * 
- * Creates a vertical scanning effect where columns light up
- * sequentially from left to right (or reverse).
- * 
- * @param durationMillis Duration of effect in milliseconds
- * @param nextPart Part ID to transition to after effect (0-255)
- * @param reduceSpeed Speed reduction factor (larger = slower)
- * 
- * Visual Effect:
- * - Vertical column scanning
- * - Left to right movement
- * - Sequential column illumination
- * - Continuous cycle
- * 
- * @see progMatrixVertical()
+ * @brief Wie progMatrixHorizontal, nur laufen die Spuren quer in jeder zweiten Zeile (derzeit in keinem Song benutzt)
  */
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor = CRGB::Green);
 void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, boolean useRandomColor);
@@ -854,10 +422,17 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart);
 
 // Matrix-Film-Regen: unabhängige Streams pro Spalte/Zeile mit zufälliger Phase, Farbe und Pause
 // maxActive=0 → alle Streams gleichzeitig aktiv; >0 → max. N gleichzeitige Streams
+// Mit baseColor: alle Spuren in dieser Farbe; ohne Farbangabe: jede Spur in eigener Zufallsfarbe.
 void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor, byte maxActive = 0);
 void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte maxActive = 0);
 
+//==================================================================
+//=========== Effekte für die LED-Flächen ==========================
+//==================================================================
+// reduceSpeed ist überall die Wartezeit in ms zwischen zwei Schritten.
+
 // Feuer-Effekt: Hitzediffusion von unten nach oben, FastLED HeatColor-Palette
+// Feste Flammen nebeneinander, die auf der unteren Kante stehen. blueFire = blaue statt rote Flammen.
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, bool blueFire);
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
 void progFire(unsigned int durationMillis, byte nextPart);
@@ -867,25 +442,35 @@ void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceS
 void progPlasma(unsigned int durationMillis, byte nextPart);
 
 // Sternenhimmel / Warp: Sterne fliegen aus dem Zentrum heraus
+// numStars = Anzahl der Sterne (höchstens 40, Vorgabe 25)
 void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars);
 void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 20);
 void progStarfield(unsigned int durationMillis, byte nextPart);
 
 // Lissajous-Figuren: animierte parametrische Kurven mit Fading-Trail
+// (eine geschwungene Schleife in Regenbogenfarben, die sich langsam dreht und eine Leuchtspur zieht)
 void progLissajous(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 25);
 void progLissajous(unsigned int durationMillis, byte nextPart);
 
 // Sinus/Kosinus Kurven animiert, je eigene Farbe
+// cycles = Anzahl der Wellenberge auf der Breite der Fläche
 void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, float cycles, CRGB sinColor, CRGB cosColor);
 void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 40);
 void progSineCos(unsigned int durationMillis, byte nextPart);
 
 // Equalizer: Balken von unten, 5px breit + 1px Lücke, grün→gelb→orange→rot, pro Band konfigurierbarer Mittelwert
+// Es wird kein Ton gemessen: die Balken tanzen zufällig. centers = Liste der mittleren Höhen je Balken (Pixel),
+// numCenters = Länge der Liste, deviation = so weit schwankt ein Balken um seine mittlere Höhe.
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, const uint8_t* centers, byte numCenters, byte deviation);
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 50);
 void progEqualizer(unsigned int durationMillis, byte nextPart);
 
 // 2D Wasseroberflächen-Effekt: expandierende Wellenringe wie ein Stein ins Wasser
+//   baseColor (CRGB)    alle Wellen in dieser Farbe
+//   useGradient (bool)  ohne Farbangabe: jede Welle in eigener Farbe; true = zusätzlich Regenbogen-Verlauf
+//                       mit dem Abstand von der Mitte
+// HINWEIS: die beiden Fassungen ganz ohne Farbe und ohne true/false zeigen nichts (sie verwenden Schwarz) -
+// immer eine Farbe oder true/false angeben.
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient);
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor);
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, bool useGradient);

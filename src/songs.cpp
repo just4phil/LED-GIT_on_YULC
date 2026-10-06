@@ -23,6 +23,55 @@ extern byte songID; // 0 -> default loop
 extern volatile byte prog;							// the actual song-part
 //----------------------------
 
+//=====================================================================
+// songs.cpp - die handgeschriebenen Songs
+//=====================================================================
+// Jede Funktion ist die Lichtshow zu einem Song. So ist eine Song-Funktion aufgebaut:
+//
+//   void MeinSong() {
+//       switch (prog) {                                // prog = Nummer des laufenden Parts
+//
+//       case 0:  // Pause vor dem Einsatz
+//           progBlack(5650, 5);                        // 5650 ms dunkel, danach weiter mit Part 5
+//           break;
+//       case 5:  // Intro
+//           progPalette(6235, 8, 10);                  // 6235 ms Farbverlauf Nr. 8, danach Part 10
+//           break;
+//       ...
+//       case 110:                                      // Ende des Songs
+//           clearAll();
+//           switchToSong(0);                           // zurück in die Pause (Song 0)
+//           break;
+//       }
+//   }
+//
+// So liest man das:
+//   - Ein "case" ist ein Songteil (Part). Die Nummern sind frei gewählt (meist in 5er-Schritten, damit man später
+//     etwas dazwischenschieben kann) - es zählt nur, welcher Part als "nächster" angegeben ist.
+//   - In jedem case steht EIN Effekt-Aufruf: prog...(Dauer in ms, nächster Part, Einstellungen des Effekts).
+//     Was die Effekte tun und was ihre Parameter bedeuten: FXprograms.h, guitarShapeFX.h, scenes.h.
+//   - Die Song-Funktion wird bei jedem Durchlauf von loop() erneut aufgerufen, nicht nur einmal. Der Effekt
+//     merkt sich beim ersten Aufruf Dauer und Folge-Part; ist die Dauer um, schaltet loop() auf den Folge-Part
+//     (switchToPart) und beim nächsten Aufruf landet das switch im neuen case. Eine Schleife gibt es hier nicht.
+//   - Die Dauern sind aus Tempo und Taktzahl des Songs berechnet und müssen zur Musik passen: auf ihnen beruht
+//     der Gleichlauf aller Geräte, denn jedes Gerät zählt die Zeit für sich. Der Start kommt per MIDI.
+//   - Der Kommentar hinter "case" nennt den Songteil ("verse 1", "chorus 2" ...), oft mit der Dauer in ms.
+//
+// Besonderheiten, die in mehreren Songs vorkommen:
+//   - if (LEDGITBOARD) { ... } else { ... }   Die LED-Fläche (Scrollmatrix) zeigt an dieser Stelle etwas anderes
+//     als die Streifen-Geräte, meist einen Lauftext. Wichtig: beide Zweige müssen zusammen gleich lang dauern,
+//     sonst laufen die Geräte danach auseinander (daher die "sync"-Hinweise in den Kommentaren).
+//   - #ifdef GIT / #ifdef BASS / #if defined(LAMPE1) ...   Dieser Teil gilt nur für das genannte Gerät.
+//   - markerLED4 = ESaite_Fis;   Ein Bund-Marker wird mitten im Song ein- oder ausgeschaltet (0 = aus), z.B. für
+//     ein Solo oder einen Tonartwechsel. Die Grundmarker je Song stehen in markerLEDs.cpp.
+//   - Vorspann-Funktionen (Trailer/Intro) setzen am Ende songID direkt und rufen switchToPart() auf, statt
+//     switchToSong(): so springen sie hinter das Intro des eigentlichen Songs, und die Marker bleiben an.
+//   - Auskommentierte Zeilen in einem case (//progStern(...)) sind frühere Fassungen dieses Parts.
+//
+// Neue Songs entstehen nicht mehr hier, sondern werden generiert (songs_generated.cpp, tools/songgen.py).
+// Ein generierter Song ersetzt den alten nur im Aufruf in main.cpp; der alte Code bleibt hier stehen.
+
+//--- Merkzettel: getestete Effekt-Aufrufe zum Kopieren (alles auskommentiert) -------------------------
 
 		//progSternschnuppen(50000, 2, 20);			// OK
 		//progBlingBlingColoringSONGPAUSE			// OK
@@ -147,6 +196,13 @@ extern volatile byte prog;							// the actual song-part
 //matrixMovieFX(5000, 14, 100, 5);
 
 
+//==================================================================
+//=========== Grundzustände ========================================
+//==================================================================
+
+// #99 - Startbild. HINWEIS: die folgende Zeile vor dem switch ist ein Test-Aufruf, der noch stehen geblieben ist.
+// Er läuft bei jedem Durchlauf zuerst und legt damit Dauer (20 s) und Folge-Part (10) fest; das progBlack in
+// case 0 kommt deshalb nicht mehr zum Zug, und einen case 10 gibt es nicht.
 void STARTUP()  {	// BLACK bis zum Start des Intros
 progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
  	switch (prog) { 
@@ -166,9 +222,11 @@ progSternNeu(20000, 600, 10, 5, 26, 5, true, 3);
 // int randomProg = 0;
 
 
+// #0 - Pause zwischen den Songs: ruhiges Glitzern. Die Lampen bekommen seltener neue Lichtpunkte (alle 2000 ms
+// statt alle 250 ms), weil sie weniger LEDs haben. case 100 startet Song 0 neu -> Dauerschleife.
 void SONGPAUSE()  {	// soft / static LEDs
-	
-	switch (prog) { 
+
+	switch (prog) {
 
 	case 0:
 		// randomProg	= random(1, 3);
@@ -294,6 +352,7 @@ void SONGPAUSE_ohne_switchToSong0()  {	// soft / static LEDs
 // 24 enjoyTheSilenceINTRO();
 
 //#0
+// (Song-ID 100) Bunter Dauerlauf durch viele Effekte, jeder etwa 10 Sekunden.
 void defaultLoop()  {
 
  	switch (prog) { 
@@ -464,7 +523,12 @@ void defaultLoop()  {
 
 
 
+//==================================================================
+//=========== Songs ================================================
+//==================================================================
+
 // #1 PhysicalMitTrailer(); // FERTIG! am 12.08.2023
+// Vorspann: während des Einspielers dunkel (LED-Fläche: Lauftexte), dann direkt in Song 2 hinter dessen Intro.
 void PhysicalTrailer() {
 		
 	switch (prog) {
@@ -501,9 +565,11 @@ void PhysicalTrailer() {
 		// switch to the real song PHYSICAL
 		//switchToSong(2);	// we dont use this, because it turns off the MarkerLEDs
 
+		// songID wird hier von Hand gesetzt statt über switchToSong(2): switchToSong würde die Bund-Marker löschen
+		// und bei Part 0 beginnen.
 		//--- start song ----// we go there directly
 		songID = 2;			// this is PHYSICAL
-		switchToPart(40);	// but we have to jump over the Intro directly to part 30!
+		switchToPart(40);	// but we have to jump over the Intro directly to part 30! (Einsprung ist heute Part 40: das Strobo vor dem ersten Refrain)
 		break;
 	}
 }
@@ -4058,8 +4124,13 @@ void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 //-----------
 
 
+//==================================================================
+//=========== Demos ================================================
+//==================================================================
+
 //#90
-//==== DEMO: neue Effekte aus guitarShapeFX (Songwahl per MIDI CC#0 = 90 oder START_WITH_FX_DEMO) ====
+//==== DEMO: neue Effekte aus guitarShapeFX (Songwahl per MIDI: Kanal 10, CC 22, Wert 90 - oder START_WITH_FX_DEMO) ====
+// Zeigt jeden Kontur-Effekt nacheinander für 8 bis 12 Sekunden. Kompakte Schreibweise: ein Part je Zeile.
 void neueEffekteDemo() {
 
 	switch (prog) {
@@ -4088,7 +4159,9 @@ void neueEffekteDemo() {
 }
 
 //#91
-//==== DEMO: Szenen + Farbschemata auf allen Geräten (Songwahl per MIDI CC#0 = 91 oder START_WITH_SCENE_DEMO) ====
+//==== DEMO: Szenen + Farbschemata auf allen Geräten (Songwahl per MIDI: Kanal 10, CC 22, Wert 91 - oder START_WITH_SCENE_DEMO) ====
+// Je Zeile: erst das Farbschema des Parts setzen, dann die Szene aufrufen (Szene, Dauer in ms, Folge-Part, Tempo).
+// So sieht auch ein Part in einem generierten Song aus.
 void szenenDemo() {
 
 	const uint8_t bpm = 120;
@@ -4130,13 +4203,17 @@ void szenenDemo() {
 }
 
 //#92
-//==== DEMO: Ausgabestufe - alle Übergänge, Modifikatoren und Ebenen-Modi (Songwahl per MIDI CC#0 = 92 oder START_WITH_PIPELINE_DEMO) ====
+//==== DEMO: Ausgabestufe - alle Übergänge, Modifikatoren und Ebenen-Modi (Songwahl per MIDI: Kanal 10, CC 22, Wert 92 - oder START_WITH_PIPELINE_DEMO) ====
+// Je Part werden VOR dem Effekt die Bausteine der Ausgabestufe angemeldet (fx...-Aufrufe, erklärt in fxPipeline.h);
+// der Effekt bzw. die Szene am Zeilenende malt dann das Bild, auf das sie wirken.
 // Unten läuft fast immer das Farbband (SCENE_PALETTE): es leuchtet durchgehend, so sieht man den Baustein und nicht die Szene.
 // Vor jedem noch nicht abgenommenen Part steht 3 s lang seine Nummer auf der Matrix (Part DEMO_NR(n) zeigt die Nummer n
 // und springt dann in Part n). Worauf bei welcher Nummer zu achten ist: docs/LED-Effekte-und-Szenen.html, Abschnitt 8.
 #define DEMO_NR_BASE	110
 #define DEMO_NR(part)	(DEMO_NR_BASE + (part))
 
+// Zeigt 3 Sekunden lang die Part-Nummer auf der Matrix (andere Geräte: dunkel) und springt dann in diesen Part.
+// "[[maybe_unused]]" unterdrückt nur die Compiler-Warnung, falls die Funktion gerade nirgends benutzt wird.
 [[maybe_unused]] static void demoNumber(byte part) {
 #if DEVICE_CLASS == CLASS_MATRIX
 	static char nr[4];

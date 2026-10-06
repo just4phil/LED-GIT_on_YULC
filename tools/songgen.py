@@ -42,6 +42,41 @@ import yaml
 import markers as mk
 import struktur as st
 
+#==================================================================
+# Wie dieses Programm arbeitet (Überblick zum Lesen des Codes)
+#==================================================================
+# Es ist ein "Code-Generator": ein Python-Programm, das C++-Quelltext als Text zusammenbaut. Der Weg eines Songs:
+#
+#   struktur.xlsx  --(struktur.py: read_table)-->  Song-Dictionary mit den Abschnitten (Name, Takte, Tempo, Energie)
+#   show.yaml      --(merge_show)--------------->  dieselben Abschnitte, ergänzt um die Gestaltung (scene, scheme ...)
+#        |
+#        v   build_timeline():  aus Takten und Tempo werden Millisekunden; jeder Abschnitt bekommt eine
+#        |                      case-Nummer, eine Startzeit und eine Dauer  -> die "Timeline" (Liste von Parts)
+#        v   validate():        prüft alles (unbekannte Szenen, Tippfehler in Schlüsseln, kollidierende Song-IDs ...)
+#        v   gen_function():    schreibt je Part einen "case" mit den passenden Aufrufen -> C++-Text der Song-Funktion
+#        |
+#   songs/<Song>/generated.cpp   ("Fragment": der Code dieses einen Songs + Kopfzeilen //@id, //@function ...)
+#        |
+#        v   assemble():        setzt die Fragmente ALLER Songs zu src/songs_generated.cpp/.h zusammen und trägt
+#                               die Aufrufe in den switch (songID) von src/main.cpp ein
+#
+# Begriffe:
+#   Abschnitt (section)   eine Zeile der Tabelle (Intro, Verse 1 ...)
+#   Part                  ein "case" im erzeugten Code. Meist 1 Abschnitt = 1 Part; ein Abschnitt mit "tail:"
+#                         wird in zwei Parts geteilt (Hauptteil + Schluss)
+#   Dictionary (dict)     Nachschlagetabelle Name -> Wert, z.B. sec["name"], sec.get("scene"). ".get()" liefert
+#                         None statt eines Fehlers, wenn der Name fehlt.
+#   f"..."                Text mit eingesetzten Werten: f"case {nr}:" wird zu "case 25:"
+#   Schlüssel mit "_"     (song["_dir"], song["_notes"] ...) sind interne Notizen des Generators, sie kommen
+#                         nicht aus Tabelle oder show.yaml
+#   ${dur}, ${next} ...   Platzhalter in fx:-Angaben der show.yaml; fill() setzt die Werte des Parts ein
+#
+# WICHTIG: Der Generator liest auch C++-Quelltext als Text (Suchmuster): die Namen der Szenen und Effekte aus
+# den Headern in src/, MATRIX_WIDTH aus definitions.h, den switch (songID) in main.cpp und Sprünge in songs.cpp.
+# Wer dort Zeilen umbaut (z.B. eine Deklaration auf mehrere Zeilen verteilt), muss hier nachsehen, ob die
+# Suchmuster noch passen (matrix_widths, known_functions, enum_names, main_cases, trailer_jumps).
+
+# --- Ordner und Dateinamen ---
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 SONGS_DIR = ROOT / "songs"
@@ -60,13 +95,16 @@ VERSION_FILES = (TABLE_FILE, SHOW_FILE, GEN_FILE)	# so heißen sie im Versions-O
 MARK_BEGIN = "// >>> GENERATED SONGS (tools/songgen.py) >>>"	# dahinter kommen die cases neuer Song-IDs
 TAG = "// <<< GENERATED SONGS <<<"							# hängt an jedem generierten Aufruf in main.cpp
 SONGS_CPP = SRC / "songs.cpp"
+# Suchmuster für main.cpp: eine Zeile, die nur aus einem Funktionsaufruf besteht ("\t\t\tPhysical();") bzw. ein
+# solcher Aufruf auskommentiert ("//BillyJean();" - der alte Aufruf über einem generierten)
 CALL_RE = re.compile(r"^(\s*)(\w+)\(\);")
 OLD_CALL_RE = re.compile(r"^\s*//\s*(\w+)\(\);")
 
 SCROLL_DEVICES = ("SCROLLMATRIX", "GITBOARD")	# zeigen am Songanfang Titel + Interpret als Lauftext
 SCROLL_MAX_WAIT_MS = 4000	# so lange darf die Matrix vor dem Lauftext schwarz bleiben, damit er genau an einer Grenze endet
-BLACK = "progBlack(${dur}, ${next})"
-MAX_PART_MS = 0xFFFFFFFF
+BLACK = "progBlack(${dur}, ${next})"	# Aufruf für "alles dunkel", mit Platzhaltern für Dauer und Folge-Part
+MAX_PART_MS = 0xFFFFFFFF				# längste Dauer, die in die Zeitzähler der Firmware passt
+# Hat ein Abschnitt in der show.yaml keine Szene, wird sie aus der Energie der Tabelle gewählt (0 = dunkel)
 ENERGY_SCENE = {1: "SCENE_CALM", 2: "SCENE_VERSE", 3: "SCENE_BUILDUP", 4: "SCENE_DROP", 5: "SCENE_DROP"}
 
 # text: eines Parts - die Matrix-Geräte zeigen Text (progText/progTextScroll), alle anderen spielen ihre Szene weiter
@@ -105,6 +143,8 @@ DEVICE_KEYS = {
 }
 
 
+# Eigene Fehlerart: alles, was an Tabelle oder show.yaml nicht stimmt. main() fängt sie ab und zeigt nur die
+# Meldung - der User soll eine verständliche Zeile sehen, keinen Programmabsturz.
 class SongError(Exception):
 	pass
 
@@ -125,6 +165,7 @@ def section_beats(sec, song):
 	raise SongError(f"Abschnitt '{sec.get('name')}' braucht 'bars' oder 'beats'")
 
 
+# Tempo eines Abschnitts: sein eigenes ("BPM pro Part"), sonst das Tempo des Songs
 def section_bpm(sec, song):
 	return float(sec.get("bpm", song["bpm"]))
 
@@ -142,9 +183,11 @@ def midi_offset_ms(song):
 		whole = 0.0
 	else:
 		raise SongError(f"midi_offset '{v}' bitte als Notenwert angeben, z. B. 1/8")
+	# Rechenweg: ein Beat (Viertel) dauert 60000 / bpm ms, ein ganzer Takt (4/4) viermal so lang.
 	return whole * 4 * 60000.0 / section_bpm(song["sections"][0], song)
 
 
+# Der Offset als Text für Kommentare und die Timeline-Ausgabe ("1/8 = 246 ms")
 def offset_text(song):
 	ms = midi_offset_ms(song)
 	return f"{song['midi_offset']} = {ms:.0f} ms" if "midi_offset" in song and "midi_offset_ms" not in song else f"{ms:.0f} ms"
@@ -189,6 +232,11 @@ def expand_parts(song):
 	return parts, times[-1]
 
 
+# Die Timeline: für jeden Part case-Nummer, Folge-case, Startzeit und Dauer in ms.
+# Kern der Genauigkeit: Es werden zuerst alle Grenzen als ABSOLUTE Zeit seit Songbeginn berechnet (mit
+# Nachkommastellen) und erst dann gerundet; die Dauer eines Parts ist die Differenz zweier gerundeter Grenzen.
+# Würde man stattdessen jede Dauer einzeln runden, summierten sich die Rundungsfehler über den Song.
+# Rückgabe: (Liste der Parts, case-Nummer des Schlusses "zurück zu Song 0").
 def build_timeline(song):
 	parts, song_end = expand_parts(song)
 	offset = midi_offset_ms(song)
@@ -212,6 +260,8 @@ def build_timeline(song):
 
 	ms = [round(b) for b in bounds]
 	n = len(secs)
+	# case-Nummern in 5er-Schritten (0, 5, 10 ...). prog ist in der Firmware ein Byte (höchstens 255): bei sehr
+	# vielen Parts wird der Schritt auf 4 oder 3 verkleinert.
 	step = 5
 	while step > 3 and (n + 1) * step > 255:	# >= 3, damit case 1/2 für den Lauftext frei sind
 		step -= 1
@@ -234,6 +284,8 @@ def build_timeline(song):
 #=========== Code erzeugen ========================================
 #==================================================================
 
+# Setzt in einer fx:-Angabe die Platzhalter ein: ${dur} Dauer des Parts, ${next} Folge-case, ${bpm} Tempo,
+# ${beat} / ${half} / ${bar} Länge von 1 Beat / 2 Beats / 1 Takt in ms. Ergebnis endet immer mit ";".
 def fill(expr, part, song):
 	bpm = part["bpm"]
 	beat = 60000.0 / bpm
@@ -250,6 +302,8 @@ def fill(expr, part, song):
 	return out.rstrip(";") + ";"
 
 
+# Der Aufruf, den ein Part auf allen Geräten ohne eigene Angabe bekommt. Rangfolge: fx: (wörtlicher Aufruf)
+# vor scene: vor der Szene aus der Energie.
 def default_call(part, song):
 	sec = part["sec"]
 	if "fx" in sec:
@@ -274,6 +328,7 @@ def per_beats(per, sec, song):
 	return beats
 
 
+# fade: darf kurz ("fade: complement") oder ausführlich ({to: ..., per: ...}) geschrieben sein - hier vereinheitlicht
 def fade_spec(sec):
 	spec = sec.get("fade")
 	return spec if isinstance(spec, dict) else {"to": spec}
@@ -689,10 +744,12 @@ def text_layer_code(part, song):
 	return pre, [f"#if {guard}", "\t\tfxLayerFlush();", "#endif"]
 
 
+# Millisekunden als Zeit im Song: 81393 -> "1:21.393"
 def fmt_time(ms):
 	return f"{ms // 60000}:{(ms // 1000) % 60:02d}.{ms % 1000:03d}"
 
 
+# Länge eines Abschnitts als Text für den Kommentar am case: "8 T" (Takte), "8 T+2 B" (Takte + Beats)
 def section_length_text(sec, song):
 	if "bars" in sec:
 		return f"{sec['bars']} T" + (f"+{sec['beats']} B" if "beats" in sec else "")
@@ -710,6 +767,7 @@ def matrix_widths():
 	return {"SCROLLMATRIX": int(m.group(1)), "GITBOARD": int(m.group(2))}
 
 
+# Der Lauftext am Songanfang: "Titel by Interpret" (oder scroll_title aus der show.yaml)
 def scroll_title(song):
 	return song.get("scroll_title") or (song["name"] + (f" by {song['artist']}" if song.get("artist") else ""))
 
@@ -876,6 +934,10 @@ def scroll_code(song, device, plan):
 	return head, extra
 
 
+# Schreibt die C++-Funktion des Songs. Alles wird als Liste von Textzeilen gesammelt ("lines") und am Ende mit
+# Zeilenumbrüchen verbunden. "\t" ist ein Tabulator (Einrückung), "{{" ergibt in einem f"..."-Text eine "{".
+# Aufbau je Part: case-Zeile mit Kommentar -> Farbschema -> Ausgabestufe (fx...) -> Ebenen-Beginn ->
+# Aufruf (ggf. je Gerät verschieden über #if/#elif/#else) -> Ebenen-Ende -> break.
 def gen_function(song, timeline, end_case):
 	fn = song["function"]
 	lines = []
@@ -954,10 +1016,14 @@ def gen_function(song, timeline, end_case):
 #=========== Prüfen ===============================================
 #==================================================================
 
+# Alle Namen mit einem bestimmten Anfang aus einer Header-Datei sammeln, z.B. alle SCENE_... aus scenes.h.
+# So kennt der Generator die gültigen Szenen und Farbschemata, ohne dass man sie hier doppelt pflegen muss.
 def enum_names(path, prefix):
 	return set(re.findall(r"\b(" + prefix + r"[A-Z0-9_]+)\b", path.read_text(encoding="utf-8", errors="ignore")))
 
 
+# Die Namen aller in den Headern deklarierten Funktionen: damit wird geprüft, ob ein fx:-Aufruf in der
+# show.yaml einen Effekt nennt, den es wirklich gibt.
 def known_functions():
 	names = set()
 	for h in ["FXprograms.h", "guitarShapeFX.h", "scenes.h", "matrixFunctions.h", "functions.h", "colorSchemes.h"]:
@@ -985,6 +1051,7 @@ def main_cases(lines):
 	return cases
 
 
+# main.cpp als Liste von Zeilen
 def main_lines():
 	return MAIN_CPP.read_text(encoding="utf-8").split("\n")
 
@@ -1101,6 +1168,8 @@ def trailer_jumps(song_id):
 	return out
 
 
+# Prüft den ganzen Song und sammelt ALLE Fehler in einer Liste (statt beim ersten abzubrechen), damit der User
+# alles auf einmal korrigieren kann. Eine leere Liste heißt: der Song kann generiert werden.
 def validate(song, timeline):
 	scenes = enum_names(SRC / "scenes.h", "SCENE_")
 	schemes = enum_names(SRC / "colorSchemes.h", "SCHEME_")
@@ -1178,6 +1247,7 @@ def validate(song, timeline):
 #=========== Dateien schreiben ====================================
 #==================================================================
 
+# Macht aus dem Songtitel einen gültigen Funktionsnamen: "Girls just wanna have fun" -> "GirlsJustWannaHaveFun"
 def pascal(name):
 	return "".join(w[:1].upper() + w[1:] for w in re.split(r"[^A-Za-z0-9]+", name) if w)
 
@@ -1237,6 +1307,7 @@ def force_black_start(song):
 #=========== Song-Ordner ==========================================
 #==================================================================
 
+# Alle Song-Ordner unter songs/
 def song_dirs():
 	return sorted(d for d in SONGS_DIR.iterdir() if d.is_dir())
 
@@ -1258,6 +1329,7 @@ def table_path(song_dir):
 	return direct if direct.is_file() else song_dir / TABLE_DIR / TABLE_FILE
 
 
+# Tabelle lesen; Fehler der Tabelle (TableError) werden als SongError weitergereicht, mit dem Dateinamen davor
 def read_table(path, label=None):
 	try:
 		return st.read_table(path)
@@ -1363,6 +1435,17 @@ def generate(song, others):
 #=========== Fragment (generated.cpp je Song) =====================
 #==================================================================
 
+#==================================================================
+#=========== Fragmente (songs/<Song>/generated.cpp) ===============
+#==================================================================
+# Ein Fragment ist der erzeugte Code EINES Songs, mit einigen Kopfzeilen, die mit "//@" beginnen:
+#   //@id, //@function, //@name       wer der Song ist
+#   //@struktur_sha, //@show_sha      Fingerabdrücke von Tabelle und show.yaml zum Zeitpunkt der Generierung -
+#                                     daran erkennt "songgen.py" (Liste), ob seitdem etwas geändert wurde
+#   //@part <Konstante> <case>        Part-Nummern für songs_generated.h
+#   //@code ... //@markers ...        der Code der Song-Funktion und die Zeilen für die Bund-Marker
+# Weil jeder Song sein Fragment behält, lässt sich src/ jederzeit neu zusammensetzen, ohne die anderen Songs
+# neu zu generieren - ihr Code bleibt Zeichen für Zeichen, wie er war.
 FRAG_HEAD = "// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern (Quelle: struktur.xlsx + show.yaml)"
 
 
@@ -1371,16 +1454,19 @@ def norm_text(path):
 	return path.read_bytes().replace(b"\r\n", b"\n") if path.exists() else None
 
 
+# Fingerabdruck ("Hash") einer Datei; "-" wenn sie fehlt
 def sha(path):
 	data = norm_text(path)
 	return hashlib.sha256(data).hexdigest() if data is not None else "-"
 
 
+# Textdatei schreiben, immer mit Unix-Zeilenenden (LF) - so ändert sich eine erzeugte Datei nicht je nach Rechner
 def write_lf(path, text):
 	with open(path, "w", encoding="utf-8", newline="\n") as f:
 		f.write(text)
 
 
+# Den Text eines Fragments zusammenbauen (Kopfzeilen + Code + Marker)
 def fragment_text(song, code, marker_lines, song_dir):
 	head = [FRAG_HEAD, f"//@id {song['id']}", f"//@function {song['function']}", f"//@name {song['name']}",
 			f"//@struktur_sha {song['_table_sha']}", f"//@show_sha {sha(song_dir / SHOW_FILE)}"]
@@ -1388,6 +1474,7 @@ def fragment_text(song, code, marker_lines, song_dir):
 	return "\n".join(head) + "\n" + code + "\n//@markers\n" + "".join(l + "\n" for l in marker_lines)
 
 
+# Ein Fragment wieder einlesen und in seine Teile zerlegen
 def read_fragment(path):
 	text = path.read_text(encoding="utf-8")
 	m = re.match(r"(.*?)\n//@code\n(.*)\n//@markers\n(.*)\Z", text, re.S)
@@ -1401,6 +1488,7 @@ def read_fragment(path):
 			"dir": path.parent.name}
 
 
+# Die Fragmente aller Songs (optional ohne einen bestimmten Ordner)
 def fragments(skip=None):
 	return [read_fragment(d / GEN_FILE) for d in song_dirs() if d != skip and (d / GEN_FILE).exists()]
 
@@ -1414,11 +1502,17 @@ def is_current(song_dir, frag):
 #=========== Versionen ============================================
 #==================================================================
 
+# Bei jeder Generierung wird der Stand eines Songs (Tabelle + show.yaml + Code) in einen Ordner
+# versionen/<Datum_Uhrzeit>/ kopiert. --restore holt einen solchen Stand 1:1 zurück.
+
+# Die Versions-Ordner eines Songs, älteste zuerst
 def versions(song_dir):
 	v = song_dir / VERSIONS_DIR
 	return sorted(d for d in v.iterdir() if d.is_dir()) if v.exists() else []
 
 
+# Git-Stand des Werkzeugs für info.yaml: so lässt sich später nachvollziehen, mit welcher Fassung von
+# Generator und Firmware-Quellen eine Version entstanden ist
 def git_state():
 	try:
 		run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True, timeout=10).stdout.strip()
@@ -1507,6 +1601,7 @@ def gen_markers(marker_cases):
 	return "\n".join(lines)
 
 
+# Datei nur schreiben, wenn sich ihr Inhalt wirklich ändert - sonst würde PlatformIO sie unnötig neu übersetzen
 def write_if_changed(path, text):
 	if not path.exists() or path.read_text(encoding="utf-8") != text:
 		path.write_text(text, encoding="utf-8")
@@ -1555,11 +1650,14 @@ def assemble():
 	return frags
 
 
+# --- Ausgaben auf der Konsole ---
 def print_assembled(frags):
 	print(f"\nsrc/songs_generated.cpp/.h + main.cpp: {len(frags)} Song(s) - "
 		  + (", ".join(f"#{f['id']} {f['name']}" for f in frags) or "keine"))
 
 
+# Die Timeline als Tabelle: je Part case-Nummer, Startzeit, Dauer und Name, dazu Lauftext, Texte, Ebenen,
+# Ausgabestufe, Hinweise und Marker. Das ist die Ausgabe von --dry-run.
 def print_timeline(song, timeline):
 	print(f"\n#{song['id']} {song['name']}  ({song['function']}, {song['bpm']} BPM, midi_offset {offset_text(song)})")
 	print(f"  {'case':>4}  {'start':>9}  {'dauer':>6}  abschnitt")
@@ -1593,6 +1691,10 @@ def print_timeline(song, timeline):
 #=========== Kommandos ============================================
 #==================================================================
 
+# Je Kommando der Befehlszeile eine Funktion. Rückgabe 0 = in Ordnung, 1 = Fehler (wird zum Rückgabewert
+# des Programms).
+
+# ohne Argument: alle Songs und ihren Stand auflisten
 def cmd_list():
 	print("Songs unter songs/ (generieren: songgen.py <Song>):\n")
 	for d in song_dirs():
@@ -1613,6 +1715,7 @@ def cmd_list():
 	return 0
 
 
+# <Song>: laden, prüfen, Code erzeugen, Fragment + Version speichern, src/ neu zusammensetzen
 def cmd_generate(song_dir, dry_run, note):
 	song = load_song(song_dir)
 	timeline, code, marker_lines, errors = generate(song, fragments(skip=song_dir))
@@ -1643,6 +1746,7 @@ def cmd_generate(song_dir, dry_run, note):
 	return 0
 
 
+# <Song> --versions: die gespeicherten Versionen auflisten
 def cmd_versions(song_dir):
 	vs = versions(song_dir)
 	if not vs:
@@ -1659,6 +1763,9 @@ def cmd_versions(song_dir):
 	return 0
 
 
+# <Song> --restore <Version>: eine Version wieder aktiv machen. Der bisherige Stand wird vorher selbst als
+# Version gesichert, es geht also nichts verloren. Dies ist (neben --neu) die einzige Stelle, an der das
+# Werkzeug eine struktur.xlsx schreibt - und zwar die eigene, früher gespeicherte Fassung des Users.
 def cmd_restore(song_dir, version):
 	hit = [v for v in versions(song_dir) if v.name == version] or [v for v in versions(song_dir) if v.name.startswith(version)]
 	if len(hit) != 1:
@@ -1723,6 +1830,7 @@ def cmd_new(name):
 	return 0
 
 
+# Hauptprogramm: Befehlszeile auswerten und das passende Kommando ausführen
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	ap.add_argument("song", nargs="?", help="Ordnername unter songs/ (Anfang genügt)")

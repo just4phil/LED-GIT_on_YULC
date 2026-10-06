@@ -1,5 +1,5 @@
 """
-markers.py - Bund-Marker-LEDs für generierte Songs (genutzt von sheet2song.py und songgen.py)
+markers.py - Bund-Marker-LEDs für generierte Songs (Bibliothek für songgen.py, kein eigenes Kommando)
 
 Regeln (vom User):
 - Marker = Grundtöne der Akkorde (nach transpose), jeweils auf E- UND A-Saite; eine LED pro Bund,
@@ -10,24 +10,37 @@ Regeln (vom User):
 SCHUTZ: Marker, die der User gesetzt oder akzeptiert hat, werden NIE geändert:
 - hat markerLEDs.cpp (setMarkerLEDs) einen case für die Song-ID, gewinnt immer diese Handarbeit,
   es wird weder vorgeschlagen noch generiert;
-- ein markers:-Block in der Song-YAML wird von keinem Tool verändert (sheet2song übernimmt ihn wörtlich).
+- ein markers:-Block in der show.yaml eines Songs wird von keinem Tool verändert.
+
+Was diese Datei tut: Sie prüft den markers:-Block der show.yaml (validate) und erzeugt daraus C++-Code - den case
+für setGeneratedMarkerLEDs() in src/songs_generated.cpp (gen_case) und, für Marker, die nur in einzelnen Parts
+gelten, Zeilen für den Anfang der Song-Funktion (inline_code). Die Markernamen (ESaite_G ...) sind dieselben wie
+in src/definitions.h.
+
+propose() und yaml_block() stammen aus dem früheren Akkord-Import (sheet2song.py, entfernt) und werden von
+songgen.py nicht mehr aufgerufen.
 """
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-MARKER_CPP = ROOT / "src" / "markerLEDs.cpp"
+ROOT = Path(__file__).resolve().parent.parent		# Projektordner (eine Ebene über tools/)
+MARKER_CPP = ROOT / "src" / "markerLEDs.cpp"		# hier stehen die von Hand gesetzten Marker der alten Songs
 MAX_MARKERS = 7				# markerLED1..markerLED7
 SKIP_FRETS = {0, 5, 12}		# Leersaite + 5./12. Bund (blaue LEDs)
 
+# Die Markernamen in der Reihenfolge der Bünde: Platz 0 = Leersaite, Platz 1 = 1. Bund usw.
+# E_NAMES benennt die Bünde nach dem Ton auf der E-Saite, A_NAMES nach dem Ton auf der A-Saite.
 E_NAMES = ["ESaite_E", "ESaite_F", "ESaite_Fis", "ESaite_G", "ESaite_Gis", "ESaite_A", "ESaite_Bb", "ESaite_B",
 		   "ESaite_C", "ESaite_Cis", "ESaite_D", "ESaite_Dis", "ESaite_E_hoch", "ESaite_F_hoch", "ESaite_Fis_hoch", "ESaite_G_hoch"]
 A_NAMES = ["ASaite_A", "ASaite_Bb", "ASaite_B", "ASaite_C", "ASaite_Cis", "ASaite_D", "ASaite_Dis", "ASaite_E",
 		   "ASaite_F", "ASaite_Fis", "ASaite_G", "ASaite_Gis", "ASaite_A_hoch", "ASaite_Bb_hoch", "ASaite_B_hoch", "ASaite_C_hoch"]
+# Nachschlagetabelle Markername -> Bundnummer (für beide Saiten zusammen); dient auch als Liste aller gültigen Namen
 FRET = {n: i for i, n in enumerate(E_NAMES)} | {n: i for i, n in enumerate(A_NAMES)}
-E_ROOT, A_ROOT = 4, 9		# Tonhöhe der Leersaiten (E, A)
+E_ROOT, A_ROOT = 4, 9		# Tonhöhe der Leersaiten (E, A) als Halbtonschritte über C (C = 0, Cis = 1 ... H = 11)
 
 
+# Liest src/markerLEDs.cpp als Text und sucht mit einem Suchmuster die "case <Nummer>:" in setMarkerLEDs().
+# Kommentare werden vorher entfernt, damit auskommentierte cases nicht mitzählen.
 def handwritten_ids():
 	"""Song-IDs mit von Hand gesetzten Markern (case im switch von setMarkerLEDs)."""
 	text = MARKER_CPP.read_text(encoding="utf-8", errors="ignore")
@@ -46,6 +59,7 @@ def handwritten_slots(song_id):
 	return {int(x) for x in re.findall(r"markerLED(\d)\s*=", c.group(1))} if c else set()
 
 
+# "Slot" = einer der sieben Marker-Plätze markerLED1..markerLED7.
 def slot_parts(markers):
 	"""[(abschnitt, instrument, slot, name)] aller Slot-Angaben ({slot: Name}) in markers.parts."""
 	out = []
@@ -81,6 +95,7 @@ def inline_code(markers, part_cases, base_slots):
 	return lines
 
 
+# (nicht mehr benutzt, siehe Dateikopf)
 def propose(chord_counts):
 	"""Marker aus Akkord-Grundtönen. chord_counts: {(root, quality): Anzahl halber Takte im Song}.
 	Liefert (Markernamen nach Häufigkeit, Hinweise)."""
@@ -104,6 +119,8 @@ def propose(chord_counts):
 	return [v[1] for _f, v in sorted(order, key=lambda kv: kv[0])], notes
 
 
+# Prüft den markers:-Block auf Tippfehler: unbekannte Schlüssel, unbekannte Markernamen, zu viele Marker,
+# Parts, die es im Song nicht gibt. Eine leere Liste heißt: alles in Ordnung.
 def validate(markers, part_names):
 	"""Fehlerliste für einen markers:-Block."""
 	errs = []
@@ -140,6 +157,7 @@ def validate(markers, part_names):
 	return errs
 
 
+# "all" gilt für Gitarre und Bass; "guitar" bzw. "bass" ersetzen es für das jeweilige Instrument.
 def resolve(s, fallback):
 	"""(guitar, bass) aus einem Satz all/guitar/bass, fehlende Angaben aus fallback."""
 	allv = s.get("all")
@@ -148,6 +166,7 @@ def resolve(s, fallback):
 	return list(g or []), list(b or [])
 
 
+# C++-Zeilen "markerLED1 = ...;" bis "markerLED7 = ...;" - nicht belegte Plätze werden ausdrücklich auf 0 gesetzt
 def assign_lines(names, indent):
 	vals = list(names) + ["0"] * (MAX_MARKERS - len(names))
 	return [f"{indent}markerLED{i + 1} = {v};" for i, v in enumerate(vals)]
@@ -192,6 +211,7 @@ def gen_case(song_id, markers, part_cases):
 	return lines
 
 
+# (nicht mehr benutzt, siehe Dateikopf)
 def yaml_block(names, notes, chords_text):
 	"""markers:-Block (Vorschlag) für die Song-YAML."""
 	lines = [

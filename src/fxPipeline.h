@@ -23,6 +23,18 @@
  *
  * Alles rechnet aus der Zeit seit Part-Beginn -> läuft auf allen Geräten gleich, unabhängig von der LED-Zahl.
  * switchToPart() setzt Übergang und Modifikatoren zurück; ohne Anmeldung verhält sich ein Part wie bisher.
+ *
+ * Kleines Wörterbuch für diese Datei:
+ *   Part          Abschnitt eines Songs (ein "case" in der Song-Funktion)
+ *   anmelden      eine fx...-Funktion aufrufen; sie merkt sich nur die Werte, gerechnet wird erst in fxPresent()
+ *   Modifikator   verändert das fertige Bild als Ganzes (heller/dunkler, pumpen, färben, ausschneiden)
+ *   Übergang      Blende vom letzten Bild des alten Parts ins Bild des neuen
+ *   Ebene         ein zweiter Effekt, der gleichzeitig läuft und über den ersten gemischt wird
+ *   bpm           Tempo des Songs in Schlägen ("Beats") pro Minute; ein Beat dauert 60000 / bpm Millisekunden
+ *   0..255        Stärken und Helligkeiten sind ein Byte: 255 = voll, 0 = nichts (uint8_t = Zahl 0..255)
+ *   "= 255" hinter einem Parameter: Vorgabewert; der Parameter darf beim Aufruf weggelassen werden
+ *
+ * Wie es innen funktioniert, ist in fxPipeline.cpp erklärt.
  */
 #pragma once
 
@@ -93,7 +105,7 @@ enum FxTransition : uint8_t {
 	TRANS_STAGE_OUT,	// … von der Mitte (Drums) nach außen
 	TRANS_DISSOLVE,		// Pixel kippen einzeln um
 };
-void fxTransition(uint8_t type, unsigned int durationMillis);
+void fxTransition(uint8_t type, unsigned int durationMillis);	// type = einer der TRANS_...-Werte, durationMillis = Dauer ab Part-Beginn
 
 //--- Modifikatoren: wirken auf das fertige Bild des laufenden Effekts ---
 void fxFadeIn(unsigned int millis);				// Helligkeit steigt am Part-Anfang von 0 an

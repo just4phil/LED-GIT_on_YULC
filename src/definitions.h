@@ -3,38 +3,44 @@
 
 /**
  * @file definitions.h
- * @brief Global configuration and hardware-specific definitions
- * 
- * This file contains all compile-time configuration options, hardware pin
- * assignments, LED matrix parameters, BLE device addresses, and instrument-
- * specific settings for the LED-GIT project.
- * 
- * Configuration Structure:
- * - Hardware Platform (ESP32/Teensy) - Selected via PlatformIO build flags
- * - LED Device Type - Choose exactly one device type
- * - Features - Per-device feature configuration
- * - Pin Assignments - GPIO pin mappings per device
- * - LED Matrix - Dimensions, type, and configuration
- * - Instrument Markers - Fret position LED mappings per instrument
- * - BLE Configuration - Server UUIDs and client MAC addresses
- * 
- * Device Types:
- * - ANDRESGIT: Guitar LED system with MIDI input
- * - RINASBASS: Bass LED system with BLE client
- * - LAMPE1/LAMPE2: Standalone lamp devices
- * - SCROLLMATRIX: Folding matrix display
- * - GITBOARD: Teensy-based guitar board
- * 
- * Features:
- * - HAS_MIDI_IN: MIDI CC input for song/part control
- * - IS_MIDI_PROXY: BLE server broadcasting to clients
- * - HAS_ROTARY_ENCODER: Manual song selection via knob
- * - HAS_LIPOVOLTAGE_CHECK: Battery voltage monitoring
- * - IS_BLE_CLIENT: Receive sync from BLE proxy
- * 
- * @note All definitions are compile-time constants
- * @note Select device type by uncommenting exactly ONE LED-DEVICE definition
- * @note Features are configured per-device in the device sections below
+ * @brief Alle Einstellungen des Projekts an einer Stelle
+ *
+ * Dieselbe Firmware läuft auf allen Geräten. Diese Datei legt beim Übersetzen ("Kompilieren") fest, für
+ * WELCHES Gerät gebaut wird und was dieses Gerät hat: Anschlüsse (Pins), Zahl der LEDs, Marker, Funkrolle.
+ *
+ * So liest man die Datei:
+ *   #define NAME          legt einen Schalter um ("NAME ist gesetzt") - ohne Wert
+ *   #define NAME 42       gibt einem Namen einen festen Wert; der Compiler ersetzt überall NAME durch 42
+ *   //#define NAME        auskommentiert = nicht gesetzt
+ *   #ifdef NAME ... #endif        der Teil dazwischen wird nur übersetzt, wenn NAME gesetzt ist
+ *   #if defined(A) ... #elif defined(B) ... #else ... #endif   Auswahl aus mehreren Fällen
+ * Das alles passiert VOR dem eigentlichen Übersetzen; im fertigen Programm kostet es weder Zeit noch Speicher.
+ *
+ * Aufbau der Datei:
+ *   1. Gerät wählen (genau eines)
+ *   2. je Gerät: was es kann (Features)
+ *   3. je Gerät: Name, Platz auf der Bühne, Bauart
+ *   4. Debug-Schalter
+ *   5. Pins und Grundhelligkeit
+ *   6. Größe der Matrix, Zahl der LEDs
+ *   7. Bluetooth-Kennungen und -Adressen
+ *   8. LED-Nummern der Bünde (Marker) je Instrument, Geometrie der Gitarre
+ *   9. Einstellungen der LED-Ausgabe
+ *
+ * Geräte:
+ *   ANDRESGIT     Gitarre: bekommt MIDI, ist der Bluetooth-Sender ("Proxy") für alle anderen
+ *   RINASBASS     Bass: Bluetooth-Empfänger ("Client")
+ *   LAMPE1/2      Lampen links und rechts: Bluetooth-Empfänger
+ *   SCROLLMATRIX  LED-Fläche an den Drums (54 x 10): Bluetooth-Empfänger
+ *   GITBOARD      altes Board mit Teensy 4.0 (wird nicht mehr gebaut)
+ *
+ * Features (werden vom Gerät gesetzt, nicht von Hand):
+ *   HAS_MIDI_IN            MIDI-Eingang vorhanden (Funk-MIDI-Modul WIDI CORE)
+ *   IS_MIDI_PROXY          gibt Song/Part per Bluetooth an die Clients weiter
+ *   IS_BLE_CLIENT          bekommt Song/Part per Bluetooth vom Proxy
+ *   HAS_ROTARY_ENCODER     Drehknopf zur Song-Wahl vorhanden
+ *   HAS_LIPOVOLTAGE_CHECK  Akkuspannung wird überwacht
+ *   NOMARKER               Gerät hat keine Bund-Marker (Lampen, Matrix)
  */
 
 //====== DEFINES ========================================================================
@@ -72,6 +78,7 @@
 //========================================================================================
 
 //------ GERÄTE -------------
+// Je Gerät: welche Features es hat. Diese Blöcke sind der Grund, warum man oben nur das Gerät wählen muss.
 #ifdef RINASBASS	// is BT BLE Client
 	#define BASS				// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass	
 	#define BASSMARKER			// definiert die spezifischen LED-indizes für BASS bzw. GIT
@@ -118,19 +125,25 @@
 
 //==== Geräte-Identität für Szenen (scenes.cpp) =========================================
 // Bühne von links nach rechts (Publikumssicht): Lampe1 - Bass - Drums/Matrix - Gitarre - Lampe2
+// Jedes Gerät hat ein eigenes Bit (0x01 = Bit 0, 0x02 = Bit 1, 0x04 = Bit 2 ...). Dadurch lassen sich mehrere
+// Geräte mit "|" zu einer "Maske" zusammenfassen: DEV_LAMPE1 | DEV_LAMPE2 heißt "beide Lampen".
+// Effekte fragen dann mit isDev(maske), ob das eigene Gerät gemeint ist.
 #define DEV_LAMPE1		0x01
 #define DEV_BASS		0x02
 #define DEV_DRUMS		0x04	// Scrollmatrix an den Drums
 #define DEV_GIT			0x08
 #define DEV_LAMPE2		0x10
 #define DEV_GITBOARD	0x20
-#define DEV_ALL			0x3F
+#define DEV_ALL			0x3F	// alle sechs Bits gesetzt = alle Geräte
 #define STAGE_POSITIONS	5		// Anzahl Positionen auf der Bühne (0..4)
 
+// Bauart des Geräts: bestimmt, wie Szenen und Übergänge auf ihm dargestellt werden
 #define CLASS_GUITAR	1		// Kontur-Strip (guitarShapeFX)
 #define CLASS_LAMP		2		// vertikaler Strip
 #define CLASS_MATRIX	3		// 2D-Matrix
 
+// Für das gewählte Gerät: DEVICE_NAME (Text), DEV_ME (sein Bit), STAGE_POS (Platz auf der Bühne, 0 = ganz links)
+// und DEVICE_CLASS (Bauart)
 #if defined(LAMPE1)
 	#define DEVICE_NAME		"lampe1"	// Ordnername auf dem OTA-Server
 	#define DEV_ME			DEV_LAMPE1
@@ -162,12 +175,14 @@
 	#define STAGE_POS		2
 	#define DEVICE_CLASS	CLASS_MATRIX
 #endif
+// isDev(maske): wahr, wenn dieses Gerät in der Maske enthalten ist ("&" = bitweises UND: bleibt ein Bit übrig, passt es)
 #define isDev(mask)		((DEV_ME & (mask)) != 0)
 
 #define LAMP_IDX0_AT_BOTTOM	1	// 1: LED 0 der Lampen sitzt unten (ausmessen!)
 //---------------------------------------------------------------------------------------
 
 //==== debug ============
+// Gesetzt = das jeweilige Modul schreibt Meldungen auf die serielle Schnittstelle (Serial Monitor, 115200 Baud)
 //#define debug_ble_client
 #define debug_ble_proxy
 //#define debug_rotary
@@ -176,10 +191,11 @@
 //#define START_WITH_PIPELINE_DEMO	// startet direkt mit Song 92 (Demo der Ausgabestufe: Übergänge, Modifikatoren, Ebene) statt SONGPAUSE
 //-----------------------------------------------------------------------------------------
 
+// Pins = Nummern der Anschlüsse am Mikrocontroller. DEFAULT_BRIGHTNESS = Grundhelligkeit 0..255 des Geräts.
 #ifdef USE_ESP32
-	#define DATA_PIN_1          1 	// yulc channel 1
-	#define DATA_PIN_2          2 	// yulc channel 2
-	#define LIPO_PIN            4 
+	#define DATA_PIN_1          1 	// yulc channel 1: Datenleitung zu den LEDs am Instrument / der Lampe / der Matrix
+	#define DATA_PIN_2          2 	// yulc channel 2: Datenleitung zum Gurt
+	#define LIPO_PIN            4 	// hier wird die Akkuspannung gemessen 
 	#if defined(SCROLLMATRIX)
 		#define DEFAULT_BRIGHTNESS	80
 	#elif defined(LAMPE1)
@@ -209,6 +225,7 @@
 	#endif
 #endif
 
+// Drehknopf ("Rotary Encoder"): zwei Leitungen fürs Drehen (A/B) und eine für den Tastendruck
 #ifdef firstYulcPrototype	// aktuell in RINAs gehäuse
     #define ROTARY_ENCODER_BUTTON_PIN   38 // SW
     #define ROTARY_ENCODER_B_PIN        36 // CLK
@@ -219,8 +236,10 @@
     #define ROTARY_ENCODER_A_PIN        6 // DT
 #endif
 #define ROTARY_ENCODER_VCC_PIN 	-1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
-#define ROTARY_ENCODER_STEPS 	4
+#define ROTARY_ENCODER_STEPS 	4	// elektrische Schritte je fühlbarer Raste des Knopfs
 
+// Größe der Matrix in LEDs. Auch Gitarre, Bass und Lampen rechnen intern mit einer 22 x 23-Fläche (506 Plätze),
+// weil viele alte Effekte über x/y zeichnen; ihre echten LEDs sind die ersten anz_LEDs Plätze davon.
 #ifdef SCROLLMATRIX
 	#define MATRIX_WIDTH       	54
 	#define MATRIX_HEIGHT      	10
@@ -237,7 +256,7 @@
 
 #define MATRIX_TYPE         HORIZONTAL_ZIGZAG_MATRIX
 #define MATRIX_SIZE         MATRIX_WIDTH * MATRIX_HEIGHT
-#define NUMMATRIX			MATRIX_SIZE	// TODO: ausmerzen
+#define NUMMATRIX			MATRIX_SIZE	// TODO: ausmerzen   (Größe der LED-Puffer leds[], leds1[], leds2[])
 #define NUMPIXELS           MATRIX_SIZE // TODO: ausmerzen
 #define COLOR_ORDER         RGB
 #define CHIPSET             WS2812B
@@ -247,6 +266,7 @@
 #define SECONDSFORVOLTAGE	1
 //----------------------------
 
+// Echte Zahl der LEDs je Gerät. Weiter unten wird daraus anz_LEDs für das gewählte Gerät.
 #define anz_LEDs_GIT1 			163 // war 164 bis 25.04.2026 (eine LED entfernt)
 #define anz_LEDs_BASS 			155
 #define anz_LEDs_GITBOARD 		278
@@ -258,7 +278,10 @@
 
 // TODO: ggf. mehrere server UUID definieren und clients zuordnen... bisher aber noch nicht nötig
 
-//------ BLE SERVER 1 and his CLIENTS -------------- 
+//------ BLE SERVER 1 and his CLIENTS --------------
+// Bluetooth: die beiden UUIDs sind frei gewählte Kennnummern unseres Dienstes und seines Datenwerts. Proxy und
+// Clients müssen dieselben verwenden - daran erkennen sie sich. Die CLIENT_ADDRESS_...-Werte sind die festen
+// Bluetooth-Adressen der einzelnen YULC-Boards; der Proxy lässt nur die Adressen aus seiner Liste zu.
 #define SERVICE_UUID        	"204916ff-8db3-4368-bab9-e1f6e1ad653c"
 #define CHARACTERISTIC_UUID 	"f2e030f2-8c2b-46b6-bbab-5cf9dd837962"
 #define CLIENT_ADDRESS_YULC1	"48:ca:43:80:8b:95"	// Andres YULC -> ist aber SERVER
@@ -278,6 +301,15 @@
 // #define CLIENT_ADDRESS_YULC3	"bb:bb:bb:bb:bb:bb"	// TODO
 //---------------------------
 
+//==== LED-Nummern der Bünde (Marker) ===================================================
+// Es folgen drei gleich aufgebaute Blöcke - übersetzt wird nur der des gewählten Geräts:
+//   NOMARKER        Geräte ohne Marker: alle Namen gibt es trotzdem (Wert 0), damit der übrige Code übersetzbar bleibt
+//   BASSMARKER      Rinas Bass
+//   GITMARKER_GIT1  Andres Gitarre
+// Jeder Block legt anz_LEDs fest, den Halsbereich Bund_min..Bund_max (bleibt dunkel bis auf die Marker) und für
+// jeden Ton die Nummer der LED, die an seinem Bund sitzt. ESaite_x und ASaite_y mit gleicher Nummer sind derselbe
+// Bund, einmal nach dem Ton auf der E-Saite und einmal nach dem Ton auf der A-Saite benannt.
+// Die Zahlen in den Kommentaren hinter den Werten ("E/A: 56") sind die LED-Nummern am Bass.
 #ifdef NOMARKER		//--------- NUR FÜR LEDGITBOARD und SCROLLMATRIX ---------------
 
 	#if defined(GITBOARD)
@@ -418,6 +450,8 @@
 	#define ASaite_B_hoch	 	46	// F#/B: 42 (hohe Oktave)
 	#define ASaite_C_hoch	 	45	// G/C: 41 (hohe Oktave)
 
+	// Der LED-Streifen läuft einmal rund um die Gitarre (Form "SG"). Damit Effekte der Form folgen können
+	// (z.B. vom Korpus zur Kopfplatte laufen), wird die Kontur hier in Zonen eingeteilt.
 	//--- Geometrie der SG-Kontur für guitarShapeFX (geschätzt aus Foto vom 27.09.2026 -> mit progTestRange ausmessen!) ---
 	#define GUITAR_HEAD_TIP_IDX		77	// LED-Index an der Spitze der Kopfplatte
 	#define GUITAR_LOOP_DIR			1	// +1: LED-Index steigt von der Kopfspitze Richtung Hals-UNTERkante (Diskant-Seite ohne Marker), sonst -1
@@ -441,6 +475,7 @@
 									// (gemessen 06.10.2026: show() 15,6 ms -> 62 Bilder/s). Hält deren Tempo, wenn show() schneller wird.
 #define FX_MAX_CATCHUP		4		// so viele versäumte Schritte holt ein Effekt in einem Bild höchstens nach, der Rest verfällt
 //#define debug_fx_frametime		// alle 5 s Bilder/s und Dauer von show() auf Serial
+// LEDS_OUT = so viele LEDs werden je Ausgang wirklich gesendet
 #ifdef FX_OUTPUT_REAL_LENGTH
 	#define LEDS_OUT	anz_LEDs
 #else
@@ -448,6 +483,7 @@
 #endif
 //---------------------------------------------------------------------------------------
 
+// --- Ab hier nur noch Archiv: der frühere Marker-Block der Gitarre (alle Werte um 1 höher), auskommentiert ---
 // #ifdef GITMARKER_GIT1	//--------- NUR FÜR ANDRES GITARRE -------------------
 
 // //neue gummi LEDs auf der neuen GIT (ab 18.02.2025):

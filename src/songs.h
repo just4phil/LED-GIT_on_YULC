@@ -1,437 +1,199 @@
+//=====================================================================
+// songs.h - die handgeschriebenen Songs (eine Funktion je Song)
+//=====================================================================
+// Jede Funktion hier ist die Lichtshow zu EINEM Song. loop() in main.cpp ruft über switch(songID) bei jedem
+// Durchlauf die Funktion des laufenden Songs auf. Wie eine Song-Funktion aufgebaut ist, steht am Anfang von
+// songs.cpp.
+//
+// Die Nummer hinter "#" ist die Song-ID: mit ihr wird der Song per MIDI (Kanal 10, CC 22) gestartet.
+// Die Zuordnung ID -> Funktion steht in main.cpp, die Bund-Marker je Song in markerLEDs.cpp.
+//
+// Neue Songs werden nicht mehr hier von Hand geschrieben, sondern aus der Excel-Tabelle des Songs
+// (songs/<Song>/quelle/struktur.xlsx) und der show.yaml erzeugt: siehe songs_generated.h und tools/songgen.py.
+
+//==================================================================
+//=========== Grundzustände (keine Songs) ==========================
+//==================================================================
+
 /**
- * @brief Startup animation sequence
- * 
- * Runs on system boot to display initialization pattern and
- * verify LED functionality. Shows a sequence of colors and
- * patterns before entering normal operation mode.
- * 
- * @note Only runs once during initialization
- * @see setup()
+ * @brief #99 Startbild: dunkel, bis das Intro gestartet wird
+ *
+ * Gedacht: 60 Sekunden dunkel, dann Wechsel in den defaultLoop (#100).
+ * HINWEIS: In songs.cpp steht derzeit vor dem switch noch ein Test-Aufruf von progSternNeu - solange er
+ * dort steht, zeigt Song 99 stattdessen den drehenden Stern.
  */
 void STARTUP();
 
 /**
- * @brief Pause animation state
- * 
- * Displays a pause indicator pattern when song playback is
- * paused. Shows a visual cue that the system is in pause mode.
- * 
- * @note Active when PAUSED flag is set
- * @see switchToPart()
+ * @brief #0 Pause zwischen den Songs
+ *
+ * Ruhiges Glitzern in Dauerschleife (auf der LED-Fläche zuerst der Lauftext "Nerds on Fire").
+ * Das ist der Zustand nach dem Einschalten, nach jedem Song-Ende und nach dem Not-Aus.
  */
 void SONGPAUSE();
 
 /**
- * @brief Default loop pattern for time between songs
- * 
- * Fallback animation pattern used when no specific song is
- * selected or when an invalid song ID is provided. Shows a
- * generic pattern to indicate default state.
- * 
- * @note Used for song ID 0
- * @see switchToSong()
+ * @brief Pausenbild für Song-IDs, zu denen es (noch) keinen Song gibt
+ *
+ * Sieht aus wie SONGPAUSE, springt am Ende aber NICHT auf Song 0 zurück. So bleibt die gewählte
+ * Song-ID erhalten und man kann für einen neuen Song schon die Bund-Marker einrichten und sehen,
+ * bevor seine Show existiert. Wird in main.cpp im "default"-Zweig aufgerufen.
  */
 //#0
 void SONGPAUSE_ohne_switchToSong0();
 
 /**
- * @brief Default loop pattern for unknown songs to show marker LEDS without switching Back to 0
- * 
- * Fallback animation pattern used when no specific song is
- * selected or when an invalid song ID is provided. Shows a
- * generic pattern to indicate default state.
- * 
- * @note Used as default song (when there is no song for the given song ID 0!)
- * @see switchToSong()
+ * @brief #100 Bunter Dauerlauf durch viele Effekte (läuft nach STARTUP)
  */
 //#0
 void defaultLoop();
 
+//==================================================================
+//=========== Songs ================================================
+//==================================================================
+
 /**
- * @brief Physical - Trailer version pattern
- * 
- * LED pattern for "Physical" song trailer sequence.
- * Displays specific timing and patterns for this song's
- * intro/preview section.
- * 
- * Song: Physical by Dua Lipa
- * Version: Trailer/Intro section
- * Status: Completed 12.08.2023
- * 
- * @see Physical()
+ * @brief #1 Vorspann zu "Physical"
+ *
+ * Bleibt während des Einspielers dunkel (auf der LED-Fläche Lauftexte) und springt am Ende direkt
+ * in Song #2 Physical, hinter dessen Intro.
  */
 // #1
 void PhysicalTrailer();
 
-/**
- * @brief Physical full song pattern
- * 
- * Complete LED pattern sequence for "Physical" by Dua Lipa.
- * Includes all song sections with proper timing and visual
- * cues synchronized to the music.
- * 
- * Song: Physical by Dua Lipa
- * Status: Completed 13.08.2023
- * 
- * @see PhysicalTrailer()
- */
+/** @brief #2 Physical (Dua Lipa) - fertig 13.08.2023 */
 // #2
 void Physical();
 
-/**
- * @brief Take On Me song pattern
- * 
- * LED pattern for "Take On Me" by A-ha. Features the iconic
- * synthesizer melody and song structure visualization.
- * 
- * Song: Take On Me by A-ha
- * 
- * @see switchToSong()
- */
+/** @brief #3 Take On Me (a-ha) */
 // #3 - TakeOnMe
 void TakeOnMe();
 
-/**
- * @brief Don't Stop The Music song pattern
- * 
- * LED pattern for "Don't Stop The Music" by Rihanna.
- * Displays rhythmic patterns and song sections.
- * 
- * Song: Don't Stop The Music by Rihanna
- * 
- * @see switchToSong()
- */
-//#4 DontStopTheMusic 
+/** @brief #4 Don't Stop The Music (Rihanna) */
+//#4 DontStopTheMusic
 void DontStopTheMusic();
 
-/**
- * @brief Use Somebody song pattern
- * 
- * LED pattern for "Use Somebody" by Kings of Leon.
- * Features guitar-driven visualization and song structure.
- * 
- * Song: Use Somebody by Kings of Leon
- * Status: Completed 25.08.2023
- * 
- * @see switchToSong()
- */
+/** @brief #5 Use Somebody (Kings of Leon) - fertig 25.08.2023 */
 //#5 -> FERTIG: 25.08.2023
 void UseSomebody();
 
-/**
- * @brief No Roots song pattern
- * 
- * LED pattern for "No Roots" by Alice Merton. Includes
- * driving bass visualization and song structure.
- * 
- * Song: No Roots by Alice Merton
- * Status: Completed 25.08.2023
- * Note: Root notes may need timing adjustment (arrive 1/8 note early)
- * 
- * @see switchToSong()
- */
+/** @brief #6 No Roots (Alice Merton) - fertig 25.08.2023 */
 //#6 -> FERTIG: 25.08.2023
 void NoRoots();
 
-/**
- * @brief Firework song pattern
- * 
- * LED pattern for "Firework" by Katy Perry. Features
- * explosive visual effects matching the song's energy.
- * 
- * Song: Firework by Katy Perry
- * Status: Completed 25.08.2023
- * 
- * @see switchToSong()
- */
+/** @brief #7 Firework (Katy Perry) - fertig 25.08.2023 */
 //#7 -> FERTIG: 25.08.2023
 void Firework();
 
 /**
- * @brief Dancing On My Own song pattern
- * 
- * LED pattern for "Dancing On My Own" by Robyn.
- * Emotional visualization matching the song's mood.
- * 
- * Song: Dancing On My Own by Robyn
- * 
- * @see switchToSong()
+ * @brief #8 Dancing On My Own (Robyn) - alte, handgeschriebene Fassung
+ *
+ * Wird nicht mehr aufgerufen: main.cpp ruft für Song 8 die generierte Fassung gen_DancingOnMyOwn() auf.
  */
 // #8
 void DancingOnMyOwn();
 
-/**
- * @brief I Love It song pattern
- * 
- * LED pattern for "I Love It" by Icona Pop.
- * High-energy visualization for this upbeat track.
- * 
- * Song: I Love It by Icona Pop
- * 
- * @see switchToSong()
- * @see ILoveItTRAILER()
- */
-//#9 ILoveIt 
+/** @brief #9 I Love It (Icona Pop). Der Vorspann dazu ist #80 ILoveItTRAILER. */
+//#9 ILoveIt
 void ILoveIt();
 
-/**
- * @brief Bloody Mary song pattern
- * 
- * LED pattern for "Bloody Mary" by Lady Gaga.
- * Dark, atmospheric visualization matching the song's tone.
- * 
- * Song: Bloody Mary by Lady Gaga
- * 
- * @see switchToSong()
- */
+/** @brief #10 Bloody Mary (Lady Gaga) */
 // #10 BloodyMary();
 void BloodyMary();
 
-/**
- * @brief Titanium song pattern
- * 
- * LED pattern for "Titanium" by David Guetta ft. Sia.
- * Features strong, metallic visual effects.
- * 
- * Song: Titanium by David Guetta ft. Sia
- * Status: Completed 25.08.2023
- * 
- * @see switchToSong()
- */
+/** @brief #11 Titanium (David Guetta feat. Sia) - fertig 25.08.2023 */
 //#11 -> FERTIG: 25.08.2023
 void Titanium();
 
-/**
- * @brief Such A Shame song pattern
- * 
- * LED pattern for "Such A Shame" by Talk Talk.
- * Matches the song's distinctive synth sound.
- * 
- * Song: Such A Shame by Talk Talk
- * 
- * @see switchToSong()
- */
+/** @brief #12 Such A Shame (Talk Talk) - fertig 17.09.2023 */
 // #12 SuchAshame();
 void SuchAshame();
 
-/**
- * @brief In The Dark song pattern
- * 
- * LED pattern for "In The Dark" by Dev.
- * Club-style visualization for this dance track.
- * 
- * Song: In The Dark by Dev
- * 
- * @see switchToSong()
- */
+/** @brief #13 In The Dark - fertig 16.09.2023 */
 // #13 InTheDark();
 void InTheDark();
 
-/**
- * @brief Shivers song pattern
- * 
- * LED pattern for "Shivers" by Ed Sheeran.
- * Energetic visualization matching the song's tempo.
- * 
- * Song: Shivers by Ed Sheeran
- * 
- * @see switchToSong()
- */
+/** @brief #14 Shivers (Ed Sheeran) */
 // #14 Shivers();
 void Shivers();
 
-/**
- * @brief abcdefu song pattern
- * 
- * LED pattern for "abcdefu" by Gayle.
- * Bold, expressive visualization for this anthem.
- * 
- * Song: abcdefu by Gayle
- * Status: Completed 25.08.2023
- * 
- * @see switchToSong()
- */
+/** @brief #15 abcdefu (GAYLE) - fertig 25.08.2023 */
 // #15 Abcdefu -> FERTIG: 25.08.2023
 void Abcdefu();
 
-/**
- * @brief Enjoy The Silence song pattern
- * 
- * LED pattern for "Enjoy The Silence" by Depeche Mode.
- * Atmospheric visualization for this classic synth-pop track.
- * 
- * Song: Enjoy The Silence by Depeche Mode
- * Status: Completed 25.08.2023
- * 
- * @see switchToSong()
- * @see enjoyTheSilenceINTRO()
- */
+/** @brief #16 Enjoy The Silence (Depeche Mode) - fertig 25.08.2023. Der Vorspann dazu ist #24. */
 //#16 -> FERTIG: 25.08.2023
 void enjoyTheSilence();
 
-/**
- * @brief apt. song pattern
- * 
- * LED pattern for "apt." by Rosé & Bruno Mars.
- * Currently empty (placeholder).
- * 
- * Song: apt. by Rosé & Bruno Mars
- * Status: Not implemented
- * 
- * @see switchToSong()
- */
+/** @brief #17 APT. (ROSÉ & Bruno Mars) */
 //#17 leer
 void apt();
 
-/**
- * @brief Prisoner song pattern
- * 
- * LED pattern for "Prisoner" by Miley Cyrus ft. Dua Lipa.
- * Features collaborative duet visualization.
- * 
- * Song: Prisoner by Miley Cyrus ft. Dua Lipa
- * Status: Completed 5.3.2022
- * 
- * @see switchToSong()
- */
+/** @brief #18 Prisoner (Miley Cyrus feat. Dua Lipa) */
 //#18 -> ok: 5.3.22
 void prisoner();
 
-/**
- * @brief Hot N Cold song pattern
- * 
- * LED pattern for "Hot N Cold" by Katy Perry.
- * Playful visualization matching the song's theme.
- * 
- * Song: Hot N Cold by Katy Perry
- * 
- * @see switchToSong()
- */
+/** @brief #19 Hot N Cold (Katy Perry) */
 // #19 Hot n Cold();
 void Hotncold();
 
-/**
- * @brief Kids song pattern
- * 
- * LED pattern for "Kids" by MGMT.
- * Psych-pop visualization for this indie classic.
- * 
- * Song: Kids by MGMT
- * 
- * @see switchToSong()
- */
+/** @brief #20 Kids (MGMT) */
 // #20 Kids();
 void Kids();
 
-/**
- * @brief Tell It To My Heart song pattern
- * 
- * LED pattern for "Tell It To My Heart" by Taylor Swift.
- * Covers Taylor Swift's version of this song.
- * 
- * Song: Tell It To My Heart by Taylor Swift
- * 
- * @see switchToSong()
- */
+/** @brief #21 Tell It To My Heart */
 // #21 Tellittomyheart();
 void Tellittomyheart();
 
-/**
- * @brief Enjoy The Silence intro pattern
- * 
- * Special intro sequence for "Enjoy The Silence" before
- * the main pattern begins.
- * 
- * Song: Enjoy The Silence by Depeche Mode
- * Section: Intro only
- * 
- * @see enjoyTheSilence()
- */
+/** @brief #24 Vorspann zu "Enjoy The Silence" (#16) */
 // #24
 void enjoyTheSilenceINTRO();
 
-/**
- * @brief Friday I'm In Love song pattern
- * 
- * LED pattern for "Friday I'm In Love" by The Cure.
- * Upbeat, romantic visualization for this classic.
- * 
- * Song: Friday I'm In Love by The Cure
- * 
- * @see switchToSong()
- */
+/** @brief #25 Friday I'm In Love (The Cure) */
 // #25 FridayImInLove();
 void FridayImInLove();
 
-/**
- * @brief Be Mine song pattern
- * 
- * LED pattern for "Be Mine" by Kamrad.
- * 
- * Song: Be Mine by Kamrad
- * 
- * @see switchToSong()
- */
+/** @brief #26 Be Mine */
 // #26 BeMine();
 void BeMine();
 
-/**
- * @brief IWannaDanceWithSomebody song pattern
- * 
- * LED pattern for "IWannaDanceWithSomebody" by Whitney Houston.
- * 
- * Song: IWannaDanceWithSomebody by Whitney Houston
- * 
- * @see switchToSong()
- */
+/** @brief #27 I Wanna Dance With Somebody (Whitney Houston) */
 // #27 IWannaDanceWithSomebody();
 void IWannaDanceWithSomebody();
 
 /**
- * @brief Billie Jean song pattern
- * 
- * LED pattern for "Billie Jean" by Michael Jackson.
- * Features the iconic bass line and synth-driven visualization.
- * 
- * Song: Billie Jean by Michael Jackson
- * 
- * @see switchToSong()
+ * @brief #28 Billie Jean (Michael Jackson) - alte, handgeschriebene Fassung
+ *
+ * Die Deklaration ist auskommentiert: Song 28 läuft über die generierte Fassung gen_BillieJean().
  */
 // #28 BillyJean();
 //void BillyJean();	// ersetzt durch gen_BillieJean() (songs_generated.h), alter Code auskommentiert in songs.cpp
 
 
-/**
- * @brief Maniac song pattern
- * 
- * LED pattern for "Maniac" by Michael Sembello.
- * Features the iconic bass line and synth-driven visualization.
- * 
- * Song: Maniac by Michael Sembello
- * 
- * @see switchToSong()
- */
+/** @brief #29 Maniac (Michael Sembello) - alte Fassung; gespielt wird #30 */
 // #29 Maniac();
 void Maniac();
 
+/** @brief #30 Maniac in der transponierten Fassung "T-1" - das ist die Fassung, die gespielt wird */
 void Maniac_Tminus1();
 
 /**
- * @brief I Love It trailer pattern
- * 
- * Special trailer/intro pattern for "I Love It" before
- * the main song pattern begins.
- * 
- * Song: I Love It by Icona Pop
- * Section: Trailer/Intro
- * 
- * @see ILoveIt()
+ * @brief #80 Vorspann zu "I Love It"
+ *
+ * Bleibt während des Einspielers dunkel (auf der LED-Fläche Lauftexte) und springt am Ende direkt
+ * in Song #9 I Love It, hinter dessen Intro.
  */
 // #80
 void ILoveItTRAILER();
 
+/** @brief #81 Vorspann zu "Dancing On My Own": springt am Ende in den ersten Refrain von Song #8 */
 // #81
 void INTROdancing();
+
+//==================================================================
+//=========== Demos (zum Ansehen und Abnehmen der Effekte) =========
+//==================================================================
+// Start per Song-ID oder direkt nach dem Einschalten über START_WITH_..._DEMO in definitions.h.
 
 /**
  * @brief Demo aller neuen Kontur-Effekte aus guitarShapeFX (Song-ID 90, läuft in Dauerschleife)

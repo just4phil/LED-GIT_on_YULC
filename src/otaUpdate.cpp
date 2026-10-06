@@ -9,6 +9,27 @@
 #include <Update.h>
 #include <Preferences.h>
 
+//=====================================================================
+// otaUpdate.cpp - Firmware-Update über WLAN ("OTA" = over the air)
+//=====================================================================
+// Damit man zum Aufspielen einer neuen Firmware nicht jedes Gerät per USB anschließen muss, holt sich
+// jedes Gerät die neue Firmware selbst von einem kleinen Webserver auf dem PC (tools/build_ota.py).
+// Ablauf und Bedienung: otaUpdate.h und docs/OTA-Update.html.
+//
+// Begriffe:
+//   NVS         kleiner Dauerspeicher des ESP32, der einen Neustart übersteht (Bibliothek "Preferences").
+//               Darin steht nur ein Merker: "beim nächsten Start bitte updaten".
+//   OTA-Slot    der Flash-Speicher hat zwei Plätze für die Firmware. Die neue wird in den freien Platz
+//               geschrieben; erst wenn sie vollständig und geprüft ist, startet das Gerät von dort.
+//               Geht etwas schief, läuft die alte Firmware einfach weiter.
+//   MD5         Prüfsumme der Firmware-Datei: stimmt sie nach dem Laden nicht, wird die Datei verworfen.
+//
+// WICHTIG: Diese Datei läuft nur im Update-Modus, NICHT während der Show. Deshalb sind hier delay() und
+// FastLED.show() direkt erlaubt.
+// Bei Änderungen an diesem Ablauf docs/OTA-Update.html mitziehen.
+
+// WLAN-Zugangsdaten und Server-Adresse stehen in src/secrets.h. Die Datei ist absichtlich nicht im Git
+// (Passwörter!). Fehlt sie, gelten die Ersatzwerte unten und beim Übersetzen erscheint eine Warnung.
 #if __has_include("secrets.h")
 	#include "secrets.h"
 #else
@@ -25,6 +46,7 @@
 #endif
 
 // kommen aus tools/fw_version.py (nur für diese Datei gesetzt)
+// FW_VERSION = Zeitpunkt des Builds als Zahl (Sekunden seit 1970): eine neuere Firmware hat immer die größere Zahl.
 #ifndef FW_VERSION
 	#define FW_VERSION		0UL
 #endif
@@ -36,13 +58,15 @@
 extern CRGB leds1[];
 extern CRGB leds2[];
 
-#define OTA_WIFI_TIMEOUT_MS		20000
-#define OTA_HTTP_TIMEOUT_MS		10000
+#define OTA_WIFI_TIMEOUT_MS		20000	// so lange wird höchstens nach dem WLAN gesucht
+#define OTA_HTTP_TIMEOUT_MS		10000	// so lange darf der Server für eine Antwort brauchen
 #define OTA_BRIGHTNESS			32		// Anzeige, keine Show: niedrig halten (Akku, Stromversorgung)
 
+// Liste der erlaubten WLANs (Name + Passwort); verbunden wird mit dem stärksten erreichbaren
 struct OtaWifi { const char* ssid; const char* pass; };
 static const OtaWifi otaWifiList[] = OTA_WIFI_LIST;
 
+// Unter diesem Namen liegt der Update-Merker im Dauerspeicher
 static const char* NVS_NAMESPACE = "ota";
 static const char* NVS_KEY_REQUEST = "req";
 //---------------------------
@@ -50,6 +74,8 @@ static const char* NVS_KEY_REQUEST = "req";
 uint32_t otaFirmwareVersion() { return FW_VERSION; }
 const char* otaFirmwareGit() { return FW_GIT; }
 
+// Beim Start: wurde vor dem Neustart ein Update angefordert? Der Merker wird dabei gleich gelöscht, damit
+// das Gerät nach einem fehlgeschlagenen Update nicht endlos wieder in den Update-Modus startet.
 bool otaIsRequested() {
 	Preferences prefs;
 	prefs.begin(NVS_NAMESPACE, false);
@@ -59,6 +85,8 @@ bool otaIsRequested() {
 	return requested;
 }
 
+// Update anfordern: Merker in den Dauerspeicher schreiben und neu starten. setup() findet den Merker dann
+// und ruft otaRun() auf - so beginnt das Update aus einem frischen, aufgeräumten Zustand.
 void otaRequestAndRestart() {
 	Serial.println("OTA: Update angefordert -> Neustart in den Update-Modus");
 	Preferences prefs;
@@ -69,8 +97,10 @@ void otaRequestAndRestart() {
 	ESP.restart();
 }
 
+// Statusanzeige: die ersten LEDs beider Ausgänge leuchten in "color" - fraction 0..1 bestimmt, wie viele
+// (1.0 = alle). So entsteht ein Fortschrittsbalken.
 void otaShowStatus(uint32_t color, float fraction) {
-	int n = constrain((int)(anz_LEDs * fraction + 0.5f), 0, anz_LEDs);
+	int n = constrain((int)(anz_LEDs * fraction + 0.5f), 0, anz_LEDs);	// Anzahl LEDs, gerundet und auf 0..anz_LEDs begrenzt
 	fill_solid(leds1, NUMMATRIX, CRGB::Black);
 	fill_solid(leds2, NUMMATRIX, CRGB::Black);
 	fill_solid(leds1, n, CRGB(color));
@@ -79,6 +109,7 @@ void otaShowStatus(uint32_t color, float fraction) {
 	FastLED.show();
 }
 
+// Nur Proxy: wird der Drehknopf beim Einschalten mindestens 1 Sekunde gedrückt gehalten?
 #ifdef IS_MIDI_PROXY
 bool otaBootButtonHeld() {
 	pinMode(ROTARY_ENCODER_BUTTON_PIN, INPUT_PULLUP);	// Knopf zieht nach GND
@@ -104,6 +135,9 @@ static void otaFail(const String& reason) {
 }
 
 //--- Minimaler JSON-Leser für die flache version.json von tools/build_ota.py
+// Die Datei sieht so aus: {"version": 1759740000, "md5": "ab12...", "git": "2253fd7"}
+// Gesucht wird der Schlüssel in Anführungszeichen, dann der Doppelpunkt, dann der Wert dahinter
+// (Text in Anführungszeichen oder eine Zahl). Für mehr als so eine einfache Datei taugt das nicht.
 static String jsonValue(const String& json, const char* key) {
 	int k = json.indexOf("\"" + String(key) + "\"");
 	if (k < 0) return "";
@@ -120,6 +154,7 @@ static String jsonValue(const String& json, const char* key) {
 	return json.substring(i, end);
 }
 
+// Wird von der Update-Bibliothek während des Ladens immer wieder aufgerufen: gelber Fortschrittsbalken
 static void onDownloadProgress(size_t done, size_t total) {
 	static int lastPercent = -1;
 	int percent = total ? (int)(done * 100 / total) : 0;
@@ -129,6 +164,8 @@ static void onDownloadProgress(size_t done, size_t total) {
 	if (percent % 10 == 0) Serial.printf("OTA: %d%%\n", percent);
 }
 
+// Der Update-Modus. Schritte: WLAN verbinden -> Version auf dem Server lesen -> nur wenn sie neuer ist:
+// Firmware laden, prüfen, in den freien Slot schreiben -> Neustart. Endet IMMER mit einem Neustart.
 void otaRun() {
 	Serial.printf("OTA: Update-Modus - Gerät %s, Version %lu (%s)\n", DEVICE_NAME, (unsigned long)FW_VERSION, FW_GIT);
 
@@ -142,7 +179,7 @@ void otaRun() {
 	}
 	if (wifiCount == 0) otaFail("kein WLAN konfiguriert (src/secrets.h)");
 
-	WiFi.mode(WIFI_STA);
+	WiFi.mode(WIFI_STA);	// "Station" = das Gerät meldet sich wie ein Handy an einem vorhandenen WLAN an
 	unsigned long start = millis();
 	int blink = 0;
 	while (wifiMulti.run(8000) != WL_CONNECTED) {	// run() sucht + verbindet neu: Timeout muss für Anmeldung + DHCP reichen
@@ -152,6 +189,7 @@ void otaRun() {
 	Serial.println("OTA: WLAN " + WiFi.SSID() + ", IP " + WiFi.localIP().toString());
 	otaShowStatus(CRGB::Blue, 0.1f);
 
+	// Jedes Gerät hat auf dem Server seinen eigenen Ordner, z.B. http://192.168.137.1:8080/lampe1/
 	String baseUrl = String("http://") + OTA_SERVER + ":" + String(OTA_PORT) + "/" + DEVICE_NAME + "/";
 	HTTPClient http;
 	http.setTimeout(OTA_HTTP_TIMEOUT_MS);
@@ -171,6 +209,7 @@ void otaRun() {
 	String md5 = jsonValue(json, "md5");
 	Serial.printf("OTA: Server-Version %lu (%s)\n", (unsigned long)serverVersion, jsonValue(json, "git").c_str());
 
+	// Nichts Neueres auf dem Server: grün anzeigen und normal starten
 	if (serverVersion <= FW_VERSION) {
 		Serial.println("OTA: Firmware ist aktuell -> normaler Start");
 		otaShowStatus(CRGB::Green, 1.0f);
@@ -194,6 +233,7 @@ void otaRun() {
 	if (md5.length() == 32) Update.setMD5(md5.c_str());	// Update.end() prüft dann die Prüfsumme
 	Update.onProgress(onDownloadProgress);
 
+	// lädt die Datei Stück für Stück und schreibt sie direkt in den Flash (sie passt nicht am Stück in den Arbeitsspeicher)
 	size_t written = Update.writeStream(*http.getStreamPtr());
 	http.end();
 	if (written != (size_t)size || !Update.end()) {

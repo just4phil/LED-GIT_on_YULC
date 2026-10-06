@@ -18,10 +18,21 @@ extern CRGB leds1[NUMMATRIX];
 extern CRGB leds2[NUMMATRIX];
 //-----------------------
 
+//=====================================================================
+// markerLEDs.cpp - Bund-Marker (Erklärung: siehe markerLEDs.h)
+//=====================================================================
+// HINWEIS: Die Marker der Songs sind von den Musikern abgenommen - an den Zuweisungen nichts ändern.
+
+// Legt je Song fest, welche Bünde markiert werden. Die case-Nummern sind die Song-IDs wie in main.cpp.
+// "#ifdef GIT ... #endif" wird nur für die Gitarre übersetzt, "#ifdef BASS ..." nur für den Bass;
+// Zeilen ohne #ifdef gelten für beide.
 void setMarkerLEDs(byte songID, byte partID) {
 
 	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!
 
+		// Übersicht der Namen aus definitions.h: jede Zeile ist EIN Bund. Die LED an diesem Bund markiert auf der
+		// E-Saite den linken Ton und auf der A-Saite den rechten (z.B. ESaite_G und ASaite_C = dieselbe LED).
+		// Die LED-Nummern in der Spalte GITARRE sind veraltet (alte Gitarre) - gültig sind die Werte in definitions.h.
 		//    E-Saite			   A-Saite			GITARRE			BASS
 		//====================================================================================
 		// ESaite_E			 	ASaite_A			71		E/A 	56 (leere / tiefe Saiten)
@@ -324,6 +335,7 @@ void setMarkerLEDs(byte songID, byte partID) {
 				markerLED3 = ESaite_Bb;
 			#endif
 
+			// Hier hängen die Marker vom Part ab: deshalb wird diese Funktion bei jedem Bild neu aufgerufen.
 			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier					
 			if (partID < 52) {
 				markerLED1 = ESaite_F;
@@ -441,24 +453,31 @@ void setMarkerLEDs(byte songID, byte partID) {
 }
 
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
+// (das erledigt fxPresent() in fxPipeline.cpp - Effekte rufen diese Funktion nicht selbst auf)
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
-	
+
+	// fxFrame zeigt auf das fertige Bild (leds[] oder das gemischte Bild der Ausgabestufe).
+	// memcpy(Ziel, Quelle, Anzahl Bytes) kopiert den ganzen Puffer in einem Rutsch.
 	// Kopie erstellen (muss vorab geschehen, da sonst über YULC die MATRIXEN nicht leuchten!!)
 	memcpy(leds1, fxFrame, sizeof(leds));	// dies ist die kopie für die GIT-LEDs die noch MARKER LEDs bekommen
 	memcpy(leds2, fxFrame, sizeof(leds));	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER LEDs!
 	if (strapOverride) {				// Effekt mit eigenem Gurt-Bild (z.B. progFuse)
-		memcpy(leds2, ledsStrap, sizeof(ledsStrap));
-		memset(leds2 + anz_LEDs_STRAP, 0, (NUMMATRIX - anz_LEDs_STRAP) * sizeof(CRGB));
+		memcpy(leds2, ledsStrap, sizeof(ledsStrap));	// das eigene Gurt-Bild des Effekts (guitarShapeFX) ...
+		memset(leds2 + anz_LEDs_STRAP, 0, (NUMMATRIX - anz_LEDs_STRAP) * sizeof(CRGB));	// ... und alles hinter dem Gurt-Ende auf Schwarz
 	}
 	//--------------------------------------
 
 	#if !defined (NOMARKER)	// nur für bass oder git machen, nicht aber für GITBOARD!
 		
+		// Den Halsbereich ausschalten: diese LEDs würden beim Spielen blenden
 		//turnOffGitBlindingLEDs
 		for (int i = Bund_min; i < Bund_max; i++) {
 			leds1[i] = CRGB(0, 0, 0); //BLACK
 		}
 		
+		// Farbwert der Marker gegenläufig zur Gesamthelligkeit wählen, damit sie immer etwa gleich schwach leuchten
+		// (Tabelle in markerLEDs.h). Gelesen wird die Helligkeit, die FastLED gerade wirklich verwendet - ein Effekt
+		// oder der Blinder kann sie für dieses Bild verändert haben.
 		uint8_t BRIGHTNESS = FastLED.getBrightness(); // ACHTUNG: diese BRIGHTNESS ist eine andere variable als die globale BRIGHTNESS
 
 		if (BRIGHTNESS >= 0 && BRIGHTNESS <20) helligkeit = 255;
@@ -472,6 +491,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 
 		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
 		// turn on special MarkerLEDs for the songs
+		// Nur setzen, wenn die Nummer im Halsbereich liegt (0 = "kein Marker" fällt damit automatisch heraus).
+		// CRGB(helligkeit, 0, 0) = nur Rot.
 		if (markerLED1 > Bund_min-1 && markerLED1 < Bund_max) leds1[markerLED1] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 		if (markerLED2 > Bund_min-1 && markerLED2 < Bund_max) leds1[markerLED2] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 		if (markerLED3 > Bund_min-1 && markerLED3 < Bund_max) leds1[markerLED3] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
@@ -480,7 +501,7 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		if (markerLED6 > Bund_min-1 && markerLED6 < Bund_max) leds1[markerLED6] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 		if (markerLED7 > Bund_min-1 && markerLED7 < Bund_max) leds1[markerLED7] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 
-		// turn on generel MarkerLEDs
+		// turn on generel MarkerLEDs: zwei blaue Orientierungspunkte, bei jedem Song an
 		leds1[ESaite_E_hoch] 	= CRGB(0, 0, helligkeit);	//CRGB::Blue;
 		leds1[ESaite_A] 		= CRGB(0, 0, helligkeit);	//CRGB::Blue;
 	

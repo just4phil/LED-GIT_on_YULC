@@ -1,122 +1,106 @@
 //=====================================================================
 //=========== HELPER FUNCTIONS ========================================
 //=====================================================================
+// functions.h / functions.cpp - kleine Helfer, die überall gebraucht werden:
+//   - das Bluetooth-Nachrichtenformat BLEmessage (Proxy <-> Clients)
+//   - Zufallsfarben für die Effekte
+//   - switchToSong() / switchToPart(): die EINZIGEN Stellen, an denen Song und Part gewechselt werden
+//
+// Hinweis zum Aufbau: in der .h-Datei stehen nur die "Ankündigungen" (Deklarationen) der Funktionen,
+// damit andere Dateien sie aufrufen können; der eigentliche Code steht in der gleichnamigen .cpp-Datei.
 
 /**
- * @brief Structure for BLE communication messages
- * 
- * This structure is used to exchange song and part information between
- * BLE proxy server and clients. It is packed to avoid padding for
- * efficient transmission.
- * 
- * Message Types:
- * - 0: Set song and part
- * - 1: Change song (only songID)
- * - 2: Change part (only partID)
- * - 3: Force sync to clients (songID and partID)
- * - 4: Switch part after LED sync
- * - 5: Server needs LED sync from client
- * - 6: Client sends song/part after server requested a sync
- * - 7: Enter OTA update mode (only accepted while songID == 0, see otaUpdate.h)
+ * @brief Die Nachricht, die per Bluetooth (BLE) zwischen Proxy und Clients ausgetauscht wird
+ *
+ * Genau 3 Bytes: Nachrichtentyp, Song, Part. Je nach Typ werden nur einzelne Felder ausgewertet.
+ *
+ * Nachrichtentypen (msgType):
+ * - 0: Song und Part setzen (Stand, den ein Client beim Verbinden lesen kann)
+ * - 1: Songwechsel (nur songID zählt)
+ * - 2: Partwechsel (nur part zählt)
+ * - 3: erzwungener Abgleich an alle Clients (songID und part)
+ * - 4: Partwechsel nach einem LED-Abgleich
+ * - 5: der Server (Proxy) braucht den Stand von einem Client
+ * - 6: Antwort des Clients auf Typ 5 (songID und part)
+ * - 7: in den OTA-Update-Modus wechseln (wird nur bei songID == 0 angenommen, siehe otaUpdate.h)
+ *
+ * Wo die Typen gesendet und ausgewertet werden: midiProxyBLEserver_nimBLE.cpp (Proxy) und
+ * BLE_client_nimBLE.cpp (Clients). Bei Änderungen docs/OTA-Update.html mitziehen.
  */
+// "pack(push, 1)": der Compiler darf zwischen den Feldern keine Füllbytes einfügen, damit die Struktur auf
+// allen Geräten exakt 3 Bytes groß ist und Byte für Byte gesendet werden kann.
+// ACHTUNG: Das Gegenstück "#pragma pack(pop)" fehlt. Die Einstellung gilt deshalb weiter für alle Strukturen,
+// die in einer Datei NACH dem Einbinden von functions.h definiert werden.
 #pragma pack(push, 1)   // Ensures structure is stored without padding
 struct BLEmessage {
-    uint8_t msgType; /**< Message type (0-7) */
-    uint8_t songID;  /**< Song ID to switch to */
-    uint8_t part;     /**< Part ID to switch to */
+    uint8_t msgType; /**< Nachrichtentyp (0-7), siehe Liste oben */
+    uint8_t songID;  /**< Song-ID */
+    uint8_t part;     /**< Part-Nummer */
 };
 
 /**
- * @brief Get a random color component value
- * 
- * Returns a random value for a single color component (red, green, or blue).
- * Uses predefined brightness levels for consistent color generation.
- * 
- * @return Random color component value (5, 63, 127, 191, or 255)
- * 
- * @note Excludes pure black (0) to ensure visible colors
- * @see getRandomColor()
- * @see getRandomColorIncludingBlack()
+ * @brief Zufälliger Wert für EINEN Farbanteil (Rot, Grün oder Blau)
+ *
+ * Liefert zufällig eine von fünf festen Helligkeitsstufen: 5, 63, 127, 191 oder 255.
+ * Echtes Schwarz (0) kommt nicht vor, damit eine daraus gemischte Farbe immer sichtbar ist.
+ * Drei Aufrufe (für R, G und B) ergeben zusammen eine Zufallsfarbe.
  */
 int getRandomColorValue();
 
 /**
- * @brief Get a random predefined color
- * 
- * Returns a random color from the predefined color palette.
- * Excludes black to ensure bright, visible colors.
- * 
- * @return Random color constant (WHITE, GREEN, BLUE, ORANGE, PURPLE, CYAN, or RED)
- * 
- * @note All colors are at high brightness
- * @see getRandomColorValue()
- * @see getRandomColorIncludingBlack()
+ * @brief Zufällige fertige Farbe (ohne Schwarz)
+ *
+ * Ist für den Part ein Farbschema gesetzt (colorSchemes.h), kommt eine Farbe aus diesem Schema -
+ * so halten sich auch alte Zufallseffekte an die Farbwelt des Songs. Sonst eine der kräftigen
+ * Grundfarben aus colors.h (Weiß, Grün, Blau, Orange, Lila, Cyan).
+ *
+ * @return Farbe im Format RGB565 (16-Bit-Farbwert, wie ihn die Matrix-Zeichenfunktionen erwarten)
  */
 int getRandomColor();
 
 /**
- * @brief Get a random color including black option
- * 
- * Returns a random color from the extended palette that includes black.
- * Useful for creating patterns with LED-off effects.
- * 
- * @return Random color constant (including LED_BLACK with 12.5% probability)
- * 
- * @note Black appears with 1 in 8 probability
- * @see getRandomColor()
- * @see getRandomColorValue()
+ * @brief Zufällige Farbe, bei der auch Schwarz (LED aus) herauskommen kann
+ *
+ * Wie getRandomColor(), aber mit einer Wahrscheinlichkeit von 1 zu 8 kommt Schwarz zurück.
+ * Praktisch für Muster, in denen einzelne LEDs dunkel bleiben sollen.
+ *
+ * @return Farbe im Format RGB565 oder LED_BLACK
  */
 int getRandomColorIncludingBlack();
 
 /**
- * @brief Switch to a specific part within the current song
- * 
- * This function transitions to a new song part and resets all
- * timing counters and effect-specific variables. It also broadcasts
- * the change to connected BLE clients if in proxy mode.
- * 
- * @param part Part ID to switch to (range: 0-7)
- * 
- * @note Part IDs are song-specific (each song has different parts)
- * @note Resets timing counters (millisCounterTimer, millisCounterForProgChange)
- * @note Broadcasts to BLE clients if IS_MIDI_PROXY is defined
- * @see switchToSong()
- * @see switchToSongAndPart()
+ * @brief In einen anderen Part des aktuellen Songs wechseln
+ *
+ * Setzt prog auf den neuen Part und stellt alles auf "Part-Anfang": die Zeitzähler auf 0, die
+ * Hilfszähler der Effekte zurück, das Farbschema auf Zufall und die Ausgabestufe (fxPartReset)
+ * auf Anfang. Der Song legt danach beim ersten Durchlauf Länge und Folge-Part neu fest.
+ *
+ * @param part Nummer des Parts (zählt je Song ab 0; wie viele es gibt, bestimmt der Song)
+ *
+ * @note Sendet selbst NICHTS per Bluetooth. Das Weitergeben an die Clients erledigen
+ *       midi_in.cpp / main.cpp / midiProxyBLEserver_nimBLE.cpp.
  */
 void switchToPart(byte part);
 
 /**
- * @brief Switch to a specific song and initialize part 0
- * 
- * This function transitions to a new song, resetting all marker LEDs
- * to 0 before setting new markers. It initializes the song at part 0
- * and broadcasts the change to connected BLE clients if in proxy mode.
- * 
- * @param song Song ID to switch to (range: 0-100)
- * 
- * @note Invalid song IDs fall through to defaultLoop()
- * @note Resets markerLED1 through markerLED7 before setting new values
- * @note Calls switchToPart(0) to initialize part 0
- * @note Broadcasts to BLE clients if IS_MIDI_PROXY is defined
- * @see switchToPart()
- * @see switchToSongAndPart()
+ * @brief Einen anderen Song starten (beginnt immer bei Part 0)
+ *
+ * Löscht die Bund-Marker des alten Songs, merkt sich den bisherigen Song in songIDbefore,
+ * setzt songID und ruft switchToPart(0) auf.
+ *
+ * @param song Song-ID (siehe switch(songID) in main.cpp; unbekannte IDs zeigen das Pausenbild)
  */
 void switchToSong(byte song);
 
 /**
- * @brief Immediately switch to a specific song and part combination
- * 
- * This function performs an immediate transition to the specified song
- * and part without waiting for timing or synchronization. It resets all
- * marker LEDs and broadcasts the change if in BLE proxy mode.
- * 
- * @param song Song ID to switch to (range: 0-100)
- * @param part Part ID to switch to (range: 0-7)
- * 
- * @note Does not validate song or part ranges
- * @note Bypasses normal transition timing
- * @note Used for immediate synchronization across BLE devices
- * @see switchToSong()
- * @see switchToPart()
+ * @brief Sofort in einen bestimmten Song UND Part springen
+ *
+ * Für den Abgleich über Bluetooth: ein Gerät, das mitten im Song dazukommt, springt damit direkt
+ * an die richtige Stelle, statt bei Part 0 zu beginnen. Löscht ebenfalls zuerst die Marker.
+ *
+ * @param song Song-ID
+ * @param part Part-Nummer
+ *
+ * @note Song und Part werden nicht auf Gültigkeit geprüft.
  */
 void switchToSongAndPart(byte song, byte part);

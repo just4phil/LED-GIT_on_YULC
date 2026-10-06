@@ -4,25 +4,35 @@
 #include <MIDI.h>  // Add Midi Library
 //---------------------------
 
+//=====================================================================
+// midi_in.cpp - MIDI-Eingang (Erklärung des Protokolls: siehe midi_in.h)
+//=====================================================================
+
+// Die MIDI-Bibliothek braucht ein Objekt, das an einer seriellen Schnittstelle lauscht.
+// MIDI_CREATE_INSTANCE legt es unter dem Namen "MIDI" an.
 //Create an instance of the library with default name, serial port and settings
 //midi::SerialMIDI<SerialPort, _Settings>::SerialMIDI [mit SerialPort=HardwareSerial, _Settings=midi::DefaultSerialSettings]
 //MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 #ifdef USE_ESP32	// #elif defined(USE_TEENSY)
-    HardwareSerial myHardwareSerial(0);
+    HardwareSerial myHardwareSerial(0);		// serielle Schnittstelle Nr. 0 des ESP32 (RX-Pin = Empfang vom WIDI CORE)
     MIDI_CREATE_INSTANCE(HardwareSerial, myHardwareSerial, MIDI);
-    
+
 #elif defined(USE_TEENSY)
     MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 #endif
 
-volatile bool newMidiValuesToBroadcast = false;
+// "Briefkasten" für den Proxy: ein per MIDI empfangener Wechsel wird hier abgelegt;
+// midiProxy_midiLoop() (midiProxyBLEserver_nimBLE.cpp) holt ihn ab und sendet ihn per Bluetooth weiter.
+volatile bool newMidiValuesToBroadcast = false;	// true = es liegt etwas zum Weitersenden bereit
 volatile byte typeID = 0; // msgType -> 0 = NULL / 1 = change Song / 2 = change part
-volatile byte midiInCC = 0;
-volatile byte midiInValue = 0;
+volatile byte midiInCC = 0;		// die empfangene CC-Nummer (22 oder 23)
+volatile byte midiInValue = 0;	// der empfangene Wert = Song-ID bzw. Part-Nummer
 
+// Einen Wechsel in den Briefkasten legen.
+// type: 1 = Songwechsel, 2 = Partwechsel (= msgType der BLE-Nachricht, siehe functions.h)
 void setBroadcastValues(byte type, byte number, byte value) {
     //--- set vlaues for broadcasting to listeners
-    newMidiValuesToBroadcast = true;	
+    newMidiValuesToBroadcast = true;
     typeID = type;
     midiInCC = number;
     midiInValue = value;
@@ -31,9 +41,11 @@ void setBroadcastValues(byte type, byte number, byte value) {
 // MidiDatenAuswerten is the function that will be called by the Midi Library
 // when a Continuous Controller message is received.
 // It will be passed bytes for Channel, Controller Number, and Value
-// It checks if the controller number is within the 22 to 27 range
+// Es wird nur auf Kanal 10 und nur auf die CC-Nummern 22 (Song) und 23 (Part) reagiert.
 void MidiDatenAuswerten(byte channel, byte number, byte value) {
 
+    // Hinweis: zwischen den beiden number-Vergleichen steht ein einfaches "&" (bitweises UND) statt "&&".
+    // Da beide Vergleiche nur 0 oder 1 liefern, ist das Ergebnis hier dasselbe.
     if (channel == 10 && number >= 22 & number <= 23) { // security check ....only act on channel 10!!
 
         // with midi byte 22 the song can be changed!
@@ -55,12 +67,12 @@ void MidiDatenAuswerten(byte channel, byte number, byte value) {
 
 void midi_initialize() {
 	//---- MIDI ----------------
-	MIDI.begin(10); // Initialize the Midi Library.
+	MIDI.begin(10); // Initialize the Midi Library: nur auf MIDI-Kanal 10 hören
 	// OMNI sets it to listen to all channels.. MIDI.begin(2) would set it
 	// to respond to notes on channel 2 only.
 	MIDI.setHandleControlChange(MidiDatenAuswerten); // This command tells the MIDI Library
 	// the function you want to call when a Continuous Controller command
-	// is received. In this case it's "MyCCFunction".
+	// is received. Hier: MidiDatenAuswerten() (ein sogenannter "Callback").
 }
 
 void midi_loop() {

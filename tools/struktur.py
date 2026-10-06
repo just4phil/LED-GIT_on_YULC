@@ -26,9 +26,12 @@ import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-TABLE_FILE = "struktur.xlsx"
-SHEET = "Struktur"
-BEATS_PER_BAR = 4
+# --- Feste Einstellungen ---
+TABLE_FILE = "struktur.xlsx"	# Dateiname der Tabelle in songs/<Song>/quelle/
+SHEET = "Struktur"				# Name des Tabellenblatts
+BEATS_PER_BAR = 4				# Schläge je Takt (alle Songs stehen im 4/4-Takt)
+# Wörterbücher "Beschriftung in der Tabelle (klein geschrieben) -> interner Name". So werden Kopf-Felder und
+# Spalten an ihrem Text erkannt, egal wo sie stehen; mehrere Schreibweisen führen zum selben internen Namen.
 HEAD_LABELS = {"midi-startnummer": "id", "song-id": "id", "bpm": "bpm", "startbit": "startbit", "titel": "name",
 			   "interpret": "artist"}
 COL_LABELS = {"von takt": "von", "songpart": "name", "part": "name", "effektidee": "idea", "energie 0-5": "energy",
@@ -36,36 +39,49 @@ COL_LABELS = {"von takt": "von", "songpart": "name", "part": "name", "effektidee
 			  "bisher (alter code)": "old", "bisher": "old"}
 INFO_KEYS = ("idea", "description", "chords", "old")		# nur für Claude (Gestaltung), der Generator rechnet damit nicht
 END_NAMES = ("ende", "black", "fini", "finito", "back to default")	# so heißt die letzte Zeile (Schlusstakt)
+# Suchmuster ("regulärer Ausdruck") für eine Zeitangabe wie "10 sek." oder "2,5 s" oder "800 ms" in der
+# Effektidee der Ende-Zeile: eine Zahl (mit Punkt oder Komma), dahinter die Einheit.
 END_BLACK_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(ms|sek|sec|s)\b", re.I)
+# Spalten, die write_table() anlegt: (Überschrift, Breite)
 COLS = [("von takt", 9), ("Songpart", 30), ("Effektidee", 40), ("Energie 0-5", 12), ("BPM pro Part", 13)]
 EXTRA_COLS = [("description", "Beschreibung", 50), ("chords", "Akkorde", 28), ("old", "bisher (alter Code)", 70)]
-HEADER_ROW = 5
+HEADER_ROW = 5		# in dieser Zeile schreibt write_table() die Spaltenüberschriften
 
 
+# Eigene Fehlerart für alles, was an einer Tabelle nicht stimmt. songgen.py fängt sie ab und zeigt dem User
+# die Meldung im Klartext statt eines Programmabsturzes.
 class TableError(Exception):
 	pass
 
 
+# --- Kleine Helfer zum Aufbereiten von Zellinhalten ---
+# Zahl ohne überflüssige Nullen als Text: 21.7500 -> "21.75", 8.0000 -> "8"
 def fmt(x):
 	return f"{x:.4f}".rstrip("0").rstrip(".")
 
 
+# Zellinhalt als Text in einer Zeile: leere Zelle -> "", mehrfache Leerzeichen und Umbrüche -> ein Leerzeichen
 def text(v):
 	return "" if v is None else " ".join(str(v).split())
 
 
+# wie text(), aber Zeilenumbrüche bleiben erhalten (für die Spalte "bisher (alter Code)")
 def multiline(v):
 	return "" if v is None else "\n".join(l.strip() for l in str(v).splitlines() if l.strip())
 
 
+# Beschriftung zum Vergleichen: klein geschrieben, ohne Doppelpunkt am Ende ("BPM:" -> "bpm")
 def label(v):
 	return text(v).lower().rstrip(":").strip() if isinstance(v, str) else ""
 
 
+# Ist die Zelle leer (gar kein Inhalt oder nur Leerzeichen)?
 def empty(v):
 	return v is None or (isinstance(v, str) and not v.strip())
 
 
+# Zellinhalt als Zahl. Akzeptiert Zahlen, Text mit Komma oder Punkt ("21,75") und - wenn erlaubt - Brüche ("3/8").
+# what = Beschreibung der Stelle für die Fehlermeldung.
 def number(v, what, allow_fraction=False):
 	if isinstance(v, bool) or empty(v):
 		raise TableError(f"{what} fehlt")
@@ -113,6 +129,7 @@ def startbit_of(song):
 #=========== lesen ================================================
 #==================================================================
 
+# Durchsucht die ersten 40 Zeilen jedes Blatts nach der Zeile mit den Spaltenüberschriften.
 def find_sheet(wb):
 	"""Blatt mit der Kopfzeile ('von takt' + 'Songpart'): bevorzugt das Blatt 'Struktur'. Liefert (Blatt, Zeile, Spalten)."""
 	sheets = ([wb[SHEET]] if SHEET in wb.sheetnames else []) + [ws for ws in wb.worksheets if ws.title != SHEET]
@@ -129,6 +146,9 @@ def find_sheet(wb):
 					 "(das alte Kalkulator-Format mit 'bis takt' wird nicht mehr gelesen)")
 
 
+# Die Hauptfunktion: liest die Tabelle und liefert alles als "Dictionary" (Nachschlagetabelle Name -> Wert).
+# Ablauf: 1. Blatt und Kopfzeile finden, 2. Kopf-Felder lesen (Titel, Song-ID, BPM, StartBit), 3. die Zeilen
+# der Parts lesen und prüfen, 4. aus den "von takt"-Werten die Länge jedes Parts berechnen.
 def read_table(path):
 	"""Tabelle -> Song-Dict, wie es songgen.build_timeline() erwartet (id, name, artist, bpm, midi_offset, sections ...)."""
 	try:
@@ -247,6 +267,8 @@ def read_table(path):
 	return song
 
 
+# Ein "Hash" ist ein Fingerabdruck: gleiche Inhalte ergeben dieselbe Zeichenfolge, die kleinste Änderung eine
+# völlig andere. songgen.py merkt sich ihn je Version und erkennt daran, ob die Tabelle seitdem geändert wurde.
 def content_sha(song):
 	"""Hash über den gelesenen Inhalt der Tabelle (Excel ändert die Datei-Bytes bei jedem Speichern)."""
 	data = {k: v for k, v in song.items() if not k.startswith("_")}
@@ -267,6 +289,8 @@ def table_sha(path):
 #=========== schreiben (Vorlage, Umstellung alter Songs) ==========
 #==================================================================
 
+# Legt eine NEUE Tabelle an (Vorlage für einen neuen Song bzw. Rückholen einer alten Version).
+# Eine vorhandene Tabelle wird nie überschrieben - sie gehört dem User.
 def write_table(path, song, notes=()):
 	"""Song-Dict (Form wie read_table) als Tabelle im Format des Users schreiben. Überschreibt nie eine vorhandene Datei."""
 	if path.exists():

@@ -10,7 +10,14 @@
  * Kalibrierung: GUITAR_HEAD_TIP_IDX, GUITAR_LOOP_DIR und die ZONE_* Werte in definitions.h.
  *
  * Alle prog-Funktionen folgen dem üblichen Muster (durationMillis, nextPart, ...) und rufen
- * am Ende gitBlindingLEDs_OFF_MarkerLEDs_ON() + FastLED.show() auf.
+ * am Ende fxShow() auf (-> fxPresent() in fxPipeline.cpp: Ausgabestufe, Marker, FastLED.show()).
+ *
+ * Die beiden ersten Parameter sind bei jedem Effekt gleich:
+ *   durationMillis  Länge des Parts in Millisekunden
+ *   nextPart        Nummer des Parts, der danach folgt
+ * Ein Effekt wird während seines Parts bei JEDEM Durchlauf von loop() aufgerufen und malt jedes Mal ein Bild.
+ *
+ * Wie die Rechnung mit Konturposition, Abstand und Ort funktioniert, ist in guitarShapeFX.cpp erklärt.
  */
 #pragma once
 
@@ -20,6 +27,9 @@
 #include "fxPipeline.h"
 
 //--- Defaults für Geräte ohne SG-Geometrie (skaliert auf anz_LEDs) ---
+// Nur die Gitarre hat ausgemessene Werte in definitions.h. Für alle anderen Geräte werden die Werte der Gitarre
+// (163 LEDs) im Verhältnis der LED-Zahl umgerechnet, damit dieselben Effekte auch dort laufen.
+// "#ifndef X" = nur wenn X noch NICHT definiert ist.
 #ifndef GUITAR_HEAD_TIP_IDX
 	#define GUITAR_HEAD_TIP_IDX		(anz_LEDs * 77 / 163)
 	#define GUITAR_LOOP_DIR			1
@@ -58,18 +68,20 @@ uint16_t loopToLed(int k);						// Konturposition -> LED-Index
 uint16_t ledToLoop(uint16_t i);					// LED-Index -> Konturposition
 uint8_t zoneOfLoop(uint16_t k);					// Konturposition -> GuitarZone
 void setMirrored(uint16_t dFromHead, CRGB col);	// setzt beide Seiten im Abstand d von der Kopfspitze
-void fillZone(uint8_t zone, CRGB col);
-void fire2012Step(uint8_t* heat, int len);
+void fillZone(uint8_t zone, CRGB col);			// ganze Zone (GuitarZone) einfärben
+void fire2012Step(uint8_t* heat, int len);		// ein Fire2012-Schritt, heat[0] = unten
 
 //--- gemeinsames Grundgerüst für prog-Funktionen (auch von scenes.cpp genutzt) ---
 bool fxPartStart(unsigned int durationMillis, byte nextPart);	// true beim ersten Aufruf eines Parts
 bool fxFrameDue(unsigned int ms);								// true, wenn der nächste Frame fällig ist
 void fxShow();													// Marker + FastLED.show(), beachtet LEDsTurnedOff
 unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm);				// ms seit dem letzten Beat, ohne Rundungsdrift
-uint32_t fxBeats(uint8_t bpm);									// Beats seit Partbeginn		// ein Fire2012-Schritt, heat[0] = unten
-extern const CRGBPalette16 outlineBlueFire_p;
+uint32_t fxBeats(uint8_t bpm);									// Beats seit Partbeginn
+extern const CRGBPalette16 outlineBlueFire_p;					// Farbverlauf für blaues Feuer (Schwarz -> Blau -> Weiß)
 
 //--- Effekte ---
+// Die meisten gibt es in zwei Fassungen: mit allen Parametern und als Kurzform mit bewährten Vorgabewerten.
+// hue = Farbton 0..255 (einmal um den Farbkreis: 0 rot, 96 grün, 160 blau), bpm = Tempo in Beats pro Minute.
 // 1: Komet mit Schweif um die Kontur, optional zweiter Komet gegenläufig
 void progCometLoop(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, uint8_t hue, bool twoComets);
 void progCometLoop(unsigned int durationMillis, byte nextPart);

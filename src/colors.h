@@ -1,38 +1,22 @@
 /**
  * @file colors.h
- * @brief RGB565 color definitions for LED matrix displays
- * 
- * This file provides pre-defined color constants in RGB565 format
- * for use with LED matrix displays. Colors are defined at multiple
- * intensity levels (very low, low, medium, high) to support
- * dynamic brightness control and visual effects.
- * 
- * Color Format:
- * - RGB565: 16-bit color format (5 bits red, 6 bits green, 5 bits blue)
- * - Red: Bits 11-15 (5 bits, range 0-31)
- * - Green: Bits 5-10 (6 bits, range 0-63)
- * - Blue: Bits 0-4 (5 bits, range 0-31)
- * 
- * Intensity Levels:
- * - VERYLOW: Minimal brightness for subtle effects
- * - LOW: Low brightness for background elements
- * - MEDIUM: Medium brightness for standard display
- * - HIGH: Maximum brightness for highlights
- * 
- * Color Mixing:
- * - Compound colors (orange, purple, cyan, white) are created
- *   by summing the RGB component values
- * 
- * Usage:
- * - Use these constants directly when setting LED colors
- * - Compatible with FastLED_NeoMatrix library
- * - Works with RGB LED matrices (WS2812B, WS2811, etc.)
- * 
- * @note These definitions use RGB565 bit shifting for efficiency
- * @note Alternative: Use matrix->color(r, g, b) for runtime color generation
- * @note Compatible with Adafruit GFX backends lacking color() method
- * 
- * @see FastLED_NeoMatrix
+ * @brief Fertige Farben im 16-Bit-Format für die Zeichenfunktionen der Matrix (Text, Linien, Kreise)
+ *
+ * Im Projekt gibt es zwei Arten, eine Farbe anzugeben:
+ *   - CRGB(rot, gruen, blau), je 0..255 (FastLED): für alles, was direkt in leds[] schreibt
+ *   - einen 16-Bit-Wert "RGB565": für matrix->drawLine(), setTextColor() usw. Dafür sind die Namen hier gedacht.
+ * Umrechnen von CRGB nach RGB565: toRGB565() in colorSchemes.cpp.
+ *
+ * RGB565 packt die drei Farbanteile in eine einzige 16-Bit-Zahl:
+ *   Bit 15..11 = Rot (5 Bit, 0..31), Bit 10..5 = Grün (6 Bit, 0..63), Bit 4..0 = Blau (5 Bit, 0..31)
+ * Die Schreibweise "(15 << 11)" heißt: den Wert 15 um 11 Stellen nach links schieben, also in das Rot-Feld setzen.
+ *
+ * Jede Farbe gibt es in vier Helligkeitsstufen: VERYLOW, LOW, MEDIUM, HIGH.
+ * Mischfarben (Orange, Lila, Cyan, Weiß) entstehen durch Addieren der Grundfarben - das geht, weil
+ * Rot, Grün und Blau in getrennten Bit-Feldern liegen.
+ *
+ * Die Farbe selbst ist hier fest; wie hell sie am Ende leuchtet, bestimmt zusätzlich die Gesamthelligkeit
+ * (BRIGHTNESS in main.cpp).
  */
 
 //===============================================

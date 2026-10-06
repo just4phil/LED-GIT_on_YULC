@@ -20,6 +20,35 @@ extern boolean forceLEDsync; // in main
 extern boolean waitForLEDsync; // in main
 //-------------------------------------------
 
+//=====================================================================
+// midiProxyBLEserver_nimBLE.cpp - Bluetooth-Sender des Proxys (nur Gitarre ANDRESGIT)
+//=====================================================================
+// Die Gitarre bekommt Song und Part per MIDI und gibt sie über Bluetooth Low Energy (BLE) an Bass,
+// Lampen und Matrix weiter. Verwendet wird die Bibliothek NimBLE.
+//
+// Die wichtigsten BLE-Begriffe:
+//   Server / Client   Der Server bietet Daten an (hier: der Proxy), Clients verbinden sich mit ihm.
+//   Advertising       Der Server sendet regelmäßig "ich bin da", damit Clients ihn finden können.
+//   Service           Eine Gruppe zusammengehöriger Daten, erkennbar an ihrer Kennnummer (SERVICE_UUID).
+//   Characteristic    EIN Datenwert innerhalb des Service (CHARACTERISTIC_UUID). Hier ist das die
+//                     3-Byte-Nachricht BLEmessage (functions.h). Clients können sie lesen (READ),
+//                     beschreiben (WRITE) und sich Änderungen zuschicken lassen (NOTIFY).
+//   Notify            Der Server schickt den Wert von sich aus an alle Clients, die das abonniert
+//                     haben ("subscribe"). So werden Song- und Part-Wechsel verteilt.
+//   Callback          Eine Funktion, die die Bibliothek von selbst aufruft, wenn etwas passiert
+//                     (Verbindung, Lesen, Schreiben ...). Sie läuft NICHT in loop(), sondern im
+//                     Bluetooth-Teil des Systems - deshalb werden dort meist nur Merker gesetzt.
+//
+// Ablauf der Nachrichten (msgType, siehe functions.h):
+//   1 / 2   Song- bzw. Part-Wechsel, der per MIDI ankam -> sofort an alle (midiProxy_midiLoop)
+//   3       erzwungener Abgleich: Song + Part des Proxys an alle (forceLEDsync)
+//   4       "jetzt beginnt Part n": zeitgenauer Einstieg nach einem Abgleich (gesendet in main.cpp)
+//   5       der Proxy bittet einen Client um dessen Stand (needLEDsync); Antwort kommt in onWrite()
+//   7       alle Geräte in den Firmware-Update-Modus (midiProxy_broadcastOTA)
+// Bei Änderungen am Protokoll docs/OTA-Update.html mitziehen.
+
+// Nur diese Geräte dürfen sich verbinden (Bluetooth-Adressen aus definitions.h). Fremde Geräte
+// werden in onConnect() sofort wieder getrennt.
 const char* client_addresses[] = {
     CLIENT_ADDRESS_YULC2,   // RINAs YULC
     CLIENT_ADDRESS_YULC4,   // YULC 4 vom 12.3.25
@@ -32,6 +61,8 @@ const size_t client_address_count = sizeof(client_addresses) / sizeof(client_add
 uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 //volatile bool syncLEDgits = false;
 
+// Merker aus den Callbacks: "es hat sich jemand verbunden / getrennt". midiProxy_midiLoop() wertet sie
+// aus (derzeit nur für die Meldung auf Serial).
 bool aDeviceConnected = false;
 bool aDeviceDISconnected = false;
 volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications (für OTA-Broadcast)
@@ -39,12 +70,13 @@ volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications 
 #define OTA_CLIENT_WAIT_MS      20000   // so lange wartet midiProxy_broadcastOTA() höchstens auf die Clients
 #define OTA_CLIENT_QUIET_MS     5000    // ... und sendet früher, wenn sich so lange kein weiterer Client angemeldet hat
 
-static NimBLEServer* pServer;
-NimBLEService *pService;
-NimBLECharacteristic *pCharacteristic;
-NimBLEAdvertising *pAdvertising;
+// Zeiger auf die BLE-Objekte, angelegt in midiProxy_initialize_BLE()
+static NimBLEServer* pServer;			// der Server selbst
+NimBLEService *pService;				// unser Service
+NimBLECharacteristic *pCharacteristic;	// unser Datenwert (die BLEmessage)
+NimBLEAdvertising *pAdvertising;		// das "ich bin da"-Senden
 
-BLEmessage bleMessage;
+BLEmessage bleMessage;	// die zuletzt gesetzte/gesendete Nachricht
 
 // Funktion, um zu prüfen, ob eine Adresse erlaubt ist
 bool is_address_in_array(const char* address) {
@@ -58,7 +90,10 @@ bool is_address_in_array(const char* address) {
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
+// Callbacks für Verbindungsaufbau und -abbau. "class X : public Y" heißt: unsere Klasse übernimmt
+// alles von der Bibliotheksklasse Y und ersetzt ("override") nur die Funktionen, die uns interessieren.
 class ServerCallbacks : public NimBLEServerCallbacks {
+    // Ein Gerät hat sich verbunden
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
         #if defined(debug_ble_proxy)
             Serial.printf("Client address: %s\n", connInfo.getAddress().toString().c_str());
@@ -89,6 +124,8 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 
         NimBLEDevice::startAdvertising(); // wichtig damit auch der zweite client connecten kann!
     }
+    // Ein Gerät ist weg (ausgeschaltet, außer Reichweite): wieder auffindbar machen, damit es
+    // sich von selbst neu verbinden kann
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
         #if defined(debug_ble_proxy)
             Serial.printf("Client disconnected - start advertising\n");
@@ -125,7 +162,11 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 } serverCallbacks;
 
 /** Handler class for characteristic actions */
+// Callbacks für Zugriffe der Clients auf unseren Datenwert
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
+    // Ein Client hat den Wert GELESEN, d.h. er hat sich Song + Part des Proxys geholt (needLEDsync am
+    // Client). Damit kennt er den Part, aber nicht, wie weit dieser schon gelaufen ist. Deshalb meldet der
+    // Proxy den nächsten Part-Wechsel aktiv (msgType 4, in main.cpp) - ab da läuft der Client zeitgleich.
     void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
         // Serial.printf("%s : onRead(), value: %s\n",
         //        pCharacteristic->getUUID().toString().c_str(),
@@ -139,6 +180,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         #endif
     }
     
+    // Ein Client hat den Wert BESCHRIEBEN, d.h. er schickt dem Proxy seinen Stand: als Antwort auf
+    // msgType 5 (dann msgType 6) und noch einmal bei seinem nächsten Part-Wechsel (msgType 4).
+    // Der Proxy übernimmt Song + Part des Clients, ohne den msgType zu unterscheiden.
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
         //Serial.println("onWrite(): server reads incoming data");
         // Auslesen der Daten
@@ -153,6 +197,7 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         // }
 
         BLEmessage receivedData;
+        // Nur annehmen, wenn genau 3 Bytes ankamen; memcpy kopiert die rohen Bytes in die Struktur
         if (value.length() == sizeof(BLEmessage)) {
             memcpy(&receivedData, value.data(), sizeof(BLEmessage));
             //Serial.printf("read characterisitc - Song: %d, Part: %d\n", receivedData.songID, receivedData.part);
@@ -176,6 +221,8 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     // }
 
     /** Peer subscribed to notifications/indications */
+    // Ein Client hat Notifications abonniert (subValue > 0) oder abbestellt (0). Mitgezählt wird nur,
+    // damit das OTA-Update weiß, wie viele Clients den Update-Befehl empfangen können.
     void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
         #if defined(debug_ble_proxy)
             Serial.printf("a client subscribed to notifications");
@@ -186,13 +233,14 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     }
 } chrCallbacks;
 
+// Bluetooth-Server aufbauen und auffindbar machen (einmal aus setup()).
 void midiProxy_initialize_BLE() {
-    
-    NimBLEDevice::init("midi-proxy");
+
+    NimBLEDevice::init("midi-proxy");       // Bluetooth starten, Gerätename "midi-proxy"
     pServer = NimBLEDevice::createServer();
     /** Optional: set the transmit power */
-    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
-    NimBLEDevice::setMTU(23);
+    NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power (größte Reichweite auf der Bühne)
+    NimBLEDevice::setMTU(23);               // kleinste Paketgröße genügt: unsere Nachricht hat nur 3 Bytes
     //NimBLEDevice::setMaxConnections(4);  // 4 Clients zulassen -> geht so nicht -> in plattformio.ini konfiguriert in build-flags
     pService = pServer->createService(SERVICE_UUID);
     pServer->setCallbacks(&serverCallbacks);
@@ -207,7 +255,9 @@ void midiProxy_initialize_BLE() {
     //pCharacteristic->setMaxLength(sizeof(SongAndPart));
     pCharacteristic->setCallbacks(&chrCallbacks);
     pService->start();
-    
+
+    // Advertising: der Proxy macht sich mit seiner Service-Kennnummer auffindbar. Die Clients
+    // suchen genau nach dieser Nummer (BLE_client_nimBLE.cpp).
     pAdvertising = NimBLEDevice::getAdvertising();
     //pAdvertising->setName("midi-proxy");  // wenn dies aktiv ist kommt keine connection zustande!
     pAdvertising->addServiceUUID(SERVICE_UUID); 
@@ -227,6 +277,8 @@ void midiProxy_initialize_BLE() {
     4 = switch part after LEDsync
     7 = enter OTA update mode (midiProxy_broadcastOTA)
 */
+// Nachricht nur HINTERLEGEN: sie steht danach im Datenwert und kann von Clients gelesen werden,
+// wird aber nicht aktiv verschickt.
 void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     bleMessage.msgType = msgType;
     bleMessage.songID = songID;
@@ -234,17 +286,22 @@ void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     pCharacteristic->setValue((uint8_t*)&bleMessage, sizeof(bleMessage));
 }
 
+// Nachricht hinterlegen UND per Notify sofort an alle angemeldeten Clients schicken.
+// Es gibt keine Empfangsbestätigung: ein Client außer Reichweite verpasst die Nachricht.
 void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part) {
     setBLEmessageForLEDsync(msgType, songID, part);
     pCharacteristic->notify();
 }
 
 // Knopf beim Einschalten gedrückt: alle Clients + Proxy in den OTA-Update-Modus. Kehrt nicht zurück.
+// Hier ist delay() erlaubt: die Show läuft noch nicht (Aufruf aus setup(), vor dem Start des Timers).
 void midiProxy_broadcastOTA() {
     Serial.println("proxy: OTA für alle Geräte -> warte auf Clients");
-    unsigned long start = millis();
-    unsigned long lastJoin = start;
-    uint8_t seenClients = 0;
+    unsigned long start = millis();     // Beginn des Wartens
+    unsigned long lastJoin = start;     // Zeitpunkt, zu dem sich zuletzt ein Client angemeldet hat
+    uint8_t seenClients = 0;            // so viele Clients waren beim letzten Nachsehen angemeldet
+    // Warten, bis alle erwarteten Clients angemeldet sind - höchstens OTA_CLIENT_WAIT_MS.
+    // Währenddessen zeigt ein lila Balken, wie viele schon da sind.
     while (subscribedClients < client_address_count && millis() - start < OTA_CLIENT_WAIT_MS) {
         if (subscribedClients != seenClients) {
             seenClients = subscribedClients;
@@ -268,6 +325,7 @@ void midiProxy_broadcastOTA() {
     otaRequestAndRestart();
 }
 
+// Bei jedem loop()-Durchlauf: arbeitet die Merker ab, die MIDI, Drehknopf und Callbacks gesetzt haben.
 void midiProxy_midiLoop() {
 
     if (aDeviceConnected) {
@@ -287,6 +345,7 @@ void midiProxy_midiLoop() {
         aDeviceDISconnected = false;
     }
 
+    // Per MIDI kam ein Song- oder Part-Wechsel an (midi_in.cpp hat ihn vorgemerkt) -> an alle Clients senden
     // notify changed value
     if (newMidiValuesToBroadcast) {
         //if (anzahl_BLE_devices > 0) {
@@ -311,6 +370,8 @@ void midiProxy_midiLoop() {
         newMidiValuesToBroadcast = false;	// wenn kein client connected, dann flag einfach löschen ... später möglichst syncen
     }
 
+    // Doppelklick am Drehknopf des Proxys: der Proxy holt sich den Stand von einem Client.
+    // Er sendet die Bitte (msgType 5); die Antwort trifft in onWrite() ein.
     if (needLEDsync) {
         needLEDsync = false;
         #if defined(debug_ble_proxy)
@@ -319,6 +380,8 @@ void midiProxy_midiLoop() {
         sendBLEmessageForLEDsync(5, 0, 0);
     }        
 
+    // Kurzer Klick am Drehknopf des Proxys oder Not-Aus: alle Clients auf Song + Part des Proxys zwingen.
+    // Der zeitgenaue Einstieg folgt mit dem nächsten Part-Wechsel (syncProgWithNextChange -> msgType 4).
     if (forceLEDsync) {
         forceLEDsync = false;
         #if defined(debug_ble_proxy)

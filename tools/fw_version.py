@@ -12,9 +12,13 @@ import os
 import subprocess
 import time
 
+# Dieses Skript wird nicht von Hand gestartet: PlatformIO führt es vor jedem Build aus (Eintrag "extra_scripts"
+# in platformio.ini). "env" ist die Build-Umgebung, die PlatformIO dafür bereitstellt.
 Import("env")  # noqa: F821 (von PlatformIO bereitgestellt)
 
+# Version: von build_ota.py vorgegeben, sonst die jetzige Zeit in Sekunden seit 1970
 version = os.environ.get("FW_VERSION") or str(int(time.time()))
+# Kurze Kennung des Git-Stands, nur zur Anzeige ("+" = es gibt nicht committete Änderungen)
 try:
     git = subprocess.check_output(
         ["git", "rev-parse", "--short", "HEAD"], cwd=env["PROJECT_DIR"], text=True  # noqa: F821
@@ -27,6 +31,9 @@ except Exception:
 print(f"fw_version: FW_VERSION={version} FW_GIT={git}")
 
 
+# Wird von PlatformIO für JEDE Quelldatei aufgerufen. Nur für src/otaUpdate.cpp werden die beiden Werte als
+# #define mitgegeben (wie eine Zeile "#define FW_VERSION 1759740000UL" am Dateianfang); alle anderen Dateien
+# bleiben unberührt und müssen deshalb bei einer neuen Version nicht neu übersetzt werden.
 def add_version(env, node):
     if not node.get_path().replace("\\", "/").endswith("src/otaUpdate.cpp"):
         return node

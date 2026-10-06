@@ -15,6 +15,19 @@ extern boolean needLEDsync; // in main
 extern boolean waitForLEDsync; // in main
 //-------------------------------------------
 
+//=====================================================================
+// BLE_client_nimBLE.cpp - Bluetooth-Empfänger (Bass, Lampen, Matrix)
+//=====================================================================
+// Gegenstück zu midiProxyBLEserver_nimBLE.cpp (dort sind die BLE-Begriffe erklärt). Ein Client
+//   1. sucht ("scannt") nach einem Gerät, das unseren Service anbietet - das ist der Proxy,
+//   2. verbindet sich damit und abonniert die Notifications,
+//   3. führt jede ankommende Nachricht aus (Song-/Part-Wechsel, Abgleich, OTA),
+//   4. sucht von selbst neu, wenn die Verbindung abreißt.
+//
+// Wichtig: Die Callbacks (notifyCallback, onResult ...) laufen im Bluetooth-Teil des Systems, nicht in
+// loop(). Sie legen deshalb nur Werte ab und setzen Merker; ausgeführt wird alles in BLE_client_Loop().
+
+// Die Kennnummern von Service und Datenwert des Proxys (aus definitions.h)
 static BLEUUID serviceUUID(SERVICE_UUID);       // verbindung zum midi proxy
 static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 
@@ -24,18 +37,19 @@ static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 //-------------------------------------------
 
 //BLEScan *pBLEScan;
-static boolean doConnect = false;
-static boolean connected = false;
+static boolean doConnect = false;	// Merker: der Proxy wurde gefunden -> BLE_client_Loop() soll verbinden
+static boolean connected = false;	// true, solange die Verbindung zum Proxy steht
 static boolean isScanning = false;	// True if scan started or false if there was an error.
-boolean informServerOnNextProgChange = false;
-static const NimBLEAdvertisedDevice* advDevice;
-NimBLEScan* pBLEScan;
-volatile bool newMidiValuesReceivedFromProxy = false;
-volatile byte newMsgTypeIDfromProxy = 0;
-volatile byte newMidiCCfromProxy = 0;
-volatile byte newMidiValueFromProxy = 0;
+boolean informServerOnNextProgChange = false;	// der Proxy hat nach unserem Stand gefragt: den nächsten Part-Wechsel auch melden
+static const NimBLEAdvertisedDevice* advDevice;	// das beim Suchen gefundene Gerät (der Proxy)
+NimBLEScan* pBLEScan;				// das Such-Objekt der Bibliothek
+// "Briefkasten": notifyCallback() legt die empfangene Nachricht hier ab, BLE_client_Loop() führt sie aus
+volatile bool newMidiValuesReceivedFromProxy = false;	// true = es liegt eine neue Nachricht vor
+volatile byte newMsgTypeIDfromProxy = 0;	// Byte 1: msgType
+volatile byte newMidiCCfromProxy = 0;		// Byte 2: Song-ID (der Name stammt noch aus der Zeit, als hier die MIDI-CC-Nummer stand)
+volatile byte newMidiValueFromProxy = 0;	// Byte 3: Part-Nummer
 
-static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time.
+static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time. Danach startet onScanEnd() die Suche neu
 //----------------------------
     /** Now we can read/write/subscribe the characteristics of the services we are interested in */
     NimBLERemoteService*        pSvc = nullptr;
@@ -45,12 +59,15 @@ static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time.
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
+// Callbacks für Verbindungsaufbau und -abbau
 class ClientCallbacks : public NimBLEClientCallbacks {
     void onConnect(NimBLEClient* pClient) override { 
         #if defined(debug_ble_client)
             Serial.printf("Connected\n"); 
         #endif
         }
+    // Verbindung verloren (Proxy aus oder außer Reichweite): sofort wieder suchen.
+    // Die Show läuft inzwischen nach der eigenen Uhr weiter.
     void onDisconnect(NimBLEClient* pClient, int reason) override {
         #if defined(debug_ble_client)
             Serial.printf("%s Disconnected, reason = %d - Starting scan\n", pClient->getPeerAddress().toString().c_str(), reason);
@@ -84,6 +101,7 @@ class ClientCallbacks : public NimBLEClientCallbacks {
     // }
 } clientCallbacks;
 
+// Callbacks der Suche
 class scanCallbacks : public NimBLEScanCallbacks {
     // /** Initial discovery, advertisement data only. */
     // void onDiscovered(const NimBLEAdvertisedDevice* advertisedDevice) override {
@@ -92,6 +110,8 @@ class scanCallbacks : public NimBLEScanCallbacks {
      *  If active scanning the result here will have the scan response data.
      *  If not active scanning then this will be the same as onDiscovered.
      */
+    // Wird für jedes Bluetooth-Gerät in der Nähe aufgerufen. Uns interessiert nur das Gerät, das
+    // unseren Service anbietet: dann Suche beenden, Gerät merken und das Verbinden anstoßen.
     void onResult(const NimBLEAdvertisedDevice* advertisedDevice) override {
         #if defined(debug_ble_client)
             Serial.printf("Advertised Device found: %s\n", advertisedDevice->toString().c_str());
@@ -109,6 +129,7 @@ class scanCallbacks : public NimBLEScanCallbacks {
             doConnect = true;
         }
     }
+    // Die Suchzeit (10 s) ist abgelaufen: ohne Verbindung einfach von vorn suchen
     void onScanEnd(const NimBLEScanResults& results, int reason) override {
         printf("Scan ended reason = %d; ", reason);
         isScanning = false;
@@ -120,6 +141,7 @@ class scanCallbacks : public NimBLEScanCallbacks {
     }
 } scanCallbacks;
 
+// Bluetooth starten (Gerätename "midi-client", volle Sendeleistung)
 void initialize_Device() {
     #if defined(debug_ble_client)
         Serial.println("Starting BLE Client ...");
@@ -129,6 +151,7 @@ void initialize_Device() {
     NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
 } 
 
+// Die Suche einrichten
 void set_values() {
     pBLEScan = NimBLEDevice::getScan(); // Create the scan object.
     pBLEScan->setScanCallbacks(&scanCallbacks, false); // Set the callback for when devices are discovered, no duplicates.
@@ -136,12 +159,14 @@ void set_values() {
     pBLEScan->setMaxResults(0);             // Do not store the scan results, use callback only.
 } 
 
+// Die Suche starten (läuft im Hintergrund, Ergebnisse kommen über scanCallbacks)
 void scan() {
     pBLEScan->start(scanTimeMs, false, true); // duration, not a continuation of last scan, restart to get all devices again.
     printf("Scanning...\n");
     isScanning = true;
 }
 
+// Einmal aus setup(): Bluetooth starten und nach dem Proxy suchen
 void BLE_client_initialize() { 
     initialize_Device();
     set_values();
@@ -149,6 +174,8 @@ void BLE_client_initialize() {
 }
 
 /** Notification / Indication receiving handler callback */
+// Der Proxy hat eine Nachricht geschickt. pData zeigt auf die empfangenen Bytes (unsere BLEmessage:
+// msgType, Song, Part). Hier werden sie nur in den Briefkasten gelegt.
 void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
     
     // //===== TEST 03.01.2025: =============================
@@ -181,6 +208,8 @@ void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_
     newMidiValuesReceivedFromProxy = true;
 }
 
+// Verbindung zum gefundenen Proxy aufbauen und seine Notifications abonnieren.
+// Rückgabe true = verbunden. Der auskommentierte Block am Anfang ist die alte Fassung (vor NimBLE).
 bool connectToServer() {
     // Serial.print("Forming a connection to ");
     // Serial.println(myDevice->getAddress().toString().c_str());
@@ -223,8 +252,10 @@ bool connectToServer() {
 
     //--------------------------------
 
-    NimBLEClient* pClient = nullptr;
+    NimBLEClient* pClient = nullptr;	// unser "Verbindungs-Objekt"; nullptr = noch keins
 
+    // Schritt 1: Gibt es schon ein Verbindungs-Objekt für diesen Proxy (nach einem Abriss)? Dann
+    // wiederverwenden - das geht deutlich schneller als ein kompletter Neuaufbau.
     /** Check if we have a client we should reuse first **/
     if (NimBLEDevice::getCreatedClientCount()) {
         /**
@@ -252,6 +283,7 @@ bool connectToServer() {
         }
     }
 
+    // Schritt 2: sonst ein neues Verbindungs-Objekt anlegen und verbinden
     /** No client to reuse? Create a new one. */
     if (!pClient) {
         if (NimBLEDevice::getCreatedClientCount() >= NIMBLE_MAX_CONNECTIONS) {
@@ -307,6 +339,7 @@ bool connectToServer() {
     // NimBLERemoteCharacteristic* pChr = nullptr;
     //NimBLERemoteDescriptor*     pDsc = nullptr;
 
+    // Schritt 3: auf dem Proxy unseren Service und darin unseren Datenwert heraussuchen
     pSvc = pClient->getService(SERVICE_UUID);
     if (pSvc) {
         pChr = pSvc->getCharacteristic(CHARACTERISTIC_UUID);
@@ -331,6 +364,8 @@ bool connectToServer() {
             // }
         }
 
+        // Schritt 4: Notifications abonnieren. Ab jetzt ruft die Bibliothek bei jeder Nachricht
+        // des Proxys notifyCallback() auf.
         if (pChr->canNotify()) {
             if (!pChr->subscribe(true, notifyCallback)) {
                 #if defined(debug_ble_client)
@@ -368,6 +403,7 @@ bool connectToServer() {
     return true;
 }
 
+// Eine vom Proxy empfangene Nachricht ausführen (Nachrichtentypen: siehe BLEmessage in functions.h).
 void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 
     switch (msgType) {
@@ -383,6 +419,9 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
             switchToPart(part);
             break;
         
+        // Erzwungener Abgleich: sofort in Song + Part des Proxys springen und dunkel schalten. Wie weit
+        // der Part beim Proxy schon gelaufen ist, weiß der Client nicht - deshalb wartet er auf den
+        // nächsten Part-Wechsel des Proxys (msgType 4) und läuft erst ab dann zeitgleich mit.
         case 3:    // server forces the clients to sync
             //needLEDsync = true;
             #if defined(debug_ble_client)
@@ -399,6 +438,7 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
             waitForLEDsync = true;
             break;
 
+        // "Jetzt beginnt Part n" - nur von Bedeutung, wenn dieser Client gerade auf den Einstieg wartet
         case 4:    // sync gits after connect/subscribe, but only if there is actually no song running
             if (waitForLEDsync) {  // TESTEN !!!--------------------------------
                 #if defined(debug_ble_client)
@@ -410,8 +450,10 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
             }
             break;
 
+        // Der Proxy möchte UNSEREN Stand übernehmen: Song + Part als msgType 6 zurückschreiben und
+        // vormerken, dass auch der nächste Part-Wechsel gemeldet wird (informServerOnNextChange).
         case 5:    // the server requests a sync; value doesnt matter
-            #if defined(debug_ble_client)    
+            #if defined(debug_ble_client)
                 Serial.println("server requests a sync -> write values to server:"); 
                 Serial.print("songID: ");
                 Serial.println(songID);
@@ -445,6 +487,9 @@ void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 }
 
 // the server requests a sync; value doesnt matter
+// Wird von loop() bei JEDEM automatischen Part-Wechsel aufgerufen, tut aber nur etwas, wenn der Proxy
+// vorher per msgType 5 nach unserem Stand gefragt hat: dann schreibt der Client "jetzt beginnt Part n"
+// (msgType 4) an den Proxy, damit dieser zeitgleich einsteigt.
 void informServerOnNextChange(byte nextPart) {
     if (informServerOnNextProgChange) {
         informServerOnNextProgChange = false;
@@ -465,6 +510,8 @@ void informServerOnNextChange(byte nextPart) {
     }
 }
 
+// Bei jedem loop()-Durchlauf: verbinden, wenn der Proxy gefunden wurde; empfangene Nachrichten
+// ausführen; auf Wunsch (Drehknopf) den Stand des Proxys holen.
 void BLE_client_Loop() {
     // If the flag "doConnect" is true then we have scanned for and found the desired
     // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
@@ -503,6 +550,9 @@ void BLE_client_Loop() {
         }
     } 
 
+    // Kurzer Klick am Drehknopf dieses Clients: Song + Part aktiv beim Proxy abholen (READ) und
+    // dorthin springen. Der Proxy bemerkt das Lesen und meldet seinen nächsten Part-Wechsel
+    // (msgType 4) - damit stimmt danach auch die Zeit.
     if (needLEDsync) {
         needLEDsync = false;
         // Serial.println("needLEDsync");
