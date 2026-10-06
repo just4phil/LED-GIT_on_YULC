@@ -17,7 +17,7 @@ Bluetooth LE, and from then on every device runs through the parts of the song o
 - **Scenes across all devices**: one scene name (calm, verse, build-up, drop, fire, star, rain ...) gives each
   device type its matching effect, in a shared colour scheme
 - **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
-  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font), and a stage blinder at full brightness
+  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness
 - **MIDI start, BLE sync**: only the song start and manual part jumps are transmitted; everything else runs
   locally, so the devices stay in sync regardless of their LED count
 - **Fret markers**: red/blue marker LEDs on the fretboard of guitar and bass, always at the same brightness

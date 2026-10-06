@@ -192,8 +192,10 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
   `over: true`: `gradient: scheme|rainbow|party|clouds|stripes|matrix|random|<Paletten-ID>` oder ausführlich
   `gradient: {palette: scheme, dir: h|v|diag|letters, per: beat|half|bar|<Beats>}`. `dir`: `h` quer über die Matrix
   (Standard), `v` von oben nach unten in den Buchstaben, `diag` schräg, `letters` am Text befestigt; `per` = so
-  lange wandert der Verlauf einmal durch die Schrift, ohne `per` steht er still. Noch nicht vom User abgenommen
-  (Demo 92, Parts 29-33): bis dahin nur auf Wunsch einsetzen.
+  lange wandert der Verlauf einmal durch die Schrift, ohne `per` steht er still. Urteil des Users (06.10.2026, Demo 92):
+  `dir: h` mit `scheme`, `dir: letters` mit `party` und `dir: diag` mit `scheme` + `per` sind „super"; `dir: v`
+  ist „ok, aber nicht mein Favourite". Der Titel-Lauftext am Songanfang trägt die drei Favoriten von selbst (reihum
+  je Song-Nummer), dafür ist in der `show.yaml` nichts einzutragen.
 - Max. 9 Zeichen pro Wort auf der SCROLLMATRIX, sonst läuft alles als Lauftext (Hinweis in der Ausgabe); nur ASCII.
 - Geht auch im `tail`; nicht zusammen mit `devices` für `matrix`/`SCROLLMATRIX`/`GITBOARD`.
 - `over: true` (z. B. `{words: "FUN", over: true}`) - der Text liegt über der Szene, die Matrix spielt sie weiter.

@@ -11,8 +11,21 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (Farbverlauf in der Schrift gebaut, Abnahme offen)
+Zuletzt aktualisiert: 06.10.2026 (Titel-Lauftext aller Songs mit Farbverlauf, Abnahme offen)
 
+- **06.10.2026, Titel-Lauftext aller Songs mit Farbverlauf** (Wunsch des Users nach Demo 92: 29, 32 und 33
+  „super", 31 „ok aber nicht mein favourite"; alle Songs inkl. Song 0 auf die drei Favoriten umstellen, im Wechsel):
+  `progScrollText` (`src/fxText.cpp`) zeichnet immer mit Verlauf - den angemeldeten, sonst nach `songID % 3`:
+  0 (auch Song 0) = Party-Palette `TEXT_GRAD_LETTERS` (Part 32), 1 = `PALETTE_SCHEME` `TEXT_GRAD_DIAG`, wandert in
+  `TITLE_GRAD_CYCLE_MS` 1000 (Part 33), 2 = `PALETTE_SCHEME` `TEXT_GRAD_H` (Part 29); ohne aktives Schema zeigen
+  die Schema-Varianten einen Regenbogen. Kein Aufruf und kein generierter Song geändert: der Parameter `col` wird
+  nicht mehr benutzt. Tempo des Texts unverändert (Schritt weiter über `fxEvery`), zwischen den Schritten wird nur
+  neu gezeichnet, wenn der Verlauf gewandert ist. Gilt damit auch für die übrigen `progScrollText`-Aufrufe alter
+  Songs („1  2  3  4", „Prisoner", „Let me go", „Nerds on Fire"). Die Hilfsfunktionen des Verlaufs stehen in
+  `fxText.cpp` jetzt vor den Effekten. Demo 92: Parts 29, 31, 32, 33 sind abgenommen und laufen ohne Nummer als
+  erste der abgenommenen (Part 0 springt in 29, 33 weiter in 23); Demo-Tabelle mit neuen Zeiten. Dokus, Katalog
+  und Skill nachgezogen. Alle fünf Envs bauen, OTA in `ota/` neu gebaut (Version siehe `ota/*/version.json`).
+  Der Titel-Lauftext selbst ist auf der Hardware noch nicht gesehen.
 - **06.10.2026, Farbverlauf in der Schrift (`fxTextGradient`) - gebaut, vom User: „supercool"; Abnahme der Demo-Parts
   auf der Hardware offen** (Commit „Farbverlauf in der Schrift (fxTextGradient)"; Wunsch des Users: beim Lauftext statt des Farbwechsels je Durchlauf auch Palette oder Farbverlauf in
   der Schrift). Anmeldung `fxTextGradient(paletteID, dir, cycleMillis)` oben im case (`src/fxPipeline.cpp/.h`, wird
