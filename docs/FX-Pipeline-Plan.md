@@ -22,6 +22,11 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
+- **Wartet auf den User (Branch `fx-cleanup`, Stand `541a57e`, nicht gemergt, nicht gepusht):** OTA-Firmwares in
+  `ota/` sind von diesem Stand (Version 1791290774), der Stand davor liegt in `ota/backup/2026-10-06_3`. Anzusehen:
+  die sieben Effekte aus `fxMatrixSim.cpp` (Song 92 Part 92 Feuer; alte Songs mit `progWaterRipple`, `progPlasma`,
+  `progStarfield`), Knopf ganz zurück = nur Marker, sonst alles wie vorher. Passt das, geht es mit demselben
+  Rezept in den übrigen Familien weiter (116 `LEDsTurnedOff`-Abfragen, davon 74 in `fxMatrixRain.cpp`).
 - **In Arbeit (seit 06.10.2026, Branch `fx-cleanup`): `FXprograms.cpp` aufräumen und die Effekte vom Standard-Teil
   entkoppeln.** Plan in vier Schritten, jeder ein eigener Commit, kein Aufruf in den Songs ändert sich:
   1. toten, auskommentierten Code löschen - **erledigt** (Commit „FXprograms.cpp: toten Code entfernt"): 110 Zeilen
