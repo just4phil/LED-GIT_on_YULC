@@ -2,7 +2,7 @@
 
 Erzeugt von `tools/fxstats.py` - nicht von Hand ändern, neu erzeugen.
 
-Grundlage: 474 Parts aus 21 handgeschriebenen Songs (2385 Takte), jeweils der Effekt auf der Gitarre (`# bisher:` in `songs/*/song.yaml`).
+Grundlage: 474 Parts aus 21 handgeschriebenen Songs (2385 Takte), jeweils der Effekt auf der Gitarre (Spalte 'bisher (alter Code)' in `songs/*/quelle/struktur.xlsx`).
 Die alten Songs haben keine `energy`-Werte, deshalb ist hier nur nach Part-Typ ausgewertet.
 
 ## 1. Effekte nach Spielzeit

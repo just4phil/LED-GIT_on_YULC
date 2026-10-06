@@ -1,6 +1,2 @@
 pyyaml
-numpy
-librosa
-matplotlib
-soundfile
 openpyxl

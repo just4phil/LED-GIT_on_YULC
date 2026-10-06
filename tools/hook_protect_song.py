@@ -2,15 +2,17 @@
 """
 hook_protect_song.py - Claude-Code-Hook (PreToolUse, siehe .claude/settings.json)
 
-songs/<Song>/song.yaml gehört dem User. Der Hook blockiert jeden Versuch von Claude, eine solche Datei zu
-schreiben: Edit/Write direkt, Shell-Befehle anhand typischer Schreibmuster (Umleitung, mv, rm, sed -i ...).
-Lesen bleibt erlaubt. Exit 2 = blockieren, die Meldung auf stderr geht an Claude.
+songs/<Song>/quelle/struktur.xlsx gehört dem User: es ist die einzige Datei, die er pro Song pflegt. Der Hook
+blockiert jeden Versuch von Claude, eine solche Tabelle zu schreiben: Edit/Write direkt, Shell-Befehle anhand
+typischer Schreibmuster (Umleitung, mv, rm, sed -i ...). Neu angelegt wird sie nur von `songgen.py <Song> --neu`,
+zurückgeholt nur von `songgen.py <Song> --restore`. Genauso geschützt bleiben die alten song.yaml, solange der
+User sie nicht selbst gelöscht hat. Lesen bleibt erlaubt. Exit 2 = blockieren, die Meldung auf stderr geht an Claude.
 """
 import json
 import re
 import sys
 
-NAME = r"song\.yaml"
+NAME = r"(?:song\.yaml|struktur\.xlsx)"
 END = r"""["']?\s*($|[;&|)])"""
 WRITE_PATTERNS = [
 	r">>?\s*[^\s;&|]*" + NAME,																	# Umleitung in die Datei
@@ -40,8 +42,9 @@ def main():
 		blocked = False
 	if blocked:
 		sys.stderr.reconfigure(encoding="utf-8")
-		print("BLOCKIERT: songs/<Song>/song.yaml gehört dem User und wird von Claude nie geschrieben, verschoben oder "
-			  "gelöscht. Änderungen dem User im Chat vorschlagen; Gestaltung gehört in show.yaml.", file=sys.stderr)
+		print("BLOCKIERT: songs/<Song>/quelle/struktur.xlsx (und eine alte song.yaml) gehört dem User und wird von Claude "
+			  "nie geschrieben, verschoben oder gelöscht. Änderungen dem User im Chat vorschlagen; Gestaltung gehört in "
+			  "show.yaml.", file=sys.stderr)
 		return 2
 	return 0
 

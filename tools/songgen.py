@@ -8,15 +8,15 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py <Song> --versions      # gespeicherte Versionen
     tools/.venv/Scripts/python tools/songgen.py <Song> --restore <Version>
     tools/.venv/Scripts/python tools/songgen.py --assemble             # nur src/ aus den gespeicherten Songs neu bauen
+    tools/.venv/Scripts/python tools/songgen.py <Song> --neu           # neuen Song-Ordner mit leerer Tabelle anlegen
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
-    song.yaml       gehört dem User: Tempo, Takte, midi_offset, Stimmungen, Effekt-Wünsche. WIRD NIE GESCHRIEBEN.
-    show.yaml       technisch (von Claude abgeleitet): Szenen, Farbschemata, Overrides, Tails
-    generated.cpp   erzeugter Code dieses Songs
-    versionen/<Zeit>/   Kopie von song.yaml + show.yaml + generated.cpp bei jeder Generierung
-Die Struktur steht nur in song.yaml, die Show ordnet per Abschnittsname zu. Gestaltung in song.yaml
-(scene, fx, scheme, fade, devices, tail, text, overlay, dazu Übergang und Modifikatoren: transition, fade_in,
-fade_out, pulse, gate, dim, tint, only, span) hat immer Vorrang vor show.yaml.
+    quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Effektidee, Energie.
+                           Format siehe tools/struktur.py. Kein Werkzeug ändert eine vorhandene Tabelle.
+    show.yaml              technisch (von Claude aus der Tabelle abgeleitet): Szenen, Farbschemata, Overrides, Tails
+    generated.cpp          erzeugter Code dieses Songs
+    versionen/<Zeit>/      Kopie von struktur.xlsx + show.yaml + generated.cpp bei jeder Generierung (+ info.yaml)
+Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gestaltung steht nur in show.yaml.
 
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
@@ -24,11 +24,12 @@ Schreibt:
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
 Zeitbasis: 0 ms = Eintreffen des Start-MIDI-Signals. Das MIDI kommt midi_offset (Notenwert, z. B. 1/8)
-NACH Takt 1 -> der erste Part wird um den Offset kürzer. Alle Grenzen werden aus absoluten Zeiten
+NACH dem Anfang der ersten Zeile (StartBit der Tabelle) -> der erste Part wird um den Offset kürzer. Alle Grenzen werden aus absoluten Zeiten
 gerundet, dadurch entsteht keine kumulative Rundungsdrift.
 """
 import argparse
 import datetime
+import difflib
 import hashlib
 import re
 import shutil
@@ -39,6 +40,7 @@ from pathlib import Path
 import yaml
 
 import markers as mk
+import struktur as st
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
@@ -47,11 +49,13 @@ OUT_CPP = SRC / "songs_generated.cpp"
 OUT_H = SRC / "songs_generated.h"
 MAIN_CPP = SRC / "main.cpp"
 
-SONG_FILE = "song.yaml"			# gehört dem User, wird von keinem Werkzeug geschrieben
+TABLE_FILE = st.TABLE_FILE			# struktur.xlsx: gehört dem User, kein Werkzeug ändert eine vorhandene
+TABLE_DIR = "quelle"
+TEMPLATE = SONGS_DIR / "struktur-vorlage.xlsx"	# --neu kopiert sie (der User darf sie anpassen)
 SHOW_FILE = "show.yaml"
 GEN_FILE = "generated.cpp"
 VERSIONS_DIR = "versionen"
-VERSION_FILES = (SONG_FILE, SHOW_FILE, GEN_FILE)
+VERSION_FILES = (TABLE_FILE, SHOW_FILE, GEN_FILE)	# so heißen sie im Versions-Ordner (die Tabelle liegt dort flach)
 
 MARK_BEGIN = "// >>> GENERATED SONGS (tools/songgen.py) >>>"	# dahinter kommen die cases neuer Song-IDs
 TAG = "// <<< GENERATED SONGS <<<"							# hängt an jedem generierten Aufruf in main.cpp
@@ -877,11 +881,11 @@ def gen_function(song, timeline, end_case):
 	lines = []
 	bpm = song["bpm"]
 	lines.append(f"//#{song['id']} {song['name']}" + (f" - {song['artist']}" if song.get("artist") else "")
-				 + f"  {bpm} BPM  midi_offset {offset_text(song)}  (generiert aus songs/{song['_dir']}: {SONG_FILE} + {song['_show'] or '-'})")
+				 + f"  {bpm} BPM  midi_offset {offset_text(song)}  (generiert aus songs/{song['_dir']}: {TABLE_FILE} + {song['_show'] or '-'})")
 	lines.append(f"void {fn}() {{")
 	lines.append("")
 	if song.get("_marker_inline"):
-		lines.append(f"\t// Marker einzelner Parts (markers.parts in {SONG_FILE}), läuft nach setMarkerLEDs()")
+		lines.append(f"\t// Marker einzelner Parts (markers.parts in {SHOW_FILE}), läuft nach setMarkerLEDs()")
 		lines += song["_marker_inline"] + [""]
 	if song.get("scheme"):
 		lines.append(f"\tsetColorScheme({song['scheme']});\t// Default für alle Parts")
@@ -1178,16 +1182,13 @@ def pascal(name):
 	return "".join(w[:1].upper() + w[1:] for w in re.split(r"[^A-Za-z0-9]+", name) if w)
 
 
-SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms")
+SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "markers")
 SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text", "overlay") + PIPELINE_KEYS
-STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar")
+STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar", "energy")
 
 
 def merge_show(song, show):
-	"""Technische Gestaltung (show.yaml) per Abschnittsname in die Struktur einsetzen.
-	Gestaltung, die der User in song.yaml gesetzt hat, hat immer Vorrang vor der Show."""
-	if "markers" in show:
-		raise SongError(f"{SHOW_FILE}: markers gehören in {SONG_FILE}, nicht in die Show")
+	"""Technische Gestaltung (show.yaml) per Partname in die Struktur aus der Tabelle einsetzen."""
 	notes = song.setdefault("_notes", [])
 	for k in SONG_DESIGN_KEYS:
 		if k not in show:
@@ -1195,33 +1196,27 @@ def merge_show(song, show):
 		if k not in song:
 			song[k] = show[k]
 		elif song[k] != show[k]:
-			notes.append(f"{k}: {song[k]} aus {SONG_FILE} hat Vorrang vor {SHOW_FILE}")
+			notes.append(f"{k}: {song[k]} aus {TABLE_FILE} hat Vorrang vor {SHOW_FILE}")
 	design = show.get("sections") or {}
 	names = [s["name"] for s in song["sections"]]
-	for name in design:
-		if name not in names:
-			raise SongError(f"{SHOW_FILE}: Abschnitt '{name}' gibt es in {SONG_FILE} nicht")
+	lost = [n for n in design if n not in names]
+	if lost:
+		# die Tabelle wurde geändert (Part umbenannt, eingefügt, gelöscht): zeigen, was nicht mehr zusammenpasst
+		free = [n for n in names[1:] if n not in design]
+		lines = [f"{SHOW_FILE} passt nicht mehr zu {TABLE_FILE} - die Show an die Tabelle anpassen:"]
+		for n in lost:
+			near = difflib.get_close_matches(n, free, n=1, cutoff=0.5)
+			lines.append(f"    Show-Eintrag '{n}': diesen Part gibt es nicht" + (f" (heißt er jetzt '{near[0]}'?)" if near else ""))
+		lines += [f"    Part '{n}' hat keine Gestaltung" for n in free]
+		raise SongError("\n".join(lines))
 	for sec in song["sections"]:
 		d = dict(design.get(sec["name"]) or {})
 		clash = [k for k in d if k in STRUCTURE_KEYS]
 		if clash:
-			raise SongError(f"{SHOW_FILE}: '{sec['name']}' darf {', '.join(clash)} nicht setzen - Struktur gehört in {SONG_FILE}")
-		user = {k: sec[k] for k in SECTION_DESIGN_KEYS if k in sec}
-		if "scene" in user and "fx" in user:
-			raise SongError(f"{SONG_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
-		if "scene" in user or "fx" in user:
-			# der User legt den Effekt fest -> Effekt und Geräte-Overrides der Show gelten für diesen Part nicht
-			for k in ("scene", "fx", "devices", "text", "overlay", "why"):
-				d.pop(k, None)
-			d["why"] = f"Vorgabe aus {SONG_FILE}"
-		elif "devices" in user:
-			user["devices"] = {**(d.get("devices") or {}), **user["devices"]}
-		if "why" in sec:
-			d.pop("why", None)
+			raise SongError(f"{SHOW_FILE}: '{sec['name']}' darf {', '.join(clash)} nicht setzen - Struktur gehört in {TABLE_FILE}")
+		if "scene" in d and "fx" in d:
+			raise SongError(f"{SHOW_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
 		sec.update(d)
-		sec.update(user)
-		if user:
-			notes.append(f"'{sec['name']}': {', '.join(user)} aus {SONG_FILE} (Vorrang vor {SHOW_FILE})")
 
 
 def force_black_start(song):
@@ -1257,54 +1252,31 @@ def find_song_dir(name):
 	return hit[0]
 
 
-def find_audio(song, song_dir):
-	"""Audiodatei eines Songs: 'audio:' relativ zum Song-Ordner (auch nur der Dateiname), sonst die einzige MP3 im Ordner."""
-	if song.get("audio"):
-		a = Path(song["audio"])
-		for c in (song_dir / a, song_dir / "quelle" / a.name, song_dir / a.name, ROOT / a):
-			if c.is_file():
-				return c.resolve()
-	found = [p for p in song_dir.rglob("*.mp3") if VERSIONS_DIR not in p.parts]
-	return found[0].resolve() if len(found) == 1 else None
+def table_path(song_dir):
+	"""Struktur-Tabelle eines Songs: quelle/struktur.xlsx (auch direkt im Song-Ordner erlaubt)."""
+	direct = song_dir / TABLE_FILE
+	return direct if direct.is_file() else song_dir / TABLE_DIR / TABLE_FILE
 
 
-NOTE_AFTER_QUOTE = re.compile(r'^(\s*(?:-\s+)?[\w ]+:\s*)"([^"]*)"[ \t]*([^\s#].*?)\s*$')
-
-
-def read_song_yaml(path):
-	"""song.yaml lesen. Der User schreibt Anmerkungen gern hinter den Wert (idea: "ruhig" -> mehr Bewegung);
-	das ist kein gültiges YAML, deshalb wird der Rest der Zeile vorher in den Text hineingezogen."""
-	lines = []
-	for line in path.read_text(encoding="utf-8").splitlines():
-		m = NOTE_AFTER_QUOTE.match(line)
-		if m:
-			rest = m.group(3).replace("\\", "/").replace('"', "'")
-			line = f'{m.group(1)}"{m.group(2)} {rest}"'
-		lines.append(line)
+def read_table(path, label=None):
 	try:
-		return yaml.safe_load("\n".join(lines))
-	except yaml.YAMLError as e:
-		mark = getattr(e, "problem_mark", None)
-		where = f" Zeile {mark.line + 1}" if mark else ""
-		raise SongError(f"{path.parent.name}/{path.name}{where}: kein gültiges YAML ({getattr(e, 'problem', e)})")
+		return st.read_table(path)
+	except st.TableError as e:
+		raise SongError(f"{label or path.name}: {e}")
 
 
-def load_song(song_dir, song_path=None, show_path=None):
-	"""song.yaml + show.yaml eines Ordners laden und zusammenführen (beide Dateien werden nur gelesen)."""
-	song_path = song_path or song_dir / SONG_FILE
+def load_song(song_dir, table=None, show_path=None):
+	"""struktur.xlsx + show.yaml eines Ordners laden und zusammenführen (beide Dateien werden nur gelesen)."""
+	table = table or table_path(song_dir)
 	show_path = show_path or song_dir / SHOW_FILE
-	label = f"{song_dir.name}/{SONG_FILE}"
-	if not song_path.exists():
-		raise SongError(f"{label} fehlt")
-	song = read_song_yaml(song_path)
+	label = f"{song_dir.name}/{TABLE_DIR}/{TABLE_FILE}"
+	if not table.exists():
+		raise SongError(f"{label} fehlt - anlegen mit: songgen.py {song_dir.name} --neu")
+	song = read_table(table, label)
+	song["_table_sha"] = st.content_sha(song)
 	song["_dir"] = song_dir.name
-	for req in ("id", "name", "bpm", "sections"):
-		if req not in song:
-			raise SongError(f"{label}: Feld '{req}' fehlt")
-	names = [s.get("name") for s in song["sections"]]
-	dup = sorted({n for n in names if names.count(n) > 1})
-	if None in names or dup:
-		raise SongError(f"{label}: jeder Abschnitt braucht einen eindeutigen Namen (doppelt: {', '.join(map(str, dup))})")
+	if (table.parent / ("~$" + table.name)).exists():
+		song.setdefault("_notes", []).append(f"{TABLE_FILE} ist gerade in Excel geöffnet - gelesen wird der zuletzt gespeicherte Stand")
 
 	song["_show"] = SHOW_FILE if show_path.exists() else None
 	show = (yaml.safe_load(show_path.read_text(encoding="utf-8")) or {}) if show_path.exists() else {}
@@ -1352,11 +1324,11 @@ def generate(song, others):
 	if hand:
 		lists = any(k != "parts" for k in markers) or len(slots) < sum(len(s or {}) for s in (markers.get("parts") or {}).values())
 		song["_marker_note"] = "Grund-Marker von Hand in markerLEDs.cpp" + (
-			f" - Marker-Listen in {SONG_FILE} werden ignoriert" if lists else "")
+			f" - Marker-Listen in {SHOW_FILE} werden ignoriert" if lists else "")
 	elif markers:
 		if not errs:
 			marker_lines = mk.gen_case(song["id"], markers, part_cases)
-		song["_marker_note"] = f"generiert aus markers: in {SONG_FILE}"
+		song["_marker_note"] = f"generiert aus markers: in {SHOW_FILE}"
 	else:
 		song["_marker_note"] = "keine"
 	if slots and not errs:
@@ -1366,12 +1338,12 @@ def generate(song, others):
 	inline_old = [(n, l.strip()) for n, l in (old_function_body(old) if old else [])
 				  if re.search(r"markerLED\d\s*=", l.split("//")[0])]
 	if inline_old and not slots:
-		errors.append(f"der alte Code {old}() setzt Marker-LEDs in einzelnen Parts, sie müssen übernommen werden: in {SONG_FILE} "
+		errors.append(f"der alte Code {old}() setzt Marker-LEDs in einzelnen Parts, sie müssen übernommen werden: in {SHOW_FILE} "
 					  f"unter markers.parts eintragen, z. B. 'bridge 1: {{bass: {{5: ASaite_E}}}}'. Stellen in songs.cpp:\n"
 					  + "\n".join(f"        Zeile {n}: {l}" for n, l in inline_old))
 	elif inline_old:
 		notes.append(f"{old}() setzt Marker inline (songs.cpp Zeilen {', '.join(str(n) for n, _l in inline_old)}) - "
-					 f"bitte mit markers.parts in {SONG_FILE} vergleichen")
+					 f"bitte mit markers.parts in {SHOW_FILE} vergleichen")
 
 	# Trailer: handgeschriebener Code, der in diesen Song springt, braucht die neuen Part-Nummern
 	song["_parts"] = part_constants(song, timeline)
@@ -1391,7 +1363,7 @@ def generate(song, others):
 #=========== Fragment (generated.cpp je Song) =====================
 #==================================================================
 
-FRAG_HEAD = "// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern (Quelle: song.yaml + show.yaml)"
+FRAG_HEAD = "// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern (Quelle: struktur.xlsx + show.yaml)"
 
 
 def norm_text(path):
@@ -1411,7 +1383,7 @@ def write_lf(path, text):
 
 def fragment_text(song, code, marker_lines, song_dir):
 	head = [FRAG_HEAD, f"//@id {song['id']}", f"//@function {song['function']}", f"//@name {song['name']}",
-			f"//@song_sha {sha(song_dir / SONG_FILE)}", f"//@show_sha {sha(song_dir / SHOW_FILE)}"]
+			f"//@struktur_sha {song['_table_sha']}", f"//@show_sha {sha(song_dir / SHOW_FILE)}"]
 	head += [f"//@part {c} {n}" for c, n in song.get("_parts", [])] + ["//@code"]
 	return "\n".join(head) + "\n" + code + "\n//@markers\n" + "".join(l + "\n" for l in marker_lines)
 
@@ -1423,7 +1395,7 @@ def read_fragment(path):
 		raise SongError(f"{path.relative_to(ROOT)} ist kein gültiges Fragment - Song neu generieren")
 	meta = dict(re.findall(r"^//@(\w+) (.*)$", m.group(1), re.M))
 	return {"id": int(meta["id"]), "function": meta["function"], "name": meta["name"],
-			"song_sha": meta.get("song_sha"), "show_sha": meta.get("show_sha"),
+			"struktur_sha": meta.get("struktur_sha"), "show_sha": meta.get("show_sha"),
 			"parts": re.findall(r"^//@part (\w+) (\d+)$", m.group(1), re.M),
 			"code": m.group(2), "markers": [l for l in m.group(3).splitlines() if l.strip()],
 			"dir": path.parent.name}
@@ -1434,8 +1406,8 @@ def fragments(skip=None):
 
 
 def is_current(song_dir, frag):
-	"""Passt generated.cpp noch zu song.yaml + show.yaml?"""
-	return frag["song_sha"] == sha(song_dir / SONG_FILE) and frag["show_sha"] == sha(song_dir / SHOW_FILE)
+	"""Passt generated.cpp noch zu struktur.xlsx + show.yaml? (Fragmente aus der Zeit vor der Tabelle: nie)"""
+	return frag["struktur_sha"] == st.table_sha(table_path(song_dir)) and frag["show_sha"] == sha(song_dir / SHOW_FILE)
 
 
 #==================================================================
@@ -1456,13 +1428,24 @@ def git_state():
 		return "unbekannt"
 
 
+def live_file(song_dir, f):
+	"""Wo die Datei einer Version im Song-Ordner liegt (die Tabelle unter quelle/)."""
+	return table_path(song_dir) if f == TABLE_FILE else song_dir / f
+
+
+def same_as_version(song_dir, v, files=VERSION_FILES):
+	"""Ist der Stand im Song-Ordner derselbe wie in der Version? Die Tabelle wird nach Inhalt verglichen."""
+	return all(st.table_sha(table_path(song_dir)) == st.table_sha(v / f) if f == TABLE_FILE
+			   else norm_text(song_dir / f) == norm_text(v / f) for f in files)
+
+
 def save_version(song_dir, note=""):
-	"""Aktuellen Stand (song.yaml, show.yaml, generated.cpp) nach versionen/<Zeit>/ kopieren.
+	"""Aktuellen Stand (struktur.xlsx, show.yaml, generated.cpp) nach versionen/<Zeit>/ kopieren.
 	Nichts zu tun, wenn es genau diesen Stand schon als Version gibt. Liefert den Ordner oder None."""
 	if not (song_dir / GEN_FILE).exists():
 		return None
 	for v in versions(song_dir):
-		if all(norm_text(song_dir / f) == norm_text(v / f) for f in VERSION_FILES):
+		if same_as_version(song_dir, v):
 			return None
 	now = datetime.datetime.now()
 	stamp = now.strftime("%Y-%m-%d_%H%M")
@@ -1472,14 +1455,14 @@ def save_version(song_dir, note=""):
 		dst = song_dir / VERSIONS_DIR / f"{stamp}_{n}"
 	dst.mkdir(parents=True)
 	for f in VERSION_FILES:
-		if (song_dir / f).exists():
-			shutil.copy2(song_dir / f, dst / f)
+		if live_file(song_dir, f).exists():
+			shutil.copy2(live_file(song_dir, f), dst / f)
 	info = {
 		"zeit": now.strftime("%Y-%m-%d %H:%M:%S"),
 		"notiz": note or "",
 		"werkzeug_git": git_state(),
-		"code_passt_zu_yaml": is_current(song_dir, read_fragment(song_dir / GEN_FILE)),
-		"sha256": {f: sha(song_dir / f) for f in VERSION_FILES},
+		"code_passt_zu_tabelle_und_show": is_current(song_dir, read_fragment(song_dir / GEN_FILE)),
+		"sha256": {f: st.table_sha(table_path(song_dir)) if f == TABLE_FILE else sha(song_dir / f) for f in VERSION_FILES},
 	}
 	write_lf(dst / "info.yaml", yaml.safe_dump(info, allow_unicode=True, sort_keys=False))
 	return dst
@@ -1491,7 +1474,7 @@ def save_version(song_dir, note=""):
 
 CPP_HEADER = """//==================================================================
 // AUTOMATISCH GENERIERT von tools/songgen.py aus songs/<Song>/generated.cpp
-// NICHT von Hand ändern -> song.yaml / show.yaml anpassen und den Song neu generieren
+// NICHT von Hand ändern -> struktur.xlsx / show.yaml anpassen und den Song neu generieren
 //==================================================================
 #include <Arduino.h>
 #include <FastLED.h>
@@ -1513,7 +1496,7 @@ def gen_markers(marker_cases):
 	"""setGeneratedMarkerLEDs(): wird aus setMarkerLEDs() (markerLEDs.cpp) im default-Fall aufgerufen,
 	also nur für Songs ohne handgeschriebene Marker."""
 	lines = ["//==================================================================",
-			 "// Bund-Marker der generierten Songs (aus markers: in songs/<Song>/song.yaml)",
+			 "// Bund-Marker der generierten Songs (aus markers: in songs/<Song>/show.yaml)",
 			 "//==================================================================",
 			 "void setGeneratedMarkerLEDs(byte songID, byte partID) {",
 			 "#if !defined(NOMARKER)",
@@ -1616,14 +1599,16 @@ def cmd_list():
 		if (d / GEN_FILE).exists():
 			f = read_fragment(d / GEN_FILE)
 			sid = f"#{f['id']}"
-			if not (d / SONG_FILE).exists():
-				state = f"Code eingefroren (keine {SONG_FILE}) - bleibt in der Firmware, wie er ist"
+			if not table_path(d).exists():
+				state = f"Code eingefroren (keine {TABLE_FILE}) - bleibt in der Firmware, wie er ist"
+			elif not (d / SHOW_FILE).exists():
+				state = f"Code eingefroren (keine {SHOW_FILE}) - bleibt in der Firmware, wie er ist"
 			else:
-				state = "aktuell" if is_current(d, f) else f"{SONG_FILE}/{SHOW_FILE} seit der Generierung geändert"
-		elif (d / SONG_FILE).exists():
-			state, sid = "noch nicht generiert", ""
+				state = "aktuell" if is_current(d, f) else f"{TABLE_FILE}/{SHOW_FILE} seit der Generierung geändert"
+		elif table_path(d).exists():
+			state, sid = ("gestaltet, noch nicht generiert" if (d / SHOW_FILE).exists() else "noch keine Show"), ""
 		else:
-			state, sid = f"leer (keine {SONG_FILE})", ""
+			state, sid = f"leer (keine {TABLE_FILE})", ""
 		print(f"  {d.name:<28} {sid:>4}  {state}  ({len(versions(d))} Versionen)")
 	return 0
 
@@ -1646,8 +1631,8 @@ def cmd_generate(song_dir, dry_run, note):
 	gen = song_dir / GEN_FILE
 	if gen.exists():
 		old = read_fragment(gen)
-		if old["song_sha"] != sha(song_dir / SONG_FILE):
-			print(f"\n{SONG_FILE} wurde seit der letzten Generierung geändert (von dir) - wird übernommen.")
+		if old["struktur_sha"] and old["struktur_sha"] != song["_table_sha"]:
+			print(f"\n{TABLE_FILE} wurde seit der letzten Generierung geändert (von dir) - wird übernommen.")
 		if old["code"] == code and old["markers"] == marker_lines:
 			print("Der erzeugte Code ist identisch mit dem bisherigen.")
 	write_lf(gen, fragment_text(song, code, marker_lines, song_dir))
@@ -1666,9 +1651,11 @@ def cmd_versions(song_dir):
 	print(f"Versionen von songs/{song_dir.name} (zurückholen: songgen.py {song_dir.name} --restore <Version>):\n")
 	for v in vs:
 		info = yaml.safe_load((v / "info.yaml").read_text(encoding="utf-8")) if (v / "info.yaml").exists() else {}
-		active = all(norm_text(song_dir / f) == norm_text(v / f) for f in (SHOW_FILE, GEN_FILE))
+		active = same_as_version(song_dir, v, (SHOW_FILE, GEN_FILE))
+		fits = info.get("code_passt_zu_tabelle_und_show", info.get("code_passt_zu_yaml", True))
 		print(f"  {v.name}{'  <- aktiv' if active else ''}  {info.get('notiz') or ''}"
-			  + ("" if info.get("code_passt_zu_yaml", True) else "  (Code älter als die YAML-Dateien)"))
+			  + ("" if (v / TABLE_FILE).exists() else "  (ohne Tabelle: nur Show + Code)")
+			  + ("" if fits else "  (Code älter als Tabelle/Show)"))
 	return 0
 
 
@@ -1678,26 +1665,37 @@ def cmd_restore(song_dir, version):
 		raise SongError(f"Version '{version}' {'nicht gefunden' if not hit else 'ist nicht eindeutig'} - siehe --versions")
 	vdir = hit[0]
 	frag = read_fragment(vdir / GEN_FILE)
+	table, has_table = table_path(song_dir), (vdir / TABLE_FILE).exists()
+	if has_table and table.exists():
+		try:
+			with open(table, "r+b"):	# in Excel geöffnet -> gesperrt: abbrechen, bevor irgendetwas zurückkopiert ist
+				pass
+		except OSError:
+			raise SongError(f"{TABLE_FILE} ist gesperrt (in Excel geöffnet?) - bitte schließen und noch einmal")
 
 	saved = save_version(song_dir, f"automatisch vor Restore von {vdir.name}")
 	if saved:
 		print(f"Bisheriger Stand gesichert als Version {saved.name}")
 
-	# zurück kommen nur show.yaml + generated.cpp. song.yaml gehört dem User und wird nie geschrieben.
+	# zurück kommt der ganze Stand: Tabelle + show.yaml + generated.cpp (der bisherige ist oben gesichert)
 	if (vdir / SHOW_FILE).exists():
 		shutil.copy2(vdir / SHOW_FILE, song_dir / SHOW_FILE)
 	elif (song_dir / SHOW_FILE).exists():
 		(song_dir / SHOW_FILE).unlink()
 	shutil.copy2(vdir / GEN_FILE, song_dir / GEN_FILE)
-	print(f"Version {vdir.name} ist wieder aktiv: {SHOW_FILE} + {GEN_FILE} (Code 1:1 wie gespeichert)")
-
-	if norm_text(song_dir / SONG_FILE) != norm_text(vdir / SONG_FILE):
-		print(f"\nACHTUNG: deine {SONG_FILE} ist heute anders als in dieser Version. Sie wird NICHT zurückkopiert.\n"
-			  f"  Der wiederhergestellte Code gehört zu songs/{song_dir.name}/{VERSIONS_DIR}/{vdir.name}/{SONG_FILE}.\n"
-			  f"  Beim nächsten Generieren gilt wieder deine aktuelle {SONG_FILE}. Willst du die alte zurück, kopiere sie selbst.")
+	if has_table:
+		table.parent.mkdir(parents=True, exist_ok=True)
+		shutil.copy2(vdir / TABLE_FILE, table)
+		print(f"Version {vdir.name} ist wieder aktiv: {TABLE_FILE} + {SHOW_FILE} + {GEN_FILE} (Code 1:1 wie gespeichert)")
+	else:
+		print(f"Version {vdir.name} ist wieder aktiv: {SHOW_FILE} + {GEN_FILE} (Code 1:1 wie gespeichert)\n"
+			  f"\nACHTUNG: diese Version stammt aus der Zeit vor der Tabelle und enthält keine {TABLE_FILE}. Deine heutige\n"
+			  f"  Tabelle bleibt, wie sie ist - beim nächsten Generieren gilt sie, die Show muss dann zu ihr passen.")
+		print_assembled(assemble())
+		return 0
 	try:
-		song = load_song(song_dir, vdir / SONG_FILE, vdir / SHOW_FILE)
-		_tl, code, marker_lines, _e = generate(song, [])
+		song = load_song(song_dir)
+		_tl, code, marker_lines, _e = generate(song, fragments(skip=song_dir))
 		same = code == frag["code"] and marker_lines == frag["markers"]
 	except SongError:
 		same = False
@@ -1708,15 +1706,35 @@ def cmd_restore(song_dir, version):
 	return 0
 
 
+def cmd_new(name):
+	"""Neuen Song-Ordner mit leerer Tabelle anlegen (Kopie der Vorlage). Eine vorhandene Tabelle bleibt unberührt."""
+	if not re.fullmatch(r"[A-Za-z0-9_\-]+", name):
+		raise SongError(f"Ordnername '{name}': nur Buchstaben, Ziffern, _ und - (z. B. Vogue_v1)")
+	path = SONGS_DIR / name / TABLE_DIR / TABLE_FILE
+	if path.exists():
+		raise SongError(f"{path.relative_to(ROOT).as_posix()} gibt es schon - sie wird nicht überschrieben")
+	if not TEMPLATE.is_file():
+		raise SongError(f"Vorlage {TEMPLATE.relative_to(ROOT).as_posix()} fehlt")
+	path.parent.mkdir(parents=True, exist_ok=True)
+	shutil.copyfile(TEMPLATE, path)
+	print(f"Tabelle angelegt: {path.relative_to(ROOT).as_posix()}\n"
+		  f"In Excel ausfüllen und speichern (Titel, Midi-StartNummer, BPM, StartBit, pro Part eine Zeile, letzte Zeile 'Ende'),\n"
+		  f"dann Claude die Show gestalten lassen.")
+	return 0
+
+
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	ap.add_argument("song", nargs="?", help="Ordnername unter songs/ (Anfang genügt)")
 	ap.add_argument("--dry-run", action="store_true", help="nur Timeline anzeigen, nichts schreiben")
 	ap.add_argument("--note", default="", help="Notiz zur gespeicherten Version")
 	ap.add_argument("--versions", action="store_true", help="gespeicherte Versionen des Songs auflisten")
-	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (show.yaml + Code, nie song.yaml)")
+	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (Tabelle + show.yaml + Code)")
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
+	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	args = ap.parse_args()
+	for stream in (sys.stdout, sys.stderr):
+		stream.reconfigure(encoding="utf-8")
 
 	try:
 		if args.assemble:
@@ -1724,6 +1742,8 @@ def main():
 			return 0
 		if not args.song:
 			return cmd_list()
+		if args.neu:
+			return cmd_new(args.song)
 		song_dir = find_song_dir(args.song)
 		if args.versions:
 			return cmd_versions(song_dir)

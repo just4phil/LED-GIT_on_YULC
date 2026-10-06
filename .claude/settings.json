@@ -1,7 +1,7 @@
 {
   "enabledMcpjsonServers": ["semble"],
   "permissions": {
-    "deny": ["Edit(songs/**/song.yaml)"]
+    "deny": ["Edit(songs/**/struktur.xlsx)", "Edit(songs/**/song.yaml)"]
   },
   "hooks": {
     "PreToolUse": [

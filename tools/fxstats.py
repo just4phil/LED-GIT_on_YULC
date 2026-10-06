@@ -5,9 +5,9 @@ fxstats.py - wertet aus, welche Effekte die alten, handgeschriebenen Songs an we
     python tools/fxstats.py              # Bericht nach docs/effekt-statistik.md + Kurzfassung auf der Konsole
     python tools/fxstats.py --stdout     # ganzen Bericht nur ausgeben, nichts schreiben
 
-Quelle sind die Kommentare '# bisher: progX(...)' in songs/*/song.yaml (von tools/excel2song.py aus
+Quelle ist die Spalte 'bisher (alter Code)' in songs/*/quelle/struktur.xlsx (beim Import der alten Songs aus
 src/songs.cpp übernommen: Effekt des alten Codes auf der Gitarre, dahinter ggf. '(Matrix: ...)').
-Die song.yaml werden nur gelesen. Parameternamen kommen aus den Deklarationen in src/*.h.
+Die Tabellen werden nur gelesen. Parameternamen kommen aus den Deklarationen in src/*.h.
 
 Der Bericht ist die Grundlage für docs/effekt-katalog.yaml (Steckbriefe der Effekte).
 """
@@ -17,6 +17,9 @@ import statistics
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import struktur as st  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SONGS_DIR = ROOT / "songs"
@@ -130,44 +133,33 @@ def param_names(sigs, fx, args):
 
 
 def load_parts():
-	"""Alle Abschnitte mit '# bisher:' als Liste von dicts, in Song-Reihenfolge."""
+	"""Alle Parts mit einem Eintrag in der Spalte 'bisher (alter Code)' als Liste von dicts, in Song-Reihenfolge."""
 	parts = []
-	for path in sorted(SONGS_DIR.glob("*/song.yaml")):
-		song = {"name": path.parent.name, "bpm": None, "bpb": 4}
-		cur = None
-		for line in path.read_text(encoding="utf-8").splitlines():
-			s = line.strip()
-			m = re.match(r"-\s*name:\s*(.*)", s)
-			if m:
-				cur = {"song": song["name"], "name": m.group(1).split("#")[0].strip().strip("\"'"),
-					   "bars": 0.0, "beats": 0.0, "bpm": song["bpm"], "bpb": song["bpb"]}
+	for path in sorted(SONGS_DIR.glob(f"*/quelle/{st.TABLE_FILE}")):
+		try:
+			song = st.read_table(path)
+		except st.TableError as e:
+			print(f"  ! {path.parent.parent.name}: {e}", file=sys.stderr)
+			continue
+		for sec in song["sections"]:
+			old = next((l for l in sec.get("old", "").splitlines() if not l.startswith("!")), None)	# erste Zeile = Effekt des Parts
+			call = parse_call(old) if old else None
+			if not call:
 				continue
-			m = re.match(r"(bpm|beats_per_bar|bars|beats):\s*([\d.]+)", s)
-			if m:
-				key, val = m.group(1), float(m.group(2))
-				if cur is None:
-					song["bpb" if key == "beats_per_bar" else key] = val
-				else:
-					cur["bpb" if key == "beats_per_bar" else key] = val
-				continue
-			m = re.match(r"#\s*bisher:\s*(.*)", s)
-			if m and cur is not None:
-				call = parse_call(m.group(1))
-				if not call:
-					continue
-				cur["fx"], cur["args"], rest = call
-				cur["raw"] = m.group(1).split("   (Matrix:")[0].strip()
-				cur["matrix"] = []
-				mm = re.search(r"\(Matrix:\s*(.*)\)\s*$", rest)
-				if mm:
-					for piece in mm.group(1).split(";"):
-						c = parse_call(piece)
-						if c:
-							cur["matrix"].append(c[0])
-				cur["len"] = cur["bars"] + cur["beats"] / cur["bpb"]
-				cur["type"] = part_type(cur["name"])
-				parts.append(cur)
-				cur = None
+			cur = {"song": path.parent.parent.name, "name": sec["name"], "bars": float(sec.get("bars", 0)),
+				   "beats": float(sec.get("beats", 0)), "bpm": float(sec.get("bpm", song["bpm"])), "bpb": song["beats_per_bar"]}
+			cur["fx"], cur["args"], rest = call
+			cur["raw"] = old.split("   (Matrix:")[0].strip()
+			cur["matrix"] = []
+			mm = re.search(r"\(Matrix:\s*(.*)\)\s*$", rest)
+			if mm:
+				for piece in mm.group(1).split(";"):
+					c = parse_call(piece)
+					if c:
+						cur["matrix"].append(c[0])
+			cur["len"] = cur["bars"] + cur["beats"] / cur["bpb"]
+			cur["type"] = part_type(cur["name"])
+			parts.append(cur)
 	return parts
 
 
@@ -202,7 +194,7 @@ def report(parts, sigs):
 	L += ["# Effekt-Statistik der alten Songs", "",
 		  "Erzeugt von `tools/fxstats.py` - nicht von Hand ändern, neu erzeugen.", "",
 		  f"Grundlage: {len(parts)} Parts aus {len(songs)} handgeschriebenen Songs ({total_bars:.0f} Takte), "
-		  "jeweils der Effekt auf der Gitarre (`# bisher:` in `songs/*/song.yaml`).",
+		  "jeweils der Effekt auf der Gitarre (Spalte 'bisher (alter Code)' in `songs/*/quelle/struktur.xlsx`).",
 		  "Die alten Songs haben keine `energy`-Werte, deshalb ist hier nur nach Part-Typ ausgewertet.", ""]
 
 	L += ["## 1. Effekte nach Spielzeit", ""]
@@ -300,7 +292,7 @@ def main():
 
 	parts = load_parts()
 	if not parts:
-		sys.exit("keine '# bisher:'-Kommentare in songs/*/song.yaml gefunden")
+		sys.exit("keine Einträge in der Spalte 'bisher (alter Code)' der Tabellen gefunden")
 	text = report(parts, load_signatures())
 	if args.stdout:
 		print(text)
