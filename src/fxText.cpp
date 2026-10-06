@@ -47,14 +47,12 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 	if (fxEvery(millisCounterTimer, 100)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
-		if (!LEDsTurnedOff) {
-			textSetup();
-			matrix->setCursor(pos_x, pos_y);
-			matrix->setTextColor(col);
-			matrix->print(words);
-			fxPresent();
-		}
+		textSetup();
+		matrix->setCursor(pos_x, pos_y);
+		matrix->setTextColor(col);
+		matrix->print(words);
 	}
+	fxShow();
 }
 
 // Lauftext von rechts nach links. delay = ms je Pixel-Schritt (kleiner = schneller). Ist der Text ganz
@@ -74,28 +72,25 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 	if (fxEvery(millisCounterTimer, delay)) {
 		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			matrix->clear();
-			matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-			matrix->setTextSize(1);
-			matrix->setRotation(0);
+		matrix->clear();
+		matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+		matrix->setTextSize(1);
+		matrix->setRotation(0);
 
-			progScrollTextZaehler--;	// einen Pixel nach links
-			if (progScrollTextZaehler < -progScrollEnde) progScrollTextZaehler = MATRIX_WIDTH - 2;	// links ganz hinaus: wieder rechts beginnen
+		progScrollTextZaehler--;	// einen Pixel nach links
+		if (progScrollTextZaehler < -progScrollEnde) progScrollTextZaehler = MATRIX_WIDTH - 2;	// links ganz hinaus: wieder rechts beginnen
 
-			yield();
-			matrix->clear();
-			#if defined(GITBOARD)
-				matrix->setCursor(progScrollTextZaehler, 13);
-			#elif defined(SCROLLMATRIX)
-				matrix->setCursor(progScrollTextZaehler, 1); 
-			#endif
-			matrix->setTextColor(col);
-			matrix->print(words);
-
-			fxPresent();
-		}
+		yield();
+		matrix->clear();
+		#if defined(GITBOARD)
+			matrix->setCursor(progScrollTextZaehler, 13);
+		#elif defined(SCROLLMATRIX)
+			matrix->setCursor(progScrollTextZaehler, 1); 
+		#endif
+		matrix->setTextColor(col);
+		matrix->print(words);
 	}
+	fxShow();
 }
 
 // Buchstaben gleichmäßig über die Matrix verteilt, jeder in Zufallsfarbe.
@@ -112,34 +107,30 @@ void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPa
 	if (fxEvery(millisCounterTimer, msDelay)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
-		if (!LEDsTurnedOff) {
-			textSetup();
-			int n = text.length();
-			if (n == 0) return;
+		textSetup();
+		int n = text.length();	// bei leerem Text (n = 0) laufen die Schleifen unten gar nicht: das Bild bleibt leer
 
-			if (MATRIX_WIDTH >= MATRIX_HEIGHT) {
-				// Horizontal: SCROLLMATRIX 54×10
-				int step = (n > 1) ? (MATRIX_WIDTH - 4) / (n - 1) : 0;
-				int y_base = (MATRIX_HEIGHT - 7) / 2;
-				for (int i = 0; i < n; i++) {
-					matrix->setCursor(2 + i * step, y_base + random(-1, 2));
-					matrix->setTextColor(getRandomColor());
-					matrix->print(text[i]);
-				}
-			} else {
-				// Vertikal: ANDRESGIT 22×23 und ähnliche
-				int step = (n > 1) ? (MATRIX_HEIGHT - 7) / (n - 1) : 0;
-				int x_base = max(0, MATRIX_WIDTH / 2 - 3);
-				for (int i = 0; i < n; i++) {
-					matrix->setCursor(x_base + random(-1, 2), 1 + i * step);
-					matrix->setTextColor(getRandomColor());
-					matrix->print(text[i]);
-				}
+		if (MATRIX_WIDTH >= MATRIX_HEIGHT) {
+			// Horizontal: SCROLLMATRIX 54×10
+			int step = (n > 1) ? (MATRIX_WIDTH - 4) / (n - 1) : 0;
+			int y_base = (MATRIX_HEIGHT - 7) / 2;
+			for (int i = 0; i < n; i++) {
+				matrix->setCursor(2 + i * step, y_base + random(-1, 2));
+				matrix->setTextColor(getRandomColor());
+				matrix->print(text[i]);
 			}
-
-			fxPresent();
+		} else {
+			// Vertikal: ANDRESGIT 22×23 und ähnliche
+			int step = (n > 1) ? (MATRIX_HEIGHT - 7) / (n - 1) : 0;
+			int x_base = max(0, MATRIX_WIDTH / 2 - 3);
+			for (int i = 0; i < n; i++) {
+				matrix->setCursor(x_base + random(-1, 2), 1 + i * step);
+				matrix->setTextColor(getRandomColor());
+				matrix->print(text[i]);
+			}
 		}
 	}
+	fxShow();
 }
 
 // Backward-compat Wrapper für NoRoots()
@@ -164,19 +155,17 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart,
 	if (fxEvery(millisCounterTimer, blinkMs)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
-		if (!LEDsTurnedOff) {
-			textSetup();
-			if (progTextBlinkIsOn) {
-				int x = max(0, MATRIX_WIDTH / 2 - (int)words.length() * 3);
-				int y = max(0, MATRIX_HEIGHT / 2 - 4);
-				matrix->setCursor(x, y);
-				matrix->setTextColor(blinkColor);
-				matrix->print(words);
-			}
-			progTextBlinkIsOn = !progTextBlinkIsOn;
-			fxPresent();
+		textSetup();
+		if (progTextBlinkIsOn) {
+			int x = max(0, MATRIX_WIDTH / 2 - (int)words.length() * 3);
+			int y = max(0, MATRIX_HEIGHT / 2 - 4);
+			matrix->setCursor(x, y);
+			matrix->setTextColor(blinkColor);
+			matrix->print(words);
 		}
+		progTextBlinkIsOn = !progTextBlinkIsOn;
 	}
+	fxShow();
 }
 
 //------ Text für den text:-Schlüssel der Song-YAMLs (tools/songgen.py) ------
@@ -195,6 +184,8 @@ static int textY() {
 }
 
 // Standard-Teil für progText/progTextScroll. Rückgabe false = LEDs sind abgeschaltet, nichts zeichnen.
+// Beide Effekte zeichnen nur, wenn sich der "Stand" des Textes ändert (neues Wort, nächster Pixel), geben aber in
+// jedem Durchlauf aus (fxShow), damit Übergänge und Modifikatoren der Ausgabestufe flüssig weiterlaufen.
 static bool textPartInit(unsigned int durationMillis, byte nextPart) {
 	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
@@ -207,14 +198,14 @@ static bool textPartInit(unsigned int durationMillis, byte nextPart) {
 // Lauftext, der genau am Ende des Parts fertig ist: so viele ganze Durchläufe, dass das Tempo nahe
 // TEXT_SCROLL_MS pro Pixel liegt. col = CRGB::Black -> Farbe aus dem aktiven Schema, pro Durchlauf die nächste.
 void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col) {
-	if (!textPartInit(durationMillis, nextPart) || durationMillis == 0) return;
+	if (!textPartInit(durationMillis, nextPart) || durationMillis == 0) { fxShow(); return; }
 
 	long steps = MATRIX_WIDTH - 2 + 6 * (long)strlen(text);		// Pixel für einen Durchlauf
 	// Anzahl ganzer Durchläufe, die bei rund TEXT_SCROLL_MS je Pixel in den Part passen (gerundet, mindestens 1)
 	long passes = max(1L, ((long)durationMillis + steps * TEXT_SCROLL_MS / 2) / (steps * TEXT_SCROLL_MS));
 	// aktuelle Position in Pixeln über alle Durchläufe: Anteil der vergangenen Zeit mal Gesamtweg
 	long pos = (long)((uint64_t)millisCounterForProgChange * steps * passes / durationMillis);
-	if (pos == progTextLastState) return;
+	if (pos == progTextLastState) { fxShow(); return; }
 	progTextLastState = pos;
 
 	FastLED.setBrightness(BRIGHTNESS);
@@ -222,7 +213,7 @@ void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart
 	matrix->setCursor(MATRIX_WIDTH - 2 - (int)(pos % steps), textY());
 	matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(pos / steps) : col));
 	matrix->print(text);
-	fxPresent();
+	fxShow();
 }
 
 // Ein oder mehrere Wörter (durch Leerzeichen getrennt): pro msPerWord erscheint das nächste Wort zentriert,
@@ -244,13 +235,13 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 		progTextScroll(words, durationMillis, nextPart, col);
 		return;
 	}
-	if (!textPartInit(durationMillis, nextPart) || n == 0 || msPerWord == 0) return;
+	if (!textPartInit(durationMillis, nextPart) || n == 0 || msPerWord == 0) { fxShow(); return; }
 
 	unsigned int t = millisCounterForProgChange;
 	long slot = t / msPerWord;								// das wievielte Wort-Zeitfenster seit Part-Beginn läuft gerade?
 	bool on = (t % msPerWord) < msPerWord - msPerWord / 4;	// in den ersten drei Vierteln des Fensters ist das Wort zu sehen
 	long state = on ? slot : -1;							// "Stand" des Bildes: nur wenn er sich ändert, wird neu gezeichnet
-	if (state == progTextLastState) return;
+	if (state == progTextLastState) { fxShow(); return; }
 	progTextLastState = state;
 
 	FastLED.setBrightness(BRIGHTNESS);
@@ -268,5 +259,5 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 		matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(slot) : col));
 		for (int i = 0; i < len; i++) matrix->print(p[i]);
 	}
-	fxPresent();
+	fxShow();
 }

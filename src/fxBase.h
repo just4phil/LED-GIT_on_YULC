@@ -11,7 +11,9 @@
  *   2. Takt          Ersatz für delay(): "ist mein nächstes Bild schon dran?"
  *                    -> fxEvery(), fxFrameDue() oder fxStepsDue() (Unterschiede siehe unten).
  *   3. Ausgabe       Am Ende das Bild ausgeben - immer, auch wenn nichts Neues gemalt wurde.
- *                    -> fxShow() (oder direkt fxPresent() aus fxPipeline.h).
+ *                    -> fxShow(). Es kümmert sich auch um abgeschaltete LEDs (Knopf ganz zurück, Akku leer):
+ *                    dann geht ein schwarzes Bild mit den Bund-Markern hinaus. Ein Effekt braucht deshalb
+ *                    kein eigenes "if (!LEDsTurnedOff)".
  *
  * Ein vollständiger Effekt sieht damit so aus - übrig bleibt nur, was der Effekt wirklich tut:
  *

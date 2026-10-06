@@ -123,7 +123,7 @@ void FillLEDsFromPaletteColors(uint8_t colorInd, char speed) {
 	uint8_t brightness = 255;	// TODO: Achtung hier wird NICHT die allgemeine CONST für BRIGHTNESS genutzt (ggf. weil dann zu dunkel!?)
 
 	for (int i = 0; i < anz_LEDs; i++) {
-		if (!LEDsTurnedOff) leds[i] = ColorFromPalette(currentPalette, colorInd, brightness, currentBlending);
+		leds[i] = ColorFromPalette(currentPalette, colorInd, brightness, currentBlending);
 		colorInd += speed;	//3; / je hoeher dieser wert desto kuerzer sind die farbabschnitte (beeinflusst die subjektive geschwindigkeit)
 	}
 }
@@ -216,12 +216,9 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 	else {
 		// ein Schritt je FX_REF_FRAME_MS aus der Zeit seit Part-Beginn (früher: ein Schritt je Bild) - auf allen Geräten gleich schnell
 		zaehler = (millisCounterForProgChange / FX_REF_FRAME_MS + 1) % 1001;	// der wert 1000 beinflusst  die geschwindigkeit
-		FillLEDsFromPaletteColors(zaehler);	// hier wird schon intern LEDsTurnedOff abgefragt
+		FillLEDsFromPaletteColors(zaehler);
 	}
-
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-		fxPresent();
-	}
+	fxShow();
 }
 
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart) {

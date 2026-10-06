@@ -71,30 +71,20 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 			zaehler++;
 			if (zaehler >= MATRIX_WIDTH +6) scannerGoesBack = true;
 
-			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-				matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_RED_HIGH);
-				matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_WHITE_HIGH);
-				matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_RED_HIGH);
-			}
+			matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_RED_HIGH);
+			matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_WHITE_HIGH);
+			matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_RED_HIGH);
 		}
 		else {
 			zaehler--;
 			if (zaehler <= -6) scannerGoesBack = false;
 
-			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-				matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_WHITE_HIGH);
-				matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_RED_HIGH);
-				matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_WHITE_HIGH);
-			}
-		}
-
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			fxPresent();
+			matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_WHITE_HIGH);
+			matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_RED_HIGH);
+			matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_WHITE_HIGH);
 		}
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}
+	fxShow();
 }
 void progMatrixScanner(unsigned int durationMillis, byte nextPart) {
 	progMatrixScanner(durationMillis, nextPart, 0);
@@ -135,136 +125,132 @@ int c_y;
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed -= reduceSpeed;
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
+		clearAll();
 
-			clearAll();
+		#if defined (SCROLLMATRIX)
 
-			#if defined (SCROLLMATRIX)
+			c_x = center_x;		// Mitte der Fläche (definitions.h)
+			c_y = center_y;
 
-				c_x = center_x;		// Mitte der Fläche (definitions.h)
-				c_y = center_y;
+			switch (zaehler) {
+			case 0:
+				matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col1);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col1);	// 0/180 grad
+				break;
 
-				switch (zaehler) {
+			case 1:
+				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col1);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col1);	// 0/180 grad
+				break;
+
+			case 2:
+				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
+				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
+				break;
+			
+			case 3:	//ist kein 90 grad winkel!!
+				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col1);		// 68/248 Grad
+				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col1);	// 338/158 Grad 
+				break;
+
+			case 4:
+				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col1);	//45/225 Grad
+				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col1);	//315/135 Grad
+				break;
+				
+			case 5://ist kein 90 grad winkel!!
+				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col1);		// 68/248 Grad
+				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col1);	// 338/158 Grad 
+				break;
+
+			case 6:
+				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col1);
+				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
+				break;
+
+			case 7:
+				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col1);		// 68/248 Grad
+				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col1);	// 338/158 Grad 
+				break;
+			}
+
+			// 2. Farbe
+			switch (zaehler) {
 				case 0:
-					matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col1);		// 90/270 grad
-					matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col1);	// 0/180 grad
-					break;
+				c_x = center_x +1;
+				c_y = center_y -1;
+				matrix->drawLine(c_x, c_y-5, c_x, c_y+5, col2);		// 90/270 grad
+				matrix->drawLine(c_x-27, c_y, c_x+27, c_y, col2);	// 0/180 grad
+				break;
 
-				case 1:
-					matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col1);		// 90/270 grad
-					matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col1);	// 0/180 grad
-					break;
+			case 1:
+				c_x = center_x +1;
+				c_y = center_y +1;	// hier entsteht eine mini lücke
+				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col2);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col2);	// 0/180 grad
+				break;
 
-				case 2:
-					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
-					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
-					break;
+			case 2:
+				c_x = center_x +1;
+				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
+				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
+				break;
+			
+			case 3:
+				c_x = center_x +1;
+				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col2);		// 68/248 Grad
+				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col2);	// 338/158 Grad 
+				break;
+
+			case 4:
+				c_x = center_x +1;
+				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col2);	//45/225 Grad
+				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col2);	//315/135 Grad
+				break;
+
+			case 5:
+				c_x = center_x;
+				c_y = center_y -1;
+				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col2);		// 68/248 Grad
 				
-				case 3:	//ist kein 90 grad winkel!!
-					matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col1);		// 68/248 Grad
-					matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col1);	// 338/158 Grad 
-					break;
+				c_x = center_x+1;
+				c_y = center_y;
+				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col2);	// 338/158 Grad 
+				break;
 
-				case 4:
-					matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col1);	//45/225 Grad
-					matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col1);	//315/135 Grad
-					break;
-					
-				case 5://ist kein 90 grad winkel!!
-					matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col1);		// 68/248 Grad
-					matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col1);	// 338/158 Grad 
-					break;
-
-				case 6:
-					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col1);
-					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
-					break;
-
-				case 7:
-					matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col1);		// 68/248 Grad
-					matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col1);	// 338/158 Grad 
-					break;
-				}
-
-				// 2. Farbe
-				switch (zaehler) {
-					case 0:
-					c_x = center_x +1;
-					c_y = center_y -1;
-					matrix->drawLine(c_x, c_y-5, c_x, c_y+5, col2);		// 90/270 grad
-					matrix->drawLine(c_x-27, c_y, c_x+27, c_y, col2);	// 0/180 grad
-					break;
-
-				case 1:
-					c_x = center_x +1;
-					c_y = center_y +1;	// hier entsteht eine mini lücke
-					matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col2);		// 90/270 grad
-					matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col2);	// 0/180 grad
-					break;
-
-				case 2:
-					c_x = center_x +1;
-					matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
-					matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
-					break;
+			case 6:
+				c_x = center_x +1;
+				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col2);
+				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
+				break;
 				
-				case 3:
-					c_x = center_x +1;
-					matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col2);		// 68/248 Grad
-					matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col2);	// 338/158 Grad 
-					break;
+			case 7:
+				c_y = center_y +1;
+				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col2);		// 68/248 Grad
+				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col2);	// 338/158 Grad 
+				break;
+			}
 
-				case 4:
-					c_x = center_x +1;
-					matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col2);	//45/225 Grad
-					matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col2);	//315/135 Grad
-					break;
+			zaehler++;
+			if (zaehler >= 8) zaehler = 0;
 
-				case 5:
-					c_x = center_x;
-					c_y = center_y -1;
-					matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col2);		// 68/248 Grad
-					
-					c_x = center_x+1;
-					c_y = center_y;
-					matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col2);	// 338/158 Grad 
-					break;
+		#else
 
-				case 6:
-					c_x = center_x +1;
-					matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col2);
-					matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
-					break;
-					
-				case 7:
-					c_y = center_y +1;
-					matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col2);		// 68/248 Grad
-					matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col2);	// 338/158 Grad 
-					break;
-				}
+			zaehler++;
+			if (zaehler >= 10) zaehler = 0;
 
-				zaehler++;
-				if (zaehler >= 8) zaehler = 0;
+			matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
+			matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
+			matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
+			matrix->drawLine(0, zaehler, 21, 21 - zaehler, col2);
+			matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, col1);
+			matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, col2);
+			matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
+			matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
 
-			#else
-
-				zaehler++;
-				if (zaehler >= 10) zaehler = 0;
-
-				matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
-				matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
-				matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
-				matrix->drawLine(0, zaehler, 21, 21 - zaehler, col2);
-				matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, col1);
-				matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, col2);
-				matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
-				matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
-
-			#endif
-
-			fxPresent();
-		}
+		#endif
 	}
+	fxShow();
 }
 // Kurzformen: ohne Farbwechsel (msForColorChange = 0) bzw. zusätzlich mit schnellster Drehung
 void progStern(unsigned int durationMillis, unsigned char nextPart, unsigned char reduceSpeed) {
@@ -310,45 +296,42 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
 
 	uint8_t steps = fxStepsDue(millisToReduceCPUSpeed, reduceSpeed);
 	if (steps) {
-		if (!LEDsTurnedOff) {
-			clearAll();
+		clearAll();
 
-			// versäumte Schritte nachholen
-			sternAngle = fmodf(sternAngle + 0.06f * (steps - 1), (float)M_PI);
-			if (wander) sternWanderT += 0.03f * (steps - 1);
+		// versäumte Schritte nachholen
+		sternAngle = fmodf(sternAngle + 0.06f * (steps - 1), (float)M_PI);
+		if (wander) sternWanderT += 0.03f * (steps - 1);
 
-			float cx = cx_base;
-			float cy = cy_base;
-			if (wander) {
-				float rx = (MATRIX_WIDTH  / 2.0f) - 3.0f;
-				float ry = (MATRIX_HEIGHT / 2.0f) - 2.0f;
-				cx = cx_base + rx * sinf(sternWanderT);
-				cy = cy_base + ry * sinf(sternWanderT * 0.7f + 1.047f);
-				sternWanderT += 0.03f;
-			}
-
-			// R gross genug damit die Linie immer den Rand erreicht
-			float R = sqrtf((float)(MATRIX_WIDTH * MATRIX_WIDTH + MATRIX_HEIGHT * MATRIX_HEIGHT));	// = Diagonale der Fläche
-			float armStep = (float)M_PI / numArms;	// Winkel zwischen zwei benachbarten Linien
-
-			for (byte a = 0; a < numArms; a++) {
-				float a1 = sternAngle + a * armStep;
-				float a2 = a1 + 0.08f;   // leichter Versatz fuer Doppellinien-Effekt (col2)
-
-				matrix->drawLine(
-					(int)(cx + cosf(a1) * R), (int)(cy + sinf(a1) * R),
-					(int)(cx - cosf(a1) * R), (int)(cy - sinf(a1) * R), col1);
-				matrix->drawLine(
-					(int)(cx + cosf(a2) * R), (int)(cy + sinf(a2) * R),
-					(int)(cx - cosf(a2) * R), (int)(cy - sinf(a2) * R), col2);
-			}
-
-			sternAngle += 0.06f;
-			if (sternAngle >= (float)M_PI) sternAngle -= (float)M_PI;	// nach einer halben Drehung sieht der Stern wieder gleich aus: von vorn
-
-			fxPresent();
+		float cx = cx_base;
+		float cy = cy_base;
+		if (wander) {
+			float rx = (MATRIX_WIDTH  / 2.0f) - 3.0f;
+			float ry = (MATRIX_HEIGHT / 2.0f) - 2.0f;
+			cx = cx_base + rx * sinf(sternWanderT);
+			cy = cy_base + ry * sinf(sternWanderT * 0.7f + 1.047f);
+			sternWanderT += 0.03f;
 		}
+
+		// R gross genug damit die Linie immer den Rand erreicht
+		float R = sqrtf((float)(MATRIX_WIDTH * MATRIX_WIDTH + MATRIX_HEIGHT * MATRIX_HEIGHT));	// = Diagonale der Fläche
+		float armStep = (float)M_PI / numArms;	// Winkel zwischen zwei benachbarten Linien
+
+		for (byte a = 0; a < numArms; a++) {
+			float a1 = sternAngle + a * armStep;
+			float a2 = a1 + 0.08f;   // leichter Versatz fuer Doppellinien-Effekt (col2)
+
+			matrix->drawLine(
+				(int)(cx + cosf(a1) * R), (int)(cy + sinf(a1) * R),
+				(int)(cx - cosf(a1) * R), (int)(cy - sinf(a1) * R), col1);
+			matrix->drawLine(
+				(int)(cx + cosf(a2) * R), (int)(cy + sinf(a2) * R),
+				(int)(cx - cosf(a2) * R), (int)(cy - sinf(a2) * R), col2);
+		}
+
+		sternAngle += 0.06f;
+		if (sternAngle >= (float)M_PI) sternAngle -= (float)M_PI;	// nach einer halben Drehung sieht der Stern wieder gleich aus: von vorn
 	}
+	fxShow();
 }
 
 // Standard: Mitte = center_x/center_y, kein Wandern, 2 Arm-Paare
@@ -394,23 +377,17 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 	if (fxEvery(millisCounterTimer, msForChange)) {
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			if (clearEach) {
-				clearAll();
-				col1 = getRandomColor();
-			}
-			else {
-				col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
-			}
-
-			matrix->fillCircle(random(0, MATRIX_WIDTH-1), random(0, MATRIX_HEIGHT-1), random(3, 10), col1);
-		
-			fxPresent();
+		if (clearEach) {
+			clearAll();
+			col1 = getRandomColor();
 		}
+		else {
+			col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
+		}
+
+		matrix->fillCircle(random(0, MATRIX_WIDTH-1), random(0, MATRIX_HEIGHT-1), random(3, 10), col1);
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}
+	fxShow();
 }
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange) {
 	progCircles(durationMillis, nextPart, msForChange, true);
@@ -433,25 +410,19 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 		byte x1 = random(0, MATRIX_WIDTH-1);
 		byte x2 = random(0, MATRIX_WIDTH-1);	
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			if (clearEach) {
-				clearAll();
-				col1 = getRandomColor();
-			}
-			else {
-				col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
-			}
-
-			matrix->drawLine(x1 - 1, 0, x2 - 1, MATRIX_HEIGHT-1, col1);
-			matrix->drawLine(x1, 0, x2, MATRIX_HEIGHT-1, col1);
-			matrix->drawLine(x1 + 1, 0, x2 + 1, MATRIX_HEIGHT-1, col1);
-		
-			fxPresent();
+		if (clearEach) {
+			clearAll();
+			col1 = getRandomColor();
 		}
+		else {
+			col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
+		}
+
+		matrix->drawLine(x1 - 1, 0, x2 - 1, MATRIX_HEIGHT-1, col1);
+		matrix->drawLine(x1, 0, x2, MATRIX_HEIGHT-1, col1);
+		matrix->drawLine(x1 + 1, 0, x2 + 1, MATRIX_HEIGHT-1, col1);
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}
+	fxShow();
 }
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange) {
 	progRandomLines(durationMillis, nextPart, msForChange, true);
@@ -491,7 +462,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 0;
 					break;
 				}
-				if (!LEDsTurnedOff)	matrix->drawLine(zaehler, 0, 25 - zaehler, 22, getRandomColor());
+				matrix->drawLine(zaehler, 0, 25 - zaehler, 22, getRandomColor());
 				break;
 
 			case 1:
@@ -501,7 +472,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 12;
 					break;
 				}
-				if (!LEDsTurnedOff) matrix->drawLine(25, zaehler, 0, 22 - zaehler, getRandomColor());
+				matrix->drawLine(25, zaehler, 0, 22 - zaehler, getRandomColor());
 				break;
 
 			case 2:
@@ -511,7 +482,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 25;
 					break;
 				}
-				if (!LEDsTurnedOff) matrix->drawLine(25, zaehler, 0, 22 - zaehler, getRandomColor());
+				matrix->drawLine(25, zaehler, 0, 22 - zaehler, getRandomColor());
 				break;
 
 			case 3:
@@ -521,7 +492,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 0;
 					break;
 				}
-				if (!LEDsTurnedOff) matrix->drawLine(zaehler, 0, 25 - zaehler, 22, getRandomColor());
+				matrix->drawLine(zaehler, 0, 25 - zaehler, 22, getRandomColor());
 				break;
 
 			case 4:
@@ -531,7 +502,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 10;
 					break;
 				}
-				if (!LEDsTurnedOff) matrix->drawLine(0, zaehler, 25, 22 - zaehler, getRandomColor());
+				matrix->drawLine(0, zaehler, 25, 22 - zaehler, getRandomColor());
 				break;
 
 			case 5:
@@ -541,19 +512,13 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 					zaehler = 0;
 					break;
 				}
-				if (!LEDsTurnedOff) matrix->drawLine(0, zaehler, 25, 22 - zaehler, getRandomColor());
+				matrix->drawLine(0, zaehler, 25, 22 - zaehler, getRandomColor());
 				break;
 		}
 
 	#endif
-
-		if (!LEDsTurnedOff) {
-			fxPresent();
-		}
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}
+	fxShow();
 }
 void progMovingLines(unsigned int durationMillis, byte nextPart) {
 	progMovingLines(durationMillis, nextPart, 0);
@@ -583,35 +548,35 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				anz = (sizeof(outlinePath1) / sizeof(outlinePath1[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath1[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 1:
 				anz = (sizeof(outlinePath2) / sizeof(outlinePath2[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath2[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 2:
 				anz = (sizeof(outlinePath3) / sizeof(outlinePath3[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath3[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 3:
 				anz = (sizeof(outlinePath4) / sizeof(outlinePath4[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath4[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 			case 4:
 				anz = (sizeof(outlinePath5) / sizeof(outlinePath5[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath5[i];
-					if (!LEDsTurnedOff) leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
 				}
 				break;
 
@@ -621,33 +586,32 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 				anz = (sizeof(outlinePath6) / sizeof(outlinePath6[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath6[i];
-					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
+					leds[test] = getRandomCRGB();
 				}
 				break;
 			case 6:
 				anz = (sizeof(outlinePath7) / sizeof(outlinePath7[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath7[i];
-					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
+					leds[test] = getRandomCRGB();
 				}
 				break;
 			case 7:
 				anz = (sizeof(outlinePath8) / sizeof(outlinePath8[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath8[i];
-					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
+					leds[test] = getRandomCRGB();
 				}
 				break;
 			case 8:
 				anz = (sizeof(outlinePath9) / sizeof(outlinePath9[0]));
 				for (int i = 0; i < anz; i++) {
 					int test = outlinePath9[i];
-					if (!LEDsTurnedOff) leds[test] = getRandomCRGB();
+					leds[test] = getRandomCRGB();
 				}
 				break;
 
 		#endif
-
 			}
 		}
 
@@ -663,10 +627,9 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 			zaehler--;
 			if (zaehler <= 0) scannerGoesBack = false;	
 		}
-		
 	}
 	// dies hier immer und im zweifel auch sofort callen sonst fallen die MarkerLEDs kurz aus
-	fxPresent();
+	fxShow();
 }
 void progOutline(unsigned int durationMillis, byte nextPart) {
 	progOutline(durationMillis, nextPart, 0);

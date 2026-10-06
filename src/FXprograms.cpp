@@ -15,33 +15,28 @@
 //=====================================================================
 // Hier stehen die einfachen Streifen-Effekte (Sternschnuppen, Glitzern, einfarbig, Strobo, Dunkel) und das
 // gemeinsame "Gedächtnis" aller älteren Effekte. Die übrigen Familien stehen in fxMatrixShapes.cpp, fxText.cpp,
-// fxPalette.cpp, fxMatrixRain.cpp und fxMatrixSim.cpp (Übersicht: FXprograms.h). Die Songs (songs.cpp, songs_generated.cpp) rufen sie auf. Neuere Effekte stehen
-// in guitarShapeFX.cpp und scenes.cpp; sie sind kürzer geschrieben, arbeiten aber nach demselben Prinzip.
+// fxPalette.cpp, fxMatrixRain.cpp und fxMatrixSim.cpp (Übersicht: FXprograms.h). Die Songs (songs.cpp,
+// songs_generated.cpp) rufen sie auf. Neuere Effekte stehen in guitarShapeFX.cpp und scenes.cpp.
 //
-// DAS PRINZIP - jeder Effekt hier ist gleich aufgebaut. Die neueren Effekte schreiben dieselben drei Schritte
-// kürzer mit den Bausteinen aus fxBase.h (fxBegin/fxPartStart, fxEvery/fxFrameDue, fxShow); die Effekte dieser
-// Datei werden nach und nach darauf umgestellt. Ausgeschrieben sieht das Prinzip so aus:
+// DAS PRINZIP - jeder Effekt ist aus denselben drei Bausteinen gebaut (fxBase.h):
 //
-//   void progXyz(unsigned int durationMillis, byte nextPart, ...weitere Einstellungen...) {
+//   void progXyz(unsigned int durationMillis, byte nextPart, unsigned int wartezeit) {
 //
-//       // 1. "Standard-Teil": läuft nur beim ERSTEN Aufruf in einem Part.
-//       if (!nextChangeMillisAlreadyCalculated) {
+//       // 1. Part-Start: läuft nur beim ERSTEN Aufruf in einem Part. fxBegin() trägt ein, wie lange der Part
+//       //    dauert und welcher danach folgt, und meldet mit true, dass der Part gerade beginnt.
+//       if (fxBegin(durationMillis, nextPart)) {
 //           clearAll();                                  // Bild löschen
-//           nextChangeMillis = durationMillis;           // so lange dauert dieser Part
-//           nextSongPart = nextPart;                     // dieser Part folgt danach
-//           nextChangeMillisAlreadyCalculated = true;    // merken: erledigt
 //           ...eigene Startwerte des Effekts...
 //       }
 //
-//       // 2. "Ersatz für delay()": nur wenn genug Zeit vergangen ist, wird ein neues Bild gemalt.
-//       if (millisCounterTimer >= wartezeit) {
-//           millisCounterTimer -= wartezeit;             // die verbrauchte Zeit abziehen
+//       // 2. Takt ("Ersatz für delay()"): nur wenn genug Zeit vergangen ist, wird ein neues Bild gemalt.
+//       //    fxEvery() zieht die verbrauchte Zeit vom Zähler ab.
+//       if (fxEvery(millisCounterTimer, wartezeit)) {
 //           ...in leds[] malen...
-//           fxPresent();                                 // Bild ausgeben
 //       }
-//       else {
-//           fxPresent();                                 // auch ohne neues Bild ausgeben (siehe unten)
-//       }
+//
+//       // 3. Ausgabe: IMMER, auch wenn gerade nichts Neues gemalt wurde.
+//       fxShow();
 //   }
 //
 // Wichtig zum Verständnis:
@@ -49,13 +44,14 @@
 //     ununterbrochen auf (hunderte Male pro Sekunde). Jeder Aufruf dauert nur kurz und kehrt sofort zurück.
 //     Deshalb darf nirgends delay() stehen: währenddessen stünde alles still (MIDI, Bluetooth, Knopf).
 //   - Was ein Effekt sich von Aufruf zu Aufruf merken muss (Position, Farbe ...), steht in globalen Variablen
-//     oder in "static"-Variablen. switchToPart() setzt die wichtigsten bei jedem Part-Wechsel zurück.
+//     (fxState.h) oder in "static"-Variablen. switchToPart() setzt die wichtigsten bei jedem Part-Wechsel zurück.
 //   - Die beiden Zeitzähler millisCounterTimer und millisToReduceCPUSpeed zählt der Timer alle 2 ms hoch.
 //     Mancher Effekt braucht beide: einen für die Bildfolge, einen für z.B. den Farbwechsel.
-//   - "if (!LEDsTurnedOff)": bei abgeschalteten LEDs (Knopf ganz zurückgedreht, Akku leer) wird nicht gemalt.
-//   - Das fxPresent() im else-Zweig sorgt dafür, dass Bund-Marker, Übergänge und Modifikatoren der
-//     Ausgabestufe (fxPipeline.cpp) auch dann weiterlaufen, wenn der Effekt gerade kein neues Bild hat.
-//     fxPresent() sendet nur, wenn sich wirklich etwas geändert hat - es bremst also nicht.
+//   - fxShow() in jedem Durchlauf sorgt dafür, dass Bund-Marker, Übergänge und Modifikatoren der Ausgabestufe
+//     (fxPipeline.cpp) auch dann weiterlaufen, wenn der Effekt gerade kein neues Bild hat. Gesendet wird nur,
+//     wenn sich wirklich etwas geändert hat - es bremst also nicht.
+//   - Abgeschaltete LEDs (Knopf ganz zurückgedreht, Akku leer) muss kein Effekt selbst beachten: er malt einfach
+//     weiter, fxShow() gibt dann ein schwarzes Bild mit den Bund-Markern aus.
 //   - Viele Effekte gibt es mehrfach mit gleichem Namen, aber unterschiedlich vielen Parametern
 //     ("Überladen"): die kurzen Fassungen rufen die lange mit Vorgabewerten auf.
 //
@@ -196,22 +192,18 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 		initSternschnuppen();
 	}
 	
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-		// Farbwerte in FastLED setzen
-		for (int i = 0; i < anzahlLEDsSternschnuppen; i++) {
-			if (LEDsUndFarbWerteSternschnuppen[i][0] >= 0) {
-				leds[LEDsUndFarbWerteSternschnuppen[i][0]] = 
-					CRGB(LEDsUndFarbWerteSternschnuppen[i][1], 
-					LEDsUndFarbWerteSternschnuppen[i][2], 
-					LEDsUndFarbWerteSternschnuppen[i][3]);
-			}
+	// Farbwerte in FastLED setzen
+	for (int i = 0; i < anzahlLEDsSternschnuppen; i++) {
+		if (LEDsUndFarbWerteSternschnuppen[i][0] >= 0) {
+			leds[LEDsUndFarbWerteSternschnuppen[i][0]] = 
+				CRGB(LEDsUndFarbWerteSternschnuppen[i][1], 
+				LEDsUndFarbWerteSternschnuppen[i][2], 
+				LEDsUndFarbWerteSternschnuppen[i][3]);
 		}
+	}
+	fxShow();
 
-		fxPresent();
-	}	
-	
-	// //----jetzt neu platzieren und dimmen
+	//----jetzt neu platzieren und dimmen
 	if (fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) {
 
 		//--- erste LED ausschalten
@@ -299,20 +291,16 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 		}
 	}
 
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-		// Farbwerte in FastLED setzen
-		for (int i = 0; i < anzahlLEDsImArray; i++) {
-			if (LEDsUndFarbWerte[i][0] >= 0) {
-				leds[LEDsUndFarbWerte[i][0]] = 
-					CRGB(LEDsUndFarbWerte[i][1], 
-					LEDsUndFarbWerte[i][2], 
-					LEDsUndFarbWerte[i][3]);
-			}
+	// Farbwerte in FastLED setzen
+	for (int i = 0; i < anzahlLEDsImArray; i++) {
+		if (LEDsUndFarbWerte[i][0] >= 0) {
+			leds[LEDsUndFarbWerte[i][0]] = 
+				CRGB(LEDsUndFarbWerte[i][1], 
+				LEDsUndFarbWerte[i][2], 
+				LEDsUndFarbWerte[i][3]);
 		}
-
-		fxPresent();
-	}		
+	}
+	fxShow();
 }
 
 //--- progBlingBlingColoring -----
@@ -335,18 +323,12 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 			r = c.r; g = c.g; b = c.b;
 		}
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			//set random pixel to defined color
-			leds[random(0, anz_LEDs)] = CRGB(r, g, b);
-			// delete 1 pixel sometimes
-			if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
-
-			fxPresent();
-		}
+		//set random pixel to defined color
+		leds[random(0, anz_LEDs)] = CRGB(r, g, b);
+		// delete 1 pixel sometimes
+		if (random(0, 3) == 1) leds[random(0, anz_LEDs)] = CRGB::Black;
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}	
+	fxShow();
 
 	// after DEL ms seconds change 1 part of the color randomly
 	if (fxEvery(millisCounterTimer, msForColorChange)) {
@@ -387,25 +369,22 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 		}
 	}
 
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
+	// Gesamthelligkeit direkt setzen (nicht BRIGHTNESS überschreiben). Nur bei eingeschalteten LEDs: sind sie
+	// abgeschaltet, leuchten allein die Bund-Marker - und die sollen dann nicht plötzlich voll hell werden.
+	if (!LEDsTurnedOff) FastLED.setBrightness(255);
 
-		//---- jetzt LEDs ausgeben
-		//BRIGHTNESS = 255;	// nicht BRIGHTNESS überschreiben, sondern besser direkt setzen
-		FastLED.setBrightness(255); //brightness erhöhen...aber nicht zu hoch!
-
-		// neu würfeln höchstens alle FX_REF_FRAME_MS (früher: in jedem Bild) - das Funkeln bleibt gleich schnell, wenn show() schneller wird
-		static unsigned int blingTick = 0;
-		unsigned int tick = millisCounterForProgChange / FX_REF_FRAME_MS + 1;
-		if (tick != blingTick) {
-			blingTick = tick;
-			clearAll();
-			//set random pixel to defined color
-			for (int i = 0; i < actualAnzahlLEDs; i++) {
-				leds[random(0, anz_LEDs)] = getRandomCRGB(); //LED_RED_HIGH;
-			}
+	// neu würfeln höchstens alle FX_REF_FRAME_MS (früher: in jedem Bild) - das Funkeln bleibt gleich schnell, wenn show() schneller wird
+	static unsigned int blingTick = 0;
+	unsigned int tick = millisCounterForProgChange / FX_REF_FRAME_MS + 1;
+	if (tick != blingTick) {
+		blingTick = tick;
+		clearAll();
+		//set random pixel to defined color
+		for (int i = 0; i < actualAnzahlLEDs; i++) {
+			leds[random(0, anz_LEDs)] = getRandomCRGB();
 		}
-		fxPresent();
 	}
+	fxShow();
 }
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart) {
 	progFastBlingBling(durationMillis, anzahl, nextPart, 0, 0, 0);
@@ -415,9 +394,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart)
 // Alle LEDs in derselben Zufallsfarbe; alle del ms kommt eine neue Farbe (z.B. del = Länge eines Beats).
 void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del) {
 
-	if (fxBegin(durationMillis, nextPart)) {
-		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
-
+	if (fxBegin(durationMillis, nextPart)) {	// Bild löschen ist nicht nötig: der Effekt überschreibt ohnehin alle LEDs
 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
 
@@ -426,20 +403,11 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 		CRGB c = getRandomCRGB();
 		r = c.r; g = c.g; b = c.b;
 
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-
-			for (int i = 0; i < anz_LEDs; i++) {
-				leds[i] = CRGB(r, g, b);
-			}
-			fxPresent();
-
-
+		for (int i = 0; i < anz_LEDs; i++) {
+			leds[i] = CRGB(r, g, b);
 		}
 	}
-	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-		fxPresent();
-	}
+	fxShow();
 }
 
 //--- Strobo ---------------------------------------------------------------
@@ -456,34 +424,14 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 
 	if (fxEvery(millisCounterTimer, del)) {
 
-		//--- switch color ---
-		if (progStroboIsBlack) {
-
-			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-				for (int i = 0; i < anz_LEDs; i++) {
-					leds[i] = CRGB(red, green, blue);
-				}
-				fxPresent();
-
-			}
-			progStroboIsBlack = false;
+		// Phase wechseln: war es dunkel, kommt jetzt die Farbe - und umgekehrt
+		CRGB c = progStroboIsBlack ? CRGB(red, green, blue) : CRGB(0, 0, 0);
+		for (int i = 0; i < anz_LEDs; i++) {
+			leds[i] = c;
 		}
-		else {
-			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-
-				for (int i = 0; i < anz_LEDs; i++) {
-					leds[i] = CRGB(0, 0, 0);
-				}
-				fxPresent();
-
-			} 
-			progStroboIsBlack = true;
-		}
+		progStroboIsBlack = !progStroboIsBlack;
 	}
-	else { // eingebaut, da dies die "ausfälle" der MarkerLEDs minimiert (FastLED.clear ganz oben ist aber hauptursächlich)
-		fxPresent();
-	}
+	fxShow();
 }
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, CRGB col, bool invertPhase) {
 	progStrobo(durationMillis, nextPart, del, col.r, col.g, col.b, invertPhase);
@@ -497,9 +445,7 @@ void progBlack(unsigned int durationMillis, byte nextPart) {
 		clearAll();
 	}
 
-	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-		fxPresent();
-	}
+	fxShow();
 }
 
 // Test: ein einzelner roter Punkt läuft Pixel für Pixel über die ganze Fläche.
