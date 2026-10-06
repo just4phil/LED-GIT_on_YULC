@@ -19,8 +19,6 @@
  * @brief #99 Startbild: dunkel, bis das Intro gestartet wird
  *
  * Gedacht: 60 Sekunden dunkel, dann Wechsel in den defaultLoop (#100).
- * HINWEIS: In songs.cpp steht derzeit vor dem switch noch ein Test-Aufruf von progSternNeu - solange er
- * dort steht, zeigt Song 99 stattdessen den drehenden Stern.
  */
 void STARTUP();
 

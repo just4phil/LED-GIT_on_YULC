@@ -439,8 +439,8 @@ void setMarkerLEDs(byte songID, byte partID) {
 			markerLED3 = ESaite_Cis;			
 			break;
 
-		case 100://STARTUP();
-			// DO NOTHING !!
+		case 100:
+			// DO NOTHING !!  gemeint ist der defaultLoop() (Song 100)
 			break;
 
 		default://defaultLoop();
