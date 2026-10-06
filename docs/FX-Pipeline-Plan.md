@@ -22,6 +22,12 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
+- **06.10.2026, Helligkeitsknopf mit gleichmäßig wirkenden Stufen** (Wunsch des Users, umschaltbar, Abnahme offen):
+  `ROTARY_BRIGHTNESS_CURVE` in `src/definitions.h` (aktiv = neu, auskommentiert = alt). Neu: 32 Stufen
+  (`ROTARY_BRIGHTNESS_STEPS`), Stufe 0 = LEDs aus, danach 3 … 255 mit rund 16 % je Raste, ohne Beschleunigung
+  (`src/rotaryEncoder.cpp`). Alt: 2..255 linear; die Bibliothek beschleunigt dabei entgegen dem alten Kommentar
+  (Stärke 300). Zum Blinder bei ausgedrehten LEDs: `fxPresent()` mischt bei `LEDsTurnedOff` gar nichts, also auch
+  keinen Blinder - am Code geprüft, nichts zu ändern.
 - **06.10.2026, Marker-Helligkeit berechnet statt Stufentabelle** (Wunsch des Users, Abnahme offen):
   `markerValue()` in `src/markerLEDs.cpp` rechnet die Skalierung von FastLED (Gesamthelligkeit und Farbkorrektur
   `LED_COLOR_CORRECTION`) zurück; Zielwert `MARKER_LEVEL` 7 in `src/definitions.h` = bisherige Helligkeit auf der

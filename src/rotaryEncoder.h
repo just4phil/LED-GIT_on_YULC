@@ -35,7 +35,11 @@ void IRAM_ATTR readEncoderISR();    // Function required for interrupts
  *
  * Legt das Encoder-Objekt mit den Pins aus definitions.h an (ROTARY_ENCODER_A_PIN, _B_PIN,
  * _BUTTON_PIN), meldet die Interrupt-Routine an und stellt den Wertebereich für die Helligkeit
- * ein: 2..255, Startwert DEFAULT_BRIGHTNESS, ohne Beschleunigung und ohne Überlauf.
+ * ein. Zwei Methoden, umschaltbar mit ROTARY_BRIGHTNESS_CURVE in definitions.h:
+ *   neu (Schalter gesetzt)  ROTARY_BRIGHTNESS_STEPS Stufen von "aus" bis 255, die fürs Auge gleich groß wirken
+ *                           (jede Raste rund 16 % heller), ohne Beschleunigung
+ *   alt (auskommentiert)    Helligkeit 2..255 direkt, eine Raste = 1, mit Beschleunigung bei schnellem Drehen
+ * Startwert ist in beiden Fällen DEFAULT_BRIGHTNESS, am Ende des Bereichs gibt es keinen Überlauf.
  */
 void rotary_initialize();
 

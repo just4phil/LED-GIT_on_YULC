@@ -35,6 +35,9 @@ static bool wasButtonDown = false;				// war der Taster beim letzten Nachsehen g
 static bool shortClickHappened = false;			// es gab einen Klick, der noch nicht ausgeführt ist
 static bool wasButtonDownFIRST = false;			// erster Klick erkannt
 static bool wasButtonDownSECOND = false;		// zweiter Klick erkannt -> Doppelklick
+#if defined(ROTARY_BRIGHTNESS_CURVE)
+static uint8_t brightnessCurve[ROTARY_BRIGHTNESS_STEPS];	// Helligkeit je Stufe des Knopfs (berechnet in rotary_initialize)
+#endif
 //---------------------------------
 
 void IRAM_ATTR readEncoderISR() {    // Function required for interupts
@@ -50,7 +53,8 @@ void rotary_initialize() {
 	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
 	rotaryEncoder->setup(readEncoderISR);
-	// Beschleunigung aus: ein Schritt am Knopf ist immer genau ein Schritt im Wert, egal wie schnell man dreht
+	// Beschleunigung zunächst aus. Achtung: numberSelector.setRange() weiter unten stellt sie je nach Größe des
+	// Wertebereichs von sich aus wieder ein (siehe dort).
 	rotaryEncoder->setAcceleration(0);
 	rotaryEncoder->disableAcceleration();
 
@@ -89,11 +93,38 @@ void rotary_initialize() {
 
 	numberSelector.setValue - sets initial value    
 	*/
-	//numberSelector.setRange(255, 0, -1, false, 0); // reduktion bis auf null möglich
+#if defined(ROTARY_BRIGHTNESS_CURVE)
+	//--- NEUE METHODE: wenige Stufen, die fürs Auge gleich groß wirken ---
+	// Der Knopf zählt nur die Stufe (0 .. ROTARY_BRIGHTNESS_STEPS-1); die Helligkeit dazu steht in brightnessCurve[].
+	// Stufe 0 = "LEDs aus" (Wert 2 wie bisher), Stufe 1 = die kleinste Helligkeit, die letzte Stufe = 255.
+	// Dazwischen wächst die Helligkeit von Stufe zu Stufe um denselben FAKTOR (nicht um denselben Betrag):
+	//     helligkeit(stufe) = 3 * (255 / 3) ^ ((stufe - 1) / (Stufenzahl - 2))
+	// Bei 32 Stufen ist das rund 16 % mehr je Raste. So nimmt das Auge Helligkeit wahr - jede Raste wirkt gleich groß.
+	// Ganz unten gibt es nur ganze Zahlen (3, 4, 5 ...), dort steigt der Wert deshalb mindestens um 1 je Stufe.
+	brightnessCurve[0] = 2;
+	for (int i = 1; i < ROTARY_BRIGHTNESS_STEPS; i++) {
+		int v = lroundf(3.0f * powf(255.0f / 3.0f, (float)(i - 1) / (ROTARY_BRIGHTNESS_STEPS - 2)));
+		if (v <= brightnessCurve[i - 1]) v = brightnessCurve[i - 1] + 1;
+		brightnessCurve[i] = (v > 255) ? 255 : v;
+	}
+	// Startstufe: die, deren Helligkeit der Grundhelligkeit des Geräts am nächsten liegt
+	int startStep = 1;
+	for (int i = 1; i < ROTARY_BRIGHTNESS_STEPS; i++) {
+		if (abs((int)brightnessCurve[i] - DEFAULT_BRIGHTNESS) < abs((int)brightnessCurve[startStep] - DEFAULT_BRIGHTNESS)) startStep = i;
+	}
+	// Wertebereich = Stufen. Die vertauschten Grenzen und der negative Schritt kehren die Drehrichtung um.
+	numberSelector.setRange(ROTARY_BRIGHTNESS_STEPS - 1, 0, -1, false, 0);
+	numberSelector.setValue(startStep);
+	rotaryEncoder->setAcceleration(0);	// setRange() hat eine Beschleunigung eingestellt - hier ist sie nicht nötig: eine Raste = eine Stufe
+#else
+	//--- ALTE METHODE: Helligkeit direkt, eine Raste = 1 von 255, mit Beschleunigung bei schnellem Drehen ---
 	// Wertebereich der Helligkeit: 255 bis 2 in Schritten von -1 (die vertauschten Grenzen und der negative
 	// Schritt kehren die Drehrichtung um), kein Überlauf am Ende. Der Wert 2 bedeutet "LEDs aus" (rotary_loop).
+	// setRange() stellt bei diesem großen Bereich selbst eine Beschleunigung ein (Stärke 300): liegen zwei Rasten in
+	// derselben Richtung weniger als 200 ms auseinander, kommen etwa 75 / (Abstand in ms) Schritte dazu.
 	numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
 	numberSelector.setValue(DEFAULT_BRIGHTNESS);	// Startwert = Grundhelligkeit des Geräts
+#endif
 }
 
 void on_button_short_click() {
@@ -198,7 +229,12 @@ void rotary_loop() {
 
 	// When getting value
 	if (encoderDelta != 0) {		
-		BRIGHTNESS = numberSelector.getValue();
+		#if defined(ROTARY_BRIGHTNESS_CURVE)
+			int step = constrain((int)numberSelector.getValue(), 0, ROTARY_BRIGHTNESS_STEPS - 1);	// Stufe des Knopfs
+			BRIGHTNESS = brightnessCurve[step];		// Helligkeit dieser Stufe (Stufe 0 -> 2 = "LEDs aus")
+		#else
+			BRIGHTNESS = numberSelector.getValue();
+		#endif
 		FastLED.setBrightness(BRIGHTNESS);
 		
 		if (BRIGHTNESS == 2) { // wenn LEDs ausgedreht sind... 

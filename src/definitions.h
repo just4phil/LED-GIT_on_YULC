@@ -233,6 +233,11 @@
 #endif
 #define ROTARY_ENCODER_VCC_PIN 	-1 /* 27 put -1 of Rotary encoder Vcc is connected directly to 3,3V; else you can use declared output pin for powering rotary encoder */
 #define ROTARY_ENCODER_STEPS 	4	// elektrische Schritte je fühlbarer Raste des Knopfs
+// Helligkeit am Drehknopf - zwei Methoden (rotaryEncoder.cpp):
+//   Zeile aktiv         = NEU: wenige Stufen, die fürs Auge gleich groß wirken (jede Raste rund 16 % heller), keine Beschleunigung
+//   Zeile auskommentiert = ALT: 2..255 in Einerschritten, schnelles Drehen beschleunigt
+#define ROTARY_BRIGHTNESS_CURVE
+#define ROTARY_BRIGHTNESS_STEPS	32	// nur NEU: Anzahl der Stufen von "LEDs aus" (ganz zurück) bis volle Helligkeit; mehr = feiner
 
 // Größe der Matrix in LEDs. Auch Gitarre, Bass und Lampen rechnen intern mit einer 22 x 23-Fläche (506 Plätze),
 // weil viele alte Effekte über x/y zeichnen; ihre echten LEDs sind die ersten anz_LEDs Plätze davon.
