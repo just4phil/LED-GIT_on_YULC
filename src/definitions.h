@@ -472,6 +472,13 @@
 										// 7 = so hell wie bisher auf der Gitarre in der Grundhelligkeit 48. Größer = heller
 #define MARKER_MIN_BRIGHTNESS	16		// unter dieser Gesamthelligkeit (Knopf fast oder ganz zurück) wird sie für die Marker auf
 										// diesen Wert angehoben und der Effekt dafür dunkler gerechnet (markerLEDs.cpp)
+// Warn-LEDs "keine Bluetooth-Verbindung" (markerLEDs.cpp, nur in der Songpause = Song 0): einige LEDs pulsieren rot,
+// solange ein Client den Proxy (die Gitarre) nicht hat bzw. solange am Proxy noch kein einziger Client hängt.
+// Wo sie sitzen: Lampen die untersten LEDs, Matrix ein Quadrat unten rechts, Gitarre/Bass direkt hinter ESaite_E.
+#define BLE_WARN_FADE_MS		2000	// so lange dauert das Aufblenden und ebenso das Abblenden (ein Puls = 2 x dieser Wert)
+#define BLE_WARN_LEDS_LAMP		10		// Lampen: so viele LEDs am unteren Ende
+#define BLE_WARN_LEDS_GUITAR	3		// Gitarre/Bass: so viele LEDs hinter dem letzten Marker (ESaite_E + 1 aufwärts)
+#define BLE_WARN_MATRIX_SIZE	3		// Matrix: Kantenlänge des Quadrats unten rechts (3 = 3 x 3 = neun LEDs)
 #define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
 #define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).

@@ -78,7 +78,7 @@ static volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notific
 #define OTA_CLIENT_QUIET_MS     5000    // ... und sendet früher, wenn sich so lange kein weiterer Client angemeldet hat
 
 // Zeiger auf die BLE-Objekte, angelegt in midiProxy_initialize_BLE()
-static NimBLEServer* pServer;			// der Server selbst
+static NimBLEServer* pServer = nullptr;	// der Server selbst (nullptr = noch nicht angelegt)
 static NimBLEService *pService;				// unser Service
 static NimBLECharacteristic *pCharacteristic;	// unser Datenwert (die BLEmessage)
 static NimBLEAdvertising *pAdvertising;		// das "ich bin da"-Senden
@@ -335,6 +335,14 @@ void midiProxy_broadcastOTA() {
     }
     delay(1000);                            // Clients Zeit zum Neustart geben, dann selbst
     otaRequestAndRestart();
+}
+
+// Für die Warn-LEDs in markerLEDs.cpp: wie viele Clients sind gerade verbunden? Gefragt wird die
+// Bibliothek selbst (nicht anzahl_BLE_devices), damit die Zahl auch nach einem Abriss sofort stimmt.
+// pServer ist nullptr, solange midiProxy_initialize_BLE() noch nicht gelaufen ist -> dann 0.
+uint8_t midiProxy_connectedClients() {
+    if (pServer == nullptr) return 0;
+    return (uint8_t)pServer->getConnectedCount();
 }
 
 // Bei jedem loop()-Durchlauf: arbeitet die Merker ab, die MIDI, Drehknopf und Callbacks gesetzt haben.

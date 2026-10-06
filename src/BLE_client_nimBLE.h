@@ -10,10 +10,11 @@
 // führt dessen Nachrichten aus. Ausführliche Erklärung: BLE_client_nimBLE.cpp, die BLE-Begriffe
 // stehen in midiProxyBLEserver_nimBLE.cpp, das Nachrichtenformat (BLEmessage) in functions.h.
 //
-// Hier stehen nur die drei Funktionen, die von außen (main.cpp) benutzt werden:
+// Hier stehen nur die vier Funktionen, die von außen (main.cpp, markerLEDs.cpp) benutzt werden:
 //   BLE_client_initialize()      einmal in setup()
 //   BLE_client_Loop()            bei jedem loop()-Durchlauf
 //   informServerOnNextChange()   bei jedem automatischen Part-Wechsel
+//   BLE_client_isConnected()     für die Warn-LEDs: steht die Verbindung zum Proxy?
 //
 // Alles andere (Suche, Verbindungsaufbau, Callbacks, Auswerten der Nachrichten) braucht nur
 // BLE_client_nimBLE.cpp selbst und ist dort beschrieben. Die .cpp-Datei bindet diese Datei selbst
@@ -53,5 +54,15 @@ void informServerOnNextChange(byte nextPart);
  *   der zeitgenaue Einstieg folgt mit dem nächsten Part-Wechsel des Proxys (Typ 4)
  */
 void BLE_client_Loop();
+
+/**
+ * @brief Steht die Verbindung zum Proxy?
+ *
+ * @return true, sobald der Client verbunden ist UND die Notifications abonniert hat (erst dann kommen
+ *         Song- und Part-Wechsel an); false während der Suche und sofort nach einem Verbindungsabriss
+ *
+ * @note Gebraucht von den roten Warn-LEDs in der Songpause (drawBleWarnLEDs() in markerLEDs.cpp).
+ */
+bool BLE_client_isConnected();
 //----------
 #endif

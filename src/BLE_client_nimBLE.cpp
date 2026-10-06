@@ -28,8 +28,8 @@ extern boolean waitForLEDsync; // in main
 // Wichtig: Die Callbacks (notifyCallback, onResult ...) laufen im Bluetooth-Teil des Systems, nicht in
 // loop(). Sie legen deshalb nur Werte ab und setzen Merker; ausgeführt wird alles in BLE_client_Loop().
 //
-// In BLE_client_nimBLE.h stehen nur die drei Funktionen, die main.cpp aufruft (BLE_client_initialize,
-// BLE_client_Loop, informServerOnNextChange). Alle anderen Funktionen und die beiden Callback-Klassen
+// In BLE_client_nimBLE.h stehen nur die vier Funktionen, die von außen aufgerufen werden (BLE_client_initialize,
+// BLE_client_Loop, informServerOnNextChange aus main.cpp, BLE_client_isConnected aus markerLEDs.cpp). Alle anderen Funktionen und die beiden Callback-Klassen
 // werden nur innerhalb dieser Datei benutzt und sind deshalb nur hier beschrieben.
 //
 // Alles Interne ist vor dem Rest des Programms "versteckt", damit sein Name nirgends sonst stören kann
@@ -542,6 +542,12 @@ static void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
             //}
             // break;
     }
+}
+
+// Für die Warn-LEDs in markerLEDs.cpp: steht die Verbindung zum Proxy? (true erst nach dem Abonnieren
+// der Notifications in connectToServer(), false sofort beim Abriss in onDisconnect())
+bool BLE_client_isConnected() {
+    return connected;
 }
 
 // the server requests a sync; value doesnt matter

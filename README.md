@@ -133,6 +133,12 @@ There are no unit tests.
 
 Song 0 is the pause between songs.
 
+**Connection warning:** during song 0 a few LEDs pulse slowly in red (2 s up, 2 s down) for as long as the
+Bluetooth link is missing - on a client until it has found the guitar, on the guitar until the first client has
+connected. Lamps use their bottom 10 LEDs, the matrix a 3 x 3 square at the bottom right, guitar and bass the
+3 LEDs right after the last fret marker. The warning never appears while a song is running (`BLE_WARN_...` in
+`src/definitions.h`).
+
 ### Rotary knob
 
 | Action | Effect |

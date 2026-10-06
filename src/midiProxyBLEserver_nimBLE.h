@@ -20,6 +20,9 @@ void sendBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part);
 void setBLEmessageForLEDsync(uint8_t msgType, uint8_t songID, uint8_t part);
 // Bei jedem loop()-Durchlauf: MIDI-Wechsel weitersenden, Abgleich-Wünsche (Drehknopf) abarbeiten
 void midiProxy_midiLoop();
+// Anzahl der gerade verbundenen Clients (0 = noch keiner da). Gebraucht von den roten Warn-LEDs in der
+// Songpause (drawBleWarnLEDs() in markerLEDs.cpp)
+uint8_t midiProxy_connectedClients();
 
 /**
  * @brief Alle Clients und den Proxy selbst in den OTA-Update-Modus schicken

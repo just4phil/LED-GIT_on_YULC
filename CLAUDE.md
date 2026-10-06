@@ -78,7 +78,9 @@ Effects never call `FastLED.show()` themselves and never check `LEDsTurnedOff`: 
 `gitBlindingLEDs_OFF_MarkerLEDs_ON()` (`markerLEDs.h`: copies the frame → `leds1`/`leds2`, blanks the fretboard area in
 `leds1`, overlays the red/blue fret-marker LEDs) and sends. Marker brightness is computed, not tabulated
 (`markerValue()`: constant `MARKER_LEVEL` at any global brightness; below `MARKER_MIN_BRIGHTNESS` the global
-brightness is raised for the frame and the image scaled down). An unchanged frame is not sent again
+brightness is raised for the frame and the image scaled down). In song 0 only, the same function ends with
+`drawBleWarnLEDs()`: a few LEDs pulse red while the BLE link is missing (client: no proxy; proxy: no client yet;
+`BLE_WARN_...` in `definitions.h`). An unchanged frame is not sent again
 (`FX_SKIP_UNCHANGED_FRAMES`, keep-alive every `FX_KEEPALIVE_MS`).
 
 ### Output stage (`fxPipeline.cpp/.h`)

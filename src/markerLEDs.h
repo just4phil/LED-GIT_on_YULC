@@ -58,6 +58,12 @@ void setMarkerLEDs(byte songID, byte partID);
  * (Bis zum 06.10.2026 stand hier eine Tabelle mit 8 Stufen; damit schwankte die Marker-Helligkeit je nach
  * Gesamthelligkeit zwischen 3 und 10.)
  *
+ * 4. nur in der Songpause (Song 0) und nur solange die Bluetooth-Verbindung fehlt: rote Warn-LEDs darüber
+ *    (drawBleWarnLEDs() in markerLEDs.cpp). Ein Client (Bass, Lampen, Matrix) warnt, solange er den Proxy nicht
+ *    hat; der Proxy (Gitarre) warnt, solange noch kein einziger Client an ihm hängt. Die LEDs pulsieren langsam
+ *    (BLE_WARN_FADE_MS auf, ebenso lange ab): Lampen die untersten 10 LEDs, Matrix 3 x 3 unten rechts,
+ *    Gitarre/Bass die 3 LEDs hinter ESaite_E (Einstellungen: BLE_WARN_... in definitions.h).
+ *
  * @note Schritte 2 und 3 entfallen auf Geräten ohne Marker (NOMARKER).
  */
 void gitBlindingLEDs_OFF_MarkerLEDs_ON();

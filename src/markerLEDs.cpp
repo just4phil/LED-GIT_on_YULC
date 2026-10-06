@@ -2,7 +2,13 @@
 #include <FastLED.h>
 #include "guitarShapeFX.h"
 #include "songs_generated.h"	// setGeneratedMarkerLEDs()
+#include <FastLED_NeoMatrix.h>			// matrix->XY() für die Warn-LEDs der Matrix
+#include "BLE_client_nimBLE.h"			// BLE_client_isConnected()      (Warn-LEDs, Clients)
+#include "midiProxyBLEserver_nimBLE.h"	// midiProxy_connectedClients()  (Warn-LEDs, Proxy)
 //-----------------------
+
+extern byte songID;					// aktueller Song (0 = Songpause)
+extern FastLED_NeoMatrix* matrix;	// das Matrix-Objekt aus main.cpp
 
 extern byte markerLED1;
 extern byte markerLED2;
@@ -473,6 +479,62 @@ static uint8_t markerValue(uint8_t level, uint8_t brightness, uint8_t correction
 	return value > 255 ? 255 : (uint8_t)value;
 }
 
+// Fehlt die Bluetooth-Verbindung? Je nach Rolle des Geräts heißt das etwas anderes:
+//   Client (Bass, Lampen, Matrix): der Proxy (die Gitarre) ist nicht verbunden
+//   Proxy (Gitarre):               es hängt noch kein einziger Client an ihm
+//   Gerät ohne Bluetooth:          nie
+static bool bleLinkMissing() {
+	#if defined(USE_ESP32) && defined(IS_BLE_CLIENT)
+		return !BLE_client_isConnected();
+	#elif defined(USE_ESP32) && defined(IS_MIDI_PROXY)
+		return midiProxy_connectedClients() == 0;
+	#else
+		return false;
+	#endif
+}
+
+// Rote Warn-LEDs "keine Bluetooth-Verbindung": nur in der Songpause (Song 0), damit sie nie in eine Show hineinleuchten.
+// Solange die Verbindung fehlt, pulsieren einige LEDs langsam rot: BLE_WARN_FADE_MS aufblenden, ebenso lange abblenden.
+// Gezeichnet wird direkt in die Ausgabepuffer (wie die Marker), also über dem Bild der Songpause - leds[] und damit
+// der Effekt bleiben unberührt. Sobald die Verbindung steht, hört das Zeichnen einfach auf.
+// Die Helligkeit folgt dem Drehknopf wie das übrige Bild (bei "LEDs aus" bleibt auf Gitarre/Bass ein schwacher Rest,
+// weil die Gesamthelligkeit dort für die Marker nie unter MARKER_MIN_BRIGHTNESS fällt).
+static void drawBleWarnLEDs() {
+	if (songID != 0 || !bleLinkMissing()) return;
+
+	// Dreieck über die Zeit: 0 -> 255 -> 0 in 2 x BLE_WARN_FADE_MS. "%" ist der Rest beim Teilen: phase läuft
+	// immer wieder von 0 bis kurz vor 2 x BLE_WARN_FADE_MS.
+	uint32_t phase = millis() % (2UL * BLE_WARN_FADE_MS);
+	if (phase >= BLE_WARN_FADE_MS) phase = 2UL * BLE_WARN_FADE_MS - phase;	// zweite Hälfte: wieder abwärts
+	uint8_t v = phase * 255 / BLE_WARN_FADE_MS;
+	v = scale8(v, v);	// quadrieren (v * v / 256): das Auge empfindet den Verlauf dann als gleichmäßig
+	const CRGB red(v, 0, 0);
+
+	#if DEVICE_CLASS == CLASS_MATRIX
+		// Quadrat unten rechts. matrix->XY(x, y) rechnet Spalte/Zeile in die LED-Nummer um (y = 0 ist oben).
+		// leds2 bekommt dasselbe, weil beide Ausgänge hier dasselbe Bild zeigen.
+		for (int y = MATRIX_HEIGHT - BLE_WARN_MATRIX_SIZE; y < MATRIX_HEIGHT; y++) {
+			for (int x = MATRIX_WIDTH - BLE_WARN_MATRIX_SIZE; x < MATRIX_WIDTH; x++) {
+				uint16_t i = matrix->XY(x, y);
+				leds1[i] = red;
+				leds2[i] = red;
+			}
+		}
+	#elif DEVICE_CLASS == CLASS_LAMP
+		// die untersten LEDs der Lampe; an welchem Ende des Streifens "unten" ist, sagt LAMP_IDX0_AT_BOTTOM
+		for (int n = 0; n < BLE_WARN_LEDS_LAMP; n++) {
+			int i = LAMP_IDX0_AT_BOTTOM ? n : anz_LEDs - 1 - n;
+			leds1[i] = red;
+			leds2[i] = red;
+		}
+	#else
+		// Gitarre/Bass: die LEDs direkt hinter dem letzten Marker (ESaite_E), nur am Instrument (leds1), nicht am Gurt
+		for (int n = 1; n <= BLE_WARN_LEDS_GUITAR; n++) {
+			leds1[ESaite_E + n] = red;
+		}
+	#endif
+}
+
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 // (das erledigt fxPresent() in fxPipeline.cpp - Effekte rufen diese Funktion nicht selbst auf)
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
@@ -538,6 +600,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		// turn on generel MarkerLEDs: zwei blaue Orientierungspunkte, bei jedem Song an
 		leds1[ESaite_E_hoch] 	= CRGB(0, 0, helligkeitBlau);	//CRGB::Blue;
 		leds1[ESaite_A] 		= CRGB(0, 0, helligkeitBlau);	//CRGB::Blue;
-	
+
 	#endif
+
+	drawBleWarnLEDs();	// ganz zum Schluss, damit die Warnung über Bild und abgedunkeltem Halsbereich liegt
 }
