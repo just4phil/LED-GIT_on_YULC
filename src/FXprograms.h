@@ -469,8 +469,8 @@ void progEqualizer(unsigned int durationMillis, byte nextPart);
 //   baseColor (CRGB)    alle Wellen in dieser Farbe
 //   useGradient (bool)  ohne Farbangabe: jede Welle in eigener Farbe; true = zusätzlich Regenbogen-Verlauf
 //                       mit dem Abstand von der Mitte
-// HINWEIS: die beiden Fassungen ganz ohne Farbe und ohne true/false zeigen nichts (sie verwenden Schwarz) -
-// immer eine Farbe oder true/false angeben.
+// Die beiden Fassungen ganz ohne Farbe und ohne true/false zeigen Zufallsfarben ohne Verlauf
+// (dasselbe wie useGradient = false); ohne Tempo-Angabe gilt msToReduceSpeed = 50.
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient);
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, CRGB baseColor);
 void progWaterRipple(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed, bool useGradient);

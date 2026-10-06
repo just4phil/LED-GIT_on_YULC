@@ -2,7 +2,6 @@ claude --dangerously-skip-permissions
 ======================================
 
 Auffälligkeiten im code: (06.10.2026):
-1. STARTUP() (Song 99): Vor dem switch steht noch ein Test-Aufruf progSternNeu(...). Dadurch zeigt Song 99 den drehenden Stern statt 60 Sekunden Schwarz.
 2. progWaterRipple ohne Farbe: Die beiden Fassungen ohne Farbe und ohne true/false zeigen nichts, weil sie Schwarz als Farbe verwenden. In Songs werden sie nicht aufgerufen.
 3. functions.h: Zu #pragma pack(push, 1) fehlt das pack(pop). Die Einstellung gilt deshalb für alle Strukturen, die nach diesem Include definiert werden.
 4. getRandomColor(): random(1, 7) liefert nur 1 bis 6, der Fall „Rot“ wird nie erreicht.

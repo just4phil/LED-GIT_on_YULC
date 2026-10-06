@@ -3665,8 +3665,9 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
 // Öffentliche Overloads — alle delegieren zur Core-Funktion mit expliziten Flags
 // Welche Fassung der Compiler nimmt, entscheidet der Typ der Angaben: eine Farbe (CRGB) = feste Farbe,
 // true/false an dieser Stelle = Zufallsfarben mit bzw. ohne Farbverlauf.
-// HINWEIS: die beiden Fassungen ganz ohne Farbe und ohne true/false (nur Dauer, Folge-Part und evtl. Tempo)
-// übergeben Schwarz als feste Farbe - sie zeigen deshalb nichts. Immer eine Farbe oder true/false angeben.
+// Die beiden Fassungen ganz ohne Farbe und ohne true/false (nur Dauer, Folge-Part und evtl. Tempo) zeigen
+// Zufallsfarben ohne Verlauf - dasselbe wie die Fassung mit false. Das Schwarz (CRGB::Black), das die Fassungen
+// ohne Farbe an die Core-Funktion geben, ist nur ein Platzhalter: bei useRandom = true wird es nicht verwendet.
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed, CRGB baseColor, bool useGradient) {
 	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, baseColor, useGradient, false, false);
@@ -3684,11 +3685,11 @@ void progWaterRipple(unsigned int durationMillis, byte nextPart,
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart,
                      unsigned int msToReduceSpeed) {
-	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, false, false, false);
+	progWaterRippleCore(durationMillis, nextPart, msToReduceSpeed, CRGB::Black, false, true, false);
 }
 
 void progWaterRipple(unsigned int durationMillis, byte nextPart) {
-	progWaterRippleCore(durationMillis, nextPart, 50, CRGB::Black, false, false, false);
+	progWaterRippleCore(durationMillis, nextPart, 50, CRGB::Black, false, true, false);
 }
 
 // Tunnel-Varianten: alle Ripples spawnen in der Mitte
