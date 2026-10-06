@@ -231,7 +231,9 @@ void gen_ILoveIt() {
 		progSternNeu(8000, 1000, 30, 5, 26, 5, true, 3);
 		break;
 
-	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt.
+	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt. Auf der letzten Viertel (Snarewirbel) ein starker Blinder, der bis zum Part-Ende voll steht.
+		fxBlinder(15500, 1000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 500);
 		progPalette(16000, 11, 35);
 		break;
 
@@ -251,11 +253,13 @@ void gen_ILoveIt() {
 		progWaterRipple(14000, 55, 50, true, false);
 		break;
 
-	case 55:	// STOP  1 T  2000ms  @2:19.250  -- Alter Effekt: 1 Takt schwarz.
+	case 55:	// STOP  1 T  2000ms  @2:19.250  -- Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz.
+		fxBlinder(0, 500, 255, FX_BLINDER_WARM, DEV_ALL);
 		progBlack(2000, 60);
 		break;
 
-	case 60:	// chorus 4  8 T  16000ms  @2:21.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+	case 60:	// chorus 4  8 T  16000ms  @2:21.250  -- Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+		fxBlinder(0, 1000, 255, FX_BLINDER_WARM, DEV_ALL);
 		progSternNeu(16000, 500, 65, 5, 26, 5, false, 4);
 		break;
 

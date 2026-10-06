@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:55:42'
+notiz: 'Aenderungswuensche: Blinder am Ende von ''youre on a different road'', auf
+  die Eins von STOP und am Anfang von chorus 4'
+werkzeug_git: 24be761
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a77842f0242344b29ab094c69ce9fe5164ee11076db857a9f07b297c878273a7
+  show.yaml: 2665781f23467e6774e16046e7ca328e1e2f54a3c92f2681151c1e00595f6279
+  generated.cpp: c3ea2af8549b9ef391c21e212127659aeff42b906e45dcbc2799ae2700faf142
