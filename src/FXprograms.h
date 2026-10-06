@@ -5,8 +5,12 @@
  * Diese Datei ist das Inhaltsverzeichnis der Effekte. Wie die Effekte innen aufgebaut sind,
  * ist in fxBase.h (die Bausteine) und am Anfang von FXprograms.cpp erklärt.
  * Der Code steht nach Familien getrennt in mehreren Dateien:
- *   FXprograms.cpp    Glitzern, Strobo, Stern, Kreise, Linien, Text, Paletten, "Matrix"-Regen
- *   fxMatrixSim.cpp   Feuer, Plasma, Sternenfeld, Lissajous, Wellenlinien, Equalizer, Wasserwellen
+ *   FXprograms.cpp      Sternschnuppen, Glitzern (BlingBling), einfarbig, Strobo, Dunkel, Tests
+ *   fxMatrixShapes.cpp  Scanner, Stern, Kreise, Linien, Rahmen (Outline)
+ *   fxText.cpp          stehender Text, Lauftext, Buchstaben, Blinktext
+ *   fxPalette.cpp       Paletten (Farbverläufe)
+ *   fxMatrixRain.cpp    "Matrix"-Regen
+ *   fxMatrixSim.cpp     Feuer, Plasma, Sternenfeld, Lissajous, Wellenlinien, Equalizer, Wasserwellen
  *
  * So ruft ein Song einen Effekt auf (ein "case" = ein Part des Songs):
  *
@@ -251,7 +255,7 @@ void progMovingLines(unsigned int durationMillis, byte nextPart);
 /**
  * @brief Rahmen: ein Rahmen wächst von innen nach außen und wieder zurück (nur für die LED-Flächen)
  *
- * Die LEDs der einzelnen Rahmen stehen als feste Listen in FXprograms.cpp (outlinePath1..9).
+ * Die LEDs der einzelnen Rahmen stehen als feste Listen in fxMatrixShapes.cpp (outlinePath1..9).
  *
  * @param reduceSpeed ms je Schritt (Kurzform: 0)
  */

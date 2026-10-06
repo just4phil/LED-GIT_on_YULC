@@ -112,8 +112,9 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `definitions.h` | All compile-time config — edit here first |
 | `main.cpp` | `setup()` + `loop()`, global state variables |
 | `songs.cpp/.h` | One function per song, calls FX primitives |
-| `FXprograms.cpp/.h` | Reusable visual effects (strobe, palette, text…); `FXprograms.h` is the one header for all `prog…` effects, also those in the `fx*.cpp` family files |
-| `fxMatrixSim.cpp` | Computed matrix effects (fire, plasma, starfield, Lissajous, sine/cos, equalizer, water ripple), declared in `FXprograms.h` |
+| `FXprograms.cpp/.h` | Basic strip effects (bling, full colours, strobe, black) + the shared effect state; `FXprograms.h` is the one header for all `prog…` effects, also those in the family files below |
+| `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp`, `fxMatrixRain.cpp`, `fxMatrixSim.cpp` | Effect families: scanner/star/circles/lines/outline, text, palettes, "Matrix" rain, computed matrix effects (fire, plasma, starfield, Lissajous, sine/cos, equalizer, water ripple) |
+| `fxState.h` | `extern` declarations of what the effect files share (timer counters, buffers, shared counters) |
 | `fxBase.cpp/.h` | Building blocks every effect is made of: part start (`fxBegin`, `fxPartStart`), step timing (`fxEvery`, `fxFrameDue`), output (`fxShow`), `clearAll()`, beat helpers |
 | `fxPipeline.cpp/.h` | Output stage `fxPresent()`: layer (second effect), transitions, modifiers, markers, the only `FastLED.show()` for effects |
 | `markerLEDs.cpp/.h` | Fret-position marker LED overlay |

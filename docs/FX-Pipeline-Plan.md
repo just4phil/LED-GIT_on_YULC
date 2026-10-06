@@ -46,7 +46,11 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
      Erledigt: in der restlichen `FXprograms.cpp` alle 25 Standard-Teile auf `fxBegin()` und 20 Takt-Abfragen auf
      `fxEvery()` umgestellt (rein mechanisch, gleiche Zähler, gleiche Startwerte; Abfragen mit `>` statt `>=` und
      die beiden Zufallsfarben-Wrapper von `progMatrixHorizontal`/`Vertical` bleiben wie sie sind). Alle fünf Envs
-     bauen. Als Nächstes: Datei nach Familien aufteilen (reiner Umzug); danach je Familie `LEDsTurnedOff` und das
+     bauen.
+     Erledigt: Datei nach Familien aufgeteilt (reiner Umzug, Commit „Effekte nach Familien auf eigene Dateien
+     verteilt"): `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp`, `fxMatrixRain.cpp`; die einfachen
+     Streifen-Effekte und der gemeinsame Zustand bleiben in `FXprograms.cpp` (543 Zeilen, kein eigenes `fxBasic.cpp`),
+     `fxState.h` deklariert das Geteilte. Alle fünf Envs bauen. **Noch offen:** je Familie `LEDsTurnedOff` und das
      doppelte `fxPresent()` auf `fxShow()` zusammenziehen - das ändert das Verhalten bei den alten Effekten, die
      zwischen zwei Schritten nicht ausgeben (Text, BlingBling), und
      braucht je Familie einen Blick auf die Hardware;
