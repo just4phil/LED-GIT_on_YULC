@@ -3,7 +3,10 @@
  * @brief Die Effekt-Sammlung: alle "prog..."-Funktionen, die ein Song aufrufen kann
  *
  * Diese Datei ist das Inhaltsverzeichnis der Effekte. Wie die Effekte innen aufgebaut sind,
- * ist am Anfang von FXprograms.cpp erklärt.
+ * ist in fxBase.h (die Bausteine) und am Anfang von FXprograms.cpp erklärt.
+ * Der Code steht nach Familien getrennt in mehreren Dateien:
+ *   FXprograms.cpp    Glitzern, Strobo, Stern, Kreise, Linien, Text, Paletten, "Matrix"-Regen
+ *   fxMatrixSim.cpp   Feuer, Plasma, Sternenfeld, Lissajous, Wellenlinien, Equalizer, Wasserwellen
  *
  * So ruft ein Song einen Effekt auf (ein "case" = ein Part des Songs):
  *

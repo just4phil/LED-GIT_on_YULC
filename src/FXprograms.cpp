@@ -13,7 +13,7 @@
 // FXprograms.cpp - die Effekt-Sammlung ("prog..."-Funktionen)
 //=====================================================================
 // Hier stehen die älteren, bewährten Effekte: Glitzern, Strobo, Stern, Kreise, Linien, Text, Paletten,
-// Feuer, Plasma, Wasser ... Die Songs (songs.cpp, songs_generated.cpp) rufen sie auf. Neuere Effekte stehen
+// "Matrix"-Regen ... (Feuer, Plasma, Wasser usw. stehen in fxMatrixSim.cpp.) Die Songs (songs.cpp, songs_generated.cpp) rufen sie auf. Neuere Effekte stehen
 // in guitarShapeFX.cpp und scenes.cpp; sie sind kürzer geschrieben, arbeiten aber nach demselben Prinzip.
 //
 // DAS PRINZIP - jeder Effekt hier ist gleich aufgebaut. Die neueren Effekte schreiben dieselben drei Schritte

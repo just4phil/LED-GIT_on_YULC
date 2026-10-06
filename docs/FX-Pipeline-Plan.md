@@ -36,8 +36,13 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
      Song-Verteiler selbst aus (`main.cpp`); ein Effekt darf deshalb ohne eigenes `if (!LEDsTurnedOff)` malen und
      mit `fxShow()` enden - sichtbar bleibt dasselbe (schwarz + Marker);
   3. Effekte familienweise auf die Bausteine umstellen und auf `fxBasic` / `fxMatrixShapes` / `fxText` /
-     `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - **in Arbeit:
-     `fxMatrixSim` (Fire, Plasma, Starfield, Lissajous, SineCos, Equalizer, WaterRipple)**,
+     `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - **in Arbeit.**
+     Erledigt: **`fxMatrixSim.cpp`** (Fire, Plasma, Starfield, Lissajous, SineCos, Equalizer, WaterRipple; Commit
+     `7f415b2`), alle fünf Envs bauen, **noch nicht auf der Hardware gesehen**.
+     Takt und Startwerte sind 1:1 übernommen (`fxEvery` auf demselben Zähler wie vorher). Einzige Änderung im
+     Verhalten: bei abgeschalteten LEDs rechnen die Effekte weiter (sichtbar bleibt schwarz + Marker).
+     `progWaterRipple` gibt weiterhin nur aus, wenn ein Schritt fällig ist (so war es immer) - Kandidat für später:
+     in jedem Durchlauf ausgeben, damit Übergänge und Fades darüber flüssiger laufen. Als Nächstes die übrigen Familien,
      braucht je Familie einen Blick auf die Hardware;
   4. optional: Überladungen durch Vorgabe-Argumente ersetzen, `progMatrixHorizontal` / `Vertical` zusammenlegen.
 - **Gebaut und committet am 06.10.2026 (drei Commits auf `MAIN`: „Song-Werkzeuge: Excel-Tabelle …", „Songs: Struktur-Tabelle
@@ -79,7 +84,7 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - 05.10.2026, Feuer auf der Matrix (Part 92): erst „dick genug und richtig herum", aber fast nur rot (Fehler: die
   zweite Zeile bekam nie Hitze), dann „fast etwas zu hoch skaliert", dann der Wunsch nach festen Plätzen wie auf den
   Lampen. Ergebnis mit festen Flammen (`a9b5152`): „ja mega! das war genau die richtige Entscheidung!! das sieht
-  jetzt richtig klasse aus!!!" Werte in `MFIRE_…` (`src/FXprograms.cpp`) so lassen.
+  jetzt richtig klasse aus!!!" Werte in `MFIRE_…` (`src/fxMatrixSim.cpp`) so lassen.
 - 05.10.2026, Phase 3b und Ebene: „alle Effekte sehen sehr gut aus und alle sind verwendbar!" – `fxSmooth` (Parts
   18, 4, 11, 12), `progPalette` mit Tempo und Fade (13, 14, 16), `fxSoft` (6–9), Text als Maske (2), Ebene gezielt
   steuern (82–88). Besonders: „sehr cool finde ich auch 9, wo die Farben von Gerät zu Gerät faden"
