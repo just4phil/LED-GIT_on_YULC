@@ -43,10 +43,16 @@ void setMarkerLEDs(byte songID, byte partID);
  *
  * Die Marker sollen immer gleich schwach leuchten, egal wie hell die Show gerade ist. Weil die
  * Gesamthelligkeit von FastLED auf ALLE LEDs wirkt, wird der Farbwert der Marker gegenläufig
- * gewählt: bei hoher Gesamthelligkeit ein kleiner Wert, bei niedriger ein großer:
+ * berechnet: bei hoher Gesamthelligkeit ein kleiner Wert, bei niedriger ein großer - und zwar genau so,
+ * dass nach der Rechnung von FastLED immer MARKER_LEVEL (definitions.h) herauskommt. Die Formel ist bei
+ * markerValue() in markerLEDs.cpp erklärt. Beispiele für MARKER_LEVEL 7 (rote Marker):
  *
- *   Gesamthelligkeit   0-19   20-59   60-99   100-139   140-179   180-209   210-229   230-255
- *   Marker-Farbwert     255      40      25        20        15        10         7         4
+ *   Gesamthelligkeit      2     10     48     80    128    200    255
+ *   Marker-Farbwert     255    163     37     23     14      9      7
+ *   leuchtet mit          2      7      7      7      7      7      7
+ *
+ * (Bis zum 06.10.2026 stand hier eine Tabelle mit 8 Stufen; damit schwankte die Marker-Helligkeit je nach
+ * Gesamthelligkeit zwischen 3 und 10.)
  *
  * @note Schritte 2 und 3 entfallen auf Geräten ohne Marker (NOMARKER).
  */

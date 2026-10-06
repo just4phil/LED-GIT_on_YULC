@@ -452,6 +452,26 @@ void setMarkerLEDs(byte songID, byte partID) {
 	#endif
 }
 
+// Berechnet den Farbwert, den ein Marker im Bild bekommen muss, damit er am Ende mit der Helligkeit "level" leuchtet.
+//
+// Das Problem: FastLED multipliziert beim Senden JEDE LED mit der Gesamthelligkeit - auch die Marker. Soll ein Marker
+// immer gleich hell sein, muss sein Farbwert also umso größer sein, je kleiner die Gesamthelligkeit ist.
+//
+// So rechnet FastLED beim Senden (für jede Farbe einzeln):
+//     faktor  = (korrektur + 1) * gesamthelligkeit / 256      (korrektur = Anteil der Farbkorrektur, 0..255)
+//     ausgabe = farbwert * (faktor + 1) / 256                  (Nachkommastellen fallen weg)
+// Das wird hier einfach nach "farbwert" umgestellt: der kleinste Farbwert, bei dem "ausgabe" mindestens "level" ist:
+//     farbwert = level * 256 / (faktor + 1), aufgerundet
+// Beispiel Gitarre, Gesamthelligkeit 48, Rot (korrektur 255): faktor = 48 -> farbwert = 7 * 256 / 49 = 36,6 -> 37.
+// Probe: 37 * 49 / 256 = 7,08 -> 7. Bei Gesamthelligkeit 255 (Blinder, schnelles Glitzern): farbwert = 7 -> wieder 7.
+// Ist die Gesamthelligkeit so klein, dass selbst der größte Farbwert 255 nicht reicht (Knopf ganz zurück), bleibt
+// es bei 255 - heller geht es dann nicht.
+static uint8_t markerValue(uint8_t level, uint8_t brightness, uint8_t correction) {
+	uint32_t factor = ((uint32_t)correction + 1) * brightness / 256 + 1;	// "faktor + 1" aus der Formel oben
+	uint32_t value = ((uint32_t)level * 256 + factor - 1) / factor;			// "+ factor - 1" = aufrunden beim Teilen
+	return value > 255 ? 255 : (uint8_t)value;
+}
+
 // immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
 // (das erledigt fxPresent() in fxPipeline.cpp - Effekte rufen diese Funktion nicht selbst auf)
 void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
@@ -475,21 +495,15 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 			leds1[i] = CRGB(0, 0, 0); //BLACK
 		}
 		
-		// Farbwert der Marker gegenläufig zur Gesamthelligkeit wählen, damit sie immer etwa gleich schwach leuchten
-		// (Tabelle in markerLEDs.h). Gelesen wird die Helligkeit, die FastLED gerade wirklich verwendet - ein Effekt
-		// oder der Blinder kann sie für dieses Bild verändert haben.
-		uint8_t BRIGHTNESS = FastLED.getBrightness(); // ACHTUNG: diese BRIGHTNESS ist eine andere variable als die globale BRIGHTNESS
+		// Farbwert der Marker so berechnen, dass sie bei JEDER Gesamthelligkeit gleich hell leuchten (MARKER_LEVEL,
+		// Rechnung in markerValue() oben). Gelesen wird die Helligkeit, die FastLED gerade wirklich verwendet - ein
+		// Effekt oder der Blinder kann sie für dieses Bild verändert haben. Rot und Blau werden getrennt gerechnet,
+		// weil die Farbkorrektur (MARKER_CORRECTION) Blau etwas stärker dämpft als Rot.
+		uint8_t brightnessNow = FastLED.getBrightness();
+		const CRGB correction = MARKER_CORRECTION;
+		helligkeit = markerValue(MARKER_LEVEL, brightnessNow, correction.r);			// Farbwert der roten Song-Marker
+		uint8_t helligkeitBlau = markerValue(MARKER_LEVEL, brightnessNow, correction.b);	// Farbwert der blauen Orientierungs-Marker
 
-		if (BRIGHTNESS >= 0 && BRIGHTNESS <20) helligkeit = 255;
-		else if (BRIGHTNESS >= 20 && BRIGHTNESS <60) helligkeit = 40;
-		else if (BRIGHTNESS >= 60 && BRIGHTNESS <100) helligkeit = 25;
-		else if (BRIGHTNESS >= 100 && BRIGHTNESS <140) helligkeit = 20;
-		else if (BRIGHTNESS >= 140 && BRIGHTNESS <180) helligkeit = 15;
-		else if (BRIGHTNESS >= 180 && BRIGHTNESS <210) helligkeit = 10;
-		else if (BRIGHTNESS >= 210 && BRIGHTNESS <230) helligkeit = 7;
-		else if (BRIGHTNESS >= 230 && BRIGHTNESS <=255) helligkeit = 4; // bei fastBling immer noch sehr hell
-
-		//FastLED.setBrightness(5);	// dim brightness funktioniert nicht ....dimmt leider alle LEDs
 		// turn on special MarkerLEDs for the songs
 		// Nur setzen, wenn die Nummer im Halsbereich liegt (0 = "kein Marker" fällt damit automatisch heraus).
 		// CRGB(helligkeit, 0, 0) = nur Rot.
@@ -502,8 +516,8 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		if (markerLED7 > Bund_min-1 && markerLED7 < Bund_max) leds1[markerLED7] = CRGB(helligkeit, 0, 0);	//CRGB::Red;
 
 		// turn on generel MarkerLEDs: zwei blaue Orientierungspunkte, bei jedem Song an
-		leds1[ESaite_E_hoch] 	= CRGB(0, 0, helligkeit);	//CRGB::Blue;
-		leds1[ESaite_A] 		= CRGB(0, 0, helligkeit);	//CRGB::Blue;
+		leds1[ESaite_E_hoch] 	= CRGB(0, 0, helligkeitBlau);	//CRGB::Blue;
+		leds1[ESaite_A] 		= CRGB(0, 0, helligkeitBlau);	//CRGB::Blue;
 	
 	#endif
 }

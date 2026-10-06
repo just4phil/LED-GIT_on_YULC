@@ -225,12 +225,12 @@ void setup() {
 	// NEOPIXEL = LED-Typ WS2812B; setCorrection gleicht den Farbstich der LEDs aus.
 	#if defined (USE_ESP32)
 		//----- initialize LEDs ---------
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, LEDS_OUT).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_1>(leds1, LEDS_OUT).setCorrection(LED_COLOR_CORRECTION);
 		//---use both yulc outputs:
-		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, LEDS_OUT).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN_2>(leds2, LEDS_OUT).setCorrection(LED_COLOR_CORRECTION);
 
 	#elif defined (USE_TEENSY)
-		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(TypicalLEDStrip);
+		FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUMMATRIX).setCorrection(LED_COLOR_CORRECTION);
 	#endif
 
 	//NEOPIXEL	//WS2812B

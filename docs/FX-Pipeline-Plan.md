@@ -22,6 +22,11 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
+- **06.10.2026, Marker-Helligkeit berechnet statt Stufentabelle** (Wunsch des Users, Abnahme offen):
+  `markerValue()` in `src/markerLEDs.cpp` rechnet die Skalierung von FastLED (Gesamthelligkeit und Farbkorrektur
+  `LED_COLOR_CORRECTION`) zurück; Zielwert `MARKER_LEVEL` 7 in `src/definitions.h` = bisherige Helligkeit auf der
+  Gitarre bei 48. Vorher schwankte sie je nach Gesamthelligkeit zwischen 3 und 10. Nur die Helligkeit ist
+  geändert, keine Marker-Position.
 - **06.10.2026, Blinder auf volle Helligkeit** (Wunsch des Users, Abnahme offen): siehe Abschnitt „Blinder". Zu den
   umgestellten Familien: „sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!" - Schritt 3 ist abgenommen.
 - **06.10.2026, übrige Familien umgestellt (Commit „Alte Effekte: Ausgabe über fxShow …", auf Zuruf des Users,
@@ -447,8 +452,8 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
   1,7-fach, reines Weiß gar nicht) und der Schalter `FX_BLINDER_BRIGHTNESS` sind entfernt. Bei niedriger
   Grundhelligkeit ist das Bild des Effekts während des Blinders gröber abgestuft (es wird z. B. auf 48/255
   heruntergerechnet); unter dem hellen Blinder fällt das nicht auf.
-- Nebenwirkung: Marker-LEDs und Gurt sind während eines Blinders im selben Maß heller (sie hängen an der
-  Gesamthelligkeit).
+- Marker-LEDs bleiben während eines Blinders gleich hell: ihr Farbwert wird seit 06.10.2026 aus der gerade
+  gültigen Gesamthelligkeit berechnet (`markerValue()` in `src/markerLEDs.cpp`, Zielwert `MARKER_LEVEL`).
 - YAML (`pipeline_calls()` in `tools/songgen.py`): `blinder: bar` (auch `beat`, `half`, Zahl in Beats) oder
   `blinder: {every: …, at: <Beats>, len: <Beats>, amount: <Prozent>, color: warm|<Farbe>, devices: [...]}`; ohne
   `every` einmalig bei `at`. Standard: `len` 1 Beat, `amount` 100, `color` warm, alle Geräte.

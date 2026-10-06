@@ -462,6 +462,11 @@
 #endif
 
 //==== LED-Ausgabe (fxPipeline.cpp) ======================================================
+#define LED_COLOR_CORRECTION	TypicalLEDStrip	// Farbkorrektur von FastLED für alle LED-Ausgänge (gleicht den Farbstich der LEDs aus:
+										// Rot 255, Grün 176, Blau 240 von 255). main.cpp stellt sie ein, markerLEDs.cpp rechnet damit
+#define MARKER_CORRECTION		CRGB(LED_COLOR_CORRECTION)	// dieselbe Korrektur, zerlegt in ihre drei Farbanteile
+#define MARKER_LEVEL			7		// so hell leuchten die Bund-Marker (0..255, gemessen am Ausgang), unabhängig von der Gesamthelligkeit.
+										// 7 = so hell wie bisher auf der Gitarre in der Grundhelligkeit 48. Größer = heller
 #define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
 #define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
