@@ -9,6 +9,10 @@
 // Hinweis zum Aufbau: in der .h-Datei stehen nur die "Ankündigungen" (Deklarationen) der Funktionen,
 // damit andere Dateien sie aufrufen können; der eigentliche Code steht in der gleichnamigen .cpp-Datei.
 
+// Include-Schutz: der Compiler liest diese Datei pro .cpp-Datei nur einmal, auch wenn sie (direkt oder über
+// eine andere .h-Datei) mehrfach eingebunden wird. Ohne ihn gäbe es dann "BLEmessage ist schon definiert".
+#pragma once
+
 /**
  * @brief Die Nachricht, die per Bluetooth (BLE) zwischen Proxy und Clients ausgetauscht wird
  *
@@ -29,14 +33,22 @@
  */
 // "pack(push, 1)": der Compiler darf zwischen den Feldern keine Füllbytes einfügen, damit die Struktur auf
 // allen Geräten exakt 3 Bytes groß ist und Byte für Byte gesendet werden kann.
-// ACHTUNG: Das Gegenstück "#pragma pack(pop)" fehlt. Die Einstellung gilt deshalb weiter für alle Strukturen,
-// die in einer Datei NACH dem Einbinden von functions.h definiert werden.
-#pragma pack(push, 1)   // Ensures structure is stored without padding
+// "push" merkt sich dabei die bisherige Einstellung, "pack(pop)" direkt hinter der Struktur stellt sie wieder
+// her. Das pop ist wichtig: ohne es gälte "keine Füllbytes" auch für alles, was eine .cpp-Datei NACH
+// functions.h noch einbindet (z.B. Adafruit_GFX, NimBLE, WiFi) - deren Klassen hätten dort dann eine andere
+// Größe als in der Bibliothek selbst, und das führt zu schwer auffindbaren Speicherfehlern.
+#pragma pack(push, 1)   // ab hier: Strukturen ohne Füllbytes
 struct BLEmessage {
     uint8_t msgType; /**< Nachrichtentyp (0-7), siehe Liste oben */
     uint8_t songID;  /**< Song-ID */
     uint8_t part;     /**< Part-Nummer */
 };
+#pragma pack(pop)       // Einstellung von vor dem push wiederherstellen
+
+// "static_assert" ist eine Prüfung, die der Compiler schon beim Übersetzen ausführt (kostet auf dem Gerät
+// nichts): stimmt die Bedingung nicht, bricht der Build mit dem Text dahinter ab. So fällt sofort auf, wenn
+// jemand die Nachricht verändert - alle Geräte müssen dieselben 3 Bytes senden und erwarten.
+static_assert(sizeof(BLEmessage) == 3, "BLEmessage muss genau 3 Bytes gross sein");
 
 /**
  * @brief Zufälliger Wert für EINEN Farbanteil (Rot, Grün oder Blau)
