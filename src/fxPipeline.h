@@ -124,8 +124,7 @@ void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts fol
 												// Puls, Tor und Ein-/Ausblenden bleiben scharf. Rechnet mit der echten Zeit je Bild -> auf allen Geräten gleich
 //--- Blinder: helles Aufblenden wie bei einem Bühnen-Blinder, punktuell über dem laufenden Effekt. Voll hell in der ersten
 //    Hälfte von lenMillis, klingt dann ab; liegt über allem (auch über Tor, Dimmen und Übergang). Der Blinder hebt dabei
-//    die Gesamthelligkeit an (der Effekt darunter bleibt gleich hell): ohne FX_BLINDER_BRIGHTNESS (definitions.h) nur so
-//    weit, wie es ein voll weißes Bild in der normalen Helligkeit an Strom braucht ---
+//    die Gesamthelligkeit bis auf volle 255 an (der Effekt darunter bleibt gleich hell) ---
 #define FX_BLINDER_WARM	CRGB(255, 150, 50)	// warmes Weiß wie ein Halogen-Blinder
 
 // Fällige Schritte eines schrittweisen Effekts seit dem letzten Aufruf (zieht sie vom Zähler ab). Schritte unter

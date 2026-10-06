@@ -22,6 +22,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
+- **06.10.2026, Blinder auf volle Helligkeit** (Wunsch des Users, Abnahme offen): siehe Abschnitt „Blinder". Zu den
+  umgestellten Familien: „sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!" - Schritt 3 ist abgenommen.
 - **06.10.2026, übrige Familien umgestellt (Commit „Alte Effekte: Ausgabe über fxShow …", auf Zuruf des Users,
   Abnahme auf der Hardware offen):** In `FXprograms.cpp`, `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp` und
   `fxMatrixRain.cpp` sind alle `if (!LEDsTurnedOff)` und das doppelte `fxPresent()` durch ein `fxShow()` am Ende
@@ -163,8 +165,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
    `smooth`, Text über der Szene, ausgestanzter Text) sind noch in keinem Song eingesetzt – nur auf Zuruf,
    `song.yaml` gehört dem User. Naheliegend: Blinder auf Chorus-Einsätze, `soft` auf `SCENE_COLORS_WAVE`.
-4. **Offene Frage Blinder:** Reicht die Stromversorgung von Gitarre, Bass und Matrix für mehr Helligkeit im Blinder?
-   Dann `FX_BLINDER_BRIGHTNESS` in `src/definitions.h` setzen (heute auskommentiert, siehe Abschnitt „Blinder").
+4. Blinder-Helligkeit: erledigt am 06.10.2026 - der Blinder geht auf volle 255 (Auskunft des Users: die
+   Stromversorgung ist kein Problem mehr), `FX_BLINDER_BRIGHTNESS` gibt es nicht mehr.
 5. **Offen beim User, ohne Eile:** Bausteine in `docs/effekt-katalog.yaml` unter `ausgabestufe` bewerten (Felder
    `urteil` / `notiz` gehören ihm; seine mündlichen Urteile stehen oben).
 6. **Phase 4b Punkt 3 und 4, Phase 7, Phase 6** – nach Bedarf. Phase 7 rückt vor, falls die Ebene die Matrix
@@ -440,11 +442,11 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
 - **Helligkeit:** Der erste Versuch blendete nur in der normalen Gesamthelligkeit und war auf Gitarre, Bass
   (`DEFAULT_BRIGHTNESS` 48) und Matrix (80) kaum zu sehen, nur auf den Lampen (200). Jetzt steigt im Blinder die
   Gesamthelligkeit, und das Bild des Effekts wird im selben Maß heruntergerechnet (der Effekt bleibt gleich hell).
-  Grenze: nie mehr Strom als ein voll weißes Bild in der normalen Helligkeit – bei warmem Weiß
-  (`FX_BLINDER_WARM` = 255/150/50) rund 1,7-fach (Gitarre 48 → 80, Matrix 80 → 134, Lampen 200 → 255), bei reinem
-  Weiß keine Anhebung. Mit `#define FX_BLINDER_BRIGHTNESS` in `src/definitions.h` (auskommentiert) lässt sich die
-  Helligkeit im Blinder fest höher setzen – **nur wenn die Stromversorgung aller Geräte reicht**; das ist nicht
-  geklärt und nicht getestet.
+  Seit 06.10.2026 (Wunsch des Users, die Stromversorgung ist kein Problem mehr): bei vollem Blinder geht die
+  Gesamthelligkeit auf allen Geräten auf 255, für jede Blinder-Farbe. Die frühere Strom-Grenze (warmes Weiß rund
+  1,7-fach, reines Weiß gar nicht) und der Schalter `FX_BLINDER_BRIGHTNESS` sind entfernt. Bei niedriger
+  Grundhelligkeit ist das Bild des Effekts während des Blinders gröber abgestuft (es wird z. B. auf 48/255
+  heruntergerechnet); unter dem hellen Blinder fällt das nicht auf.
 - Nebenwirkung: Marker-LEDs und Gurt sind während eines Blinders im selben Maß heller (sie hängen an der
   Gesamthelligkeit).
 - YAML (`pipeline_calls()` in `tools/songgen.py`): `blinder: bar` (auch `beat`, `half`, Zahl in Beats) oder
@@ -455,7 +457,7 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
 - Erfahrung für Songs: auf allen Geräten ab 2 Beats Länge, am stärksten über dunklen oder ruhigen Effekten, schwach
   über vollflächigen Farbwechseln (`SCENE_COLORS`); nur auf den Lampen und kurz für Rhythmisches.
 - Geprüft: alle fünf Envs bauen; YAML-Formen und Fehlermeldungen im Speicher; Song #31 erzeugt denselben Code; vom
-  User auf der Hardware abgenommen. **Nicht gemessen:** die Stromaufnahme.
+  User auf der Hardware abgenommen.
 
 ## Phase 4 – Ebene (einfacher als geplant)
 

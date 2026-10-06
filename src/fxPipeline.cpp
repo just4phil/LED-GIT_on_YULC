@@ -213,7 +213,7 @@ struct FxContext {
 };
 
 // Manche Effekte stellen die Gesamthelligkeit um (progFastBlingBling auf 255). In der Ebene darf das den Effekt darunter
-// nicht mit aufhellen (Stromaufnahme!): die Helligkeit der Ebene wird gemerkt und beim Mischen ausgeglichen.
+// nicht mit aufhellen: die Helligkeit der Ebene wird gemerkt und beim Mischen ausgeglichen.
 struct FxLayer {
 	CRGB buf[NUMMATRIX];	// Bild der Ebene
 	FxContext ctx;
@@ -443,27 +443,19 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 	return scale8(b.amount, scale8(lin, lin));					// lin * lin: fällt erst schnell, läuft dann lange aus
 }
 
-// Der Blinder leuchtet heller als der Effekt: die Gesamthelligkeit steigt, das Bild des Effekts wird im selben Maß
-// heruntergerechnet und bleibt so gleich hell. Ohne FX_BLINDER_BRIGHTNESS steigt sie nur so weit, dass der Blinder nie mehr
-// Strom zieht als ein voll weißes Bild in der normalen Helligkeit (warmes Weiß: rund 1,7-fach).
+// Der Blinder nutzt die volle Leuchtkraft der LEDs: bei vollem Blinder steigt die Gesamthelligkeit auf 255 (100 %),
+// egal wie hell das Gerät sonst eingestellt ist. Das Bild des Effekts wird im selben Maß heruntergerechnet und bleibt
+// so gleich hell - nur der Blinder selbst strahlt.
 static void applyBlinder(CRGB* buf, uint8_t level) {
 	const CRGB col = mod.blinder.col;
 	const uint8_t base = FastLED.getBrightness();	// die normale Gesamthelligkeit
-	// peak = Gesamthelligkeit bei vollem Blinder. Ohne FX_BLINDER_BRIGHTNESS: Weiß (255,255,255) hat die Summe 765;
-	// eine Farbe mit kleinerer Summe darf im selben Verhältnis heller werden, ohne mehr Strom zu ziehen.
-	#ifdef FX_BLINDER_BRIGHTNESS
-		uint8_t peak = max(base, (uint8_t)FX_BLINDER_BRIGHTNESS);
-	#else
-		uint16_t sum = col.r + col.g + col.b;
-		uint8_t peak = sum ? min((uint32_t)255, (uint32_t)base * 765 / sum) : base;
-	#endif
-	uint8_t bright = base + (uint16_t)(peak - base) * level / 255;	// je stärker der Blinder gerade ist, desto näher an peak
+	uint8_t bright = base + (uint16_t)(255 - base) * level / 255;	// je stärker der Blinder gerade ist, desto näher an 255
 	if (bright != base) {
 		uint8_t keep = (uint16_t)base * 255 / bright;	// um diesen Faktor wird das Bild des Effekts dunkler gerechnet
 		for (int i = 0; i < NUMMATRIX; i++) buf[i].nscale8(keep);
 		FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 	}
-	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], col, level);	// nur echte LEDs (Stromaufnahme!)
+	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], col, level);	// nur echte LEDs
 }
 
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen
@@ -688,7 +680,7 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 		uint8_t v = 255 - t;
 		v = scale8(v, v);	// fällt schnell ab
 		CRGB white(v, v, v);
-		for (int i = 0; i < anz_LEDs; i++) buf[i] += white;	// nur echte LEDs (Stromaufnahme!)
+		for (int i = 0; i < anz_LEDs; i++) buf[i] += white;	// nur echte LEDs
 		break;
 	}
 

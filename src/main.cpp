@@ -118,7 +118,7 @@ CRGB leds2[NUMMATRIX];	// dies ist die kopie für die GIT-STRAP-LEDs OHNE MARKER
 // "volatile" steht bei allen Variablen, die auch der Timer-Interrupt (TimerFunctions.cpp) liest oder
 // schreibt. Es sagt dem Compiler: der Wert kann sich jederzeit "von außen" ändern, also jedes Mal
 // frisch aus dem Speicher lesen und nichts wegoptimieren.
-int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // Grundhelligkeit 0..255 (je Gerät in definitions.h); klein halten, solange die Stromversorgung nicht mehr hergibt
+int BRIGHTNESS	= DEFAULT_BRIGHTNESS; // Grundhelligkeit 0..255 (je Gerät in definitions.h)
 byte songID = 0;				// aktueller Song (0 = SONGPAUSE), siehe switch(songID) in loop()
 byte songIDbefore = 0;			// der Song davor (setzt switchToSong)
 volatile byte nextSongPart = 0;	// der Part, in den beim nächsten Wechsel gesprungen wird (setzt der Song selbst)

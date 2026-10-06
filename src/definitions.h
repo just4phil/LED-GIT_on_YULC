@@ -67,10 +67,6 @@
 //#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 
-//---- Blinder (fxBlinder): Gesamthelligkeit im Blinder. Auskommentiert steigt sie nur so weit, dass der Blinder nicht mehr
-//     Strom zieht als ein voll weißes Bild in DEFAULT_BRIGHTNESS. Nur setzen, wenn die Stromversorgung ALLER Geräte reicht! ----
-//#define FX_BLINDER_BRIGHTNESS	255
-
 //---- start a special demo? --------
 //#define START_WITH_FX_DEMO
 //#define START_WITH_SCENE_DEMO
@@ -203,7 +199,7 @@
 	#elif defined(LAMPE2)
 		#define DEFAULT_BRIGHTNESS	200		
 	#else	
-		#define DEFAULT_BRIGHTNESS	48	// solange die stromversorgung nicht ausreichend ist
+		#define DEFAULT_BRIGHTNESS	48
 	#endif	
 #endif
 
@@ -219,9 +215,9 @@
 	#define LIPO_PIN            19 
 
 	#if defined(GITBOARD)
-		#define DEFAULT_BRIGHTNESS	32	// solange die stromversorgung nicht ausreichend ist
+		#define DEFAULT_BRIGHTNESS	32
 	#elif defined(SCROLLMATRIX)
-		#define DEFAULT_BRIGHTNESS	10	// solange die stromversorgung nicht ausreichend ist
+		#define DEFAULT_BRIGHTNESS	10
 	#endif
 #endif
 
