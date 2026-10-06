@@ -241,8 +241,28 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 	fxShow();
 }
 
-// Lauftext von rechts nach links. delay = ms je Pixel-Schritt (kleiner = schneller). Ist der Text ganz
-// durchgelaufen, beginnt er von vorn. (Der Parameter heißt nur so wie die Funktion delay(), gewartet wird nicht.)
+// Dauer EINES Durchlaufs von progScrollText in ms, exakt: der Text startet 2 Pixel links vom rechten Rand
+// (MATRIX_WIDTH - 2), ist 6 Pixel je Zeichen breit und rückt alle delay ms einen Pixel weiter, bis er links ganz
+// hinaus ist. Beispiel SCROLLMATRIX (54 breit), "abcdefu by Gayle" (16 Zeichen), delay 90: (52 + 96) * 90 = 13320 ms.
+// Dieselbe Formel rechnet tools/songgen.py (plan_scroll), um den Wiedereinstieg der Matrix zu planen.
+unsigned long scrollTextMillis(const String& words, int delay) {
+	return (unsigned long)(MATRIX_WIDTH - 2 + words.length() * 6) * (unsigned long)max(delay, 0);
+}
+
+// true, sobald der Lauftext des laufenden Parts seine ganzen Durchläufe gezeigt hat (dann bleibt die Matrix dunkel)
+static bool progScrollDone = false;
+// true, wenn die Dauer des Parts kürzer ist als ein Durchlauf: der Text läuft dann etwas schneller, damit er passt
+static bool progScrollFit = false;
+static long progScrollFitStep = -1;		// zuletzt gezeichneter Pixel-Schritt im "passend gemacht"-Betrieb
+
+// Lauftext von rechts nach links. delay = ms je Pixel-Schritt (kleiner = schneller).
+// Der Text läuft immer in GANZEN Durchläufen und bricht nie mittendrin ab (Wunsch des Users, 06.10.2026):
+//  - Ist er ganz durchgelaufen, beginnt er nur dann von vorn, wenn ein weiterer ganzer Durchlauf noch in die Dauer
+//    des Parts passt (scrollTextMillis). Sonst bleibt die Matrix bis zum Part-Ende dunkel: genau 1x, 2x ...
+//  - Ist die Dauer kürzer als ein einziger Durchlauf (viele alte Songs: ein paar Hundert ms zu kurz), läuft der Text
+//    gerade so viel schneller, dass er genau am Part-Ende links hinaus ist. Die Position wird dann nicht mehr in
+//    Schritten von delay gezählt, sondern aus der Zeit seit Part-Beginn gerechnet.
+// (Der Parameter heißt nur so wie die Funktion delay(), gewartet wird nicht.)
 // Die Schrift trägt immer einen Farbverlauf: den mit fxTextGradient(...) angemeldeten, sonst einen von vieren,
 // bei jedem Part-Beginn neu ausgewürfelt (siehe textGradNow). Der Parameter col wird deshalb nicht mehr benutzt; er bleibt, damit die
 // vielen alten Aufrufe (..., getRandomColor(), ...) unverändert passen.
@@ -256,25 +276,62 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 		//--- init. :
 		progScrollTextZaehler = MATRIX_WIDTH - 2;	// Start: Text beginnt am rechten Rand
 		progScrollEnde = words.length() * 6;		// Breite des Texts in Pixeln (6 je Zeichen)
+		progScrollDone = false;
+		// kürzer als ein Durchlauf? (ein Schritt Spielraum: so knapp daneben fällt es nicht auf, das Tempo bleibt dann exakt)
+		progScrollFit = (unsigned long)durationMillis + (unsigned long)max(delay, 0) < scrollTextMillis(words, delay);
+		progScrollFitStep = -1;
 		textGradLoaded = -1;						// Palette des Farbverlaufs in diesem Part neu holen
 		// Variante des Farbverlaufs würfeln: random(1, 4) liefert 1, 2 oder 3; um so viel weitergezählt (und mit "%"
 		// wieder auf 0..3 gebracht) kommt immer eine ANDERE Variante heraus als beim letzten Lauftext.
 		titleGradVariant = (titleGradVariant + random(1, TITLE_GRAD_VARIANTS)) % TITLE_GRAD_VARIANTS;
     }
 
-	// Ist ein Pixel-Schritt fällig? Dann rückt der Text weiter. Das Tempo des Texts bleibt damit genau wie bisher.
-	bool step = fxEvery(millisCounterTimer, delay);
-	if (step) {
-		progScrollTextZaehler--;	// einen Pixel nach links
-		if (progScrollTextZaehler < -progScrollEnde) progScrollTextZaehler = MATRIX_WIDTH - 2;	// links ganz hinaus: wieder rechts beginnen
+	if (progScrollDone) {	// alle ganzen Durchläufe sind gezeigt: dunkel bleiben, bis der Part zu Ende ist
+		fxShow();
+		return;
 	}
-
-	// Wie weit ist der laufende Schritt schon vorbei (0..255)? millisCounterTimer zählt die ms seit dem letzten
-	// Schritt. Daraus rechnet scrollDraw, wie weit der Text schon zur nächsten Position geglitten ist.
-	uint8_t frac = 0;
+	bool step;
+	uint8_t frac = 0;	// wie weit der laufende Pixel-Schritt schon vorbei ist (0..255), fürs Gleiten in scrollDraw
+	if (progScrollFit) {
+		// Passend gemacht: ein Durchlauf hat "steps" Pixel-Schritte (rechter Rand bis ganz links hinaus). Der wievielte
+		// läuft gerade? Anteil der vergangenen Zeit mal steps, in 1/256 Schritten gerechnet ("fine"), damit auch der
+		// Bruchteil für das Gleiten abfällt. uint64_t = 64-Bit-Zahl, weil das Produkt sonst überlaufen kann.
+		unsigned long steps = MATRIX_WIDTH - 2 + progScrollEnde;
+		unsigned long t = min((unsigned long)millisCounterForProgChange, (unsigned long)durationMillis);
+		unsigned long fine = (unsigned long)((uint64_t)t * steps * 256 / max(1u, durationMillis));
+		long n = min(fine >> 8, steps - 1);
+		step = (n != progScrollFitStep);
+		progScrollFitStep = n;
+		progScrollTextZaehler = MATRIX_WIDTH - 3 - n;	// dieselben Positionen wie im normalen Betrieb, nur enger getaktet
 #if TEXT_SCROLL_BLEND
-	if (delay > 0) frac = (uint8_t)min(255L, (long)millisCounterTimer * 256 / delay);
+		frac = (fine >> 8) >= steps ? 255 : (uint8_t)(fine & 255);
 #endif
+	}
+	else {
+		step = fxEvery(millisCounterTimer, delay);
+		if (step) {
+			progScrollTextZaehler--;	// einen Pixel nach links
+			if (progScrollTextZaehler < -progScrollEnde) {	// links ganz hinaus: ein Durchlauf ist fertig
+				// Passt noch ein ganzer Durchlauf in den Rest des Parts? millisCounterForProgChange = ms seit Part-Beginn.
+				// Ein Schritt (delay) Spielraum, weil der Loop einen Schritt ein paar ms zu spät bemerken kann.
+				unsigned long rest = durationMillis > millisCounterForProgChange ? durationMillis - millisCounterForProgChange : 0;
+				if (rest + (unsigned long)max(delay, 0) >= scrollTextMillis(words, delay)) {
+					progScrollTextZaehler = MATRIX_WIDTH - 2;	// ja: wieder rechts beginnen
+				}
+				else {
+					progScrollDone = true;		// nein: Schluss, nicht noch einmal anfangen
+					FastLED.clear();
+					fxShow();
+					return;
+				}
+			}
+		}
+		// Wie weit ist der laufende Schritt schon vorbei (0..255)? millisCounterTimer zählt die ms seit dem letzten
+		// Schritt. Daraus rechnet scrollDraw, wie weit der Text schon zur nächsten Position geglitten ist.
+#if TEXT_SCROLL_BLEND
+		if (delay > 0) frac = (uint8_t)min(255L, (long)millisCounterTimer * 256 / delay);
+#endif
+	}
 
 	// Neu gezeichnet wird, wenn sich etwas geändert hat: ein Schritt, das Gleiten zwischen zwei Positionen oder der
 	// wandernde Farbverlauf.

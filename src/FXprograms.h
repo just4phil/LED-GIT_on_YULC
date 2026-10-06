@@ -305,6 +305,15 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
  * @param col   wird nicht mehr benutzt (früher: Farbe als 16-Bit-Wert); bleibt, damit die alten Aufrufe passen
  */
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart);
+/**
+ * @brief Dauer eines Durchlaufs von progScrollText in ms, exakt: (MATRIX_WIDTH - 2 + 6 je Zeichen) * delay.
+ * progScrollText zeigt damit nur ganze Durchläufe: so viele, wie in die Dauer des Parts passen (mindestens einen),
+ * danach bleibt die Matrix bis zum Part-Ende dunkel. Der Text bricht also nie mittendrin ab und fängt nie für
+ * einen Augenblick neu an. Ist die Dauer kürzer als ein Durchlauf, läuft der Text gerade so viel schneller, dass
+ * er genau am Part-Ende links hinaus ist. Für eigene Parts: progScrollText(text, 2 * scrollTextMillis(text, 90), 90, 0, next)
+ * = genau zwei Durchläufe.
+ */
+unsigned long scrollTextMillis(const String& words, int delay);
 
 /**
  * @brief Zeigt die Buchstaben "RooTs" verteilt in Zufallsfarben (alter Aufruf, ruft progShowLettersSpread auf)
