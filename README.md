@@ -177,15 +177,15 @@ firmware. Details: `docs/OTA-Update.html`.
 
 | ID | Song | | ID | Song |
 |---|---|---|---|---|
-| 0 | Pause between songs | | 17 | Apt. |
+| 0 | Pause between songs | | 17 | Apt. * |
 | 1 | Physical (trailer) | | 20 | Kids |
 | 2 | Physical | | 21 | Tell It To My Heart |
 | 3 | Take On Me | | 24 | Enjoy The Silence (intro) |
-| 4 | Don't Stop The Music | | 25 | Friday I'm In Love |
-| 6 | No Roots | | 26 | Be Mine |
-| 7 | Firework | | 27 | I Wanna Dance With Somebody |
+| 4 | Don't Stop The Music | | 25 | Friday I'm In Love * |
+| 6 | No Roots | | 26 | Be Mine * |
+| 7 | Firework | | 27 | I Wanna Dance With Somebody * |
 | 8 | Dancing On My Own * | | 28 | Billie Jean * |
-| 9 | I Love It | | 29 | Maniac |
+| 9 | I Love It * | | 29 | Maniac |
 | 10 | Bloody Mary | | 31 | All The Things She Said * |
 | 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
 | 12 | Such A Shame | | 80 | I Love It (trailer) |

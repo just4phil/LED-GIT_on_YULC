@@ -11,8 +11,78 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (Tabelle mit Spalten „Effekt (füllt KI)“ / „Änderungswunsch“, Abcdefu neu generiert)
+Zuletzt aktualisiert: 06.10.2026 (neue Szene SCENE_CALL_RESPONSE, in APT. eingesetzt, Abnahme offen)
 
+- **06.10.2026, neue Szene `SCENE_CALL_RESPONSE` (Frage/Antwort) - gebaut, Abnahme offen.** Anlass (User): das
+  Ping-Pong in APT. wirke „nicht im Takt“. Der Code rechnet den Beat exakt; die Ursache ist die Art der Szene (ein
+  Gerät pro Beat in Zufallsfolge, klingt nur auf 22 % ab, 5 Geräte gegen 4 Beats). Der User lobte dagegen den
+  Schluss-Blinder („mega“). Neu, als Ergänzung - `SCENE_PINGPONG` bleibt unverändert: `progCallResponse()` in
+  `src/scenes.cpp` (Prototyp und Szenen-Nummer in `scenes.h`, am Ende der Liste): gerade Beats blitzen die
+  Bühnenpositionen links der Mitte (Lampe 1, Bass), ungerade die rechts (Gitarre, Lampe 2), die Matrix jeden Beat mit
+  ihrer linken bzw. rechten Hälfte; Abklingkurve `flashEnvelope`, Farbe `sharedColor((beat & 1) + beat / 8)`, kein
+  gemerkter Zustand. Demo: Song 92 Part 37 (steht als offener Part am Anfang, mit Nummer), Song 91 Part 86. Doku:
+  `docs/LED-Effekte-und-Szenen.html` (Szenen-Tabelle, Primitive, Demo-Tabellen, Bühnen-Vorschau), `effekt-katalog.yaml`,
+  `Song-Workflow.html`, SKILL.md. APT. (#17, Version `2026-10-06_2329`): `verse 1` (ROYAL) und `apt apt apt` (NEON,
+  mit Text „APT“) nutzen die neue Szene. Alle fünf Envs gebaut. **Nächster Schritt:** User prüft Song 17 und
+  Demo 92 Part 37; nach der Abnahme Part 37 in den abgenommenen Teil der Demo verschieben und `urteil` im Katalog füllen.
+
+- **06.10.2026, alte Songs 1:1 generieren (Wunsch des Users: „Millisekunden pro Part neu berechnen, damit die Songs
+  in sync sind“) - in Arbeit, Song für Song.** Befund: die alten ms waren schon Takte × BPM, nur auf 5 ms gerundet;
+  was die Geräte auseinanderlaufen lässt, ist die Verspätung der Part-Wechsel, die nur bei generierten Songs
+  ausgeglichen wird (`isGeneratedSong()`). Deshalb: je Song eine `show.yaml`, in der jeder Part den alten Aufruf 1:1
+  als `fx:` trägt (kein Schema, kein neuer Look); von Hand gerundete Beat-Zeiten in den Effekten als `${beat}` /
+  `${half}`, alles andere wörtlich; Matrix-Zweige (`LEDGITBOARD`) als `devices: matrix`; alter Lauftext über
+  `scroll_title` / `scroll_delay`. **Fertig** (Version `2026-10-06_2319`, alle fünf Envs gebaut): **Be Mine (#26)**,
+  **Friday I'm In Love (#25)** (Matrix-Fassung des Sterns in `intro 2` übernommen; 1015 ms und 460 ms liegen nicht
+  im Beat-Raster und stehen unverändert - Frage an den User), **I Love It (#9)** (Trailer Song 80 in `songs.cpp`
+  springt jetzt mit `GEN_ILOVEIT_CHORUS_1` statt der festen 15 ein). **Nachtrag am selben Abend:** Be Mine hat nach
+  den Wünschen des Users einen starken Blinder auf den Einsatz von `chorus 1` (`{at: 0, len: 4, hold: 2}`) und den
+  Schluss-Blinder wie APT. (`chorus 3` `{at: 31, len: 2, hold: 1}` + `end_blinder: 5`), Version `2026-10-06_2339`.
+  **I Wanna Dance With Somebody (#27) fertig** (Version `2026-10-06_2351`, alle fünf Envs gebaut): `markerLEDs.cpp`
+  case 27 schaltete die Marker 1 und 4 über `partID < 52` um; mit ausdrücklichem OK des Users steht dort jetzt
+  `partID < GEN_IWANNADANCEWITHSOMEBODY_UEBERGANG_CHORUS_3` (= 115, derselbe Part „übergang chorus (3)“), die Marker
+  selbst sind unverändert. Wird der Part in der Tabelle umbenannt, bricht der Build an dieser Zeile. Palette 12 in
+  `i need a man …` ist nicht definiert (zeigt die zuletzt geladene) - 1:1 übernommen. **Offen danach:**
+  Kids, Maniac, TakeOnMe, TellItToMyHeart, DontStopTheMusic, EnjoyTheSilence (passen bis auf `!`-Zeilen),
+  BloodyMary, Firework, NoRoots, SuchAShame, InTheDark (50-420 ms Abweichung), Shivers und Titanium (Tabelle und
+  alter Code weichen strukturell ab) - je Song die `!`-Zeilen und Abweichungen mit dem User klären.
+  **Nächster Schritt:** User prüft #9, #25, #26, #27 auf den Geräten (bei #27 besonders: Marker 1 und 4 gehen mit
+  „übergang chorus (3)“ aus).
+- **06.10.2026, neuer Schlüssel `end_blinder` (show.yaml, Song-Ebene) - gebaut, Abnahme offen.** Wunsch des Users zu
+  APT.: „Blinder darf erst auf der letzten Viertel vor dem Ende des Parts kommen und darf dann 5 Sekunden ausfaden“.
+  Ein Blinder endet mit seinem Part; `tools/songgen.py` (`end_blinder_spec`, `build_timeline`) hängt deshalb einen
+  zweiten Blinder an das Schluss-Black (`fxBlinder(0, 5000 ...)` + `fxBlinderShape(0, 0)` = sofort voll, klingt aus).
+  APT.: `apt apt apt (3)` `blinder: {at: 63, len: 2, hold: 1}` + `end_blinder: 5` (Version `2026-10-06_2315`).
+  Keine Änderung an der Firmware. Doku: SKILL.md, `docs/Song-Workflow.html`. **Korrektur an APT. am selben Abend**
+  (Version `2026-10-06_2318`): `bassdrum intro`, `chorus 2` und `chorus 5` wechselten in der ersten Fassung jeden
+  Beat statt wie im alten Code alle 2 Beats (800/805 ms) - Fehler von Claude beim Übertragen, jetzt `${half}`.
+
+- **06.10.2026, APT. (#17) generiert - Abnahme durch den User offen** (Version `2026-10-06_2302`, erste Show des
+  Songs, `songs/Apt_v1/show.yaml`). Wie bei Abcdefu behalten Parts ohne Änderungswunsch den alten Effekt aus `apt()`
+  1:1 als `fx:` (kein Schema auf Song-Ebene). Nach den Änderungswünschen der Tabelle: `verse 1` = `SCENE_PINGPONG` in
+  `SCHEME_ROYAL` („Geräte abwechselnd“); `chorus 1` = `SCENE_DROP` in `SCHEME_SUNSET` (Vorschlag statt des Sterns);
+  `STOP` = Schwarz mit Blinder auf den Schlag (2 Beats), `STOP (2)` = alter weißer Strobo mit demselben Blinder;
+  `apt apt apt` = `SCENE_PINGPONG` in `SCHEME_NEON` mit Text „APT“ im Beat über der Szene (Matrix); `hey ….` =
+  `SCENE_BUILDUP` (Neon) mit starkem Blinder auf den letzten 2 Beats (`{at: 12, len: 2, hold: 1.5}`); `nur vocals` =
+  `SCENE_BUILDUP` (Sunset) statt Schwarz; `apt apt apt (3)` = alte Einzelblitze mit Blinder über den letzten Takt
+  (`{at: 60, len: 4, hold: 3}`). `chorus 2` und `chorus 5` haben keinen Wunsch und zeigen weiter den Stern. Der alte
+  Code setzt in `apt()` keine Part-Marker, kein Trailer springt hinein; Grund-Marker unverändert in `markerLEDs.cpp`
+  (case 17). `main.cpp` case 17 ruft `gen_APT()`, README-Songtabelle nachgezogen, alle fünf Envs gebaut
+  (`build_ota.py --backup`, Backup des Stands davor in `ota/backup/2026-10-06_19`). Dem User im Chat vorgeschlagen,
+  noch nicht gebaut: neue Szene „Geräte abwechselnd“ als Frage/Antwort (linke und rechte Bühnenhälfte wechseln sich
+  pro Beat ab, Matrix auf jeden Beat). **Nächster Schritt:** User aktualisiert die Geräte und prüft Song 17.
+
+- **06.10.2026, `progScrollText` in ganzen Durchläufen - gebaut, Abnahme offen.** Anlass (User): bei Abcdefu kam der
+  Titel „noch ganz kurz ein zweites Mal“ - der Generator rundet die Lauftext-Dauer auf den nächsten Beat (13636 ms),
+  ein Durchlauf dauert 13320 ms, in den 316 ms fing der Text neu an. Umsetzung in `src/fxText.cpp`:
+  `scrollTextMillis(words, delay)` = exakte Dauer eines Durchlaufs ((MATRIX_WIDTH - 2 + 6 je Zeichen) * delay,
+  deklariert in `FXprograms.h`); nach jedem Durchlauf prüft `progScrollText`, ob noch ein ganzer in den Rest des Parts
+  passt (ein Schritt Spielraum), sonst bleibt die Matrix dunkel (`progScrollDone`). Ist die Dauer kürzer als ein
+  Durchlauf (17 Aufrufe in den alten Songs, meist 100-800 ms zu kurz, „Prisoner“ und „1  2  3  4“ rund 24 %), wird die
+  Position aus der Part-Zeit gerechnet und der Text läuft passend schneller (`progScrollFit`) statt abgeschnitten zu
+  werden - das ändert auch die alten, handgeschriebenen Songs. Der Generator bleibt, wie er ist (seine Dauern sind nie
+  kürzer als ein Durchlauf), kein Song neu generiert. Alle fünf Envs gebaut. **Nächster Schritt:** User prüft den
+  Titel-Lauftext auf der Matrix (Abcdefu, ein alter Song wie Take On Me).
 - **06.10.2026, neues Tabellenformat (Wunsch des Users) - gebaut, Abnahme offen.** Der User trägt Wünsche in die neue
   Spalte „Änderungswunsch“ ein und löscht sie selbst; `songgen.py` schreibt bei jeder Generierung in „Effekt (füllt KI)“,
   was je Part umgesetzt ist (Aufruf/Szene + Schema, Text/Ebene/Ausgabestufe, `why:` der Show). Umsetzung:

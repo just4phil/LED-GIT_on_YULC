@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:19:15'
+notiz: 'Erste generierte Fassung: alle Parts 1:1 mit dem alten Effekt, Part-Längen
+  exakt aus der Tabelle'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 3e091092897191e0bab9f5a9c086769b1556b2966213079d2358349bb5bb4db6
+  show.yaml: 72715b1242229d42e87994fb5afed2db3350d68e143c4484ace3012d73b4c798
+  generated.cpp: 54e8badce1a1fe7c8ddf27de036f116b762489131317ca37e2746edabd63e19e

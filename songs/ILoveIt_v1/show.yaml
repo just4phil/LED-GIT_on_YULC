@@ -1,0 +1,71 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus ILoveIt() (Spalte "bisher (alter Code)") als fx:.
+# Der alte Code bleibt in src/songs.cpp. Kein Farbschema: die alten Effekte laufen wie bisher mit freien Zufallsfarben.
+# Die Zeiten in den Effekten (500 ms = 1 Beat, 1000 ms = 2 Beats bei 120 BPM) stehen als ${beat} / ${half}.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: ILoveIt() setzt keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 9) und gelten unverändert.
+# Trailer: INTROiLoveIt (Song 80, src/songs.cpp) springt direkt in "chorus 1" - dort steht jetzt die Konstante
+# GEN_ILOVEIT_CHORUS_1 statt der festen Part-Nummer 15 (derselbe Einstiegspunkt wie bisher).
+# Titel-Lauftext wörtlich wie im alten Code.
+
+function: gen_ILoveIt
+scroll_title: "I love it by Icona Pop"
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  synth intro:
+    fx: "progPalette(${dur}, 6, ${next})"
+    why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
+
+  verse 1:
+    fx: "progFullColors(${dur}, ${next}, ${half})"
+    why: "Alter Effekt: alle LEDs einfarbig, alle 2 Beats eine neue Farbe."
+
+  chorus 1:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein."
+
+  verse 2:
+    fx: "progMatrixScanner(${dur}, ${next})"
+    why: "Alter Effekt: Scanner, eine Leuchtlinie fährt hin und her."
+
+  chorus 2:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats."
+
+  youre on a different road:
+    fx: "progPalette(${dur}, 11, ${next})"
+    why: "Alter Effekt: grüner Verlauf, der zu Weiß aufhellt."
+
+  i love it:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  verse 3:
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    why: "Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe."
+
+  chorus 3:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat."
+
+  youre on a different road (2):
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alter Effekt: 1 Takt schwarz."
+
+  chorus 4:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  chorus 5:
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze zum Schluss."

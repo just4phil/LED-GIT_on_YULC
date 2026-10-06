@@ -184,6 +184,96 @@ void gen_DancingOnMyOwn() {
 	}
 }
 
+//#9 I Love It - Icona Pop  120 BPM  midi_offset 3/8 = 750 ms  (generiert aus songs/ILoveIt_v1: struktur.xlsx + show.yaml)
+void gen_ILoveIt() {
+
+	switch (prog) {
+
+	case 0:	// pause  3 T  5250ms  @0:00.000  -- Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("I love it by Icona Pop", 16750, 90, getRandomColor(), 2);	// 1 Durchlauf = 16560 ms
+#elif defined(GITBOARD)
+		progScrollText("I love it by Icona Pop", 13750, 90, getRandomColor(), 2);	// 1 Durchlauf = 13680 ms
+#else
+		progBlack(5250, 5);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'verse 1' ab 0:16.750, Einstieg case 15
+		progFullColors(12500, 15, 1000);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'verse 1' ab 0:13.750, Einstieg case 15
+		progFullColors(15500, 15, 1000);
+		break;
+#endif
+
+	case 5:	// synth intro  4 T  8000ms  @0:05.250  -- Alter Effekt: weiße Wellen, weich an- und abschwellend.
+		progPalette(8000, 6, 10);
+		break;
+
+	case 10:	// verse 1  8 T  16000ms  @0:13.250  -- Alter Effekt: alle LEDs einfarbig, alle 2 Beats eine neue Farbe.
+		progFullColors(16000, 15, 1000);
+		break;
+
+	case 15:	// chorus 1  4 T  8000ms  @0:29.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein.
+		progSternNeu(8000, 1000, 20, 5, 26, 5, false, 4);
+		break;
+
+	case 20:	// verse 2  8 T  16000ms  @0:37.250  -- Alter Effekt: Scanner, eine Leuchtlinie fährt hin und her.
+		progMatrixScanner(16000, 25);
+		break;
+
+	case 25:	// chorus 2  4 T  8000ms  @0:53.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats.
+		progSternNeu(8000, 1000, 30, 5, 26, 5, true, 3);
+		break;
+
+	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt.
+		progPalette(16000, 11, 35);
+		break;
+
+	case 35:	// i love it  8 T  16000ms  @1:17.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+		progSternNeu(16000, 500, 40, 5, 26, 5, false, 4);
+		break;
+
+	case 40:	// verse 3  8 T  16000ms  @1:33.250  -- Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe.
+		progFullColors(16000, 45, 500);
+		break;
+
+	case 45:	// chorus 3  8 T  16000ms  @1:49.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.
+		progSternNeu(16000, 500, 50, 5, 26, 5, true, 3);
+		break;
+
+	case 50:	// youre on a different road (2)  7 T  14000ms  @2:05.250  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.
+		progWaterRipple(14000, 55, 50, true, false);
+		break;
+
+	case 55:	// STOP  1 T  2000ms  @2:19.250  -- Alter Effekt: 1 Takt schwarz.
+		progBlack(2000, 60);
+		break;
+
+	case 60:	// chorus 4  8 T  16000ms  @2:21.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+		progSternNeu(16000, 500, 65, 5, 26, 5, false, 4);
+		break;
+
+	case 65:	// chorus 5  4 T  8000ms  @2:37.250  -- Alter Effekt: schnelle Einzelblitze zum Schluss.
+		progFastBlingBling(8000, 6, 70);
+		break;
+
+	case 70:	// BLACK (Ende)    10000ms  @2:45.250  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 75);
+		break;
+
+	case 75:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
 //#15 abcdefu - Gayle  128 BPM  midi_offset 1/4 = 545 ms  (generiert aus songs/Abcdefu_v1: struktur.xlsx + show.yaml)
 void gen_Abcdefu() {
 
@@ -348,6 +438,523 @@ void gen_Abcdefu() {
 		break;
 
 	case 85:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#17 APT. - Rose feat. Bruno Mars  149 BPM  midi_offset 3/8 = 604 ms  (generiert aus songs/Apt_v1: struktur.xlsx + show.yaml)
+void gen_APT() {
+
+	switch (prog) {
+
+	case 0:	// pause  4 T  5839ms  @0:00.000  -- Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("APT. by Rose feat. Bruno Mars", 20738, 90, getRandomColor(), 2);	// 1 Durchlauf = 20340 ms
+#elif defined(GITBOARD)
+		progBlack(1265, 1);	// Lauftext verzögern, damit er genau an case 10 endet
+#else
+		progBlack(5839, 5);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'verse 1' ab 0:20.738, Einstieg case 15
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_CALL_RESPONSE, 10873, 15, 149);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:18.725, Einstieg case 10
+		progScrollText("APT. by Rose feat. Bruno Mars", 17460, 90, getRandomColor(), 10);	// 1 Durchlauf = 17460 ms
+		break;
+#endif
+
+	case 5:	// bassdrum intro  8 T  12886ms  @0:05.839  -- Alter Effekt: alle 2 Beats eine neue zufällige Linie in Zufallsfarbe.
+		progRandomLines(12886, 10, 805, true);
+		break;
+
+	case 10:	// verse 1  8 T  12886ms  @0:18.725  -- Frage/Antwort im Takt: auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2; die Matrix blitzt auf jeden Schlag, abwechselnd mit ihrer linken und rechten Hälfte. Jeder Blitz klingt vor dem nächsten Schlag ganz ab. Farben Blau, Lila, Weiß, alle 2 Takte wechseln die Seiten die Farbe.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_CALL_RESPONSE, 12886, 15, 149);
+		break;
+
+	case 15:	// chorus 1  7 T  11275ms  @0:31.611  -- Vorschlag statt des Sterns: volle Energie im Beat in Orange, Pink, Lila, Gelb - Schockwellen laufen vom Steg über Gitarre und Bass, die Lampen blitzen auf jeden Beat in wechselnder Farbe, auf der Matrix schnelle Wasserringe aus der Mitte.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_DROP, 11275, 20, 149);
+		break;
+
+	case 20:	// STOP  1 T  1611ms  @0:42.886  -- 1 Takt Stille. Auf den Stopp-Schlag springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats ins Schwarz ab.
+		fxBlinder(0, 805, 255, FX_BLINDER_WARM, DEV_ALL);
+		progBlack(1611, 25);
+		break;
+
+	case 25:	// apt apt apt  8 T  12886ms  @0:44.497  -- Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2. Auf der Matrix steht dazu APT und pulsiert auf jeden Beat in den Schemafarben, die beiden Matrix-Hälften blitzen gedimmt darunter weiter.
+		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("APT", 12886, 30, 403);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_CALL_RESPONSE, 12886, 30, 149);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 30:	// ist whatever  2 T  3221ms  @0:57.383  -- Alter Effekt: weißer Strobo, 200 ms an / 200 ms aus.
+		progStrobo(3221, 35, 200, 255, 255, 255);
+		break;
+
+	case 35:	// verse 2  6 T  9664ms  @1:00.604  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
+		progPalette(9664, 3, 40);
+		break;
+
+	case 40:	// chorus 2  7 T  11276ms  @1:10.268  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats.
+		progSternNeu(11276, 805, 45, 5, 26, 5, false, 4);
+		break;
+
+	case 45:	// STOP (2)  1 T  1610ms  @1:21.544  -- Alter Effekt: 1 Takt harter weißer Strobo (100 ms). Neu: auf den ersten Schlag springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats in den Strobo ab.
+		fxBlinder(0, 805, 255, FX_BLINDER_WARM, DEV_ALL);
+		progStrobo(1610, 50, 100, 255, 255, 255);
+		break;
+
+	case 50:	// apt apt apt (2)  8 T  12886ms  @1:23.154  -- Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe.
+		progStrobo(12886, 55, 400, getRandomCRGB());
+		break;
+
+	case 55:	// hey ….  3 T+2 B  5638ms  @1:36.040  -- Build-up über den ganzen Part in Neon-Farben: Gitarre und Bass laden sich von unten bis zur Kopfplatte auf, die Lampen füllen sich von unten, auf der Matrix fliegen Sterne aus der Mitte. Auf den letzten 2 Beats steht ein starker Blinder voll hell (warmweiß, alle Geräte) und geht direkt in den Strobo über.
+		setColorScheme(SCHEME_NEON);
+		fxBlinder(4832, 805, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 604);
+		scene(SCENE_BUILDUP, 5638, 60, 149);
+		break;
+
+	case 60:	// get ya get ya  2 B  805ms  @1:41.678  -- Alter Effekt: 2 Beats weißes Flimmern (50 ms) als Absprung.
+		progStrobo(805, 65, 50, 255, 255, 255);
+		break;
+
+	case 65:	// hold on  16 T  25772ms  @1:42.483  -- Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden (alle 2,5 s eine LED mehr, bis 15).
+		progFastBlingBling(25772, 4, 70, 1, 15, 2500);
+		break;
+
+	case 70:	// nur vocals  3 T  4832ms  @2:08.255  -- Build-up statt Schwarz, in Orange, Pink, Lila: Gitarre und Bass laden sich auf, die Lampen füllen sich, Sterne auf der Matrix - die Explosion fällt genau auf den Strobo-Einsatz.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_BUILDUP, 4832, 75, 149);
+		break;
+
+	case 75:	// strobo  1 T  1611ms  @2:13.087  -- Alter Effekt: 1 Takt weißes Flimmern (50 ms) vor dem letzten Chorus.
+		progStrobo(1611, 80, 50, 255, 255, 255);
+		break;
+
+	case 80:	// chorus 5  4 T  6443ms  @2:14.698  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats.
+		progSternNeu(6443, 805, 85, 5, 26, 5, true, 3);
+		break;
+
+	case 85:	// apt apt apt (3)  16 T  25772ms  @2:21.141  -- Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus.
+		fxBlinder(25369, 805, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 403);
+		progFastBlingBling(25772, 4, 90, 1, 15, 2500);
+		break;
+
+	case 90:	// BLACK (Ende)    10000ms  @2:46.913  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progBlack(10000, 95);
+		break;
+
+	case 95:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#25 Friday I'm In Love - The Cure  140 BPM  midi_offset 3/8 = 643 ms  (generiert aus songs/FridayImInLove_v1: struktur.xlsx + show.yaml)
+void gen_FridayImInLove() {
+
+	switch (prog) {
+
+	case 0:	// pause  3 T  4500ms  @0:00.000  -- Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("Friday im in Love by The Cure", 20357, 90, getRandomColor(), 2);	// 1 Durchlauf = 20340 ms
+#elif defined(GITBOARD)
+		progBlack(754, 1);	// Lauftext verzögern, damit er genau an case 10 endet
+#else
+		progBlack(4500, 5);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'intro 2' ab 0:20.357, Einstieg case 15
+		progSternNeu(11572, 1015, 15, 5, 26, 5, false, 4);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:18.214, Einstieg case 10
+		progScrollText("Friday im in Love by The Cure", 17460, 90, getRandomColor(), 10);	// 1 Durchlauf = 17460 ms
+		break;
+#endif
+
+	case 5:	// intro  8 T  13714ms  @0:04.500  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(13714, 6, 10);
+		break;
+
+	case 10:	// intro 2  8 T  13715ms  @0:18.214  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel etwa alle 1 s (1015 ms, nicht im Beat-Raster). Auf der Matrix steht der Stern fest in der Mitte.
+#if DEVICE_CLASS == CLASS_MATRIX
+		progSternNeu(13715, 1015, 15, 5, 26, 5, false, 4);
+#else
+		progSternNeu(13715, 1015, 15, 5, 26, 5, true, 3);
+#endif
+		break;
+
+	case 15:	// verse 1  8 T  13714ms  @0:31.929  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
+		progPalette(13714, 3, 20);
+		break;
+
+	case 20:	// verse 1b  8 T  13714ms  @0:45.643  -- Alter Effekt: weiße Wellen, weich an- und abschwellend.
+		progPalette(13714, 6, 25);
+		break;
+
+	case 25:	// Saturday went  6 T  10286ms  @0:59.357  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
+		progRandomLines(10286, 30, 460, true);
+		break;
+
+	case 30:	// verse 2  8 T  13714ms  @1:09.643  -- Alter Effekt: Wolken-Farben (blau, hellblau, weiß), ruhig.
+		progPalette(13714, 7, 35);
+		break;
+
+	case 35:	// SOLO  8 T  13714ms  @1:23.357  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
+		progFastBlingBling(13714, 2, 40, 1, 16, 2000);
+		break;
+
+	case 40:	// verse 3  8 T  13715ms  @1:37.071  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet.
+		progPalette(13715, 2, 45);
+		break;
+
+	case 45:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
+		progRandomLines(10285, 50, 460, true);
+		break;
+
+	case 50:	// dressed up  8 T  13715ms  @2:01.071  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+		progSternNeu(13715, 429, 55, 5, 26, 5, false, 4);
+		break;
+
+	case 55:	// dressed up 2  7 T  12000ms  @2:14.786  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
+		progFastBlingBling(12000, 2, 60, 1, 16, 2000);
+		break;
+
+	case 60:	// strobo  1 T  1714ms  @2:26.786  -- Alter Effekt: 1 Takt weißes Flimmern (65 ms).
+		progStrobo(1714, 65, 65, 255, 255, 255);
+		break;
+
+	case 65:	// verse 4a  8 T  13714ms  @2:28.500  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet (sehr farbig).
+		progPalette(13714, 2, 70);
+		break;
+
+	case 70:	// verse 4b  8 T  13715ms  @2:42.214  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.
+		progWaterRipple(13715, 75, 50, true, false);
+		break;
+
+	case 75:	// outro chorus 1  8 T  13714ms  @2:55.929  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats.
+		progSternNeu(13714, 857, 80, 5, 26, 5, true, 3);
+		break;
+
+	case 80:	// outro chorus 2  7 T  12000ms  @3:09.643  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
+		progFastBlingBling(12000, 2, 85, 1, 16, 2000);
+		break;
+
+	case 85:	// git fade out  3 T  5143ms  @3:21.643  -- Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe (ruhiger Ausklang).
+		progBlingBlingColoring(5143, 90, 6000);
+		break;
+
+	case 90:	// BLACK (Ende)    10000ms  @3:26.786  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 95);
+		break;
+
+	case 95:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#26 Be Mine - Kamrad  126 BPM  midi_offset 3/8 = 714 ms  (generiert aus songs/BeMine_v1: struktur.xlsx + show.yaml)
+void gen_BeMine() {
+
+	switch (prog) {
+
+	case 0:	// pause  3 T  5000ms  @0:00.000  -- Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("Be Mine by Kamrad", 11667, 75, getRandomColor(), 2);	// 1 Durchlauf = 11550 ms
+#elif defined(GITBOARD)
+		progScrollText("Be Mine by Kamrad", 9286, 75, getRandomColor(), 2);	// 1 Durchlauf = 9150 ms
+#else
+		progBlack(5000, 5);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'intro' ab 0:11.667, Einstieg case 10
+		progBlingBlingColoring(8571, 10, 952);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'intro' ab 0:09.286, Einstieg case 10
+		progBlingBlingColoring(10952, 10, 952);
+		break;
+#endif
+
+	case 5:	// intro  8 T  15238ms  @0:05.000  -- Alter Effekt: jedes Gerät füllt sich LED für LED mit einer Farbe, alle 2 Beats kommt die nächste.
+		progBlingBlingColoring(15238, 10, 952);
+		break;
+
+	case 10:	// verse 1a  8 T  15238ms  @0:20.238  -- Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte.
+		progPalette(15238, 1, 15);
+		break;
+
+	case 15:	// verse 1b  8 T  15238ms  @0:35.476  -- Alter Effekt: bunte, unterschiedlich helle Farbflecken laufen weich über die Geräte.
+		progPalette(15238, 4, 20);
+		break;
+
+	case 20:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
+		progRandomLines(13334, 25, 476, false);
+		break;
+
+	case 25:	// snareroll  1 T  1904ms  @1:04.048  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.
+		progFastBlingBling(1904, 6, 30);
+		break;
+
+	case 30:	// chorus 1  8 T  15238ms  @1:05.952  -- Auf den Chorus-Einsatz springt ein starker Blinder auf (warmweiß, alle Geräte): 2 Beats voll hell, klingt über 2 Beats ab. Darunter der alte Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe.
+		fxBlinder(0, 1905, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 952);
+		progFullColors(15238, 35, 476);
+		break;
+
+	case 35:	// uebergang  1 T  1905ms  @1:21.190  -- Alter Effekt: 1 Takt schwarz.
+		progBlack(1905, 40);
+		break;
+
+	case 40:	// verse 2  8 T  15238ms  @1:23.095  -- Alter Effekt: Leuchtspuren laufen durch und hellen nach Weiß auf.
+		progMatrixHorizontal(15238, 45, 70, true);
+		break;
+
+	case 45:	// im going crazy  8 T  15238ms  @1:38.333  -- Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf.
+		progWaterRipple(15238, 50, 50, true, true);
+		break;
+
+	case 50:	// you got me so high (2)  7 T  13334ms  @1:53.571  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
+		progRandomLines(13334, 55, 476, false);
+		break;
+
+	case 55:	// snareroll (2)  1 T  1905ms  @2:06.905  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.
+		progFastBlingBling(1905, 6, 60);
+		break;
+
+	case 60:	// chorus 2  7 T  13333ms  @2:08.810  -- Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe.
+		progFullColors(13333, 65, 476);
+		break;
+
+	case 65:	// strobe  1 T  1905ms  @2:22.143  -- Alter Effekt: 1 Takt harter weißer Strobo (120 ms).
+		progStrobo(1905, 70, 120, 255, 255, 255);
+		break;
+
+	case 70:	// chorus 3  8 T  15238ms  @2:24.048  -- Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden (alle 2 Beats eine LED mehr, bis 20). Auf dem letzten Viertel springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus.
+		fxBlinder(14762, 952, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 476);
+		progFastBlingBling(15238, 2, 75, 1, 20, 952);
+		break;
+
+	case 75:	// BLACK (Ende)    10000ms  @2:39.286  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progBlack(10000, 80);
+		break;
+
+	case 80:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#27 I Wanna Dance With Somebody - Whitney Houston  124 BPM  midi_offset 3/8 = 726 ms  (generiert aus songs/IWannaDanceWithSomebody_v1: struktur.xlsx + show.yaml)
+void gen_IWannaDanceWithSomebody() {
+
+	switch (prog) {
+
+	case 0:	// pause  2 T+2.5 B  4355ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("I Wanna Dance With Somebody by Whitney Houston", 26370, 80, getRandomColor(), 2);	// 1 Durchlauf = 26240 ms
+#elif defined(GITBOARD)
+		progBlack(755, 1);	// Lauftext verzögern, damit er genau an case 20 endet
+#else
+		progBlack(4355, 5);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'verse 1' ab 0:26.370, Einstieg case 25
+		progRandomLines(13549, 25, 484, true);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:24.435, Einstieg case 20
+		progScrollText("I Wanna Dance With Somebody by Whitney Houston", 23680, 80, getRandomColor(), 20);	// 1 Durchlauf = 23680 ms
+		break;
+#endif
+
+	case 5:	// strobo  1.5 B  726ms  @0:04.355  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(726, 10, 100, getRandomCRGB());
+		break;
+
+	case 10:	// intro  9 T  17419ms  @0:05.081  -- Alter Effekt: weiße Wellen, weich an- und abschwellend.
+		progPalette(17419, 6, 15);
+		break;
+
+	case 15:	// strobo (2)  1 T  1935ms  @0:22.500  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1935, 20, 100, getRandomCRGB());
+		break;
+
+	case 20:	// verse 1  8 T  15484ms  @0:24.435  -- Alter Effekt: pro Beat eine neue zufällige Linie in Zufallsfarbe.
+		progRandomLines(15484, 25, 484, true);
+		break;
+
+	case 25:	// ive done alright  6 T  11613ms  @0:39.919  -- Alter Effekt: ruhiger Scanner, eine Leuchtlinie fährt hin und her.
+		progMatrixScanner(11613, 30, 30);
+		break;
+
+	case 30:	// übergang chorus  1 T  1936ms  @0:51.532  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1936, 35, 100, getRandomCRGB());
+		break;
+
+	case 35:	// chorus 1  7 T  13548ms  @0:53.468  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel jeden Takt.
+		progSternNeu(13548, 1935, 40, 5, 26, 5, false, 4);
+		break;
+
+	case 40:	// w. smbdy who loves me  1 T  1936ms  @1:07.016  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1936, 45, 100, getRandomCRGB());
+		break;
+
+	case 45:	// chorus 1 weiter  7 T  13548ms  @1:08.952  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel jeden Takt.
+		progSternNeu(13548, 1935, 50, 5, 26, 5, true, 3);
+		break;
+
+	case 50:	// w. smbdy who loves me (2)  1 T  1935ms  @1:22.500  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1935, 6, 55);
+		break;
+
+	case 55:	// stehender chord  1 T  1936ms  @1:24.435  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1936, 60, 100, getRandomCRGB());
+		break;
+
+	case 60:	// übergang verse  1 T  1935ms  @1:26.371  -- Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen.
+		progMatrixHorizontal(1935, 65, 70, true);
+		break;
+
+	case 65:	// verse 2  8 T  15484ms  @1:28.306  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.
+		progWaterRipple(15484, 70, 50, true, false);
+		break;
+
+	case 70:	// ive done alright (2)  6 T  11613ms  @1:43.790  -- Alter Effekt: rot-weiß-blaue Blöcke mit Lücken, harte Kanten.
+		progPalette(11613, 9, 75);
+		break;
+
+	case 75:	// übergang chorus (2)  1 T  1936ms  @1:55.403  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1936, 80, 100, getRandomCRGB());
+		break;
+
+	case 80:	// chorus 2  7 T  13548ms  @1:57.339  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel jeden Takt.
+		progSternNeu(13548, 1935, 85, 5, 26, 5, false, 4);
+		break;
+
+	case 85:	// w. smbdy who loves me (3)  1 T  1936ms  @2:10.887  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1936, 6, 90);
+		break;
+
+	case 90:	// chorus 2 weiter  7 T  13548ms  @2:12.823  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel jeden Takt.
+		progSternNeu(13548, 1935, 95, 5, 26, 5, true, 3);
+		break;
+
+	case 95:	// w. smbdy who loves me (4)  1 T  1935ms  @2:26.371  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1935, 100, 100, getRandomCRGB());
+		break;
+
+	case 100:	// Say you wanna dance  7 T  13549ms  @2:28.306  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(13549, 6, 105);
+		break;
+
+	case 105:	// übergang  1 T  1935ms  @2:41.855  -- Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen.
+		progMatrixHorizontal(1935, 110, 70, true);
+		break;
+
+	case 110:	// i need a man …  6 T  11613ms  @2:43.790  -- Alter Effekt: Farbband mit Palette 12. Diese Palette ist im Code nicht definiert - zu sehen ist die zuletzt geladene (hier die rot-weiß-blaue aus "ive done alright").
+		progPalette(11613, 12, 115);
+		break;
+
+	case 115:	// übergang chorus (3)  1 T  1936ms  @2:55.403  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe. Ab hier (transponierter Teil) sind die Bund-Marker 1 und 4 aus.
+		progStrobo(1936, 120, 100, getRandomCRGB());
+		break;
+
+	case 120:	// chorus 3  7 T  13548ms  @2:57.339  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats.
+		progSternNeu(13548, 968, 125, 5, 26, 5, false, 4);
+		break;
+
+	case 125:	// w. smbdy who loves me (5)  1 T  1936ms  @3:10.887  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1936, 130, 100, getRandomCRGB());
+		break;
+
+	case 130:	// chorus 3 weiter  7 T  13548ms  @3:12.823  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.
+		progSternNeu(13548, 484, 135, 5, 26, 5, true, 3);
+		break;
+
+	case 135:	// w. smbdy who loves me (6)  1 T  1935ms  @3:26.371  -- Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe.
+		progStrobo(1935, 140, 100, getRandomCRGB());
+		break;
+
+	case 140:	// Say you wanna dance (2)  1 T+1.5 B  2662ms  @3:28.306  -- Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel).
+		progRandomLines(2662, 145, 120, true);
+		break;
+
+	case 145:	// strobe  2.5 B  1209ms  @3:30.968  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1209, 4, 150);
+		break;
+
+	case 150:	// Say you wanna dance (3)  1 T+1.5 B  2662ms  @3:32.177  -- Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel).
+		progRandomLines(2662, 155, 120, true);
+		break;
+
+	case 155:	// strobe (2)  2.5 B  1209ms  @3:34.839  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1209, 6, 160);
+		break;
+
+	case 160:	// Say you wanna dance (4)  1 T+1.5 B  2662ms  @3:36.048  -- Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel).
+		progRandomLines(2662, 165, 120, true);
+		break;
+
+	case 165:	// strobe (3)  2.5 B  1209ms  @3:38.710  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1209, 8, 170);
+		break;
+
+	case 170:	// w. some…  1 T  1936ms  @3:39.919  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+		progSternNeu(1936, 484, 175, 5, 26, 5, false, 4);
+		break;
+
+	case 175:	// ...bdy who loves me  1 T  1935ms  @3:41.855  -- Alter Effekt: schnelle Einzelblitze.
+		progFastBlingBling(1935, 10, 180);
+		break;
+
+	case 180:	// BLACK (Ende)    10000ms  @3:43.790  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 185);
+		break;
+
+	case 185:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
@@ -1029,7 +1636,7 @@ void setGeneratedMarkerLEDs(byte songID, byte partID) {
 //==================================================================
 bool isGeneratedSong(byte songID) {
 	switch (songID) {
-	case 8: case 15: case 28: case 31: case 33:
+	case 8: case 9: case 15: case 17: case 25: case 26: case 27: case 28: case 31: case 33:
 		return true;
 	}
 	return false;

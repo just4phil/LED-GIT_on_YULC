@@ -342,8 +342,10 @@ void setMarkerLEDs(byte songID, byte partID) {
 			#endif
 
 			// Hier hängen die Marker vom Part ab: deshalb wird diese Funktion bei jedem Bild neu aufgerufen.
-			// Achtung: markerLED4 wird für die GIT ab partID 52 ausgeschaltet! -> passiert ausnahmsweise hier					
-			if (partID < 52) {
+			// Achtung: markerLED4 wird für die GIT ab dem Part "übergang chorus (3)" ausgeschaltet! -> passiert ausnahmsweise hier
+			// Seit 06.10.2026 ist der Song generiert (gen_IWannaDanceWithSomebody) und seine Parts haben andere Nummern:
+			// statt der festen 52 steht hier die Part-Nummer dieses Parts aus songs_generated.h. Die Marker sind dieselben.
+			if (partID < GEN_IWANNADANCEWITHSOMEBODY_UEBERGANG_CHORUS_3) {
 				markerLED1 = ESaite_F;
 				markerLED4 = ASaite_Dis;
 			}

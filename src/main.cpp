@@ -472,7 +472,8 @@ void loop() {
 			gen_DancingOnMyOwn(); // <<< GENERATED SONGS <<<
 			break;
 		case 9:
-			ILoveIt();
+			//ILoveIt();
+			gen_ILoveIt(); // <<< GENERATED SONGS <<<
 			break;
 		case 10:
 			BloodyMary();
@@ -497,7 +498,8 @@ void loop() {
 			enjoyTheSilence();
 			break;
 		case 17:
-			apt();
+			//apt();
+			gen_APT(); // <<< GENERATED SONGS <<<
 			break;
 		case 18:
 			prisoner();
@@ -515,13 +517,16 @@ void loop() {
 			enjoyTheSilenceINTRO();
 			break;
 		case 25:
-			FridayImInLove();
+			//FridayImInLove();
+			gen_FridayImInLove(); // <<< GENERATED SONGS <<<
 			break;
 		case 26:
-			BeMine();
+			//BeMine();
+			gen_BeMine(); // <<< GENERATED SONGS <<<
 			break;
 		case 27:
-			IWannaDanceWithSomebody();	
+			//IWannaDanceWithSomebody();	
+			gen_IWannaDanceWithSomebody(); // <<< GENERATED SONGS <<<
 			break;			
 
 		case 28:

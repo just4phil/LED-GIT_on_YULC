@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:39:11'
+notiz: 'Änderungswünsche: starker Blinder auf den Einsatz von chorus 1, Schluss-Blinder
+  auf dem letzten Viertel von chorus 3 mit 5 s Ausklingen'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
+  show.yaml: 26cec8e21063a26086d0f6a5e364e705e43c097d58cb9cfd8c1a176583ad9578
+  generated.cpp: bde579991e093186cbedcdd368ac64ba1fc2b0113744c5d33d26cf205a9a2d3a

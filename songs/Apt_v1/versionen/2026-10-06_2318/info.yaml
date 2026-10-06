@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:18:00'
+notiz: 'Korrektur: bassdrum intro, chorus 2 und chorus 5 wechseln wie im alten Code
+  alle 2 Beats (805 ms), nicht jeden Beat'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f91efb35e3083ec1282dc2091a45fa25f11e76afdec78cdd3f2fc73099c2aeff
+  show.yaml: a4c1f5e30a2592828f0acab663dd70a371902a68f4bbf051f9af88e5d673c3d1
+  generated.cpp: 6607eec8eb10445ca9677ec2b23abd8dd2c98119e927cd4c4836801de1707726

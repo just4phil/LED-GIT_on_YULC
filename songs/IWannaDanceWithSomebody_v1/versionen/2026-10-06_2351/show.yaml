@@ -1,0 +1,161 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus IWannaDanceWithSomebody() (Spalte
+# "bisher (alter Code)") als fx:. Der alte Code bleibt in src/songs.cpp. Kein Farbschema: freie Zufallsfarben wie bisher.
+# Zeiten in den Effekten, die im alten Code von Hand gerundete Beats waren (480 ms = 1 Beat, 964 ms = 2 Beats,
+# 1925 ms = 1 Takt bei 124 BPM), stehen als ${beat} / ${half} / ${bar} (484 / 968 / 1935 ms). 120 ms und 100 ms bleiben.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: stehen von Hand in src/markerLEDs.cpp (case 27) und gelten unverändert. Dort werden ab dem Part
+# "übergang chorus (3)" (transponierter Teil) die Marker 1 und 4 ausgeschaltet - die Grenze steht in markerLEDs.cpp als
+# Konstante GEN_IWANNADANCEWITHSOMEBODY_UEBERGANG_CHORUS_3 (früher feste Part-Nummer 52; mit OK des Users umgestellt,
+# die Marker selbst sind unverändert). Wird dieser Part in der Tabelle umbenannt, bricht der Build - dann die
+# Konstante dort anpassen. Kein Trailer springt in diesen Song.
+# Titel-Lauftext mit 80 ms pro Pixel wie im alten Code.
+
+function: gen_IWannaDanceWithSomebody
+scroll_delay: 80
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "strobo":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "intro":
+    fx: "progPalette(${dur}, 6, ${next})"
+    why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
+
+  "strobo (2)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "verse 1":
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, true)"
+    why: "Alter Effekt: pro Beat eine neue zufällige Linie in Zufallsfarbe."
+
+  "ive done alright":
+    fx: "progMatrixScanner(${dur}, ${next}, 30)"
+    why: "Alter Effekt: ruhiger Scanner, eine Leuchtlinie fährt hin und her."
+
+  "übergang chorus":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "chorus 1":
+    fx: "progSternNeu(${dur}, ${bar}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel jeden Takt."
+
+  "w. smbdy who loves me":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "chorus 1 weiter":
+    fx: "progSternNeu(${dur}, ${bar}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel jeden Takt."
+
+  "w. smbdy who loves me (2)":
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "stehender chord":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "übergang verse":
+    fx: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen."
+
+  "verse 2":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  "ive done alright (2)":
+    fx: "progPalette(${dur}, 9, ${next})"
+    why: "Alter Effekt: rot-weiß-blaue Blöcke mit Lücken, harte Kanten."
+
+  "übergang chorus (2)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "chorus 2":
+    fx: "progSternNeu(${dur}, ${bar}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel jeden Takt."
+
+  "w. smbdy who loves me (3)":
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "chorus 2 weiter":
+    fx: "progSternNeu(${dur}, ${bar}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel jeden Takt."
+
+  "w. smbdy who loves me (4)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "Say you wanna dance":
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "übergang":
+    fx: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen."
+
+  "i need a man …":
+    fx: "progPalette(${dur}, 12, ${next})"
+    why: "Alter Effekt: Farbband mit Palette 12. Diese Palette ist im Code nicht definiert - zu sehen ist die zuletzt geladene (hier die rot-weiß-blaue aus \"ive done alright\")."
+
+  "übergang chorus (3)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe. Ab hier (transponierter Teil) sind die Bund-Marker 1 und 4 aus."
+
+  "chorus 3":
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
+
+  "w. smbdy who loves me (5)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "chorus 3 weiter":
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat."
+
+  "w. smbdy who loves me (6)":
+    fx: "progStrobo(${dur}, ${next}, 100, getRandomCRGB())"
+    why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
+
+  "Say you wanna dance (2)":
+    fx: "progRandomLines(${dur}, ${next}, 120, true)"
+    why: "Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel)."
+
+  "strobe":
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "Say you wanna dance (3)":
+    fx: "progRandomLines(${dur}, ${next}, 120, true)"
+    why: "Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel)."
+
+  "strobe (2)":
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "Say you wanna dance (4)":
+    fx: "progRandomLines(${dur}, ${next}, 120, true)"
+    why: "Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel)."
+
+  "strobe (3)":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "w. some…":
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  "...bdy who loves me":
+    fx: "progFastBlingBling(${dur}, 10, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."

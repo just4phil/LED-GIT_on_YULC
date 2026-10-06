@@ -1,0 +1,80 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus BeMine() (Spalte "bisher (alter Code)") als fx:.
+# Der alte Code bleibt in src/songs.cpp. Kein Farbschema: die alten Effekte laufen wie bisher mit freien Zufallsfarben.
+# Zeiten in den Effekten, die im alten Code von Hand gerundete Beats waren (470/474 ms = 1 Beat, 946 ms = 2 Beats bei
+# 126 BPM), stehen als ${beat} / ${half} - so liegen auch die Farbwechsel exakt auf dem Takt (476 / 952 ms).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: BeMine() setzt keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 26) und gelten unverändert. Kein Trailer springt in diesen Song.
+# Titel-Lauftext mit 75 ms pro Pixel wie im alten Code.
+# Nach den Änderungswünschen des Users (06.10.2026):
+#   chorus 1 = "starker blinder am Anfang!": Blinder auf den Einsatz, 2 Beats voll, 2 Beats abklingend
+#   chorus 3 = "blinder am ende": wie der Schluss von APT. (vom User dort gelobt) - auf dem letzten Viertel, 5 s ausklingen
+
+function: gen_BeMine
+end_blinder: 5    # der Blinder vom letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus (wie in APT.)
+scroll_delay: 75
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  intro:
+    fx: "progBlingBlingColoring(${dur}, ${next}, ${half})"
+    why: "Alter Effekt: jedes Gerät füllt sich LED für LED mit einer Farbe, alle 2 Beats kommt die nächste."
+
+  verse 1a:
+    fx: "progPalette(${dur}, 1, ${next})"
+    why: "Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte."
+
+  verse 1b:
+    fx: "progPalette(${dur}, 4, ${next})"
+    why: "Alter Effekt: bunte, unterschiedlich helle Farbflecken laufen weich über die Geräte."
+
+  you got me so high:
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"
+    why: "Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild."
+
+  snareroll:
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus."
+
+  chorus 1:
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    blinder: {at: 0, len: 4, hold: 2}
+    why: "Auf den Chorus-Einsatz springt ein starker Blinder auf (warmweiß, alle Geräte): 2 Beats voll hell, klingt über 2 Beats ab. Darunter der alte Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe."
+
+  uebergang:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alter Effekt: 1 Takt schwarz."
+
+  verse 2:
+    fx: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "Alter Effekt: Leuchtspuren laufen durch und hellen nach Weiß auf."
+
+  im going crazy:
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"
+    why: "Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf."
+
+  you got me so high (2):
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"
+    why: "Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild."
+
+  snareroll (2):
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus."
+
+  chorus 2:
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    why: "Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe."
+
+  strobe:
+    fx: "progStrobo(${dur}, ${next}, 120, 255, 255, 255)"
+    why: "Alter Effekt: 1 Takt harter weißer Strobo (120 ms)."
+
+  chorus 3:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 20, ${half})"
+    blinder: {at: 31, len: 2, hold: 1}
+    why: "Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden (alle 2 Beats eine LED mehr, bis 20). Auf dem letzten Viertel springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus."

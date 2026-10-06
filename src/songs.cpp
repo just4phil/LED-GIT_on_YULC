@@ -4067,7 +4067,10 @@ void ILoveItTRAILER() {
 
 		//--- start song ----// we go there directly
 		songID = 9;			// this is I LOVE IT
-		switchToPart(15);	// but we have to jump over the Intro directly to part 15!
+		// but we have to jump over the Intro directly to "chorus 1" (früher feste Part-Nummer 15). I Love It ist seit
+		// 06.10.2026 ein generierter Song (gen_ILoveIt): GEN_ILOVEIT_CHORUS_1 ist die Part-Nummer von "chorus 1" aus
+		// songs_generated.h - so bleibt der Einstieg richtig, auch wenn sich die Nummern beim Generieren verschieben.
+		switchToPart(GEN_ILOVEIT_CHORUS_1);
 		break;
 	}
 }
@@ -4194,7 +4197,10 @@ void szenenDemo() {
 	case 78:	setColorScheme(SCHEME_RETRO);	scene(SCENE_COLORS,      8000, 80, bpm);	break;
 	case 80:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_COLORS_WAVE, 8000, 82, bpm);	break;
 	case 82:	setColorScheme(SCHEME_TOXIC);	scene(SCENE_RAIN,        8000, 84, bpm);	break;
-	case 84:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_PALETTE,     8000, 100, bpm);	break;
+	case 84:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_PALETTE,     8000, 86, bpm);	break;
+
+	// Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat
+	case 86:	setColorScheme(SCHEME_NEON);	scene(SCENE_CALL_RESPONSE, 8000, 100, bpm);	break;
 
 	case 100:
 		clearAll();
@@ -4238,8 +4244,12 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit ist nichts offen:
-	case 0:		switchToPart(34);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 37.
+	case 0:		demoNumber(37);	break;
+
+	// SCENE_CALL_RESPONSE (Frage/Antwort, neu am 06.10.2026): Beat 1 und 3 blitzen Lampe 1 und Bass, Beat 2 und 4 Gitarre
+	// und Lampe 2; die Matrix macht jeden Beat mit ihrer linken bzw. rechten Hälfte mit. 16 Beats = 2 Farbpaare.
+	case 37:	setColorScheme(SCHEME_NEON);	scene(SCENE_CALL_RESPONSE, 8000, 34, bpm);	break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// progText mit Wortlänge und flash (abgenommen am 06.10.2026: "beides ist super"; in ATTSS nahm der User hart,

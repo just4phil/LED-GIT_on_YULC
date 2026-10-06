@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:29:31'
+notiz: 'verse 1 und apt apt apt: neue Szene SCENE_CALL_RESPONSE (Frage/Antwort) statt
+  Ping-Pong'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f91efb35e3083ec1282dc2091a45fa25f11e76afdec78cdd3f2fc73099c2aeff
+  show.yaml: be992e1e8a90473f7e9479dd0181aa264dc5ba06abaf6317af30e4abc8b45dca
+  generated.cpp: 7328091e3c914b05643df06eea0a5c50e1c5e703c4401f220d8349f1964cef45

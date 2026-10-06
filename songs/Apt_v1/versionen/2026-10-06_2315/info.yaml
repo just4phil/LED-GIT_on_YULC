@@ -1,0 +1,9 @@
+zeit: '2026-10-06 23:15:54'
+notiz: 'Schluss-Blinder nach Wunsch: erst auf dem letzten Viertel von apt apt apt
+  (3), klingt 5 s ins Schluss-Schwarz aus (end_blinder)'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f91efb35e3083ec1282dc2091a45fa25f11e76afdec78cdd3f2fc73099c2aeff
+  show.yaml: 4f28d330c2137a996c80fe891389c130b7ee53688a4a75e89221db53c92fe3f5
+  generated.cpp: b5271c91574b245332fe58d11e2aebc3fb0d0fe44525683b05acbd0f3c83d962

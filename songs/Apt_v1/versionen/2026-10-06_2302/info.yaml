@@ -1,0 +1,10 @@
+zeit: '2026-10-06 23:02:29'
+notiz: 'Erste generierte Fassung: Änderungswünsche umgesetzt (Ping-Pong in verse 1
+  und apt apt apt mit Text APT, SCENE_DROP in chorus 1, Blinder auf beide STOPs, Build-up
+  in hey und nur vocals, Schluss-Blinder), übrige Parts alter Effekt'
+werkzeug_git: f285efa + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f9869374fa53029f030774c0e9f9be56c843831b616902eba8c1fa269bddd91c
+  show.yaml: 9a3c88d684951ccdac7577506c3b02254de85e3dc628241e220f9615ee75c041
+  generated.cpp: 8ca4afea34e70e8b012bbcccf40863ac99bcc68ef8e809301537a85f5e8b488a
