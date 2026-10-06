@@ -113,6 +113,7 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `main.cpp` | `setup()` + `loop()`, global state variables |
 | `songs.cpp/.h` | One function per song, calls FX primitives |
 | `FXprograms.cpp/.h` | Reusable visual effects (strobe, water, palette, text…) |
+| `fxBase.cpp/.h` | Building blocks every effect is made of: part start (`fxBegin`, `fxPartStart`), step timing (`fxEvery`, `fxFrameDue`), output (`fxShow`), `clearAll()`, beat helpers |
 | `fxPipeline.cpp/.h` | Output stage `fxPresent()`: layer (second effect), transitions, modifiers, markers, the only `FastLED.show()` for effects |
 | `markerLEDs.cpp/.h` | Fret-position marker LED overlay |
 | `matrixFunctions.cpp/.h` | Matrix drawing helpers (lines, circles, etc.) |

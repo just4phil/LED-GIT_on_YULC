@@ -6,6 +6,7 @@
 #include "colors.h"
 #include "colorSchemes.h"
 #include "fxPipeline.h"
+#include "fxBase.h"
 //---------------------------------------------------------------------
 
 //=====================================================================
@@ -15,7 +16,9 @@
 // Feuer, Plasma, Wasser ... Die Songs (songs.cpp, songs_generated.cpp) rufen sie auf. Neuere Effekte stehen
 // in guitarShapeFX.cpp und scenes.cpp; sie sind kürzer geschrieben, arbeiten aber nach demselben Prinzip.
 //
-// DAS PRINZIP - jeder Effekt hier ist gleich aufgebaut:
+// DAS PRINZIP - jeder Effekt hier ist gleich aufgebaut. Die neueren Effekte schreiben dieselben drei Schritte
+// kürzer mit den Bausteinen aus fxBase.h (fxBegin/fxPartStart, fxEvery/fxFrameDue, fxShow); die Effekte dieser
+// Datei werden nach und nach darauf umgestellt. Ausgeschrieben sieht das Prinzip so aus:
 //
 //   void progXyz(unsigned int durationMillis, byte nextPart, ...weitere Einstellungen...) {
 //
@@ -162,29 +165,6 @@ uint16_t rippleSpawnTimer = 0;				// zählt bis zur nächsten neuen Welle
 	const static int outlinePath9[] = { 82, 83, 84, 85, 86, 96, 97, 106, 107, 116, 117, 126, 166, 167, 168, 169, 170, 157, 156, 147, 146, 137, 136, 127 }; 
 #endif
 //--------------------------------
-
-// Bild löschen: alle LEDs im Arbeitspuffer auf Schwarz. (memset füllt einen Speicherbereich mit einem Wert, hier 0.)
-// FastLED.clear(); alleine reicht nicht. dann funktioniert das kopieren der LED arrays nicht bzw. dort bleiben die vorherigen LEDs an
-// FastLED.clear(true) (löscht UND sendet sofort) wird hier bewusst nicht benutzt: das ließ die Bund-Marker kurz ausfallen.
-void clearAll() {
-	FastLED.clear();
-	memset(leds, 0, anz_LEDs * sizeof(CRGB));
-
-}
-
-// Der "Standard-Teil" (siehe Dateikopf) als eigene Funktion, für Stellen, die keinen fertigen Effekt aufrufen.
-// wird zB fuer ProgDisplayRGB benutzt
-void setDurationAndNextPart(unsigned int durationMillis, byte nextPart) {
-
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-	}
-	//---------------------------------------------------------------------
-}
 
 // Eine rote LED blinkt im Abstand von del ms (alte Akku-Warnung; die heutige steht in loop() in main.cpp)
 void progBlinkLowVoltage(unsigned int del) {

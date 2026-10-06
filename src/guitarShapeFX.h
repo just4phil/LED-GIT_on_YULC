@@ -25,6 +25,7 @@
 #include <FastLED.h>
 #include "definitions.h"
 #include "fxPipeline.h"
+#include "fxBase.h"		// Grundbausteine: fxPartStart(), fxFrameDue(), fxShow(), fxBeats(), fxBeatPhase()
 
 //--- Defaults für Geräte ohne SG-Geometrie (skaliert auf anz_LEDs) ---
 // Nur die Gitarre hat ausgemessene Werte in definitions.h. Für alle anderen Geräte werden die Werte der Gitarre
@@ -71,12 +72,6 @@ void setMirrored(uint16_t dFromHead, CRGB col);	// setzt beide Seiten im Abstand
 void fillZone(uint8_t zone, CRGB col);			// ganze Zone (GuitarZone) einfärben
 void fire2012Step(uint8_t* heat, int len);		// ein Fire2012-Schritt, heat[0] = unten
 
-//--- gemeinsames Grundgerüst für prog-Funktionen (auch von scenes.cpp genutzt) ---
-bool fxPartStart(unsigned int durationMillis, byte nextPart);	// true beim ersten Aufruf eines Parts
-bool fxFrameDue(unsigned int ms);								// true, wenn der nächste Frame fällig ist
-void fxShow();													// Marker + FastLED.show(), beachtet LEDsTurnedOff
-unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm);				// ms seit dem letzten Beat, ohne Rundungsdrift
-uint32_t fxBeats(uint8_t bpm);									// Beats seit Partbeginn
 extern const CRGBPalette16 outlineBlueFire_p;					// Farbverlauf für blaues Feuer (Schwarz -> Blau -> Weiß)
 
 //--- Effekte ---

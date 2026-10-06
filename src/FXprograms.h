@@ -32,6 +32,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "colorSchemes.h"
+#include "fxBase.h"		// Grundbausteine der Effekte: clearAll(), fxBegin(), fxEvery(), fxShow() ...
 
 //==================================================================
 //=========== FX programs ==========================================
@@ -97,22 +98,6 @@
 //==================================================================
 //=========== Grundfunktionen ======================================
 //==================================================================
-
-/**
- * @brief Bild löschen: alle LEDs im Arbeitspuffer leds[] auf Schwarz
- *
- * Löscht nur den Puffer. Sichtbar wird das erst mit der nächsten Ausgabe (fxPresent()).
- */
-void clearAll();
-
-/**
- * @brief Länge des Parts und Folge-Part festlegen, ohne einen Effekt zu starten
- *
- * Das ist der "Standard-Teil", den jeder Effekt beim ersten Aufruf in einem Part selbst erledigt,
- * als eigene Funktion - für Song-Parts, die ihr Bild selbst malen statt einen Effekt aufzurufen.
- * Wirkt nur beim ersten Aufruf im Part und löscht dabei das Bild.
- */
-void setDurationAndNextPart(unsigned int durationMillis, byte nextPart);
 
 /**
  * @brief Alte Akku-Warnung: eine rote LED blinkt im Abstand von del ms

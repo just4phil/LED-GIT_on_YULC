@@ -28,7 +28,13 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
      weg (3628 -> 3519). Kontrolle bestanden: `FXprograms.cpp.o` ist ohne Debug-Info auf allen fünf Envs
      byte-gleich mit dem Stand davor, die Firmware ändert sich also nicht; kein Hardware-Test nötig;
   2. Bausteine `fxPartStart` / `fxFrameDue` / `fxShow` aus `guitarShapeFX.cpp` nach `src/fxBase.cpp/.h`, dazu
-     `fxBegin` (Part-Start ohne Nebenwirkung) und `fxEvery` (exakter Takt der alten Effekte) - **in Arbeit**;
+     `fxBegin` (Part-Start ohne Nebenwirkung) und `fxEvery` (exakter Takt der alten Effekte) - **erledigt** (Commit
+     „fxBase: Grundbausteine der Effekte in eigener Datei"). Reiner Umzug: `clearAll()` und
+     `setDurationAndNextPart()` stehen jetzt auch dort, `fxPartStart()` baut auf `fxBegin()` auf,
+     `initGuitarShape()` prüft selbst, ob schon gerechnet ist. Alle fünf Envs bauen, Firmware 32-48 Byte kleiner.
+     Geprüft für Schritt 3: bei abgeschalteten LEDs löscht `loop()` das Bild in jedem Durchlauf und gibt nach dem
+     Song-Verteiler selbst aus (`main.cpp`); ein Effekt darf deshalb ohne eigenes `if (!LEDsTurnedOff)` malen und
+     mit `fxShow()` enden - sichtbar bleibt dasselbe (schwarz + Marker);
   3. Effekte familienweise auf die Bausteine umstellen und auf `fxBasic` / `fxMatrixShapes` / `fxText` /
      `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - offen,
      braucht je Familie einen Blick auf die Hardware;

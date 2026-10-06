@@ -30,8 +30,8 @@ extern volatile unsigned int millisCounterForProgChange;
 //   Ort x/y            Lage jeder LED im Raum (0..255), gewonnen aus einem Foto der Gitarre. Damit laufen
 //                      Wellen und Lichtebenen quer durch den Raum statt nur am Streifen entlang.
 //
-// Außerdem stehen hier die Grundbausteine ALLER neueren Effekte (auch der Szenen):
-// fxPartStart(), fxFrameDue(), fxShow(), fxBeats(), fxBeatPhase().
+// Die Grundbausteine aller Effekte (fxPartStart(), fxFrameDue(), fxShow(), fxBeats(), fxBeatPhase())
+// stehen in fxBase.cpp.
 //
 // Bass und Lampen benutzen dieselben Funktionen; ihre Geometrie wird aus der Gitarre hochgerechnet
 // (Vorgabewerte in guitarShapeFX.h).
@@ -114,6 +114,7 @@ void fillZone(uint8_t zone, CRGB col) {
 // auf dem Streifen - also wird der Umriss abgeschritten und alle (Gesamtlänge / anz_LEDs) eine LED gesetzt.
 // Läuft nur einmal (beim ersten Effekt), deshalb sind die langsamen Kommazahlen (float) hier in Ordnung.
 void initGuitarShape() {
+	if (shapeReady) return;	// schon berechnet (fxPartStart() ruft das bei jedem Part-Start auf)
 	const int nPts = sizeof(outlinePx) / sizeof(outlinePx[0]);	// Anzahl der Eckpunkte
 
 	// Schritt 1: Länge jedes Teilstücks (Satz des Pythagoras), Gesamtlänge und die äußersten x/y-Werte
@@ -165,60 +166,6 @@ void initGuitarShape() {
 		ledDistBridge[i] = (uint8_t)(dist[i] * 255.0f / maxDist);
 	}
 	shapeReady = true;
-}
-
-//==================================================================
-//=========== Grundbausteine aller neueren Effekte =================
-//==================================================================
-
-// Standard-Teil: Dauer + nächsten Part merken; liefert true beim ersten Aufruf eines Parts
-// Hintergrund: Ein Effekt wird während seines Parts viele hundert Mal aufgerufen. Nur beim allerersten Mal
-// (das Flag ist dann noch false, switchToPart() hat es gelöscht) wird die Länge des Parts und der Folge-Part
-// eingetragen und das Bild gelöscht. Der Timer wechselt dann von selbst, sobald die Länge erreicht ist.
-bool fxPartStart(unsigned int durationMillis, byte nextPart) {
-	if (nextChangeMillisAlreadyCalculated) return false;	// schon erledigt: nichts tun
-	nextChangeMillis = durationMillis;
-	nextSongPart = nextPart;
-	nextChangeMillisAlreadyCalculated = true;
-	if (!shapeReady) initGuitarShape();
-	clearAll();
-	millisToReduceCPUSpeed = 0;
-	return true;
-}
-
-// true, wenn seit dem letzten Frame mindestens ms vergangen sind
-// Der Ersatz für delay(ms): statt zu warten, fragt der Effekt bei jedem Durchlauf "ist mein nächstes Bild schon
-// dran?". millisToReduceCPUSpeed wird vom Timer hochgezählt; ist genug Zeit vergangen, wird sie hier abgezogen.
-bool fxFrameDue(unsigned int ms) {
-	if (ms < FX_REF_FRAME_MS) ms = FX_REF_FRAME_MS;	// kürzere Schritte liefen bisher im Bildtakt - Tempo unabhängig von show() halten
-	if (millisToReduceCPUSpeed < ms) return false;
-	unsigned int rest = millisToReduceCPUSpeed - ms;
-	millisToReduceCPUSpeed = (rest > ms) ? 0 : rest;	// nicht endlos nachholen
-	return true;
-}
-
-// dies hier immer callen, sonst fallen die MarkerLEDs kurz aus
-// (auch in Durchläufen, in denen kein neues Bild gemalt wurde). Sind die LEDs abgeschaltet (Not-Aus, Akku leer),
-// wird das Bild vorher gelöscht - dann leuchten nur noch die Marker.
-void fxShow() {
-	if (LEDsTurnedOff) {
-		clearAll();
-		fill_solid(ledsStrap, anz_LEDs_STRAP, CRGB::Black);
-	}
-	fxPresent();
-}
-
-// ms seit dem letzten Beat - exakt über bpm gerechnet (60000 / bpm ist gerundet und läuft pro Beat bis zu 1 ms davon)
-// Beispiel bpm 128: ein Beat dauert 468,75 ms. Mit gerundeten 468 ms läge man nach 100 Beats schon 75 ms daneben.
-// Deshalb wird erst mit bpm multipliziert und der Rest zu 60000 genommen, und erst am Schluss geteilt.
-unsigned int fxBeatPhase(unsigned int ms, uint8_t bpm) {
-	if (bpm == 0) bpm = 1;
-	return ((uint32_t)ms * bpm % 60000) / bpm;
-}
-
-// Beats seit Partbeginn (bpm), ohne Überlauf
-uint32_t fxBeats(uint8_t bpm) {
-	return (uint32_t)((uint64_t)millisCounterForProgChange * bpm / 60000);
 }
 
 //==================================================================
