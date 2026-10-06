@@ -22,7 +22,17 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts.
+- **In Arbeit (seit 06.10.2026, Branch `fx-cleanup`): `FXprograms.cpp` aufräumen und die Effekte vom Standard-Teil
+  entkoppeln.** Plan in vier Schritten, jeder ein eigener Commit, kein Aufruf in den Songs ändert sich:
+  1. toten, auskommentierten Code löschen - **erledigt** (Commit „FXprograms.cpp: toten Code entfernt"): 110 Zeilen
+     weg (3628 -> 3519). Kontrolle bestanden: `FXprograms.cpp.o` ist ohne Debug-Info auf allen fünf Envs
+     byte-gleich mit dem Stand davor, die Firmware ändert sich also nicht; kein Hardware-Test nötig;
+  2. Bausteine `fxPartStart` / `fxFrameDue` / `fxShow` aus `guitarShapeFX.cpp` nach `src/fxBase.cpp/.h`, dazu
+     `fxBegin` (Part-Start ohne Nebenwirkung) und `fxEvery` (exakter Takt der alten Effekte) - **in Arbeit**;
+  3. Effekte familienweise auf die Bausteine umstellen und auf `fxBasic` / `fxMatrixShapes` / `fxText` /
+     `fxPalette` / `fxMatrixRain` / `fxMatrixSim` aufteilen (`FXprograms.h` bleibt der gemeinsame Header) - offen,
+     braucht je Familie einen Blick auf die Hardware;
+  4. optional: Überladungen durch Vorgabe-Argumente ersetzen, `progMatrixHorizontal` / `Vertical` zusammenlegen.
 - **Gebaut und committet am 06.10.2026 (drei Commits auf `MAIN`: „Song-Werkzeuge: Excel-Tabelle …", „Songs: Struktur-Tabelle
   für alle 24 Songs …", „Doku: Song-Workflow …"; nicht gepusht): Song-Workflow nur noch Excel + show.yaml.** `quelle/struktur.xlsx`
   (Blatt „Struktur": von takt, Songpart, Effektidee, Energie 0-5, BPM pro Part, letzte Zeile „Ende") ist die einzige

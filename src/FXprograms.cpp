@@ -61,8 +61,6 @@
 //     bewegte Muster.
 // Farben für die matrix->-Funktionen sind 16-Bit-Werte (LED_RED_HIGH ... aus colors.h), sonst CRGB.
 
-//extern const boolean LEDGITBOARD;			// geht aus irgendeinem Grund nicht -> FXprograms.cpp.o:(.literal._Z14progFullColorsjhj+0x0): undefined reference to `LEDGITBOARD'
-//extern const boolean LEDGITBOARD = false;
 extern boolean LEDGITBOARD;	// defined in definitions.h
 
 extern byte songID;
@@ -167,13 +165,11 @@ uint16_t rippleSpawnTimer = 0;				// zählt bis zur nächsten neuen Welle
 
 // Bild löschen: alle LEDs im Arbeitspuffer auf Schwarz. (memset füllt einen Speicherbereich mit einem Wert, hier 0.)
 // FastLED.clear(); alleine reicht nicht. dann funktioniert das kopieren der LED arrays nicht bzw. dort bleiben die vorherigen LEDs an
+// FastLED.clear(true) (löscht UND sendet sofort) wird hier bewusst nicht benutzt: das ließ die Bund-Marker kurz ausfallen.
 void clearAll() {
 	FastLED.clear();
 	memset(leds, 0, anz_LEDs * sizeof(CRGB));
 
-	// nicht nötig:
-	//memset(leds1, 0, anz_LEDs * sizeof(CRGB));
-	//memset(leds2, 0, anz_LEDs * sizeof(CRGB));
 }
 
 // Der "Standard-Teil" (siehe Dateikopf) als eigene Funktion, für Stellen, die keinen fertigen Effekt aufrufen.
@@ -182,10 +178,7 @@ void setDurationAndNextPart(unsigned int durationMillis, byte nextPart) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -279,18 +272,14 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 
-		//if (songIDbefore != 0 || LEDGITBOARD) {
-			//FastLED.clear(true);
-			clearAll();
+		clearAll();
 
-			// Array Initialisierung
-			initSternschnuppen();
-		//}
+		// Array Initialisierung
+		initSternschnuppen();
 	}
 	//---------------------------------------------------------------------
 	
@@ -346,13 +335,11 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
 
 		if (songIDbefore != 0 || LEDGITBOARD) {
-			//FastLED.clear(true);
 			clearAll();
 
 			// Array Initialisierung mit -1
@@ -376,10 +363,6 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 				LEDsUndFarbWerte[i][1] = c.r;
 				LEDsUndFarbWerte[i][2] = c.g;
 				LEDsUndFarbWerte[i][3] = c.b;
-				// if (i > maxI) {
-				// 	maxI = i;
-				// 	Serial.println(maxI);
-				// }
 				break;	// nach dem ersten gefundenen element abbrechen!
 			}
 		}
@@ -437,7 +420,6 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
@@ -495,14 +477,10 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)9.65f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 
 		actualAnzahlLEDs = anzahl;
 	}
@@ -536,11 +514,7 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart,
 			}
 		}
 		fxPresent();
-	} // TODO: Checken ob das hier auch hin muss:
-	// else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
-	// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-	// 	FastLED.show();
-	// }
+	}
 }
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart) {
 	progFastBlingBling(durationMillis, anzahl, nextPart, 0, 0, 0);
@@ -553,12 +527,9 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 
 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
@@ -579,17 +550,6 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 			fxPresent();
 
 
-			// if (LEDGITBOARD) {
-			// 	FastLED.showColor(CRGB(r, g, b)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
-			// }
-			// else {
-			// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-			// 	for (int i = 0; i < anz_LEDs; i++) {
-			// 		leds[i] = CRGB(r, g, b);
-			// 	}
-			// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-			// 	FastLED.show();
-			// }
 		}
 	}
 	else {	// dies hier aber immer und sofort callen sonst fallen die MarkerLEDs kurz aus
@@ -604,10 +564,7 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte>
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.3f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -630,17 +587,6 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 				}
 				fxPresent();
 
-				// if (LEDGITBOARD) {
-				// 	FastLED.showColor(CRGB(red, green, blue)); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
-				// }
-				// else {
-				// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-				// 	for (int i = 0; i < anz_LEDs; i++) {
-				// 		leds[i] = CRGB(red, green, blue);
-				// 	}
-				// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-				// 	FastLED.show();
-				// }
 			}
 			progStroboIsBlack = false;
 		}
@@ -652,17 +598,6 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, in
 				}
 				fxPresent();
 
-				// if (LEDGITBOARD) {
-				// 	FastLED.showColor(CRGB::Black); // für LED-Stripe-Git deaktiviert, da hiermit turnOffGitBlindingLEDs() nicht funktioniert
-				// }
-				// else {
-				// 	// für LED-stripe-git einfach alle LEDs in loop manuell setzen:
-				// 	for (int i = 0; i < anz_LEDs; i++) {
-				// 		leds[i] = CRGB(0, 0, 0);
-				// 	}
-				// 	gitBlindingLEDs_OFF_MarkerLEDs_ON();	// immer vor fastLED.show() callen damit die blendenen LEDs an der Gitarre ausgeschaltet werden
-				// 	FastLED.show();
-				// }
 			} 
 			progStroboIsBlack = true;
 		}
@@ -682,10 +617,7 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)3.95f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -694,8 +626,6 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 	//---------------------------------------------------------------------
 
 #if defined (SCROLLMATRIX)
-	//reduceSpeed = reduceSpeed - 20;
-	//if (reduceSpeed <= 1) reduceSpeed = 1;
 	reduceSpeed = 1;
 #endif 
 
@@ -716,7 +646,6 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 				matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_RED_HIGH);
 				matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_WHITE_HIGH);
-				//matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, CRGB::White);
 				matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_RED_HIGH);
 			}
 		}
@@ -725,10 +654,8 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int 
 			if (zaehler <= -6) scannerGoesBack = false;
 
 			if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-				//matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, CRGB::White);
 				matrix->drawLine(zaehler + 0, 0, zaehler + 0, MATRIX_HEIGHT, LED_WHITE_HIGH);
 				matrix->drawLine(zaehler - 1, 0, zaehler - 1, MATRIX_HEIGHT, LED_RED_HIGH);
-				//matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, CRGB::White);
 				matrix->drawLine(zaehler - 2, 0, zaehler - 2, MATRIX_HEIGHT, LED_WHITE_HIGH);
 			}
 		}
@@ -757,10 +684,7 @@ int c_y;
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -797,8 +721,6 @@ int c_y;
 
 				c_x = center_x;		// Mitte der Fläche (definitions.h)
 				c_y = center_y;
-
-				//zaehler = 7;
 
 				switch (zaehler) {
 				case 0:
@@ -1046,14 +968,10 @@ void progBlack(unsigned int durationMillis, byte nextPart) {
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 	}
 	//---------------------------------------------------------------------
 
@@ -1070,10 +988,7 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 		clearAll();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -1114,12 +1029,9 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
 
 		clearAll();
 
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.05f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -1167,12 +1079,9 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)9.1f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 	}
 	//---------------------------------------------------------------------
 
@@ -1277,12 +1186,9 @@ void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduce
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)2.15f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 	}
 	//---------------------------------------------------------------------
 
@@ -1398,12 +1304,9 @@ void progRunningPixel(unsigned int durationMillis, byte nextPart) {
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
-		//		Serial.println(nextChangeMillis);
 	}
 	//---------------------------------------------------------------------
 
@@ -1431,8 +1334,6 @@ void progTestRange(unsigned int durationMillis, byte nextPart) {
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -1497,8 +1398,6 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
     //--- standard-part um dauer und naechstes programm zu speichern ----
     if (!nextChangeMillisAlreadyCalculated) {
         FastLED.clear();
-        // workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-        //nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
         nextChangeMillis = durationMillis;
         nextSongPart = nextPart;
         nextChangeMillisAlreadyCalculated = true;
@@ -1535,7 +1434,6 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 			matrix->print(words);
 
 			fxPresent();
-			//matrix->show();
 		}
 	}
 }
@@ -1858,9 +1756,6 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -2066,9 +1961,6 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
-		//FastLED.clear(true);	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
@@ -2567,8 +2459,6 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 	//--- standard-part um dauer und naechstes programm zu speichern ----
 	if (!nextChangeMillisAlreadyCalculated) {
 		FastLED.clear();	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)5.85f);	// TODO: diesen wert eurieren und anpassen!!
 		nextChangeMillis = durationMillis;
 		nextSongPart = nextPart;
 		nextChangeMillisAlreadyCalculated = true;
