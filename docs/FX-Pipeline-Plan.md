@@ -13,6 +13,12 @@ kann.
 
 Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf Branch `lib-cleanup`)
 
+- **06.10.2026: `fx-cleanup` nach `MAIN` gemergt (Fast-Forward) und gepusht.** Vom User auf der Hardware abgenommen:
+  Effekt-Umbau („sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!"), `progWaterRipple` in jedem
+  Durchlauf, `progBreathe` bis ganz dunkel, Blinder auf 255, berechnete Marker-Helligkeit („das funktioniert gut"),
+  Marker ganz unten am Knopf und der Helligkeitsknopf mit 32 Stufen („beides genial!!! funktioniert gut"). Die
+  OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791296560). Offen bleibt nur das optionale Schritt 4
+  (Überladungen -> Vorgabe-Argumente, `progMatrixHorizontal`/`Vertical` zusammenlegen) - nur auf Zuruf.
 - **Branch:** `MAIN`. `fx-pipeline` (`13cda8e`) und `lib-cleanup` (Aufräumen, Phase 0c, Phase 0b) sind am
   06.10.2026 per Fast-Forward nach `MAIN` gemergt und gepusht. Die Commits der Session vom 05.10.2026:
   `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
@@ -22,21 +28,21 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
-- **06.10.2026, Helligkeitsknopf mit gleichmäßig wirkenden Stufen** (Wunsch des Users, umschaltbar, Abnahme offen):
+- **06.10.2026, Helligkeitsknopf mit gleichmäßig wirkenden Stufen** (Wunsch des Users, umschaltbar, abgenommen):
   `ROTARY_BRIGHTNESS_CURVE` in `src/definitions.h` (aktiv = neu, auskommentiert = alt). Neu: 32 Stufen
   (`ROTARY_BRIGHTNESS_STEPS`), Stufe 0 = LEDs aus, danach 3 … 255 mit rund 16 % je Raste, ohne Beschleunigung
   (`src/rotaryEncoder.cpp`). Alt: 2..255 linear; die Bibliothek beschleunigt dabei entgegen dem alten Kommentar
   (Stärke 300). Zum Blinder bei ausgedrehten LEDs: `fxPresent()` mischt bei `LEDsTurnedOff` gar nichts, also auch
   keinen Blinder - am Code geprüft, nichts zu ändern.
-- **06.10.2026, Marker-Helligkeit berechnet statt Stufentabelle** (Wunsch des Users, Abnahme offen):
+- **06.10.2026, Marker-Helligkeit berechnet statt Stufentabelle** (Wunsch des Users, abgenommen):
   `markerValue()` in `src/markerLEDs.cpp` rechnet die Skalierung von FastLED (Gesamthelligkeit und Farbkorrektur
   `LED_COLOR_CORRECTION`) zurück; Zielwert `MARKER_LEVEL` 7 in `src/definitions.h` = bisherige Helligkeit auf der
   Gitarre bei 48. Vorher schwankte sie je nach Gesamthelligkeit zwischen 3 und 10. Nur die Helligkeit ist
   geändert, keine Marker-Position. Vom User gesehen: „das funktioniert gut"; sein Wunsch dazu: ganz unten am Knopf
   (LEDs fast oder ganz aus) sollen die Marker etwas heller sein - dort reichte die Gesamthelligkeit (2..6) nicht
   für `MARKER_LEVEL`. Jetzt wird sie unter `MARKER_MIN_BRIGHTNESS` (16) für das Bild angehoben und der Effekt im
-  selben Verhältnis dunkler gerechnet; die Marker leuchten damit auch dort mit 7 (vorher 2 bis 6). Abnahme offen.
-- **06.10.2026, Blinder auf volle Helligkeit** (Wunsch des Users, Abnahme offen): siehe Abschnitt „Blinder". Zu den
+  selben Verhältnis dunkler gerechnet; die Marker leuchten damit auch dort mit 7 (vorher 2 bis 6). Abgenommen.
+- **06.10.2026, Blinder auf volle Helligkeit** (Wunsch des Users, abgenommen): siehe Abschnitt „Blinder". Zu den
   umgestellten Familien: „sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!" - Schritt 3 ist abgenommen.
 - **06.10.2026, übrige Familien umgestellt (Commit „Alte Effekte: Ausgabe über fxShow …", auf Zuruf des Users,
   Abnahme auf der Hardware offen):** In `FXprograms.cpp`, `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp` und
@@ -52,8 +58,8 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   fällig ist), damit Übergänge, Fades und Ebenen darüber flüssig laufen. Tempo der Wellen unverändert. Vom User gesehen: „kaum sichtbar, aber sieht gut aus" - bleibt drin.
   Dazu sein Wunsch zu #31, synth intro: die Lampen sollen beim Atmen ganz ausfaden. Ursache war die Untergrenze
   3/255 in `progBreathe` (`src/scenes.cpp`); sie ist entfernt. Gilt für `SCENE_CALM` auf Gitarre, Bass und Lampen
-  in allen Songs. Abnahme offen.
-- **Wartet auf den User (Branch `fx-cleanup`, Stand `541a57e`, nicht gemergt, nicht gepusht):** OTA-Firmwares in
+  in allen Songs. Abgenommen.
+- Erledigt (war: wartet auf den User, Branch `fx-cleanup`, Stand `541a57e`): OTA-Firmwares in
   `ota/` sind vom Stand `64efc91` (Version 1791293784), die Stände davor liegen in `ota/backup/2026-10-06_3` bis `_6`. Anzusehen:
   die sieben Effekte aus `fxMatrixSim.cpp` (Song 92 Part 92 Feuer; alte Songs mit `progWaterRipple`, `progPlasma`,
   `progStarfield`), Knopf ganz zurück = nur Marker, sonst alles wie vorher. Passt das, geht es mit demselben
