@@ -13,6 +13,23 @@ kann.
 
 Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf Branch `lib-cleanup`)
 
+- **06.10.2026, `progStarfield` mit Schweif** (Wunsch des Users: „sieht etwas lame aus"; dritte Fassung vom User
+  auf der Hardware abgenommen: „nicht mehr so richtig ein starfield, aber es sieht dennoch besser aus"; Commit
+  „progStarfield: Schweif, eigene Farbe je Stern, Sterne über die ganze Fläche"; OTA-Firmwares in `ota/` sind von
+  diesem Stand, Version 1791303124): jeder Stern zieht einen Strich bis zu seiner Position vor `STARFIELD_TRAIL_STEPS`
+  (4) Schritten, zur Mitte hin ausfadend (Helligkeit quadratisch); die Stelle wird aus der Entfernung berechnet,
+  nicht gespeichert. In der Mitte bleibt es ein Punkt, nach außen wird der Strich länger. `0` = altes Bild (nur
+  Punkte). Tempo, Sternzahl, Farben und Aufrufe unverändert; betrifft `SCENE_BUILDUP` auf den Matrix-Geräten und
+  die alten Songs mit `progStarfield`. `src/fxMatrixSim.cpp`, Kommentar in `FXprograms.h`, `docs/effekt-katalog.yaml`.
+  Rückmeldung des Users zur ersten Fassung (4 Schritte, quadratischer Abfall): „ich sehe noch einzelne punkte, der
+  schweif könnte deutlicher sein". Zweite Fassung (gebaut, Abnahme offen): 10 Schritte, Abfall linear, Mindestlänge
+  `STARFIELD_TRAIL_MIN_PIXELS` 3 (zur Mitte hin verlängert, nie über die Mitte hinaus).
+  Dazu der User: „im grunde besser und farblich interessanter, durch die Auflösung etwas gröber, dennoch ganz cool";
+  Wünsche: mehr Sterne in Richtung der langen Seiten, mehr Farbverläufe. Dritte Fassung (gebaut, Abnahme offen):
+  Sterne über die ganze Fläche verteilt (seitlicher Startbereich im Seitenverhältnis), Sternzahl wächst mit dem
+  Seitenverhältnis (`numStars` gilt für ein Quadrat, Deckel `STARFIELD_MAX_STARS` 80; 54 x 10: 80 statt 25,
+  22 x 23: 26), jeder Stern mit eigener Farbe (Schemafarbe, ohne Schema freier Farbton), Verlauf weiß -> Sternfarbe.
+  Stellschrauben, falls es nicht gefällt: `STARFIELD_TRAIL_STEPS` (länger/kürzer), Exponent des Abfalls, Sternzahl.
 - **06.10.2026: `fx-cleanup` nach `MAIN` gemergt (Fast-Forward) und gepusht.** Vom User auf der Hardware abgenommen:
   Effekt-Umbau („sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!"), `progWaterRipple` in jedem
   Durchlauf, `progBreathe` bis ganz dunkel, Blinder auf 255, berechnete Marker-Helligkeit („das funktioniert gut"),

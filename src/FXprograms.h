@@ -423,8 +423,11 @@ void progFire(unsigned int durationMillis, byte nextPart);
 void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
 void progPlasma(unsigned int durationMillis, byte nextPart);
 
-// Sternenhimmel / Warp: Sterne fliegen aus dem Zentrum heraus
-// numStars = Anzahl der Sterne (höchstens 40, Vorgabe 25)
+// Sternenhimmel / Warp: Sterne fliegen aus dem Zentrum heraus und ziehen einen Schweif, der nach außen länger wird
+// (Länge: STARFIELD_TRAIL_STEPS in fxMatrixSim.cpp, 0 = nur Punkte)
+// Jeder Stern hat seine eigene Farbe: mit Farbschema eine der Schemafarben, ohne Schema ein beliebiger Farbton.
+// numStars = Anzahl der Sterne auf einer quadratischen Fläche (Vorgabe 25); breite Flächen bekommen im Verhältnis
+// mehr, damit auch die Enden der langen Seite gefüllt sind (höchstens STARFIELD_MAX_STARS = 80)
 void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars);
 void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 20);
 void progStarfield(unsigned int durationMillis, byte nextPart);

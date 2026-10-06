@@ -318,7 +318,7 @@ effekte:
     notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
 
   progStarfield:
-    wirkung: "Sterne fliegen aus der Mitte auf den Betrachter zu"
+    wirkung: "Sterne fliegen aus der Mitte auf den Betrachter zu und ziehen einen Schweif, der nach außen länger wird; jeder Stern in eigener Farbe (Schemafarben)"
     art: raster
     rolle: [flaeche, aufbau]
     energie: [2, 4]

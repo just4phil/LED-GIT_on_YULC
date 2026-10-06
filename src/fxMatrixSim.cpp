@@ -151,22 +151,71 @@ void progPlasma(unsigned int durationMillis, byte nextPart) {
 // Jeder Stern hat eine Position im Raum: sx/sy seitlich, sz = Entfernung nach vorn. Pro Schritt kommt er näher
 // (sz wird kleiner). Auf den Bildschirm kommt er durch "Perspektive": Bildposition = sx / sz - je näher der Stern,
 // desto weiter außen und desto heller erscheint er. Ist er vorbei, startet er weit hinten neu.
-// numStars = Anzahl der Sterne (höchstens 40).
-void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars) {
-	static float sx[40], sy[40], sz[40];	// Raumposition jedes Sterns
-	static CRGB  starColor;					// Farbe der Sterne am Bildrand (in der Mitte sind sie weiß)
+// numStars = Anzahl der Sterne auf einer quadratischen Fläche; breite Flächen bekommen im Verhältnis mehr
+// (höchstens STARFIELD_MAX_STARS). Jeder Stern hat seine eigene Farbe (aus dem Farbschema oder frei gewürfelt).
+//
+// Schweif: jeder Stern zieht einen Strich hinter sich her, der zur Bildmitte hin ausläuft. Der Strich reicht vom
+// Stern zurück bis zu der Stelle, an der er vor STARFIELD_TRAIL_STEPS Schritten war. Diese Stelle wird nicht
+// gespeichert, sondern ausgerechnet: vor n Schritten war der Stern um n * STARFIELD_Z_STEP weiter weg. In der
+// Bildmitte bewegt sich ein Stern kaum; je näher er kommt, desto schneller wird er und desto länger wird der
+// Strich. So entsteht der "Warp"-Eindruck auch bei wenigen Pixeln. Damit auch langsame Sterne nicht nur Punkte
+// sind, ist der Schweif mindestens STARFIELD_TRAIL_MIN_PIXELS lang (nur direkt an der Bildmitte kürzer).
+#define STARFIELD_Z_STEP		0.18f	// so viel kommt jeder Stern pro Schritt näher
+#define STARFIELD_TRAIL_STEPS	10		// Länge des Schweifs in Schritten (0 = kein Schweif, nur Punkte wie früher)
+#define STARFIELD_TRAIL_MIN_PIXELS	3	// so lang ist der Schweif mindestens, auch bei langsamen Sternen weit hinten (0 = aus)
 
-	if (numStars > 40) numStars = 40;
+#define STARFIELD_MAX_STARS		80		// mehr Sterne gibt es nie (Platz in den Tabellen unten)
+
+void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte numStars) {
+	static float sx[STARFIELD_MAX_STARS], sy[STARFIELD_MAX_STARS], sz[STARFIELD_MAX_STARS];	// Raumposition jedes Sterns
+	static CRGB  starColors[STARFIELD_MAX_STARS];	// Farbe jedes Sterns am Bildrand (in der Mitte sind alle weiß)
+
 	const float cx  = MATRIX_WIDTH  / 2.0f;	// Bildmitte
 	const float cy  = MATRIX_HEIGHT / 2.0f;
 	const float fov = min(MATRIX_WIDTH, MATRIX_HEIGHT) / 2.0f;	// Stärke der Perspektive ("Brennweite")
 
+	// Breite Flächen: die Sterne werden über die ganze Bildfläche verteilt, nicht nur über ein Quadrat in der
+	// Mitte. spreadX/spreadY = wie weit seitlich ein Stern höchstens starten darf (10 = bisheriger Wert für die
+	// kurze Seite; die lange Seite bekommt im Verhältnis mehr). Damit die Fläche dabei nicht leerer wird, wächst
+	// die Zahl der Sterne im selben Verhältnis mit: numStars gilt für ein Quadrat, eine 54 x 10 Fläche bekäme das
+	// 5,4-fache - begrenzt auf STARFIELD_MAX_STARS.
+	const float spreadX = 10.0f * cx / fov;
+	const float spreadY = 10.0f * cy / fov;
+	int stars = (int)(numStars * (cx / fov) * (cy / fov));
+	if (stars > STARFIELD_MAX_STARS) stars = STARFIELD_MAX_STARS;
+
+	// Würfelt für Stern i einen neuen Platz seitlich und eine neue Farbe: mit Farbschema eine seiner Farben, ohne
+	// Schema einen beliebigen kräftigen Farbton. So fliegen Sterne in vielen Farben gleichzeitig.
+	// Das "[&]" macht daraus eine kleine Funktion in der Funktion (Lambda), die die Variablen von außen
+	// mitbenutzen darf. random(-1000, 1001) / 1000.0f ist eine Zufallszahl zwischen -1 und +1.
+	auto newStar = [&](int i) {
+		sx[i] = random(-1000, 1001) / 1000.0f * spreadX;
+		sy[i] = random(-1000, 1001) / 1000.0f * spreadY;
+		starColors[i] = colorSchemeActive() ? getRandomCRGB() : CRGB(CHSV(random8(), 255, 255));
+	};
+
+	// Malt einen Pixel des Sternenfelds in der Sternfarbe starColor mit der Helligkeit bright. Die Farbe hängt
+	// vom Ort ab: in der Bildmitte weiß, zum Rand hin starColor - jeder Stern fliegt also durch seinen eigenen
+	// Farbverlauf.
+	auto drawStarPixel = [&](int px, int py, uint8_t bright, const CRGB& starColor) {
+		// t=0 (Zentrum)→weiß, t=1 (Rand)→starColor
+		// x und y getrennt normalisieren → gleiche Farbtiefe auf beiden Achsen
+		float tx = (cx > 0.0f) ? fabsf((float)px - cx) / cx : 0.0f;
+		float ty = (cy > 0.0f) ? fabsf((float)py - cy) / cy : 0.0f;
+		float t  = sqrtf(tx * tx + ty * ty) * 0.7071f;  // /sqrt(2) → Ecke=1
+		if (t > 1.0f) t = 1.0f;
+
+		CRGB col((uint8_t)(255.0f * (1.0f - t) + starColor.r * t),
+		         (uint8_t)(255.0f * (1.0f - t) + starColor.g * t),
+		         (uint8_t)(255.0f * (1.0f - t) + starColor.b * t));
+		col.nscale8(bright);
+		matrix->drawPixel(px, py, col);
+	};
+
 	if (fxBegin(durationMillis, nextPart)) {
 		millisCounterTimer = 0;
-		starColor = colorSchemeActive() ? getRandomCRGB() : CRGB(CHSV((uint8_t)esp_random(), 255, 255));  // Hardware-TRNG, kein Fixed-Seed Problem
-		for (int i = 0; i < numStars; i++) {
-			sx[i] = (random(0, 200) - 100) / 10.0f;
-			sy[i] = (random(0, 200) - 100) / 10.0f;
+		for (int i = 0; i < stars; i++) {
+			newStar(i);
 			sz[i] = random(1, 100) / 10.0f;
 		}
 	}
@@ -174,32 +223,56 @@ void progStarfield(unsigned int durationMillis, byte nextPart, unsigned int redu
 	if (fxEvery(millisCounterTimer, reduceSpeed)) {
 		clearAll();
 
-		for (int i = 0; i < numStars; i++) {
-			sz[i] -= 0.18f;
+		// 1. alle Sterne einen Schritt näher holen; wer vorbei ist, startet weit hinten neu
+		for (int i = 0; i < stars; i++) {
+			sz[i] -= STARFIELD_Z_STEP;
 			if (sz[i] <= 0.05f) {
 				sz[i] = 8.0f + random(0, 20) / 10.0f;
-				sx[i] = (random(0, 200) - 100) / 10.0f;
-				sy[i] = (random(0, 200) - 100) / 10.0f;
+				newStar(i);
 			}
-			int px = (int)(sx[i] / sz[i] * fov + cx);
-			int py = (int)(sy[i] / sz[i] * fov + cy);
-			if (px >= 0 && px < MATRIX_WIDTH && py >= 0 && py < MATRIX_HEIGHT) {
+		}
+
+		// 2. malen, in zwei Durchgängen: erst alle Schweife (pass 0), dann alle Sternköpfe (pass 1). So kann der
+		//    dunkle Schweif eines Sterns nie den hellen Kopf eines anderen übermalen.
+		for (int pass = 0; pass < 2; pass++) {
+			for (int i = 0; i < stars; i++) {
+				// Schweif-Ende: dort war der Stern vor STARFIELD_TRAIL_STEPS Schritten (weiter weg = näher zur Mitte)
+				float zTail = sz[i] + STARFIELD_TRAIL_STEPS * STARFIELD_Z_STEP;
+				float tailX = sx[i] / zTail * fov + cx;
+				float tailY = sy[i] / zTail * fov + cy;
+				float headX = sx[i] / sz[i] * fov + cx;
+				float headY = sy[i] / sz[i] * fov + cy;
+				float dx = headX - tailX;	// Strecke vom Schweif-Ende bis zum Kopf, in Pixeln
+				float dy = headY - tailY;
+
+				// Mindestlänge: weit hinten bewegt sich ein Stern so langsam, dass der berechnete Schweif kürzer als
+				// ein Pixel wäre - man sähe nur einen Punkt. Dann wird der Schweif in Richtung Bildmitte auf
+				// STARFIELD_TRAIL_MIN_PIXELS verlängert, aber nie über die Bildmitte hinaus (r = Abstand zur Mitte).
+				float len  = sqrtf(dx * dx + dy * dy);
+				float r    = sqrtf((headX - cx) * (headX - cx) + (headY - cy) * (headY - cy));
+				float want = min(r, (float)STARFIELD_TRAIL_MIN_PIXELS);
+				if (len > 0.0f && len < want) {
+					dx *= want / len;
+					dy *= want / len;
+					tailX = headX - dx;
+					tailY = headY - dy;
+				}
+				// Liegt schon das Schweif-Ende außerhalb, ist der ganze Stern aus dem Bild
+				if (tailX < 0 || tailX >= MATRIX_WIDTH || tailY < 0 || tailY >= MATRIX_HEIGHT) continue;
+
+				int n = (int)max(fabsf(dx), fabsf(dy));		// so viele Pixel ist der Schweif lang (0 = nur der Kopf)
 				uint8_t bright = (uint8_t)constrain((int)(220.0f / sz[i]), 20, 255);
 
-				// t=0 (Zentrum)→weiß, t=1 (Rand)→starColor
-				// x und y getrennt normalisieren → gleiche Farbtiefe auf beiden Achsen
-				float tx = (cx > 0.0f) ? fabsf((float)px - cx) / cx : 0.0f;
-				float ty = (cy > 0.0f) ? fabsf((float)py - cy) / cy : 0.0f;
-				float t  = sqrtf(tx * tx + ty * ty) * 0.7071f;  // /sqrt(2) → Ecke=1
-				if (t > 1.0f) t = 1.0f;
-
-				uint8_t r = (uint8_t)(255.0f * (1.0f - t) + starColor.r * t);
-				uint8_t g = (uint8_t)(255.0f * (1.0f - t) + starColor.g * t);
-				uint8_t b = (uint8_t)(255.0f * (1.0f - t) + starColor.b * t);
-
-				CRGB col(r, g, b);
-				col.nscale8(bright);
-				matrix->drawPixel(px, py, col);
+				// k läuft vom Schweif-Ende (0) bis zum Kopf (n)
+				for (int k = (pass == 0 ? 0 : n); k <= (pass == 0 ? n - 1 : n); k++) {
+					float f  = (float)(k + 1) / (float)(n + 1);	// 0..1 entlang des Schweifs, am Kopf genau 1
+					int   px = (int)(tailX + dx * f);
+					int   py = (int)(tailY + dy * f);
+					// Der Strich läuft von innen nach außen: ist er einmal aus dem Bild, kommt er nicht zurück
+					if (px < 0 || px >= MATRIX_WIDTH || py < 0 || py >= MATRIX_HEIGHT) break;
+					// die Helligkeit fällt zum Schweif-Ende hin gleichmäßig ab (Kopf voll, Mitte halb)
+					drawStarPixel(px, py, (uint8_t)(bright * f), starColors[i]);
+				}
 			}
 		}
 	}
