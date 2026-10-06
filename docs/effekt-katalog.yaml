@@ -628,7 +628,7 @@ effekte:
 # ---------------------------------------------------------------------------------------------------
 # Paletten von progPalette(dur, paletteID, next)
 #
-# Hinweise aus dem Code (src/FXprograms.cpp, progPalette / FillLEDsFromPaletteColors):
+# Hinweise aus dem Code (src/fxPalette.cpp, progPalette / FillLEDsFromPaletteColors):
 # - Seit 05.10.2026 gibt es Tempo und Fade als optionale Parameter (siehe regler bei progPalette). Die Angaben hier
 #   beschreiben den alten Aufruf mit 3 Parametern: Alle Paletten laufen gleich schnell; 'slow'/'fast' kommt nur daher,
 #   wie viele Farbwechsel in der Palette stecken (Streifen wirken schnell, weiche Verläufe langsam).

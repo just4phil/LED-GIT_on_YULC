@@ -144,7 +144,7 @@
 
 <!-- ===================================================================== -->
 <h2 id="effekte">3 · Die 11 Kontur-Effekte</h2>
-<p>Alle Effekte folgen dem bekannten Muster <code>progXxx(durationMillis, nextPart, …)</code>. Sie setzen beim ersten Aufruf Dauer und nächsten Part, arbeiten mit dem 2-ms-Timer statt <code>delay()</code>, respektieren <code>LEDsTurnedOff</code> und rufen am Ende <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code> + <code>FastLED.show()</code> auf. Die Fret-Marker bleiben also sichtbar.</p>
+<p>Alle Effekte folgen dem bekannten Muster <code>progXxx(durationMillis, nextPart, …)</code>. Sie setzen beim ersten Aufruf Dauer und nächsten Part, arbeiten mit dem 2-ms-Timer statt <code>delay()</code> und rufen am Ende <code>fxShow()</code> auf. Das gibt über die Ausgabestufe aus (Marker, <code>FastLED.show()</code>) und beachtet <code>LEDsTurnedOff</code>: Bei abgeschalteten LEDs geht ein schwarzes Bild mit den Fret-Markern hinaus, ein Effekt muss das nicht selbst abfragen.</p>
 
 <div class="sticky">
 <div class="stagebox">
@@ -296,7 +296,7 @@
 <p>Diese Programme schreiben direkt in <code>leds[0..anz_LEDs)</code> und laufen deshalb auf jedem Gerät. Die Szenen nutzen sie, sie funktionieren aber auch einzeln in normalen Songs.</p>
 <div class="tablewrap"><table>
   <tr><th>Signatur</th><th>Wirkung</th></tr>
-  <tr><td><code>progBreathe(dur, next, CRGB col, periodMillis, maxVal)</code></td><td>Ganzes Gerät atmet in <code>col</code>, Helligkeit per <code>quadwave8</code> zwischen 3 und <code>maxVal</code>.</td></tr>
+  <tr><td><code>progBreathe(dur, next, CRGB col, periodMillis, maxVal)</code></td><td>Ganzes Gerät atmet in <code>col</code>, Helligkeit per <code>quadwave8</code> zwischen 0 (ganz dunkel) und <code>maxVal</code>.</td></tr>
   <tr><td><code>progBeatFlash(dur, next, bpm, CRGB col, delayMillis)</code></td><td>Flash auf jedem Beat (+ Verzögerung), klingt über max. 70 % des Beats bzw. 450 ms quadratisch ab.</td></tr>
   <tr><td><code>progPingPong(dur, next, bpm)</code></td><td>Gemeinsame Folge über <code>sharedRand8</code>: Pro Beat ist genau eine Bühnenposition aktiv und flasht in <code>deviceColor()</code>. Der Rest ist dunkel.</td></tr>
   <tr><td><code>progLampFill(dur, next, CRGB col)</code></td><td>Lampe füllt sich über <i>Dauer − 600 ms</i> von unten, mit heller Kante und leichtem Flackern. Danach 600 ms weiße Explosion, synchron zu <code>progChargeBlast</code> in <code>SCENE_BUILDUP</code>.</td></tr>
@@ -312,12 +312,14 @@
 </table></div>
 <p>Lampen-Ausrichtung: <code>LAMP_IDX0_AT_BOTTOM</code> (1 = LED 0 unten). Füllt sich eine Lampe von oben, auf 0 setzen.</p>
 
-<h4>Gemeinsames Grundgerüst (<code>guitarShapeFX.h</code>)</h4>
+<h4>Gemeinsames Grundgerüst (<code>fxBase.h</code>)</h4>
 <div class="tablewrap"><table>
   <tr><th>Funktion</th><th>Beschreibung</th></tr>
   <tr><td><code>bool fxPartStart(dur, next)</code></td><td>Setzt beim ersten Aufruf eines Parts Dauer und nächsten Part, löscht die LEDs, initialisiert die Geometrie und gibt <code>true</code> zurück. Genau dann gehört der Effekt-Zustand zurückgesetzt.</td></tr>
+  <tr><td><code>bool fxBegin(dur, next)</code></td><td>Wie <code>fxPartStart</code>, aber ohne Nebenwirkung: trägt nur Dauer und nächsten Part ein und gibt beim ersten Aufruf <code>true</code> zurück. Für Effekte, die Bild und Zähler selbst anders vorbelegen (die älteren Effekte).</td></tr>
   <tr><td><code>bool fxFrameDue(ms)</code></td><td>Frame-Takt über <code>millisToReduceCPUSpeed</code>, holt nicht endlos nach.</td></tr>
-  <tr><td><code>void fxShow()</code></td><td>Beachtet <code>LEDsTurnedOff</code> und gibt über <code>fxPresent()</code> aus (Ausgabestufe, siehe unten). In jedem Durchlauf aufrufen, sonst flackern die Marker.</td></tr>
+  <tr><td><code>bool fxEvery(zähler, ms)</code></td><td>Exakter Takt auf einem der beiden Zeitzähler: zieht genau <code>ms</code> ab, ein Rest zählt für den nächsten Schritt mit. Für alles, was im Beat bleiben muss (Strobo, Farbwechsel je Beat).</td></tr>
+  <tr><td><code>void fxShow()</code></td><td>Beachtet <code>LEDsTurnedOff</code> (dann schwarzes Bild + Marker) und gibt über <code>fxPresent()</code> aus (Ausgabestufe, siehe unten). In jedem Durchlauf aufrufen, sonst flackern die Marker und Übergänge laufen nicht weiter.</td></tr>
   <tr><td><code>uint32_t fxBeats(bpm)</code></td><td>Beats seit Partbeginn, ohne Überlauf.</td></tr>
   <tr><td><code>loopToLed(k)</code>, <code>ledToLoop(i)</code>, <code>zoneOfLoop(k)</code>, <code>setMirrored(d, col)</code>, <code>fillZone(zone, col)</code>, <code>fire2012Step(heat, len)</code></td><td>Geometrie-Helper für eigene Effekte.</td></tr>
 </table></div>
@@ -505,14 +507,16 @@
 <h2 id="dateien">10 · Dateien &amp; API-Referenz</h2>
 <div class="tablewrap"><table>
   <tr><th>Datei</th><th>Inhalt</th></tr>
-  <tr><td><code>src/guitarShapeFX.cpp/.h</code></td><td>Geometrie (Umriss, XY, Zonen), Grundgerüst <code>fx*</code>, 11 Kontur-Effekte, Gurt-Puffer</td></tr>
+  <tr><td><code>src/guitarShapeFX.cpp/.h</code></td><td>Geometrie (Umriss, XY, Zonen), 11 Kontur-Effekte, Gurt-Puffer</td></tr>
+  <tr><td><code>src/fxBase.cpp/.h</code></td><td>Grundgerüst aller Effekte: <code>fxBegin</code>, <code>fxPartStart</code>, <code>fxEvery</code>, <code>fxFrameDue</code>, <code>fxShow</code>, <code>fxBeats</code>, <code>fxBeatPhase</code>, <code>clearAll</code></td></tr>
   <tr><td><code>src/fxPipeline.cpp/.h</code></td><td>Ausgabestufe <code>fxPresent()</code>: Ebene (zweiter Effekt), Übergänge zwischen Parts, Modifikatoren, Marker, <code>FastLED.show()</code></td></tr>
   <tr><td><code>src/colorSchemes.cpp/.h</code></td><td>Farbschemata, <code>getRandomCRGB</code>, <code>deviceColor</code>, <code>schemePalette</code></td></tr>
   <tr><td><code>src/scenes.cpp/.h</code></td><td><code>scene()</code>, Primitive, Lampen-Effekte, <code>sharedRand8</code></td></tr>
   <tr><td><code>src/definitions.h</code></td><td>Geräte-Identität (<code>DEV_*</code>, <code>STAGE_POS</code>, <code>DEVICE_CLASS</code>), Geometrie-Defines, Start-Demos</td></tr>
-  <tr><td><code>src/markerLEDs.cpp</code></td><td>Gurt-Override in <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code></td></tr>
+  <tr><td><code>src/markerLEDs.cpp</code></td><td>Gurt-Override in <code>gitBlindingLEDs_OFF_MarkerLEDs_ON()</code>; Marker-Helligkeit berechnet (<code>markerValue()</code>, Zielwert <code>MARKER_LEVEL</code> in <code>definitions.h</code>): gleich hell bei jeder Gesamthelligkeit, auch im Blinder und bei „LEDs aus“</td></tr>
   <tr><td><code>src/functions.cpp</code></td><td><code>switchToPart()</code> setzt <code>strapOverride</code> und Farbschema zurück; Zufallsfarben mit Schema</td></tr>
-  <tr><td><code>src/FXprograms.cpp/.h</code></td><td>Schema-Anbindung der alten Programme, <code>progStrobo(…, CRGB)</code>, <code>PALETTE_SCHEME</code></td></tr>
+  <tr><td><code>src/FXprograms.cpp/.h</code></td><td>Einfache Streifen-Effekte (Glitzern, einfarbig, <code>progStrobo(…, CRGB)</code>, Dunkel); <code>FXprograms.h</code> ist der gemeinsame Header aller älteren <code>prog…</code>-Effekte</td></tr>
+  <tr><td><code>src/fxMatrixShapes.cpp</code>, <code>fxText.cpp</code>, <code>fxPalette.cpp</code>, <code>fxMatrixRain.cpp</code>, <code>fxMatrixSim.cpp</code></td><td>Die älteren Effekte nach Familien: Scanner/Stern/Kreise/Linien/Rahmen, Text, Paletten (<code>PALETTE_SCHEME</code>), „Matrix“-Regen, berechnete Bilder (Feuer, Plasma, Sternenfeld, Wasserwellen …); <code>fxState.h</code> deklariert ihre gemeinsamen Zähler</td></tr>
   <tr><td><code>src/songs.cpp/.h</code>, <code>src/main.cpp</code></td><td>Demo-Songs 90/91/92 und Dispatcher</td></tr>
 </table></div>
 

@@ -65,7 +65,10 @@ LED-GIT_on_YULC/
 │   ├── definitions.h            # Device-specific configurations
 │   ├── colors.h                # LED color definitions
 │   ├── functions.h/cpp          # Helper functions (song switching, etc.)
-│   ├── FXprograms.h/cpp         # LED effect programs
+│   ├── FXprograms.h/cpp         # LED effect programs (basic strip effects, header for all prog... effects)
+│   ├── fxBase.h/cpp             # Building blocks of every effect (part start, step timing, output)
+│   ├── fxMatrixShapes/fxText/fxPalette/fxMatrixRain/fxMatrixSim.cpp  # Effect families
+│   ├── fxPipeline.h/cpp         # Output stage: transitions, modifiers, layers, blinder
 │   ├── songs.h/cpp             # Song-specific implementations
 │   ├── matrixFunctions.h/cpp    # Matrix helper functions
 │   ├── markerLEDs.h/cpp        # Fret position markers
@@ -78,7 +81,6 @@ LED-GIT_on_YULC/
 │   ├── AiEsp32RotaryEncoder.h/cpp # Rotary encoder library
 │   └── smileytongue24.h        # Bitmap graphics
 ├── platformio.ini               # PlatformIO configuration
-├── OPTIMIZATION_RECOMMENDATIONS.md # Optimization guide
 └── README.md                   # This file
 ```
 
@@ -205,17 +207,16 @@ lib_deps =
 
 ### Manual Control (Rotary Encoder)
 
-**Short Press** (duration < 1 second):
-- Turn knob: Navigate songs (0-26)
-- Click: Switch to selected song
+**Turn knob**: brightness. Fully down = LEDs off, only the fret markers stay on. By default 32 perceptually
+even steps (`ROTARY_BRIGHTNESS_CURVE` in `definitions.h`; commented out = linear 2-255 with acceleration).
+
+**Short Press**: LED sync - the proxy forces its song/part on all clients, a client fetches it from the proxy.
+
+**Double Click** (proxy only): take song/part from a client.
 
 **Long Press** (duration > 1 second):
-- Emergency stop: Switch to song 0 (all LEDs off)
+- Emergency stop: Switch to song 0
 - Useful for quick shutdown during performance
-
-**Brightness Control**:
-- Turn knob while holding button: Adjust brightness
-- Range: 4-255 (depends on battery level)
 
 ### MIDI Control
 
@@ -683,8 +684,6 @@ ENDE SETUP
 - "Voltage low" - Battery below threshold
 
 ## Performance Optimization
-
-See `OPTIMIZATION_RECOMMENDATIONS.md` for detailed optimization strategies.
 
 ### Key Metrics
 

@@ -64,10 +64,14 @@ Three CRGB arrays in `main.cpp`:
 - `leds1[]` — output for DATA_PIN_1 (guitar LEDs), receives marker LEDs on top
 - `leds2[]` — output for DATA_PIN_2 (strap LEDs), no markers
 
-Effects never call `FastLED.show()` themselves: they end with `fxPresent()` (`fxPipeline.h`; `fxShow()` for the
-contour effects). It mixes transition + modifiers into a copy (`leds[]` stays untouched), calls
+Effects never call `FastLED.show()` themselves and never check `LEDsTurnedOff`: they are built from the blocks in
+`fxBase.h` - `if (fxBegin(dur, next)) {init}` (or `fxPartStart`), `if (fxEvery(counter, ms)) {draw}` (or `fxFrameDue` /
+`fxStepsDue`), and `fxShow()` on every pass. `fxShow()` blanks the frame when the LEDs are switched off and calls
+`fxPresent()` (`fxPipeline.h`). That mixes transition + modifiers into a copy (`leds[]` stays untouched), calls
 `gitBlindingLEDs_OFF_MarkerLEDs_ON()` (`markerLEDs.h`: copies the frame → `leds1`/`leds2`, blanks the fretboard area in
-`leds1`, overlays the red/blue fret-marker LEDs) and sends. An unchanged frame is not sent again
+`leds1`, overlays the red/blue fret-marker LEDs) and sends. Marker brightness is computed, not tabulated
+(`markerValue()`: constant `MARKER_LEVEL` at any global brightness; below `MARKER_MIN_BRIGHTNESS` the global
+brightness is raised for the frame and the image scaled down). An unchanged frame is not sent again
 (`FX_SKIP_UNCHANGED_FRAMES`, keep-alive every `FX_KEEPALIVE_MS`).
 
 ### Output stage (`fxPipeline.cpp/.h`)

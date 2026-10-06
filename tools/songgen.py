@@ -1027,7 +1027,7 @@ def enum_names(path, prefix):
 # show.yaml einen Effekt nennt, den es wirklich gibt.
 def known_functions():
 	names = set()
-	for h in ["FXprograms.h", "guitarShapeFX.h", "scenes.h", "matrixFunctions.h", "functions.h", "colorSchemes.h"]:
+	for h in ["FXprograms.h", "fxBase.h", "guitarShapeFX.h", "scenes.h", "matrixFunctions.h", "functions.h", "colorSchemes.h"]:
 		p = SRC / h
 		if p.exists():
 			names |= set(re.findall(r"^\s*[\w:<>]+\s*\*?\s+(\w+)\s*\(", p.read_text(encoding="utf-8", errors="ignore"), re.M))

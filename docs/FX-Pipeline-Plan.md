@@ -19,6 +19,20 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   Marker ganz unten am Knopf und der Helligkeitsknopf mit 32 Stufen („beides genial!!! funktioniert gut"). Die
   OTA-Firmwares in `ota/` sind von diesem Stand (Version 1791296560). Offen bleibt nur das optionale Schritt 4
   (Überladungen -> Vorgabe-Argumente, `progMatrixHorizontal`/`Vertical` zusammenlegen) - nur auf Zuruf.
+- 06.10.2026, Dokus nachgezogen (noch nicht committet): `docs/LED-Effekte-und-Szenen.html` (Grundgerüst in
+  `fxBase.h`, Dateitabelle, `progBreathe`), `docs/Song-Workflow.html` (Blinder, Header-Liste), `CLAUDE.md`,
+  `README.md` (Drehknopf, Dateien), `docs/effekt-katalog.yaml` (Pfad), `tools/songgen.py` (kennt `fxBase.h`).
+  Gelöscht, weil veraltet (Entscheidung des Users): `API_DOCUMENTATION.md`, `SYNC_LATENCY_ANALYSE.md`,
+  `OPTIMIZATION_RECOMMENDATIONS.md` (Januar) und der Ordner `optimizations/` (Februar, Mai); alles steht noch in
+  der git-Historie. Aus der Analyse vom 09.05.2026 gilt am heutigen Code noch (geprüft, nichts davon ist dringend):
+  - dieselbe 8-Farben-Palette steht zweimal in `src/fxMatrixRain.cpp` (Zufallsfarben-Wrapper von
+    `progMatrixHorizontal` / `Vertical`);
+  - Überladungen mit `bool` neben `CRGB` (`progMatrixHorizontal` / `Vertical`, `progWaterRipple`) sind fehleranfällig;
+    gehört zu Schritt 4 (Vorgabe-Argumente);
+  - `src/definitions.h`: `mw` / `mh` / `NUMPIXELS` mit „TODO: ausmerzen", auskommentierter Block `GITMARKER_GIT1`;
+  - `getRandomColorIncludingBlack()` ist fast eine Kopie von `getRandomColor()` (`src/functions.cpp`).
+  Nicht angefasst (datierte Analysen): `docs/runtime-switch-gitboard-andresgit.html`,
+  `src/SKILLS/LED_Effekt_System_Analyse.md`.
 - **Branch:** `MAIN`. `fx-pipeline` (`13cda8e`) und `lib-cleanup` (Aufräumen, Phase 0c, Phase 0b) sind am
   06.10.2026 per Fast-Forward nach `MAIN` gemergt und gepusht. Die Commits der Session vom 05.10.2026:
   `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
