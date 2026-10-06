@@ -47,9 +47,13 @@ void setMarkerLEDs(byte songID, byte partID);
  * dass nach der Rechnung von FastLED immer MARKER_LEVEL (definitions.h) herauskommt. Die Formel ist bei
  * markerValue() in markerLEDs.cpp erklärt. Beispiele für MARKER_LEVEL 7 (rote Marker):
  *
- *   Gesamthelligkeit      2     10     48     80    128    200    255
- *   Marker-Farbwert     255    163     37     23     14      9      7
- *   leuchtet mit          2      7      7      7      7      7      7
+ *   Gesamthelligkeit     16     48     80    128    200    255
+ *   Marker-Farbwert     106     37     23     14      9      7
+ *   leuchtet mit          7      7      7      7      7      7
+ *
+ * Unter MARKER_MIN_BRIGHTNESS (16) - also ganz unten am Helligkeitsknopf und bei "LEDs aus" - wird für das Bild
+ * die Gesamthelligkeit auf 16 angehoben und der Effekt im selben Verhältnis dunkler gerechnet. So leuchten die
+ * Marker auch dort mit MARKER_LEVEL, obwohl der Effekt fast oder ganz dunkel ist.
  *
  * (Bis zum 06.10.2026 stand hier eine Tabelle mit 8 Stufen; damit schwankte die Marker-Helligkeit je nach
  * Gesamthelligkeit zwischen 3 und 10.)

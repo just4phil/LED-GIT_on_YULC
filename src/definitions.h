@@ -467,6 +467,8 @@
 #define MARKER_CORRECTION		CRGB(LED_COLOR_CORRECTION)	// dieselbe Korrektur, zerlegt in ihre drei Farbanteile
 #define MARKER_LEVEL			7		// so hell leuchten die Bund-Marker (0..255, gemessen am Ausgang), unabhängig von der Gesamthelligkeit.
 										// 7 = so hell wie bisher auf der Gitarre in der Grundhelligkeit 48. Größer = heller
+#define MARKER_MIN_BRIGHTNESS	16		// unter dieser Gesamthelligkeit (Knopf fast oder ganz zurück) wird sie für die Marker auf
+										// diesen Wert angehoben und der Effekt dafür dunkler gerechnet (markerLEDs.cpp)
 #define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
 #define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).

@@ -464,8 +464,9 @@ void setMarkerLEDs(byte songID, byte partID) {
 //     farbwert = level * 256 / (faktor + 1), aufgerundet
 // Beispiel Gitarre, Gesamthelligkeit 48, Rot (korrektur 255): faktor = 48 -> farbwert = 7 * 256 / 49 = 36,6 -> 37.
 // Probe: 37 * 49 / 256 = 7,08 -> 7. Bei Gesamthelligkeit 255 (Blinder, schnelles Glitzern): farbwert = 7 -> wieder 7.
-// Ist die Gesamthelligkeit so klein, dass selbst der größte Farbwert 255 nicht reicht (Knopf ganz zurück), bleibt
-// es bei 255 - heller geht es dann nicht.
+// Ist die Gesamthelligkeit so klein, dass selbst der größte Farbwert 255 nicht reicht, bleibt es bei 255. Damit das
+// nicht vorkommt, hebt gitBlindingLEDs_OFF_MarkerLEDs_ON() eine sehr kleine Gesamthelligkeit vorher auf
+// MARKER_MIN_BRIGHTNESS an (Knopf ganz zurück).
 static uint8_t markerValue(uint8_t level, uint8_t brightness, uint8_t correction) {
 	uint32_t factor = ((uint32_t)correction + 1) * brightness / 256 + 1;	// "faktor + 1" aus der Formel oben
 	uint32_t value = ((uint32_t)level * 256 + factor - 1) / factor;			// "+ factor - 1" = aufrunden beim Teilen
@@ -500,6 +501,25 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		// Effekt oder der Blinder kann sie für dieses Bild verändert haben. Rot und Blau werden getrennt gerechnet,
 		// weil die Farbkorrektur (MARKER_CORRECTION) Blau etwas stärker dämpft als Rot.
 		uint8_t brightnessNow = FastLED.getBrightness();
+
+		// Ganz unten am Helligkeitsknopf (LEDs aus oder fast aus) reicht die Gesamthelligkeit nicht mehr, um die Marker
+		// auf MARKER_LEVEL zu bringen: bei Gesamthelligkeit 2 käme selbst mit dem größten Farbwert nur 2 heraus.
+		// Deshalb wird die Gesamthelligkeit für dieses Bild auf MARKER_MIN_BRIGHTNESS angehoben und das Bild des Effekts
+		// im selben Verhältnis dunkler gerechnet - der Effekt bleibt so dunkel wie eingestellt (bei "LEDs aus" ist er
+		// ohnehin schwarz), nur die Marker bekommen genug Spielraum. (Derselbe Kniff wie beim Blinder in fxPipeline.cpp.)
+		// main.cpp setzt die Gesamthelligkeit vor jedem Durchlauf wieder auf den Wert des Knopfs zurück.
+		if (brightnessNow < MARKER_MIN_BRIGHTNESS) {
+			// FastLED rechnet "wert * (helligkeit + 1) / 256"; damit das Bild gleich hell bleibt, muss es also um
+			// (alte Helligkeit + 1) / (neue Helligkeit + 1) dunkler werden. nscale8(k) rechnet "wert * (k + 1) / 256".
+			uint8_t keep = ((uint16_t)brightnessNow + 1) * 256 / (MARKER_MIN_BRIGHTNESS + 1) - 1;
+			for (int i = 0; i < NUMMATRIX; i++) {
+				leds1[i].nscale8(keep);
+				leds2[i].nscale8(keep);
+			}
+			FastLED.setBrightness(MARKER_MIN_BRIGHTNESS);
+			brightnessNow = MARKER_MIN_BRIGHTNESS;
+		}
+
 		const CRGB correction = MARKER_CORRECTION;
 		helligkeit = markerValue(MARKER_LEVEL, brightnessNow, correction.r);			// Farbwert der roten Song-Marker
 		uint8_t helligkeitBlau = markerValue(MARKER_LEVEL, brightnessNow, correction.b);	// Farbwert der blauen Orientierungs-Marker

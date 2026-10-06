@@ -26,7 +26,10 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   `markerValue()` in `src/markerLEDs.cpp` rechnet die Skalierung von FastLED (Gesamthelligkeit und Farbkorrektur
   `LED_COLOR_CORRECTION`) zurück; Zielwert `MARKER_LEVEL` 7 in `src/definitions.h` = bisherige Helligkeit auf der
   Gitarre bei 48. Vorher schwankte sie je nach Gesamthelligkeit zwischen 3 und 10. Nur die Helligkeit ist
-  geändert, keine Marker-Position.
+  geändert, keine Marker-Position. Vom User gesehen: „das funktioniert gut"; sein Wunsch dazu: ganz unten am Knopf
+  (LEDs fast oder ganz aus) sollen die Marker etwas heller sein - dort reichte die Gesamthelligkeit (2..6) nicht
+  für `MARKER_LEVEL`. Jetzt wird sie unter `MARKER_MIN_BRIGHTNESS` (16) für das Bild angehoben und der Effekt im
+  selben Verhältnis dunkler gerechnet; die Marker leuchten damit auch dort mit 7 (vorher 2 bis 6). Abnahme offen.
 - **06.10.2026, Blinder auf volle Helligkeit** (Wunsch des Users, Abnahme offen): siehe Abschnitt „Blinder". Zu den
   umgestellten Familien: „sieht sehr cool aus! markerLEDs scheinen gut zu funktionieren!" - Schritt 3 ist abgenommen.
 - **06.10.2026, übrige Familien umgestellt (Commit „Alte Effekte: Ausgabe über fxShow …", auf Zuruf des Users,
