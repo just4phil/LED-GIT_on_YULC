@@ -64,7 +64,7 @@ int getRandomColorValue();
  *
  * Ist für den Part ein Farbschema gesetzt (colorSchemes.h), kommt eine Farbe aus diesem Schema -
  * so halten sich auch alte Zufallseffekte an die Farbwelt des Songs. Sonst eine der kräftigen
- * Grundfarben aus colors.h (Weiß, Grün, Blau, Orange, Lila, Cyan).
+ * Grundfarben aus colors.h (Weiß, Grün, Blau, Orange, Lila, Cyan, Rot), jede gleich häufig.
  *
  * @return Farbe im Format RGB565 (16-Bit-Farbwert, wie ihn die Matrix-Zeichenfunktionen erwarten)
  */

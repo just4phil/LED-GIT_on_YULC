@@ -71,8 +71,9 @@ int getRandomColor() { // dies erzeugt einen random color wert für die indexed 
 	// Hat der Part ein Farbschema, kommt die Farbe von dort (toRGB565 wandelt die FastLED-Farbe CRGB
 	// in den 16-Bit-Farbwert um, den die Matrix-Funktionen erwarten).
 	if (colorSchemeActive()) return toRGB565(getRandomCRGB());
-	// random(1, 7) liefert 1..6 - der case 7 (Rot) unten wird deshalb nie erreicht.
-	int farbZahl = random(1, 7);
+	// random(1, 8) liefert 1..7 (die Obergrenze 8 ist NICHT dabei) - so sind alle sieben cases unten
+	// erreichbar, auch der case 7 (Rot). Jede Farbe kommt mit der Wahrscheinlichkeit 1 zu 7.
+	int farbZahl = random(1, 8);
 	int farbe = LED_BLACK;
 	switch (farbZahl) {
 	case 1:

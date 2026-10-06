@@ -2,10 +2,7 @@ claude --dangerously-skip-permissions
 ======================================
 
 Auffälligkeiten im code: (06.10.2026):
-2. progWaterRipple ohne Farbe: Die beiden Fassungen ohne Farbe und ohne true/false zeigen nichts, weil sie Schwarz als Farbe verwenden. In Songs werden sie nicht aufgerufen.
-3. functions.h: Zu #pragma pack(push, 1) fehlt das pack(pop). Die Einstellung gilt deshalb für alle Strukturen, die nach diesem Include definiert werden.
-4. getRandomColor(): random(1, 7) liefert nur 1 bis 6, der Fall „Rot“ wird nie erreicht.
-5. progWordArray: Die Abfrage <= anzWords liest einen Eintrag hinter dem Listenende.
+2
 6. songs_generated.h: Der Build warnt mehrfach „GEN_ALLTHETHINGSSHESAID_ redefined“. Vermutlich erzeugen Partnamen ohne Buchstaben oder Ziffern eine leere, doppelte Konstante. Die Ursache im Generator habe ich nicht untersucht.
 7. midi_in.h und BLE_client_nimBLE.h: Einige Deklarationen passen nicht mehr zur .cpp-Datei (falsche Parameterzahl, nicht mehr vorhandene Funktionen). Das ist folgenlos, weil sie nie aufgerufen werden.
 ================================================
