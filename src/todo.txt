@@ -1,9 +1,6 @@
 claude --dangerously-skip-permissions
 ======================================
 
-Auffälligkeiten im code: (06.10.2026):
-================================================
-
 definitions.h musst du nicht mehr anfassen. Stattdessen wählst du das passende PlatformIO-Env. Für die Gitarre heißt es andresgit, und es setzt ANDRESGIT selbst beim Bauen.
 
 In VS Code:
