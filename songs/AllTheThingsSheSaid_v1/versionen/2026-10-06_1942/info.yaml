@@ -1,0 +1,8 @@
+zeit: '2026-10-06 19:42:44'
+notiz: Hook-Text hart statt abklingend (Urteil des Users)
+werkzeug_git: 1772b41 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: e418698fe04d60e7a6e87c5bd675d5589d6e642b39e0e8950acc0da55515c97e
+  show.yaml: 2bdeb3164192355acebc70e1d11d7d8ffad0e28ee4caf57ab2b0d1992ea69409
+  generated.cpp: 47be83827afe9774624d62e3547503938236acf7b5fbad9ed57e82e31d095c3f

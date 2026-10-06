@@ -11,8 +11,15 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (progText: Wörter mit eigener Länge, ATTSS-Hook mit Text; Abnahme offen)
+Zuletzt aktualisiert: 06.10.2026 (progText Wortlänge + flash abgenommen, ATTSS-Hook hart)
 
+- **06.10.2026, `progText` Wortlänge (`*Zahl`) und `flash` vom User abgenommen** („sehr geil!“, dann „beides ist
+  super. ich würde aber in diesem fall auf das abklingen verzichten (hier option: hart), da es sich dann etwas besser
+  vom drunter liegenden effekt abhebt“). ATTSS (#31): `flash: true` aus den fünf Hook-Parts entfernt, neu generiert,
+  OTA in `ota/` neu gebaut. Demo 92: Parts 34 (hart) und 36 (abklingend) laufen ohne Nummer als erster abgenommener
+  Block (Part 0 springt in 34, 34 -> 36 -> 29), Tabelle in `docs/LED-Effekte-und-Szenen.html` um 6 s zurück.
+  Urteil in `docs/effekt-katalog.yaml` (`progText`) und `.claude/skills/new-song/SKILL.md` eingetragen. Der Eintrag
+  darunter beschreibt die Umsetzung; sein „Nächster Schritt“ ist damit erledigt. Offen ist nichts.
 - **06.10.2026, `progText`: Wörter mit eigener Länge (`WORT*Zahl`) - gebaut, Abnahme offen.** Anlass: der User hat in
   der Tabelle von ATTSS (#31) für alle fünf Hook-Parts „This is not enough“ als einzelne Worte auf die Viertel über
   dem Effekt gewünscht; danach: THIS, IS, NOT sollen jeweils mit den beiden Lampen zusammen aufleuchten, ENOUGH darf

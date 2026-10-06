@@ -599,7 +599,7 @@ effekte:
   # ---------- Text (nur Matrix-Geräte; in show.yaml über `text:` statt von Hand) ----------
 
   progText:
-    wirkung: "Wort pulsiert im Beat bzw. pro Beat das nächste Wort, automatisch zentriert; ein Wort mit *Zahl am Ende bleibt so viele Beats stehen (THIS IS NOT ENOUGH*5; Demo 92 Part 34, Abnahme offen); mit flash klingen die Wörter ab wie der Lampen-Blitz statt hart an/aus (Demo 92 Part 36, Abnahme offen)"
+    wirkung: "Wort pulsiert im Beat bzw. pro Beat das nächste Wort, automatisch zentriert; ein Wort mit *Zahl am Ende bleibt so viele Beats stehen (THIS IS NOT ENOUGH*5; Demo 92 Part 34); mit flash klingen die Wörter ab wie der Lampen-Blitz statt hart an/aus (Demo 92 Part 36)"
     art: text
     rolle: [akzent, flaeche]
     energie: [3, 5]
@@ -608,8 +608,8 @@ effekte:
     farbe: schema
     traegt_takte: "1-8"
     alt: {parts: 0, takte: 0, wofuer: "neu; ersetzt progShowText/progWordArray/progBlinkText (alt: 'ROOTS' 8x zum Strobo)"}
-    urteil:
-    notiz:
+    urteil: gern
+    notiz: "06.10.2026 (ATTSS-Hook, Demo 92 Parts 34/36): Wörter mit eigener Länge 'sehr geil'; hart und abklingend (flash) 'beides ist super' - über einem Effekt (over) nahm er hart, weil sich der Text so besser vom Effekt darunter abhebt"
 
   progTextScroll:
     wirkung: "Lauftext, der genau am Part-Ende fertig ist; gleitet weich von Pixel zu Pixel (TEXT_SCROLL_BLEND 2, vom User am 06.10.2026 abgenommen: 'das gefällt mir gut')"

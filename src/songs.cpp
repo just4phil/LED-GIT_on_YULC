@@ -4238,18 +4238,21 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 29.
-	case 0:		demoNumber(34);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit ist nichts offen:
+	case 0:		switchToPart(34);	break;
 
+	//--- ABGENOMMEN (ohne Nummer) ---
+	// progText mit Wortlänge und flash (abgenommen am 06.10.2026: "beides ist super"; in ATTSS nahm der User hart,
+	// weil sich der Text so besser vom Effekt darunter abhebt)
 	case 34:	// progText mit "*Zahl": THIS, IS, NOT je einen Beat (zusammen mit dem Blitz der Lampen), ENOUGH bleibt 5 Beats stehen
 		setColorScheme(SCHEME_RED);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);	// Wellen unter dem Text auf 15 % gedimmt, damit er lesbar bleibt
 		fxLayerBegin();
-		progText("THIS IS NOT ENOUGH*5", 8000, DEMO_NR(36), 500, CRGB::White);
+		progText("THIS IS NOT ENOUGH*5", 8000, 36, 500, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
-		scene(SCENE_DROP, 8000, DEMO_NR(36), bpm);
+		scene(SCENE_DROP, 8000, 36, bpm);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerFlush();
 #endif
@@ -4269,7 +4272,6 @@ void pipelineDemo() {
 #endif
 		break;
 
-	//--- ABGENOMMEN (ohne Nummer) ---
 	// fxTextGradient: Farbverlauf in der Schrift statt einer Farbe (nur Matrix; die anderen Geräte atmen ruhig im Schema).
 	// Die vier Parts sind die Varianten, aus denen der Titel-Lauftext der Songs per Zufall wählt (progScrollText).
 	case 29:	// Lauftext, Verlauf aus dem Farbschema quer über die Matrix: die Buchstaben laufen durch die Farben

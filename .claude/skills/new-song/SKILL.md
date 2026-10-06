@@ -192,8 +192,10 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
   Die Längen so wählen, dass ein Durchlauf ganze Takte füllt (hier 8 Beats), sonst wandert der Text gegen den Takt.
 - `flash: true` (nur `words`, sinnvoll mit `per: beat`) - die Wörter blitzen auf und klingen ab wie die Lampen im
   Beat-Blitz (SCENE_DROP), statt hart an- und auszugehen; mit `over: true` scheint die Szene dabei durch. Ein Wort mit
-  `*Zahl` steht voll und klingt erst in seinem letzten `per` ab. Vom User als Option gewünscht (06.10.2026), Urteil
-  hart gegen abklingend steht noch aus (Demo 92, Parts 34 und 36).
+  `*Zahl` steht voll und klingt erst in seinem letzten `per` ab. Urteil des Users (06.10.2026, Demo 92 Parts 34/36):
+  „beides ist super“ - über einem Effekt (`over: true`) nahm er in ATTSS aber hart, „da es sich dann etwas besser vom
+  drunter liegenden Effekt abhebt“. Also: Text über einer Szene standardmäßig ohne `flash`; `flash` eher für Text,
+  der allein auf der Matrix steht, oder wenn er ausdrücklich weich gewünscht ist.
 - `text: {scroll: "..."}` - Lauftext, der genau am Part-Ende fertig ist.
 - `gradient` statt `color` - Farbverlauf in der Schrift (`fxTextGradient`), für `words` und `scroll`, auch mit
   `over: true`: `gradient: scheme|rainbow|party|clouds|stripes|matrix|random|<Paletten-ID>` oder ausführlich
