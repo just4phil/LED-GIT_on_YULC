@@ -142,9 +142,8 @@ Song 0 is the pause between songs.
 | Double click (proxy only) | Take song/part from a client |
 | Long press (1 s) | Emergency stop: back to song 0 |
 
-By default the knob has 32 steps that look evenly spaced to the eye (about 16 % more light per detent).
-Commenting out `ROTARY_BRIGHTNESS_CURVE` in `src/definitions.h` switches back to the old linear scale (2-255,
-with acceleration when turning fast).
+The knob has 32 steps that look evenly spaced to the eye (about 16 % more light per detent); the number of
+steps is `ROTARY_BRIGHTNESS_STEPS` in `src/definitions.h`.
 
 ### Fret markers
 

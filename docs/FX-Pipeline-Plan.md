@@ -59,6 +59,12 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   (`src/rotaryEncoder.cpp`). Alt: 2..255 linear; die Bibliothek beschleunigt dabei entgegen dem alten Kommentar
   (Stärke 300). Zum Blinder bei ausgedrehten LEDs: `fxPresent()` mischt bei `LEDsTurnedOff` gar nichts, also auch
   keinen Blinder - am Code geprüft, nichts zu ändern.
+  **Nachtrag 06.10.2026:** Die Kurve ist Standard (Entscheidung des Users). Schalter `ROTARY_BRIGHTNESS_CURVE`
+  und die alte lineare Methode sind entfernt, ebenso der Helfer `src/AiEsp32RotaryEncoderNumberSelector.h`
+  (gelöscht); `rotaryEncoder.cpp` setzt den Zählbereich jetzt direkt am Encoder (`setBoundaries(-31, 0)`, Stufe =
+  `-readEncoder()`), Verhalten unverändert. Die Bibliothek `AiEsp32RotaryEncoder.cpp/.h` bleibt (Drehimpulse, Taster).
+  Alle fünf Envs bauen; OTA-Firmwares in `ota/` neu gebaut (Version 1791301092, vorheriger Stand gesichert in
+  `ota/backup/2026-10-06_11`). Am Gerät noch nicht geprüft (Drehrichtung, "LEDs aus" ganz unten).
 - **06.10.2026, Marker-Helligkeit berechnet statt Stufentabelle** (Wunsch des Users, abgenommen):
   `markerValue()` in `src/markerLEDs.cpp` rechnet die Skalierung von FastLED (Gesamthelligkeit und Farbkorrektur
   `LED_COLOR_CORRECTION`) zurück; Zielwert `MARKER_LEVEL` 7 in `src/definitions.h` = bisherige Helligkeit auf der

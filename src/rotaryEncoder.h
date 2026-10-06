@@ -7,8 +7,8 @@
 // beim Drehen Impulse liefert (links/rechts) und sich zusätzlich drücken lässt.
 //
 // Was der Knopf macht:
-//   drehen              Helligkeit einstellen (2..255). Ganz zurückgedreht (Wert 2) = LEDs aus,
-//                       nur die Bund-Marker leuchten noch.
+//   drehen              Helligkeit einstellen, in ROTARY_BRIGHTNESS_STEPS Stufen. Ganz zurückgedreht
+//                       (Stufe 0, Wert 2) = LEDs aus, nur die Bund-Marker leuchten noch.
 //   kurz drücken        Abgleich über Bluetooth:
 //                         am Proxy (Gitarre): alle Clients auf Song + Part des Proxys zwingen
 //                         an einem Client:    Song + Part vom Proxy holen
@@ -34,12 +34,11 @@ void IRAM_ATTR readEncoderISR();    // Function required for interrupts
  * @brief Drehknopf einrichten (einmal aus setup())
  *
  * Legt das Encoder-Objekt mit den Pins aus definitions.h an (ROTARY_ENCODER_A_PIN, _B_PIN,
- * _BUTTON_PIN), meldet die Interrupt-Routine an und stellt den Wertebereich für die Helligkeit
- * ein. Zwei Methoden, umschaltbar mit ROTARY_BRIGHTNESS_CURVE in definitions.h:
- *   neu (Schalter gesetzt)  ROTARY_BRIGHTNESS_STEPS Stufen von "aus" bis 255, die fürs Auge gleich groß wirken
- *                           (jede Raste rund 16 % heller), ohne Beschleunigung
- *   alt (auskommentiert)    Helligkeit 2..255 direkt, eine Raste = 1, mit Beschleunigung bei schnellem Drehen
- * Startwert ist in beiden Fällen DEFAULT_BRIGHTNESS, am Ende des Bereichs gibt es keinen Überlauf.
+ * _BUTTON_PIN), meldet die Interrupt-Routine an und berechnet die Helligkeit je Stufe:
+ * ROTARY_BRIGHTNESS_STEPS Stufen (definitions.h) von "aus" bis 255, die fürs Auge gleich groß wirken
+ * (bei 32 Stufen jede Raste rund 16 % heller). Eine Raste = eine Stufe, ohne Beschleunigung bei
+ * schnellem Drehen. Startwert ist die Stufe, die DEFAULT_BRIGHTNESS am nächsten liegt; am Ende des
+ * Bereichs gibt es keinen Überlauf.
  */
 void rotary_initialize();
 
@@ -71,7 +70,7 @@ void rotary_onButtonClick();
 /**
  * @brief Den Drehknopf abfragen (bei jedem loop()-Durchlauf)
  *
- * - wurde gedreht: neue Helligkeit übernehmen; beim kleinsten Wert (2) LEDsTurnedOff setzen
+ * - wurde gedreht: Helligkeit der neuen Stufe übernehmen; auf Stufe 0 (Wert 2) LEDsTurnedOff setzen
  * - Taster auswerten (rotary_onButtonClick)
  * - 800 ms nach dem letzten Klick: kurzen Klick oder Doppelklick ausführen
  * - 3 s nach einem langen Druck: Taster wieder freigeben

@@ -134,7 +134,7 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `midi_in.cpp/.h` | MIDI CC parsing, BLE broadcast in proxy mode |
 | `midiProxyBLEserver_nimBLE.cpp/.h` | NimBLE BLE server (proxy only) |
 | `BLE_client_nimBLE.cpp/.h` | NimBLE BLE client (non-proxy devices) |
-| `rotaryEncoder.cpp/.h` | Knob: turn = brightness (fully down = LEDs off, markers stay; `ROTARY_BRIGHTNESS_CURVE` in `definitions.h` selects 32 perceptually even steps, commented out = old linear 2..255 with acceleration), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0) |
+| `rotaryEncoder.cpp/.h` | Knob: turn = brightness (fully down = LEDs off, markers stay; 32 perceptually even steps, `ROTARY_BRIGHTNESS_STEPS` in `definitions.h`, no acceleration), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
 | `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
 | `colors.h` | RGB565 color constants at multiple brightness levels |

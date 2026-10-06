@@ -2,7 +2,6 @@
 //----------------------------
 #include "definitions.h"
 #include "AiEsp32RotaryEncoder.h"
-#include "AiEsp32RotaryEncoderNumberSelector.h"
 #include <FastLED.h>
 //---------------------------------
 
@@ -20,8 +19,6 @@ extern volatile bool syncProgWithNextChange;
 // rotaryEncoder.cpp - Drehknopf mit Taster (Bedienung: siehe rotaryEncoder.h)
 //=====================================================================
 AiEsp32RotaryEncoder *rotaryEncoder;				// das Encoder-Objekt der Bibliothek (zählt die Drehschritte)
-AiEsp32RotaryEncoderNumberSelector numberSelector;	// Helfer der Bibliothek: macht aus den Drehschritten einen Wert in einem festen Bereich
-
 //paramaters for button
 unsigned int shortPressAfterMiliseconds = 50;   //how long short press shoud be. Do not set too low to avoid bouncing (false press events).
 unsigned int timeBetweenDoubleClicks = 800;		// so lange wird nach einem Klick auf einen zweiten gewartet (ms)
@@ -35,9 +32,7 @@ static bool wasButtonDown = false;				// war der Taster beim letzten Nachsehen g
 static bool shortClickHappened = false;			// es gab einen Klick, der noch nicht ausgeführt ist
 static bool wasButtonDownFIRST = false;			// erster Klick erkannt
 static bool wasButtonDownSECOND = false;		// zweiter Klick erkannt -> Doppelklick
-#if defined(ROTARY_BRIGHTNESS_CURVE)
 static uint8_t brightnessCurve[ROTARY_BRIGHTNESS_STEPS];	// Helligkeit je Stufe des Knopfs (berechnet in rotary_initialize)
-#endif
 //---------------------------------
 
 void IRAM_ATTR readEncoderISR() {    // Function required for interupts
@@ -48,55 +43,17 @@ void rotary_initialize() {
 
 	// Encoder-Objekt anlegen: Pins für Drehrichtung A/B und Taster, -1 = keine eigene Versorgungsleitung
 	rotaryEncoder = new AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
-	numberSelector = AiEsp32RotaryEncoderNumberSelector();
 
 	//--- Initialize rotary encoder --------------
 	rotaryEncoder->begin();
 	rotaryEncoder->setup(readEncoderISR);
-	// Beschleunigung zunächst aus. Achtung: numberSelector.setRange() weiter unten stellt sie je nach Größe des
-	// Wertebereichs von sich aus wieder ein (siehe dort).
+	// Keine Beschleunigung bei schnellem Drehen: eine Raste = eine Stufe
 	rotaryEncoder->setAcceleration(0);
 	rotaryEncoder->disableAcceleration();
 
-	//set boundaries and if values should cycle or not
-	//in this example we will set possible values between 0 and 1000
-	//and do not cycle from low 
-	//bool circleValues = false;
-	//rotaryEncoder.setBoundaries(0, 255, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
-
-	/*Rotary acceleration
-   * in case range to select is huge, for example - select a value between 0 and 1000 and we want 785
-   * without accelerateion you need long time to get to that number
-   * Using acceleration, faster you turn, faster will the value raise.
-   * For fine tuning slow down.
-   */
-	//rotaryEncoder.disableAcceleration(); //acceleration is now enabled by default - disable if you dont need it
-	//rotaryEncoder.setAcceleration(250); //or set the value - larger number = more accelearation; 0 or 1 means disabled acceleration
-
-  	// AiEsp32RotaryEncoderNumberSelector is that additional helper which 
-	// will hide calculation for a rotary encoder.
-	// Internally AiEsp32RotaryEncoderNumberSelector will do the math and 
-	// set the most apropriate acceleration, min and max values for you
-
-	// use setRange to set parameters
-	// use setValue for a default/initial value
-	// and finally read the value with getValue
-			
-	numberSelector.attachEncoder(rotaryEncoder);
-	/*
-	numberSelector.setRange parameters:
-		float minValue,                set minimum value for example -12.0
-		float maxValue,                set maximum value for example 31.5
-		float step,                    set step increment, default 1, can be smaller steps like 0.5 or 10
-		bool cycleValues,              set true only if you want going to miminum value after maximum 
-		unsigned int decimals = 0      precision - how many decimal places you want, default is 0
-
-	numberSelector.setValue - sets initial value    
-	*/
-#if defined(ROTARY_BRIGHTNESS_CURVE)
-	//--- NEUE METHODE: wenige Stufen, die fürs Auge gleich groß wirken ---
+	//--- Helligkeit: wenige Stufen, die fürs Auge gleich groß wirken ---
 	// Der Knopf zählt nur die Stufe (0 .. ROTARY_BRIGHTNESS_STEPS-1); die Helligkeit dazu steht in brightnessCurve[].
-	// Stufe 0 = "LEDs aus" (Wert 2 wie bisher), Stufe 1 = die kleinste Helligkeit, die letzte Stufe = 255.
+	// Stufe 0 = "LEDs aus" (Wert 2), Stufe 1 = die kleinste Helligkeit, die letzte Stufe = 255.
 	// Dazwischen wächst die Helligkeit von Stufe zu Stufe um denselben FAKTOR (nicht um denselben Betrag):
 	//     helligkeit(stufe) = 3 * (255 / 3) ^ ((stufe - 1) / (Stufenzahl - 2))
 	// Bei 32 Stufen ist das rund 16 % mehr je Raste. So nimmt das Auge Helligkeit wahr - jede Raste wirkt gleich groß.
@@ -112,19 +69,11 @@ void rotary_initialize() {
 	for (int i = 1; i < ROTARY_BRIGHTNESS_STEPS; i++) {
 		if (abs((int)brightnessCurve[i] - DEFAULT_BRIGHTNESS) < abs((int)brightnessCurve[startStep] - DEFAULT_BRIGHTNESS)) startStep = i;
 	}
-	// Wertebereich = Stufen. Die vertauschten Grenzen und der negative Schritt kehren die Drehrichtung um.
-	numberSelector.setRange(ROTARY_BRIGHTNESS_STEPS - 1, 0, -1, false, 0);
-	numberSelector.setValue(startStep);
-	rotaryEncoder->setAcceleration(0);	// setRange() hat eine Beschleunigung eingestellt - hier ist sie nicht nötig: eine Raste = eine Stufe
-#else
-	//--- ALTE METHODE: Helligkeit direkt, eine Raste = 1 von 255, mit Beschleunigung bei schnellem Drehen ---
-	// Wertebereich der Helligkeit: 255 bis 2 in Schritten von -1 (die vertauschten Grenzen und der negative
-	// Schritt kehren die Drehrichtung um), kein Überlauf am Ende. Der Wert 2 bedeutet "LEDs aus" (rotary_loop).
-	// setRange() stellt bei diesem großen Bereich selbst eine Beschleunigung ein (Stärke 300): liegen zwei Rasten in
-	// derselben Richtung weniger als 200 ms auseinander, kommen etwa 75 / (Abstand in ms) Schritte dazu.
-	numberSelector.setRange(255, 2, -1, false, 0); // hier nur reduktion bis auf 2 möglich
-	numberSelector.setValue(DEFAULT_BRIGHTNESS);	// Startwert = Grundhelligkeit des Geräts
-#endif
+	// Zählbereich des Encoders = die Stufen, am Ende kein Überlauf (false). Der Encoder zählt dabei NEGATIV
+	// (-(Stufenzahl-1) .. 0) und die Stufe ist der Wert ohne Vorzeichen (siehe rotary_loop). Das kehrt die
+	// Drehrichtung um, passend zur Verdrahtung des Knopfs.
+	rotaryEncoder->setBoundaries(-(ROTARY_BRIGHTNESS_STEPS - 1), 0, false);
+	rotaryEncoder->setEncoderValue(-startStep);
 }
 
 void on_button_short_click() {
@@ -229,12 +178,8 @@ void rotary_loop() {
 
 	// When getting value
 	if (encoderDelta != 0) {		
-		#if defined(ROTARY_BRIGHTNESS_CURVE)
-			int step = constrain((int)numberSelector.getValue(), 0, ROTARY_BRIGHTNESS_STEPS - 1);	// Stufe des Knopfs
-			BRIGHTNESS = brightnessCurve[step];		// Helligkeit dieser Stufe (Stufe 0 -> 2 = "LEDs aus")
-		#else
-			BRIGHTNESS = numberSelector.getValue();
-		#endif
+		int step = constrain((int)-rotaryEncoder->readEncoder(), 0, ROTARY_BRIGHTNESS_STEPS - 1);	// Stufe des Knopfs (der Encoder zählt negativ)
+		BRIGHTNESS = brightnessCurve[step];		// Helligkeit dieser Stufe (Stufe 0 -> 2 = "LEDs aus")
 		FastLED.setBrightness(BRIGHTNESS);
 		
 		if (BRIGHTNESS == 2) { // wenn LEDs ausgedreht sind... 
