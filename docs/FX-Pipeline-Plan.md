@@ -42,7 +42,13 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
      Takt und Startwerte sind 1:1 übernommen (`fxEvery` auf demselben Zähler wie vorher). Einzige Änderung im
      Verhalten: bei abgeschalteten LEDs rechnen die Effekte weiter (sichtbar bleibt schwarz + Marker).
      `progWaterRipple` gibt weiterhin nur aus, wenn ein Schritt fällig ist (so war es immer) - Kandidat für später:
-     in jedem Durchlauf ausgeben, damit Übergänge und Fades darüber flüssiger laufen. Als Nächstes die übrigen Familien,
+     in jedem Durchlauf ausgeben, damit Übergänge und Fades darüber flüssiger laufen.
+     Erledigt: in der restlichen `FXprograms.cpp` alle 25 Standard-Teile auf `fxBegin()` und 20 Takt-Abfragen auf
+     `fxEvery()` umgestellt (rein mechanisch, gleiche Zähler, gleiche Startwerte; Abfragen mit `>` statt `>=` und
+     die beiden Zufallsfarben-Wrapper von `progMatrixHorizontal`/`Vertical` bleiben wie sie sind). Alle fünf Envs
+     bauen. Als Nächstes: Datei nach Familien aufteilen (reiner Umzug); danach je Familie `LEDsTurnedOff` und das
+     doppelte `fxPresent()` auf `fxShow()` zusammenziehen - das ändert das Verhalten bei den alten Effekten, die
+     zwischen zwei Schritten nicht ausgeben (Text, BlingBling), und
      braucht je Familie einen Blick auf die Hardware;
   4. optional: Überladungen durch Vorgabe-Argumente ersetzen, `progMatrixHorizontal` / `Vertical` zusammenlegen.
 - **Gebaut und committet am 06.10.2026 (drei Commits auf `MAIN`: „Song-Werkzeuge: Excel-Tabelle …", „Songs: Struktur-Tabelle

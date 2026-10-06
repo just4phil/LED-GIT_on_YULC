@@ -154,8 +154,7 @@ int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
 // Eine rote LED blinkt im Abstand von del ms (alte Akku-Warnung; die heutige steht in loop() in main.cpp)
 void progBlinkLowVoltage(unsigned int del) {
 
-	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer -= del;
+	if (fxEvery(millisCounterTimer, del)) {
 
 		//--- switch color ---
 		if (progStroboIsBlack) {
@@ -235,18 +234,12 @@ void initSternschnuppen() {
 // msToReduceSpeed = ms je Schritt (größer = langsamer)
 void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
 
 		// Array Initialisierung
 		initSternschnuppen();
 	}
-	//---------------------------------------------------------------------
 	
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 
@@ -264,8 +257,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 	}	
 	
 	// //----jetzt neu platzieren und dimmen
-	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed -= msToReduceSpeed;
+	if (fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) {
 
 		//--- erste LED ausschalten
 		leds[LEDsUndFarbWerteSternschnuppen[0][0]] = CRGB(0,0,0);
@@ -284,8 +276,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 		}
 	}
 
-	if (millisCounterTimer >= 3000) {	// ersatz für delay()
-		millisCounterTimer -= 3000;
+	if (fxEvery(millisCounterTimer, 3000)) {
 		// RESTART
 		initSternschnuppen();
 	}	
@@ -298,12 +289,7 @@ void progSternschnuppen(unsigned int durationMillis, byte nextPart, unsigned int
 //endlos-loop: random und farbwerte in eigenes array schreiben und langsam dimmen
 void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart, unsigned int msToReduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-
+	if (fxBegin(durationMillis, nextPart)) {
 		if (songIDbefore != 0 || LEDGITBOARD) {
 			clearAll();
 
@@ -315,10 +301,8 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 			}
 		}
 	}
-	//---------------------------------------------------------------------
 	
-	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed -= msToReduceSpeed;
+	if (fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) {
 
 		// freies element suchen und setzen
 		for (int i = 0; i < anzahlLEDsImArray; i++) {
@@ -383,19 +367,13 @@ void progBlingBlingColoringSONGPAUSE(unsigned int durationMillis, byte nextPart,
 // msForColorChange = ms zwischen zwei Farbwechseln, msToReduceSpeed = ms zwischen zwei neuen LEDs
 void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned int msForColorChange, unsigned int msToReduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		
 		progBlingBlingColoring_rounds = 0;
 	}
-	//---------------------------------------------------------------------
 
-	if (millisToReduceCPUSpeed >= msToReduceSpeed) {	// ersatz für delay()
-		millisToReduceCPUSpeed -= msToReduceSpeed;
+	if (fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) {
 
 		if (progBlingBlingColoring_rounds == 0) {
 			CRGB c = getRandomCRGB();
@@ -416,8 +394,7 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 	}	
 
 	// after DEL ms seconds change 1 part of the color randomly
-	if (millisCounterTimer >= msForColorChange) {	//15000 // ersatz für delay()
-		millisCounterTimer -= msForColorChange;
+	if (fxEvery(millisCounterTimer, msForColorChange)) {
 		progBlingBlingColoring_rounds++;
 		if (progBlingBlingColoring_rounds == 4) progBlingBlingColoring_rounds = 1;
 
@@ -440,20 +417,14 @@ void progBlingBlingColoring(unsigned int durationMillis, byte nextPart, unsigned
 // Der Effekt stellt die Gesamthelligkeit auf 255, weil nur wenige LEDs gleichzeitig leuchten.
 void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart, byte addLEDs, byte maxLEDs, unsigned int delayForAddingLEDs) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		actualAnzahlLEDs = anzahl;
 	}
-	//---------------------------------------------------------------------
 
 	// anzahl LEDs ggf. erhoehen
-	if (millisCounterTimer >= delayForAddingLEDs) {	//15000 // ersatz für delay()
-		millisCounterTimer -= delayForAddingLEDs;
+	if (fxEvery(millisCounterTimer, delayForAddingLEDs)) {
 		if (addLEDs > 0) {
 			if (actualAnzahlLEDs + addLEDs <= maxLEDs) {
 				actualAnzahlLEDs = actualAnzahlLEDs + addLEDs;
@@ -489,19 +460,13 @@ void progFastBlingBling(unsigned int durationMillis, byte anzahl, byte nextPart)
 // Alle LEDs in derselben Zufallsfarbe; alle del ms kommt eine neue Farbe (z.B. del = Länge eines Beats).
 void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer -= del;
+	if (fxEvery(millisCounterTimer, del)) {
 
 		CRGB c = getRandomCRGB();
 		r = c.r; g = c.g; b = c.b;
@@ -527,20 +492,14 @@ void progFullColors(unsigned int durationMillis, byte nextPart, unsigned int del
 // invertPhase = true beginnt mit der anderen Phase: so können zwei Geräte abwechselnd blitzen.
 void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, int red, int green, int blue, bool invertPhase) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		progStroboIsBlack = invertPhase;   // Startphase: false=sync, true=invertiert (halbe Periode Versatz)
 		millisCounterTimer = del; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= del) {	// ersatz für delay()
-		millisCounterTimer -= del;
+	if (fxEvery(millisCounterTimer, del)) {
 
 		//--- switch color ---
 		if (progStroboIsBlack) {
@@ -580,15 +539,10 @@ void progStrobo(unsigned int durationMillis, byte nextPart, unsigned int del, CR
 // reduceSpeed = ms je Schritt. zaehler ist die x-Position; sie läuft auf beiden Seiten 6 Spalten über den Rand hinaus.
 void progMatrixScanner(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		millisToReduceCPUSpeed = 0;
 	}
-	//---------------------------------------------------------------------
 
 #if defined (SCROLLMATRIX)
 	reduceSpeed = 1;
@@ -647,23 +601,17 @@ void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsig
 int c_x;
 int c_y;
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		//--- init.:
 		col1 = getRandomColor();
 		col2 = getRandomColor();
 	}
-	//---------------------------------------------------------------------
 
 	// change color every x seconds
 	if (msForColorChange > 0) {
-		if (millisCounterTimer >= msForColorChange) {	// ersatz für delay()
-			millisCounterTimer -= msForColorChange;
+		if (fxEvery(millisCounterTimer, msForColorChange)) {
 			col1 = getRandomColor();
 			col2 = getRandomColor();
 		}
@@ -836,11 +784,8 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
                               unsigned char nextPart, unsigned char reduceSpeed,
                               float cx_base, float cy_base, bool wander, byte numArms) {
 
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		col1 = getRandomColor();
 		col2 = getRandomColor();
 		sternAngle   = 0.0f;
@@ -848,8 +793,7 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
 	}
 
 	if (msForColorChange > 0) {
-		if (millisCounterTimer >= msForColorChange) {
-			millisCounterTimer -= msForColorChange;
+		if (fxEvery(millisCounterTimer, msForColorChange)) {
 			col1 = getRandomColor();
 			col2 = getRandomColor();
 		}
@@ -931,14 +875,9 @@ void progSternNeu(unsigned int durationMillis, unsigned int msForColorChange,
 // Alle LEDs aus für die Dauer des Parts (Pausen, Stopps im Song). Die Bund-Marker leuchten weiter.
 void progBlack(unsigned int durationMillis, byte nextPart) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 	}
-	//---------------------------------------------------------------------
 
 	if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 		fxPresent();
@@ -951,19 +890,13 @@ void progBlack(unsigned int durationMillis, byte nextPart) {
 // schwarze Kreise kommen vor, die wieder Lücken in das Bild stanzen.
 void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		millisCounterTimer = msForChange; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= msForChange) {	// ersatz für delay()
-		millisCounterTimer -= msForChange;
+	if (fxEvery(millisCounterTimer, msForChange)) {
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
 			if (clearEach) {
@@ -992,21 +925,14 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 // zufälligen Stelle am unteren Rand. clearEach wie bei progCircles.
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-
+	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
 
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		millisCounterTimer = msForChange; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= msForChange) {	// ersatz für delay()
-		millisCounterTimer -= msForChange;
+	if (fxEvery(millisCounterTimer, msForChange)) {
 
 		byte x1 = random(0, MATRIX_WIDTH-1);
 		byte x2 = random(0, MATRIX_WIDTH-1);	
@@ -1041,14 +967,9 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 // Geräten durchläuft sie sechs Abschnitte (stage 0..5), in denen sich jeweils ein anderes Linien-Ende bewegt.
 void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 	}
-	//---------------------------------------------------------------------
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed -= reduceSpeed;
@@ -1148,14 +1069,9 @@ void progMovingLines(unsigned int durationMillis, byte nextPart) {
 // "sizeof(liste) / sizeof(liste[0])" = Anzahl der Einträge einer Liste (Gesamtgröße durch Größe eines Eintrags).
 void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 	}
-	//---------------------------------------------------------------------
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed -= reduceSpeed;
@@ -1266,14 +1182,9 @@ void progOutline(unsigned int durationMillis, byte nextPart) {
 //TODO: fixen
 void progRunningPixel(unsigned int durationMillis, byte nextPart) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 	}
-	//---------------------------------------------------------------------
 
 	int last_x = -1;
 	int last_y = -1;
@@ -1296,14 +1207,9 @@ void progRunningPixel(unsigned int durationMillis, byte nextPart) {
 // Test: alle LEDs des Geräts (0 .. anz_LEDs-1) in einer festen Farbe - zeigt, ob anz_LEDs stimmt und alle LEDs gehen.
 void progTestRange(unsigned int durationMillis, byte nextPart) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		//FastLED.clear(true);	// nicht nötig da full colors ohnehin alles überschreiben
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 	}
-	//---------------------------------------------------------------------
 
 	for (int i = 0; i < anz_LEDs; i++) {
 		leds[i] = CRGB(100, 50, 50);
@@ -1332,18 +1238,12 @@ static void textSetup() {
 // Alle 100 ms neu gezeichnet.
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart) {
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		millisCounterTimer = 100;
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= 100) {
-		millisCounterTimer -= 100;
+	if (fxEvery(millisCounterTimer, 100)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
 		if (!LEDsTurnedOff) {
@@ -1360,12 +1260,8 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 // durchgelaufen, beginnt er von vorn. (Der Parameter heißt nur so wie die Funktion delay(), gewartet wird nicht.)
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart) {
 
-    //--- standard-part um dauer und naechstes programm zu speichern ----
-    if (!nextChangeMillisAlreadyCalculated) {
+    if (fxBegin(durationMillis, nextPart)) {
         FastLED.clear();
-        nextChangeMillis = durationMillis;
-        nextSongPart = nextPart;
-        nextChangeMillisAlreadyCalculated = true;
 
 		millisCounterTimer = delay; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
 
@@ -1373,10 +1269,8 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 		progScrollTextZaehler = MATRIX_WIDTH - 2;	// Start: Text beginnt am rechten Rand
 		progScrollEnde = words.length() * 6;		// Breite des Texts in Pixeln (6 je Zeichen)
     }
-    //---------------------------------------------------------------------
 	
-	if (millisCounterTimer >= delay) {	// ersatz für delay()
-		millisCounterTimer -= delay;
+	if (fxEvery(millisCounterTimer, delay)) {
 		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
 
 		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
@@ -1409,16 +1303,12 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPart,
                             unsigned int msDelay) {
 
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		millisCounterTimer = msDelay;
 	}
 
-	if (millisCounterTimer >= msDelay) {
-		millisCounterTimer -= msDelay;
+	if (fxEvery(millisCounterTimer, msDelay)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
 		if (!LEDsTurnedOff) {
@@ -1463,18 +1353,14 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart,
 
 	static int blinkColor;
 
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		blinkColor = getRandomColor();
 		progTextBlinkIsOn = false;
 		millisCounterTimer = blinkMs;
 	}
 
-	if (millisCounterTimer >= blinkMs) {
-		millisCounterTimer -= blinkMs;
+	if (fxEvery(millisCounterTimer, blinkMs)) {
 		FastLED.setBrightness(BRIGHTNESS);
 
 		if (!LEDsTurnedOff) {
@@ -1509,11 +1395,8 @@ static int textY() {
 
 // Standard-Teil für progText/progTextScroll. Rückgabe false = LEDs sind abgeschaltet, nichts zeichnen.
 static bool textPartInit(unsigned int durationMillis, byte nextPart) {
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 		progTextLastState = -1000000;
 	}
 	if (LEDsTurnedOff) progTextLastState = -1000000;	// nach dem Wiedereinschalten sofort neu zeichnen
@@ -1719,12 +1602,7 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 //11 weiss/grün fast mit fades
 //20 (PALETTE_SCHEME) Verlauf aus dem aktiven Farbschema
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-
+	if (fxBegin(durationMillis, nextPart)) {
 		// setup palette/Programm
 		switch (paletteID) {
 		case 0:
@@ -1783,7 +1661,6 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 		if (blend == PAL_BLEND_ON) currentBlending = LINEARBLEND;
 		else if (blend == PAL_BLEND_OFF) currentBlending = NOBLEND;
 	}
-	//---------------------------------------------------------------------
 
 	if (cycleMillis) {
 		// Tempo als Parameter: Lage in der Palette aus der Zeit seit Part-Beginn (auf allen Geräten gleich, kein Sprung)
@@ -1924,20 +1801,13 @@ void progMatrixHorizontal(unsigned int durationMillis, byte nextPart, unsigned i
 
 	int colorIndex, offset, row, i;
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-
+	if (fxBegin(durationMillis, nextPart)) {
 		zaehler = 0;
 		progMatrixZaehler = 27;
 		millisCounterTimer = 100;
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer -= reduceSpeed;
+	if (fxEvery(millisCounterTimer, reduceSpeed)) {
 
 		clearAll();
 
@@ -2421,21 +2291,15 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart, unsigned int
 
 	int colorIndex, offset, row, i;
 
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
+	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();	// DEAKTIVIERT da dies immer zu mehr oder minder langen "ausfällen" der MarkerLEDs führte
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
 
 		zaehler = 0;
 		progMatrixZaehler = 25; // (rand() % (40 + 1 - 15) + 15);//25;
 		millisCounterTimer = 100;
 	}
-	//---------------------------------------------------------------------
 
-	if (millisCounterTimer >= reduceSpeed) {	// ersatz für delay()
-		millisCounterTimer -= reduceSpeed;
+	if (fxEvery(millisCounterTimer, reduceSpeed)) {
 
 		clearAll();
 
@@ -2739,10 +2603,7 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 		CRGB(0,   255, 180),
 	};
 
-	if (!nextChangeMillisAlreadyCalculated) {
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
+	if (fxBegin(durationMillis, nextPart)) {
 		millisCounterTimer = 100;
 
 		int nActive = limiting ? (int)maxActive : numStreams;
@@ -2773,8 +2634,7 @@ static void matrixMovieFXCore(unsigned int durationMillis, byte nextPart,
 		}
 	}
 
-	if (millisCounterTimer >= reduceSpeed) {
-		millisCounterTimer -= reduceSpeed;
+	if (fxEvery(millisCounterTimer, reduceSpeed)) {
 		clearAll();
 
 		for (int s = 0; s < numStreams; s++) {
