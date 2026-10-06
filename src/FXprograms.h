@@ -319,7 +319,9 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart, uns
  * progText: ein oder mehrere Wörter (durch Leerzeichen getrennt), pro msPerWord das nächste, automatisch
  * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext.
  * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist.
- * col = CRGB::Black (Standard): Farben des aktiven Schemas.
+ * col = CRGB::Black (Standard): Farben des aktiven Schemas (bei jedem Wort bzw. Durchlauf die nächste).
+ * Farbverlauf in der Schrift statt einer Farbe: vorher im case fxTextGradient(...) anmelden (fxPipeline.h),
+ * col gilt dann nicht.
  */
 void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col = CRGB::Black);
 void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col = CRGB::Black);
@@ -376,6 +378,15 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart);
  * @param blend (colorSchemes.h) PAL_BLEND_AUTO (wie zur paletteID festgelegt), PAL_BLEND_ON (weiche Übergänge), PAL_BLEND_OFF (harte Kanten)
  */
 void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, unsigned int cycleMillis, uint8_t blend = PAL_BLEND_AUTO);
+
+/**
+ * @brief Palette zu einer paletteID holen, ohne die aktuelle Palette (die von progPalette) zu verändern
+ *
+ * Für Effekte, die einen Verlauf für sich brauchen - z. B. den Farbverlauf in der Schrift (fxTextGradient).
+ * @param pal      hier hinein wird die Palette geschrieben
+ * @param blending hier hinein die Art der Übergänge (LINEARBLEND = weich, NOBLEND = harte Kanten)
+ */
+void paletteByID(uint8_t paletteID, CRGBPalette16& pal, TBlendType& blending);
 
 //==================================================================
 //=========== "Matrix"-Regen (wie im gleichnamigen Film) ===========

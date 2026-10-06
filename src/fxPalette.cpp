@@ -130,6 +130,79 @@ void FillLEDsFromPaletteColors(uint8_t colorInd, char speed) {
 void FillLEDsFromPaletteColors(uint8_t colorInd) {
 	FillLEDsFromPaletteColors(colorInd, 3);
 }
+// Setzt die aktuelle Palette (currentPalette) und ihre Übergänge (currentBlending: LINEARBLEND = weich,
+// NOBLEND = harte Kanten) nach der paletteID (Liste oben). Eine unbekannte Nummer lässt beides, wie es ist.
+static void loadPalette(uint8_t paletteID) {
+	switch (paletteID) {
+	case 0:
+		currentPalette = RainbowColors_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case 1:
+		currentPalette = RainbowStripeColors_p;
+		currentBlending = NOBLEND;
+		break;
+	case 2:
+		currentPalette = RainbowStripeColors_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case 3:
+		SetupPurpleAndGreenPalette();
+		currentBlending = LINEARBLEND;
+		break;
+	case 4:
+		SetupTotallyRandomPalette();
+		currentBlending = LINEARBLEND;
+		break;
+	case 5:
+		SetupBlackAndWhiteStripedPalette();
+		currentBlending = NOBLEND;
+		break;
+	case 6:
+		SetupBlackAndWhiteStripedPalette();
+		currentBlending = LINEARBLEND;
+		break;
+	case 7:
+		currentPalette = CloudColors_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case 8:
+		currentPalette = PartyColors_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case 9:
+		currentPalette = myRedWhiteBluePalette_p;
+		currentBlending = NOBLEND;
+		break;
+	case 10:
+		currentPalette = myRedWhiteBluePalette_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case 11:
+		currentPalette = MatrixColors_p;
+		currentBlending = LINEARBLEND;
+		break;
+	case PALETTE_SCHEME:
+		currentPalette = schemePalette();
+		currentBlending = LINEARBLEND;
+		break;
+	}
+}
+
+// Liefert die Palette zu einer paletteID, OHNE die aktuelle Palette zu verändern (für den Farbverlauf in der
+// Schrift, fxText.cpp: darunter kann zugleich progPalette mit seiner eigenen Palette laufen). Die aktuelle Palette
+// wird dazu kurz gesichert, über loadPalette() gesetzt, kopiert und wieder zurückgestellt. Das "&" hinter den
+// Typen heißt: die Funktion schreibt ihr Ergebnis direkt in die Variablen des Aufrufers.
+void paletteByID(uint8_t paletteID, CRGBPalette16& pal, TBlendType& blending) {
+	CRGBPalette16 keepPalette = currentPalette;
+	TBlendType keepBlending = currentBlending;
+	loadPalette(paletteID);
+	pal = currentPalette;
+	blending = currentBlending;
+	currentPalette = keepPalette;
+	currentBlending = keepBlending;
+}
+
 //--- Paletten-Effekt -----------------------------------------------------------
 // Ein Farbverlauf wandert über den Streifen. paletteID wählt den Verlauf (Liste unten), cycleMillis das Tempo,
 // blend erzwingt weiche oder harte Übergänge (siehe FXprograms.h).
@@ -151,60 +224,7 @@ void progPalette(unsigned int durationMillis, uint8_t paletteID, byte nextPart, 
 
 	if (fxBegin(durationMillis, nextPart)) {
 		// setup palette/Programm
-		switch (paletteID) {
-		case 0:
-			currentPalette = RainbowColors_p;
-			currentBlending = LINEARBLEND;
-			break;
-		case 1:
-			currentPalette = RainbowStripeColors_p;   
-			currentBlending = NOBLEND;
-			break;
-		case 2:
-			currentPalette = RainbowStripeColors_p;   
-			currentBlending = LINEARBLEND;
-			break;
-		case 3:
-			SetupPurpleAndGreenPalette();   
-			currentBlending = LINEARBLEND;
-			break;
-		case 4:
-			SetupTotallyRandomPalette();   
-			currentBlending = LINEARBLEND;
-			break;
-		case 5:
-			SetupBlackAndWhiteStripedPalette();       
-			currentBlending = NOBLEND;
-			break;
-		case 6:
-			SetupBlackAndWhiteStripedPalette();       
-			currentBlending = LINEARBLEND;
-			break;
-		case 7:
-			currentPalette = CloudColors_p;           
-			currentBlending = LINEARBLEND;
-			break;
-		case 8:
-			currentPalette = PartyColors_p;           
-			currentBlending = LINEARBLEND;
-			break;
-		case 9:
-			currentPalette = myRedWhiteBluePalette_p; 
-			currentBlending = NOBLEND;
-			break;
-		case 10:
-			currentPalette = myRedWhiteBluePalette_p; 
-			currentBlending = LINEARBLEND;
-			break;
-		case 11:
-			currentPalette = MatrixColors_p;
-			currentBlending = LINEARBLEND;
-			break;
-		case PALETTE_SCHEME:
-			currentPalette = schemePalette();
-			currentBlending = LINEARBLEND;
-			break;
-		}
+		loadPalette(paletteID);
 		if (blend == PAL_BLEND_ON) currentBlending = LINEARBLEND;
 		else if (blend == PAL_BLEND_OFF) currentBlending = NOBLEND;
 	}

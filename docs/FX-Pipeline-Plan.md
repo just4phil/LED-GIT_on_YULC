@@ -11,8 +11,27 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf Branch `lib-cleanup`)
+Zuletzt aktualisiert: 06.10.2026 (Farbverlauf in der Schrift gebaut, Abnahme offen)
 
+- **06.10.2026, Farbverlauf in der Schrift (`fxTextGradient`) - gebaut, vom User: „supercool"; Abnahme der Demo-Parts
+  auf der Hardware offen** (Commit „Farbverlauf in der Schrift (fxTextGradient)"; Wunsch des Users: beim Lauftext statt des Farbwechsels je Durchlauf auch Palette oder Farbverlauf in
+  der Schrift). Anmeldung `fxTextGradient(paletteID, dir, cycleMillis)` oben im case (`src/fxPipeline.cpp/.h`, wird
+  von `fxPartReset()` gelöscht), ausgewertet von `progText` / `progTextScroll` selbst (`src/fxText.cpp`: Buchstaben
+  weiß zeichnen, danach jedes nicht schwarze Pixel aus der Palette färben). `dir`: `TEXT_GRAD_H` (quer über die
+  Matrix), `TEXT_GRAD_V` (oben -> unten in den Buchstaben), `TEXT_GRAD_DIAG`, `TEXT_GRAD_LETTERS` (am Text
+  befestigt, Schrittweite `TEXT_GRAD_LETTER_STEP` 5). `cycleMillis` > 0: der Verlauf wandert, gerechnet aus der
+  Zeit seit Part-Beginn; dann wird auch bei stehendem Text neu gezeichnet. Palette über das neue `paletteByID()`
+  (`src/fxPalette.cpp`; der `switch` von `progPalette` ist dafür unverändert nach `loadPalette()` gezogen,
+  `currentPalette` bleibt unberührt). Ohne Anmeldung verhalten sich beide Text-Effekte wie bisher. YAML:
+  `text: {..., gradient: scheme|rainbow|party|... | {palette:, dir:, per:}}` (`tools/songgen.py`,
+  `text_gradient_call()`; nicht zusammen mit `color`). Demo 92: Parts 29, 31, 32, 33 am Anfang (Part 0 springt
+  dorthin, danach weiter in 23). Dokus: `docs/LED-Effekte-und-Szenen.html` (Tabelle Text-Ebene, Demo-Tabelle mit
+  um 44 s verschobenen Zeiten), `docs/Song-Workflow.html`, `docs/effekt-katalog.yaml`, Skill `new-song`,
+  `CLAUDE.md`, `README.md`. Alle fünf Envs bauen; OTA-Firmwares in `ota/` sind von diesem Stand
+  (Version 1791303954, vorheriger Stand per `--backup` in `ota/backup/` gesichert). **Nächster Schritt:** User
+  startet `build_ota.py --serve-only` und prüft Demo 92; nach der Abnahme Parts 29-33 nach hinten zu den
+  abgenommenen rücken, Urteil in den Katalog, committen. Stellschrauben: Dichte des Verlaufs quer (einmal je
+  Matrixbreite), `TEXT_GRAD_LETTER_STEP`, Faktoren 32 / 16 je Pixelzeile bei V / DIAG.
 - **06.10.2026, `progStarfield` mit Schweif** (Wunsch des Users: „sieht etwas lame aus"; dritte Fassung vom User
   auf der Hardware abgenommen: „nicht mehr so richtig ein starfield, aber es sieht dennoch besser aus"; Commit
   „progStarfield: Schweif, eigene Farbe je Stern, Sterne über die ganze Fläche"; OTA-Firmwares in `ota/` sind von

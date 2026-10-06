@@ -104,6 +104,9 @@ static struct {
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// fxGate
 	uint8_t dim, stageDim;						// fxDim und fxMaskStage (255 = volle Helligkeit)
 	uint8_t soft;								// fxSoft (Prozent)
+	bool textGrad;								// fxTextGradient: Farbverlauf in der Schrift angemeldet
+	uint8_t textGradPalette, textGradDir;		// ... Palette (paletteID) und Richtung (TEXT_GRAD_...)
+	unsigned int textGradCycleMs;				// ... Dauer eines Durchlaufs (0 = steht still)
 	uint8_t spanFrom, spanTo;					// fxMaskSpan
 	bool span;
 	CRGB tint;									// fxTint
@@ -193,6 +196,22 @@ void fxTextFadeOut(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeOutMs = mil
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_TEXT], bpm, depth, beats); }
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_TEXT], bpm, perBeat, dutyPercent); }
 void fxTextUnder(uint8_t brightness)		{ mod.layer[LAYER_TEXT].under = brightness; }
+
+// Farbverlauf in der Schrift: hier wird er nur gemerkt, gezeichnet wird er in fxText.cpp (progText / progTextScroll
+// fragen ihn mit fxTextGradientGet() ab).
+void fxTextGradient(uint8_t paletteID, uint8_t dir, unsigned int cycleMillis) {
+	mod.textGrad = true;
+	mod.textGradPalette = paletteID;
+	mod.textGradDir = dir;
+	mod.textGradCycleMs = cycleMillis;
+}
+bool fxTextGradientGet(uint8_t& paletteID, uint8_t& dir, unsigned int& cycleMillis) {
+	if (!modReady) resetMods();
+	paletteID = mod.textGradPalette;
+	dir = mod.textGradDir;
+	cycleMillis = mod.textGradCycleMs;
+	return mod.textGrad;
+}
 
 //==================================================================
 //=========== Ebene: zweiter Effekt mit eigenem Kontext ============

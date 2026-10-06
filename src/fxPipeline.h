@@ -92,6 +92,25 @@ void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);
 void fxTextUnder(uint8_t brightness);
 
+//--- Farbverlauf in der Schrift: progText / progTextScroll färben die Buchstaben nicht einfarbig, sondern mit einer
+//    Palette (paletteID wie bei progPalette, FXprograms.h; PALETTE_SCHEME = Verlauf aus dem aktiven Farbschema).
+//    Anmeldung wie die Modifikatoren oben im case; ausgewertet wird sie vom Text-Effekt selbst (wie fxSoft), egal ob
+//    der Text als Effekt des Parts, in der Ebene oder in der Text-Ebene läuft. Die Farbe im Aufruf (col) gilt dann nicht.
+//
+//   case 45: setColorScheme(SCHEME_SUNSET); fxTextGradient(PALETTE_SCHEME, TEXT_GRAD_V);
+//            progTextScroll("GIRLS JUST WANNA HAVE FUN", 11163, 50); break; ---
+enum FxTextGradDir : uint8_t {
+	TEXT_GRAD_H = 0,	// quer: der Verlauf liegt einmal über die Breite der Matrix, die Buchstaben laufen hindurch
+	TEXT_GRAD_V,		// hoch: von der Oberkante der Buchstaben zur Unterkante (jede Pixelzeile der Schrift eine Farbe)
+	TEXT_GRAD_DIAG,		// schräg: quer und zugleich nach unten versetzt
+	TEXT_GRAD_LETTERS,	// quer, aber am Text befestigt: beim Lauftext behält jeder Buchstabe seine Farbe und nimmt sie mit
+};
+void fxTextGradient(uint8_t paletteID, uint8_t dir = TEXT_GRAD_H, unsigned int cycleMillis = 0);	// cycleMillis = so lange braucht
+						// der Verlauf, um einmal durch die Schrift zu wandern (aus der Zeit seit Part-Beginn -> auf allen Geräten
+						// gleich); 0 = der Verlauf steht still
+bool fxTextGradientGet(uint8_t& paletteID, uint8_t& dir, unsigned int& cycleMillis);	// für die Text-Effekte: ist ein Verlauf
+						// angemeldet (Rückgabe true)? Dann stehen seine Werte in den drei Variablen
+
 //--- Übergänge: so kommt das Bild des neuen Parts ins Bild des alten ---
 enum FxTransition : uint8_t {
 	TRANS_CUT = 0,		// harter Schnitt (Standard)

@@ -4238,8 +4238,46 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23. Derzeit ist nichts offen:
-	case 0:		switchToPart(23);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 23.
+	case 0:		switchToPart(DEMO_NR(29));	break;
+
+	// fxTextGradient: Farbverlauf in der Schrift statt einer Farbe (nur Matrix; die anderen Geräte atmen ruhig im Schema)
+	case 29:	// Lauftext, Verlauf aus dem Farbschema quer über die Matrix: die Buchstaben laufen durch die Farben
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextGradient(PALETTE_SCHEME, TEXT_GRAD_H);
+		progTextScroll("GRADIENT ACROSS", 8000, DEMO_NR(31));
+#else
+		scene(SCENE_CALM, 8000, DEMO_NR(31), bpm);
+#endif
+		break;
+	case 31:	// Lauftext, Regenbogen von oben nach unten in den Buchstaben, wandert in 2 s einmal durch
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextGradient(0, TEXT_GRAD_V, 2000);
+		progTextScroll("RAINBOW TOP DOWN", 8000, DEMO_NR(32));
+#else
+		scene(SCENE_CALM, 8000, DEMO_NR(32), bpm);
+#endif
+		break;
+	case 32:	// Lauftext, Party-Palette am Text befestigt: jeder Buchstabe nimmt seine Farbe mit
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+		progTextScroll("EVERY LETTER ITS COLOUR", 8000, DEMO_NR(33));
+#else
+		scene(SCENE_CALM, 8000, DEMO_NR(33), bpm);
+#endif
+		break;
+	case 33:	// Wörter im Beat, Verlauf aus dem Farbschema schräg, wandert in 1 s (2 Beats) einmal durch
+		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextGradient(PALETTE_SCHEME, TEXT_GRAD_DIAG, 1000);
+		progText("GIRLS JUST WANNA HAVE FUN", 8000, 23, 500);
+#else
+		scene(SCENE_CALM, 8000, 23, bpm);
+#endif
+		break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// Phase 0c: bildgetaktete Effekte laufen auf festem 16-ms-Schritt (FX_REF_FRAME_MS) - auf allen Geräten gleich schnell

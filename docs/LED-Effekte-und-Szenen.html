@@ -208,7 +208,7 @@
 <div class="tablewrap"><table>
   <tr><th>Quelle</th><th>Betroffene Programme</th><th>Verhalten mit Schema</th></tr>
   <tr><td><code>getRandomColor()</code>, <code>getRandomColorIncludingBlack()</code></td><td>progScrollText, progShowText, progStern/SternNeu, progCircles, progRandomLines, progMovingLines, progBlinkText, progShowLettersSpread</td><td>Schemafarbe als RGB565, bei <i>IncludingBlack</i> mit 1/8 Chance schwarz.</td></tr>
-  <tr><td><code>schemeColor(n)</code></td><td>progText, progTextScroll (der <code>text:</code>-Schlüssel der Song-YAMLs, siehe <code>docs/Song-Workflow.html</code>)</td><td>bei jedem Wort bzw. Durchlauf die nächste Schemafarbe; mit fester Farbe im Aufruf gilt diese.</td></tr>
+  <tr><td><code>schemeColor(n)</code></td><td>progText, progTextScroll (der <code>text:</code>-Schlüssel der Song-YAMLs, siehe <code>docs/Song-Workflow.html</code>)</td><td>bei jedem Wort bzw. Durchlauf die nächste Schemafarbe; mit fester Farbe im Aufruf gilt diese. Mit <code>fxTextGradient(PALETTE_SCHEME, …)</code> liegen alle Schemafarben als Verlauf in der Schrift.</td></tr>
   <tr><td>3× <code>getRandomColorValue()</code> → <code>getRandomCRGB()</code></td><td>progBlingBlingColoringSONGPAUSE, progBlingBlingColoring, progFastBlingBling, progFullColors, progOutline (GITBOARD-Pfade)</td><td>ganze Schemafarbe. Bei BlingBlingColoring wird pro Runde eine neue Schemafarbe gezogen statt nur ein Kanal geändert.</td></tr>
   <tr><td><code>progStrobo(…, CRGB col)</code></td><td>neue Überladung; alle 97 Strobo-Aufrufe mit Zufallsfarben in <code>songs.cpp</code> nutzen jetzt <code>getRandomCRGB()</code></td><td>Strobo in Schemafarben</td></tr>
   <tr><td>direkte Zufallspaletten</td><td>progMatrixHorizontal/Vertical (random), matrixMovieFX (random pro Stream), SetupTotallyRandomPalette (progPalette 4), progWaterRipple (random), progStarfield</td><td>Schemafarben statt fester Palette</td></tr>
@@ -374,6 +374,7 @@
   <tr><td><code>fxTextBegin()</code> / <code>fxTextEnd(amount = 255, mode = FX_OVER)</code></td><td>Der Effekt dazwischen (<code>progText</code>, <code>progTextScroll</code>) zeichnet in die Text-Ebene. <code>amount</code> = Deckkraft des Texts. Mit <code>mode = FX_CUT</code> und weiß gezeichnetem Text wird er ausgestanzt: Buchstaben dunkel, die Szene leuchtet drumherum (YAML: <code>color: schwarz</code>). Lesbar nur über hellen, gleichmäßigen Flächen. <code>fxLayerFlush()</code> gilt für beide Ebenen.</td></tr>
   <tr><td><code>fxTextWindow</code>, <code>fxTextFadeIn</code>, <code>fxTextFadeOut</code>, <code>fxTextPulse</code>, <code>fxTextGate</code></td><td>Wie die <code>fxLayer…</code>-Funktionen, steuern aber nur den Text.</td></tr>
   <tr><td><code>fxTextUnder(brightness)</code></td><td>Alles unter dem Text wird dunkler: Effekt des Parts <b>und</b> Ebene.</td></tr>
+  <tr><td><code>fxTextGradient(paletteID, dir = TEXT_GRAD_H, cycleMillis = 0)</code></td><td>Farbverlauf in der Schrift statt einer Farbe, für <code>progText</code> und <code>progTextScroll</code> – egal ob der Text als Effekt des Parts, in der Ebene oder in der Text-Ebene läuft. <code>paletteID</code> wie bei <code>progPalette</code> (<code>PALETTE_SCHEME</code> = Verlauf aus dem aktiven Farbschema). <code>dir</code>: <code>TEXT_GRAD_H</code> quer über die Matrix (die Buchstaben laufen durch die Farben), <code>TEXT_GRAD_V</code> von oben nach unten in den Buchstaben, <code>TEXT_GRAD_DIAG</code> schräg, <code>TEXT_GRAD_LETTERS</code> am Text befestigt (jeder Buchstabe nimmt seine Farbe mit). <code>cycleMillis</code>: so lange wandert der Verlauf einmal durch die Schrift, 0 = steht still. Die Farbe im Aufruf gilt dann nicht. YAML: <code>text: {…, gradient: …}</code>.</td></tr>
 </table></div>
 <p>In generierten Songs entsteht die Text-Ebene von selbst, wenn ein Abschnitt <code>text: {…, over: true}</code> <b>und</b> <code>overlay</code> hat; die Ebenen-Schlüssel im <code>text</code> steuern dann den Text. Ohne <code>overlay</code> belegt der Text wie bisher die eine Ebene.</p>
 <p>Grenzen: Nicht derselbe Effekt oben und unten, weil die Effekte eigenen Zustand in statischen Variablen halten; mit Text-Ebene also kein <code>progText</code> / <code>progTextScroll</code> in der Ebene oder als Effekt des Parts. Es gibt eine frei belegbare Ebene pro Part, dazu die Text-Ebene. Stellt der Effekt der Ebene die Gesamthelligkeit um (<code>progFastBlingBling</code> setzt 255), wird das beim Mischen ausgeglichen: der Effekt darunter behält seine Helligkeit.</p>
@@ -414,76 +415,80 @@
   <tr><td>70</td><td>SUNSET</td><td><code>progPalette(8000, PALETTE_SCHEME, 100)</code></td></tr>
 </table></div>
 <div class="tablewrap"><table>
-  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 6:40 min)</th></tr>
+  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 7:25 min)</th></tr>
   <tr><th>Part</th><th>ab</th><th>Baustein</th><th>Worauf du achten sollst</th></tr>
-  <tr><th colspan="4">Noch nicht abgenommen: derzeit nichts. Neue Bausteine stehen immer hier am Anfang; vor jedem offenen Part zeigt die Matrix dann 3 s lang seine Nummer (übrige Geräte dunkel), und in dieser Spalte steht genau, worauf zu achten ist.</th></tr>
+  <tr><th colspan="4">Noch nicht abgenommen: Farbverlauf in der Schrift (<code>fxTextGradient</code>), je 8 s. Neue Bausteine stehen immer hier am Anfang; vor jedem offenen Part zeigt die Matrix 3 s lang seine Nummer (übrige Geräte dunkel), und in dieser Spalte steht genau, worauf zu achten ist. Übrige Geräte in diesen Parts: ruhiges Atmen im Schema.</th></tr>
+  <tr><td>29</td><td>0:03</td><td><code>fxTextGradient(PALETTE_SCHEME, TEXT_GRAD_H)</code></td><td>Matrix: Lauftext „GRADIENT ACROSS“. Der Verlauf der Schemafarben (SUNSET) liegt fest quer über der Matrix, die Buchstaben laufen durch die Farben hindurch. Ist der Verlauf über die Breite gut zu erkennen, bleibt der Text lesbar?</td></tr>
+  <tr><td>31</td><td>0:14</td><td><code>fxTextGradient(0, TEXT_GRAD_V, 2000)</code></td><td>Matrix: Lauftext „RAINBOW TOP DOWN“. Regenbogen von der Oberkante zur Unterkante der Buchstaben (jede Pixelzeile eine Farbe); die Farben wandern in 2 s einmal durch. Läuft der Text dabei so flüssig wie ohne Verlauf?</td></tr>
+  <tr><td>32</td><td>0:25</td><td><code>fxTextGradient(8, TEXT_GRAD_LETTERS)</code></td><td>Matrix: Lauftext „EVERY LETTER ITS COLOUR“. Party-Palette am Text befestigt: jeder Buchstabe behält seine Farbe und nimmt sie beim Laufen mit, nach rund 8 Buchstaben wiederholt sich der Verlauf.</td></tr>
+  <tr><td>33</td><td>0:36</td><td><code>fxTextGradient(PALETTE_SCHEME, TEXT_GRAD_DIAG, 1000)</code> mit <code>progText</code></td><td>Matrix: Wörter im Beat („GIRLS JUST WANNA HAVE FUN“), Schemafarben (NEON) schräg durch die Schrift, wandern in 2 Beats einmal durch – auch während das Wort steht.</td></tr>
     <tr><th colspan="4">Phase 0c: Effekte auf festem 16-ms-Schritt statt im Bildtakt, je 12 s (abgenommen am 06.10.2026: „deutlich besser als vorher und 100% synchron“)</th></tr>
-  <tr><td>23</td><td>0:00</td><td><code>progPalette(…, 8, …)</code>, alter Aufruf</td><td>Das Farbband läuft auf Matrix, Gitarre, Bass und Lampen gleich schnell (früher war die Matrix rund 12 % langsamer).</td></tr>
-  <tr><td>24</td><td>0:12</td><td><code>progSternNeu(…, 5)</code></td><td>Der Stern dreht sich gleichmäßig und auf allen Geräten gleich schnell.</td></tr>
-  <tr><td>26</td><td>0:24</td><td><code>progMatrixScanner(…, 7)</code></td><td>Der Scanner-Balken läuft gleichmäßig hin und her.</td></tr>
-  <tr><td>27</td><td>0:36</td><td><code>progCometLoop(…, 8, 0, false)</code></td><td>Ein roter Komet läuft um die Kontur von Gitarre und Bass. Bekannt: Auf der Matrix laufen die Kontur-Effekte rund 12 % langsamer (dort wird nichts nachgeholt).</td></tr>
+  <tr><td>23</td><td>0:44</td><td><code>progPalette(…, 8, …)</code>, alter Aufruf</td><td>Das Farbband läuft auf Matrix, Gitarre, Bass und Lampen gleich schnell (früher war die Matrix rund 12 % langsamer).</td></tr>
+  <tr><td>24</td><td>0:56</td><td><code>progSternNeu(…, 5)</code></td><td>Der Stern dreht sich gleichmäßig und auf allen Geräten gleich schnell.</td></tr>
+  <tr><td>26</td><td>1:08</td><td><code>progMatrixScanner(…, 7)</code></td><td>Der Scanner-Balken läuft gleichmäßig hin und her.</td></tr>
+  <tr><td>27</td><td>1:20</td><td><code>progCometLoop(…, 8, 0, false)</code></td><td>Ein roter Komet läuft um die Kontur von Gitarre und Bass. Bekannt: Auf der Matrix laufen die Kontur-Effekte rund 12 % langsamer (dort wird nichts nachgeholt).</td></tr>
   <tr><th colspan="4">Blinder (<code>fxBlinder</code>) auf allen Geräten, je 8 s (abgenommen am 05.10.2026: „ja top!! gefällt mir gut“)</th></tr>
-  <tr><td>17</td><td>0:48</td><td><code>fxBlinderBeat(bpm, 4, 1000)</code></td><td>Über dem Farbband (ROYAL) blendet auf jede 1 ein warmweißer Blinder auf allen Geräten gleichzeitig auf: 1 Beat voll hell, 1 Beat abklingend, deutlich heller als das Farbband. Das Farbband bleibt dabei gleich hell.</td></tr>
-  <tr><td>19</td><td>0:56</td><td><code>fxBlinder(4000, 3000)</code></td><td>Ruhige Fläche (<code>SCENE_GLOW</code>, ROYAL); genau nach 4 s kommt <b>ein</b> langer Blinder auf allen Geräten: 1,5 s voll, 1,5 s abklingend.</td></tr>
-  <tr><td>22</td><td>1:04</td><td><code>fxBlinderBeat(bpm, 4, 1000)</code> auf <code>SCENE_RAIN</code></td><td>Blinder auf jede 1 über einem dunklen Effekt (fallende Leuchtspuren, TOXIC): größter Kontrast. Die Leuchtspuren laufen darunter weiter.</td></tr>
+  <tr><td>17</td><td>1:32</td><td><code>fxBlinderBeat(bpm, 4, 1000)</code></td><td>Über dem Farbband (ROYAL) blendet auf jede 1 ein warmweißer Blinder auf allen Geräten gleichzeitig auf: 1 Beat voll hell, 1 Beat abklingend, deutlich heller als das Farbband. Das Farbband bleibt dabei gleich hell.</td></tr>
+  <tr><td>19</td><td>1:40</td><td><code>fxBlinder(4000, 3000)</code></td><td>Ruhige Fläche (<code>SCENE_GLOW</code>, ROYAL); genau nach 4 s kommt <b>ein</b> langer Blinder auf allen Geräten: 1,5 s voll, 1,5 s abklingend.</td></tr>
+  <tr><td>22</td><td>1:48</td><td><code>fxBlinderBeat(bpm, 4, 1000)</code> auf <code>SCENE_RAIN</code></td><td>Blinder auf jede 1 über einem dunklen Effekt (fallende Leuchtspuren, TOXIC): größter Kontrast. Die Leuchtspuren laufen darunter weiter.</td></tr>
   <tr><th colspan="4">Blinder nur auf den Lampen (abgenommen: „gefallen mir auch gut, kann man gut für rhythmische Sachen verwenden“)</th></tr>
-  <tr><td>21</td><td>1:12</td><td><code>fxBlinderBeat(bpm, 2, 300, 255, White, Lampen)</code></td><td>Nur die beiden Lampen blitzen alle 2 Beats kurz weiß auf, Gitarre, Bass und Matrix zeigen ungestört das Farbband (ICE).</td></tr>
+  <tr><td>21</td><td>1:56</td><td><code>fxBlinderBeat(bpm, 2, 300, 255, White, Lampen)</code></td><td>Nur die beiden Lampen blitzen alle 2 Beats kurz weiß auf, Gitarre, Bass und Matrix zeigen ungestört das Farbband (ICE).</td></tr>
   <tr><th colspan="4">Blinder mit eigenem Verlauf (<code>fxBlinderShape</code>), 8 s (abgenommen am 06.10.2026: „der blinder ist sehr cool“)</th></tr>
-  <tr><td>28</td><td>1:20</td><td><code>fxBlinderBeat(bpm, 8, 4000)</code> + <code>fxBlinderShape(250)</code></td><td>Über dunklem Atmen (ROYAL, 50 %) blendet der Blinder in einer Viertelsekunde ein und klingt dann über fast 4 s aus, zweimal (bei 0 s und 4 s). Im Einsatz: Billie Jean, „the ONE … halftime“.</td></tr>
+  <tr><td>28</td><td>2:04</td><td><code>fxBlinderBeat(bpm, 8, 4000)</code> + <code>fxBlinderShape(250)</code></td><td>Über dunklem Atmen (ROYAL, 50 %) blendet der Blinder in einer Viertelsekunde ein und klingt dann über fast 4 s aus, zweimal (bei 0 s und 4 s). Im Einsatz: Billie Jean, „the ONE … halftime“.</td></tr>
   <tr><th colspan="4">Text-Ebene (abgenommen: „sieht jetzt deutlich besser aus“)</th></tr>
-  <tr><td>1</td><td>1:28</td><td><code>fxTextBegin/End</code> + <code>fxTextUnder(40)</code></td><td>Matrix: Text „TEXT ON TOP“ über Farbband (SUNSET) <b>und</b> Glitzern; beides leuchtet unter dem Text nur mit rund 15 %, damit der Text lesbar ist. Übrige Geräte: Farbband mit Glitzern in voller Helligkeit.</td></tr>
+  <tr><td>1</td><td>2:12</td><td><code>fxTextBegin/End</code> + <code>fxTextUnder(40)</code></td><td>Matrix: Text „TEXT ON TOP“ über Farbband (SUNSET) <b>und</b> Glitzern; beides leuchtet unter dem Text nur mit rund 15 %, damit der Text lesbar ist. Übrige Geräte: Farbband mit Glitzern in voller Helligkeit.</td></tr>
   <tr><th colspan="4">Nachleuchten (<code>fxSmooth</code>, abgenommen: „alle Effekte sehen sehr gut aus und alle sind verwendbar“)</th></tr>
-  <tr><td>18</td><td>1:36</td><td>ohne <code>fxSmooth</code></td><td>Nur zum Vergleich, nichts zu prüfen: <code>progFullColors</code> wie bisher. Merk dir, wie hart jedes Gerät auf den Beat in eine neue Farbe springt.</td></tr>
-  <tr><td>4</td><td>1:40</td><td><code>fxSmooth(250)</code></td><td>Derselbe Effekt mit kurzem Nachleuchten. <b>1.</b> Der Farbwechsel ist eine kurze, weiche Blende statt eines Sprungs. <b>2.</b> Der Beat ist trotzdem noch klar zu erkennen. <b>3.</b> Die Blende ist auf Matrix, Gitarren und Lampen gleich lang. <b>4.</b> Die Matrix ruckelt nicht.</td></tr>
-  <tr><td>11</td><td>1:48</td><td><code>fxSmooth(1000)</code></td><td>Derselbe Effekt, sehr träge. <b>1.</b> Die Farben fließen ineinander, der Beat ist kaum noch zu erkennen. <b>2.</b> Keine sichtbaren Stufen oder Flackern, auch nicht in dunklen Farben. <b>3.</b> Dein Urteil: noch brauchbar (ruhige Parts) oder zu matschig?</td></tr>
-  <tr><td>12</td><td>1:56</td><td><code>fxSmooth(300)</code> auf <code>SCENE_PINGPONG</code></td><td>Das Licht springt pro Beat auf ein anderes Gerät. <b>1.</b> Das Gerät, das gerade dran war, glüht aus, während das nächste aufleuchtet (kein hartes Aus). <b>2.</b> Man sieht trotzdem klar, welches Gerät gerade dran ist. <b>3.</b> Dein Urteil: besser als der harte Sprung?</td></tr>
+  <tr><td>18</td><td>2:20</td><td>ohne <code>fxSmooth</code></td><td>Nur zum Vergleich, nichts zu prüfen: <code>progFullColors</code> wie bisher. Merk dir, wie hart jedes Gerät auf den Beat in eine neue Farbe springt.</td></tr>
+  <tr><td>4</td><td>2:24</td><td><code>fxSmooth(250)</code></td><td>Derselbe Effekt mit kurzem Nachleuchten. <b>1.</b> Der Farbwechsel ist eine kurze, weiche Blende statt eines Sprungs. <b>2.</b> Der Beat ist trotzdem noch klar zu erkennen. <b>3.</b> Die Blende ist auf Matrix, Gitarren und Lampen gleich lang. <b>4.</b> Die Matrix ruckelt nicht.</td></tr>
+  <tr><td>11</td><td>2:32</td><td><code>fxSmooth(1000)</code></td><td>Derselbe Effekt, sehr träge. <b>1.</b> Die Farben fließen ineinander, der Beat ist kaum noch zu erkennen. <b>2.</b> Keine sichtbaren Stufen oder Flackern, auch nicht in dunklen Farben. <b>3.</b> Dein Urteil: noch brauchbar (ruhige Parts) oder zu matschig?</td></tr>
+  <tr><td>12</td><td>2:40</td><td><code>fxSmooth(300)</code> auf <code>SCENE_PINGPONG</code></td><td>Das Licht springt pro Beat auf ein anderes Gerät. <b>1.</b> Das Gerät, das gerade dran war, glüht aus, während das nächste aufleuchtet (kein hartes Aus). <b>2.</b> Man sieht trotzdem klar, welches Gerät gerade dran ist. <b>3.</b> Dein Urteil: besser als der harte Sprung?</td></tr>
   <tr><th colspan="4"><code>progPalette</code> mit Tempo und Fade (abgenommen)</th></tr>
-  <tr><td>13</td><td>2:04</td><td>alter Aufruf</td><td>Nur zum Vergleich: Merk dir, wie schnell das Farbband auf Matrix, Gitarren und Lampen läuft (bisher je Gerät unterschiedlich).</td></tr>
-  <tr><td>14</td><td>2:08</td><td>Tempo 8000 ms</td><td><b>1.</b> Das Band läuft auf allen Geräten gleich schnell (eine Farbe braucht 8 s für einen Umlauf, also genau die Länge des Parts). <b>2.</b> Es läuft gleichmäßig, ohne Ruck oder Sprung. <b>3.</b> Die Übergänge zwischen den Farben sind weich.</td></tr>
-  <tr><td>16</td><td>2:16</td><td>Tempo 1500 ms, <code>PAL_BLEND_OFF</code></td><td><b>1.</b> Das Band läuft deutlich schneller. <b>2.</b> Zwischen den Farben sind harte Kanten, keine Verläufe. <b>3.</b> Wieder auf allen Geräten gleich schnell.</td></tr>
+  <tr><td>13</td><td>2:48</td><td>alter Aufruf</td><td>Nur zum Vergleich: Merk dir, wie schnell das Farbband auf Matrix, Gitarren und Lampen läuft (bisher je Gerät unterschiedlich).</td></tr>
+  <tr><td>14</td><td>2:52</td><td>Tempo 8000 ms</td><td><b>1.</b> Das Band läuft auf allen Geräten gleich schnell (eine Farbe braucht 8 s für einen Umlauf, also genau die Länge des Parts). <b>2.</b> Es läuft gleichmäßig, ohne Ruck oder Sprung. <b>3.</b> Die Übergänge zwischen den Farben sind weich.</td></tr>
+  <tr><td>16</td><td>3:00</td><td>Tempo 1500 ms, <code>PAL_BLEND_OFF</code></td><td><b>1.</b> Das Band läuft deutlich schneller. <b>2.</b> Zwischen den Farben sind harte Kanten, keine Verläufe. <b>3.</b> Wieder auf allen Geräten gleich schnell.</td></tr>
   <tr><th colspan="4">Weiche Farbwechsel im Beat (<code>fxSoft</code>, abgenommen; Part 9 „sehr cool“)</th></tr>
-  <tr><td>6</td><td>2:24</td><td>ohne <code>fxSoft</code></td><td>Nur zum Vergleich: Alle Geräte zeigen dieselbe Farbe und springen pro Beat hart in die nächste.</td></tr>
-  <tr><td>7</td><td>2:28</td><td><code>fxSoft(30)</code></td><td><b>1.</b> Die Farbe steht den größten Teil des Beats still. <b>2.</b> Kurz vor dem nächsten Beat blendet sie weich in die nächste Farbe. <b>3.</b> Alle Geräte blenden exakt gleichzeitig. <b>4.</b> Der Beat bleibt spürbar.</td></tr>
-  <tr><td>8</td><td>2:36</td><td><code>fxSoft(100)</code></td><td><b>1.</b> Die Farbe steht nie still, sie fließt durchgehend von Farbe zu Farbe. <b>2.</b> Alle Geräte zeigen in jedem Moment dieselbe Mischfarbe. <b>3.</b> Dein Urteil: welcher Anteil gefällt dir für Songs, 30 oder 100 %?</td></tr>
-  <tr><td>9</td><td>2:44</td><td><code>fxSoft(60)</code> auf <code>SCENE_COLORS_WAVE</code></td><td><b>1.</b> Die Farbe wandert pro Beat ein Gerät weiter von links nach rechts. <b>2.</b> Jedes Gerät blendet weich in seine nächste Farbe. <b>3.</b> Alle Geräte blenden gleichzeitig.</td></tr>
+  <tr><td>6</td><td>3:08</td><td>ohne <code>fxSoft</code></td><td>Nur zum Vergleich: Alle Geräte zeigen dieselbe Farbe und springen pro Beat hart in die nächste.</td></tr>
+  <tr><td>7</td><td>3:12</td><td><code>fxSoft(30)</code></td><td><b>1.</b> Die Farbe steht den größten Teil des Beats still. <b>2.</b> Kurz vor dem nächsten Beat blendet sie weich in die nächste Farbe. <b>3.</b> Alle Geräte blenden exakt gleichzeitig. <b>4.</b> Der Beat bleibt spürbar.</td></tr>
+  <tr><td>8</td><td>3:20</td><td><code>fxSoft(100)</code></td><td><b>1.</b> Die Farbe steht nie still, sie fließt durchgehend von Farbe zu Farbe. <b>2.</b> Alle Geräte zeigen in jedem Moment dieselbe Mischfarbe. <b>3.</b> Dein Urteil: welcher Anteil gefällt dir für Songs, 30 oder 100 %?</td></tr>
+  <tr><td>9</td><td>3:28</td><td><code>fxSoft(60)</code> auf <code>SCENE_COLORS_WAVE</code></td><td><b>1.</b> Die Farbe wandert pro Beat ein Gerät weiter von links nach rechts. <b>2.</b> Jedes Gerät blendet weich in seine nächste Farbe. <b>3.</b> Alle Geräte blenden gleichzeitig.</td></tr>
   <tr><th colspan="4">Text als Maske (abgenommen)</th></tr>
-  <tr><td>2</td><td>2:52</td><td><code>FX_MASK</code> mit Text</td><td>Matrix: <b>1.</b> Das Farbband ist nur <b>in</b> den Buchstaben von „TEXT AS MASK“ zu sehen. <b>2.</b> Der Rest der Matrix ist schwarz. <b>3.</b> Die Farben wandern durch die Buchstaben. Übrige Geräte: nur das Farbband.</td></tr>
+  <tr><td>2</td><td>3:36</td><td><code>FX_MASK</code> mit Text</td><td>Matrix: <b>1.</b> Das Farbband ist nur <b>in</b> den Buchstaben von „TEXT AS MASK“ zu sehen. <b>2.</b> Der Rest der Matrix ist schwarz. <b>3.</b> Die Farben wandern durch die Buchstaben. Übrige Geräte: nur das Farbband.</td></tr>
   <tr><th colspan="4">Ebene gezielt steuern, je 8 s (abgenommen)</th></tr>
-  <tr><td>82</td><td>3:00</td><td><code>fxLayerPulse(bpm, 240)</code></td><td><b>1.</b> Die ruhige Fläche darunter bleibt gleichmäßig hell. <b>2.</b> Nur das Glitzern pumpt: auf jedem Beat hell, danach fast weg.</td></tr>
-  <tr><td>84</td><td>3:08</td><td><code>fxLayerFadeIn</code> + <code>fxLayerFadeOut</code></td><td><b>1.</b> Das Farbband ist von Anfang an da und bleibt gleich hell. <b>2.</b> Das Glitzern baut sich in den ersten 4 s langsam auf. <b>3.</b> In den letzten 2 s klingt es wieder ab.</td></tr>
-  <tr><td>86</td><td>3:16</td><td><code>fxLayerUnder(60)</code></td><td><b>1.</b> Das Farbband ist deutlich dunkler als in den anderen Parts. <b>2.</b> Darüber voll hell: auf der Matrix der Text „SCENE DIMMED“, auf Gitarre und Bass rote Kometen, auf den Lampen weiße Leuchtspuren.</td></tr>
-  <tr><td>88</td><td>3:24</td><td><code>fxLayerWindow(4000)</code> + <code>fxLayerGate(bpm, 2)</code></td><td><b>1.</b> Die ersten 4 s ist nur das Farbband zu sehen. <b>2.</b> Genau nach 4 s setzt das Glitzern auf allen Geräten gleichzeitig ein. <b>3.</b> Es blitzt in Achteln (bekannt: wirkt wie ein Wackelkontakt, „passt erstmal“).</td></tr>
+  <tr><td>82</td><td>3:44</td><td><code>fxLayerPulse(bpm, 240)</code></td><td><b>1.</b> Die ruhige Fläche darunter bleibt gleichmäßig hell. <b>2.</b> Nur das Glitzern pumpt: auf jedem Beat hell, danach fast weg.</td></tr>
+  <tr><td>84</td><td>3:52</td><td><code>fxLayerFadeIn</code> + <code>fxLayerFadeOut</code></td><td><b>1.</b> Das Farbband ist von Anfang an da und bleibt gleich hell. <b>2.</b> Das Glitzern baut sich in den ersten 4 s langsam auf. <b>3.</b> In den letzten 2 s klingt es wieder ab.</td></tr>
+  <tr><td>86</td><td>4:00</td><td><code>fxLayerUnder(60)</code></td><td><b>1.</b> Das Farbband ist deutlich dunkler als in den anderen Parts. <b>2.</b> Darüber voll hell: auf der Matrix der Text „SCENE DIMMED“, auf Gitarre und Bass rote Kometen, auf den Lampen weiße Leuchtspuren.</td></tr>
+  <tr><td>88</td><td>4:08</td><td><code>fxLayerWindow(4000)</code> + <code>fxLayerGate(bpm, 2)</code></td><td><b>1.</b> Die ersten 4 s ist nur das Farbband zu sehen. <b>2.</b> Genau nach 4 s setzt das Glitzern auf allen Geräten gleichzeitig ein. <b>3.</b> Es blitzt in Achteln (bekannt: wirkt wie ein Wackelkontakt, „passt erstmal“).</td></tr>
   <tr><th colspan="4">Übergänge: das Farbband wechselt warm ↔ kalt, je 6 s, Übergang 4 Beats</th></tr>
-  <tr><td>3</td><td>3:32</td><td>–</td><td>Farbband warm (FIRE), 4 s Vorlauf</td></tr>
-  <tr><td>5</td><td>3:36</td><td><code>TRANS_FADE</code></td><td>Kreuzblende nach kalt</td></tr>
-  <tr><td>10</td><td>3:42</td><td><code>TRANS_BLACK</code></td><td>über Schwarz nach warm</td></tr>
-  <tr><td>15</td><td>3:48</td><td><code>TRANS_FLASH</code></td><td>weißer Blitz (1 Beat), klingt ins kalte Bild ab</td></tr>
-  <tr><td>20</td><td>3:54</td><td><code>TRANS_WIPE</code></td><td>Kante läuft über jedes Gerät</td></tr>
-  <tr><td>25</td><td>4:00</td><td><code>TRANS_WIPE_BACK</code></td><td>… in Gegenrichtung</td></tr>
-  <tr><td>30</td><td>4:06</td><td><code>TRANS_STAGE_LR</code></td><td>Geräte wechseln nacheinander von links nach rechts</td></tr>
-  <tr><td>35</td><td>4:12</td><td><code>TRANS_STAGE_RL</code></td><td>… von rechts nach links</td></tr>
-  <tr><td>40</td><td>4:18</td><td><code>TRANS_STAGE_OUT</code></td><td>… von der Mitte nach außen</td></tr>
-  <tr><td>45</td><td>4:24</td><td><code>TRANS_DISSOLVE</code></td><td>Pixel kippen einzeln um</td></tr>
+  <tr><td>3</td><td>4:16</td><td>–</td><td>Farbband warm (FIRE), 4 s Vorlauf</td></tr>
+  <tr><td>5</td><td>4:20</td><td><code>TRANS_FADE</code></td><td>Kreuzblende nach kalt</td></tr>
+  <tr><td>10</td><td>4:26</td><td><code>TRANS_BLACK</code></td><td>über Schwarz nach warm</td></tr>
+  <tr><td>15</td><td>4:32</td><td><code>TRANS_FLASH</code></td><td>weißer Blitz (1 Beat), klingt ins kalte Bild ab</td></tr>
+  <tr><td>20</td><td>4:38</td><td><code>TRANS_WIPE</code></td><td>Kante läuft über jedes Gerät</td></tr>
+  <tr><td>25</td><td>4:44</td><td><code>TRANS_WIPE_BACK</code></td><td>… in Gegenrichtung</td></tr>
+  <tr><td>30</td><td>4:50</td><td><code>TRANS_STAGE_LR</code></td><td>Geräte wechseln nacheinander von links nach rechts</td></tr>
+  <tr><td>35</td><td>4:56</td><td><code>TRANS_STAGE_RL</code></td><td>… von rechts nach links</td></tr>
+  <tr><td>40</td><td>5:02</td><td><code>TRANS_STAGE_OUT</code></td><td>… von der Mitte nach außen</td></tr>
+  <tr><td>45</td><td>5:08</td><td><code>TRANS_DISSOLVE</code></td><td>Pixel kippen einzeln um</td></tr>
   <tr><th colspan="4">Modifikatoren auf dem Farbband (SUNSET), je 8 s</th></tr>
-  <tr><td>50</td><td>4:30</td><td><code>fxFadeIn</code> + <code>fxFadeOut</code></td><td>4 Beats einblenden, am Ende 4 Beats ausblenden</td></tr>
-  <tr><td>52</td><td>4:38</td><td><code>fxPulse(bpm, 150)</code></td><td>pumpt auf jeden Beat</td></tr>
-  <tr><td>54</td><td>4:46</td><td><code>fxPulse(bpm, 150, 4)</code></td><td>pumpt einmal pro Takt</td></tr>
-  <tr><td>56</td><td>4:54</td><td><code>fxGate(bpm, 2)</code></td><td>Strobo-Tor in Achteln</td></tr>
-  <tr><td>58</td><td>5:02</td><td><code>fxDim(80)</code></td><td>deutlich dunkler</td></tr>
-  <tr><td>60</td><td>5:10</td><td><code>fxTint(Blue, 150)</code></td><td>Bild zieht nach Blau</td></tr>
-  <tr><td>62</td><td>5:18</td><td><code>fxMaskStage</code></td><td>Gitarre und Bass voll, Lampen und Matrix gedimmt</td></tr>
-  <tr><td>64</td><td>5:26</td><td><code>fxMaskSpan(0, 128)</code></td><td>nur die erste Hälfte jedes Geräts leuchtet</td></tr>
+  <tr><td>50</td><td>5:14</td><td><code>fxFadeIn</code> + <code>fxFadeOut</code></td><td>4 Beats einblenden, am Ende 4 Beats ausblenden</td></tr>
+  <tr><td>52</td><td>5:22</td><td><code>fxPulse(bpm, 150)</code></td><td>pumpt auf jeden Beat</td></tr>
+  <tr><td>54</td><td>5:30</td><td><code>fxPulse(bpm, 150, 4)</code></td><td>pumpt einmal pro Takt</td></tr>
+  <tr><td>56</td><td>5:38</td><td><code>fxGate(bpm, 2)</code></td><td>Strobo-Tor in Achteln</td></tr>
+  <tr><td>58</td><td>5:46</td><td><code>fxDim(80)</code></td><td>deutlich dunkler</td></tr>
+  <tr><td>60</td><td>5:54</td><td><code>fxTint(Blue, 150)</code></td><td>Bild zieht nach Blau</td></tr>
+  <tr><td>62</td><td>6:02</td><td><code>fxMaskStage</code></td><td>Gitarre und Bass voll, Lampen und Matrix gedimmt</td></tr>
+  <tr><td>64</td><td>6:10</td><td><code>fxMaskSpan(0, 128)</code></td><td>nur die erste Hälfte jedes Geräts leuchtet</td></tr>
   <tr><th colspan="4">Ebene, je 8 s</th></tr>
-  <tr><td>70</td><td>5:34</td><td><code>FX_ADD</code></td><td>Glitzern über ruhiger Fläche (GLOW, ROYAL)</td></tr>
-  <tr><td>72</td><td>5:42</td><td><code>FX_MAX</code></td><td>Blitz läuft pro Beat über die Bühne, das Farbband bleibt darunter</td></tr>
-  <tr><td>74</td><td>5:50</td><td><code>FX_OVER</code></td><td>Matrix: Text „TEXT OVER SCENE" über dem Farbband; Gitarre/Bass: rote Kometen; Lampen: weiße Leuchtspuren</td></tr>
-  <tr><td>76</td><td>5:58</td><td><code>FX_MASK</code></td><td>Farbband nur in den fallenden Leuchtspuren sichtbar</td></tr>
-  <tr><td>78</td><td>6:06</td><td><code>FX_ADD</code>, Abschnitt</td><td>Glitzern nur in der zweiten Hälfte jedes Geräts</td></tr>
-  <tr><td>80</td><td>6:14</td><td>Übergang + Puls + Ebene</td><td>Kreuzblende, dann pumpendes Farbband (NEON) mit Glitzern</td></tr>
+  <tr><td>70</td><td>6:18</td><td><code>FX_ADD</code></td><td>Glitzern über ruhiger Fläche (GLOW, ROYAL)</td></tr>
+  <tr><td>72</td><td>6:26</td><td><code>FX_MAX</code></td><td>Blitz läuft pro Beat über die Bühne, das Farbband bleibt darunter</td></tr>
+  <tr><td>74</td><td>6:34</td><td><code>FX_OVER</code></td><td>Matrix: Text „TEXT OVER SCENE" über dem Farbband; Gitarre/Bass: rote Kometen; Lampen: weiße Leuchtspuren</td></tr>
+  <tr><td>76</td><td>6:42</td><td><code>FX_MASK</code></td><td>Farbband nur in den fallenden Leuchtspuren sichtbar</td></tr>
+  <tr><td>78</td><td>6:50</td><td><code>FX_ADD</code>, Abschnitt</td><td>Glitzern nur in der zweiten Hälfte jedes Geräts</td></tr>
+  <tr><td>80</td><td>6:58</td><td>Übergang + Puls + Ebene</td><td>Kreuzblende, dann pumpendes Farbband (NEON) mit Glitzern</td></tr>
   <tr><th colspan="4">Ausgestanzter Text, 8 s (abgenommen: „kommt gut rüber“)</th></tr>
-  <tr><td>90</td><td>6:22</td><td><code>fxTextEnd(255, FX_CUT)</code></td><td>Matrix: Text „TEXT CUT OUT" dunkel im Farbband (SUNSET) ausgestanzt – die Buchstaben-LEDs sind aus, das Farbband leuchtet drumherum; übrige Geräte: nur das Farbband</td></tr>
+  <tr><td>90</td><td>7:06</td><td><code>fxTextEnd(255, FX_CUT)</code></td><td>Matrix: Text „TEXT CUT OUT" dunkel im Farbband (SUNSET) ausgestanzt – die Buchstaben-LEDs sind aus, das Farbband leuchtet drumherum; übrige Geräte: nur das Farbband</td></tr>
   <tr><th colspan="4">Feuer, 8 s (abgenommen: „sieht jetzt richtig klasse aus“)</th></tr>
-  <tr><td>92</td><td>6:30</td><td><code>SCENE_FIRE</code></td><td>Feuer auf allen Geräten (FIRE). Auf der Matrix feste Flammen an zufälligen Plätzen (4 Pixel breit, spitz zulaufend), die nur ihre Höhe ändern und unter der Oberkante enden</td></tr>
+  <tr><td>92</td><td>7:14</td><td><code>SCENE_FIRE</code></td><td>Feuer auf allen Geräten (FIRE). Auf der Matrix feste Flammen an zufälligen Plätzen (4 Pixel breit, spitz zulaufend), die nur ihre Höhe ändern und unter der Oberkante enden</td></tr>
 </table></div>
 <div class="note">Für Song 91 müssen <b>alle</b> Geräte mit dem Branch <code>szenen</code> geflasht sein, für Song 92 mit <code>fx-pipeline</code>. Ein Gerät mit altem Stand zeigt bei unbekannter Song-ID <code>SONGPAUSE_ohne_switchToSong0</code>.</div>
 

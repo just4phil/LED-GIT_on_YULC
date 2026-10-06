@@ -95,7 +95,8 @@ buffer with its own copy of the shared effect counters, `fxPresent()` mixes it o
 same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
 layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. A second layer reserved
 for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run
-together. Everything is
+together. `fxTextGradient(paletteID, dir, cycleMillis)` is registered the same way and evaluated by
+`progText` / `progTextScroll` themselves: a palette gradient in the font instead of one colour (YAML: `gradient` inside `text:`). Everything is
 computed from the time since part start, so all devices stay in sync regardless of LED count. In generated songs they
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span`, `soft`, `smooth`, `blinder` (lengths in
 beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene, or the text layer if the

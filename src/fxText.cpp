@@ -15,7 +15,7 @@
 // fxText.cpp - Text auf der LED-Fläche
 //=====================================================================
 // Stehender Text, Lauftext, verteilte Buchstaben, blinkender Text und die beiden Text-Effekte für den text:-Schlüssel
-// der Song-YAMLs (progText, progTextScroll). Parameter der Effekte: FXprograms.h. Bausteine (fxBegin, fxEvery):
+// der Song-YAMLs (progText, progTextScroll; beide auf Wunsch mit Farbverlauf in der Schrift, fxTextGradient). Parameter der Effekte: FXprograms.h. Bausteine (fxBegin, fxEvery):
 // fxBase.h. Gemeinsame Zähler (progScrollTextZaehler ...): fxState.h.
 
 //==================================================================
@@ -173,6 +173,7 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart,
 // dadurch bleibt der Text auch nach einem BLE-Sync mitten im Part im Takt.
 #define TEXT_SCROLL_MS	80		// angestrebte ms pro Pixel beim Lauftext
 static long progTextLastState;	// zuletzt gezeichneter Stand (nur bei Änderung neu zeichnen)
+static int textGradLoaded = -1;	// paletteID, deren Palette für den Farbverlauf gerade geladen ist (-1 = keine)
 
 // senkrechte Position der Textzeile: mittig auf der Fläche (Schrifthöhe 7 Pixel)
 static int textY() {
@@ -190,13 +191,78 @@ static bool textPartInit(unsigned int durationMillis, byte nextPart) {
 	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
 		progTextLastState = -1000000;
+		textGradLoaded = -1;	// Palette des Farbverlaufs in diesem Part neu holen
 	}
 	if (LEDsTurnedOff) progTextLastState = -1000000;	// nach dem Wiedereinschalten sofort neu zeichnen
 	return !LEDsTurnedOff;
 }
 
+//------ Farbverlauf in der Schrift (fxTextGradient, fxPipeline.h) ------
+// Ist für den Part ein Verlauf angemeldet, werden die Buchstaben erst weiß gezeichnet und danach Pixel für Pixel
+// mit der Farbe aus einer Palette eingefärbt. Vor dem Zeichnen löscht textSetup() das Bild, deshalb gilt: jedes
+// Pixel, das nicht schwarz ist, gehört zu einem Buchstaben.
+#define TEXT_GRAD_LETTER_STEP	5	// TEXT_GRAD_LETTERS: um so viel rückt die Farbe je Pixel weiter (5 -> nach rund 8 Buchstaben wiederholt sich der Verlauf)
+
+// Was für den laufenden Durchlauf gilt. "struct" fasst mehrere Werte unter einem Namen zusammen.
+struct TextGrad {
+	bool on;			// ist ein Verlauf angemeldet?
+	uint8_t paletteID;	// welche Palette (Nummern wie bei progPalette)
+	uint8_t dir;		// Richtung (TEXT_GRAD_...)
+	uint8_t phase;		// wie weit der Verlauf gerade gewandert ist (0..255 = ein ganzer Durchlauf)
+};
+
+// Fragt die Anmeldung ab und rechnet die Wanderung aus der Zeit seit Part-Beginn (auf allen Geräten gleich).
+// Ändert sich phase, muss neu gezeichnet werden, auch wenn der Text selbst still steht: deshalb merkt sich die
+// Funktion in textGradChanged, ob das seit dem letzten Bild der Fall war.
+static bool textGradChanged;
+static TextGrad textGradNow() {
+	static int lastPhase = -1;
+	TextGrad g;
+	unsigned int cycleMillis;
+	g.on = fxTextGradientGet(g.paletteID, g.dir, cycleMillis);
+	g.phase = (g.on && cycleMillis) ? (uint8_t)((uint64_t)millisCounterForProgChange * 256 / cycleMillis) : 0;
+	int phase = g.on ? g.phase : -1;
+	textGradChanged = (phase != lastPhase);
+	lastPhase = phase;
+	return g;
+}
+
+// Färbt die gerade gezeichneten Buchstaben ein. originX = linke Kante des Texts (nur für TEXT_GRAD_LETTERS).
+static void textGradPaint(const TextGrad& g, int originX) {
+	static CRGBPalette16 pal;
+	static TBlendType blending = LINEARBLEND;
+	// Palette nur holen, wenn nötig (einmal je Part). Ausnahme PALETTE_SCHEME: die Schemafarben können im Part
+	// wandern (fade: / setColorFade), deshalb dort bei jedem Zeichnen frisch.
+	if (textGradLoaded != g.paletteID || g.paletteID == PALETTE_SCHEME) {
+		paletteByID(g.paletteID, pal, blending);
+		textGradLoaded = g.paletteID;
+	}
+	int y0 = textY();	// oberste Pixelzeile der Schrift
+	for (int y = 0; y < MATRIX_HEIGHT; y++) {
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			CRGB& px = leds[matrix->XY(x, y)];	// "&": px ist das Pixel selbst, keine Kopie
+			if (!px) continue;					// schwarz = kein Buchstabe
+			int idx;							// Stelle im Verlauf (0..255, läuft darüber hinaus einfach wieder von vorn)
+			switch (g.dir) {
+			case TEXT_GRAD_V:		idx = (y - y0) * 32;	break;	// 7 Zeilen Schrift -> 0..192: oben Anfang, unten fast das Ende des Verlaufs
+			case TEXT_GRAD_DIAG:	idx = x * 256 / MATRIX_WIDTH + (y - y0) * 16;	break;
+			case TEXT_GRAD_LETTERS:	idx = (x - originX) * TEXT_GRAD_LETTER_STEP;	break;
+			default:				idx = x * 256 / MATRIX_WIDTH;	break;	// TEXT_GRAD_H: einmal über die Breite
+			}
+			px = ColorFromPalette(pal, (uint8_t)(idx + g.phase), 255, blending);
+		}
+	}
+}
+
+// Schriftfarbe setzen: mit Verlauf weiß (wird danach eingefärbt), sonst col bzw. die n-te Schemafarbe.
+static void textColor(const TextGrad& g, CRGB col, long n) {
+	if (g.on) matrix->setTextColor(0xFFFF);
+	else matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(n) : col));
+}
+
 // Lauftext, der genau am Ende des Parts fertig ist: so viele ganze Durchläufe, dass das Tempo nahe
 // TEXT_SCROLL_MS pro Pixel liegt. col = CRGB::Black -> Farbe aus dem aktiven Schema, pro Durchlauf die nächste.
+// Mit fxTextGradient(...) im case: Farbverlauf in der Schrift statt einer Farbe.
 void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col) {
 	if (!textPartInit(durationMillis, nextPart) || durationMillis == 0) { fxShow(); return; }
 
@@ -205,14 +271,17 @@ void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart
 	long passes = max(1L, ((long)durationMillis + steps * TEXT_SCROLL_MS / 2) / (steps * TEXT_SCROLL_MS));
 	// aktuelle Position in Pixeln über alle Durchläufe: Anteil der vergangenen Zeit mal Gesamtweg
 	long pos = (long)((uint64_t)millisCounterForProgChange * steps * passes / durationMillis);
-	if (pos == progTextLastState) { fxShow(); return; }
+	TextGrad grad = textGradNow();
+	if (pos == progTextLastState && !textGradChanged) { fxShow(); return; }
 	progTextLastState = pos;
 
 	FastLED.setBrightness(BRIGHTNESS);
 	textSetup();
-	matrix->setCursor(MATRIX_WIDTH - 2 - (int)(pos % steps), textY());
-	matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(pos / steps) : col));
+	int x = MATRIX_WIDTH - 2 - (int)(pos % steps);	// linke Kante des Texts: wandert von rechts nach links hinaus
+	matrix->setCursor(x, textY());
+	textColor(grad, col, pos / steps);
 	matrix->print(text);
+	if (grad.on) textGradPaint(grad, x);
 	fxShow();
 }
 
@@ -220,6 +289,7 @@ void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart
 // im letzten Viertel ist die Matrix dunkel (ein einzelnes Wort pulsiert so im Takt), nach dem letzten Wort
 // beginnt es von vorn. Passt ein Wort nicht auf die Matrix, läuft der ganze Text als Lauftext.
 // col = CRGB::Black -> Farben des aktiven Schemas, bei jedem Wort die nächste.
+// Mit fxTextGradient(...) im case: Farbverlauf in der Schrift statt einer Farbe.
 void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col) {
 	// Wörter zählen und das längste finden. "const char* p" ist ein Zeiger, der Zeichen für Zeichen durch den
 	// Text wandert; "*p" ist das Zeichen an dieser Stelle, das Textende ist das Zeichen mit dem Wert 0.
@@ -241,7 +311,8 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 	long slot = t / msPerWord;								// das wievielte Wort-Zeitfenster seit Part-Beginn läuft gerade?
 	bool on = (t % msPerWord) < msPerWord - msPerWord / 4;	// in den ersten drei Vierteln des Fensters ist das Wort zu sehen
 	long state = on ? slot : -1;							// "Stand" des Bildes: nur wenn er sich ändert, wird neu gezeichnet
-	if (state == progTextLastState) { fxShow(); return; }
+	TextGrad grad = textGradNow();							// Farbverlauf in der Schrift (fxTextGradient)? Wandert er, zählt auch das als Änderung
+	if (state == progTextLastState && !(on && textGradChanged)) { fxShow(); return; }
 	progTextLastState = state;
 
 	FastLED.setBrightness(BRIGHTNESS);
@@ -255,9 +326,11 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 			len = 0;
 			while (p[len] && p[len] != ' ') len++;
 		}
-		matrix->setCursor((MATRIX_WIDTH - (len * 6 - 1)) / 2, textY());
-		matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(slot) : col));
+		int x = (MATRIX_WIDTH - (len * 6 - 1)) / 2;	// linke Kante des Worts, so dass es mittig steht
+		matrix->setCursor(x, textY());
+		textColor(grad, col, slot);
 		for (int i = 0; i < len; i++) matrix->print(p[i]);
+		if (grad.on) textGradPaint(grad, x);
 	}
 	fxShow();
 }

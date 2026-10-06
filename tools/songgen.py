@@ -116,6 +116,15 @@ TEXT_COLORS = {"weiss": "White", "weiß": "White", "white": "White", "rot": "Red
 			   "pink": "DeepPink", "lila": "Purple", "purple": "Purple", "cyan": "Cyan"}
 TEXT_OVER_UNDER = 15		# Prozent: so hell bleibt die Szene unter einem Text mit over: true, wenn kein under: angegeben ist
 TEXT_CUT_COLORS = ("schwarz", "black", "aus")	# ausgestanzter Text: Buchstaben dunkel, die Szene leuchtet drumherum (FX_CUT)
+# text: {..., gradient: ...} - Farbverlauf in der Schrift statt einer Farbe (fxTextGradient in fxPipeline.h).
+# Name -> Paletten-ID wie bei progPalette (FXprograms.h); eine Zahl in der show.yaml gilt direkt als Paletten-ID.
+TEXT_GRADIENTS = {"scheme": "PALETTE_SCHEME", "schema": "PALETTE_SCHEME", "rainbow": "0", "regenbogen": "0",
+				  "stripes": "1", "streifen": "1", "random": "4", "zufall": "4", "clouds": "7", "wolken": "7",
+				  "party": "8", "matrix": "11"}
+TEXT_GRADIENT_DIRS = {"h": "TEXT_GRAD_H", "quer": "TEXT_GRAD_H", "v": "TEXT_GRAD_V", "hoch": "TEXT_GRAD_V",
+					  "diag": "TEXT_GRAD_DIAG", "schraeg": "TEXT_GRAD_DIAG", "schräg": "TEXT_GRAD_DIAG",
+					  "letters": "TEXT_GRAD_LETTERS", "buchstaben": "TEXT_GRAD_LETTERS"}
+TEXT_GRADIENT_PALETTE_IDS = tuple(range(12)) + (20,)	# die Paletten-IDs, die progPalette kennt
 
 # fade: eines Parts - die Schemafarben wandern im Takt zu einem Ziel und zurück (setColorFade in colorSchemes.h)
 FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT", "triad": "FADE_TRIAD",
@@ -810,10 +819,49 @@ def text_is_cut(spec):
 	return isinstance(spec, dict) and str(spec.get("color", "")).strip().lower() in TEXT_CUT_COLORS
 
 
+def text_gradient_call(part, song):
+	"""gradient: im text: eines Parts -> (Anmeldung "fxTextGradient(...);", Beschreibung) oder (None, "") ohne gradient.
+	Formen: gradient: scheme | rainbow | party | <Paletten-ID>   oder ausführlich
+	{palette: scheme, dir: h|v|diag|letters, per: beat|half|bar|<Beats>} - per = so lange wandert der Verlauf einmal
+	durch die Schrift; ohne per steht er still."""
+	sec = part["sec"]
+	name = sec.get("name", "?")
+	text = sec["text"]
+	if not isinstance(text, dict) or "gradient" not in text:
+		return None, ""
+	spec = text["gradient"]
+	spec = dict(spec) if isinstance(spec, dict) else {"palette": spec}
+	unknown = [k for k in spec if k not in ("palette", "dir", "per")]
+	if unknown:
+		raise SongError(f"{name}: text gradient kennt nur palette, dir, per - unbekannt: {', '.join(map(str, unknown))}")
+	if "color" in text:
+		raise SongError(f"{name}: text hat color und gradient zugleich - bitte nur eins (gradient färbt die Schrift selbst)")
+	pal = spec.get("palette", "scheme")
+	if isinstance(pal, int) and not isinstance(pal, bool) and pal in TEXT_GRADIENT_PALETTE_IDS:
+		pal_id = str(pal)
+	else:
+		pal_id = TEXT_GRADIENTS.get(str(pal).strip().lower())
+	if pal_id is None:
+		raise SongError(f"{name}: text gradient palette '{pal}' unbekannt - {', '.join(sorted(TEXT_GRADIENTS))} "
+						f"oder eine Paletten-ID von progPalette ({', '.join(map(str, TEXT_GRADIENT_PALETTE_IDS))})")
+	d = str(spec.get("dir", "h")).strip().lower()
+	if d not in TEXT_GRADIENT_DIRS:
+		raise SongError(f"{name}: text gradient dir '{spec.get('dir')}' unbekannt - {', '.join(sorted(TEXT_GRADIENT_DIRS))}")
+	ms = 0
+	if "per" in spec:
+		beats = per_beats(spec["per"], sec, song)
+		if beats is None:
+			raise SongError(f"{name}: text gradient per '{spec['per']}' unbekannt - beat, half, bar oder eine Zahl (Beats je Durchlauf)")
+		ms = round(beats * 60000.0 / part["bpm"])
+	info = f"Farbverlauf {pal} ({d}" + (f", wandert in {ms} ms" if ms else "") + ")"
+	return f"fxTextGradient({pal_id}, {TEXT_GRADIENT_DIRS[d]}" + (f", {ms}" if ms else "") + ");", info
+
+
 def text_call(part, song, widths):
 	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
 	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
-	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). over: true legt den Text über die laufende
+	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). gradient: statt color: färbt die Schrift mit einem
+	Farbverlauf (text_gradient_call). over: true legt den Text über die laufende
 	Szene, statt sie auf der Matrix zu ersetzen - auch zusammen mit overlay: (dann liegt der Text über beidem).
 	color: schwarz (nur mit over: true) stanzt den Text aus: die Buchstaben sind dunkel, die Szene leuchtet drumherum."""
 	sec = part["sec"]
@@ -821,11 +869,11 @@ def text_call(part, song, widths):
 	spec = sec["text"]
 	if not isinstance(spec, dict):
 		spec = {"words": spec}
-	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "over") + (LAYER_MOD_KEYS if spec.get("over") is True else ())]
+	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "gradient", "over") + (LAYER_MOD_KEYS if spec.get("over") is True else ())]
 	if not isinstance(spec.get("over", False), bool):
 		raise SongError(f"{name}: text over ist true oder false")
 	if unknown or ("words" in spec) == ("scroll" in spec):
-		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color, over)"
+		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color, gradient, over)"
 						+ (f" - unbekannt: {', '.join(unknown)}" if unknown else ""))
 	scroll = "scroll" in spec
 	txt = " ".join(str(spec["scroll"] if scroll else spec["words"]).split())
@@ -873,9 +921,12 @@ def apply_texts(song, timeline):
 		sec = part["sec"]
 		if "text" not in sec:
 			continue
+		# Farbverlauf in der Schrift: eigene Anmelde-Zeile oben im case (gen_function), gilt für jede der drei Formen unten
+		part["text_gradient"], grad_info = text_gradient_call(part, song)
 		if isinstance(sec["text"], dict) and sec["text"].get("over"):
 			# Text als Ebene über der Szene: die Matrix spielt ihre Szene weiter
 			expr, info = text_call(part, song, widths)
+			info += (", " + grad_info) if grad_info else ""
 			cut = text_is_cut(sec["text"])
 			layer_mods = {k: sec["text"][k] for k in LAYER_MOD_KEYS if k in sec["text"]}	# z. B. under: Szene gedimmt, Text voll hell
 			if not cut:
@@ -897,6 +948,7 @@ def apply_texts(song, timeline):
 		if clash:
 			raise SongError(f"{sec.get('name')}: text und devices.{clash[0]} zugleich - bitte nur eins für die Matrix")
 		devices["matrix"], part["text_info"] = text_call(part, song, widths)
+		part["text_info"] += (", " + grad_info) if grad_info else ""
 		part["sec"] = dict(sec, devices=devices)
 
 
@@ -967,6 +1019,8 @@ def gen_function(song, timeline, end_case):
 
 		lines += scheme_lines(part, song)
 		lines += pipeline_calls(part, song)[0]
+		if part.get("text_gradient"):	# Farbverlauf in der Schrift (wird nur von progText / progTextScroll ausgewertet)
+			lines.append("		" + part["text_gradient"])
 
 		call = default_call(part, song)
 		devices = sec.get("devices") or {}
