@@ -183,7 +183,7 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 - Wird nicht in den `tail` vererbt. Nicht in Chorus-Parts, die über ihre feste Erkennungsfarbe funktionieren.
 
 **`text:`** - Text auf den Matrix-Geräten, die übrigen Geräte spielen die Szene weiter (nie von Hand
-`progShowText`/`progWordArray` in `devices` schreiben). Zentrierung, Tempo und Farbe macht die Firmware
+`progShowText`/`progBlinkText` in `devices` schreiben). Zentrierung, Tempo und Farbe macht die Firmware
 (`progText`/`progTextScroll`):
 - `text: "FUN"` - ein Wort pulsiert im Beat; `text: "THEY JUST WANNA HAVE FUN"` - pro Beat das nächste Wort.
 - `text: {words: "...", per: beat|half|bar|<Beats>, color: weiss|rot|...|CRGB::...}`; ohne `color` Schemafarben.

@@ -143,28 +143,6 @@ uint16_t rippleSpawnTimer = 0;				// zählt bis zur nächsten neuen Welle
 //=========== FX programs ==========================================
 //==================================================================
 
-// const static char wordFeels[] = { "Feels" };
-// const static char wordLike[] = { "like" };
-// const static char wordI[] = { "i" };
-// const static char wordAm[] = { "am" };
-// const static char wordJust[] = { "just" };
-// const static char wordToo[] = { "too" };
-// const static char wordClose[] = { "close" };
-// const static char wordTo[] = { "to" };
-// const static char wordLove[] = { "love" };
-// const static char wordYou[] = { "you!" };
-// String wordArrTooCLose2[] = { wordFeels, wordLike, wordI, wordAm, wordJust, wordToo, wordClose, wordTo, wordLove, wordYou }; // ,'\0'
-// //==============================================
-
-// const static char castle_w1[] = { "i am" };
-// const static char castle_w2[] = { "headed" };
-// const static char castle_w3[] = { "straight" };
-// const static char castle_w4[] = { "for" };
-// const static char castle_w5[] = { "the" };
-// const static char castle_w6[] = { "castle" };
-// String wordArrCastle[] = { castle_w1, castle_w2, castle_w3, castle_w4, castle_w5, castle_w6 };
-// //==============================================
-
 // paths for progOutlinePath
 // Für den Effekt "Outline" (ineinanderliegende Rahmen): jede Liste enthält die LED-Nummern eines Rahmens,
 // von innen (Path1) nach außen. Die Nummern sind von Hand für die jeweilige LED-Fläche ermittelt.
@@ -1614,61 +1592,6 @@ void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPa
 // (zeigt die Buchstaben "RooTs" - ein alter Aufruf, der so erhalten bleibt)
 void progShowROOTS(unsigned int durationMillis, byte nextPart) {
 	progShowLettersSpread("RooTs", durationMillis, nextPart, 500);
-}
-
-// Wörter einer Liste nacheinander zeigen, jedes msPerWord ms lang (z.B. eine Textzeile im Rhythmus).
-// HINWEIS: die Abfrage unten lautet "<= anzWords" - nach dem letzten Wort wird also noch ein Eintrag hinter
-// dem Ende der Liste gelesen. Die Dauer des Parts so wählen, dass er vorher endet.
-int zaehlerWortArray;	// Nummer des nächsten Worts
-void progWordArray(String words[], int anzWords, int msPerWord, unsigned int durationMillis, int col, byte nextPart) {
-// hier kommen alle wörter einzeln nacheinander
-
-	//--- standard-part um dauer und naechstes programm zu speichern ----
-	if (!nextChangeMillisAlreadyCalculated) {
-		FastLED.clear();
-		// workaround: die eigentlichen millis werden korrigiert auf die faktische dauer
-		//nextChangeMillis = round((float)durationMillis / (float)1.0f);	// TODO: diesen wert eurieren und anpassen!!
-		nextChangeMillis = durationMillis;
-		nextSongPart = nextPart;
-		nextChangeMillisAlreadyCalculated = true;
-
-		zaehlerWortArray = 0;
-
-		millisCounterTimer = msPerWord; // workaround, damit beim ersten durchlauf immer sofort LEDs aktiviert werden und nicht erst nachdem del abgelaufen ist!
-	}
-	//---------------------------------------------------------------------
-
-	if (millisCounterTimer >= msPerWord) {	// ersatz für delay()
-		millisCounterTimer -= msPerWord;
-
-		if (!LEDsTurnedOff) {	// nur wenn LEDs an sind (for rotary encoder button push)
-			if (zaehlerWortArray <= anzWords) {
-				FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf 155
-
-				matrix->clear();
-				matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-				matrix->setTextSize(1);
-				matrix->setRotation(0);
-
-				yield();
-
-				#if defined(GITBOARD)
-					matrix->setCursor(2, 13);
-				#elif defined(SCROLLMATRIX)
-					matrix->setCursor(10, 2); 
-				#endif
-
-				matrix->setTextColor(col);
-				matrix->print(words[zaehlerWortArray]);
-
-				fxPresent();
-				//matrix->show();
-
-				//Serial.println(zaehlerWortArray);
-				zaehlerWortArray++; // naechstes Wort
-			}
-		}
-	}
 }
 
 // Blinkender, mittig gesetzter Text in einer Zufallsfarbe: blinkMs an, blinkMs aus.

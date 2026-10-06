@@ -2299,46 +2299,6 @@ This function tests LED range:
 
 ---
 
-### `progWordArray()`
-
-Display sequence of words.
-
-**Syntax**: `void progWordArray(String words[], int anzWords, int msPerWord, unsigned int durationMillis, int col, byte nextPart)`
-
-**Parameters**:
-- `words` (String[]): Array of words to display
-- `anzWords` (int): Number of words in array
-- `msPerWord` (int): Time to display each word (milliseconds)
-- `durationMillis` (unsigned int): Total duration in milliseconds
-- `col` (int): Color (LED color constant)
-- `nextPart` (byte): Part ID to switch to after duration
-
-**Description**:
-This function displays word sequence:
-- Shows each word in array
-- Displays for `msPerWord` milliseconds
-- Cycles through all words
-
-**Display Flow**:
-1. Show words[0] for msPerWord ms
-2. Show words[1] for msPerWord ms
-3. ... continue through words[anzWords-1]
-4. Repeat until duration elapsed
-
-**Side Effects**:
-- Word sequence displayed
-- Timer set for part transition
-
-**Notes**:
-- Use `F()` macro for string literals in array
-- Words centered on matrix
-
-**See Also**:
-- `progShowText()`
-- `progBlinkText()`
-
----
-
 ## Helper Functions
 
 ### `getRandomColorValue()`
@@ -3090,7 +3050,6 @@ P
 - [progSternschnuppen()](#progsternschnuppen)
 - [progStrobo()](#progstrobo)
 - [progTestRange()](#progrange)
-- [progWordArray()](#progwordarray)
 
 R
 - [readEncoderISR()](#readencoderisr)

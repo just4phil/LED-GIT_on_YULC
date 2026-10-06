@@ -207,7 +207,7 @@
 <h4>Welche Programme folgen dem Schema?</h4>
 <div class="tablewrap"><table>
   <tr><th>Quelle</th><th>Betroffene Programme</th><th>Verhalten mit Schema</th></tr>
-  <tr><td><code>getRandomColor()</code>, <code>getRandomColorIncludingBlack()</code></td><td>progScrollText, progShowText, progStern/SternNeu, progCircles, progRandomLines, progMovingLines, progWordArray, progBlinkText, progShowLettersSpread</td><td>Schemafarbe als RGB565, bei <i>IncludingBlack</i> mit 1/8 Chance schwarz.</td></tr>
+  <tr><td><code>getRandomColor()</code>, <code>getRandomColorIncludingBlack()</code></td><td>progScrollText, progShowText, progStern/SternNeu, progCircles, progRandomLines, progMovingLines, progBlinkText, progShowLettersSpread</td><td>Schemafarbe als RGB565, bei <i>IncludingBlack</i> mit 1/8 Chance schwarz.</td></tr>
   <tr><td><code>schemeColor(n)</code></td><td>progText, progTextScroll (der <code>text:</code>-Schlüssel der Song-YAMLs, siehe <code>docs/Song-Workflow.html</code>)</td><td>bei jedem Wort bzw. Durchlauf die nächste Schemafarbe; mit fester Farbe im Aufruf gilt diese.</td></tr>
   <tr><td>3× <code>getRandomColorValue()</code> → <code>getRandomCRGB()</code></td><td>progBlingBlingColoringSONGPAUSE, progBlingBlingColoring, progFastBlingBling, progFullColors, progOutline (GITBOARD-Pfade)</td><td>ganze Schemafarbe. Bei BlingBlingColoring wird pro Runde eine neue Schemafarbe gezogen statt nur ein Kanal geändert.</td></tr>
   <tr><td><code>progStrobo(…, CRGB col)</code></td><td>neue Überladung; alle 97 Strobo-Aufrufe mit Zufallsfarben in <code>songs.cpp</code> nutzen jetzt <code>getRandomCRGB()</code></td><td>Strobo in Schemafarben</td></tr>

@@ -315,16 +315,6 @@ void progShowROOTS(unsigned int durationMillis, byte nextPart);
 void progShowLettersSpread(String text, unsigned int durationMillis, byte nextPart, unsigned int msDelay = 500);
 
 /**
- * @brief Wörter einer Liste nacheinander zeigen (z.B. eine Textzeile im Rhythmus)
- *
- * @param words     Liste der Wörter
- * @param anzWords  Anzahl der Wörter in der Liste
- * @param msPerWord so lange bleibt jedes Wort stehen
- * @param col       Farbe als 16-Bit-Wert (colors.h)
- */
-void progWordArray(String words[], int anzWords, int msPerWord, unsigned int durationMillis, int col, byte nextPart);
-
-/**
  * @brief Blinkender, mittig gesetzter Text in einer Zufallsfarbe
  *
  * @param blinkMs ms je Phase (blinkMs an, blinkMs aus)

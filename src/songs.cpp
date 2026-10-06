@@ -86,7 +86,6 @@ extern volatile byte prog;							// the actual song-part
 		//progRunningPixel							// unbenutzt?
 		//progShowText("NERDS", 60000, 10, 2, getRandomColor(), 2); 	// OK
 		//progShowROOTS(60000, 2);					// DONE
-		//progWordArray 							// unbenutzt?
 		//progBlinkText								// unbenutzt?
 		//progStern(60000, 500, 2, 25);				// DONE
 		//progMovingLines(60000, 2);				// DONE
@@ -498,7 +497,6 @@ void defaultLoop()  {
 			//10 weiss/blau/beige fast mit fades (interessante farben)
 			//11 weiss/grün fast mit fades
 		//progFadeOut(5000, 20);
-		//progWordArray(wordArrTooCLose2, 10, 570, 5000, getRandomColor(), 5);
 		//progScrollText("Nerds on Fire", 5000, getRandomColor(), 4);
 		//display_panOrBounceBitmap(8);	// 8: smiley panning around
 		//display_bitmap(4, getRandomColor());
@@ -1855,7 +1853,6 @@ void Titanium() {
 	case 50://chorus 2	15250
 		progFullColors(15240, 55, 475);
 		//progFastBlingBling(16125, 7, 55);
-		//progWordArray(wordArrCastle, 6, 325, 1846, getRandomColor(), 55);
 		break;
 
 	case 55://bridge	14750

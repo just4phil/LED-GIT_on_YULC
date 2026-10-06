@@ -329,7 +329,6 @@ The system includes numerous effect programs:
 - `progShowText()`: Display static text
 - `progScrollText()`: Scrolling text marquee
 - `progBlinkText()`: Blinking text
-- `progWordArray()`: Sequence of words
 
 **Advanced Effects**:
 - `progPalette()`: Color palette cycling
