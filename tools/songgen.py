@@ -246,6 +246,29 @@ def expand_parts(song):
 	return parts, times[-1]
 
 
+# end_blinder (show.yaml, Song-Ebene): ein Blinder, der mit dem Schluss-Black voll hell beginnt und ins Schwarz
+# ausklingt. Ein Blinder gehört sonst immer zu genau einem Part und endet mit ihm; soll er über das Ende des letzten
+# Parts hinaus ausklingen (Wunsch des Users zu APT., 06.10.2026: "auf der letzten Viertel, dann 5 Sekunden ausfaden"),
+# braucht es zwei Hälften: im letzten Part einen Blinder, der bis zum Part-Ende voll steht (hold), und hier die
+# Fortsetzung im Schluss-Black.
+#   end_blinder: 5                                   -> klingt 5 Sekunden lang aus
+#   end_blinder: {seconds: 5, amount: 100, color: warm, devices: [LAMPE1, LAMPE2]}
+# Rückgabe: die Angabe so, wie sie ein Part unter "blinder:" hätte (Längen in Beats) - den Rest macht pipeline_calls().
+# attack 0 / hold 0 heißt: sofort voll und von da an abklingend (erst schnell, dann lange auslaufend).
+def end_blinder_spec(song, end_black):
+	spec = song["end_blinder"]
+	spec = dict(spec) if isinstance(spec, dict) else {"seconds": spec}
+	unknown = [k for k in spec if k not in ("seconds", "amount", "color", "devices")]
+	if unknown:
+		raise SongError(f"end_blinder kennt nur seconds, amount, color, devices - unbekannt: {', '.join(map(str, unknown))}")
+	sec = spec.pop("seconds", None)
+	if isinstance(sec, bool) or not isinstance(sec, (int, float)) or sec <= 0:
+		raise SongError(f"end_blinder: seconds ist die Länge des Ausklingens in Sekunden (Zahl > 0), nicht '{sec}'")
+	if sec * 1000 > end_black:
+		raise SongError(f"end_blinder ({sec} s) ist länger als das Schluss-Black ({end_black} ms)")
+	return {"at": 0, "len": sec * song["bpm"] / 60.0, "attack": 0, "hold": 0, **spec}
+
+
 # Die Timeline: für jeden Part case-Nummer, Folge-case, Startzeit und Dauer in ms.
 # Kern der Genauigkeit: Es werden zuerst alle Grenzen als ABSOLUTE Zeit seit Songbeginn berechnet (mit
 # Nachkommastellen) und erst dann gerundet; die Dauer eines Parts ist die Differenz zweier gerundeter Grenzen.
@@ -269,7 +292,11 @@ def build_timeline(song):
 		bounds.insert(0, 0.0)
 
 	end_black = int(song.get("end_black_ms", 10000))
-	secs.append({"name": "BLACK (Ende)", "fx": BLACK, "why": "alle Geräte schwarz, dann Pausen-Loop"})
+	end_sec = {"name": "BLACK (Ende)", "fx": BLACK, "why": "alle Geräte schwarz, dann Pausen-Loop"}
+	if song.get("end_blinder"):
+		end_sec["blinder"] = end_blinder_spec(song, end_black)
+		end_sec["why"] = "Blinder klingt ins Schwarz aus, dann Pausen-Loop"
+	secs.append(end_sec)
 	bounds.append(bounds[-1] + end_black)
 
 	ms = [round(b) for b in bounds]
@@ -790,7 +817,10 @@ def plan_scroll(song, timeline, width):
 	"""Lauftext am Songanfang für ein Scroll-Gerät planen (wie in den handgeschriebenen Songs):
 	- wait: Matrix bleibt erst schwarz, damit der Text genau an einer Part-Grenze endet
 	- fill: Text läuft sofort, danach der Rest des laufenden Parts verkürzt (ab einem Beat), dann Wiedereinstieg
-	Dauer eines Durchlaufs wie in progScrollText(): (MATRIX_WIDTH - 2 + 6 * Zeichen) * delay."""
+	Dauer eines Durchlaufs wie in progScrollText(): (MATRIX_WIDTH - 2 + 6 * Zeichen) * delay (in der Firmware:
+	scrollTextMillis). Die geplante Dauer ist nie kürzer als ein Durchlauf, oft aber etwas länger (bis zum nächsten
+	Beat oder zur Part-Grenze): progScrollText zeigt dann genau einen Durchlauf und bleibt den Rest dunkel - der Text
+	fängt nicht noch einmal an."""
 	text = scroll_title(song)
 	delay = int(song.get("scroll_delay", 90))
 	S = (width - 2 + 6 * len(text)) * delay
@@ -1362,7 +1392,7 @@ def pascal(name):
 	return "".join(w[:1].upper() + w[1:] for w in re.split(r"[^A-Za-z0-9]+", name) if w)
 
 
-SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "markers")
+SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "end_blinder", "markers")
 SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text", "overlay") + PIPELINE_KEYS
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar", "energy")
 

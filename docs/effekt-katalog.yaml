@@ -557,6 +557,19 @@ effekte:
     urteil:
     notiz:
 
+  progCallResponse:
+    wirkung: "Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat, die Matrix mit ihrer linken bzw. rechten Hälfte"
+    art: strip
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    beat: fest
+    farbe: schema
+    traegt_takte: "4-8"
+    alt: {parts: 0, takte: 0, wofuer: "SCENE_CALL_RESPONSE"}
+    urteil:
+    notiz:
+
   progLampFill:
     wirkung: "Lampe füllt sich über die Partdauer von unten, am Ende weiße Explosion"
     art: lampe
@@ -825,6 +838,15 @@ szenen:
     genutzt: 5
     urteil:
     notiz:
+  SCENE_CALL_RESPONSE:
+    wirkung: "Frage/Antwort: Beat 1 und 3 blitzt die linke Bühnenhälfte (Lampe 1, Bass), Beat 2 und 4 die rechte (Gitarre, Lampe 2); die Matrix macht jeden Beat mit ihrer linken bzw. rechten Hälfte mit. Fester Puls auf jedem Gerät, zwischen den Blitzen dunkel; alle 2 Takte neues Farbpaar"
+    geraete: {alle: progCallResponse}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    genutzt: 2          # APT. verse 1, apt apt apt (06.10.2026)
+    urteil:
+    notiz: "neu am 06.10.2026, weil SCENE_PINGPONG in APT. nicht im Takt wirkte (ein Gerät pro Beat in Zufallsfolge, kein dunkler Moment). Demo 92 Part 37, Abnahme offen"
   SCENE_SOLO_GIT:
     wirkung: "Gitarre: zwei Kometen; alle anderen atmen dunkel"
     geraete: {gitarre: progCometLoop, rest: "progBreathe dunkel"}

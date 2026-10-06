@@ -145,7 +145,8 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
 
 Neben `sections:` (Gestaltung je Partname) auf oberster Ebene: `function` (Name der C++-Funktion), `scheme`
 (Grundschema), `scroll_text` / `scroll_title` / `scroll_delay` (Lauftext am Songanfang), `markers` (siehe unten),
-`end_black_ms` (nur wenn die Zeile „Ende" der Tabelle keine Zeit nennt - sonst gilt die Tabelle).
+`end_black_ms` (nur wenn die Zeile „Ende" der Tabelle keine Zeit nennt - sonst gilt die Tabelle), `end_blinder`
+(Blinder klingt ins Schluss-Black aus, siehe `blinder`).
 Struktur (Takte, Tempo, Energie) darf die Show nicht setzen; `songgen.py` verweigert das.
 
 ## Bund-Marker-LEDs (`markers:` in `show.yaml`)
@@ -168,7 +169,10 @@ Struktur (Takte, Tempo, Energie) darf die Show nicht setzen; `songgen.py` verwei
 - **Anfang**: Der erste Abschnitt ist immer `progBlack` auf allen Geräten (Start-MIDI). Eine Gestaltung
   dafür in der Show wird ignoriert (Hinweis in der Ausgabe).
 - **Lauftext**: SCROLLMATRIX und GITBOARD zeigen "<name> by <artist>". Dauer eines Durchlaufs wie in
-  `progScrollText()`: (MATRIX_WIDTH − 2 + 6 × Zeichen) × delay, die Breite liest der Generator aus `definitions.h`.
+  `progScrollText()`: (MATRIX_WIDTH − 2 + 6 × Zeichen) × delay (Firmware: `scrollTextMillis()`), die Breite liest der
+  Generator aus `definitions.h`. `progScrollText` zeigt nur ganze Durchläufe (seit 06.10.2026, Wunsch des Users): ist
+  die geplante Dauer etwas länger als ein Durchlauf (bis zum nächsten Beat), bleibt die Matrix den Rest dunkel - der
+  Text fängt nicht noch einmal an; ist sie kürzer (alte Songs), läuft er passend schneller.
   Wiedereinstieg in die gemeinsame Timeline, je Gerät getrennt berechnet (wie in den handgeschriebenen Songs):
   1. endet der Text ≤ 4 s vor einer Part-Grenze: die Matrix bleibt so lange schwarz (case 0), dann Lauftext
      (case 1), der genau an der Grenze endet;
@@ -284,6 +288,10 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Eigener Verlauf (06.10.2026, Idee des Users „fadet schnell ein und sehr langsam aus"): `attack: <Beats>` blendet ein
   statt aufzuspringen, `hold: <Beats>` (Standard 0) steht voll, der Rest von `len` klingt ab - z. B.
   `{at: 0, len: 8, attack: 0.5}` über einem 2-Takte-Part. Vom User abgenommen (06.10.2026: „sehr cool“; Demo 92, Part 28).
+  Ein Blinder endet immer mit seinem Part. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
+  Users zu APT., 06.10.2026: „erst auf der letzten Viertel, dann 5 Sekunden ausfaden“): im letzten Part
+  `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
+  (Sekunden; ausführlich `{seconds, amount, color, devices}`) - der Blinder läuft im Schluss-Black weiter und klingt aus.
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
   Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.
@@ -312,6 +320,7 @@ mehr. Der Änderungswunsch geht immer vor der Tabelle unten:
 | Energie 2-3, Puls im Beat | SCENE_VERSE |
 | Part steigert sich ("build up") oder Pre-Chorus | SCENE_BUILDUP (Explosion fällt exakt auf die Part-Grenze) |
 | Energie 4-5, treibend | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* |
+| „Geräte abwechselnd“, Energie 3-4 | SCENE_CALL_RESPONSE (Frage/Antwort: Bühnenhälften blitzen abwechselnd, fester Puls je Gerät). SCENE_PINGPONG springt zufällig von Gerät zu Gerät und wirkte auf den User in APT. „nicht im Takt“ (06.10.2026) |
 | Energie 5, Bass/Drop, Höhepunkt | SCENE_FIRE |
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
 | energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |

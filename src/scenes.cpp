@@ -153,6 +153,44 @@ void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	fxShow();
 }
 
+// Frage/Antwort: die Bühne ist in eine linke und eine rechte Hälfte geteilt, die sich Beat für Beat abwechseln.
+//   Beat 1 und 3 (gerade Beats, ab 0 gezählt): links blitzt - Lampe 1 und Bass
+//   Beat 2 und 4 (ungerade Beats):             rechts blitzt - Gitarre und Lampe 2
+//   Matrix (Bühnenmitte): macht jeden Beat mit, aber nur mit der Hälfte ihrer Fläche, die zur Seite gehört, die dran ist
+// Anders als beim Ping-Pong (ein Gerät pro Beat in zufälliger Folge) hat hier jedes Gerät einen festen Puls: alle
+// 2 Beats, immer auf derselben Zählzeit - deshalb ist der Takt auch auf einem einzelnen Gerät gut zu sehen
+// (Anlass: APT., 06.10.2026 - das Ping-Pong wirkte dort nicht im Takt).
+// Der Blitz klingt wie der Beat-Blitz der Lampen ab (flashEnvelope) und ist vor dem nächsten Schlag ganz dunkel.
+// Farbe: beide Seiten haben je eine Farbe aus der gemeinsamen Farbfolge (sharedColor); alle 8 Beats (2 Takte)
+// rückt das Farbpaar eins weiter. Es wird nichts gemerkt: alles wird aus der Zeit seit Part-Beginn gerechnet.
+void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		bpm = max((uint8_t)1, bpm);
+		unsigned int ms = millisCounterForProgChange;	// einmal lesen: Beat-Nummer und Lage im Beat passen dann sicher zusammen
+		unsigned int period = 60000 / bpm;				// Länge eines Beats in ms (nur für die Abklingzeit des Blitzes)
+		uint32_t beat = (uint32_t)((uint64_t)ms * bpm / 60000);	// Beats seit Part-Beginn, exakt gerechnet (wie fxBeats)
+		bool leftTurn = (beat & 1) == 0;				// "& 1" = letztes Bit: 0 bei geraden Beats -> links ist dran
+		CRGB c = sharedColor((beat & 1) + beat / 8);	// Farbe der Seite, die dran ist
+		c.nscale8(flashEnvelope(fxBeatPhase(ms, bpm), period));	// hell auf dem Schlag, dann abklingen
+
+#if DEVICE_CLASS == CLASS_MATRIX
+		// Matrix: die Spalten links der Mitte gehören zur "Frage", die rechts davon zur "Antwort"
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			CRGB px = ((x < MATRIX_WIDTH / 2) == leftTurn) ? c : CRGB(CRGB::Black);
+			for (int y = 0; y < MATRIX_HEIGHT; y++) leds[matrix->XY(x, y)] = px;
+		}
+#else
+		// STAGE_POS = Platz dieses Geräts auf der Bühne (0 = ganz links). Ein Gerät genau in der Mitte macht jeden Beat mit.
+		const int mid = (STAGE_POSITIONS - 1) / 2;
+		bool mine = (STAGE_POS == mid) || ((STAGE_POS < mid) == leftTurn);
+		fill_solid(leds, anz_LEDs, mine ? c : CRGB(CRGB::Black));
+#endif
+	}
+	fxShow();
+}
+
 // k-te Farbe einer Farbfolge, die auf allen Geräten gleich ist: aus dem Farbschema des Parts, ohne Schema
 // vom Farbkreis (CHSV = Farbe aus Farbton, Sättigung, Helligkeit).
 CRGB sharedColor(uint32_t k) {
@@ -372,6 +410,9 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		return;
 	case SCENE_PINGPONG:
 		progPingPong(durationMillis, nextPart, bpm);
+		return;
+	case SCENE_CALL_RESPONSE:
+		progCallResponse(durationMillis, nextPart, bpm);
 		return;
 	case SCENE_SOLO_GIT:
 	case SCENE_SOLO_BASS:

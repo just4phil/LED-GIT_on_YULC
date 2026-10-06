@@ -50,6 +50,10 @@ enum SceneID : uint8_t {
 	SCENE_RAIN,			// fallende Leuchtspuren (progMatrixHorizontal), ruhig
 	SCENE_PALETTE,		// ein Farbband in Schemafarben läuft von links nach rechts über die ganze Bühne
 	SCENE_FADEOUT,		// jedes Gerät in seiner Schemafarbe, blendet über die ganze Partdauer weich nach Schwarz aus
+
+	//--- Frage/Antwort: die Bühnenhälften wechseln sich ab ---
+	SCENE_CALL_RESPONSE,	// Beat 1 und 3 blitzt die linke Hälfte (Lampe 1, Bass), Beat 2 und 4 die rechte (Gitarre, Lampe 2);
+							// die Matrix in der Mitte macht jeden Beat mit: ihre linke bzw. rechte Hälfte
 };
 
 #define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen
@@ -66,6 +70,7 @@ void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 uint8_t flashEnvelope(unsigned int t, unsigned int period);	// Helligkeit des Beat-Blitzes: t = ms seit dem Schlag, period = ms pro Beat;
 															// 255 auf dem Schlag, klingt in 70 % des Beats (höchstens 450 ms) auf 0 ab
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm);	// Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat
 CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)
 void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerColor, bool wave);	// einfarbig, Wechsel im Beat
 void progGlow(unsigned int durationMillis, byte nextPart, unsigned int periodMillis);		// füllt sich Pixel für Pixel, Farbe wechselt alle periodMillis

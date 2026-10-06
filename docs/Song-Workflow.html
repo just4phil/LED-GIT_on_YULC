@@ -278,6 +278,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>scroll_title</code></td><td>„Titel by Interpret“</td><td>anderer Lauftext.</td></tr>
 <tr><td><code>scroll_delay</code></td><td>90</td><td>Millisekunden pro Pixel, also die Laufgeschwindigkeit.</td></tr>
 <tr><td><code>end_black_ms</code></td><td>10000</td><td>Dauer des Schwarz nach dem letzten Part.</td></tr>
+<tr><td><code>end_blinder</code></td><td>keiner</td><td>Ein Blinder klingt ins Schluss-Schwarz aus: <code>end_blinder: 5</code> = beginnt mit dem Schluss-Schwarz voll hell und blendet 5 Sekunden lang aus (ausführlich <code>{seconds: 5, amount: 100, color: warm, devices: [LAMPE1, LAMPE2]}</code>). Gedacht als Fortsetzung eines Blinders, der im letzten Part bis zum Part-Ende voll steht, z.&nbsp;B. dort <code>blinder: {at: 63, len: 2, hold: 1}</code> = erst auf dem letzten Viertel eines 16-Takte-Parts (APT.).</td></tr>
 <tr><td><code>sections</code></td><td></td><td>Zuordnung Part-Name → Gestaltung. Parts ohne Eintrag fallen auf <code>energy</code> zurück.</td></tr>
 </table></div>
 <h3>Felder pro Part</h3>
@@ -285,7 +286,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><th>Feld</th><th>Bedeutung</th></tr>
 <tr><td><code>scene</code></td><td>Szene für alle Geräte, jedes zeigt sie auf seine Art (siehe <code>docs/LED-Effekte-und-Szenen.html</code>):<br>
   Stimmung: <code>SCENE_CALM</code> (ruhiges Atmen), <code>SCENE_VERSE</code> (rhythmisch, dezent), <code>SCENE_BUILDUP</code> (lädt sich über den ganzen Part auf, Explosion am Ende), <code>SCENE_DROP</code> (volle Energie im Beat), <code>SCENE_FIRE</code> (Feuer auf allen Geräten)<br>
-  Über die Bühne: <code>SCENE_WAVE_LR</code>, <code>SCENE_WAVE_RL</code>, <code>SCENE_WAVE_OUT</code> (Blitz pro Beat nach rechts, nach links, von der Mitte nach außen), <code>SCENE_PINGPONG</code> (pro Beat leuchtet genau ein Gerät)<br>
+  Über die Bühne: <code>SCENE_WAVE_LR</code>, <code>SCENE_WAVE_RL</code>, <code>SCENE_WAVE_OUT</code> (Blitz pro Beat nach rechts, nach links, von der Mitte nach außen), <code>SCENE_PINGPONG</code> (pro Beat leuchtet genau ein Gerät, zufällige Folge), <code>SCENE_CALL_RESPONSE</code> (Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat, die Matrix mit ihrer linken bzw. rechten Hälfte – jedes Gerät hat einen festen Puls)<br>
   Spotlight: <code>SCENE_SOLO_GIT</code>, <code>SCENE_SOLO_BASS</code>, <code>SCENE_SOLO_DRUMS</code> (Solist voll, Rest atmet dezent)<br>
   Bewährte Looks der alten Songs: <code>SCENE_STAR</code> (drehender Stern, der Refrain-Look), <code>SCENE_SPARKLE</code> (schnelle Einzelblitze, Höhepunkt), <code>SCENE_GLOW</code> (füllt sich langsam, wechselt gemeinsam die Farbe), <code>SCENE_COLORS</code> / <code>SCENE_COLORS_WAVE</code> (ganze Bühne eine Farbe pro Beat, stehend oder wandernd), <code>SCENE_RAIN</code> (fallende Leuchtspuren), <code>SCENE_PALETTE</code> (Farbband über die Bühne)<br>
   Schluss: <code>SCENE_FADEOUT</code> (jedes Gerät blendet über die ganze Partdauer weich nach Schwarz aus; ab 2 Takten richtig sanft)<br>
