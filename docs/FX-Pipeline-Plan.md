@@ -13,6 +13,24 @@ kann.
 
 Zuletzt aktualisiert: 06.10.2026 (Titel-Lauftext aller Songs mit Farbverlauf, Abnahme offen)
 
+- **06.10.2026, weicher Lauftext (`TEXT_SCROLL_BLEND`) - dritte Fassung vom User abgenommen („das gefällt mir gut!!"),
+  Commit „Lauftext gleitet weich von Pixel zu Pixel"** (Frage des Users: der Lauftext wirkt auf der groben Matrix ruckelig, ob Nachglühen / Weichzeichnen
+  hilft). `scrollDraw()` in `src/fxText.cpp` zeichnet den Text an der aktuellen und an der nächsten Position
+  (ein Pixel weiter links) und mischt beide nach dem Anteil des laufenden Schritts (`blend`, linear). Gilt für
+  `progScrollText` (Anteil aus `millisCounterTimer / delay`) und `progTextScroll` (Position in 1/256 Pixel aus der
+  Zeit seit Part-Beginn); Tempo und Positionen unverändert. Folge: der Lauftext wird in jedem Durchlauf neu
+  gezeichnet (zwei Text-Bilder + Mischen) und gesendet. `TEXT_SCROLL_BLEND 0` = harte Schritte wie zuvor.
+  Stellschrauben, falls es zu unscharf wirkt: Blende nur im letzten Teil des Schritts (z. B. ab 50 %), oder statt
+  dessen echtes Nachglühen (`fxSmooth` im Lauftext-Part). Alle fünf Envs bauen, OTA in `ota/` neu gebaut.
+  **Urteil des Users zur ersten Fassung:** „deutlich smoother, aber etwas undeutlich, weil es sehr breit wirkt;
+  die nachleuchtenden LEDs deutlich dunkler". **Zweite Fassung (gebaut, Abnahme offen):** kein gleich starkes
+  Überblenden mehr - der Text steht voll hell an seiner Position, die vorige Position (x + 1) glüht nur mit
+  `TEXT_SCROLL_GLOW` (80 von 255) nach und klingt quadratisch bis zum nächsten Schritt ab (`|=` je Farbanteil).
+  Stellschraube: `TEXT_SCROLL_GLOW` (größer = weicher und breiter, kleiner = schärfer und ruckeliger).
+  **Urteil zur zweiten Fassung:** „überzeugt mich noch nicht so richtig". **Dritte Fassung (abgenommen):** `TEXT_SCROLL_BLEND` ist jetzt ein Wahlschalter - 0 hart, 1 Nachglühen (zweite Fassung), 2 Gleiten
+  (aktiv): Überblenden wie in der ersten Fassung, aber (a) was an beiden Positionen leuchtet, bleibt voll stehen
+  (`min` je Farbanteil), (b) die Kanten blenden quadratisch (in der Schrittmitte 25 % statt 50 % - linear wirkte
+  wegen der Helligkeitswahrnehmung breit). Nächste Stellschraube, falls noch zu breit: Exponent höher (kubisch).
 - **06.10.2026, Titel-Lauftext: Variante per Zufall je Part** (Wunsch des Users, statt fest nach Song-Nummer):
   `progScrollText` würfelt bei jedem Part-Beginn eine von vier Varianten (`titleGradVariant` in `src/fxText.cpp`,
   nie zweimal hintereinander dieselbe; die vierte auf Wunsch des Users dazu: Regenbogen `TEXT_GRAD_V`, wandert in

@@ -148,6 +148,78 @@ static void textColor(const TextGrad& g, CRGB col, long n) {
 	else matrix->setTextColor(toRGB565(col == CRGB(CRGB::Black) ? schemeColor(n) : col));
 }
 
+//------ Weicher Lauftext ------
+// Die Matrix ist grob: springt der Text Pixel für Pixel weiter, ruckelt er sichtbar. TEXT_SCROLL_BLEND wählt, wie
+// das gemildert wird (Tempo und Position bleiben in jedem Fall exakt gleich):
+//   0  gar nicht: harte Pixel-Schritte wie früher
+//   1  Nachglühen: der Text steht scharf und voll hell an seiner Position; einen Pixel rechts daneben (dort stand
+//      er im Schritt davor) leuchtet er mit TEXT_SCROLL_GLOW schwach weiter und klingt bis zum nächsten Schritt ab.
+//      Urteil des Users: "überzeugt mich noch nicht so richtig" - der Text selbst springt ja weiter hart.
+//   2  Gleiten: der Text wird von seiner Position zur nächsten (ein Pixel weiter links) übergeblendet. Anders als
+//      in der allerersten Fassung ("deutlich smoother, aber sehr breit") gilt dabei:
+//      - LEDs, die an BEIDEN Positionen zum Buchstaben gehören (waagerechte Striche), bleiben voll hell und
+//        flackern nicht;
+//      - nur die LEDs an den Kanten blenden, und zwar quadratisch: eine LED mit halbem Zahlenwert wirkt fürs Auge
+//        nicht halb so hell, sondern fast voll - deshalb sah die lineare Blende so breit aus. Quadratisch sind
+//        in der Mitte eines Schritts beide Kanten nur bei 25 % statt 50 %. Vom User abgenommen ("gefällt mir gut").
+#define TEXT_SCROLL_BLEND	2
+#define TEXT_SCROLL_GLOW	80	// nur Art 1: Helligkeit des Nachglühens direkt nach einem Schritt (0..255; 80 = rund 30 %)
+
+// Zeichnet den Text einmal mit linker Kante x in der Zeile y (Schriftfarbe vorher gesetzt; mit Farbverlauf
+// werden die Buchstaben danach eingefärbt).
+static void scrollDrawOnce(const char* text, int x, int y, const TextGrad& g) {
+	textSetup();
+	matrix->setCursor(x, y);
+	matrix->print(text);
+	if (g.on) textGradPaint(g, x);
+}
+
+// Zeichnet den Lauftext mit linker Kante x in der Zeile y. frac (0..255) = wie weit der laufende Schritt zur
+// nächsten Position (x - 1) schon vorbei ist (0 = der Text ist gerade erst bei x angekommen).
+// scale8(a, b) aus FastLED rechnet a * b / 255, also "a mit Stärke b".
+static void scrollDraw(const char* text, int x, int y, uint8_t frac, const TextGrad& g) {
+#if TEXT_SCROLL_BLEND
+	// zweites Bild neben dem eigentlichen. "static": der Zwischenspeicher liegt fest im Speicher und nicht auf
+	// dem (kleinen) Stapel der Funktion.
+	static CRGB other[MATRIX_WIDTH * MATRIX_HEIGHT];
+	uint8_t rest = 255 - frac;
+#endif
+
+#if TEXT_SCROLL_BLEND == 1
+	uint8_t glow = scale8(TEXT_SCROLL_GLOW, scale8(rest, rest));	// fällt quadratisch von TEXT_SCROLL_GLOW auf 0
+	if (glow) {
+		scrollDrawOnce(text, x + 1, y, g);		// Bild der vorigen Position
+		memcpy(other, leds, sizeof(other));
+	}
+	scrollDrawOnce(text, x, y, g);				// der Text selbst, scharf und voll hell
+	if (glow) {
+		for (int i = 0; i < MATRIX_WIDTH * MATRIX_HEIGHT; i++) {
+			other[i].nscale8(glow);	// Nachglühen abdunkeln
+			leds[i] |= other[i];	// "|=" bei CRGB: je Farbanteil der hellere Wert - wo der Text selbst steht, bleibt er unverändert
+		}
+	}
+#elif TEXT_SCROLL_BLEND == 2
+	scrollDrawOnce(text, x, y, g);				// Bild an der jetzigen Position
+	if (frac == 0) return;
+	memcpy(other, leds, sizeof(other));
+	scrollDrawOnce(text, x - 1, y, g);			// Bild an der nächsten Position
+	uint8_t wOld = scale8(rest, rest);			// Gewicht der jetzigen Position: fällt quadratisch von voll auf 0
+	uint8_t wNew = scale8(frac, frac);			// Gewicht der nächsten Position: steigt quadratisch von 0 auf voll
+	for (int i = 0; i < MATRIX_WIDTH * MATRIX_HEIGHT; i++) {
+		CRGB& o = other[i];	// diese LED im Bild der jetzigen Position ...
+		CRGB& n = leds[i];	// ... und im Bild der nächsten ("&": das Pixel selbst, keine Kopie)
+		// je Farbanteil (raw[0..2] = Rot, Grün, Blau): was in beiden Bildern leuchtet (der kleinere Wert), bleibt
+		// voll stehen; nur der Überschuss des einen oder anderen Bildes wird mit seinem Gewicht dazugerechnet.
+		for (int c = 0; c < 3; c++) {
+			uint8_t both = min(o.raw[c], n.raw[c]);
+			n.raw[c] = both + scale8(o.raw[c] - both, wOld) + scale8(n.raw[c] - both, wNew);
+		}
+	}
+#else
+	scrollDrawOnce(text, x, y, g);
+#endif
+}
+
 // Stehender Text an fester Stelle. pos_x/pos_y = linke obere Ecke, col = Farbe (16-Bit-Wert aus colors.h).
 // Alle 100 ms neu gezeichnet.
 void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_y, int col, byte nextPart) {
@@ -196,21 +268,22 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 		if (progScrollTextZaehler < -progScrollEnde) progScrollTextZaehler = MATRIX_WIDTH - 2;	// links ganz hinaus: wieder rechts beginnen
 	}
 
-	// Neu gezeichnet wird bei einem Schritt - und auch dazwischen, wenn der Farbverlauf weitergewandert ist
-	// (sonst würden die Farben nur im Takt der Pixel-Schritte springen).
-	TextGrad grad = textGradNow(true);
-	if (step || textGradChanged) {
-		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
+	// Wie weit ist der laufende Schritt schon vorbei (0..255)? millisCounterTimer zählt die ms seit dem letzten
+	// Schritt. Daraus rechnet scrollDraw, wie weit der Text schon zur nächsten Position geglitten ist.
+	uint8_t frac = 0;
+#if TEXT_SCROLL_BLEND
+	if (delay > 0) frac = (uint8_t)min(255L, (long)millisCounterTimer * 256 / delay);
+#endif
 
-		textSetup();	// Bild löschen, Schrift einstellen (kein Zeilenumbruch, damit der Text sauber läuft)
-		#if defined(GITBOARD)
-			matrix->setCursor(progScrollTextZaehler, 13);
-		#elif defined(SCROLLMATRIX)
-			matrix->setCursor(progScrollTextZaehler, 1);
-		#endif
+	// Neu gezeichnet wird, wenn sich etwas geändert hat: ein Schritt, das Gleiten zwischen zwei Positionen oder der
+	// wandernde Farbverlauf.
+	static int lastFrac = -1;
+	TextGrad grad = textGradNow(true);
+	if (step || frac != lastFrac || textGradChanged) {
+		lastFrac = frac;
+		FastLED.setBrightness(BRIGHTNESS); //5 TODO: zurueck auf BRIGHTNESS?
 		matrix->setTextColor(0xFFFF);	// weiß zeichnen, danach färbt textGradPaint die Buchstaben ein
-		matrix->print(words);
-		textGradPaint(grad, progScrollTextZaehler);
+		scrollDraw(words.c_str(), progScrollTextZaehler, textY(), frac, grad);	// words.c_str(): der Text als einfache Zeichenkette
 	}
 	fxShow();
 }
@@ -300,19 +373,21 @@ void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart
 	long steps = MATRIX_WIDTH - 2 + 6 * (long)strlen(text);		// Pixel für einen Durchlauf
 	// Anzahl ganzer Durchläufe, die bei rund TEXT_SCROLL_MS je Pixel in den Part passen (gerundet, mindestens 1)
 	long passes = max(1L, ((long)durationMillis + steps * TEXT_SCROLL_MS / 2) / (steps * TEXT_SCROLL_MS));
-	// aktuelle Position in Pixeln über alle Durchläufe: Anteil der vergangenen Zeit mal Gesamtweg
-	long pos = (long)((uint64_t)millisCounterForProgChange * steps * passes / durationMillis);
+	// aktuelle Position über alle Durchläufe: Anteil der vergangenen Zeit mal Gesamtweg. Gerechnet wird in
+	// 1/256 Pixel: "/ 256" ergibt die ganzen Pixel (pos), "% 256" den schon zurückgelegten Teil des nächsten
+	// Pixel-Schritts (frac) - daraus rechnet scrollDraw, wie weit der Text schon zur nächsten Position geglitten ist.
+	uint64_t fine = (uint64_t)millisCounterForProgChange * steps * passes * 256 / durationMillis;
+	long pos = (long)(fine / 256);
+	uint8_t frac = TEXT_SCROLL_BLEND ? (uint8_t)(fine % 256) : 0;
 	TextGrad grad = textGradNow();
-	if (pos == progTextLastState && !textGradChanged) { fxShow(); return; }
-	progTextLastState = pos;
+	long state = pos * 256 + frac;	// "Stand" des Bildes: Position samt Gleiten
+	if (state == progTextLastState && !textGradChanged) { fxShow(); return; }
+	progTextLastState = state;
 
 	FastLED.setBrightness(BRIGHTNESS);
-	textSetup();
 	int x = MATRIX_WIDTH - 2 - (int)(pos % steps);	// linke Kante des Texts: wandert von rechts nach links hinaus
-	matrix->setCursor(x, textY());
 	textColor(grad, col, pos / steps);
-	matrix->print(text);
-	if (grad.on) textGradPaint(grad, x);
+	scrollDraw(text, x, textY(), frac, grad);
 	fxShow();
 }
 

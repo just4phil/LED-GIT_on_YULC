@@ -612,7 +612,7 @@ effekte:
     notiz:
 
   progTextScroll:
-    wirkung: "Lauftext, der genau am Part-Ende fertig ist"
+    wirkung: "Lauftext, der genau am Part-Ende fertig ist; gleitet weich von Pixel zu Pixel (TEXT_SCROLL_BLEND 2, vom User am 06.10.2026 abgenommen: 'das gefällt mir gut')"
     art: text
     rolle: [flaeche]
     energie: [1, 3]

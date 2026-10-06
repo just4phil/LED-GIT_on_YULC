@@ -298,6 +298,8 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
  * Party-Palette am Text befestigt (jeder Buchstabe nimmt seine Farbe mit) / Farben des Schemas schräg durch
  * die Schrift, wandernd / Farben des Schemas fest quer über der Matrix (die Buchstaben laufen hindurch) /
  * Regenbogen von oben nach unten in den Buchstaben, wandernd.
+ * Der Text gleitet: er wird von Pixel-Position zu Pixel-Position übergeblendet (TEXT_SCROLL_BLEND in
+ * fxText.cpp: 0 = harte Schritte wie früher, 1 = nur Nachglühen, 2 = Gleiten); das Tempo bleibt dabei gleich.
  *
  * @param delay ms je Pixel-Schritt (kleiner = schneller)
  * @param col   wird nicht mehr benutzt (früher: Farbe als 16-Bit-Wert); bleibt, damit die alten Aufrufe passen
@@ -324,7 +326,8 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart, uns
  *
  * progText: ein oder mehrere Wörter (durch Leerzeichen getrennt), pro msPerWord das nächste, automatisch
  * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext.
- * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist.
+ * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist; gleitet wie progScrollText
+ * weich von Pixel zu Pixel (TEXT_SCROLL_BLEND in fxText.cpp).
  * col = CRGB::Black (Standard): Farben des aktiven Schemas (bei jedem Wort bzw. Durchlauf die nächste).
  * Farbverlauf in der Schrift statt einer Farbe: vorher im case fxTextGradient(...) anmelden (fxPipeline.h),
  * col gilt dann nicht.
