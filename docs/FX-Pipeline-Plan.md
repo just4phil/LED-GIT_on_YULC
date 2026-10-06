@@ -26,7 +26,7 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   Abnahme auf der Hardware offen):** In `FXprograms.cpp`, `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp` und
   `fxMatrixRain.cpp` sind alle `if (!LEDsTurnedOff)` und das doppelte `fxPresent()` durch ein `fxShow()` am Ende
   ersetzt. Geändertes Verhalten: (1) Effekte, die bisher nur im Schritt-Takt ausgaben, geben jetzt in jedem
-  Durchlauf aus - `progSternNeu`, `progStern`, alle Text-Effekte, `progSternschnuppen`-Verwandte waren schon so;
+  Durchlauf aus - `progSternNeu`, `progStern`, alle Text-Effekte (`progText`, `progScrollText` …);
   Übergänge/Fades/Ebenen darüber laufen damit flüssig. (2) Bei abgeschalteten LEDs rechnen die Effekte weiter.
   Ausnahmen mit Absicht: `progFastBlingBling` stellt die Helligkeit nur bei eingeschalteten LEDs auf 255 (sonst
   würden die Marker im Aus-Zustand voll hell), `progRunningPixel`/`progTestRange`/`progBlinkLowVoltage` (Tests)
@@ -38,7 +38,7 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   3/255 in `progBreathe` (`src/scenes.cpp`); sie ist entfernt. Gilt für `SCENE_CALM` auf Gitarre, Bass und Lampen
   in allen Songs. Abnahme offen.
 - **Wartet auf den User (Branch `fx-cleanup`, Stand `541a57e`, nicht gemergt, nicht gepusht):** OTA-Firmwares in
-  `ota/` sind von diesem Stand (Version 1791290774), der Stand davor liegt in `ota/backup/2026-10-06_3`. Anzusehen:
+  `ota/` sind vom Stand `64efc91` (Version 1791293784), die Stände davor liegen in `ota/backup/2026-10-06_3` bis `_6`. Anzusehen:
   die sieben Effekte aus `fxMatrixSim.cpp` (Song 92 Part 92 Feuer; alte Songs mit `progWaterRipple`, `progPlasma`,
   `progStarfield`), Knopf ganz zurück = nur Marker, sonst alles wie vorher. Passt das, geht es mit demselben
   Rezept in den übrigen Familien weiter (116 `LEDsTurnedOff`-Abfragen, davon 74 in `fxMatrixRain.cpp`).
