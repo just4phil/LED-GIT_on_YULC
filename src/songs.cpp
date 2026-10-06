@@ -4243,7 +4243,7 @@ void pipelineDemo() {
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// fxTextGradient: Farbverlauf in der Schrift statt einer Farbe (nur Matrix; die anderen Geräte atmen ruhig im Schema).
-	// Part 29, 32 und 33 sind die drei Varianten, die der Titel-Lauftext der Songs reihum benutzt (progScrollText).
+	// Die vier Parts sind die Varianten, aus denen der Titel-Lauftext der Songs per Zufall wählt (progScrollText).
 	case 29:	// Lauftext, Verlauf aus dem Farbschema quer über die Matrix: die Buchstaben laufen durch die Farben
 		setColorScheme(SCHEME_SUNSET);
 #if DEVICE_CLASS == CLASS_MATRIX

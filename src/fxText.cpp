@@ -83,12 +83,16 @@ struct TextGrad {
 // Ändert sich phase, muss neu gezeichnet werden, auch wenn der Text selbst still steht: deshalb merkt sich die
 // Funktion in textGradChanged, ob das seit dem letzten Bild der Fall war.
 // titleDefault = true (nur progScrollText, der Lauftext für Songtitel und Interpret): ist nichts angemeldet, gilt
-// trotzdem ein Verlauf - reihum je Song einer von dreien, die der User in Demo 92 ausgesucht hat. "songID % 3" ist
-// der Rest der Song-Nummer beim Teilen durch 3 (0, 1 oder 2):
-//   0 (Song 0, 3, 6 ...)  Party-Palette am Text befestigt: jeder Buchstabe nimmt seine Farbe mit
-//   1 (Song 1, 4, 7 ...)  Schemafarben schräg durch die Schrift, wandern in TITLE_GRAD_CYCLE_MS einmal durch
-//   2 (Song 2, 5, 8 ...)  Schemafarben fest quer über der Matrix: die Buchstaben laufen durch die Farben
+// trotzdem ein Verlauf - einer der vier aus Demo 92 (Parts 32, 33, 29, 31; Wunsch des Users). Welcher, würfelt progScrollText
+// bei jedem Part-Beginn neu aus (titleGradVariant, nie zweimal hintereinander derselbe):
+//   0  Party-Palette am Text befestigt: jeder Buchstabe nimmt seine Farbe mit
+//   1  Schemafarben schräg durch die Schrift, wandern in TITLE_GRAD_CYCLE_MS einmal durch
+//   2  Schemafarben fest quer über der Matrix: die Buchstaben laufen durch die Farben
+//   3  Regenbogen von oben nach unten in den Buchstaben, wandert in 2 x TITLE_GRAD_CYCLE_MS einmal durch
+// Der Zufall stört den Gleichlauf der Geräte nicht: Text zeigt nur die Matrix.
 #define TITLE_GRAD_CYCLE_MS	1000
+#define TITLE_GRAD_VARIANTS	4
+static uint8_t titleGradVariant = 0;	// die gerade ausgewürfelte Variante (0..3)
 static bool textGradChanged;
 static TextGrad textGradNow(bool titleDefault = false) {
 	static int lastPhase = -1;
@@ -97,10 +101,11 @@ static TextGrad textGradNow(bool titleDefault = false) {
 	g.on = fxTextGradientGet(g.paletteID, g.dir, cycleMillis);
 	if (!g.on && titleDefault) {
 		g.on = true;
-		switch (songID % 3) {
+		switch (titleGradVariant) {
 		case 0:		g.paletteID = 8;				g.dir = TEXT_GRAD_LETTERS;	cycleMillis = 0;					break;
 		case 1:		g.paletteID = PALETTE_SCHEME;	g.dir = TEXT_GRAD_DIAG;		cycleMillis = TITLE_GRAD_CYCLE_MS;	break;
-		default:	g.paletteID = PALETTE_SCHEME;	g.dir = TEXT_GRAD_H;		cycleMillis = 0;					break;
+		case 2:		g.paletteID = PALETTE_SCHEME;	g.dir = TEXT_GRAD_H;		cycleMillis = 0;					break;
+		default:	g.paletteID = 0;				g.dir = TEXT_GRAD_V;		cycleMillis = 2 * TITLE_GRAD_CYCLE_MS;	break;	// 0 = Regenbogen
 		}
 	}
 	g.phase = (g.on && cycleMillis) ? (uint8_t)((uint64_t)millisCounterForProgChange * 256 / cycleMillis) : 0;
@@ -165,8 +170,8 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
 
 // Lauftext von rechts nach links. delay = ms je Pixel-Schritt (kleiner = schneller). Ist der Text ganz
 // durchgelaufen, beginnt er von vorn. (Der Parameter heißt nur so wie die Funktion delay(), gewartet wird nicht.)
-// Die Schrift trägt immer einen Farbverlauf: den mit fxTextGradient(...) angemeldeten, sonst reihum je Song
-// einen von dreien (siehe textGradNow). Der Parameter col wird deshalb nicht mehr benutzt; er bleibt, damit die
+// Die Schrift trägt immer einen Farbverlauf: den mit fxTextGradient(...) angemeldeten, sonst einen von vieren,
+// bei jedem Part-Beginn neu ausgewürfelt (siehe textGradNow). Der Parameter col wird deshalb nicht mehr benutzt; er bleibt, damit die
 // vielen alten Aufrufe (..., getRandomColor(), ...) unverändert passen.
 void progScrollText(String words, unsigned int durationMillis, int delay, int col, byte nextPart) {
 
@@ -179,6 +184,9 @@ void progScrollText(String words, unsigned int durationMillis, int delay, int co
 		progScrollTextZaehler = MATRIX_WIDTH - 2;	// Start: Text beginnt am rechten Rand
 		progScrollEnde = words.length() * 6;		// Breite des Texts in Pixeln (6 je Zeichen)
 		textGradLoaded = -1;						// Palette des Farbverlaufs in diesem Part neu holen
+		// Variante des Farbverlaufs würfeln: random(1, 4) liefert 1, 2 oder 3; um so viel weitergezählt (und mit "%"
+		// wieder auf 0..3 gebracht) kommt immer eine ANDERE Variante heraus als beim letzten Lauftext.
+		titleGradVariant = (titleGradVariant + random(1, TITLE_GRAD_VARIANTS)) % TITLE_GRAD_VARIANTS;
     }
 
 	// Ist ein Pixel-Schritt fällig? Dann rückt der Text weiter. Das Tempo des Texts bleibt damit genau wie bisher.

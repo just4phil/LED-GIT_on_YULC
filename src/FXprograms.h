@@ -294,9 +294,10 @@ void progShowText(String words, unsigned int durationMillis, int pos_x, int pos_
  * @brief Lauftext von rechts nach links; ist er durchgelaufen, beginnt er von vorn (Songtitel und Interpret)
  *
  * Die Schrift trägt immer einen Farbverlauf: den mit fxTextGradient(...) im case angemeldeten (fxPipeline.h),
- * sonst reihum je Song einen von dreien (Song-Nummer geteilt durch 3, Rest 0 / 1 / 2; Song 0 hat Rest 0):
+ * sonst einen von vieren, bei jedem Part-Beginn neu ausgewürfelt (nie zweimal hintereinander derselbe):
  * Party-Palette am Text befestigt (jeder Buchstabe nimmt seine Farbe mit) / Farben des Schemas schräg durch
- * die Schrift, wandernd / Farben des Schemas fest quer über der Matrix (die Buchstaben laufen hindurch).
+ * die Schrift, wandernd / Farben des Schemas fest quer über der Matrix (die Buchstaben laufen hindurch) /
+ * Regenbogen von oben nach unten in den Buchstaben, wandernd.
  *
  * @param delay ms je Pixel-Schritt (kleiner = schneller)
  * @param col   wird nicht mehr benutzt (früher: Farbe als 16-Bit-Wert); bleibt, damit die alten Aufrufe passen

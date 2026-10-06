@@ -13,6 +13,12 @@ kann.
 
 Zuletzt aktualisiert: 06.10.2026 (Titel-Lauftext aller Songs mit Farbverlauf, Abnahme offen)
 
+- **06.10.2026, Titel-Lauftext: Variante per Zufall je Part** (Wunsch des Users, statt fest nach Song-Nummer):
+  `progScrollText` würfelt bei jedem Part-Beginn eine von vier Varianten (`titleGradVariant` in `src/fxText.cpp`,
+  nie zweimal hintereinander dieselbe; die vierte auf Wunsch des Users dazu: Regenbogen `TEXT_GRAD_V`, wandert in
+  2 s, wie Demo-Part 31); `songID % 3` ist entfallen. Kein Sync-Thema: Text zeigt nur die Matrix.
+  Dokus, Katalog, Skill nachgezogen; alle fünf Envs bauen, OTA in `ota/` neu gebaut. Abnahme auf der Hardware offen;
+  Commit „Titel-Lauftext: Farbverlauf per Zufall aus vier Varianten".
 - **06.10.2026, Titel-Lauftext aller Songs mit Farbverlauf** (Wunsch des Users nach Demo 92: 29, 32 und 33
   „super", 31 „ok aber nicht mein favourite"; alle Songs inkl. Song 0 auf die drei Favoriten umstellen, im Wechsel):
   `progScrollText` (`src/fxText.cpp`) zeichnet immer mit Verlauf - den angemeldeten, sonst nach `songID % 3`:
