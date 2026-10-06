@@ -1,6 +1,6 @@
 //==================================================================
 // AUTOMATISCH GENERIERT von tools/songgen.py aus songs/<Song>/generated.cpp
-// NICHT von Hand ändern -> song.yaml / show.yaml anpassen und den Song neu generieren
+// NICHT von Hand ändern -> struktur.xlsx / show.yaml anpassen und den Song neu generieren
 //==================================================================
 #include <Arduino.h>
 #include <FastLED.h>
@@ -184,7 +184,7 @@ void gen_DancingOnMyOwn() {
 	}
 }
 
-//#28 Billie Jean - Michael Jackson  128 BPM  midi_offset 3/8 = 703 ms  (generiert aus songs/BillieJean_v1: song.yaml + show.yaml)
+//#28 Billie Jean - Michael Jackson  128 BPM  midi_offset 3/8 = 703 ms  (generiert aus songs/BillieJean_v1: struktur.xlsx + show.yaml)
 void gen_BillieJean() {
 
 	setColorScheme(SCHEME_ROYAL);	// Default für alle Parts
@@ -449,7 +449,7 @@ void gen_BillieJean() {
 	}
 }
 
-//#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: song.yaml + show.yaml)
+//#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
 void gen_AllTheThingsSheSaid() {
 
 	setColorScheme(SCHEME_ICE);	// Default für alle Parts
@@ -657,7 +657,7 @@ void gen_AllTheThingsSheSaid() {
 	}
 }
 
-//#33 Girls just wanna have fun - Cyndi Lauper  126 BPM  midi_offset 3/8 = 714 ms  (generiert aus songs/GirlsJustWannaHaveFun_v1: song.yaml + show.yaml)
+//#33 Girls just wanna have fun - Cyndi Lauper  126 BPM  midi_offset 3/8 = 714 ms  (generiert aus songs/GirlsJustWannaHaveFun_v1: struktur.xlsx + show.yaml)
 void gen_GirlsJustWannaHaveFun() {
 
 	setColorScheme(SCHEME_NEON);	// Default für alle Parts
@@ -800,7 +800,7 @@ void gen_GirlsJustWannaHaveFun() {
 }
 
 //==================================================================
-// Bund-Marker der generierten Songs (aus markers: in songs/<Song>/song.yaml)
+// Bund-Marker der generierten Songs (aus markers: in songs/<Song>/show.yaml)
 //==================================================================
 void setGeneratedMarkerLEDs(byte songID, byte partID) {
 #if !defined(NOMARKER)

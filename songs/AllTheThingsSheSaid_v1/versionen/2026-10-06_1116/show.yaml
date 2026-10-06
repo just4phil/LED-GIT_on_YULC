@@ -1,0 +1,183 @@
+# Technische Show (von Claude aus song.yaml + Analyse abgeleitet).
+# Struktur: quelle/struktur.xlsx des Users (30 Parts). Es gelten durchgehend sein energy und seine Effektideen.
+# Idee: drei wiederkehrende Motive gliedern den Song -
+#   Chorus "all the things she said"  = drehender Stern (SCENE_STAR)
+#   Hook "this is not enough"         = Schläge auf die Viertel in Rot (SCENE_DROP), jedes Mal gleich
+#   Übergang in den Chorus            = weißer Strobo
+# Farben: der Chorus (und das Band-Intro mit derselben Melodie) in NEON, die Hook rot, nach dem Stopp kippt das
+# Finale ins Warme (SUNSET -> FIRE). Verses und Bridge starten kalt (ICE/ROYAL/BLUE, A-Moll), bleiben aber nicht
+# blau stehen: fade lässt die Farben im Takt nach Pink/Orange und zurück wandern (Wunsch des Users: weniger
+# Blau, mehr langsame Verwandlung). Die Build-ups nehmen schon die Farbe des folgenden Chorus an.
+# Übergänge (erster Test der Ausgabestufe, 04.10.2026): in die ruhigen Parts wird weich geblendet (fade, wipe, dissolve)
+# statt hart geschnitten, das Synth-Solo breitet sich von der Mitte der Bühne aus (stage_out), der Wiedereinsatz nach dem
+# Stopp bekommt einen weißen Blitz (flash), "daddy looking at me" pumpt leicht im Beat (pulse). Die Absprünge in den
+# Chorus bleiben harte Schnitte - dort arbeitet schon der Strobo.
+# Ebenen (erster Test, 04.10.2026): in verse 2 a funkeln dezente Einzelblitze über dem langsamen Füllen, und die letzte
+# Hook nimmt das Glitzern des Höhepunkts ("chrorus 2") mit - die Schläge auf die Viertel laufen darunter weiter.
+
+function: gen_AllTheThingsSheSaid
+scheme: SCHEME_ICE
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+
+  synth intro:
+    scene: SCENE_CALM
+    scheme: SCHEME_ICE
+    tail:
+      beats: 1
+      fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; Wunsch des Users: der letzte Beat ist weißer Strobo als Übergang in den Band-Einsatz"
+
+  "intro: all thet ….":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    why: "Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - es ist die Chorus-Melodie, also der Chorus-Look: Stern in Pink/Cyan/Violett"
+
+  "intro: this is not enough":
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song"
+
+  verse 1a:
+    scene: SCENE_GLOW
+    scheme: SCHEME_ICE
+    transition: {type: fade, beats: 4}
+    fade: {to: triad, per: 8}
+    why: "Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück. Übergang: das Rot der Hook blendet über einen Takt weich aus statt hart abzureißen"
+
+  verse 1b:
+    scene: SCENE_RAIN
+    scheme: SCHEME_ROYAL
+    transition: {type: fade, beats: 2}
+    fade: {to: triad, per: 8}
+    why: "Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück"
+
+  "wiederholung: nobody else":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag"
+
+  übergang zum chorus:
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Idee 'strobo': 1 Beat weißes Flimmern als Absprung in den Chorus"
+
+  chorus 1:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    why: "Idee 'action', energy 4: der Stern in Pink/Cyan/Violett, Farbwechsel pro Beat - der Refrain-Look"
+
+  this is not enough:
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5)"
+
+  synth solo a:
+    scene: SCENE_COLORS
+    scheme: SCHEME_RANDOM
+    transition: {type: stage_out, beats: 2}
+    why: "Idee 'viele farben und im takt': die ganze Bühne einfarbig, pro Beat eine neue freie Zufallsfarbe - der bunteste Part"
+
+  synth solo b:
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_RANDOM
+    why: "Idee 'etwas gesteigert auf den takt': gleiche Farben, jetzt wandert die Farbe pro Beat von Gerät zu Gerät über die Bühne"
+
+  verse 2 a:
+    scene: SCENE_GLOW
+    scheme: SCHEME_ROYAL
+    transition: {type: wipe, beats: 4}
+    overlay: {scene: SCENE_SPARKLE, amount: 35}
+    fade: {to: triad, per: 8}
+    why: "Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)"
+
+  verse 2 b:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    fade: {to: triad, per: 4}
+    why: "Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)"
+
+  verse 2 b - build up:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo"
+
+  übergang zum chorus (2):
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Strobo-Absprung wie beim ersten Mal, hier 2 Beats"
+
+  chorus 1 (2):
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    why: "Chorus erkennbar gleich wie beim ersten Mal"
+
+  this is not enough (2):
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    why: "Hook-Motiv: Viertel in Rot"
+
+  Mother looking at me:
+    scene: SCENE_CALM
+    scheme: SCHEME_BLUE
+    transition: {type: dissolve, beats: 4}
+    fade: {to: triad, per: 8}
+    why: "Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet, auf der Matrix langsame Wasserringe; das Blau wandert über Violett nach Pink und zurück, die Spannung steigt mit"
+
+  daddy looking at me:
+    scene: SCENE_RAIN
+    scheme: SCHEME_ROYAL
+    transition: {type: fade, beats: 2}
+    pulse: 40
+    fade: {to: triad, per: 4}
+    why: "Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu, die Farben wandern jetzt taktweise"
+
+  build up:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Idee 'build up': Aufladen wie vor Chorus 2, schon in den warmen Farben des letzten Chorus"
+
+  übergang zum chorus (3):
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Strobo-Absprung, 2 Beats"
+
+  chorus 1 (3):
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    why: "der Chorus setzt für 2 Beats an - schon in den warmen Farben des Finales"
+
+  stop:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Idee 'BLACK': 2 Beats Dunkel machen den Wiedereinsatz stärker"
+
+  chorus 1 weiter:
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    transition: flash
+    why: "letzter Chorus eine Stufe wärmer: Stern in Orange/Pink/Lila/Gelb"
+
+  this is not enough (3):
+    scene: SCENE_DROP
+    scheme: SCHEME_FIRE
+    why: "Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb"
+
+  übergang zum chorus (4):
+    fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
+    why: "Idee 'strobe': letzter Absprung"
+
+  chrorus 2:
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    why: "Höhepunkt am Songende: 2 Takte schnelle Einzelblitze auf allen Geräten in Feuerfarben, statt ein viertes Mal der Stern"
+
+  this is not enough (4):
+    scene: SCENE_DROP
+    scheme: SCHEME_FIRE
+    overlay: {scene: SCENE_SPARKLE, amount: 60}
+    why: "die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter"
+
+  fade out:
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_RED
+    transition: {type: fade, beats: 2}
+    why: "Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz"

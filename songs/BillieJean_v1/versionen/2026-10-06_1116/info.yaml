@@ -1,0 +1,8 @@
+zeit: '2026-10-06 11:16:09'
+notiz: Umstellung auf struktur.xlsx (Code unverändert)
+werkzeug_git: 79cd7d3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
+  show.yaml: 4caccd1770e050e2190da0cf1e4761d92e846d8311324856c08661ac3a34c636
+  generated.cpp: 6914964c4f8e867711e3a3dc57ea8cc9546740cac39c6738a9f3c7012f057e35

@@ -6,7 +6,15 @@
 # Bewegung über die Bühne in der Bridge.
 
 scheme: SCHEME_NEON
-end_black_ms: 6530                  # 4 Takte, wie im alten Code
+# Schluss-Black 6,53 s (4 Takte, wie im alten Code): steht in der Tabelle in der Zeile "Ende".
+
+# Bund-Marker (unverändert aus der früheren song.yaml übernommen): der alte Code schaltet für Rina zusätzlich
+# markerLED5 = ASaite_E ein ("lets get physical" nach Chorus 2 und "hold on 1") und danach wieder aus.
+# {Slot: Marker}, nur für den Bass.
+markers:
+  parts:
+    chorus 2 hit: {bass: {5: ASaite_E}}
+    bridge 1:     {bass: {5: ASaite_E}}
 
 sections:
   pause:
