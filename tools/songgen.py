@@ -10,6 +10,7 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py --assemble             # nur src/ aus den gespeicherten Songs neu bauen
     tools/.venv/Scripts/python tools/songgen.py <Song> --neu           # neuen Song-Ordner mit leerer Tabelle anlegen
     tools/.venv/Scripts/python tools/songgen.py <Song> --tabelle       # nur die Spalte "Effekt" der Tabelle nachtragen
+    tools/.venv/Scripts/python tools/songgen.py --tabelle              # ... in den Tabellen ALLER Songs (kein neuer Code)
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
     quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
@@ -1869,11 +1870,84 @@ def effect_texts(song, timeline):
 def update_table(song_dir, song, timeline):
 	"""Spalte "Effekt" der Tabelle schreiben; liefert den Text für die Ausgabe. Geht das nicht (Tabelle in Excel
 	geöffnet, Kontrolle nach dem Schreiben schlägt fehl), bleibt die Tabelle unverändert - der Code wird trotzdem erzeugt."""
+	return write_table_texts(song_dir, effect_texts(song, timeline), song)
+
+
+def write_table_texts(song_dir, texts, song):
 	try:
-		return st.write_effects(table_path(song_dir), effect_texts(song, timeline), int(song.get("end_black_ms", 10000)))
+		return st.write_effects(table_path(song_dir), texts, int(song.get("end_black_ms", 10000)))
 	except st.TableError as e:
 		return (f"ACHTUNG: Spalte 'Effekt' der Tabelle NICHT geschrieben - {e}\n"
 				f"   Nachholen, sobald die Tabelle frei ist: songgen.py {song_dir.name} --tabelle")
+
+
+# Suchmuster für die Kopfzeile eines Parts in einer generated.cpp:
+#   "\tcase 5:\t// bass  8 T  15737ms  @0:05.656  -- nur Synth-Bass, dunkel und kühl anfangen"
+# Gruppen: case-Nummer, Name, Dauer in ms, Minuten, Sekunden, Beschreibung (kann fehlen)
+FROZEN_CASE_RE = re.compile(r"^\tcase (\d+):\t// (.+?)  .*?(\d+)ms  @(\d+):(\d+\.\d+)(?:  -- (.*))?$")
+
+
+def frozen_texts(song_dir, song):
+	"""Effekt-Texte für einen Song, dessen generierter Code "eingefroren" ist (generated.cpp ohne show.yaml, z. B.
+	Dancing On My Own): der Code läuft in der Firmware, seine Parts heißen aber anders als die Zeilen der Tabelle.
+	Zugeordnet wird deshalb über die Zeit: zu jeder Zeile der Tabelle die Parts des Codes, die in ihre Zeit fallen.
+	Das ist nur eine Näherung, wenn die Tabelle andere Längen hat als der eingefrorene Code."""
+	cases, cur = [], None
+	for line in (song_dir / GEN_FILE).read_text(encoding="utf-8").splitlines():
+		m = FROZEN_CASE_RE.match(line)
+		if m:
+			cur = {"name": m.group(2).strip(), "start": int(m.group(4)) * 60000 + round(float(m.group(5)) * 1000),
+				   "dur": int(m.group(3)), "why": (m.group(6) or "").strip(), "calls": []}
+			cases.append(cur)
+		elif re.match(r"^\tcase \d+:", line):
+			cur = None		# Hilfs-Part (Lauftext der Matrix): gehört zu keiner Zeile
+		elif cur is not None:
+			t = line.split("\t//")[0].strip()		# ohne den Kommentar am Zeilenende
+			# Weichen je Gerät lesbar machen: "#if defined(ANDRESGIT)" -> "[ANDRESGIT]", "#else" -> "[sonst]"
+			m = re.match(r"#(?:el)?if\s+(?:defined\((\w+)\)|DEVICE_CLASS == CLASS_(\w+))", t)
+			if m:
+				t = f"[{m.group(1) or m.group(2)}]"
+			elif t == "#else":
+				t = "[sonst]"
+			if t and t not in ("break;", "#endif", "}") and (t.startswith("[") or t not in cur["calls"]):
+				cur["calls"].append(t)
+	timeline, _end = build_timeline(song)
+	texts = []
+	for sec in song["sections"]:
+		part = next(p for p in timeline if p["sec"].get("name") == sec["name"])
+		a, b = part["start"], part["start"] + part["dur"]
+		lines = ["generierter Code (eingefroren, ohne show.yaml):"]
+		for c in cases:
+			if min(b, c["start"] + c["dur"]) - max(a, c["start"]) > 20 and not c["name"].startswith("BLACK (Ende)"):
+				lines.append(f"{c['name']} (ab {fmt_time(c['start'])}): " + " ".join(c["calls"]))
+				if c["why"]:
+					lines.append("   " + c["why"])
+		if len(lines) == 1:
+			lines.append("zu dieser Zeit ist der generierte Code schon zu Ende (schwarz, dann Pausen-Loop)")
+		texts.append("\n".join(lines))
+	return texts
+
+
+def table_texts(song_dir):
+	"""Was in die Spalte "Effekt" gehört, je nachdem, was in der Firmware für diesen Song läuft -> (Song, Texte):
+	  show.yaml + generated.cpp   die Gestaltung der Show (wie beim Generieren, effect_texts)
+	  show.yaml ohne Code         dieselbe Gestaltung, mit dem Hinweis, dass in der Firmware noch der alte Code läuft
+	  generated.cpp ohne Show     der eingefrorene generierte Code, über die Zeit zugeordnet (frozen_texts)
+	  keins von beiden            der alte, handgeschriebene Code aus der Spalte "bisher (alter Code)" """
+	song = load_song(song_dir)
+	has_show, has_gen = (song_dir / SHOW_FILE).exists(), (song_dir / GEN_FILE).exists()
+	if has_show:
+		timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))
+		if errors and has_gen:		# ohne Code ist die Show nur ein Plan: ihre offenen Punkte (z. B. Trailer-Sprung) stören hier nicht
+			raise SongError("die Show hat Fehler - erst beheben:\n  - " + "\n  - ".join(errors))
+		texts = effect_texts(song, timeline)
+		if not has_gen:
+			texts = ["Show gestaltet, aber noch NICHT generiert - in der Firmware läuft der alte Code. Geplant:\n" + t for t in texts]
+		return song, texts
+	if has_gen:
+		return song, frozen_texts(song_dir, song)
+	return song, [("alter Code (handgeschrieben, läuft so in der Firmware):\n" + sec["old"]) if sec.get("old") else ""
+				  for sec in song["sections"]]
 
 
 #==================================================================
@@ -1940,18 +2014,22 @@ def cmd_generate(song_dir, dry_run, note):
 
 
 # <Song> --tabelle: nur die Spalte "Effekt" der Tabelle schreiben (z. B. wenn sie beim Generieren in Excel geöffnet war).
-# Code, Version und src/ bleiben, wie sie sind.
-def cmd_table(song_dir):
-	song = load_song(song_dir)
-	timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))
-	if errors:
-		print("FEHLER (erst beheben, dann generieren):", file=sys.stderr)
-		for e in errors:
-			print("  - " + e, file=sys.stderr)
-		return 1
-	note = update_table(song_dir, song, timeline)
-	print("Tabelle: " + note)
-	return 1 if note.startswith("ACHTUNG") else 0
+# Ohne <Song>: die Tabellen aller Songs. Code, Versionen und src/ bleiben, wie sie sind. Eine Tabelle im alten Format
+# ("Effektidee") wird dabei umgestellt (struktur.ensure_effect_column).
+def cmd_table(song_dirs_):
+	failed = 0
+	for song_dir in song_dirs_:
+		if not table_path(song_dir).exists():
+			print(f"{song_dir.name}: keine {TABLE_FILE}")
+			continue
+		try:
+			song, texts = table_texts(song_dir)
+			note = write_table_texts(song_dir, texts, song)
+		except SongError as e:
+			note = f"ACHTUNG: nicht geschrieben - {e}"
+		failed += note.startswith("ACHTUNG")
+		print(f"{song_dir.name}: {note}")
+	return 1 if failed else 0
 
 
 # <Song> --versions: die gespeicherten Versionen auflisten
@@ -2047,7 +2125,7 @@ def main():
 	ap.add_argument("--versions", action="store_true", help="gespeicherte Versionen des Songs auflisten")
 	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (Tabelle + show.yaml + Code)")
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
-	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code)")
+	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
@@ -2057,6 +2135,8 @@ def main():
 		if args.assemble:
 			print_assembled(assemble())
 			return 0
+		if args.tabelle and not args.song:
+			return cmd_table(song_dirs())
 		if not args.song:
 			return cmd_list()
 		if args.neu:
@@ -2067,7 +2147,7 @@ def main():
 		if args.restore:
 			return cmd_restore(song_dir, args.restore)
 		if args.tabelle:
-			return cmd_table(song_dir)
+			return cmd_table([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)
 	except SongError as e:
 		print(f"FEHLER: {e}", file=sys.stderr)

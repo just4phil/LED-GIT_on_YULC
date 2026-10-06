@@ -26,6 +26,11 @@ Zuletzt aktualisiert: 06.10.2026 (Tabelle mit Spalten „Effekt (füllt KI)“ /
   über dem Strobo vor Verse 1 und in Chorus 1 jetzt 3 Takte ohne Fade (Chorus 2/3 unverändert weiß mit Fade); die
   `why:` der Show beschreiben jetzt, was man sieht. Alle fünf Envs gebaut. **Nächster Schritt:** User prüft die
   Tabelle in Excel (Lesbarkeit der Spalte, Formatierung nach dem Schreiben durch openpyxl) und Song 15 auf den Geräten.
+  **Nachtrag, alle Tabellen (Wunsch des Users):** `songgen.py --tabelle` ohne Song läuft über alle Song-Ordner
+  (`table_texts`, `frozen_texts`, `write_table_texts`). Am 06.10.2026 ausgeführt: alle 23 übrigen Tabellen sind auf
+  „Effekt (füllt KI)“ / „Änderungswunsch“ umgestellt und gefüllt (Songs ohne Show: alter Code aus „bisher“; Physical:
+  Show mit Vermerk „noch NICHT generiert“; Dancing On My Own: eingefrorener Code, über die Zeit zugeordnet - nur eine
+  Näherung, die Tabelle hat andere Längen als der Code). Kein Code neu erzeugt, Song-Stände unverändert.
   **Nachtrag (Wünsche des Users in der Tabelle):** Text über dem Strobo heißt „FUCK OFF“. Zu Chorus 1 schrieb er
   „muss ausgestanzt werden (schwarz) und darf nicht faden / pulsieren“ - der Code war seit `2026-10-06_2233` schon so
   (`FX_CUT`, Fenster 3 Takte, kein Fade); irreführend war die Zeile in der Effekt-Spalte („pulsiert alle 15000 ms“).

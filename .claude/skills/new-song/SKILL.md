@@ -47,6 +47,10 @@ der User löscht sie selbst.
   umgesetzte Effekt - erste Zeile Szene + Schema bzw. der Aufruf aus `fx:`, dann Text / Ebene / Ausgabestufe, zuletzt
   das `why:` der Show. **`why:` deshalb als Beschreibung schreiben, was man sieht** (kurz, für den User lesbar), nicht
   als Entstehungsgeschichte. Die Spalte ist nur Ausgabe: sie wird nicht gelesen und zählt nicht als Änderung.
+- `songgen.py --tabelle` (ohne Song) füllt die Spalte in allen Tabellen, ohne Code zu erzeugen (am 06.10.2026 für alle
+  24 Songs gelaufen). Was dort steht, hängt davon ab, was in der Firmware läuft: Show + Code = die Gestaltung der Show;
+  Show ohne Code (Physical) = die Gestaltung mit dem Vermerk „noch NICHT generiert“; eingefrorener Code ohne Show
+  (Dancing On My Own) = dessen Parts, über die Zeit zugeordnet (Näherung); sonst der alte Code aus „bisher (alter Code)“.
 - Altes Format: Tabellen aus der Zeit davor haben eine Spalte `Effektidee` (= seine Wünsche) und keine Effekt-Spalte.
   Sie werden weiter gelesen und bei ihrer ersten Generierung umgestellt (Wünsche wandern nach `Änderungswunsch`).
   Enthält das Blatt eigene Formeln, fügt das Skript keine Spalte ein und sagt dem User, was er in Excel anlegen soll.
