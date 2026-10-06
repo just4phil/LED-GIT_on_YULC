@@ -1,771 +1,274 @@
 # LED-GIT_on_YULC
 
-**LED Matrix Controller for Musical Instruments with MIDI/BLE Synchronization**
+**A synchronized LED light show for a live band: guitar, bass, stage lamps and an LED matrix, driven by MIDI and Bluetooth LE**
 
 ## Overview
 
-LED-GIT_on_YULC is an embedded system that controls LED matrices on musical instruments (guitars and bass) synchronized with MIDI input or Bluetooth Low Energy (BLE) communication. It provides real-time visual feedback during live performances with multiple song-specific lighting programs.
+LED-GIT_on_YULC is the firmware for a set of ESP32-S3 devices that carry addressable LEDs: a guitar, a bass, two
+stage lamps and a foldable LED matrix. All of them play the same song-specific light show at the same time. A MIDI
+message at the start of a song starts the show on the guitar; the guitar passes it on to the other devices via
+Bluetooth LE, and from then on every device runs through the parts of the song on its own millisecond timer.
 
 ## Features
 
-- **Multi-Song LED Programs**: 27+ pre-programmed songs with unique lighting effects
-- **Real-time MIDI Control**: Responds to MIDI CC messages for program changes
-- **BLE Mesh Networking**: Supports MIDI proxy mode to synchronize multiple devices
-- **Rotary Encoder Interface**: Manual song/part selection and brightness control
-- **LiPo Battery Monitoring**: Automatic power management and low-voltage protection
-- **Adaptive LED Markers**: Fret position indicators for guitar/bass fretboards
-- **Cross-Platform Support**: ESP32-S3 and Teensy 4 microcontrollers
+- **Song shows**: one light show per song, divided into parts (intro, verse, chorus ...) with exact lengths
+- **Generated from a table**: new songs are described in an Excel table (bars, tempo, part names, energy) plus a
+  `show.yaml`; a Python tool generates the C++ code
+- **Scenes across all devices**: one scene name (calm, verse, build-up, drop, fire, star, rain ...) gives each
+  device type its matching effect, in a shared colour scheme
+- **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
+  gate, dim, tint), a second effect as a layer, text over a scene, and a stage blinder at full brightness
+- **MIDI start, BLE sync**: only the song start and manual part jumps are transmitted; everything else runs
+  locally, so the devices stay in sync regardless of their LED count
+- **Fret markers**: red/blue marker LEDs on the fretboard of guitar and bass, always at the same brightness
+- **Rotary knob**: brightness in perceptually even steps, LED sync, emergency stop
+- **Battery monitoring** with low-voltage protection
+- **OTA firmware updates** for all devices over WiFi
 
-## Hardware Requirements
+## Hardware
 
-### Supported Microcontrollers
+### Devices
 
-- **ESP32-S3 DevKitC-1** (Primary platform)
-  - 16MB Flash
-  - 2MB PSRAM
-  - BLE 5.0 support
-  - Dual-channel LED outputs (YULC boards)
+All current devices are ESP32-S3 boards (16 MB flash, PSRAM) with two LED outputs ("YULC" controller boards).
 
-- **Teensy 4.0** (Legacy support)
-  - Single LED output
-  - USB MIDI support
+| Device (build env) | Role | LEDs | Notes |
+|---|---|---|---|
+| `andresgit` | Guitar, **MIDI proxy / BLE server** | 163 + strap | receives MIDI, forwards to all others |
+| `rinasbass` | Bass, BLE client | 155 | |
+| `lampe1` | Stage lamp, BLE client | 94 | |
+| `lampe2` | Stage lamp, BLE client | 78 | |
+| `scrollmatrix` | LED matrix 54 x 10, BLE client | 540 | text and matrix effects |
 
-### LED Hardware
+The LEDs are WS2812B (NeoPixel). Output 1 drives the instrument, lamp or matrix, output 2 the guitar strap.
 
-- **WS2812B / NeoPixel** LED matrices
-- Matrix sizes: 22x23 (506 LEDs) or 54x10 (540 LEDs)
-- Multiple device configurations:
-  - GITBOARD: 278 LEDs (Teensy-based guitar board)
-  - ANDRESGIT: 164 LEDs (ESP32-based guitar)
-  - RINASBASS: 155 LEDs (ESP32-based bass)
-  - SCROLLMATRIX: 540 LEDs (scrolling display)
-  - LAMPE1/LAMPE2: Standalone lamp fixtures
+A Teensy 4.0 board (`GITBOARD`, env `teensy40`) is still present in the code as a legacy target, but it is no longer
+built or maintained.
 
-### Optional Components
+### Other components
 
-- **Rotary Encoder**: For manual control
-  - Button pin, CLK pin, DT pin
-  - Short press: Song/part navigation
-  - Long press: Emergency stop
-
-- **WIDI Master**: Bluetooth MIDI interface
-  - MIDI input via BLE
-  - Real-time program change detection
-
-- **LiPo Battery**: 3.7V - 4.2V
-  - Voltage monitoring via analog pin
-  - Automatic shutdown at low voltage
+- **WIDI Core** (Bluetooth MIDI) on the guitar: delivers the MIDI messages as serial MIDI
+- **Rotary encoder** with push button
+- **Battery** with voltage measurement on an analog pin (LEDs are switched off below 10.5 V)
 
 ## Project Structure
 
 ```
 LED-GIT_on_YULC/
 ├── src/
-│   ├── main.cpp                 # Main application logic
-│   ├── definitions.h            # Device-specific configurations
-│   ├── colors.h                # LED color definitions
-│   ├── functions.h/cpp          # Helper functions (song switching, etc.)
-│   ├── FXprograms.h/cpp         # LED effect programs (basic strip effects, header for all prog... effects)
-│   ├── fxBase.h/cpp             # Building blocks of every effect (part start, step timing, output)
-│   ├── fxMatrixShapes/fxText/fxPalette/fxMatrixRain/fxMatrixSim.cpp  # Effect families
-│   ├── fxPipeline.h/cpp         # Output stage: transitions, modifiers, layers, blinder
-│   ├── songs.h/cpp             # Song-specific implementations
-│   ├── matrixFunctions.h/cpp    # Matrix helper functions
-│   ├── markerLEDs.h/cpp        # Fret position markers
-│   ├── TimerFunctions.h/cpp     # Hardware timer management
-│   ├── midi_in.h/cpp           # MIDI input handling
-│   ├── BLE_client_nimBLE.h/cpp # BLE client implementation
-│   ├── midiProxyBLEserver_nimBLE.h/cpp # BLE server/proxy
-│   ├── rotaryEncoder.h/cpp      # Rotary encoder control
-│   ├── lipoVoltageCheck.h/cpp  # Battery monitoring
-│   ├── AiEsp32RotaryEncoder.h/cpp # Rotary encoder library
-│   └── smileytongue24.h        # Bitmap graphics
-├── platformio.ini               # PlatformIO configuration
-└── README.md                   # This file
+│   ├── main.cpp                  # setup() + loop(), global state, song dispatcher
+│   ├── definitions.h             # all compile-time configuration (devices, pins, LED counts, switches)
+│   ├── songs.h/cpp               # hand-written songs (one function per song)
+│   ├── songs_generated.h/cpp     # generated songs - never edit by hand
+│   ├── scenes.h/cpp              # scenes: one name -> matching effect per device type
+│   ├── colorSchemes.h/cpp        # colour schemes shared by all devices
+│   ├── fxBase.h/cpp              # building blocks of every effect (part start, step timing, output)
+│   ├── fxPipeline.h/cpp          # output stage: transitions, modifiers, layers, text layer, blinder
+│   ├── FXprograms.h/cpp          # basic strip effects; FXprograms.h declares all older prog... effects
+│   ├── fxMatrixShapes.cpp        # scanner, star, circles, lines, outline
+│   ├── fxText.cpp                # text effects
+│   ├── fxPalette.cpp             # palette effects
+│   ├── fxMatrixRain.cpp          # "Matrix" rain
+│   ├── fxMatrixSim.cpp           # fire, plasma, starfield, Lissajous, equalizer, water ripple
+│   ├── fxState.h                 # state shared by the effect files
+│   ├── guitarShapeFX.h/cpp       # effects that follow the outline of the guitar
+│   ├── matrixFunctions.h/cpp     # matrix drawing helpers
+│   ├── markerLEDs.h/cpp          # fret marker LEDs
+│   ├── functions.h/cpp           # song/part switching, BLE message format, helpers
+│   ├── TimerFunctions.h/cpp      # 2 ms hardware timer
+│   ├── midi_in.h/cpp             # MIDI input
+│   ├── midiProxyBLEserver_nimBLE.h/cpp  # BLE server (guitar)
+│   ├── BLE_client_nimBLE.h/cpp   # BLE client (all other devices)
+│   ├── rotaryEncoder.h/cpp       # knob: brightness, sync, emergency stop
+│   ├── lipoVoltageCheck.h/cpp    # battery monitoring
+│   ├── otaUpdate.h/cpp           # firmware update over WiFi
+│   └── AiEsp32RotaryEncoder*     # third-party encoder library
+├── songs/<Song>_v1/              # per song: quelle/struktur.xlsx, show.yaml, generated.cpp, versionen/
+├── tools/
+│   ├── songgen.py                # generates song code from table + show.yaml
+│   ├── struktur.py               # reads the Excel table
+│   ├── build_ota.py              # builds all devices and serves the firmware for OTA
+│   ├── fw_version.py             # sets the firmware version at build time
+│   └── fxstats.py                # statistics on effects used in the old songs
+├── docs/                         # guides (German), see "Documentation"
+├── ota/                          # built firmware per device (not in git)
+└── platformio.ini
 ```
 
-## Installation and Setup
+## Building and Flashing
 
-### Prerequisites
-
-1. **PlatformIO IDE** (recommended) or command-line tools
-   - VS Code + PlatformIO extension
-   - Or: `pip install platformio`
-
-2. **Hardware**:
-   - ESP32-S3 or Teensy 4.0
-   - LED matrix
-   - USB-C cable for programming
-
-### Building
-
-#### Using PlatformIO CLI
+The project uses [PlatformIO](https://platformio.org/) (VS Code extension or CLI). There is one build environment
+per device, which selects the device via a build flag - `definitions.h` does not need to be edited.
 
 ```bash
-# Install dependencies
-pio install
+# Build one device
+pio run -e andresgit
 
-# Build for ESP32-S3 (default)
-pio run
+# Build and upload (add --upload-port COMx if several devices are connected)
+pio run -e lampe1 -t upload
 
-# Build for Teensy 4.0
-pio run -e teensy40
-
-# Clean build
-pio run --target clean
+# Serial monitor (115200 baud)
+pio device monitor -e andresgit
 ```
 
-#### Using VS Code PlatformIO
+Environments: `andresgit`, `rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`.
 
-1. Open project in VS Code
-2. Press `Ctrl+Shift+B` or click "Build" in the status bar
-3. Select target environment from dropdown
+The legacy environment `esp32-s3-devkitc-1` takes the device from `src/definitions.h`, where exactly one device
+must be uncommented.
 
-### Uploading
+Each device define switches its features on automatically (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_BLE_CLIENT`,
+`HAS_ROTARY_ENCODER`, `HAS_LIPOVOLTAGE_CHECK`, `NOMARKER` ...). They are not meant to be set by hand.
 
-```bash
-# Upload to ESP32-S3 (automatic port detection)
-pio run --target upload
+**FastLED is pinned to 3.5.0.** Newer versions (3.9.x) do not build for the ESP32-S3 in this project.
 
-# Upload with specific port (Windows)
-pio run --target upload --upload-port COM5
-
-# Upload to Teensy 4.0
-pio run -e teensy40 --target upload
-```
-
-### Serial Monitor
-
-```bash
-# Start serial monitor (ESP32-S3: 115200 baud)
-pio device monitor --port COM5 --baud 115200
-
-# Or Teensy 4.0 (9600 baud)
-pio device monitor --port COM8 --baud 9600
-```
-
-## Configuration
-
-### Selecting Device Configuration
-
-Edit `src/definitions.h` and uncomment exactly ONE device:
-
-```cpp
-// Choose ONE device:
-#define ANDRESGIT      // ESP32 guitar with MIDI proxy
-//#define RINASBASS     // ESP32 bass with BLE client
-//#define LAMPE1         // Standalone lamp
-//#define LAMPE2         // Standalone lamp
-//#define SCROLLMATRIX  // Scrolling LED display
-//#define GITBOARD       // Teensy-based guitar board
-```
-
-### Feature Flags
-
-Enable/disable features in `src/definitions.h`:
-
-```cpp
-// MIDI/BLE Configuration
-#define HAS_MIDI_IN         // Enable WIDI Master MIDI input
-#define IS_MIDI_PROXY       // Enable BLE MIDI proxy (server)
-#define IS_BLE_CLIENT       // Enable BLE client mode
-
-// Hardware Features
-#define HAS_ROTARY_ENCODER  // Enable rotary encoder
-#define HAS_LIPOVOLTAGE_CHECK // Enable battery monitoring
-```
-
-### Build Configuration
-
-Edit `platformio.ini` for advanced settings:
-
-```ini
-[env:esp32-s3-devkitc-1]
-board = esp32-s3-devkitc-1
-build_flags = 
-    -D USE_ESP32
-    -D ARDUINO_USB_CDC_ON_BOOT=1
-    -D CONFIG_BT_NIMBLE_MAX_CONNECTIONS=5
-
-lib_deps = 
-    fastled/FastLED@3.5.0
-    h2zero/NimBLE-Arduino@2.1.3
-    fortyseveneffects/MIDI Library@5.0.2
-    # ... other dependencies
-```
+There are no unit tests.
 
 ## Usage
 
-### Starting the System
+### Starting a song
 
-1. **Power On**: Connect USB or LiPo battery
-2. **Initialization**: 
-   - LED matrix initializes (brief flash)
-   - BLE starts scanning (if client mode)
-   - Default song 0 (SONGPAUSE) active
-3. **Serial Output**: Monitor at 115200 baud for status messages
+- **MIDI channel 10, CC 22** selects the song, **CC 23** jumps to a part. Everything else is ignored.
+- The guitar (proxy) forwards both to all clients as BLE notifications.
+- Automatic part changes are *not* transmitted: every device knows the part lengths and switches on its own timer.
+  A device that joins late can fetch the current song and part from the proxy (see knob).
 
-### Manual Control (Rotary Encoder)
+Song 0 is the pause between songs.
 
-**Turn knob**: brightness. Fully down = LEDs off, only the fret markers stay on. By default 32 perceptually
-even steps (`ROTARY_BRIGHTNESS_CURVE` in `definitions.h`; commented out = linear 2-255 with acceleration).
+### Rotary knob
 
-**Short Press**: LED sync - the proxy forces its song/part on all clients, a client fetches it from the proxy.
+| Action | Effect |
+|---|---|
+| Turn | Brightness. Fully down = LEDs off, only the fret markers stay on |
+| Short press | LED sync: the proxy forces its song/part on all clients; a client fetches it from the proxy |
+| Double click (proxy only) | Take song/part from a client |
+| Long press (1 s) | Emergency stop: back to song 0 |
 
-**Double Click** (proxy only): take song/part from a client.
+By default the knob has 32 steps that look evenly spaced to the eye (about 16 % more light per detent).
+Commenting out `ROTARY_BRIGHTNESS_CURVE` in `src/definitions.h` switches back to the old linear scale (2-255,
+with acceleration when turning fast).
 
-**Long Press** (duration > 1 second):
-- Emergency stop: Switch to song 0
-- Useful for quick shutdown during performance
+### Fret markers
 
-### MIDI Control
+On guitar and bass the LEDs along the neck are kept dark so they do not blind the player; only the marker LEDs
+are lit there: red for the positions of the current song part, blue for orientation. Their brightness is computed
+from the current global brightness, so they look the same whether the show is dim, at full brightness, in a
+blinder or switched off (`MARKER_LEVEL` in `src/definitions.h`).
 
-**MIDI CC Messages**:
-- CC#0 (Bank Select MSB): Select song
-- CC#32 (Bank Select LSB): Select part
-- Values 0-255 for song/part selection
+### Battery
 
-**Real-time Synchronization**:
-- WIDI Master sends MIDI program changes
-- LED patterns update immediately
-- BLE proxy broadcasts to connected clients
+With `HAS_LIPOVOLTAGE_CHECK` the battery voltage is measured continuously. Below 10.5 V the effects are switched
+off to protect the battery, warning LEDs blink red and the markers stay on.
 
-### BLE Communication
+### OTA firmware update
 
-**Proxy Mode (Server)**:
-- Acts as BLE MIDI gateway
-- Receives MIDI from WIDI Master
-- Broadcasts to up to 5 clients simultaneously
-- Server UUID: `204916ff-8db3-4368-bab9-e1f6e1ad653c`
+`python tools/build_ota.py` builds all devices with one shared version number into `ota/<device>/`;
+`--serve-only` serves that folder on port 8080. Switching on the guitar with the knob pressed sends all devices
+into update mode: they connect to WiFi (credentials in `src/secrets.h`, template `src/secrets.h.example`),
+download a newer firmware if there is one and reboot. If anything fails, the device boots normally with the old
+firmware. Details: `docs/OTA-Update.html`.
 
-**Client Mode**:
-- Connects to BLE proxy server
-- Receives song/part updates
-- Syncs LED patterns with master device
-- Auto-reconnect on connection loss
+## Songs
 
-### Battery Management
+### Current songs
 
-**Voltage Monitoring**:
-- Checks battery voltage every 1 second
-- Configurable voltage thresholds
-- Warning LEDs blink red when low
+| ID | Song | | ID | Song |
+|---|---|---|---|---|
+| 0 | Pause between songs | | 17 | Apt. |
+| 1 | Physical (trailer) | | 20 | Kids |
+| 2 | Physical | | 21 | Tell It To My Heart |
+| 3 | Take On Me | | 24 | Enjoy The Silence (intro) |
+| 4 | Don't Stop The Music | | 25 | Friday I'm In Love |
+| 6 | No Roots | | 26 | Be Mine |
+| 7 | Firework | | 27 | I Wanna Dance With Somebody |
+| 8 | Dancing On My Own * | | 28 | Billie Jean * |
+| 9 | I Love It | | 29 | Maniac |
+| 10 | Bloody Mary | | 31 | All The Things She Said * |
+| 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
+| 12 | Such A Shame | | 80 | I Love It (trailer) |
+| 13 | In The Dark | | 81 | Dancing On My Own (intro) |
+| 14 | Shivers | | 90-92 | Demo songs for effects, scenes and the output stage |
+| 15 | abcdefu | | 99 | Startup animation |
+| 16 | Enjoy The Silence | | | |
 
-**Low Voltage Protection**:
-- Below 3.5V: LEDs automatically turn off
-- Marker LEDs remain active for emergency
-- Rotary encoder still functional
+\* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp` and are being
+replaced one by one.
 
-**Charging**:
-- USB-C charging supported (ESP32-S3)
-- System operates while charging
-- Voltage monitoring continues
+### Adding or changing a song
 
-## Song Programs
+Each song has a folder `songs/<Song>_v1/`:
 
-### Available Songs
+- `quelle/struktur.xlsx` - the table with song ID, BPM and, per part: first bar, part name, effect idea,
+  energy 0-5. This is the only file maintained by hand.
+- `show.yaml` - the design: scene, colour scheme, transitions, text, overlays and markers per part.
+- `generated.cpp` - the generated code of this song.
+- `versionen/<timestamp>/` - a copy of all three for every generation.
 
-| ID  | Song Name              | Description                              |
-|-----|------------------------|------------------------------------------|
-| 0   | SONGPAUSE             | Idle mode, all LEDs off                   |
-| 1   | Physical Trailer       | Trailer for "Physical" song               |
-| 2   | Physical              | Olivia Newton-John cover                  |
-| 3   | Take On Me            | a-ha cover                               |
-| 4   | Don't Stop The Music  | Rihanna cover                             |
-| 5   | Use Somebody          | Kings of Leon cover                       |
-| 6   | No Roots              | Alice Merton cover                       |
-| 7   | Firework              | Katy Perry cover                          |
-| 8   | Dancing On My Own     | Robyn cover                              |
-| 9   | I Love It             | Icona Pop cover                          |
-| 10  | Bloody Mary           | Lady Gaga cover                           |
-| 11  | Titanium              | David Guetta ft. Sia cover              |
-| 12  | Such A Shame          | The Police cover                         |
-| 13  | In The Dark           | Devlin cover                             |
-| 14  | Shivers               | Ed Sheeran cover                         |
-| 15  | abcdefu               | Gayle cover                              |
-| 16  | Enjoy The Silence      | Depeche Mode cover                       |
-| 17  | apt.                  | ROSÉ & Bruno Mars cover                  |
-| 18  | Prisoner              | Miley Cyrus ft. Dua Lipa cover           |
-| 19  | Hot N Cold             | Katy Perry cover                         |
-| 20  | Kids                  | MGMT cover                               |
-| 21  | Tell It To My Heart    | Taylor Dayne cover                      |
-| 24  | Enjoy The Silence Intro| Intro sequence for song 16              |
-| 25  | Friday I'm In Love     | The Cure cover                          |
-| 80  | I Love It Intro        | Intro sequence for song 9               |
-| 99  | STARTUP               | Startup animation                        |
-| 100 | defaultLoop           | Default pattern                           |
-
-### Song Parts
-
-Each song has multiple parts (typically 0-7) triggered by:
-- Automatic timing (millisecond-based)
-- MIDI program changes
-- Manual selection via rotary encoder
-
-### LED Effects
-
-The system includes numerous effect programs:
-
-**Basic Effects**:
-- `progBlack()`: All LEDs off
-- `progStrobo()`: Strobe flash effect
-- `progFullColors()`: Full matrix color
-
-**Pattern Effects**:
-- `progMatrixScanner()`: Scanning line effect
-- `progMatrixHorizontal()`: Horizontal flow
-- `progMatrixVertical()`: Vertical flow
-- `progCircles()`: Expanding circles
-- `progRandomLines()`: Random line patterns
-- `progMovingLines()`: Moving line effect
-
-**Animation Effects**:
-- `progStern()`: Star pattern
-- `progSternschnuppen()`: Shooting stars
-- `progBlingBlingColoring()`: Random color twinkling
-- `progFastBlingBling()`: Rapid LED activation
-- `progBlinkLowVoltage()`: Battery warning blink
-
-**Text Effects**:
-- `progShowText()`: Display static text
-- `progScrollText()`: Scrolling text marquee
-- `progBlinkText()`: Blinking text
-
-**Advanced Effects**:
-- `progPalette()`: Color palette cycling
-- `progShowROOTS()`: Display root note positions
-- `progRunningPixel()`: Single pixel chase
-- `progTestRange()`: Test LED range
-
-## API Reference
-
-### Main Functions
-
-#### `setup()`
-Initializes all subsystems:
-```cpp
-void setup();
-```
-- Serial communication
-- LED matrix initialization
-- Rotary encoder setup
-- MIDI/BLE initialization
-- Timer configuration
-
-#### `loop()`
-Main application loop:
-```cpp
-void loop();
-```
-- Voltage monitoring
-- Rotary encoder handling
-- MIDI/BLE processing
-- LED updates (2ms intervals)
-- Song part transitions
-
-### Song Control Functions
-
-#### `switchToSong(byte song)`
-Switch to a specific song:
-```cpp
-void switchToSong(byte song);
-```
-**Parameters**:
-- `song`: Song ID (0-100)
-
-**Behavior**:
-- Resets all counters and markers
-- Sets active song
-- Initializes part 0
-- Broadcasts to BLE clients (if proxy)
-
-#### `switchToPart(byte part)`
-Switch to a specific part within current song:
-```cpp
-void switchToPart(byte part);
-```
-**Parameters**:
-- `part`: Part ID (0-7)
-
-**Behavior**:
-- Resets timing counters
-- Updates marker LEDs
-- Sets new active part
-- Triggers BLE synchronization
-
-#### `switchToSongAndPart(byte song, byte part)`
-Immediate sync to specific song and part:
-```cpp
-void switchToSongAndPart(byte song, byte part);
+```bash
+python tools/songgen.py <Song>              # generate this song and rebuild src/songs_generated.*
+python tools/songgen.py --neu <Song>        # create a new song folder with the table template
+python tools/songgen.py --versions <Song>   # list saved versions
+python tools/songgen.py --restore <version> <Song>
 ```
 
-### LED Control Functions
+The tools need Python with `pyyaml` and `openpyxl` (`tools/requirements.txt`). The full workflow is described in
+`docs/Song-Workflow.html`.
 
-#### `setMarkerLEDs(byte songID)`
-Set fret position markers for guitar/bass:
-```cpp
-void setMarkerLEDs(byte songID);
-```
-**Behavior**:
-- Defines which frets to highlight
-- Red color for song-specific positions
-- Blue color for E and A string markers
-- Only active on devices with markers (not GITBOARD)
+## How an effect is built
 
-#### `gitBlindingLEDs_OFF_MarkerLEDs_ON()`
-Apply marker LEDs and turn off blinding LEDs:
-```cpp
-void gitBlindingLEDs_OFF_MarkerLEDs_ON();
-```
-**Behavior**:
-- Copies LED buffer to both outputs
-- Turns off blinding LEDs (fretboard area)
-- Applies marker LEDs with adjusted brightness
-- Must be called before `FastLED.show()`
-
-### Hardware Timer Functions
-
-#### `timer_begin()`
-Initialize hardware timer for precise timing:
-```cpp
-void timer_begin();
-```
-**Behavior**:
-- ESP32: Uses Timer Group 0, divider 80 (2ms interval)
-- Teensy: Uses IntervalTimer
-- Sets up ISR callback
-- Enables timer alarm
-
-**Timer ISR Callback**:
-- Updates timing counters
-- Sets `flag_processFastLED`
-- Detects half-second and second boundaries
-- Triggers song part transitions
-
-### MIDI Functions
-
-#### `midi_initialize()`
-Initialize MIDI input system:
-```cpp
-void midi_initialize();
-```
-
-#### `midi_loop()`
-Process incoming MIDI messages:
-```cpp
-void midi_loop();
-```
-
-#### `MidiDatenAuswerten(byte channel, byte number, byte value)`
-Process MIDI CC messages:
-```cpp
-void MidiDatenAuswerten(byte channel, byte number, byte value);
-```
-**Parameters**:
-- `channel`: MIDI channel (0-15)
-- `number`: CC number (0-127)
-- `value`: CC value (0-127)
-
-### BLE Functions
-
-#### `BLE_client_initialize()`
-Initialize BLE client:
-```cpp
-void BLE_client_initialize();
-```
-
-#### `BLE_client_Loop()`
-Process BLE communication:
-```cpp
-void BLE_client_Loop();
-```
-
-#### `midiProxy_initialize_BLE()`
-Initialize BLE MIDI proxy server:
-```cpp
-void midiProxy_initialize_BLE();
-```
-
-#### `midiProxy_midiLoop()`
-Process MIDI and broadcast to clients:
-```cpp
-void midiProxy_midiLoop();
-```
-
-### Rotary Encoder Functions
-
-#### `rotary_initialize()`
-Initialize rotary encoder:
-```cpp
-void rotary_initialize();
-```
-
-#### `rotary_loop()`
-Process encoder input:
-```cpp
-void rotary_loop();
-```
-
-#### `on_button_short_click()`
-Handle short button press:
-```cpp
-void on_button_short_click();
-```
-
-### Battery Monitoring
-
-#### `lipoVoltageCheck_initialize()`
-Initialize voltage monitoring:
-```cpp
-void lipoVoltageCheck_initialize();
-```
-
-#### `lipoVoltageCheck_loop()`
-Check battery voltage and manage power:
-```cpp
-void lipoVoltageCheck_loop();
-```
-
-**Behavior**:
-- Reads analog voltage from LIPO_PIN
-- Compares to threshold (3.5V)
-- Sets `LIPOvoltageIsLOW` flag
-- Controls LED status
-
-### Helper Functions
-
-#### `getRandomColorValue()`
-Get random color component value:
-```cpp
-int getRandomColorValue();
-```
-**Returns**: Random value in {5, 63, 127, 191, 255}
-
-#### `getRandomColor()`
-Get random predefined color:
-```cpp
-int getRandomColor();
-```
-**Returns**: Color from predefined palette (WHITE, GREEN, BLUE, ORANGE, PURPLE, CYAN, RED)
-
-#### `getRandomColorIncludingBlack()`
-Get random color including black:
-```cpp
-int getRandomColorIncludingBlack();
-```
-**Returns**: Color from palette plus black option
-
-## Configuration Constants
-
-### LED Matrix Settings
+Every effect is a function `progXyz(durationMillis, nextPart, ...)` that is called on every pass of `loop()`
+during its part and never blocks. It is made of three building blocks from `fxBase.h`:
 
 ```cpp
-#define MATRIX_WIDTH  22  // Matrix width in pixels
-#define MATRIX_HEIGHT 23  // Matrix height in pixels
-#define NUMMATRIX     506 // Total LED count (width * height)
-#define CHIPSET       WS2812B  // LED controller type
-#define COLOR_ORDER   RGB  // Color byte order
+void progXyz(unsigned int durationMillis, byte nextPart, unsigned int msPerStep) {
+    static int pos;
+    if (fxPartStart(durationMillis, nextPart)) pos = 0;   // only on the first call in a part
+    if (fxFrameDue(msPerStep)) {                          // only when the next step is due
+        pos++;
+        leds[pos % anz_LEDs] = CRGB::White;
+    }
+    fxShow();                                             // always: hand the frame to the output stage
+}
 ```
 
-### Pin Definitions (ESP32-S3)
+`fxShow()` passes the frame to the output stage (`fxPresent()` in `fxPipeline.cpp`), which mixes in layers,
+modifiers, transitions and blinder, adds the fret markers and is the only place that calls `FastLED.show()`.
+All timing is derived from the time since the part started, never from frame counts, so devices with very
+different LED counts stay in step.
 
-```cpp
-#define DATA_PIN_1    1   // LED output channel 1
-#define DATA_PIN_2    2   // LED output channel 2
-#define LIPO_PIN      4   // Battery voltage monitoring
-```
+## Documentation
 
-### Rotary Encoder Pins
+The guides in `docs/` are written in German, as are the inline comments in the source code.
 
-```cpp
-#define ROTARY_ENCODER_BUTTON_PIN   4  // Switch pin
-#define ROTARY_ENCODER_B_PIN        5  // Clock pin (CLK)
-#define ROTARY_ENCODER_A_PIN        6  // Data pin (DT)
-```
-
-### Timer Settings
-
-```cpp
-#define INCREMENT  2  // Timer interval in milliseconds (2ms = 500Hz)
-```
-
-### Battery Settings
-
-```cpp
-#define SECONDSFORVOLTAGE  1  // Voltage check interval (seconds)
-```
-
-### LED Brightness
-
-```cpp
-#define DEFAULT_BRIGHTNESS  48  // Default brightness (0-255)
-```
+| File | Content |
+|---|---|
+| `docs/Song-Workflow.html` | How to create and change songs (table, `show.yaml`, generator) |
+| `docs/LED-Effekte-und-Szenen.html` | All effects, scenes, colour schemes and output-stage functions, with previews |
+| `docs/OTA-Update.html` | Firmware updates over WiFi: procedure and reference |
+| `docs/effekt-katalog.yaml` | Catalogue of effects, palettes and scenes with ratings |
+| `docs/effekt-statistik.md` | Which effects the old songs use (generated by `tools/fxstats.py`) |
+| `docs/FX-Pipeline-Plan.md` | Plan and working state of the effect refactoring |
+| `CLAUDE.md` | Architecture overview and working rules for AI-assisted development |
 
 ## Troubleshooting
 
-### Common Issues
+**Serial monitor shows nothing** - the build flags `ARDUINO_USB_MODE=1` and `ARDUINO_USB_CDC_ON_BOOT=1` must be
+set (they are, in `platformio.ini`); check the COM port and 115200 baud.
 
-**1. Serial monitor not working**
-- Ensure `ARDUINO_USB_CDC_ON_BOOT=1` in build_flags
-- Check baud rate matches (115200 for ESP32, 9600 for Teensy)
-- Try different COM port
+**LEDs stay dark** - the knob may be turned fully down (only markers lit), or the battery is low. Check
+`DEFAULT_BRIGHTNESS` for the device in `src/definitions.h` and the data pins.
 
-**2. LEDs not displaying**
-- Check `DEFAULT_BRIGHTNESS` in definitions.h
-- Verify LED connections (DATA_PIN)
-- Ensure `matrix->begin()` called in setup()
-- Check for `LEDsTurnedOff` flag (battery low?)
+**A client does not follow the show** - the guitar (proxy) must be switched on; press the knob on the client to
+fetch the current song and part. Debug output: `debug_ble_client` / `debug_ble_proxy` in `src/definitions.h`.
 
-**3. BLE not connecting**
-- Verify `IS_BLE_CLIENT` or `IS_MIDI_PROXY` defined
-- Check client MAC addresses in definitions.h
-- Ensure both devices on same BLE version
-- Restart both devices
+**MIDI has no effect** - only channel 10, CC 22 (song) and CC 23 (part) are evaluated, and only on the guitar.
 
-**4. MIDI not responding**
-- Confirm WIDI Master powered on
-- Check MIDI channel mapping
-- Verify `HAS_MIDI_IN` defined
-- Test with MIDI monitor software
-
-**5. Rotary encoder not working**
-- Check pin connections (CLK, DT, SW)
-- Verify `HAS_ROTARY_ENCODER` defined
-- Test with different pins
-- Check for ground connection
-
-**6. Battery warning constantly on**
-- Check LIPO_PIN connection
-- Verify voltage divider ratio
-- Adjust threshold in `lipoVoltageCheck_loop()`
-- Test with known-good battery
-
-**7. System crashes/reboots**
-- Check for stack overflow (reduce memory usage)
-- Verify PSRAM enabled (if using large buffers)
-- Add watchdog timer for crash detection
-- Monitor heap memory usage
-
-### Debug Mode
-
-Enable debug flags in `src/definitions.h`:
-
-```cpp
-#define debug_ble_client   // BLE client debug output
-#define debug_ble_proxy   // BLE proxy debug output
-#define debug_rotary      // Rotary encoder debug output
-```
-
-Or via `platformio.ini`:
-
-```ini
-build_flags = 
-    -D debug_ble_client
-    -D debug_ble_proxy
-```
-
-### Serial Output Analysis
-
-**Normal startup sequence**:
-```
-START SETUP
-MATRIX SETUP
-MATRIX BEGIN
-ROTARY SETUP
-MIDI SETUP
-start timer
-ENDE SETUP
-```
-
-**Error messages**:
-- "Malloc LEDMatrix Failed" - Not enough memory
-- "Failed to initialize BLE" - BLE library issue
-- "BLE not connected" - Connection lost
-- "Voltage low" - Battery below threshold
-
-## Performance Optimization
-
-### Key Metrics
-
-- **Timer Frequency**: 500Hz (2ms intervals)
-- **LED Update Rate**: 500Hz (maximum)
-- **Memory Usage**: ~50KB RAM (varies by configuration)
-- **Power Consumption**: 200-500mA (varies with brightness)
-- **Battery Life**: 2-4 hours (2000mAh LiPo)
-
-### Optimization Tips
-
-1. Reduce timer frequency for power savings
-2. Use adaptive frame rates
-3. Enable light sleep between frames
-4. Optimize LED buffer usage
-5. Reduce unnecessary `FastLED.show()` calls
-
-## Contributing
-
-### Code Style
-
-- Use English comments for international collaboration
-- Add Javadoc-style documentation to all public functions
-- Follow existing naming conventions
-- Keep functions focused and modular
-
-### Testing
-
-Test on multiple device configurations:
-- ESP32-S3 with BLE proxy
-- ESP32-S3 with BLE client
-- Teensy 4.0 with MIDI
-- Various LED matrix sizes
-
-### Submitting Changes
-
-1. Fork the repository
-2. Create feature branch
-3. Add tests for new functionality
-4. Update documentation
-5. Submit pull request
-
-## License
-
-This project is open source. See LICENSE file for details.
+**Timing of effects looks off** - `debug_fx_frametime` prints frames per second and the time needed for sending
+and mixing every 5 seconds.
 
 ## Credits
 
-- **Hardware Design**: Custom LED matrix boards (YULC)
-- **FastLED Library**: Daniel Garcia and Mark Kriegsman
-- **NimBLE-Arduino**: H2zero
-- **PlatformIO**: Ivan Kravets
-
-## Changelog
-
-### Version 1.0 (Current)
-- Initial release
-- Support for ESP32-S3 and Teensy 4
-- BLE mesh networking
-- 27+ song programs
-- Battery monitoring
-- Rotary encoder control
-
-## Support
-
-For issues and questions:
-- Create GitHub issue
-- Check documentation first
-- Provide device configuration and serial output
-
-## Future Enhancements
-
-- [ ] WiFi support for remote control
-- [ ] Web-based configuration interface
-- [ ] Custom song editor
-- [ ] OTA firmware updates
-- [ ] More LED effect programs
-- [ ] Save/load song configurations
-- [ ] Performance monitoring dashboard
-
----
-
-**Last Updated**: January 2, 2026
-**Version**: 1.0.0
-**Platform**: PlatformIO with ESP32-S3/Teensy 4
+- [FastLED](https://github.com/FastLED/FastLED) (pinned to 3.5.0)
+- [FastLED NeoMatrix](https://github.com/marcmerlin/FastLED_NeoMatrix), Framebuffer GFX, Adafruit GFX
+- [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino)
+- [Arduino MIDI Library](https://github.com/FortySevenEffects/arduino_midi_library)
+- [Ai Esp32 Rotary Encoder](https://github.com/igorantolic/ai-esp32-rotary-encoder)
+- [PlatformIO](https://platformio.org/)

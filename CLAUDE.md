@@ -31,6 +31,13 @@ the matching `.h` file included. New code gets comments in the same style. Gener
 (`src/songs_generated.*`, `songs/*/generated.cpp`) are never commented by hand - change the text the generator
 emits (`tools/songgen.py`). `AiEsp32RotaryEncoder*` is third-party code and stays as it is.
 
+## README.md (binding)
+
+`README.md` is the public face of the project on GitHub (English). **Keep it up to date in the same change** whenever
+something it describes changes: devices and build envs, the file list in `src/` and `tools/`, the song table (new,
+removed or newly generated songs), MIDI/BLE control, the knob, markers, OTA, the song workflow or the way effects are
+built. It deliberately contains no function-by-function API reference - that goes stale; the headers are the reference.
+
 ## Device Selection (critical before building)
 
 Preferred: one PlatformIO env per device sets the device via `-D` flag — `andresgit`, `rinasbass`,

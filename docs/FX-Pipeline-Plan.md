@@ -40,6 +40,10 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
   nicht mehr gebaut) und der Ordner `src/SKILLS/` (`LED_Effekt_System_Analyse.md`, `Switch-Case_SKILL.md` - Anleitung
   für handgeschriebene Songs, abgelöst durch Tabelle + `show.yaml` + `songgen.py`); der Skill `new-song` verweist
   statt dessen auf `docs/effekt-katalog.yaml`.
+- 06.10.2026: `README.md` neu geschrieben (englisch, für GitHub; Wunsch des Users: aktuell halten, steht jetzt als
+  verbindliche Regel in `CLAUDE.md`). Inhalt aus dem Code geprüft: Geräte und Envs, Dateien, MIDI Kanal 10 CC 22/23,
+  Knopf, Marker, Akku-Schwelle 10,5 V, OTA, Song-Tabelle, Song-Workflow, Aufbau eines Effekts. Die alte
+  Funktions-Referenz ist entfallen. Committet und gepusht.
 - **Branch:** `MAIN`. `fx-pipeline` (`13cda8e`) und `lib-cleanup` (Aufräumen, Phase 0c, Phase 0b) sind am
   06.10.2026 per Fast-Forward nach `MAIN` gemergt und gepusht. Die Commits der Session vom 05.10.2026:
   `4ec18e1` weiche Farbwechsel (`fxSoft`), `fa560cd` / `9abf098` / `a9b5152` Feuer auf der Matrix, `7201161`
