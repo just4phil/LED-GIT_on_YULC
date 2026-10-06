@@ -63,23 +63,20 @@
 
 <header>
   <div class="wrap">
-    <h1>Song-Workflow: vom Chord-Sheet zur LED-Show</h1>
-    <p class="sub">Neue Songs werden nicht mehr von Hand in <code>songs.cpp</code> programmiert: Sheet + MP3 → Struktur in Takten → Show-Dramaturgie → generierter C++-Code. Jeder Song hat einen eigenen Ordner, jede Generierung wird als Version gesichert. Stand 03.10.2026.</p>
+    <h1>Song-Workflow: vom Excel zur LED-Show</h1>
+    <p class="sub">Neue Songs werden nicht mehr von Hand in <code>songs.cpp</code> programmiert: Du pflegst pro Song eine einzige Excel-Tabelle (Takte, Effektidee, Energie), Claude gestaltet daraus die Show, der Generator erzeugt den C++-Code. Jeder Song hat einen eigenen Ordner, jede Generierung wird als Version gesichert. Stand 06.10.2026.</p>
     <nav class="toc">
       <a href="#ueberblick"><b>1</b>Überblick</a>
       <a href="#setup"><b>2</b>Einmalige Einrichtung</a>
       <a href="#ablauf"><b>3</b>Neuer Song Schritt für Schritt</a>
-      <a href="#sheet2song"><b>4</b>sheet2song: Struktur aus Sheet + Audio</a>
-      <a href="#songdatei"><b>5</b>Die Song-Datei song.yaml (gehört dir)</a>
-      <a href="#analyse"><b>6</b>Audio-Analyse</a>
-      <a href="#show"><b>7</b>Die Show-Datei show.yaml (technisch)</a>
-      <a href="#regeln"><b>8</b>Feste Regeln: Anfang &amp; Ende</a>
-      <a href="#generator"><b>9</b>Generator, Versionen &amp; Timing</a>
-      <a href="#technik"><b>10</b>Wie die MP3 analysiert wird</a>
-      <a href="#beispiel"><b>11</b>Beispiel: All The Things She Said</a>
-      <a href="#probleme"><b>12</b>Probleme &amp; Lösungen</a>
-      <a href="#marker"><b>13</b>Bund-Marker-LEDs</a>
-      <a href="#dateien"><b>14</b>Dateien</a>
+      <a href="#struktur"><b>4</b>Die Tabelle struktur.xlsx (gehört dir)</a>
+      <a href="#show"><b>5</b>Die Show-Datei show.yaml (technisch)</a>
+      <a href="#regeln"><b>6</b>Feste Regeln: Anfang &amp; Ende</a>
+      <a href="#generator"><b>7</b>Generator, Versionen &amp; Timing</a>
+      <a href="#beispiel"><b>8</b>Beispiel: All The Things She Said</a>
+      <a href="#probleme"><b>9</b>Probleme &amp; Lösungen</a>
+      <a href="#marker"><b>10</b>Bund-Marker-LEDs</a>
+      <a href="#dateien"><b>11</b>Dateien</a>
     </nav>
   </div>
 </header>
@@ -87,395 +84,175 @@
 <main class="wrap">
 
 <h2 id="ueberblick">1 · Überblick</h2>
-<p>Ein Song läuft ab dem Start-MIDI-Signal (CC 22 = Song-ID, Kanal 10) millisekundengenau durch. Alle Part-Dauern ergeben sich deshalb aus <b>Tempo × Takten</b>. Das Werkzeug rechnet sie aus, statt sie per Excel zu ermitteln.</p>
+<p>Ein Song läuft ab dem Start-MIDI-Signal (CC 22 = Song-ID, Kanal 10) millisekundengenau durch. Alle Part-Dauern ergeben sich deshalb aus <b>Tempo × Takten</b>. Du trägst nur die Taktnummern ein, die Millisekunden rechnet der Generator.</p>
 
 <div class="panel">
-<svg class="flow" viewBox="0 0 980 300" role="img" aria-label="Ablauf vom Sheet zur Firmware">
+<svg class="flow" viewBox="0 0 980 190" role="img" aria-label="Ablauf vom Excel zur Firmware">
   <defs>
     <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#9aa7b4"/>
     </marker>
   </defs>
   <g font-size="13" fill="#e6edf3">
-    <!-- Eingaben -->
-    <rect x="10" y="20" width="150" height="54" rx="8" fill="#241d12" stroke="#ffb86b"/>
-    <text x="85" y="43" text-anchor="middle">Chord-Sheet (XML)</text>
-    <text x="85" y="61" text-anchor="middle" fill="#9aa7b4" font-size="11">Parts · Lyrics · Akkorde · Tempo</text>
-    <rect x="10" y="100" width="150" height="54" rx="8" fill="#241d12" stroke="#ffb86b"/>
-    <text x="85" y="123" text-anchor="middle">MP3</text>
-    <text x="85" y="141" text-anchor="middle" fill="#9aa7b4" font-size="11">songs/&lt;Song&gt;/quelle/</text>
+    <rect x="10" y="40" width="200" height="60" rx="8" fill="#241d12" stroke="#ffb86b"/>
+    <text x="110" y="65" text-anchor="middle">quelle/struktur.xlsx</text>
+    <text x="110" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">Takte · Effektidee · Energie · BPM</text>
 
-    <!-- sheet2song -->
-    <rect x="210" y="55" width="150" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
-    <text x="285" y="80" text-anchor="middle">sheet2song.py</text>
-    <text x="285" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">Akkord-Abgleich → Takte</text>
+    <rect x="270" y="40" width="190" height="60" rx="8" fill="#14211a" stroke="#7ee787"/>
+    <text x="365" y="65" text-anchor="middle">show.yaml</text>
+    <text x="365" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">Szenen · Farben · Claude</text>
 
-    <!-- song.yaml -->
-    <rect x="410" y="55" width="150" height="60" rx="8" fill="#241d12" stroke="#ffb86b"/>
-    <text x="485" y="80" text-anchor="middle">song.yaml</text>
-    <text x="485" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">gehört dir · geschützt</text>
+    <rect x="520" y="40" width="190" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
+    <text x="615" y="65" text-anchor="middle">songgen.py</text>
+    <text x="615" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">→ Code + Version</text>
 
-    <!-- analyse -->
-    <rect x="410" y="175" width="150" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
-    <text x="485" y="200" text-anchor="middle">songanalyze.py</text>
-    <text x="485" y="218" text-anchor="middle" fill="#9aa7b4" font-size="11">Power · Stimmung · Akzente</text>
-
-    <!-- show -->
-    <rect x="610" y="55" width="150" height="60" rx="8" fill="#14211a" stroke="#7ee787"/>
-    <text x="685" y="80" text-anchor="middle">show.yaml</text>
-    <text x="685" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">Szenen · Farben · Claude</text>
-
-    <!-- songgen -->
-    <rect x="810" y="55" width="160" height="60" rx="8" fill="#11202e" stroke="#4ea1ff"/>
-    <text x="890" y="80" text-anchor="middle">songgen.py</text>
-    <text x="890" y="98" text-anchor="middle" fill="#9aa7b4" font-size="11">→ Code + Version</text>
-
-    <rect x="810" y="175" width="160" height="60" rx="8" fill="#1d242d" stroke="#2a323c"/>
-    <text x="890" y="200" text-anchor="middle">pio run + flashen</text>
-    <text x="890" y="218" text-anchor="middle" fill="#9aa7b4" font-size="11">alle ESP32-Geräte</text>
+    <rect x="770" y="40" width="200" height="60" rx="8" fill="#1d242d" stroke="#2a323c"/>
+    <text x="870" y="65" text-anchor="middle">pio run + flashen</text>
+    <text x="870" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">alle ESP32-Geräte</text>
   </g>
   <g stroke="#9aa7b4" stroke-width="1.6" fill="none" marker-end="url(#ar)">
-    <path d="M160,47 L205,75"/>
-    <path d="M160,127 L205,98"/>
-    <path d="M360,85 L405,85"/>
-    <path d="M485,115 L485,170"/>
-    <path d="M560,85 L605,85"/>
-    <path d="M560,205 L640,205 L670,120"/>
-    <path d="M760,85 L805,85"/>
-    <path d="M890,115 L890,170"/>
-    <path d="M160,140 C300,240 330,250 405,215"/>
+    <path d="M210,70 L265,70"/>
+    <path d="M460,70 L515,70"/>
+    <path d="M710,70 L765,70"/>
+    <path d="M110,100 C110,150 615,150 615,105"/>
   </g>
   <g font-size="12">
-    <text x="30" y="275" fill="#ffb86b">■ von dir</text>
-    <text x="140" y="275" fill="#4ea1ff">■ Werkzeug (Python)</text>
-    <text x="300" y="275" fill="#7ee787">■ Claude gestaltet</text>
+    <text x="300" y="140" fill="#9aa7b4" font-size="11">Takte und Tempo gehen direkt in den Generator</text>
+    <text x="30" y="178" fill="#ffb86b">■ von dir</text>
+    <text x="140" y="178" fill="#7ee787">■ Claude gestaltet</text>
+    <text x="300" y="178" fill="#4ea1ff">■ Werkzeug (Python)</text>
   </g>
 </svg>
 </div>
 
 <div class="tablewrap"><table>
 <tr><th>Datei</th><th>Wer</th><th>Inhalt</th></tr>
-<tr><td><code>song.yaml</code></td><td><b>du</b> (einmal vom Tool vorbereitet)</td><td>Was musikalisch passiert: Tempo, Takte je Part, MIDI-Offset, Lyrics, Akkorde, Stimmungen, deine Effekt-Wünsche. <b>Wird von keinem Werkzeug und nicht von Claude geschrieben.</b></td></tr>
+<tr><td><code>quelle/struktur.xlsx</code></td><td><b>du</b></td><td>Die einzige Datei, die du pflegst: Song-ID, BPM, StartBit und pro Part Taktnummer, Name, Effektidee, Energie. <b>Wird von Claude nie geschrieben.</b></td></tr>
 <tr><td><code>show.yaml</code></td><td>Claude</td><td>Wie es aussieht: Szene, Farbschema, Geräte-Overrides, Akzente je Part (per Part-Name, ohne Takte)</td></tr>
 <tr><td><code>generated.cpp</code></td><td>Generator</td><td>der erzeugte C++-Code dieses Songs</td></tr>
-<tr><td><code>versionen/&lt;Zeit&gt;/</code></td><td>Generator</td><td>Kopie von <code>song.yaml</code>, <code>show.yaml</code> und <code>generated.cpp</code> bei jeder Generierung</td></tr>
+<tr><td><code>versionen/&lt;Zeit&gt;/</code></td><td>Generator</td><td>Kopie von <code>struktur.xlsx</code>, <code>show.yaml</code> und <code>generated.cpp</code> bei jeder Generierung, dazu <code>info.yaml</code></td></tr>
 <tr><td><code>src/songs_generated.cpp/.h</code></td><td>Generator</td><td>zusammengesetzt aus den <code>generated.cpp</code> aller Songs, nie von Hand ändern</td></tr>
 </table></div>
 
 <h3>Ein Ordner pro Song</h3>
 <pre><code>songs/AllTheThingsSheSaid_v1/
-  song.yaml            <span class="c">← DEINE Datei: Takte, Stimmungen, Effekt-Wünsche</span>
+  quelle/struktur.xlsx <span class="c">← DEINE Datei: Takte, Effektideen, Energie</span>
   show.yaml            <span class="c">← aktive Show, von Claude abgeleitet</span>
   generated.cpp        <span class="c">← aktiver Code dieses Songs</span>
-  quelle/              <span class="c">← Sheet (.txt) + MP3 (MP3 nicht in Git)</span>
-  audio-analyse/       <span class="c">← analysis.yaml + analysis.png, jederzeit neu erzeugbar</span>
   versionen/
-    2026-10-03_1345/   <span class="c">← song.yaml, show.yaml, generated.cpp, info.yaml</span></code></pre>
-<p>Das <code>_v1</code> im Ordnernamen steht für die Fassung des Songs (Arrangement, Audio). Eine neue Fassung mit anderem Audio bekommt einen eigenen Ordner <code>…_v2</code> und eine eigene Song-ID. Die Versionen der Show liegen darunter in <code>versionen/</code>.</p>
+    2026-10-06_1116/   <span class="c">← struktur.xlsx, show.yaml, generated.cpp, info.yaml</span></code></pre>
+<p>Das <code>_v1</code> im Ordnernamen steht für die Fassung des Songs (Arrangement, Audio). Eine neue Fassung bekommt einen eigenen Ordner <code>…_v2</code> und eine eigene Song-ID. Die Versionen der Show liegen darunter in <code>versionen/</code>.</p>
 <p>In den Befehlen genügt der Anfang des Ordnernamens, Groß- und Kleinschreibung ist egal: <code>songgen.py allthe</code>.</p>
+<div class="note"><b>Weggefallen (06.10.2026):</b> die Zwischendatei <code>song.yaml</code>, die Audio-Analyse der MP3 und der Import aus Chord-Sheets. Liegen in einem Ordner noch <code>song.yaml</code>, <code>audio-analyse/</code>, eine MP3 oder <code>quelle/excel-kalkulation.csv</code>, liest sie kein Werkzeug mehr – du kannst sie löschen.</div>
 
 <h2 id="setup">2 · Einmalige Einrichtung</h2>
-<p>Die Python-Werkzeuge laufen in einer eigenen Umgebung <code>tools/.venv</code> (nicht versioniert). Einmal pro Rechner, in Git Bash im Projektordner:</p>
-<pre><code>python -m venv tools/.venv
-tools/.venv/Scripts/python -m pip install -r tools/requirements.txt</code></pre>
-<p>Pakete: <code>librosa</code> (Audioanalyse), <code>numpy</code>, <code>matplotlib</code> (Analysebild), <code>soundfile</code>, <code>pyyaml</code>, <code>openpyxl</code> (Struktur-Tabelle). Getestet mit Python 3.9.</p>
-<h3>Zu Beginn jeder Sitzung</h3>
-<p>Git Bash im Projektordner öffnen und einmal eingeben:</p>
-<pre><code>export PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore   <span class="c"># Umlaute richtig, librosa-Warnungen aus</span>
-PY=tools/.venv/Scripts/python                         <span class="c"># Abkürzung für alle Befehle unten</span></code></pre>
-<p>Alle Befehle in dieser Anleitung nutzen <code>$PY</code>. Ohne die Abkürzung schreibst du stattdessen <code>tools/.venv/Scripts/python</code>.</p>
+<p>Die Werkzeuge brauchen Python mit zwei Paketen. Einmal pro Rechner, in Git Bash im Projektordner:</p>
+<pre><code>python -m pip install -r tools/requirements.txt     <span class="c"># pyyaml, openpyxl</span></code></pre>
+<p>Getestet mit Python 3.9. Die frühere Umgebung <code>tools/.venv</code> mit den Audio-Bibliotheken wird nicht mehr gebraucht.</p>
 
 <h2 id="ablauf">3 · Neuer Song Schritt für Schritt</h2>
-<p>Die vollständige Reihenfolge für einen neuen Song. Beispiel: „Such A Shame“ im Ordner <code>SuchAShame_v1</code> mit Song-ID 32. In den Befehlen genügt der Anfang des Ordnernamens (<code>such</code>).</p>
+<p>Beispiel: „Vogue“ im Ordner <code>Vogue_v1</code>. In den Befehlen genügt danach der Anfang des Ordnernamens (<code>vogue</code>).</p>
 <ol class="steps">
-  <li><b>Song-ID wählen</b><span class="who du">du</span><br>
-    Eine Zahl von 1 bis 127. Das ist der MIDI-Wert von CC 22, mit dem der Song gestartet wird.
-<pre><code>$PY tools/songgen.py          <span class="c"># zeigt die IDs der generierten Songs</span></code></pre>
-    Handgeschriebene Songs stehen in <code>src/main.cpp</code> im <code>switch (songID)</code>.
+  <li><b>Ordner und Tabelle anlegen</b><span class="who tool">songgen</span><br>
+<pre><code>python tools/songgen.py Vogue_v1 --neu</code></pre>
+    Legt <code>songs/Vogue_v1/quelle/struktur.xlsx</code> an, als Kopie der Vorlage <code>songs/struktur-vorlage.xlsx</code> (eine vorhandene Tabelle wird nie überschrieben). Du kannst die Vorlage oder die Tabelle eines anderen Songs auch von Hand dorthin kopieren. Name des Ordners: Songtitel ohne Leerzeichen plus <code>_v1</code>.</li>
+
+  <li><b>Tabelle ausfüllen</b><span class="who du">du</span><br>
+    In Excel: Titel, Interpret, Midi-StartNummer (= Song-ID, 1 bis 127), BPM, StartBit und pro Part eine Zeile mit <b>von takt</b>, <b>Songpart</b>, <b>Effektidee</b> und <b>Energie 0–5</b>. Die letzte Zeile heißt „Ende“. Alle Felder in <a href="#struktur">Abschnitt 4</a>. Speichern nicht vergessen.
     <ul>
-      <li><b>Ganz neuer Song:</b> eine freie ID nehmen.</li>
-      <li><b>Neue Fassung eines alten, handgeschriebenen Songs:</b> dieselbe ID wie bisher nehmen (z. B. 2 für Physical). Der Generator ersetzt dann den alten Aufruf, siehe <a href="#altsong">Abschnitt 9, „Einen handgeschriebenen Song ersetzen“</a>.</li>
-    </ul>
-    Die Vorschau in Schritt 9 sagt, welchen alten Song eine ID ersetzen würde.</li>
-
-  <li><b>Ordner und Struktur-Tabelle anlegen</b><span class="who tool">struktur2song</span><br>
-<pre><code>$PY tools/struktur2song.py SuchAShame_v1 --neu</code></pre>
-    Legt <code>songs/SuchAShame_v1/quelle/struktur.xlsx</code> an, als Kopie der Vorlage <code>songs/struktur-vorlage.xlsx</code> (eine vorhandene Tabelle wird nie überschrieben). Du kannst die Vorlage auch von Hand kopieren. Name des Ordners: Songtitel ohne Leerzeichen plus <code>_v1</code> für die Fassung. Eine spätere Fassung mit anderem Audio bekommt einen eigenen Ordner <code>_v2</code> und eine eigene ID.</li>
-
-  <li><b>MP3 ablegen</b><span class="who du">du</span><br>
-    Nach <code>songs/SuchAShame_v1/quelle/</code> kopieren: genau die Version, die live läuft, mit demselben Tempo und derselben Stille am Anfang. MP3s werden nicht versioniert. Ein Chord-Sheet braucht es nicht mehr.</li>
-
-  <li><b>Struktur eintragen und <code>song.yaml</code> erzeugen</b><span class="who du">du</span><span class="who tool">struktur2song</span><br>
-    <code>struktur.xlsx</code> in Excel ausfüllen – das Format ist das deines Songkalkulators: Midi-StartNummer, Interpret, Titel, BPM, StartTakt, StartBit und pro Part „Songpart“ und „bis takt“ (Erklärung in <a href="#struktur">„Die Struktur-Tabelle“</a>). Die Parts schneidest du so, wie du sie für die Show brauchst. Speichern, dann:
-<pre><code>$PY tools/struktur2song.py such</code></pre>
-    Schreibt <code>songs/SuchAShame_v1/song.yaml</code> mit Takten je Part, deinen Einschätzungen und einem Marker-Vorschlag (wenn Akkorde eingetragen sind).<br>
-    <b>Alternative mit Chord-Sheet:</b> <code>sheet2song.py</code> schätzt die Takte aus Sheet und MP3 (<a href="#sheet2song">Abschnitt 4</a>). Das passt nur, wenn das Sheet so geschnitten ist wie die Show, und ist bei langsamen Akkordwechseln unzuverlässig.</li>
-
-  <li><b>Ergebnis prüfen</b><span class="who du">du</span><br>
-    Die Tabelle in der Konsole lesen: pro Part <b>von</b>, <b>bis</b>, <b>Takte</b> sowie <b>Start ms</b> und <b>Dauer ms</b> ab dem Start-MIDI, so wie der Generator sie rechnet.
-    <ul>
-      <li>Stimmt die Summe der Takte mit dem DAW-Projekt überein?</li>
-      <li>Der erste Part ist um das StartBit kürzer (z. B. 0,875 statt 1 Takt).</li>
-      <li>Zeile <code>Bund-Marker</code>: Vorschlag ansehen.</li>
-    </ul>
-    Kleine Fehler korrigierst du ab jetzt direkt in <code>song.yaml</code>. Läuft das Werkzeug noch einmal, schreibt es nur <code>song.vorschlag.yaml</code> daneben.<br>
-    <b>Tabelle später geändert</b> (Part vergessen, Takte verschoben): Werkzeug noch einmal laufen lassen und den Inhalt von <code>song.vorschlag.yaml</code> selbst in <code>song.yaml</code> übernehmen, komplett oder nur die geänderten Parts. Claude darf das nicht für dich tun. Achtung: Beim kompletten Übernehmen gehen Anmerkungen verloren, die du von Hand in <code>song.yaml</code> geschrieben hast. Wünsche, die bleiben sollen, gehören deshalb in die Spalte „Effektidee“ der Tabelle. Kommt ein Part dazu oder ändert sich ein Name, sag Claude Bescheid, damit <code>show.yaml</code> nachgezogen wird.</li>
-
-  <li><b><code>song.yaml</code> bearbeiten</b><span class="who du">du</span><br>
-    Ab jetzt gehört die Datei dir, kein Werkzeug schreibt sie mehr. Der Reihe nach:
-    <ul>
-      <li><code>name</code> und <code>artist</code> prüfen. Daraus wird der Lauftext „Titel by Interpret“.</li>
-      <li><code>midi_offset</code> prüfen: Wie spät nach Takt 1 kommt das Start-MIDI?</li>
-      <li>Taktzahlen korrigieren, wo Schritt 5 Fehler gezeigt hat.</li>
-      <li>Parts aufteilen, wo sich die Musik im Part deutlich ändert, z. B. <code>verse 2</code> (8 Takte) in <code>verse 2a</code> und <code>verse 2b</code> (je 4). Jeder Name muss eindeutig sein.</li>
-      <li>Pro Part deine Einschätzung ergänzen: <code>energy</code> 0–5, <code>description</code>, <code>mood</code>, <code>instruments</code>, <code>solo</code>.</li>
-      <li>Wo du den Effekt genau weißt, fest vorgeben: <code>scene</code> oder <code>fx</code>, <code>scheme</code>, <code>tail</code>, <code>devices</code>. Das hat immer Vorrang vor der Show.</li>
-      <li><code>markers:</code> am Ende prüfen, ändern oder löschen.</li>
-      <li>Die Zeilen <code># ! …</code> sind nur Hinweise des Tools und können weg.</li>
-    </ul>
-    Alle Felder in <a href="#songdatei">Abschnitt 5</a>.</li>
-
-  <li><b>Audio analysieren</b><span class="who tool">songanalyze</span><br>
-<pre><code>$PY tools/songanalyze.py such</code></pre>
-    Schreibt <code>audio-analyse/analysis.yaml</code> und <code>analysis.png</code>. Das Tool hat keine Optionen. Meldet es Warnungen (Tempo-Drift, Formgrenze ohne Part-Grenze), die Ursache in <code>song.yaml</code> beheben und die Analyse wiederholen. Der Schritt braucht die MP3. Ohne Audio entfällt er, die Show entsteht dann nur aus deinen Beschreibungen. Details in <a href="#analyse">Abschnitt 6</a>.</li>
-
-  <li><b>Show gestalten</b><span class="who claude">Claude</span><br>
-    In Claude Code: <i>„Gestalte die Show für SuchAShame_v1“</i>. Claude liest <code>song.yaml</code>, die Analyse und das Analysebild, schreibt <code>show.yaml</code> und führt die Schritte 9 bis 11 selbst aus.<br>
-    <b>Ohne Claude</b> gibt es zwei Wege:
-    <ul>
-      <li><code>show.yaml</code> von Hand schreiben, siehe <a href="#show">Abschnitt 7</a>.</li>
-      <li>Gar keine <code>show.yaml</code>: Dann braucht jeder Part in <code>song.yaml</code> entweder <code>scene</code>/<code>fx</code> oder <code>energy</code>. Aus <code>energy</code> wird eine Standard-Szene (0 Black, 1 Calm, 2 Verse, 3 Buildup, 4–5 Drop).</li>
+      <li><b>Ganz neuer Song:</b> eine freie ID nehmen (<code>python tools/songgen.py</code> zeigt die vergebenen).</li>
+      <li><b>Neue Fassung eines alten, handgeschriebenen Songs:</b> dieselbe ID wie bisher. Der Generator ersetzt dann den alten Aufruf, siehe <a href="#altsong">Abschnitt 7, „Einen handgeschriebenen Song ersetzen“</a>.</li>
     </ul></li>
 
-  <li><b>Vorschau</b><span class="who tool">songgen</span><br>
-<pre><code>$PY tools/songgen.py such --dry-run</code></pre>
-    Zeigt die Timeline (case, Start, Dauer je Part), den Lauftext-Plan, Hinweise und Fehler. Es wird nichts geschrieben.</li>
+  <li><b>Show gestalten und generieren</b><span class="who claude">Claude</span><br>
+    In Claude Code: <i>„Gestalte die Show für Vogue_v1“</i>. Claude liest die Tabelle, schreibt <code>show.yaml</code>, generiert den Code und baut die Firmware. Du bekommst die Timeline (Start und Dauer jedes Parts) und eine kurze Beschreibung der Dramaturgie.<br>
+    <b>Ohne Claude</b> geht es auch: <code>show.yaml</code> von Hand schreiben (<a href="#show">Abschnitt 5</a>) oder ganz weglassen – dann nimmt der Generator für jeden Part die Standard-Szene seiner Energie (0 Black, 1 Calm, 2 Verse, 3 Buildup, 4–5 Drop). Vorschau und Generieren:
+<pre><code>python tools/songgen.py vogue --dry-run             <span class="c"># Timeline, Hinweise, Fehler - schreibt nichts</span>
+python tools/songgen.py vogue --note "erste Fassung"   <span class="c"># Code + Version</span></code></pre></li>
 
-  <li><b>Generieren</b><span class="who tool">songgen</span><br>
-<pre><code>$PY tools/songgen.py such --note "erste Fassung"</code></pre>
-    Schreibt <code>generated.cpp</code>, speichert eine Version unter <code>versionen/</code> und setzt <code>src/songs_generated.cpp/.h</code> sowie den Block in <code>main.cpp</code> neu zusammen. Alle anderen Songs bleiben unverändert. Alle Optionen in <a href="#generator">Abschnitt 9</a>.</li>
-
-  <li><b>Bauen</b><span class="who tool">PlatformIO</span><br>
-<pre><code>pio run -e andresgit
-pio run -e rinasbass -e lampe1 -e lampe2 -e scrollmatrix   <span class="c"># die übrigen Geräte</span></code></pre>
-    <code>src/definitions.h</code> muss dafür nicht geändert werden.</li>
-
-  <li><b>Flashen</b><span class="who du">du</span><br>
+  <li><b>Bauen und flashen</b><span class="who tool">PlatformIO</span><span class="who du">du</span><br>
+<pre><code>pio run -e andresgit -e rinasbass -e lampe1 -e lampe2 -e scrollmatrix</code></pre>
     Per USB, ein Gerät nach dem anderen:
 <pre><code>pio run -e andresgit    -t upload --upload-port COM3
 pio run -e rinasbass    -t upload --upload-port COM8
 pio run -e lampe1       -t upload --upload-port COM11
 pio run -e lampe2       -t upload --upload-port COM10
 pio run -e scrollmatrix -t upload --upload-port COM9</code></pre>
-    Oder alle Geräte auf einmal per WLAN:
-<pre><code>python tools/build_ota.py --serve</code></pre>
-    Danach ANDRESGIT mit gedrücktem Drehknopf einschalten. Ablauf und LED-Anzeigen stehen in <code>docs/OTA-Update.html</code>.</li>
+    Oder alle Geräte per WLAN, siehe <code>docs/OTA-Update.html</code>.</li>
 
   <li><b>Testen</b><span class="who du">du</span><br>
     Song per MIDI starten: CC 22 mit Wert = Song-ID auf Kanal 10. Prüfen:
     <ul>
-      <li>Kommt der erste Part-Wechsel zu früh oder zu spät? Dann <code>midi_offset</code> anpassen.</li>
-      <li>Läuft die Show langsam auseinander? Dann <code>bpm</code> prüfen.</li>
-      <li>Sitzt ein einzelner Wechsel falsch? Dann die Taktzahl des Parts davor korrigieren.</li>
+      <li>Kommt der erste Part-Wechsel zu früh oder zu spät? Dann <b>StartBit</b> anpassen.</li>
+      <li>Läuft die Show langsam auseinander? Dann <b>BPM</b> prüfen.</li>
+      <li>Sitzt ein einzelner Wechsel falsch? Dann das <b>von takt</b> dieses Parts korrigieren.</li>
     </ul></li>
 
-  <li><b>Nachsteuern</b><span class="who du">du</span> <span class="who claude">Claude</span><br>
+  <li><b>Nachsteuern – immer im Excel</b><span class="who du">du</span> <span class="who claude">Claude</span><br>
     <ul>
-      <li>Gefällt ein Part nicht: Claude einen Satz sagen wie <i>„Chorus 2 soll mehr Bewegung haben“</i>. Claude ändert nur <code>show.yaml</code>.</li>
-      <li>Oder den Effekt selbst in <code>song.yaml</code> vorgeben.</li>
-      <li>Timing: Takte, <code>midi_offset</code> oder <code>bpm</code> in <code>song.yaml</code> ändern.</li>
+      <li><b>Timing</b> (Takte, BPM, StartBit, Energie): in der Tabelle ändern, speichern, neu generieren (<code>python tools/songgen.py vogue</code>) – dafür braucht es keine neue Gestaltung.</li>
+      <li><b>Gefällt ein Part nicht:</b> den Wunsch in die Spalte „Effektidee“ schreiben („zu statisch, mehr Bewegung“) und Claude sagen <i>„ich habe das Excel von Vogue geändert“</i>. Oder Claude den Wunsch direkt im Chat nennen.</li>
+      <li><b>Part eingefügt, gelöscht oder umbenannt:</b> Claude Bescheid geben, die Show muss dann nachgezogen werden. Der Generator bricht sonst mit einer Liste ab, welche Parts nicht mehr zur Show passen.</li>
     </ul>
-    Danach wieder Schritt 9 bis 13. Jede Generierung wird als Version gesichert.</li>
+    Jede Generierung wird als Version gesichert, samt deiner Tabelle.</li>
 
   <li><b>Zurück zu einer älteren Fassung</b><span class="who du">du</span><br>
-<pre><code>$PY tools/songgen.py such --versions
-$PY tools/songgen.py such --restore 2026-10-03_1345</code></pre>
-    Danach Schritt 11 und 12. Details in <a href="#generator">Abschnitt 9</a>.</li>
+<pre><code>python tools/songgen.py vogue --versions
+python tools/songgen.py vogue --restore 2026-10-06_1116</code></pre>
+    Holt Tabelle, Show und Code dieser Version zurück. Details in <a href="#generator">Abschnitt 7</a>.</li>
 
   <li><b>In Git sichern</b><span class="who du">du</span><br>
-<pre><code>git add songs/SuchAShame_v1 src/songs_generated.cpp src/songs_generated.h src/main.cpp
-git commit -m "Song Such A Shame"</code></pre>
-    Der Song-Ordner mit allen Versionen wird versioniert, nur MP3s und <code>song.vorschlag.yaml</code> nicht.</li>
+<pre><code>git add songs/Vogue_v1 src/songs_generated.cpp src/songs_generated.h src/main.cpp
+git commit -m "Song Vogue"</code></pre></li>
 </ol>
 
-<h3 id="struktur">Die Struktur-Tabelle (<code>quelle/struktur.xlsx</code>)</h3>
-<p>Die Tabelle hat das Format deines Excel-Songkalkulators, ein Song pro Datei. Das Werkzeug liest nur die unten genannten Felder und erkennt sie an ihrer Beschriftung, nicht an der Position; alle anderen Spalten (ms, sekunden, millis akkum …) bleiben deine Kontrollrechnung und werden ignoriert. Millisekunden und Rundung übernimmt der Generator: er rechnet jede Part-Grenze aus der absoluten Zeit, dadurch entsteht keine Abweichung, die sich aufsummiert.</p>
+<h2 id="struktur">4 · Die Tabelle struktur.xlsx (gehört dir)</h2>
+<p>Ein Song pro Datei, gelesen wird das Blatt „Struktur“. Das Werkzeug erkennt Kopf und Spalten an ihrer <b>Beschriftung</b>, nicht an der Position – du kannst also Spalten ergänzen, verschieben oder weitere Blätter anlegen. Beispiel (All The Things She Said):</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+<tr><td>1</td><td></td><td>All The Things She Said</td><td>t.A.T.u.</td><td></td><td></td></tr>
+<tr><td>2</td><td></td><td>Midi-StartNummer</td><td>31</td><td></td><td></td></tr>
+<tr><td>3</td><td></td><td>BPM</td><td>86</td><td></td><td></td></tr>
+<tr><td>4</td><td></td><td>StartBit</td><td>0,375</td><td></td><td></td></tr>
+<tr><td>5</td><td><b>von takt</b></td><td><b>Songpart</b></td><td><b>Effektidee</b></td><td><b>Energie 0-5</b></td><td><b>BPM pro Part</b></td></tr>
+<tr><td>6</td><td>0</td><td>pause</td><td>black</td><td>0</td><td>86</td></tr>
+<tr><td>7</td><td>1</td><td>synth intro</td><td>ruhig nur synths</td><td>1</td><td>86</td></tr>
+<tr><td>8</td><td>5</td><td>intro: all the …</td><td>action</td><td>4</td><td>86</td></tr>
+<tr><td>…</td><td>21,75</td><td>übergang zum chorus</td><td>strobo</td><td>5</td><td>86</td></tr>
+<tr><td>36</td><td>75</td><td>Ende</td><td>10 sek. BLACK</td><td>0</td><td>86</td></tr>
+</table></div>
 <div class="tablewrap"><table>
 <tr><th>Feld im Kopf</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td>Midi-StartNummer (A1, Wert in B1)</td><td>ja</td><td>Die Song-ID, 1..127, siehe Schritt 1.</td></tr>
-<tr><td>Interpret (A2), Titel (A3)</td><td>Titel ja</td><td>Ohne Beschriftung: die ersten beiden Texte in Spalte A, erst Interpret, dann Titel. Daraus wird der Lauftext „Titel by Interpret“.</td></tr>
-<tr><td>BPM (Wert darunter)</td><td>ja</td><td>Tempo des Songs.</td></tr>
-<tr><td>StartTakt (Wert darunter)</td><td>ja</td><td>Taktnummer im DAW-Projekt, in der das Start-MIDI liegt.</td></tr>
-<tr><td>StartBit (Wert daneben)</td><td>nein (0)</td><td>Wie weit das MIDI nach dem Taktanfang kommt, als Bruchteil des Takts: 0,125 → <code>midi_offset: 1/8</code>, 0,25 → <code>1/4</code>, 0,375 → <code>3/8</code>.</td></tr>
-<tr><td>Audio (optional ergänzen)</td><td>nein</td><td>Dateiname der MP3 in <code>quelle/</code>. Fehlt das Feld: die einzige MP3 im Ordner.</td></tr>
+<tr><td>Titel, Interpret (Zeile 1)</td><td>Titel ja</td><td>Der erste Text ist der Titel, der Text daneben der Interpret. Daraus wird der Lauftext „Titel by Interpret“.</td></tr>
+<tr><td>Midi-StartNummer</td><td>ja</td><td>Die Song-ID, 1..127: der MIDI-Wert von CC 22, mit dem der Song gestartet wird.</td></tr>
+<tr><td>BPM</td><td>ja</td><td>Tempo des Songs.</td></tr>
+<tr><td>StartBit</td><td>nein (0)</td><td>Wie weit das Start-MIDI hinter dem Anfang der ersten Zeile kommt, als Bruchteil des Takts: 0,125 = 1/8, 0,25 = 1/4, 0,375 = 3/8. Der erste Part wird um diesen Betrag kürzer.</td></tr>
 </table></div>
-<p>Ein Wert steht rechts neben seiner Beschriftung oder, wenn dort nichts steht, darunter.</p>
+<p>Ein Wert steht immer rechts neben seiner Beschriftung.</p>
 <div class="tablewrap"><table>
 <tr><th>Spalte pro Part</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td>Songpart</td><td>ja</td><td>Name. Kommt er mehrfach vor, hängt das Werkzeug <code>(2)</code>, <code>(3)</code> an.</td></tr>
-<tr><td>bis takt</td><td>ja</td><td>Taktnummer im DAW, an der der Part endet (= Anfang des nächsten). Halbe Takte als Komma-Zahl, z. B. 2269,5. Der erste Part beginnt bei StartTakt + StartBit.</td></tr>
-<tr><td>von takt</td><td></td><td>Nur Gegenprobe: passt der Wert nicht zum „bis takt“ der Zeile davor, warnt das Werkzeug. Gerechnet wird immer mit „bis takt“.</td></tr>
-<tr><td>Energie 0-5</td><td>nein</td><td>wird <code>energy</code>.</td></tr>
-<tr><td>Effektidee</td><td>nein</td><td>frei formuliert („weißer Strobo auf den Auftakt“), wird <code>idea</code>. Claude setzt sie in der Show um.</td></tr>
-<tr><td>Beschreibung</td><td>nein</td><td>was musikalisch passiert, wird <code>description</code>.</td></tr>
-<tr><td>BPM</td><td>nein</td><td>Tempo dieses Parts. Wird nur übernommen, wenn es vom BPM im Kopf abweicht (Tempowechsel).</td></tr>
-<tr><td>Akkorde (optional ergänzen)</td><td>nein</td><td>klingende Akkorde, z. B. <code>Am F C G</code>. Nur für den Bund-Marker-Vorschlag.</td></tr>
+<tr><td>von takt</td><td>ja</td><td>Taktnummer, an der der Part <b>beginnt</b>. Ab 0 gezählt oder die Taktnummern aus dem DAW – es zählt nur der Abstand zur ersten Zeile. Halbe Takte als Kommazahl: 21,75 = drei Viertel nach Takt 21. Ein Part endet, wo der nächste beginnt.</td></tr>
+<tr><td>Songpart</td><td>ja</td><td>Name. Kommt er mehrfach vor, zählt das Werkzeug mit: <code>chorus 1</code>, <code>chorus 1 (2)</code>, <code>chorus 1 (3)</code>. Unter diesen Namen steht der Part in der Show.</td></tr>
+<tr><td>Effektidee</td><td>nein</td><td>Dein Wunsch in freien Worten („weißer Strobo auf den Auftakt“, „zu statisch“). <b>Er gilt</b>: Claude setzt ihn in der Show um.</td></tr>
+<tr><td>Energie 0-5</td><td>nein</td><td>Deine Einschätzung des Parts, 0 = schwarz, 5 = Höhepunkt. Grundlage der Szenenwahl.</td></tr>
+<tr><td>BPM pro Part</td><td>nein</td><td>Tempo dieses Parts. Leer oder gleich dem BPM im Kopf (in der Vorlage eine Formel darauf) = Songtempo. Nur bei einem Tempowechsel überschreiben.</td></tr>
+<tr><td>Beschreibung, Akkorde</td><td>nein</td><td>Optional: was musikalisch passiert, welche Akkorde klingen. Nur Information für die Gestaltung.</td></tr>
+<tr><td>bisher (alter Code)</td><td>nein</td><td>Bei den alten Songs: der Effekt, den der handgeschriebene Code an dieser Stelle auf der Gitarre zeigt (<code>!</code> = Hinweis, wo alter Code und alte Kalkulation voneinander abweichen). Nur zur Orientierung.</td></tr>
 </table></div>
-<p><b>Schluss-Black:</b> Heißt die letzte Zeile „BLACK“ (auch „fini“, „ende“), wird sie nicht als Part übernommen, denn nach dem letzten Part hängt der Generator selbst 10 s Schwarz an. Die Zeile braucht kein „bis takt“. Steht in „ms gerundet!!“ dieser Zeile ein anderer Wert als 10000, kommt er als <code>end_black_ms</code> in die <code>song.yaml</code>. Die „pause“ am Anfang bleibt ein normaler Part.</p>
-<div class="ok"><b>Deine <code>song.yaml</code> wird nie überschrieben.</b> Gibt es sie schon, schreibt <code>struktur2song.py</code> sein Ergebnis als <code>song.vorschlag.yaml</code> daneben.</div>
-
-<h2 id="sheet2song">4 · sheet2song: Struktur aus Sheet + Audio (Alternative)</h2>
-<pre><code>$PY tools/sheet2song.py &lt;Song&gt; --id &lt;1..127&gt; [Optionen]</code></pre>
-<p><code>&lt;Song&gt;</code> ist der Ordner unter <code>songs/</code>. Sheet (<code>.txt</code>/<code>.xml</code>) und MP3 sucht das Tool im Ordner bzw. in <code>quelle/</code>. Von jeder Sorte darf dort genau eine Datei liegen.</p>
-<div class="ok"><b>Deine <code>song.yaml</code> wird nie überschrieben.</b> Gibt es sie schon, schreibt das Tool sein Ergebnis als <code>song.vorschlag.yaml</code> daneben. Die Datei dient nur zum Vergleichen, der Generator beachtet sie nicht. Was du übernehmen willst, überträgst du von Hand.</div>
-<div class="tablewrap"><table>
-<tr><th>Argument / Option</th><th>Pflicht</th><th>Standard</th><th>Bedeutung</th></tr>
-<tr><td><code>&lt;Song&gt;</code></td><td>ja</td><td></td><td>Ordner unter <code>songs/</code>. Er muss schon existieren. Der Anfang des Namens genügt.</td></tr>
-<tr><td><code>--id &lt;n&gt;</code></td><td>ja</td><td></td><td>Song-ID 1..127 = MIDI-Wert von CC 22 (0 ist der Pausen-Loop). Kollisionen prüft erst der Generator.</td></tr>
-<tr><td><code>--bpm &lt;zahl&gt;</code></td><td>nein</td><td>aus dem Sheet</td><td>Tempo. Nötig, wenn im Sheet weder <code>&lt;myTempo&gt;</code> noch <code>&lt;tempo&gt;</code> steht. Eine Angabe hier hat Vorrang vor dem Sheet, im Sheet hat <code>myTempo</code> Vorrang vor <code>tempo</code>.</td></tr>
-<tr><td><code>--midi-offset &lt;notenwert&gt;</code></td><td>nein</td><td><code>1/8</code></td><td>Wie spät das Start-MIDI nach Takt 1 kommt, z. B. <code>1/16</code>, <code>3/8</code>. Wird unverändert in <code>song.yaml</code> eingetragen.</td></tr>
-<tr><td><code>--sheet &lt;datei&gt;</code></td><td>nein</td><td>die einzige <code>.txt</code>/<code>.xml</code> im Song-Ordner</td><td>Sheet ausdrücklich angeben, z. B. wenn mehrere im Ordner liegen oder es woanders liegt.</td></tr>
-<tr><td><code>--audio &lt;datei&gt;</code></td><td>nein</td><td>die einzige <code>.mp3</code> im Song-Ordner</td><td>Audiodatei ausdrücklich angeben.</td></tr>
-</table></div>
-<p>Gesucht wird im ganzen Song-Ordner außer in <code>versionen/</code> und <code>audio-analyse/</code>. Das Tool schreibt genau eine Datei: <code>song.yaml</code>, oder <code>song.vorschlag.yaml</code>, wenn es <code>song.yaml</code> schon gibt.</p>
-
-<h3>Was aus dem Sheet gelesen wird</h3>
 <ul>
-  <li><code>&lt;title&gt;</code>, <code>&lt;artist&gt;</code>: Name und Lauftext auf der Scrollmatrix</li>
-  <li><code>&lt;myTempo&gt;</code> (sonst <code>&lt;tempo&gt;</code>): BPM</li>
-  <li><code>&lt;transpose&gt;</code>: Die Akkorde im Audio liegen um so viele Halbtöne höher. Beispiel ATTSS: <code>Fm</code> + 4 = <code>Am</code>.</li>
-  <li><code>&lt;part name="…"&gt;</code> mit <code>&lt;row&gt;</code>: Part-Namen, erste Textzeile als <code>lyrics</code>, Akkorde als <code>chords</code>. Leere Parts (z. B. „Chorus Lines gelöscht“) werden übersprungen.</li>
-  <li><b>Taktzahl im Part-Namen</b>: Endet der Name auf eine Taktangabe, z. B. <code>Verse 1, 16 Takte</code> oder <code>drum Solo 2 takte</code>, gilt diese Länge fest und der Part heißt danach nur <code>verse 1</code>. So zählen auch Parts ohne Akkorde (Synth-Intro, Drum-Solo). Je mehr Parts du so beschriftest, desto sicherer ist das Ergebnis.</li>
+  <li><b>Erste Zeile</b> ist immer die Pause am Anfang: Mit dem Start-MIDI sind alle Geräte schwarz, egal was dort als Effektidee steht.</li>
+  <li><b>Letzte Zeile „Ende“</b> (auch „black“, „fini“): Ihr „von takt“ ist der Schlusstakt des Songs, sie ist kein eigener Part. Danach hängt der Generator Schwarz an – so lange, wie in ihrer Effektidee steht („10 sek.“), ohne Angabe 10 Sekunden.</li>
+  <li><b>Weitere Spalten</b> sind erlaubt und werden ignoriert, ebenso weitere Tabellenblätter (z. B. deine alte Kalkulation).</li>
+  <li><b>Speichern:</b> Der Generator liest den zuletzt gespeicherten Stand. Die Datei darf in Excel geöffnet bleiben; nur für <code>--restore</code> muss sie geschlossen sein.</li>
+  <li>Millisekunden und Rundung übernimmt der Generator: er rechnet jede Part-Grenze aus der absoluten Zeit, dadurch entsteht keine Abweichung, die sich aufsummiert.</li>
 </ul>
+<div class="ok"><b>Deine Tabelle wird nie überschrieben.</b> Claude darf sie nicht ändern (technisch gesperrt), der Generator liest sie nur. Einzige Ausnahme: <code>--restore</code> holt auf deinen Befehl die Tabelle einer älteren Version zurück und sichert vorher den aktuellen Stand.</div>
 
-<h3>Wie die Takte bestimmt werden</h3>
-<ol>
-  <li><b>Erwartete Länge aus dem Sheet</b>:
-    <ul>
-      <li>eine Textzeile mit bis zu 2 Akkorden = 1 Takt, mit 3–4 Akkorden = 2 Takte;</li>
-      <li>eine Zeile mit mehreren Textzeilen = 1 Takt pro Textzeile;</li>
-      <li>eine reine Akkordzeile (Instrumental) = 1 Akkord pro Takt.</li>
-    </ul>
-    Das ist nur eine Schätzung, denn Sheets notieren Wiederholungen oft nicht aus. <code>sheet2song</code> rechnet immer im 4/4-Takt mit einem Tempo. Takt- oder Tempowechsel trägst du danach von Hand in die Song-Datei ein.</li>
-  <li><b>Beat-Raster</b>: Das Tempo ist bekannt. Gesucht wird nur, wo die Schläge liegen, also der Versatz mit den stärksten Anschlägen auf dem Raster.</li>
-  <li><b>Akkorde im Audio</b>: Pro halbem Takt wird bestimmt, welcher der Sheet-Akkorde am besten klingt (Chroma-Analyse, siehe <a href="#technik">Abschnitt 10</a>).</li>
-  <li><b>Abgleich</b>: Die Parts werden in Sheet-Reihenfolge so auf die Takte verteilt, dass die erwarteten Akkorde möglichst gut zum Audio passen (dynamische Programmierung). Grenzen liegen immer auf einem Taktanfang. Ein Part darf seine Akkordfolge wiederholen oder langsamer spielen (1 Akkord pro Takt oder pro 2 Takte). Parts mit Taktzahl im Namen bekommen genau diese Länge. Kleiner Malus, wenn die Länge stark von der Sheet-Schätzung abweicht: Das entscheidet bei Parts mit gleicher Akkordfolge (Chorus → Bridge).</li>
-  <li><b>Takt-Eins</b>: Alle 4 möglichen Zählzeiten werden als Taktanfang probiert. Die mit dem besten Abgleich gewinnt.</li>
-  <li><b>Bund-Marker</b>: Nur wenn der Song noch keine hat, kommt ein Vorschlag aus den Akkord-Grundtönen dazu (siehe <a href="#marker">Abschnitt 13</a>).</li>
-  <li><b>Pause und Ausklang</b>: Stille Takte vor dem ersten Ton werden zum Part <code>pause</code>. Klingende Takte nach dem letzten Sheet-Part werden zu <code>ende</code>.</li>
-</ol>
-
-<h3>Die Ausgabe lesen</h3>
-<pre><code>  part                     takte sheet  start mp3  akkorde
-  intro                       12    10    0:02.81      67%
-                           ! Pegelsprung vor Takt 5: -15.8 -> -3.7 dB
-  verse 1                      9     9    0:36.30     100%
-  …</code></pre>
-<ul>
-  <li><b>takte</b>: Ergebnis. <b>sheet</b>: Schätzung aus dem Sheet. Weichen beide ab, ist das oft richtig (ausgelassene Wiederholungen), sollte aber kurz geprüft werden.</li>
-  <li><b>start mp3</b>: Position in der Audiodatei, zum Gegenhören.</li>
-  <li><b>akkorde</b>: Anteil der halben Takte, in denen der erwartete Akkord erkannt wurde. Unter 50 % steht <code>&lt;- prüfen</code>. Werte um 60–70 % sind bei Intros mit Effekten oder Sprechgesang normal.</li>
-  <li><b>! Pegelsprung</b>: Innerhalb des Parts ändert sich die Lautstärke um mindestens 3 dB. Das ist ein guter Kandidat, den Part für die Show zu teilen.</li>
-</ul>
-
-<h2 id="songdatei">5 · Die Song-Datei song.yaml (gehört dir)</h2>
-<pre><code><span class="k">id</span>: 31
-<span class="k">name</span>: <span class="s">"All The Things She Said"</span>
-<span class="k">artist</span>: <span class="s">"t.A.T.u."</span>
-<span class="k">bpm</span>: 86
-<span class="k">beats_per_bar</span>: 4
-<span class="k">midi_offset</span>: 3/8            <span class="c"># MIDI kommt drei Achtel nach Takt 1</span>
-<span class="k">audio</span>: quelle/ATTSS.mp3        <span class="c"># relativ zum Song-Ordner</span>
-
-<span class="k">sections</span>:
-  - <span class="k">name</span>: pause                 <span class="c"># eindeutig! Die Show-Datei verweist darauf</span>
-    <span class="k">bars</span>: 1
-  - <span class="k">name</span>: intro
-    <span class="k">bars</span>: 4
-    <span class="k">energy</span>: 1                   <span class="c"># optional, deine Einschätzung 0-5</span>
-    <span class="k">lyrics</span>: <span class="s">"All the things she said"</span>
-    <span class="k">description</span>: <span class="s">"leiser Chant, am Ende Crescendo"</span>
-  - <span class="k">name</span>: chorus 1
-    <span class="k">bars</span>: 8
-    <span class="k">scene</span>: SCENE_PINGPONG       <span class="c"># feste Vorgabe: hat Vorrang vor show.yaml</span>
-    <span class="k">scheme</span>: SCHEME_RED</code></pre>
-<div class="ok"><b>Diese Datei gehört dir.</b> Hier stehen deine Ergänzungen zu Parts, Stimmungen und Effekten. Sie werden nie überschrieben:
-<ul>
-  <li><b>Werkzeuge</b>: <code>songgen</code> und <code>songanalyze</code> lesen die Datei nur. <code>sheet2song</code> schreibt sie nur, wenn es sie noch nicht gibt.</li>
-  <li><b>Claude</b>: Ein Hook (<code>tools/hook_protect_song.py</code>, eingetragen in <code>.claude/settings.json</code>) blockiert jeden Schreibzugriff von Claude auf <code>songs/…/song.yaml</code>, dazu kommt eine Verbotsregel in denselben Einstellungen. Claude schlägt Änderungen im Chat vor, du trägst sie ein.</li>
-  <li><b>Restore</b>: Auch beim Zurückholen einer alten Version bleibt deine aktuelle <code>song.yaml</code> unangetastet.</li>
-  <li><b>Kontrolle</b>: In jeder Version steht die Prüfsumme der Datei. <code>songgen.py</code> ohne Argument zeigt, ob sie seit der letzten Generierung geändert wurde.</li>
-</ul></div>
-<h3>Einschätzung oder feste Vorgabe</h3>
-<div class="tablewrap"><table>
-<tr><th>Du schreibst</th><th>Wirkung</th></tr>
-<tr><td><code>energy</code>, <code>description</code>, <code>mood</code>, <code>instruments</code>, <code>solo</code>, <code>lyrics</code></td><td><b>Einschätzung.</b> Claude leitet daraus die Show ab. Deine Angaben haben Vorrang vor den Messwerten der Analyse.</td></tr>
-<tr><td><code>scene</code> oder <code>fx</code></td><td><b>Feste Vorgabe.</b> Gilt immer, egal was in <code>show.yaml</code> steht. Geräte-Overrides der Show für diesen Part entfallen dann.</td></tr>
-<tr><td><code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code>, <code>text</code></td><td><b>Feste Vorgabe</b> für Farbschema, Farbwanderung, Schluss-Akzent, einzelne Geräte bzw. Text auf der Matrix. Der Rest des Parts kommt weiter aus der Show.</td></tr>
-<tr><td>Song-Ebene: <code>scheme</code>, <code>scroll_text</code>, <code>scroll_title</code>, <code>scroll_delay</code>, <code>end_black_ms</code></td><td>haben ebenfalls Vorrang vor <code>show.yaml</code></td></tr>
-</table></div>
-<p><b>Änderungswünsche als Anmerkung:</b> Du kannst einen Wunsch einfach hinter den Wert schreiben, z. B. <code>idea: "ruhig" -&gt; zu statisch, hier fehlt eine langsame Verwandlung</code>. Die Werkzeuge lesen den Rest der Zeile als Teil des Textes mit. Der Generator selbst wertet <code>idea</code> und die anderen Einschätzungen nicht aus: Sie wirken erst, wenn Claude die Show danach überarbeitet. Sag Claude deshalb, dass du Anmerkungen ergänzt hast. Die fertige Gestaltung steht danach in <code>show.yaml</code>; sie muss nicht in <code>song.yaml</code> zurückgetragen werden, und eine erledigte Anmerkung darf stehen bleiben.</p>
-<p>Der Generator meldet jede übernommene Vorgabe in der Timeline als Hinweis, z. B. <code>'chorus 1': scene, scheme aus song.yaml (Vorrang vor show.yaml)</code>. Schreibweise der Felder wie in <a href="#show">Abschnitt 7</a>.</p>
-<h3>Alle Felder auf Song-Ebene</h3>
-<div class="tablewrap"><table>
-<tr><th>Feld</th><th>Pflicht</th><th>Standard</th><th>Bedeutung</th></tr>
-<tr><td><code>id</code></td><td>ja</td><td></td><td>Song-ID 1..127 (MIDI CC 22). Frei oder die ID des alten, handgeschriebenen Songs, den diese Fassung ersetzt. Zwei generierte Songs dürfen nicht dieselbe ID haben.</td></tr>
-<tr><td><code>name</code></td><td>ja</td><td></td><td>Titel. Erscheint im Lauftext und bestimmt den Funktionsnamen (<code>gen_&lt;Name&gt;</code>).</td></tr>
-<tr><td><code>artist</code></td><td>nein</td><td></td><td>Interpret, für den Lauftext „Titel by Interpret“.</td></tr>
-<tr><td><code>bpm</code></td><td>ja</td><td></td><td>Tempo in Viertel pro Minute, höchstens 255. Kommt immer von dir und wird nie geschätzt.</td></tr>
-<tr><td><code>beats_per_bar</code></td><td>nein</td><td>4</td><td>Schläge pro Takt.</td></tr>
-<tr><td><code>midi_offset</code></td><td>nein</td><td>0</td><td>Notenwert, wie spät das Start-MIDI nach Takt 1 kommt: <code>1/8</code>, <code>1/16</code>, <code>3/16</code>. Eine Viertel ist ein Beat. Negativ (<code>-1/16</code>) heißt: MIDI kommt vor Takt 1, dann läuft ein schwarzer Vorlauf. Der erste Part wird um den Offset kürzer, alles andere bleibt auf dem Raster.</td></tr>
-<tr><td><code>midi_offset_ms</code></td><td>nein</td><td></td><td>Offset direkt in Millisekunden. Nur im Notfall, ersetzt <code>midi_offset</code>.</td></tr>
-<tr><td><code>audio</code></td><td>nein</td><td>die einzige MP3 im Ordner</td><td>Audiodatei relativ zum Song-Ordner, z. B. <code>quelle/song.mp3</code>. Nur für die Analyse.</td></tr>
-<tr><td><code>audio_beat1_ms</code></td><td>nein</td><td>0</td><td>Position von Takt 1 in der MP3. Nur für die Analyse und nur nötig, wenn die Datei nicht genau auf Takt 1 beginnt.</td></tr>
-<tr><td><code>sections</code></td><td>ja</td><td></td><td>Liste der Parts in Spielreihenfolge. Der erste Part ist immer schwarz (Start-MIDI).</td></tr>
-<tr><td><code>markers</code></td><td>nein</td><td></td><td>Bund-Marker, siehe <a href="#marker">Abschnitt 13</a>.</td></tr>
-<tr><td><code>scheme</code>, <code>scroll_text</code>, <code>scroll_title</code>, <code>scroll_delay</code>, <code>end_black_ms</code>, <code>function</code></td><td>nein</td><td></td><td>Feste Vorgaben auf Song-Ebene, Bedeutung wie in <a href="#show">Abschnitt 7</a>. Haben Vorrang vor <code>show.yaml</code>.</td></tr>
-</table></div>
-<h3>Alle Felder pro Part (<code>sections</code>)</h3>
-<div class="tablewrap"><table>
-<tr><th>Feld</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td><code>name</code></td><td>ja</td><td>Eindeutiger Name. <code>show.yaml</code> und <code>markers.parts</code> verweisen darauf.</td></tr>
-<tr><td><code>bars</code></td><td rowspan="2">eins von beiden</td><td>Länge in Takten.</td></tr>
-<tr><td><code>beats</code></td><td>Länge in Beats. Zusammen mit <code>bars</code> wird addiert, z. B. 4 Takte + 2 Beats.</td></tr>
-<tr><td><code>bpm</code></td><td>nein</td><td>anderes Tempo nur für diesen Part.</td></tr>
-<tr><td><code>beats_per_bar</code></td><td>nein</td><td>andere Taktart nur für diesen Part.</td></tr>
-<tr><td><code>energy</code></td><td>nein</td><td>Einschätzung 0–5. Zugleich Rückfalllösung, wenn der Part weder in <code>show.yaml</code> noch hier eine Szene hat: 0 Black, 1 Calm, 2 Verse, 3 Buildup, 4–5 Drop.</td></tr>
-<tr><td><code>description</code>, <code>idea</code>, <code>mood</code>, <code>instruments</code>, <code>solo</code>, <code>lyrics</code>, <code>chords</code></td><td>nein</td><td>Freie Beschreibung. Daraus leitet Claude die Show ab. Weitere eigene Felder sind erlaubt und stören nicht.</td></tr>
-<tr><td><code>scene</code></td><td rowspan="2">nein, höchstens eins</td><td>Feste Szene, siehe <a href="#show">Abschnitt 7</a>.</td></tr>
-<tr><td><code>fx</code></td><td>Fester Effektaufruf, siehe <a href="#show">Abschnitt 7</a>.</td></tr>
-<tr><td><code>scheme</code></td><td>nein</td><td>Festes Farbschema für diesen Part.</td></tr>
-<tr><td><code>tail</code></td><td>nein</td><td>Fester Schluss-Akzent, Aufbau wie in <a href="#show">Abschnitt 7</a>.</td></tr>
-<tr><td><code>devices</code></td><td>nein</td><td>Feste Ausnahmen für einzelne Geräte. Werden mit denen der Show zusammengeführt, deine gewinnen.</td></tr>
-<tr><td><code>fade</code></td><td>nein</td><td>Farbwanderung im Takt, z. B. <code>fade: complement</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Deine Angabe gewinnt gegen die der Show.</td></tr>
-<tr><td><code>text</code></td><td>nein</td><td>Text auf der Matrix, z. B. <code>text: "FUN"</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Dein Text gewinnt gegen den der Show.</td></tr>
-<tr><td><code>overlay</code></td><td>nein</td><td>Ein zweiter Effekt über dem Effekt des Parts, z. B. <code>overlay: SCENE_SPARKLE</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Deine Angabe gewinnt gegen die der Show.</td></tr>
-<tr><td><code>transition</code>, <code>fade_in</code>, <code>fade_out</code>, <code>pulse</code>, <code>gate</code>, <code>dim</code>, <code>tint</code>, <code>only</code>, <code>span</code>, <code>soft</code>, <code>smooth</code>, <code>blinder</code></td><td>nein</td><td>Übergang in den Part und Modifikatoren auf das fertige Bild, z. B. <code>transition: fade</code> oder <code>pulse: 50</code>. Alle Formen in <a href="#show">Abschnitt 7</a>. Deine Angabe gewinnt gegen die der Show.</td></tr>
-<tr><td><code>why</code></td><td>nein</td><td>Kommentar, landet im C++-Code.</td></tr>
-</table></div>
-
-<h2 id="analyse">6 · Audio-Analyse</h2>
-<pre><code>$PY tools/songanalyze.py &lt;Song&gt;</code></pre>
-<p>Misst pro Part, relativ zum Song, und schreibt <code>audio-analyse/analysis.yaml</code> plus das Bild <code>audio-analyse/analysis.png</code> in den Song-Ordner. <code>song.yaml</code> wird nur gelesen. Einziges Argument ist der Song-Ordner, Optionen gibt es nicht. Die MP3 kommt aus dem Feld <code>audio</code>, sonst nimmt das Tool die einzige MP3 im Ordner.</p>
-<div class="tablewrap"><table>
-<tr><th>Wert</th><th>Bedeutung</th><th>Nutzen für die Show</th></tr>
-<tr><td><code>power</code> 0–5</td><td>Lautheit. 5 = lautester Part (ab 4 Takten), je 1,5 dB leiser eine Stufe weniger, 0 = still. Feste dB-Stufen, weil die Parts in deinen Exporten dicht beieinander liegen. Das gilt mit und ohne Loudness-Maximizer: ohne ist die MP3 nur insgesamt rund 5 dB leiser, und alle Pegel werden relativ zum lautesten Moment des Songs gemessen.</td><td>Energie der Szene</td></tr>
-<tr><td><code>loudness_db</code></td><td>mittlerer Pegel relativ zum lautesten Moment</td><td>bei knappen Entscheidungen</td></tr>
-<tr><td><code>build</code> −1…+1</td><td>Lautstärkeverlauf im Part (+ = steigert sich)</td><td>Buildup-Szenen</td></tr>
-<tr><td><code>drive</code> 0–1</td><td>rhythmische Dichte + perkussiver Anteil</td><td>ruhig oder treibend</td></tr>
-<tr><td><code>brightness</code> 0–1</td><td>Klangfarbe dunkel → hell</td><td>kalte oder warme Farbschemata</td></tr>
-<tr><td><code>lowend</code> 0–1</td><td>Bassanteil unter 150 Hz</td><td>Drops, Feuer</td></tr>
-<tr><td><code>mood</code></td><td>Dur/Moll-Tendenz</td><td>Farbstimmung</td></tr>
-<tr><td><code>grenze_hoerbar</code></td><td>an der Part-Grenze ändert sich der Klang</td><td>Kontrolle der Struktur</td></tr>
-<tr><td><code>accents</code></td><td><code>stop</code>, <code>hit_after_stop</code>, <code>fill_into_next</code> mit Takt/Beat</td><td>Strobo-Absprünge, Black-Momente</td></tr>
-</table></div>
-<p>Das Bild zeigt übereinander: Pegelverlauf mit Part-Grenzen, Spektrogramm, die Merkmale als Balken und die „Formwechsel“-Kurve. Spitzen dort, wo keine Grenze liegt, deuten auf eine falsche Taktzahl hin. Claude liest das Bild vor der Gestaltung mit.</p>
-
-<h2 id="show">7 · Die Show-Datei show.yaml (technisch)</h2>
+<h2 id="show">5 · Die Show-Datei show.yaml (technisch)</h2>
 <pre><code><span class="k">function</span>: gen_AllTheThingsSheSaid
 <span class="k">scheme</span>: SCHEME_ICE                  <span class="c"># Grundfarben</span>
 <span class="k">sections</span>:
-  <span class="k">intro</span>:                            <span class="c"># = name aus song.yaml</span>
+  <span class="k">intro</span>:                            <span class="c"># = Songpart aus der Tabelle</span>
     <span class="k">scene</span>: SCENE_CALM
     <span class="k">scheme</span>: SCHEME_ICE
     <span class="k">tail</span>:                           <span class="c"># letzte 2 Beats als eigener Part</span>
@@ -572,9 +349,9 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td><code>${bpm}</code></td><td>Tempo des Parts, gerundet</td></tr>
 <tr><td><code>${beat}</code>, <code>${half}</code>, <code>${bar}</code></td><td>Dauer eines Beats, zweier Beats und eines Takts in ms</td></tr>
 </table></div>
-<div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Song-Datei vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code> oder <code>text</code>, gilt deine Angabe und nicht die der Show.</div>
+<div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Tabelle vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code> oder <code>text</code>, gilt deine Angabe und nicht die der Show.</div>
 
-<h2 id="regeln">8 · Feste Regeln: Anfang &amp; Ende</h2>
+<h2 id="regeln">6 · Feste Regeln: Anfang &amp; Ende</h2>
 <p>Diese Regeln setzt der Generator automatisch um, genau wie in den handgeschriebenen Songs:</p>
 <div class="tablewrap"><table>
 <tr><th>Moment</th><th>Verhalten</th></tr>
@@ -585,8 +362,8 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td>Ende</td><td>Nach dem letzten Part 10 s (<code>end_black_ms</code>) <code>progBlack</code> auf allen Geräten, dann <code>clearAll(); switchToSong(0);</code> (Pausen-Loop).</td></tr>
 </table></div>
 
-<h2 id="generator">9 · Generator, Versionen &amp; Timing</h2>
-<pre><code>$PY tools/songgen.py [&lt;Song&gt;] [Optionen]</code></pre>
+<h2 id="generator">7 · Generator, Versionen &amp; Timing</h2>
+<pre><code>python tools/songgen.py [&lt;Song&gt;] [Optionen]</code></pre>
 <div class="tablewrap"><table>
 <tr><th>Aufruf</th><th>Wirkung</th></tr>
 <tr><td><code>songgen.py</code></td><td>Alle Song-Ordner mit ID, Stand und Zahl der Versionen auflisten. Schreibt nichts.</td></tr>
@@ -595,17 +372,19 @@ git commit -m "Song Such A Shame"</code></pre>
 <tr><td><code>songgen.py &lt;Song&gt; --note "Text"</code></td><td>Generieren und die Notiz in der Version ablegen (<code>info.yaml</code>). Sie erscheint in <code>--versions</code>.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --versions</code></td><td>Gespeicherte Versionen auflisten, die aktive ist markiert.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --restore &lt;Version&gt;</code></td><td>Eine Version wieder aktiv machen. Der Anfang des Versionsnamens genügt, wenn er eindeutig ist.</td></tr>
+<tr><td><code>songgen.py &lt;Song&gt; --neu</code></td><td>Neuen Song-Ordner mit <code>quelle/struktur.xlsx</code> aus der Vorlage anlegen. Der Name gilt genau so, wie du ihn schreibst.</td></tr>
 <tr><td><code>songgen.py --assemble</code></td><td>Nur <code>src/</code> aus den <code>generated.cpp</code> aller Songs neu zusammensetzen, ohne etwas zu generieren.</td></tr>
 </table></div>
 <p><code>&lt;Song&gt;</code> ist der Ordnername unter <code>songs/</code>. Der Anfang genügt, Groß- und Kleinschreibung ist egal.</p>
 <h3>Stand in der Auflistung</h3>
 <div class="tablewrap"><table>
 <tr><th>Anzeige</th><th>Bedeutung</th></tr>
-<tr><td><code>aktuell</code></td><td>Der Code passt zu <code>song.yaml</code> und <code>show.yaml</code>.</td></tr>
-<tr><td><code>song.yaml/show.yaml seit der Generierung geändert</code></td><td>Eine der Dateien ist neuer als der Code. Der Song muss neu generiert werden, damit die Änderung wirkt.</td></tr>
-<tr><td><code>noch nicht generiert</code></td><td>Es gibt <code>song.yaml</code>, aber noch keinen Code. Der Song ist nicht in der Firmware.</td></tr>
-<tr><td><code>Code eingefroren (keine song.yaml)</code></td><td>Es gibt nur <code>generated.cpp</code>. Der Song bleibt unverändert in der Firmware (so bei „Dancing On My Own“).</td></tr>
-<tr><td><code>leer (keine song.yaml)</code></td><td>Leerer Ordner, nicht in der Firmware.</td></tr>
+<tr><td><code>noch keine Show</code></td><td>Es gibt die Tabelle, aber noch keine <code>show.yaml</code>. Der Song ist nicht in der Firmware (bei alten Songs läuft weiter der handgeschriebene Code).</td></tr>
+<tr><td><code>gestaltet, noch nicht generiert</code></td><td>Tabelle und Show sind da, aber noch kein Code.</td></tr>
+<tr><td><code>aktuell</code></td><td>Der Code passt zu <code>struktur.xlsx</code> und <code>show.yaml</code>.</td></tr>
+<tr><td><code>struktur.xlsx/show.yaml seit der Generierung geändert</code></td><td>Tabelle oder Show haben sich seit der letzten Generierung geändert. Der Song muss neu generiert werden, damit die Änderung wirkt. Verglichen wird der Inhalt der Tabelle – bloßes Speichern in Excel zählt nicht als Änderung.</td></tr>
+<tr><td><code>Code eingefroren (keine show.yaml)</code></td><td>Es gibt <code>generated.cpp</code>, aber keine Show mehr dazu. Der Song bleibt unverändert in der Firmware (so bei „Dancing On My Own“).</td></tr>
+<tr><td><code>leer (keine struktur.xlsx)</code></td><td>Ordner ohne Tabelle, nicht in der Firmware.</td></tr>
 </table></div>
 <p>Der Generator bearbeitet immer nur <b>den einen Song</b>, den du angibst. Er schreibt dessen <code>generated.cpp</code> und setzt danach <code>src/songs_generated.cpp/.h</code> und die Aufrufe in <code>main.cpp</code> aus den <code>generated.cpp</code> aller Song-Ordner zusammen. Der Code der anderen Songs wird dabei unverändert übernommen und nicht neu berechnet. Ein fertiger Song bleibt also genau so, wie er zuletzt generiert wurde, auch wenn sich der Generator später ändert. Handgeschriebene Songs in <code>songs.cpp</code> bleiben unberührt.</p>
 
@@ -627,132 +406,84 @@ git commit -m "Song Such A Shame"</code></pre>
 <div class="tablewrap"><table>
 <tr><th>Was</th><th>Regel</th></tr>
 <tr><td>Grund-Marker</td><td>Der <code>case</code> der Song-ID in <code>src/markerLEDs.cpp</code> gilt unverändert weiter, weil die ID gleich bleibt.</td></tr>
-<tr><td>Marker in einzelnen Parts</td><td>Setzt die alte Funktion Marker mitten im Song (z. B. <code>markerLED5 = ASaite_E;</code> für den Bass in der Bridge), <b>müssen</b> sie übernommen werden: in <code>song.yaml</code> unter <code>markers.parts</code> mit Slot-Angabe, siehe <a href="#marker">Abschnitt 13</a>. Fehlen sie, bricht der Generator ab und nennt die Zeilen in <code>songs.cpp</code>.</td></tr>
+<tr><td>Marker in einzelnen Parts</td><td>Setzt die alte Funktion Marker mitten im Song (z. B. <code>markerLED5 = ASaite_E;</code> für den Bass in der Bridge), <b>müssen</b> sie übernommen werden: in <code>show.yaml</code> unter <code>markers.parts</code> mit Slot-Angabe, siehe <a href="#marker">Abschnitt 10</a>. Fehlen sie, bricht der Generator ab und nennt die Zeilen in <code>songs.cpp</code>.</td></tr>
 <tr><td>Trailer</td><td>Manche Songs haben eine Trailer-Fassung mit längerem Intro, die danach mitten in den Song springt (<code>songID = 2; switchToPart(40);</code> in <code>songs.cpp</code>). Die Part-Nummern des generierten Codes sind andere. Der Generator schreibt deshalb für jeden Part eine Konstante nach <code>src/songs_generated.h</code>, z. B. <code>GEN_PHYSICAL_SAMPLE_TAIL</code>. Im Trailer muss die feste Zahl durch die passende Konstante ersetzt werden: <code>switchToPart(GEN_PHYSICAL_SAMPLE_TAIL);</code>. Steht dort noch eine Zahl, bricht der Generator ab. Die Vorschau listet alle Konstanten auf. Claude erledigt die Umstellung beim Generieren.</td></tr>
 </table></div>
 <p>Trailer gibt es derzeit für Physical (ID 1 → Song 2), I Love It (ID 80 → Song 9), Dancing On My Own (ID 81 → Song 8) und Enjoy The Silence (→ Song 16).</p>
 
 <h3>Versionen</h3>
-<p>Jede Generierung legt unter <code>versionen/&lt;Datum_Uhrzeit&gt;/</code> eine vollständige Kopie ab: <code>song.yaml</code>, <code>show.yaml</code>, den erzeugten Code <code>generated.cpp</code> und <code>info.yaml</code> (Zeit, Notiz, Git-Stand der Werkzeuge, Prüfsummen). Gibt es genau diesen Stand schon als Version, entsteht keine neue. Die Versionen werden mit versioniert (Git).</p>
-<pre><code>$PY tools/songgen.py &lt;Song&gt; --versions
-$PY tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
+<p>Jede Generierung legt unter <code>versionen/&lt;Datum_Uhrzeit&gt;/</code> eine vollständige Kopie ab: deine Tabelle <code>struktur.xlsx</code>, <code>show.yaml</code>, den erzeugten Code <code>generated.cpp</code> und <code>info.yaml</code> (Zeit, Notiz, Git-Stand der Werkzeuge, Prüfsummen). Gibt es genau diesen Stand schon als Version, entsteht keine neue. Die Versionen werden mit versioniert (Git).</p>
+<pre><code>python tools/songgen.py &lt;Song&gt; --versions
+python tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <div class="tablewrap"><table>
 <tr><th>Restore macht</th><th>Erklärung</th></tr>
 <tr><td>aktuellen Stand sichern</td><td>Falls er noch nicht als Version existiert, wird er zuerst gespeichert. Es geht nichts verloren.</td></tr>
-<tr><td><code>show.yaml</code> + <code>generated.cpp</code> zurückholen</td><td>Der Code kommt <b>1:1</b> aus der Version, er wird nicht neu berechnet. Danach wird <code>src/</code> neu zusammengesetzt.</td></tr>
-<tr><td><code>song.yaml</code> bleibt, wie sie ist</td><td>Deine Datei wird auch hier nicht geschrieben. Ist sie heute anders als in der Version, meldet das Tool das. Der Code gehört dann zur <code>song.yaml</code> im Versionsordner. Willst du auch die alte Struktur zurück, kopierst du sie selbst von dort.</td></tr>
+<tr><td><code>struktur.xlsx</code> + <code>show.yaml</code> + <code>generated.cpp</code> zurückholen</td><td>Der ganze Stand kommt zurück, auch deine Tabelle. Der Code kommt <b>1:1</b> aus der Version, er wird nicht neu berechnet. Danach wird <code>src/</code> neu zusammengesetzt. Die Tabelle muss dafür in Excel geschlossen sein.</td></tr>
+<tr><td>Versionen vor dem 06.10.2026</td><td>Sie enthalten noch keine Tabelle (damals <code>song.yaml</code>). Zurück kommen dann nur Show und Code, deine heutige Tabelle bleibt.</td></tr>
 <tr><td>Kontrolle</td><td>Das Tool prüft, ob der heutige Generator aus der Version denselben Code erzeugen würde, und meldet das Ergebnis.</td></tr>
 </table></div>
 <div class="note"><b>Grenze:</b> Gesichert wird der Code des Songs (welche Szene, welches Schema, welche Dauer), nicht die Effekt-Bibliothek. Ändert sich später eine Szene in <code>scenes.cpp</code> oder ein Effekt in <code>FXprograms.cpp</code>, sieht auch eine alte Version anders aus. Dafür steht in <code>info.yaml</code> der Git-Stand, mit dem die Version entstanden ist.</div>
 <h3>Was in der Firmware landet</h3>
-<p>In der Firmware ist jeder Song, dessen Ordner eine <code>generated.cpp</code> enthält. <code>song.yaml</code> und <code>show.yaml</code> zu löschen ändert daran nichts, der Code bleibt eingefroren erhalten. <b>Einen Song entfernen:</b> den Ordner (oder nur seine <code>generated.cpp</code>) löschen und danach <code>$PY tools/songgen.py --assemble</code> ausführen.</p>
+<p>In der Firmware ist jeder Song, dessen Ordner eine <code>generated.cpp</code> enthält. Tabelle oder <code>show.yaml</code> zu löschen ändert daran nichts, der Code bleibt eingefroren erhalten. <b>Einen Song entfernen:</b> den Ordner (oder nur seine <code>generated.cpp</code>) löschen und danach <code>python tools/songgen.py --assemble</code> ausführen.</p>
 
 <h3>So werden die Millisekunden berechnet</h3>
 <ul>
   <li>Dauer eines Beats = 60000 / BPM ms, ein Takt = 4 Beats. Bei 86 BPM: 697,67 ms bzw. 2790,7 ms.</li>
   <li>Zuerst werden die <b>absoluten</b> Startzeiten aller Parts ab Takt 1 berechnet und erst dann gerundet: <code>Dauer = round(Ende) − round(Start)</code>. So entsteht keine Rundungsdrift wie beim Aufaddieren einzelner gerundeter Dauern. Der Abgleich mit dem handgeschriebenen „Dancing On My Own“ ergab 1 ms Abweichung nach 4:25 min.</li>
-  <li>Zeitbasis im Code ist das Start-MIDI: Alle Zeiten werden um <code>midi_offset</code> verschoben. Bei <code>1/8</code> und 86 BPM ist der erste Part 349 ms kürzer.</li>
+  <li>Zeitbasis im Code ist das Start-MIDI: Alle Zeiten werden um das StartBit verschoben (im Code als <code>midi_offset</code> ausgewiesen). Bei 0,125 (1/8 Takt) und 86 BPM ist der erste Part 349 ms kürzer.</li>
   <li>Die case-Nummern laufen in 5er-Schritten. case 1 und 2 sind für den Lauftext der Scrollmatrix reserviert.</li>
   <li><b>Kein Versatz zum Klick über den Song:</b> Ein Gerät bemerkt eine Part-Grenze erst einige Millisekunden später (ein Schleifendurchlauf mit <code>FastLED.show()</code>). Früher ging diese Verspätung bei jedem Wechsel verloren und summierte sich über viele Parts, deshalb wurden Parts in den alten Songs von Hand verkürzt. Bei generierten Songs nimmt die Firmware die Verspätung jetzt in den nächsten Part mit (<code>isGeneratedSong()</code>, wird vom Generator gepflegt). Parts also <b>nie mehr künstlich verkürzen</b>, die Taktzahlen aus dem DAW gelten exakt. Die alten handgeschriebenen Songs laufen unverändert.</li>
   <li>Die Beat-Effekte (Blitze auf die Viertel, PingPong, Lampen-Puls) rechnen den Beat exakt aus dem BPM, nicht aus einer auf ganze Millisekunden gerundeten Beat-Länge.</li>
 </ul>
 
-<h2 id="technik">10 · Wie die MP3 analysiert wird</h2>
-<div class="ok">
-<p><b>Kurz gesagt:</b> Die MP3 wird ausschließlich lokal analysiert, mit der Python-Bibliothek <b>librosa</b> in <code>tools/.venv</code>. Sie wird als Mono-Signal geladen und in Fenster von etwa 23 ms zerlegt. Daraus werden berechnet:</p>
-<ul>
-  <li><b>Chroma</b>: die Energie der 12 Halbtöne, auf dem harmonischen Anteil ohne Schlagzeug. Daraus kommen Akkorde und Tonart.</li>
-  <li><b>Onsets und Kick-Energie unter 120 Hz</b>: Daraus kommen die Lage des Beat-Rasters und die Takt-Eins. Das Tempo selbst kommt von dir.</li>
-  <li><b>RMS-Pegel</b>: für Power, Stille, Pegelsprünge und Stopps.</li>
-  <li><b>Spektralschwerpunkt und Bassanteil</b>: für Helligkeit und Lowend.</li>
-  <li><b>Formwechsel</b>: Wo sich Klangfarbe, Harmonie und Pegel ändern, liegen Part-Grenzen. Damit wird die Struktur geprüft.</li>
-</ul>
-<p><b>Wie <code>sheet2song</code> daraus die Takte bestimmt:</b></p>
-<ol>
-  <li>Es rechnet die Sheet-Akkorde um den <code>&lt;transpose&gt;</code>-Wert hoch.</li>
-  <li>Pro halbem Takt bestimmt es, welcher dieser Akkorde im Audio am besten klingt.</li>
-  <li>Dann verteilt es die Parts in Sheet-Reihenfolge auf die Takte, sodass die Akkordfolgen bestmöglich passen. Ein Part darf seine Akkorde wiederholen oder halb so schnell spielen. Die Sheet-Länge entscheidet nur bei Mehrdeutigkeit, etwa wenn Chorus und Bridge dieselben Akkorde haben.</li>
-</ol>
-<p>Weil nur die Akkorde aus deinem Sheet in Frage kommen, ist das deutlich zuverlässiger als eine freie Akkorderkennung. Die Details stehen in den Tabellen und Abschnitten darunter.</p>
-</div>
-
-<p>Beide Werkzeuge nutzen die Python-Bibliothek <b>librosa</b>. Alles läuft lokal, kein Cloud-Dienst. Die MP3 wird als Mono-Signal mit 22 050 Hz geladen und in kurze Fenster zerlegt (512 Samples ≈ 23 ms).</p>
+<h2 id="beispiel">8 · Beispiel: All The Things She Said (Song 31)</h2>
+<p>Die Tabelle <code>songs/AllTheThingsSheSaid_v1/quelle/struktur.xlsx</code> hat 30 Parts, so geschnitten, wie die Show sie braucht: Synth-Intro, die Hook „this is not enough“, Build-ups und Strobo-Übergänge als eigene Parts, ein Stopp vor dem letzten Chorus. Aus Effektidee und Energie hat Claude in <code>show.yaml</code> drei wiederkehrende Motive gemacht:</p>
 <div class="tablewrap"><table>
-<tr><th>Messgröße</th><th>librosa-Funktion</th><th>Wofür</th></tr>
-<tr><td>Chroma: Energie der 12 Halbtöne, oktavunabhängig</td><td><code>chroma_cqt</code> auf dem harmonischen Anteil</td><td>Akkorde erkennen, Tonart</td></tr>
-<tr><td>Harmonisch/perkussiv trennen</td><td><code>effects.hpss</code></td><td>Akkorde ohne Schlagzeug-Störung, perkussiver Anteil für <code>drive</code></td></tr>
-<tr><td>Anschlagsstärke (Onsets)</td><td><code>onset.onset_strength</code></td><td>Beat-Raster, rhythmische Dichte</td></tr>
-<tr><td>Kick-Drum-Energie unter 120 Hz</td><td>Onsets auf dem Tiefbass-Spektrum</td><td>Takt-Eins finden</td></tr>
-<tr><td>Lautheit (RMS in dB)</td><td><code>feature.rms</code></td><td><code>power</code>, Stille, Pegelsprünge, Stopps</td></tr>
-<tr><td>Spektralschwerpunkt</td><td><code>spectral_centroid</code></td><td><code>brightness</code></td></tr>
-<tr><td>Formwechsel</td><td>Selbstähnlichkeit von MFCC + Chroma + Pegel mit Schachbrett-Kern (Foote-Novelty)</td><td>Grenzen prüfen</td></tr>
+<tr><th>In der Tabelle</th><th>In der Show</th></tr>
+<tr><td>„chorus 1“, Effektidee „action“, Energie 4</td><td>drehender Stern in Neon-Farben (<code>SCENE_STAR</code>), jedes Mal gleich</td></tr>
+<tr><td>„this is not enough“, „action stark auf viertel“, Energie 5</td><td>Schläge auf die Viertel in Rot (<code>SCENE_DROP</code>)</td></tr>
+<tr><td>„übergang zum chorus“, „strobo“, 1–2 Beats</td><td>weißer Strobo als Absprung</td></tr>
+<tr><td>„verse 2 a“, „ruhig“, Energie 2</td><td>Geräte füllen sich langsam, die Farbe wandert von Blau nach Pink und zurück</td></tr>
+<tr><td>„fade out“, „langsames fade out rot“</td><td>Rot blendet über den ganzen Part weich nach Schwarz</td></tr>
 </table></div>
-<h3>Akkorderkennung</h3>
-<p>Für jeden halben Takt wird der mittlere Chroma-Vektor mit den Dreiklang-Schablonen der Sheet-Akkorde verglichen (Kosinus-Ähnlichkeit). Septimen und Slash-Akkorde werden dabei auf Dur/Moll-Dreiklänge reduziert. Weil nur die Akkorde aus dem Sheet in Frage kommen, ist das viel zuverlässiger als eine freie Akkorderkennung.</p>
-<h3>Grenzen des Verfahrens</h3>
-<ul>
-  <li>Das Tempo wird nicht erkannt, es kommt immer von dir. Automatische Beat-Tracker liegen gern daneben: Bei ATTSS meldete der Standard-Tracker 117 statt 86 BPM, ChatGPT 86,76 BPM. Das wären nach gut 3 Minuten fast 2 s Versatz.</li>
-  <li>Parts mit identischer Akkordfolge direkt hintereinander, etwa Chorus → Bridge bei ATTSS, sind nur über die Sheet-Länge unterscheidbar. Deshalb sollte das Sheet vollständig sein.</li>
-  <li>Sprechgesang, stark effektierte Intros oder Parts ohne Harmonie (nur Drums) erkennt die Akkordanalyse schlecht. Das zeigt die Spalte „akkorde“.</li>
-  <li>Stimmung und Energie sind Messwerte, keine Musikalität. Deine <code>description</code>/<code>energy</code> haben bei der Gestaltung Vorrang.</li>
-</ul>
+<p>Die halben und Dreiviertel-Takte (21,75 · 45,5 · 62,5) stehen direkt als Kommazahl in „von takt“.</p>
 
-<h2 id="beispiel">11 · Beispiel: All The Things She Said (Song 31)</h2>
-<p>Sheet mit 8 Parts, <code>transpose 4</code>, <code>myTempo 86</code>. Ergebnis von <code>sheet2song</code> ohne Nacharbeit:</p>
-<div class="tablewrap"><table>
-<tr><th>Part</th><th>Takte</th><th>Sheet-Schätzung</th><th>Start MP3</th><th>Akkorde</th><th>Hinweis</th></tr>
-<tr><td>pause</td><td>1</td><td></td><td>0:00.02</td><td></td><td>stiller Takt in der MP3</td></tr>
-<tr><td>intro</td><td>12</td><td>10</td><td>0:02.81</td><td>67 %</td><td>Pegelsprung vor Takt 5 → aufgeteilt in intro (4) + intro band (8)</td></tr>
-<tr><td>verse 1</td><td>9</td><td>9</td><td>0:36.30</td><td>100 %</td><td></td></tr>
-<tr><td>chorus 1</td><td>8</td><td>8</td><td>1:01.42</td><td>100 %</td><td></td></tr>
-<tr><td>solo</td><td>8</td><td>8</td><td>1:23.74</td><td>100 %</td><td></td></tr>
-<tr><td>verse 2</td><td>8</td><td>8</td><td>1:46.07</td><td>100 %</td><td>Pegelsprung vor Takt 5 → verse 2a/2b</td></tr>
-<tr><td>chorus 2</td><td>8</td><td>8</td><td>2:08.39</td><td>100 %</td><td></td></tr>
-<tr><td>bridge</td><td>8</td><td>8</td><td>2:30.72</td><td>100 %</td><td>Sprung vor Takt 8 → bridge (7) + bridge hit (1)</td></tr>
-<tr><td>chorus 3</td><td>12</td><td>12</td><td>2:53.04</td><td>100 %</td><td></td></tr>
-<tr><td>ende</td><td>1</td><td></td><td>3:26.53</td><td></td><td>Schlussakkord (in der fertigen Datei von Hand in <code>end</code> umbenannt)</td></tr>
-</table></div>
-<p>Das war der erste Stand des Songs (Version <code>2026-10-03_1350</code>). Seit dem 04.10.2026 kommt seine Struktur aus <code>quelle/struktur.xlsx</code>: 30 Parts, so geschnitten, wie die Show sie braucht (Synth-Intro, Hook „this is not enough“, Build-ups und Strobo-Übergänge als eigene Parts, Stopp vor dem letzten Chorus). Die aktuellen Dateien: <code>songs/AllTheThingsSheSaid_v1/song.yaml</code> und <code>show.yaml</code>.</p>
-
-<h2 id="probleme">12 · Probleme &amp; Lösungen</h2>
+<h2 id="probleme">9 · Probleme &amp; Lösungen</h2>
 <div class="tablewrap"><table>
 <tr><th>Meldung / Symptom</th><th>Ursache und Lösung</th></tr>
-<tr><td><code>song.yaml existiert schon und wurde nicht angefasst</code> (sheet2song)</td><td>So gewollt: Das Ergebnis liegt als <code>song.vorschlag.yaml</code> daneben. Übernimm von Hand, was du brauchst.</td></tr>
-<tr><td><code>Sheet in songs/…: 2 Kandidaten</code></td><td>Im Ordner liegen mehrere Sheets oder MP3s. Überzählige entfernen oder <code>--sheet</code>/<code>--audio</code> angeben.</td></tr>
 <tr><td><code>Song '…' nicht gefunden</code></td><td>Ordnername unter <code>songs/</code> prüfen. <code>songgen.py</code> ohne Argument listet alle auf.</td></tr>
-<tr><td><code>song.yaml/show.yaml seit der Generierung geändert</code></td><td>Hinweis in der Auflistung: Der aktive Code ist älter als die Dateien. Song neu generieren.</td></tr>
-<tr><td><code>hat keine Gestaltung: scene/fx in show.yaml oder energy setzen</code></td><td>Der Part steht weder in der Show noch hat er <code>scene</code>, <code>fx</code> oder <code>energy</code> in <code>song.yaml</code>.</td></tr>
-<tr><td><code>unbekannte Szene</code> / <code>unbekanntes Farbschema</code> / <code>Funktion … nicht in den Headern gefunden</code></td><td>Tippfehler im Namen. Gültige Namen in <a href="#show">Abschnitt 7</a>.</td></tr>
+<tr><td><code>quelle/struktur.xlsx fehlt</code></td><td>Der Ordner hat noch keine Tabelle: <code>songgen.py &lt;Song&gt; --neu</code> oder eine Tabelle dorthin kopieren.</td></tr>
+<tr><td><code>Kopfzeile der Parts nicht gefunden</code></td><td>Es braucht eine Zeile mit den Überschriften „von takt“ und „Songpart“. Das alte Kalkulator-Format mit „bis takt“ wird nicht mehr gelesen.</td></tr>
+<tr><td><code>Titel fehlt</code> / <code>BPM im Kopf fehlt</code> / <code>Midi-StartNummer … fehlt</code></td><td>Im Kopf der Tabelle fehlt die Angabe oder ihre Beschriftung wurde umbenannt. Der Wert muss rechts neben der Beschriftung stehen.</td></tr>
+<tr><td><code>von takt … liegt nicht nach …</code></td><td>Die Taktnummern müssen von Zeile zu Zeile steigen. Tippfehler oder vertauschte Zeilen.</td></tr>
+<tr><td><code>die letzte Zeile muss 'Ende' heißen</code></td><td>Ohne die Zeile „Ende“ weiß der Generator nicht, wie lang der letzte Part ist. Eine Zeile mit dem Schlusstakt anhängen.</td></tr>
+<tr><td><code>… ist eine Formel ohne gespeichertes Ergebnis</code></td><td>Die Datei einmal in Excel öffnen und speichern, dann stehen die Ergebnisse der Formeln in der Datei.</td></tr>
+<tr><td><code>Partnamen nicht eindeutig</code></td><td>Ein Part heißt schon so, wie die automatische Nummerierung einen anderen nennen würde (z. B. von Hand „chorus (2)“). Einen davon umbenennen.</td></tr>
+<tr><td><code>show.yaml passt nicht mehr zu struktur.xlsx</code></td><td>Du hast einen Part eingefügt, gelöscht oder umbenannt. Die Meldung listet, welche Einträge der Show keinen Part mehr haben und welche Parts keine Gestaltung. Claude Bescheid geben („ich habe das Excel geändert“).</td></tr>
+<tr><td><code>struktur.xlsx/show.yaml seit der Generierung geändert</code></td><td>Hinweis in der Auflistung: Der aktive Code ist älter als die Dateien. Song neu generieren.</td></tr>
+<tr><td><code>hat keine Gestaltung: scene/fx in show.yaml oder energy setzen</code></td><td>Der Part steht nicht in der Show und hat in der Tabelle keine Energie.</td></tr>
+<tr><td><code>unbekannte Szene</code> / <code>unbekanntes Farbschema</code> / <code>Funktion … nicht in den Headern gefunden</code></td><td>Tippfehler im Namen in <code>show.yaml</code>. Gültige Namen in <a href="#show">Abschnitt 5</a>.</td></tr>
 <tr><td><code>unbekannter Platzhalter</code></td><td>In <code>fx</code>/<code>devices</code> sind nur <code>${dur}</code>, <code>${next}</code>, <code>${bpm}</code>, <code>${beat}</code>, <code>${half}</code>, <code>${bar}</code> erlaubt.</td></tr>
 <tr><td><code>tail von '…' ist länger als der Abschnitt</code></td><td><code>tail.beats</code> verkleinern.</td></tr>
-<tr><td><code>jeder Abschnitt braucht einen eindeutigen Namen</code></td><td>Zwei Parts heißen gleich, z. B. zweimal <code>chorus</code>. Durchnummerieren.</td></tr>
-<tr><td><code>midi_offset … bitte als Notenwert angeben</code></td><td>Schreibweise <code>1/8</code>, nicht <code>0.125</code>. Für Millisekunden <code>midi_offset_ms</code>.</td></tr>
-<tr><td><code>midi_offset … ist länger als der erste Part</code></td><td>Der erste Part (Pause) muss länger sein als der Offset.</td></tr>
+<tr><td><code>midi_offset … ist länger als der erste Part</code></td><td>Die Pause in der ersten Zeile muss länger sein als das StartBit.</td></tr>
+<tr><td><code>darf bars nicht setzen</code> / <code>hat scene UND fx</code></td><td>Fehler in <code>show.yaml</code>: Takte gehören in die Tabelle; pro Part nur <code>scene</code> oder <code>fx</code>.</td></tr>
 <tr><td><code>Version '…' nicht gefunden</code></td><td>Namen mit <code>--versions</code> nachsehen.</td></tr>
-<tr><td><code>hat scene UND fx</code></td><td>In <code>song.yaml</code> pro Part nur eins von beiden vorgeben.</td></tr>
-<tr><td><code>kein Tempo im Sheet</code></td><td><code>--bpm</code> angeben</td></tr>
-<tr><td>Part mit <code>&lt;- prüfen</code></td><td>Akkorde kaum erkannt. Transpose im Sheet prüfen und die Stelle gegenhören. Takte notfalls von Hand in der YAML korrigieren.</td></tr>
-<tr><td>Taktzahlen passen gar nicht, viele Parts mit <code>&lt;- prüfen</code></td><td>Der Song wechselt den Akkord seltener, als das Sheet vermuten lässt (z. B. „Physical“: alle 2 Takte). Taktzahlen in die Part-Namen des Sheets schreiben (<code>Chorus 1, 16 Takte</code>) und neu laufen lassen, oder die Takte direkt in <code>song.yaml</code> eintragen.</td></tr>
-<tr><td>alle Parts um einen Takt verschoben</td><td>Die Pause-Takte am Anfang stimmen nicht (z. B. bei einem Auftakt): in <code>song.yaml</code> anpassen. Takt 1 liegt bei deinen Exporten immer am Anfang der MP3; nur wenn eine Datei ausnahmsweise anders beginnt, <code>audio_beat1_ms</code> setzen.</td></tr>
-<tr><td><code>song.yaml Zeile …: kein gültiges YAML</code></td><td>Tippfehler in der genannten Zeile, meist ein fehlendes Anführungszeichen oder eine falsche Einrückung. Eine Anmerkung hinter einem Wert in Anführungszeichen ist erlaubt.</td></tr>
-<tr><td><code>'bis takt' fehlt</code> (struktur2song)</td><td>In der genannten Zeile der Tabelle fehlt die Taktnummer. Nur die Schlusszeile (BLACK, Ende) darf leer sein. Bei Formeln die Datei einmal in Excel speichern.</td></tr>
-<tr><td><code>Song-ID … hat auch songs/…</code> (songgen)</td><td>Zwei generierte Songs haben dieselbe <code>id</code>. Eine davon ändern.</td></tr>
+<tr><td><code>struktur.xlsx ist gesperrt</code> (bei <code>--restore</code>)</td><td>Die Tabelle ist in Excel geöffnet. Schließen und den Befehl wiederholen.</td></tr>
+<tr><td><code>Song-ID … hat auch songs/…</code></td><td>Zwei generierte Songs haben dieselbe Midi-StartNummer. Eine davon ändern.</td></tr>
 <tr><td>Hinweis <code>ersetzt den handgeschriebenen Song …()</code></td><td>Die ID gehört einem alten Song. Gewollt, wenn es dessen neue Fassung ist. Sonst eine freie ID wählen.</td></tr>
-<tr><td><code>der alte Code …() setzt Marker-LEDs in einzelnen Parts</code></td><td>Die genannten Zeilen aus <code>songs.cpp</code> als <code>markers.parts</code> in <code>song.yaml</code> eintragen, siehe <a href="#marker">Abschnitt 13</a>.</td></tr>
+<tr><td><code>der alte Code …() setzt Marker-LEDs in einzelnen Parts</code></td><td>Die genannten Zeilen aus <code>songs.cpp</code> müssen als <code>markers.parts</code> in <code>show.yaml</code> stehen, siehe <a href="#marker">Abschnitt 10</a>. Claude trägt sie ein.</td></tr>
 <tr><td><code>songs.cpp Zeile … springt mit fester Part-Nummer</code></td><td>Ein Trailer springt in diesen Song. Die Zahl in <code>switchToPart(…)</code> durch die passende Konstante <code>GEN_…</code> aus der Vorschau ersetzen.</td></tr>
-<tr><td><code>Abschnitt 'x' gibt es … nicht</code></td><td>Part-Name in der Show-Datei stimmt nicht mit der Song-Datei überein</td></tr>
-<tr><td><code>darf bars nicht setzen</code></td><td>Takte gehören in <code>song.yaml</code>, nicht in <code>show.yaml</code></td></tr>
-<tr><td>Show läuft langsam auseinander</td><td>BPM prüfen (Analyse meldet Drift). Bei Live-Tempo-Schwankungen der Band hilft nur ein Part-Sync per MIDI (CC 23). Die Verspätung der Part-Wechsel gleicht die Firmware bei generierten Songs selbst aus (<a href="#generator">Abschnitt 9</a>); ein alter handgeschriebener Song läuft erst nach dem Umstieg auf die generierte Fassung driftfrei.</td></tr>
-<tr><td>alles gleichmäßig zu früh oder zu spät</td><td>Konstanter Versatz, keine Drift: über <code>midi_offset</code> ausgleichen, nicht über verkürzte Parts.</td></tr>
+<tr><td>Show läuft langsam auseinander</td><td>BPM prüfen. Bei Live-Tempo-Schwankungen der Band hilft nur ein Part-Sync per MIDI (CC 23). Die Verspätung der Part-Wechsel gleicht die Firmware bei generierten Songs selbst aus (<a href="#generator">Abschnitt 7</a>); ein alter handgeschriebener Song läuft erst nach dem Umstieg auf die generierte Fassung driftfrei.</td></tr>
+<tr><td>alles gleichmäßig zu früh oder zu spät</td><td>Konstanter Versatz, keine Drift: über das StartBit ausgleichen, nicht über verkürzte Parts.</td></tr>
+<tr><td>alle Parts um einen Takt verschoben</td><td>Die Pause am Anfang stimmt nicht (z. B. bei einem Auftakt): „von takt“ der zweiten Zeile prüfen.</td></tr>
 <tr><td>Matrix nach dem Lauftext nicht im Takt (alter Song)</td><td>In handgeschriebenen Songs muss der Matrix-Zweig auf dem Raster der anderen Geräte einsteigen: Lauftext-Dauer = Start des Effekts auf den anderen Geräten + ganze Effekt-Zyklen, danach derselbe Zeitwert wie dort (Beispiel <code>Kids()</code>). Generierte Songs berechnen den Wiedereinstieg selbst.</td></tr>
-<tr><td>erster Part-Wechsel zu früh oder spät</td><td><code>midi_offset</code> anpassen (<code>1/16</code>, <code>3/16</code> …)</td></tr>
 </table></div>
 
-<h2 id="marker">13 · Bund-Marker-LEDs</h2>
+<h2 id="marker">10 · Bund-Marker-LEDs</h2>
 <div class="warn"><b>Grundregel:</b> Marker, die du gesetzt oder akzeptiert hast, werden nie mehr verändert. Das gilt für jedes Werkzeug und für Claude. Vorgeschlagen wird nur für Songs, die noch gar keine Marker haben.</div>
 <h3>Wie der Vorschlag entsteht</h3>
 <ul>
-  <li>Grundtöne aller Akkorde im Song, <b>nach</b> dem Transpose, z. B. Sheet <code>C#</code> + 4 = <code>F</code>.</li>
+  <li>Grundtöne aller Akkorde im Song, so wie sie klingen (Spalte „Akkorde“ der Tabelle oder deine Angabe im Chat).</li>
   <li>Jeder Grundton wird auf der E-Saite <b>und</b> auf der A-Saite markiert. Beide Saiten teilen sich eine LED pro Bund: <code>ESaite_C</code> und <code>ASaite_F</code> sind dieselbe LED am 8. Bund.</li>
   <li>Keine Marker auf dem 5. und 12. Bund (dort leuchten immer die blauen LEDs) und keine auf der Leersaite.</li>
   <li>Höchstens 7 Marker (<code>markerLED1…7</code>). Bei mehr fallen die seltensten Akkorde weg, mit Hinweis.</li>
@@ -761,9 +492,9 @@ $PY tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <h3>Wo die Marker stehen</h3>
 <div class="tablewrap"><table>
 <tr><th>Fall</th><th>Verhalten</th></tr>
-<tr><td>Song-ID hat einen <code>case</code> in <code>src/markerLEDs.cpp</code></td><td>Deine Handarbeit gilt immer. <code>sheet2song</code> schlägt nichts vor, der Generator erzeugt keine Grund-Marker. Marker-Listen in <code>song.yaml</code> werden dann ignoriert, Slot-Angaben für einzelne Parts gelten trotzdem. Das betrifft z. B. #31 ATTSS.</td></tr>
-<tr><td>Neuer Song ohne Marker</td><td><code>sheet2song</code> schreibt einen <code>markers:</code>-Block als <b>Vorschlag</b> ans Ende der Song-Datei. Behältst oder änderst du ihn, gilt er als deiner.</td></tr>
-<tr><td>Song-Datei hat schon <code>markers:</code></td><td>Die Datei wird ohnehin nicht mehr geschrieben. In den Vorschlag (<code>song.vorschlag.yaml</code>) übernimmt <code>sheet2song</code> den Block Zeichen für Zeichen, der Generator setzt ihn nur um.</td></tr>
+<tr><td>Song-ID hat einen <code>case</code> in <code>src/markerLEDs.cpp</code></td><td>Deine Handarbeit gilt immer. Claude schlägt nichts vor, der Generator erzeugt keine Grund-Marker. Marker-Listen in <code>show.yaml</code> werden dann ignoriert, Slot-Angaben für einzelne Parts gelten trotzdem. Das betrifft z. B. #31 ATTSS.</td></tr>
+<tr><td>Neuer Song ohne Marker</td><td>Claude zeigt dir einen <b>Vorschlag</b> und trägt ihn erst nach deinem OK als <code>markers:</code> in <code>show.yaml</code> ein. Danach gilt er als deiner.</td></tr>
+<tr><td><code>show.yaml</code> hat schon <code>markers:</code></td><td>Der Block bleibt, wie er ist; der Generator setzt ihn nur um.</td></tr>
 </table></div>
 <pre><code><span class="k">markers</span>:
   <span class="k">all</span>: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]   <span class="c"># Gitarre und Bass</span>
@@ -785,7 +516,7 @@ $PY tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <p>Der Generator erzeugt aus den Listen <code>setGeneratedMarkerLEDs()</code> in <code>songs_generated.cpp</code>. Aufgerufen wird sie im <code>default</code>-Zweig von <code>setMarkerLEDs()</code>, also nur, wenn es keinen handgeschriebenen <code>case</code> gibt. Ungültige Marker-Namen, mehr als 7 Marker oder unbekannte Abschnitte meldet er als Fehler.</p>
 <h3>Wie der Schutz abgesichert ist</h3>
 <ul>
-  <li><b>In den Werkzeugen</b> (<code>tools/markers.py</code>): Ein handgeschriebener <code>case</code> in <code>setMarkerLEDs()</code> hat immer Vorrang. <code>sheet2song</code> schreibt eine vorhandene <code>song.yaml</code> nie und übernimmt deren <code>markers:</code>-Block wörtlich in den Vorschlag. Die Show-Datei darf keine Marker enthalten, sonst bricht der Generator ab.</li>
+  <li><b>In den Werkzeugen</b> (<code>tools/markers.py</code>): Ein handgeschriebener <code>case</code> in <code>setMarkerLEDs()</code> hat immer Vorrang vor Marker-Listen aus <code>show.yaml</code>.</li>
   <li><b>Bei Claude</b>: Die Regel „nie ändern, was gesetzt oder akzeptiert ist“ steht im Memory und im Skill <code>new-song</code>. Fällt Claude etwas auf, etwa ein fehlender Akkord-Grundton, gibt es nur einen Hinweis im Chat, keine Änderung.</li>
 </ul>
 
@@ -794,47 +525,23 @@ $PY tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <pre><code>#include "songs_generated.h"	<span class="c">// setGeneratedMarkerLEDs()</span>
 …
 		default://defaultLoop();
-			<span class="c">// kein handgeschriebener case -> Marker der generierten Songs (songs/*.yaml, sonst nichts)</span>
+			<span class="c">// kein handgeschriebener case -> Marker der generierten Songs (show.yaml, sonst nichts)</span>
 			setGeneratedMarkerLEDs(songID, partID);
 			break;</code></pre>
-<p>Vorher stand im <code>default</code>-Zweig nur „DO NOTHING“. Für Songs ohne handgeschriebenen <code>case</code> und ohne <code>markers:</code> in der YAML bleibt es dabei: Die generierte Funktion setzt dann nichts.</p>
+<p>Vorher stand im <code>default</code>-Zweig nur „DO NOTHING“. Für Songs ohne handgeschriebenen <code>case</code> und ohne <code>markers:</code> in <code>show.yaml</code> bleibt es dabei: Die generierte Funktion setzt dann nichts.</p>
 <p>Im generierten Code werden bei jedem Aufruf alle 7 Marker gesetzt, unbenutzte auf <code>0</code>. So bleiben beim Wechsel in einen Part mit Spezial-Markern keine alten Marker stehen. Unterschiedliche Marker für Gitarre und Bass landen in <code>#ifdef GIT … #else … #endif</code>.</p>
 
-<h3>Geprüft</h3>
-<ul>
-  <li>Vorschlag für eine neue Song-ID aus dem ATTSS-Sheet erzeugt: 5 Marker, siehe Vergleich unten.</li>
-  <li>Für #31 (handgeschrieben) kommt kein Vorschlag, und der Generator meldet „von Hand in markerLEDs.cpp“.</li>
-  <li><code>markers:</code>-Block wie ein User geändert (andere Marker plus Spezial-Marker im Solo), dann <code>sheet2song</code> erneut (damals noch mit <code>--force</code>): Der Block blieb Zeichen für Zeichen gleich.</li>
-  <li>Testsong mit Spezial-Markern nur für den Bass im Solo: Der erzeugte Code setzt im Solo für den Bass die Spezial-Marker, für die Gitarre die normalen. Er baut für Gitarre, Bass und Lampe.</li>
-</ul>
-
-<h3>Vergleich: Vorschlag und Handarbeit bei ATTSS</h3>
-<p>Akkorde im Sheet: C#, Cm, Fm, G#, D#. Mit Transpose +4 werden daraus F, Em, Am, C, G.</p>
-<div class="tablewrap"><table>
-<tr><th>Grundton</th><th>E-Saite</th><th>A-Saite</th><th>Vorschlag</th><th>von Hand (#31)</th></tr>
-<tr><td>F</td><td>1. Bund</td><td>8. Bund</td><td>1, 8</td><td><code>ESaite_F</code> (1), <code>ASaite_F</code> (8)</td></tr>
-<tr><td>C</td><td>8. Bund</td><td>3. Bund</td><td>8, 3</td><td><code>ASaite_C</code> (3)</td></tr>
-<tr><td>E (Em)</td><td>Leersaite/12. Bund: –</td><td>7. Bund</td><td>7</td><td><code>ASaite_E</code> (7)</td></tr>
-<tr><td>A (Am)</td><td>5. Bund: –</td><td>Leersaite: –</td><td>–</td><td>–</td></tr>
-<tr><td>G</td><td>3. Bund</td><td>10. Bund</td><td>3, 10</td><td>(10 fehlt)</td></tr>
-</table></div>
-<p>Ergebnis: Der Vorschlag wäre Bund 1, 3, 7, 8 und 10, von Hand gesetzt sind 1, 3, 7, 8. Der einzige Unterschied ist Bund 10 für den G-Akkord aus Verse und Solo, vermutlich bewusst weggelassen. Nach der Schutzregel bleiben die Marker von #31 so, wie sie sind.</p>
-
-<h2 id="dateien">14 · Dateien</h2>
+<h2 id="dateien">11 · Dateien</h2>
 <div class="tablewrap"><table>
 <tr><th>Pfad</th><th>Inhalt</th></tr>
-<tr><td><code>songs/struktur-vorlage.xlsx</code></td><td>leere Struktur-Tabelle; <code>struktur2song.py --neu</code> kopiert sie in den Song-Ordner. Du kannst sie durch deine eigene Tabelle ersetzen; die Beschriftungen im Kopf und die Überschriften „Songpart“ / „bis takt“ nicht umbenennen</td></tr>
-<tr><td><code>tools/struktur2song.py</code></td><td>Struktur-Tabelle <code>quelle/struktur.xlsx</code> → <code>song.yaml</code> (nur wenn noch keine da ist, sonst <code>song.vorschlag.yaml</code>); <code>--neu</code> legt die Vorlage an</td></tr>
-<tr><td><code>tools/sheet2song.py</code></td><td>Alternative: Sheet (XML) + MP3 → <code>song.yaml</code> (nur wenn noch keine da ist, sonst <code>song.vorschlag.yaml</code>)</td></tr>
-<tr><td><code>tools/excel2song.py</code></td><td>einmalige Übernahme der alten Songs aus dem Excel-Songkalkulator und <code>src/songs.cpp</code>; Archiv der Tabelle in <code>docs/songkalkulator/</code></td></tr>
-<tr><td><code>tools/songanalyze.py</code></td><td>Messwerte pro Part → <code>audio-analyse/analysis.yaml</code> + <code>analysis.png</code></td></tr>
-<tr><td><code>tools/songgen.py</code></td><td>ein Song: <code>song.yaml</code> + <code>show.yaml</code> → <code>generated.cpp</code> + Version; setzt <code>src/</code> zusammen; <code>--versions</code>, <code>--restore</code></td></tr>
-<tr><td><code>tools/hook_protect_song.py</code></td><td>Claude-Hook: blockiert Schreibzugriffe von Claude auf <code>song.yaml</code> (eingetragen in <code>.claude/settings.json</code>)</td></tr>
+<tr><td><code>songs/struktur-vorlage.xlsx</code></td><td>Vorlage der Tabelle; <code>songgen.py &lt;Song&gt; --neu</code> kopiert sie in den Song-Ordner. Du kannst sie durch deine eigene ersetzen; die Beschriftungen im Kopf und die Überschriften „von takt“ / „Songpart“ nicht umbenennen</td></tr>
+<tr><td><code>tools/songgen.py</code></td><td>ein Song: <code>struktur.xlsx</code> + <code>show.yaml</code> → <code>generated.cpp</code> + Version; setzt <code>src/</code> zusammen; <code>--neu</code>, <code>--versions</code>, <code>--restore</code></td></tr>
+<tr><td><code>tools/struktur.py</code></td><td>liest die Tabelle (Bibliothek für <code>songgen.py</code>, kein eigenes Kommando)</td></tr>
+<tr><td><code>tools/hook_protect_song.py</code></td><td>Claude-Hook: blockiert Schreibzugriffe von Claude auf <code>struktur.xlsx</code> (eingetragen in <code>.claude/settings.json</code>)</td></tr>
 <tr><td><code>tools/markers.py</code></td><td>Marker-Vorschlag, Prüfung und Code für die Bund-Marker</td></tr>
 <tr><td><code>src/markerLEDs.cpp</code></td><td>handgeschriebene Marker (haben Vorrang) + Aufruf der generierten</td></tr>
 <tr><td><code>tools/requirements.txt</code></td><td>Python-Pakete</td></tr>
-<tr><td><code>songs/&lt;Song&gt;/</code></td><td>ein Ordner pro Song: <code>song.yaml</code>, <code>show.yaml</code>, <code>generated.cpp</code>, <code>versionen/</code> (alles versioniert)</td></tr>
-<tr><td><code>songs/&lt;Song&gt;/quelle/</code></td><td><code>struktur.xlsx</code>, MP3, ggf. Sheet (MP3s nicht versioniert)</td></tr>
+<tr><td><code>songs/&lt;Song&gt;/</code></td><td>ein Ordner pro Song: <code>quelle/struktur.xlsx</code>, <code>show.yaml</code>, <code>generated.cpp</code>, <code>versionen/</code> (alles versioniert)</td></tr>
 <tr><td><code>src/songs_generated.cpp/.h</code></td><td>aus allen <code>generated.cpp</code> zusammengesetzt, nicht von Hand ändern</td></tr>
 <tr><td><code>src/scenes.h/.cpp</code>, <code>src/colorSchemes.h</code></td><td>Szenen und Farbschemata</td></tr>
 <tr><td><code>.claude/skills/new-song/SKILL.md</code></td><td>Arbeitsanweisung und Gestaltungsregeln für Claude</td></tr>

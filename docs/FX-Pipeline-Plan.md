@@ -22,7 +22,22 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
-- **In Arbeit:** nichts. Phase 0c und **Phase 0b sind gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
+- **In Arbeit:** nichts.
+- **Gebaut und committet am 06.10.2026 (drei Commits auf `MAIN`: „Song-Werkzeuge: Excel-Tabelle …", „Songs: Struktur-Tabelle
+  für alle 24 Songs …", „Doku: Song-Workflow …"; nicht gepusht): Song-Workflow nur noch Excel + show.yaml.** `quelle/struktur.xlsx`
+  (Blatt „Struktur": von takt, Songpart, Effektidee, Energie 0-5, BPM pro Part, letzte Zeile „Ende") ist die einzige
+  Datei des Users; `song.yaml`, Audio-Analyse und Sheet-Import sind weg. `tools/struktur.py` liest die Tabelle,
+  `tools/songgen.py` arbeitet mit Tabelle + `show.yaml` (`--neu` legt einen Song an, Versionen enthalten die Tabelle,
+  `--restore` holt alle drei Dateien zurück, bei geänderten Partnamen kommt eine Gegenüberstellung). Gelöscht:
+  `struktur2song.py`, `songanalyze.py`, `sheet2song.py`, `excel2song.py`. Alle 24 Songs haben eine Tabelle (23 per
+  Einmal-Skript aus der alten `song.yaml` erzeugt, Timeline bei jedem ms-gleich; die „# bisher:"-Kommentare stehen
+  in der Spalte „bisher (alter Code)"). Kontrolle: der Code von #31, #28, #33 ist bis auf die Kommentarzeile
+  „generiert aus …" unverändert, neu generiert als Version `2026-10-06_1116`; die Firmware ändert sich dadurch nicht,
+  es wurde nicht neu gebaut. Der Hook schützt jetzt `struktur.xlsx`. Die alten `song.yaml`, CSVs, MP3s und
+  `audio-analyse/`-Ordner liegen auf Wunsch des Users noch da (er löscht sie selbst). Doku: `docs/Song-Workflow.html`,
+  Skill `new-song`, `CLAUDE.md`. Nächster Schritt: der User füllt Energie/Effektidee in den Tabellen der alten Songs
+  und nennt den Song, der als nächster gestaltet wird.
+- Davor: Phase 0c und **Phase 0b sind gebaut und abgenommen** (06.10.2026, Branch `lib-cleanup`).
 - **Gebaut und committet (06.10.2026, abends, Commit „Billie Jean: generierte Show …“); vom User gesehen: „geil!“:** neue Show für
   #28 Billie Jean (`songs/BillieJean_v1/show.yaml`, Version `2026-10-06_0022`, generiert mit
   `tools/songgen.py BillieJean`). Der alte `BillyJean()` steht auf Wunsch des Users auskommentiert (mit Verweis auf
@@ -90,7 +105,7 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 
 1. **Alte Songs auf exakte Zeiten bringen.** Handgeschrieben und von Hand abgestimmt sind noch 20 Songs
    (generiert: #8, #28, #31, #33; #2 Physical hat eine `show.yaml`, aber keinen generierten Code). Für alle liegt eine
-   `song.yaml` in `songs/<Song>/`. Weg: je Song mit `tools/songgen.py` generieren (exakte Timeline aus BPM und
+   Tabelle `quelle/struktur.xlsx` in `songs/<Song>/` (Energie und Effektidee füllt der User). Weg: je Song mit `tools/songgen.py` generieren (exakte Timeline aus BPM und
    Takten, die Verspätung am Part-Wechsel wird mitgenommen), Marker und Trailer übernehmen. Reihenfolge nach Zuruf.
 2. Optional nachmessen (`debug_fx_frametime` auf der Gitarre: erwartet `show()` rund 5 ms statt 15,6 ms).
 3. **Phase 5** – neue Szenen aus Kombinationen, weitere Songs umgestalten. Die neuen Bausteine (Blinder, `soft`,
@@ -476,13 +491,14 @@ Schlüssel erzeugt denselben Code wie vorher.
 
 Nicht in 4b: derselbe Effekt oben und unten, weiterlaufender alter Effekt im Übergang (Phase 6).
 
-## Schlüssel in song.yaml / show.yaml
+## Schlüssel in show.yaml
 
 `tools/songgen.py` kennt je Abschnitt: `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`,
 `span` und `overlay`; `text: {…, over: true}` legt Text über die Szene. Innerhalb von `overlay` (und `text` mit
 `over`) steuern `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` nur die Ebene. Längen in Beats, Stärken
 in Prozent. Wie alle
-Design-Schlüssel gewinnt `song.yaml` vor `show.yaml`. Einzelheiten: `docs/Song-Workflow.html`,
+Seit dem 06.10.2026 stehen alle Design-Schlüssel nur noch in `show.yaml` (die Struktur kommt aus
+`quelle/struktur.xlsx`, eine `song.yaml` gibt es nicht mehr). Einzelheiten: `docs/Song-Workflow.html`,
 `.claude/skills/new-song/SKILL.md`.
 
 Erste Anwendung: Song #31 All The Things She Said (`ac501fd`, `05e5873`). Andere generierte Songs werden nur auf

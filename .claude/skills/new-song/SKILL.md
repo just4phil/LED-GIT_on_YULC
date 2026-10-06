@@ -1,9 +1,9 @@
 ---
 name: new-song
-description: Neuen Song für die LED-Show anlegen oder umgestalten - pro Song ein Ordner songs/<Song>/ mit song.yaml (gehört dem User, nie schreiben) und show.yaml (Claude), optional das Audio analysieren, die Szenen-Dramaturgie über alle Geräte gestalten und per tools/songgen.py <Song> C++ generieren (mit Version/Restore). Verwenden bei "neuer Song", "Song einbauen", "Show für <Song> gestalten", "YAML für Song", "zurück zur alten Version".
+description: Neuen Song für die LED-Show anlegen oder umgestalten - pro Song ein Ordner songs/<Song>/ mit quelle/struktur.xlsx (Excel des Users, nie schreiben) und show.yaml (Claude); aus der Tabelle die Szenen-Dramaturgie über alle Geräte gestalten und per tools/songgen.py <Song> C++ generieren (mit Version/Restore). Verwenden bei "neuer Song", "Song einbauen", "Show für <Song> gestalten", "ich habe das Excel geändert", "zurück zur alten Version".
 ---
 
-# Neuer Song: Struktur → Analyse → Dramaturgie → Code
+# Neuer Song: Excel → Dramaturgie → Code
 
 Der Song wird NICHT mehr von Hand in `src/songs.cpp` programmiert. Pro Song gibt es einen Ordner
 `songs/<Song>/` (z. B. `AllTheThingsSheSaid_v1`; `_v1` = Fassung des Songs/Audios, eine `_v2` ist ein eigener
@@ -11,80 +11,85 @@ Ordner mit eigener ID):
 
 | Datei | Wer | Inhalt |
 |---|---|---|
-| `song.yaml` | **User** | Tempo, Takte, `midi_offset`, Stimmungen, Effekt-Wünsche. **Nie schreiben.** |
-| `show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails - per Abschnittsname |
+| `quelle/struktur.xlsx` | **User** | die einzige Datei, die er pflegt: Tempo, StartBit, Parts mit Taktnummer, Effektidee, Energie. **Nie schreiben.** |
+| `show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails, Marker - per Partname |
 | `generated.cpp` | Generator | erzeugter Code dieses Songs |
-| `versionen/<Zeit>/` | Generator | Kopie von song.yaml + show.yaml + generated.cpp + info.yaml je Generierung |
-| `quelle/` | User | Sheet (.txt) + MP3 (MP3 nicht in Git) |
-| `audio-analyse/` | Tool | `analysis.yaml` + `analysis.png` |
+| `versionen/<Zeit>/` | Generator | Kopie von struktur.xlsx + show.yaml + generated.cpp + info.yaml je Generierung |
 
-## `song.yaml` ist unantastbar
+Es gibt keine `song.yaml`, keine Audio-Analyse und keinen Songsheet-Import mehr (Entscheidung des Users,
+06.10.2026: zu kompliziert, das MP3 brachte keinen Mehrwert). In manchen Ordnern liegen noch alte Dateien
+(`song.yaml`, `quelle/excel-kalkulation.csv`, `audio-analyse/`, MP3s): kein Werkzeug liest sie, nicht anfassen -
+der User löscht sie selbst.
 
-Die Ergänzungen des Users zu Parts, Stimmungen und Effekten dürfen NIEMALS überschrieben werden.
-- Claude schreibt, verschiebt oder löscht `songs/*/song.yaml` nie (auch nicht per Shell). Ein Hook
-  (`tools/hook_protect_song.py`) und eine deny-Regel in `.claude/settings.json` blockieren das technisch.
-  Den Schutz nicht umgehen. Braucht die Datei eine Änderung (Strukturfehler, fehlender Part, Aufteilung
-  für einen zweiten Akzent), dem User die konkreten Zeilen im Chat vorschlagen - er trägt sie ein.
-- Einzige Ausnahme: `struktur2song.py` und `sheet2song.py` legen `song.yaml` an, wenn es sie noch nicht gibt.
-  Gibt es sie, schreiben sie `song.vorschlag.yaml` daneben (nur zum Vergleichen, der Generator ignoriert sie).
-- Ändert der User später `quelle/struktur.xlsx`: `struktur2song.py` laufen lassen, dem User sagen, was sich
-  gegenüber `song.yaml` geändert hat (`diff`), er übernimmt den Vorschlag selbst. In der Zwischenzeit `show.yaml`
-  schon für die neuen Part-Namen vorbereiten; generieren geht erst nach seiner Übernahme. Auch keine Testkopie
-  von `song.yaml` anlegen (der Hook blockiert das).
-- Der User schreibt Änderungswünsche gern hinter den Wert (`idea: "ruhig" -> zu statisch ...`). Die Werkzeuge
-  lesen das mit (`read_song_yaml` in `songgen.py`). Nach "ich habe Anmerkungen ergänzt": `git diff` auf
-  `song.yaml`, jede Anmerkung in der Show umsetzen und im `why` nennen.
-- Gestaltung in `song.yaml` hat immer Vorrang vor `show.yaml`: `scene`/`fx` (dann entfallen auch die
-  `devices`-Overrides und das `text` der Show für den Part), `scheme`, `fade`, `tail`, `devices`, `text`; auf Song-Ebene `scheme`, `scroll_*`,
-  `end_black_ms`, `function`. Solche Vorgaben nicht in der Show "korrigieren" - sie gelten. Die Show um sie
-  herum stimmig gestalten (Kontrast, Steigerung).
-- Die Struktur (Takte, Tempo) steht NUR in `song.yaml`; `songgen.py` verweigert sie in der Show.
+## Die Tabelle (`quelle/struktur.xlsx`, Blatt „Struktur")
 
-Python: `tools/.venv/Scripts/python` (Pakete: `tools/requirements.txt`; fehlt die venv:
-`python -m venv tools/.venv && tools/.venv/Scripts/python -m pip install -r tools/requirements.txt`).
-Vor die Befehle `PYTHONIOENCODING=utf-8 PYTHONWARNINGS=ignore` setzen. `<Song>` = Ordnername, Anfang genügt.
+```
+        B                  C
+1       Titel              Interpret
+2       Midi-StartNummer   31            = Song-ID (MIDI CC#0, 1..127)
+3       BPM                86
+4       StartBit           0,375         Start-MIDI kommt 3/8 Takt nach dem Anfang der ersten Zeile
+5  von takt | Songpart | Effektidee | Energie 0-5 | BPM pro Part      (+ beliebige weitere Spalten)
+6  0          pause      black        0
+7  1          synth intro ruhig …     1
+…
+36 75         Ende       10 sek. BLACK 0             <- letzte Zeile: nur der Schlusstakt
+```
+
+- `von takt`: Taktnummer, an der der Part beginnt (ab 0 oder DAW-Taktnummern - es zählt der Abstand zur ersten
+  Zeile; halbe Takte als Kommazahl). Ein Part endet, wo der nächste beginnt. Die erste Zeile ist die Pause am
+  Anfang (immer Black), die letzte heißt „Ende" und liefert den Schlusstakt; eine Zeit in ihrer Effektidee
+  („10 sek.") ist die Länge des Schluss-Blacks.
+- `Effektidee`: Wunsch des Users in Worten - **er gilt**. In der Show umsetzen und im `why` nennen. Hier trägt
+  er auch seine Änderungswünsche ein („zu statisch", „langsames fade out rot").
+- `Energie 0-5`: seine Einschätzung, Grundlage der Szenenwahl (0 = Black). Fehlt die Show für einen Part, nimmt
+  der Generator als Fallback 1 CALM, 2 VERSE, 3 BUILDUP, 4-5 DROP.
+- `BPM pro Part`: nur bei Tempowechsel anders als das BPM im Kopf.
+- Optionale Spalten, die der Leser kennt: `Beschreibung`, `Akkorde`, `bisher (alter Code)` (Effekt des alten,
+  handgeschriebenen Songs auf der Gitarre, `!` = Hinweis zum Prüfen). Sie sind nur Information für die Gestaltung.
+- Gleiche Partnamen werden in Lesereihenfolge nummeriert: `chorus 1`, `chorus 1 (2)`, `chorus 1 (3)` - unter
+  diesen Namen stehen sie in `show.yaml`. Groß/Klein zählt.
+- Leser und Format: `tools/struktur.py` (erkennt Kopf und Spalten an der Beschriftung).
+
+**Die Tabelle ist unantastbar.** Claude schreibt, verschiebt oder löscht `songs/*/quelle/struktur.xlsx` nie
+(auch nicht per Shell oder openpyxl). Ein Hook (`tools/hook_protect_song.py`) und eine deny-Regel in
+`.claude/settings.json` blockieren das; den Schutz nicht umgehen. Braucht die Tabelle eine Änderung
+(Strukturfehler, Part für einen zweiten Akzent teilen), dem User die konkreten Zeilen im Chat nennen - er trägt
+sie ein. Neu angelegt wird sie nur mit `songgen.py <Song>_v1 --neu` (Kopie von `songs/struktur-vorlage.xlsx`).
+
+Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `openpyxl`, siehe
+`tools/requirements.txt`). `<Song>` = Ordnername, Anfang genügt.
 
 ## Ablauf
 
-1. **`song.yaml`**: liegt sie schon vor, lesen. Sonst kommt die Struktur aus der **Struktur-Tabelle des Users**
-   (Standardweg - er schneidet die Parts selbst für die Show, mit den Taktnummern aus dem DAW):
-   `tools/.venv/Scripts/python tools/struktur2song.py <Song>_v1 --neu` legt `quelle/struktur.xlsx` an (Kopie von
-   `songs/struktur-vorlage.xlsx`). Format = der Excel-Songkalkulator des Users, ein Song pro Datei; er legt die
-   Tabelle meist selbst dort ab - nie ein anderes Format verlangen. Kopf: Midi-StartNummer (= Song-ID), Interpret
-   (A2), Titel (A3), BPM, StartTakt, StartBit; pro Part: Songpart, bis takt, optional Energie 0-5, Effektidee,
-   Beschreibung, BPM, Akkorde - erkannt an der Beschriftung, die ms-Spalten werden ignoriert, ein Schluss-BLACK in
-   der letzten Zeile wird nicht als Part übernommen. Dann `tools/.venv/Scripts/python tools/struktur2song.py <Song>`
-   → `song.yaml` (StartBit 0,125/0,25/0,375 → `midi_offset` 1/8, 1/4, 3/8; Effektidee → `idea`). Die
-   Konsolentabelle (Takte, Start/Dauer in ms) dem User zeigen.
-   Die Taktzählung des Users ist die verlässlichste Quelle. Struktur NICHT aus dem Audio raten: ein Versuch an
-   18 Songs (MP3s ohne Bass, mit Klick) fand bei brauchbarer Trefferquote drei falsche Grenzen je richtiger.
-   Das Audio dient für Energie pro Part und als Gegenprobe (Länge der MP3 gegen die Summe der Takte).
-   Alternative, nur wenn das Chord-Sheet so geschnitten ist wie die Show: Sheet (XML mit `<part>`/`<row>`,
-   Akkorde in `[..]`) + MP3 in `quelle/`, `tools/.venv/Scripts/python tools/sheet2song.py <Song> --id <n>`.
-   Steht im Part-Namen des Sheets eine Taktzahl ("Verse 1, 16 Takte"), gilt sie fest; das ist bei Songs mit
-   langsamem Akkordwechsel (1 Akkord pro 2 Takte) nötig, sonst liegt der Abgleich daneben.
-   Ohne Tabelle und Sheet: den Inhalt aus den Angaben des Users im Chat vorschlagen.
-   Die alten Songs aus `src/songs.cpp` haben schon eine `song.yaml` (einmalig übernommen mit
-   `tools/excel2song.py`, Kommentare `# bisher:` = alter Effekt, `# !` = vom User zu prüfen).
-   Ausführliche Anleitung für den User: `docs/Song-Workflow.html`. Freie Song-ID wählen:
-   `songgen.py` meldet Kollisionen mit anderen generierten Songs; erlaubt ist 1..127. Die ID eines alten,
-   handgeschriebenen Songs nur nehmen, wenn die neue Fassung ihn ersetzen soll (siehe unten).
-   Das BPM kennt der User für jeden Song - immer von ihm nehmen, nie aus dem Audio schätzen.
-2. **Audio analysieren**: `tools/.venv/Scripts/python tools/songanalyze.py <Song>`
-   - Warnungen zuerst klären: Tempo-Drift → Tippfehler im `bpm`? mit dem User klären; Formgrenze ohne YAML-Grenze → Taktzahlen mit dem User prüfen.
-     Die Analyse erneut laufen lassen, bis die Struktur sitzt.
-   - Dann `audio-analyse/analysis.yaml` lesen UND `audio-analyse/analysis.png` mit dem Read-Tool ansehen.
-3. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind die Beschreibungen
-   des Users (description, energy, lyrics, instruments, solo, mood) und - falls vorhanden - die Messwerte.
-   Widersprechen sich beide, gilt die Einschätzung des Users; den Widerspruch kurz erwähnen. Jede Wahl mit `why:`.
-4. **Generieren** - immer nur den einen Song, den der User nennt:
-   `tools/.venv/Scripts/python tools/songgen.py <Song> --dry-run`, dann ohne `--dry-run`, mit
-   `--note "<was sich geändert hat>"`. Das schreibt `generated.cpp`, legt eine Version an und setzt
-   `src/songs_generated.cpp/.h` + den Block in `main.cpp` aus den `generated.cpp` aller Songs zusammen
-   (die anderen Songs werden nicht neu generiert). Generierte Dateien nie von Hand ändern.
-5. **Bauen**: `pio run -e andresgit`. Bei Geräte-Overrides (`devices:`) oder neuen Szenen auch die anderen
+1. **Tabelle lesen**: `python tools/songgen.py <Song> --dry-run` zeigt die Timeline (case, Start, Dauer in ms)
+   und alle Fehler der Tabelle. Für die Gestaltung die Parts mit Effektidee, Energie und den optionalen Spalten
+   lesen: `python -c "import sys; sys.path.insert(0,'tools'); import struktur, pathlib, json;
+   print(json.dumps(struktur.read_table(pathlib.Path('songs/<Song>/quelle/struktur.xlsx')), ensure_ascii=False, indent=1))"`.
+   Neuer Song ohne Tabelle: `python tools/songgen.py <Song>_v1 --neu`, der User füllt sie in Excel aus.
+   Das BPM und die Taktzahlen kommen immer vom User, nie schätzen. Freie Song-ID: `songgen.py` meldet
+   Kollisionen; die ID eines alten, handgeschriebenen Songs nur nehmen, wenn die neue Fassung ihn ersetzen soll.
+2. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind Effektidee und Energie
+   des Users (dazu Beschreibung, Akkorde, „bisher", das eigene Wissen über den Song). Jede Wahl mit `why:`.
+3. **Generieren** - immer nur den einen Song, den der User nennt:
+   `python tools/songgen.py <Song> --dry-run`, dann ohne `--dry-run`, mit `--note "<was sich geändert hat>"`.
+   Das schreibt `generated.cpp`, legt eine Version an und setzt `src/songs_generated.cpp/.h` + den Block in
+   `main.cpp` aus den `generated.cpp` aller Songs zusammen (die anderen Songs werden nicht neu generiert).
+   Generierte Dateien nie von Hand ändern.
+4. **Bauen**: `pio run -e andresgit`. Bei Geräte-Overrides (`devices:`) oder neuen Szenen auch die anderen
    Geräte-Envs bauen (`rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`); `src/definitions.h` nicht anfassen.
-6. Dem User die Timeline (case, Start, Dauer) und eine kurze Beschreibung der Dramaturgie zeigen.
+5. Dem User die Timeline (case, Start, Dauer) und eine kurze Beschreibung der Dramaturgie zeigen.
+
+### Der User hat das Excel geändert
+
+- Nur Takte, BPM, StartBit oder Energie geändert, Partnamen gleich: direkt neu generieren (Schritt 3), die Show
+  passt weiter. Kurz prüfen, ob eine geänderte Energie eine andere Szene verlangt.
+- Effektidee geändert: die betroffenen Parts in `show.yaml` neu gestalten, im `why` den neuen Wunsch nennen.
+- Part eingefügt, gelöscht oder umbenannt: `songgen.py` bricht mit einer Gegenüberstellung ab (Show-Einträge
+  ohne Part, Parts ohne Gestaltung, vermuteter neuer Name). Achtung bei gleichen Namen: fügt der User vorn ein
+  weiteres `chorus 1` ein, rücken alle folgenden Nummern `(2)`, `(3)` um eins weiter - die Einträge der Show
+  entsprechend umhängen, nicht nur den fehlenden ergänzen. Mit der letzten Version vergleichen
+  (`versionen/<Zeit>/struktur.xlsx` lesen), um zu sehen, was sich geändert hat.
 
 ## Alten, handgeschriebenen Song ersetzen (Pflichtregeln des Users)
 
@@ -93,10 +98,9 @@ bindet sie wie bei `case 8` ein: alter Aufruf auskommentiert, darunter `gen_X();
 Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENERATED SONGS (tools/songgen.py) >>>`.
 
 1. **Marker MÜSSEN übernommen werden.** Setzt die alte Funktion Marker in einzelnen Parts
-   (`markerLED5 = ASaite_E;`, oft unter `#ifdef BASS`), gehören sie 1:1 in `song.yaml` unter `markers.parts` als
+   (`markerLED5 = ASaite_E;`, oft unter `#ifdef BASS`), gehören sie 1:1 in `show.yaml` unter `markers.parts` als
    Slot-Angabe: `bridge 1: {bass: {5: ASaite_E}}` (Slot = Nummer von markerLED1..7, `0` = aus; Schlüssel
-   `all`/`guitar`/`bass`). Da Claude `song.yaml` nicht schreibt: die Zeilen dem User fertig vorschlagen
-   (bzw. in `song.vorschlag.yaml`). Der Generator bricht ab, solange sie fehlen, und setzt sie inline an den
+   `all`/`guitar`/`bass`). Der Generator bricht ab, solange sie fehlen, und setzt sie inline an den
    Anfang der Song-Funktion. Die Grund-Marker im `case` von `markerLEDs.cpp` gelten unverändert weiter.
 2. **Trailer berücksichtigen.** Springt ein Trailer in den Song (`songID = N; switchToPart(x);` in `songs.cpp`),
    die feste Zahl durch die Konstante des entsprechenden Parts ersetzen (`GEN_<SONG>_<PART>` aus
@@ -106,41 +110,36 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
 3. Die Struktur aus den alten Part-Dauern ableiten und die alten Effekte als Geschmacksreferenz lesen (siehe
    Dramaturgie-Regeln).
 4. Will der User den alten Look behalten und nur einzelne Stellen ändern: die alten Aufrufe 1:1 als `fx:` in
-   `show.yaml` übernehmen (stehen als `# bisher:` in der `song.yaml` der alten Songs; Matrix-Zweige unter
-   `devices:`), nur die gewünschten Parts umgestalten. Song für Song, nicht alle auf einmal. Zeilen mit `# !`
+   `show.yaml` übernehmen (stehen in der Spalte „bisher (alter Code)" der Tabelle; Matrix-Zweige unter
+   `devices:`), nur die gewünschten Parts umgestalten. Song für Song, nicht alle auf einmal. Zeilen mit `!`
    (alter Code weicht vom Excel ab, oft von Hand verschobene ms) vorher mit dem User klären.
 
 ## Versionen und Restore
 
-- `songgen.py` (ohne Argument): alle Songs mit Stand (aktuell / YAML seit der Generierung geändert).
+- `songgen.py` (ohne Argument): alle Songs mit Stand (noch keine Show / gestaltet / aktuell / Tabelle oder Show seit der Generierung geändert).
 - `songgen.py <Song> --versions`: Liste; `--restore <Version>`: sichert erst den aktuellen Stand, holt dann
-  `show.yaml` + `generated.cpp` 1:1 zurück (Code wird nicht neu berechnet) und setzt `src/` neu zusammen.
-  `song.yaml` wird dabei nie zurückkopiert; weicht sie ab, meldet das Tool das - dem User weitergeben.
+  `struktur.xlsx` + `show.yaml` + `generated.cpp` 1:1 zurück (Code wird nicht neu berechnet) und setzt `src/` neu
+  zusammen. Das ist der einzige Fall, in dem ein Werkzeug die Tabelle des Users ersetzt - nur auf seinen Wunsch
+  ausführen; ist sie in Excel geöffnet, bricht das Tool vorher ab. Versionen aus der Zeit vor dem 06.10.2026
+  enthalten keine Tabelle: dort kommen nur Show + Code zurück.
 - `songgen.py --assemble`: nur `src/` neu zusammensetzen (z. B. nach dem Löschen eines Song-Ordners).
 - Versionen nie löschen oder ändern.
 
-## `song.yaml` (Felder)
+## Song-Angaben in `show.yaml`
 
-Song: `id`, `name`, `artist`, `bpm`, `beats_per_bar` (4), `midi_offset` als Notenwert (`1/8`, `1/16`, `3/16`;
-Viertel = 1 Beat; das MIDI kommt so spät NACH Takt 1 → erster Part entsprechend kürzer; negativ → schwarzer
-Vorlauf; ms werden aus dem Tempo des ersten Abschnitts berechnet; nur im Ausnahmefall `midi_offset_ms`),
-`audio` (relativ zum Song-Ordner, z. B. `quelle/x.mp3`). Takt 1 liegt bei allen Songs direkt am Anfang der
-Audiodatei - nie schätzen oder nachfragen; `audio_beat1_ms` gibt es nur noch für Ausnahmen (Standard 0).
-Abschnitt: `name` (eindeutig), `bars` und/oder `beats`, optional `bpm` / `beats_per_bar` (Tempo-/Taktwechsel).
-Einschätzung (frei): `description`, `energy` 0-5, `idea` (Effektidee des Users in Worten - in der Show
-umsetzen und im `why` nennen), `lyrics`, `instruments`, `solo`, `mood` …
-Feste Vorgabe: `scene`, `fx`, `scheme`, `fade`, `tail`, `devices`, `text` (siehe oben).
-`energy` dient auch als Fallback, falls ein Abschnitt in der Show fehlt (0 Black, 1 CALM, 2 VERSE,
-3 BUILDUP, 4-5 DROP).
+Neben `sections:` (Gestaltung je Partname) auf oberster Ebene: `function` (Name der C++-Funktion), `scheme`
+(Grundschema), `scroll_text` / `scroll_title` / `scroll_delay` (Lauftext am Songanfang), `markers` (siehe unten),
+`end_black_ms` (nur wenn die Zeile „Ende" der Tabelle keine Zeit nennt - sonst gilt die Tabelle).
+Struktur (Takte, Tempo, Energie) darf die Show nicht setzen; `songgen.py` verweigert das.
 
-## Bund-Marker-LEDs (`markers:` in `song.yaml`)
+## Bund-Marker-LEDs (`markers:` in `show.yaml`)
 
 **NIE ändern, was der User gesetzt oder akzeptiert hat** - weder handgeschriebene cases in
-`src/markerLEDs.cpp` noch einen `markers:`-Block in `song.yaml`. Auffälligkeiten nur im Chat ansprechen.
+`src/markerLEDs.cpp` noch einen bestehenden `markers:`-Block in `show.yaml`. Auffälligkeiten nur im Chat ansprechen.
 
-- Vorschlag nur für neue Songs ohne Marker: `sheet2song.py` schreibt ihn automatisch (Grundtöne der
-  transponierten Akkorde auf E- und A-Saite, ohne Leersaite/5./12. Bund, max. 7, `tools/markers.py`).
-  Ohne Sheet: aus den Akkorden, die der User nennt, nach denselben Regeln - dem User als Vorschlag zeigen.
+- Vorschlag nur für neue Songs ohne Marker: aus den Akkorden des Songs (Spalte „Akkorde" der Tabelle oder Angabe
+  des Users) die Grundtöne auf E- und A-Saite, ohne Leersaite/5./12. Bund, max. 7 (`propose()` in
+  `tools/markers.py`) - dem User als Vorschlag zeigen, erst nach seinem OK in `show.yaml` eintragen.
 - Hat `markerLEDs.cpp` einen case für die Song-ID, gilt immer der (Generator erzeugt dann nichts).
 - Format: `markers: {all: [...], guitar: [...], bass: [...], parts: {<abschnitt>: {all|guitar|bass: [...]}}}`
   (`guitar`/`bass` ersetzen `all` für das Instrument; `parts` gilt für den Abschnitt inkl. seines Tails).
@@ -260,34 +259,29 @@ Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms).
 `devices`-Schlüssel: `guitar`, `lamp`, `matrix` oder einzelne Geräte `ANDRESGIT`, `RINASBASS`, `LAMPE1`,
 `LAMPE2`, `SCROLLMATRIX`, `GITBOARD` (Einzelgerät schlägt Klasse). Geräte ohne Override zeigen die Szene.
 Muss ein Abschnitt für einen Akzent geteilt werden (mehr als ein `tail`), den User bitten, ihn in
-`song.yaml` aufzuteilen.
+der Tabelle in zwei Zeilen aufzuteilen.
 
 ## Dramaturgie-Regeln
 
-Messwerte → Wahl (`power` 0-5, `build`/`drive`/`brightness`/`lowend`/`mood` aus der Analyse; ohne Audio aus
-dem Musikverständnis des Songs ableiten). `power` ist in 1,5-dB-Stufen unter dem lautesten Abschnitt (≥ 4 Takte)
-skaliert (gilt mit und ohne Loudness-Maximizer); bei knappen Entscheidungen auch `loudness_db` direkt vergleichen.
-
-**`energy` des Users hat immer Vorrang vor dem gemessenen `power`.** Hat ein Part in `song.yaml` ein `energy`,
-gilt in der Tabelle unten dieser Wert anstelle von `power` - auch wenn die Messung deutlich abweicht (dichte
-Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts ohne `energy`; die übrigen Messwerte
-(`build`, `drive`, `brightness`, `lowend`, Akzente) verfeinern die Wahl innerhalb der vom User gesetzten Energie:
+Grundlage der Wahl sind `Energie` und `Effektidee` des Users aus der Tabelle; wo er nichts geschrieben hat, das
+eigene Musikverständnis des Songs (Steigerung, Dichte, Instrumentierung, Dur/Moll). Es gibt keine Audio-Messwerte
+mehr. Die Effektidee geht immer vor der Tabelle unten:
 
 | Situation | Szene / FX |
 |---|---|
-| power 0 / Stopp | `energy: 0` (Black), bei kurzen Stopps innerhalb eines Parts `tail` mit progBlack |
-| power 1, drive niedrig | SCENE_CALM |
-| power 2-3, drive mittel | SCENE_VERSE |
-| build > 0.3 oder Pre-Chorus | SCENE_BUILDUP (Explosion fällt exakt auf die Part-Grenze) |
-| power 4-5, drive hoch | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* |
-| power 5, lowend hoch / Höhepunkt | SCENE_FIRE |
+| Energie 0 / Stopp | Black; bei kurzen Stopps innerhalb eines Parts `tail` mit progBlack |
+| Energie 1, wenig Rhythmus | SCENE_CALM |
+| Energie 2-3, Puls im Beat | SCENE_VERSE |
+| Part steigert sich ("build up") oder Pre-Chorus | SCENE_BUILDUP (Explosion fällt exakt auf die Part-Grenze) |
+| Energie 4-5, treibend | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* |
+| Energie 5, Bass/Drop, Höhepunkt | SCENE_FIRE |
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
 | energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |
 | energy 2-4, Strophe oder Chorus im Beat | SCENE_COLORS (ganze Bühne eine Farbe pro Beat), SCENE_COLORS_WAVE |
 | Schlussakkord klingt aus, "fade out" | SCENE_FADEOUT (blendet über die Partdauer weich nach Schwarz; ab 2 Takten richtig sanft) |
 | energy 4-5, Chorus | SCENE_STAR (der Refrain-Look der alten Songs) |
 | energy 5, Action, Höhepunkt am Songende | SCENE_SPARKLE |
-| Akzent `fill_into_next` | `tail` 1-4 Beats: BUILDUP oder progStrobo |
+| Fill oder Auftakt in den nächsten Part | `tail` 1-4 Beats: BUILDUP oder progStrobo |
 | Akzent `stop` / `hit_after_stop` | Abschnitt teilen: Black für die Stille, harter Einsatz danach |
 
 - **Auswahl über den Katalog**: `docs/effekt-katalog.yaml` nennt je Effekt/Szene/Palette Wirkung, Energie, Rolle und
@@ -298,8 +292,8 @@ Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts o
 - **Wiederholung mit Steigerung**: gleiche Formteile (Chorus 1/2/3) erkennbar gleich gestalten, beim
   letzten Chorus eine Stufe mehr (FIRE statt DROP, wärmeres Schema, Strobo-Tail).
 - **Bühnenbewegung** (WAVE_LR/RL/OUT, PINGPONG) für Übergänge und Hook-Zeilen, nicht als Dauerzustand.
-- **Farbdramaturgie**: 2-3 Schemata pro Song. `brightness` niedrig → ICE/ROYAL/BLUE, hoch → NEON/SUNSET/FIRE;
-  `mood` Moll → eher kalt, Dur → eher warm. Wechsel nur an Formgrenzen. Schemata: `src/colorSchemes.h`.
+- **Farbdramaturgie**: 2-3 Schemata pro Song. Dunkle, ruhige Parts → ICE/ROYAL/BLUE, helle, laute → NEON/SUNSET/FIRE;
+  Moll → eher kalt, Dur → eher warm. Wechsel nur an Formgrenzen. Schemata: `src/colorSchemes.h`.
 - **Nicht in einer Farbe hängen bleiben** (Feedback des Users zu ATTSS, 04.10.2026: "oft viele Blautöne", "etwas
   statisch"): "Moll → kalt" gilt nur als Ausgangspunkt, nie für die halbe Songlänge. Vor dem Generieren die Schemata
   aller Parts durchzählen; liegen mehr als etwa ein Drittel der Takte in ICE/BLUE/ROYAL (oder einer anderen
@@ -316,7 +310,7 @@ Mixe trennen die Parts über die Lautheit kaum). `power` zählt nur für Parts o
   sichtbaren Wechsel der Szene, nicht zweimal dieselbe Effektart.
 - **Gibt es den Song schon handgeschrieben in `src/songs.cpp`**: dessen Part-Dauern (ms / Taktdauer = Takte)
   sind die verlässlichste Struktur und die alten Effekte zeigen den Geschmack des Users - beides vor der
-  Gestaltung lesen und mit der Analyse vergleichen. Springt ein anderer Song per `switchToPart(n)` hinein
+  Gestaltung lesen (die Spalte „bisher" der Tabelle zeigt den alten Effekt je Part). Springt ein anderer Song per `switchToPart(n)` hinein
   oder setzt der alte Code Marker-LEDs inline, dem User sagen, was beim Umstieg angepasst werden muss.
 - **Geräte-Overrides** sparsam und begründet (z. B. Gitarre bekommt eigenes VU, wenn sie einsetzt).
   Effekte und ihre Parameter: `src/FXprograms.h`, `src/guitarShapeFX.h`, Faustregeln in

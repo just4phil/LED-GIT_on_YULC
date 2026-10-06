@@ -118,26 +118,30 @@ MIDI CC#0 = song select, CC#32 = part select (handled in `midi_in.h`). The proxy
 
 ### Generated songs (songs/<Song>/)
 One folder per song, e.g. `songs/AllTheThingsSheSaid_v1/` (`_v1` = version of the arrangement/audio):
-`song.yaml` (the user's file: BPM, bars, `midi_offset` as note value, moods, effect wishes), `show.yaml`
-(derived by Claude: scenes/schemes per section), `generated.cpp` (generated code of this song),
-`versionen/<timestamp>/` (copy of all three per generation), `quelle/` (sheet + MP3), `audio-analyse/`.
+`quelle/struktur.xlsx` (the user's Excel table and the only file he maintains: song ID, BPM, StartBit, per part
+`von takt`, `Songpart`, `Effektidee`, `Energie 0-5`, `BPM pro Part`; last row `Ende`), `show.yaml` (derived by
+Claude directly from the table: scenes/schemes per part, matched by part name), `generated.cpp` (generated code of
+this song), `versionen/<timestamp>/` (copy of all three + `info.yaml` per generation). There is no `song.yaml`,
+no audio analysis and no chord-sheet import any more (user decision 06.10.2026); leftover `song.yaml`, MP3s,
+`audio-analyse/` and `quelle/excel-kalkulation.csv` in some folders are read by nothing - leave them, the user
+deletes them himself.
 
-**Never write, move or delete `songs/*/song.yaml`** - the user's additions must never be overwritten. A hook
+**Never write, move or delete `songs/*/quelle/struktur.xlsx`** - it belongs to the user. A hook
 (`tools/hook_protect_song.py`) and a deny rule in `.claude/settings.json` enforce this; do not work around
-them. Propose changes in chat instead. Design keys in `song.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`,
-`devices`, `text`, `overlay` and the output-stage keys above) always win over `show.yaml`. `fade:` lets the scheme colours travel in time with the bars to a
+them. Propose changes to the table in chat instead. His `Effektidee` and `Energie` are binding for the design; all
+design lives in `show.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`, `devices`, `text`, `overlay`, `markers` and
+the output-stage keys above), structure (bars, tempo) only in the table. `fade:` lets the scheme colours travel in time with the bars to a
 complementary colour or a second scheme and back, in sync on all devices. `text:` puts words or a scroll text on the matrix devices (auto-centred, in
 time with the beat) while the other devices keep playing the scene.
 
-`tools/songgen.py <Song>` generates only the named song, saves a version and assembles
+`tools/songgen.py <Song>` reads table + show, generates only the named song, saves a version and assembles
 `src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
-songs are taken over unchanged). `--versions` / `--restore <version>` bring back an older show + code 1:1.
-Never edit the generated files by hand. `tools/songanalyze.py <Song>` measures power/mood per section from the
-song's audio. `tools/struktur2song.py <Song>` derives `song.yaml` from the user's structure table
-`quelle/struktur.xlsx` (bar numbers from the DAW; `--neu` creates the template) - the standard way for new
-songs. `tools/sheet2song.py <Song> --id n` is the alternative from a songbook chord sheet + MP3. Both write
-`song.yaml` only if it does not exist yet, otherwise `song.vorschlag.yaml`. The old hand-written songs were
-imported once with `tools/excel2song.py` (archive of the old Excel calculator: `docs/songkalkulator/`).
+songs are taken over unchanged). `--neu` creates a new song folder with the table template
+(`songs/struktur-vorlage.xlsx`), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+Never edit the generated files by hand. `tools/struktur.py` is the table reader (format documented there). If the
+user changed part names or inserted/removed rows, `songgen.py` stops with a list of what no longer matches -
+adapt `show.yaml`. The old hand-written songs all have a table too (column `bisher (alter Code)` = their old
+effect per part; archive of the old Excel calculator: `docs/songkalkulator/`).
 Full workflow: `docs/Song-Workflow.html` (user guide), `.claude/skills/new-song/SKILL.md` (design rules).
 
 ### OTA firmware updates (`otaUpdate.cpp/.h`)
