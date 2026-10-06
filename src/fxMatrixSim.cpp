@@ -489,9 +489,13 @@ static void progWaterRippleCore(unsigned int durationMillis, byte nextPart,
 		pickRippleColor(0);
 	}
 
-	// Kein Schritt fällig: sofort zurück, OHNE auszugeben (anders als die übrigen Effekte dieser Datei, so war es
-	// schon immer). Übergänge und Modifikatoren der Ausgabestufe bewegen sich hier deshalb nur im Schritt-Takt.
-	if (!fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) return;
+	// Kein Schritt fällig: das Bild bleibt, wie es ist, wird aber trotzdem ausgegeben. So laufen Übergänge, Fades und
+	// Ebenen der Ausgabestufe in jedem Durchlauf weiter und nicht nur im Schritt-Takt der Wellen (früher kehrte der
+	// Effekt hier ohne Ausgabe zurück). fxPresent() sendet nur, wenn sich das Bild wirklich geändert hat.
+	if (!fxEvery(millisToReduceCPUSpeed, msToReduceSpeed)) {
+		fxShow();
+		return;
+	}
 
 	// Neuen Ripple periodisch spawnen — jeder bekommt beim Spawn seine Farbe
 	rippleSpawnTimer++;

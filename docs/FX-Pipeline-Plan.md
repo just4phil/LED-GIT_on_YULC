@@ -22,6 +22,9 @@ Zuletzt aktualisiert: 06.10.2026 (nach `MAIN` gemergt; Libraries aufgeräumt auf
 - **Firmware:** Alle fünf Envs bauen. Die OTA-Firmwares in `ota/` sind vom Stand `MAIN` (Version 1791238006,
   `FX_OUTPUT_REAL_LENGTH` an, Titanium-Intro mit 952 ms). `START_WITH_PIPELINE_DEMO` ist aus: Song 92 wird per
   MIDI CC#0 = 92 gewählt.
+- **06.10.2026, Rückmeldung des Users zu `fx-cleanup`:** #31 ATTSS geprüft, „sieht noch genau so aus". Auf seinen
+  Wunsch zum Testen gebaut: `progWaterRipple` gibt jetzt in jedem Durchlauf aus (nicht mehr nur, wenn ein Schritt
+  fällig ist), damit Übergänge, Fades und Ebenen darüber flüssig laufen. Tempo der Wellen unverändert. Abnahme offen.
 - **Wartet auf den User (Branch `fx-cleanup`, Stand `541a57e`, nicht gemergt, nicht gepusht):** OTA-Firmwares in
   `ota/` sind von diesem Stand (Version 1791290774), der Stand davor liegt in `ota/backup/2026-10-06_3`. Anzusehen:
   die sieben Effekte aus `fxMatrixSim.cpp` (Song 92 Part 92 Feuer; alte Songs mit `progWaterRipple`, `progPlasma`,
