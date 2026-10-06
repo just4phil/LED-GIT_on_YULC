@@ -75,15 +75,16 @@ static uint8_t flashEnvelope(unsigned int t, unsigned int period) {
 //=========== Primitive für alle Geräte ============================
 //==================================================================
 
-// "Atmen": alle LEDs in einer Farbe, die Helligkeit schwillt sanft an und ab.
+// "Atmen": alle LEDs in einer Farbe, die Helligkeit schwillt sanft an und ab (bis ganz dunkel).
 // periodMillis = Dauer eines Atemzugs, maxVal = größte Helligkeit (0..255)
 void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned int periodMillis, uint8_t maxVal) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
 		unsigned int phase = millisCounterForProgChange % periodMillis;	// Lage im Atemzug: 0 .. periodMillis
-		// quadwave8 macht aus 0..255 eine weiche Welle 0 -> 255 -> 0; nie ganz dunkel (mindestens 3)
-		uint8_t val = max((uint8_t)3, scale8(quadwave8(phase * 256 / periodMillis), maxVal));
+		// quadwave8 macht aus 0..255 eine weiche Welle 0 -> 255 -> 0. Am tiefsten Punkt gehen die LEDs ganz aus
+		// (früher blieb ein Rest von 3/255 stehen - Wunsch des Users vom 06.10.2026: ganz ausfaden ist schöner).
+		uint8_t val = scale8(quadwave8(phase * 256 / periodMillis), maxVal);
 		CRGB c = col;
 		fill_solid(leds, anz_LEDs, c.nscale8(val));
 	}
