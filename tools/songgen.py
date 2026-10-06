@@ -35,6 +35,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 import yaml
@@ -1141,13 +1142,34 @@ def old_function_body(name):
 	return out
 
 
+# Der Compiler des Projekts (GCC 8.4) erlaubt in Namen nur A-Z, a-z, 0-9 und "_". Ein Umlaut beendet für ihn den
+# Namen: aus "#define GEN_SONG_ÜBERGANG 40" wird die Konstante "GEN_SONG_" mit dem Inhalt "ÜBERGANG 40".
+# Achtung: r"\W" hilft hier nicht - für Python sind Ü, ß, é Buchstaben und blieben stehen.
+UMLAUTE = (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "AE"), ("Ö", "OE"), ("Ü", "UE"), ("ß", "ss"))
+
+
+def c_name(text):
+	"""Macht aus einem Text einen gültigen C-Namen in Großbuchstaben: Umlaute ausschreiben (Ü -> UE, ß -> SS),
+	Akzente weglassen (é -> E), alles andere außer A-Z/0-9 wird '_'. Kann leer sein (Text nur aus Sonderzeichen)."""
+	for a, b in UMLAUTE:
+		text = text.replace(a, b)
+	# NFKD zerlegt "é" in "e" + Akzent-Zeichen; der Akzent ist kein ASCII und fällt im nächsten Schritt weg
+	text = "".join(ch for ch in unicodedata.normalize("NFKD", text) if not unicodedata.combining(ch))
+	return re.sub(r"[^A-Za-z0-9]+", "_", text).strip("_").upper()
+
+
 def part_constants(song, timeline):
-	"""[(Konstante, case)]: Part-Nummern für handgeschriebenen Code, der in den Song springt (Trailer)."""
-	base = "GEN_" + re.sub(r"\W+", "_", song["function"][4:] if song["function"].startswith("gen_") else song["function"]).upper()
+	"""[(Konstante, case)]: Part-Nummern für handgeschriebenen Code, der in den Song springt (Trailer).
+	Der Name entsteht aus Funktions- und Partname über c_name(), z.B. "Übergang zum Chorus" in gen_allTheThingsSheSaid
+	-> GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS. Ein Part ohne brauchbaren Namen (leer oder nur Sonderzeichen)
+	bekommt keine Konstante; von mehreren Parts mit exakt gleichem Namen bekommt nur der erste eine - in die
+	anderen springt man mit der Zahl oder gibt ihnen in der Tabelle eindeutige Namen."""
+	base = "GEN_" + c_name(song["function"][4:] if song["function"].startswith("gen_") else song["function"])
 	out, seen = [], set()
 	for p in timeline[:-1]:
-		c = base + "_" + re.sub(r"\W+", "_", str(p["sec"].get("name", ""))).strip("_").upper()
-		if c not in seen:
+		part = c_name(str(p["sec"].get("name", "")))
+		c = base + "_" + part
+		if part and c not in seen:
 			seen.add(c)
 			out.append((c, p["case"]))
 	return out
@@ -1442,7 +1464,8 @@ def generate(song, others):
 #   //@id, //@function, //@name       wer der Song ist
 #   //@struktur_sha, //@show_sha      Fingerabdrücke von Tabelle und show.yaml zum Zeitpunkt der Generierung -
 #                                     daran erkennt "songgen.py" (Liste), ob seitdem etwas geändert wurde
-#   //@part <Konstante> <case>        Part-Nummern für songs_generated.h
+#   //@part <Konstante> <case>        Part-Nummern für songs_generated.h (gültiger C-Name, siehe c_name(); beim
+#                                     Einlesen wird er nochmals bereinigt - das heilt ältere Fragmente mit Umlaut)
 #   //@code ... //@markers ...        der Code der Song-Funktion und die Zeilen für die Bund-Marker
 # Weil jeder Song sein Fragment behält, lässt sich src/ jederzeit neu zusammensetzen, ohne die anderen Songs
 # neu zu generieren - ihr Code bleibt Zeichen für Zeichen, wie er war.
@@ -1481,9 +1504,15 @@ def read_fragment(path):
 	if not m:
 		raise SongError(f"{path.relative_to(ROOT)} ist kein gültiges Fragment - Song neu generieren")
 	meta = dict(re.findall(r"^//@(\w+) (.*)$", m.group(1), re.M))
+	# Part-Konstanten durch c_name() schicken: Fragmente aus der Zeit vor c_name() (auch per --restore zurückgeholte)
+	# können Umlaute im Namen haben. So sind sie ohne Neu-Generieren geheilt. Das dict wirft dabei doppelte Namen
+	# heraus (der erste gewinnt), denn zwei #define mit gleichem Namen wären wieder eine Compiler-Warnung.
+	parts = {}
+	for c, n in re.findall(r"^//@part (\w+) (\d+)$", m.group(1), re.M):
+		parts.setdefault(c_name(c), n)
 	return {"id": int(meta["id"]), "function": meta["function"], "name": meta["name"],
 			"struktur_sha": meta.get("struktur_sha"), "show_sha": meta.get("show_sha"),
-			"parts": re.findall(r"^//@part (\w+) (\d+)$", m.group(1), re.M),
+			"parts": list(parts.items()),
 			"code": m.group(2), "markers": [l for l in m.group(3).splitlines() if l.strip()],
 			"dir": path.parent.name}
 
