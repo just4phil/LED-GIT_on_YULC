@@ -1,0 +1,8 @@
+zeit: '2026-10-06 22:07:52'
+notiz: 'Schluss-Strobo (triolen): ein Blitz auf jedes Viertel (234 ms) statt triolisch'
+werkzeug_git: d4bcd07 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 527b585d665846ad98e75b06029b404885daacb6071fcb5ec9c6401c7a8943ce
+  show.yaml: deb1645a18b0c5308970232b8dbf2d4c301caf6b10dd6db46c4ad886e8c04594
+  generated.cpp: 45aa1a458d655ca928cf3613ad29e393c0cbf6debc0227a8846a95e33bd0b8e9

@@ -1,0 +1,9 @@
+zeit: '2026-10-06 22:40:41'
+notiz: Strobo-Text FUCK OFF; Chorus 1 unverändert ausgestanzt ohne Fade, Beschreibung
+  in der Tabelle klarer
+werkzeug_git: d4bcd07 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 287679bbeb221071d2f634bda034ac556db4a5e0a148523506fb9ddc1e8e9d92
+  show.yaml: 2bde4795e76995487ef9d415f58673772103f6e56dbb791310bb8b61a2b601ef
+  generated.cpp: 7bd458351aff8bca482714d1f1a242bec76982d40e5bfe073da038f0368e4c83

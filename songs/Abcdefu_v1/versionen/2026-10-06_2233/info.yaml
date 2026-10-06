@@ -1,0 +1,9 @@
+zeit: '2026-10-06 22:33:31'
+notiz: Neue Spalten Effekt (füllt KI) / Änderungswunsch; FUCK YOU ausgestanzt über
+  dem Strobo, Chorus 1 schwarz 3 Takte ohne Fade
+werkzeug_git: d4bcd07 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 23ff4d21159647fba3f819d92c238d13a8a8461aad26b1cb04523dcf4fb3a9e8
+  show.yaml: 553b58a757f9cca56c44076f586c1129c61d3a82270ad643ae631b65438cc61f
+  generated.cpp: 8b81c87b157483e60816bffa220dee9cd72fe65b9a8923f83d8b8af91dcfebd1

@@ -11,7 +11,7 @@ Ordner mit eigener ID):
 
 | Datei | Wer | Inhalt |
 |---|---|---|
-| `quelle/struktur.xlsx` | **User** | die einzige Datei, die er pflegt: Tempo, StartBit, Parts mit Taktnummer, Effektidee, Energie. **Nie schreiben.** |
+| `quelle/struktur.xlsx` | **User** | die einzige Datei, die er pflegt: Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie. **Nie selbst schreiben** - nur `songgen.py` füllt die Spalte „Effekt (füllt KI)“. |
 | `show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails, Marker - per Partname |
 | `generated.cpp` | Generator | erzeugter Code dieses Songs |
 | `versionen/<Zeit>/` | Generator | Kopie von struktur.xlsx + show.yaml + generated.cpp + info.yaml je Generierung |
@@ -29,19 +29,27 @@ der User löscht sie selbst.
 2       Midi-StartNummer   31            = Song-ID (MIDI CC#0, 1..127)
 3       BPM                86
 4       StartBit           0,375         Start-MIDI kommt 3/8 Takt nach dem Anfang der ersten Zeile
-5  von takt | Songpart | Effektidee | Energie 0-5 | BPM pro Part      (+ beliebige weitere Spalten)
-6  0          pause      black        0
-7  1          synth intro ruhig …     1
+5  von takt | Songpart | Effekt (füllt KI) | Änderungswunsch | Energie 0-5 | BPM pro Part   (+ beliebige weitere Spalten)
+6  0          pause      progBlack(…) …                        0
+7  1          synth intro SCENE_CALM, … ruhiges Atmen  zu statisch       1
 …
-36 75         Ende       10 sek. BLACK 0             <- letzte Zeile: nur der Schlusstakt
+36 75         Ende       10 sek. BLACK                         0      <- letzte Zeile: nur der Schlusstakt
 ```
 
 - `von takt`: Taktnummer, an der der Part beginnt (ab 0 oder DAW-Taktnummern - es zählt der Abstand zur ersten
   Zeile; halbe Takte als Kommazahl). Ein Part endet, wo der nächste beginnt. Die erste Zeile ist die Pause am
-  Anfang (immer Black), die letzte heißt „Ende" und liefert den Schlusstakt; eine Zeit in ihrer Effektidee
-  („10 sek.") ist die Länge des Schluss-Blacks.
-- `Effektidee`: Wunsch des Users in Worten - **er gilt**. In der Show umsetzen und im `why` nennen. Hier trägt
-  er auch seine Änderungswünsche ein („zu statisch", „langsames fade out rot").
+  Anfang (immer Black), die letzte heißt „Ende" und liefert den Schlusstakt; eine Zeit in ihrem Änderungswunsch
+  oder ihrem Effekt („10 sek.") ist die Länge des Schluss-Blacks.
+- `Änderungswunsch`: Wunsch des Users in Worten („zu statisch", „langsames fade out rot", „Text einblenden") - **er
+  gilt**. In der Show umsetzen. Der User löscht seine Wünsche selbst, wenn sie erledigt sind: die Spalte nie leeren.
+  Steht dort ein Wunsch, der schon umgesetzt ist (mit „Effekt“ und `show.yaml` vergleichen), nichts doppelt umbauen.
+- `Effekt (füllt KI)`: schreibt `songgen.py` bei jeder Generierung (seit 06.10.2026, Wunsch des Users): je Part der
+  umgesetzte Effekt - erste Zeile Szene + Schema bzw. der Aufruf aus `fx:`, dann Text / Ebene / Ausgabestufe, zuletzt
+  das `why:` der Show. **`why:` deshalb als Beschreibung schreiben, was man sieht** (kurz, für den User lesbar), nicht
+  als Entstehungsgeschichte. Die Spalte ist nur Ausgabe: sie wird nicht gelesen und zählt nicht als Änderung.
+- Altes Format: Tabellen aus der Zeit davor haben eine Spalte `Effektidee` (= seine Wünsche) und keine Effekt-Spalte.
+  Sie werden weiter gelesen und bei ihrer ersten Generierung umgestellt (Wünsche wandern nach `Änderungswunsch`).
+  Enthält das Blatt eigene Formeln, fügt das Skript keine Spalte ein und sagt dem User, was er in Excel anlegen soll.
 - `Energie 0-5`: seine Einschätzung, Grundlage der Szenenwahl (0 = Black). Fehlt die Show für einen Part, nimmt
   der Generator als Fallback 1 CALM, 2 VERSE, 3 BUILDUP, 4-5 DROP.
 - `BPM pro Part`: nur bei Tempowechsel anders als das BPM im Kopf.
@@ -51,9 +59,12 @@ der User löscht sie selbst.
   diesen Namen stehen sie in `show.yaml`. Groß/Klein zählt.
 - Leser und Format: `tools/struktur.py` (erkennt Kopf und Spalten an der Beschriftung).
 
-**Die Tabelle ist unantastbar.** Claude schreibt, verschiebt oder löscht `songs/*/quelle/struktur.xlsx` nie
+**Die Tabelle ist unantastbar.** Claude schreibt, verschiebt oder löscht `songs/*/quelle/struktur.xlsx` nie selbst
 (auch nicht per Shell oder openpyxl). Ein Hook (`tools/hook_protect_song.py`) und eine deny-Regel in
-`.claude/settings.json` blockieren das; den Schutz nicht umgehen. Braucht die Tabelle eine Änderung
+`.claude/settings.json` blockieren das; den Schutz nicht umgehen. Einzige Ausnahme ist `songgen.py`, das die Spalte
+„Effekt (füllt KI)“ füllt (`struktur.write_effects()`: schreibt erst eine Kopie, liest sie zurück und ersetzt die
+Tabelle nur, wenn alles andere unverändert ist). Ist die Tabelle in Excel geöffnet, wird der Code trotzdem erzeugt und
+die Spalte nicht geschrieben - dem User sagen und später `songgen.py <Song> --tabelle` nachholen. Braucht die Tabelle eine Änderung
 (Strukturfehler, Part für einen zweiten Akzent teilen), dem User die konkreten Zeilen im Chat nennen - er trägt
 sie ein. Neu angelegt wird sie nur mit `songgen.py <Song>_v1 --neu` (Kopie von `songs/struktur-vorlage.xlsx`).
 
@@ -63,13 +74,13 @@ Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `
 ## Ablauf
 
 1. **Tabelle lesen**: `python tools/songgen.py <Song> --dry-run` zeigt die Timeline (case, Start, Dauer in ms)
-   und alle Fehler der Tabelle. Für die Gestaltung die Parts mit Effektidee, Energie und den optionalen Spalten
+   und alle Fehler der Tabelle. Für die Gestaltung die Parts mit Änderungswunsch (`idea`), Energie und den optionalen Spalten
    lesen: `python -c "import sys; sys.path.insert(0,'tools'); import struktur, pathlib, json;
    print(json.dumps(struktur.read_table(pathlib.Path('songs/<Song>/quelle/struktur.xlsx')), ensure_ascii=False, indent=1))"`.
    Neuer Song ohne Tabelle: `python tools/songgen.py <Song>_v1 --neu`, der User füllt sie in Excel aus.
    Das BPM und die Taktzahlen kommen immer vom User, nie schätzen. Freie Song-ID: `songgen.py` meldet
    Kollisionen; die ID eines alten, handgeschriebenen Songs nur nehmen, wenn die neue Fassung ihn ersetzen soll.
-2. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind Effektidee und Energie
+2. **Show ableiten**: `songs/<Song>/show.yaml` schreiben (Regeln unten). Grundlage sind Änderungswunsch und Energie
    des Users (dazu Beschreibung, Akkorde, „bisher", das eigene Wissen über den Song). Jede Wahl mit `why:`.
 3. **Generieren** - immer nur den einen Song, den der User nennt:
    `python tools/songgen.py <Song> --dry-run`, dann ohne `--dry-run`, mit `--note "<was sich geändert hat>"`.
@@ -84,7 +95,8 @@ Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `
 
 - Nur Takte, BPM, StartBit oder Energie geändert, Partnamen gleich: direkt neu generieren (Schritt 3), die Show
   passt weiter. Kurz prüfen, ob eine geänderte Energie eine andere Szene verlangt.
-- Effektidee geändert: die betroffenen Parts in `show.yaml` neu gestalten, im `why` den neuen Wunsch nennen.
+- Änderungswunsch eingetragen: die betroffenen Parts in `show.yaml` neu gestalten, das `why` beschreibt danach den
+  neuen Stand (es landet in der Spalte „Effekt“). Mit der letzten Version vergleichen, welche Wünsche neu sind.
 - Part eingefügt, gelöscht oder umbenannt: `songgen.py` bricht mit einer Gegenüberstellung ab (Show-Einträge
   ohne Part, Parts ohne Gestaltung, vermuteter neuer Name). Achtung bei gleichen Namen: fügt der User vorn ein
   weiteres `chorus 1` ein, rücken alle folgenden Nummern `(2)`, `(3)` um eins weiter - die Einträge der Show
@@ -190,6 +202,11 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 - Ein Wort mit `*Zahl` am Ende bleibt so viele `per` stehen: `words: "THIS IS NOT ENOUGH*5"` = THIS, IS, NOT je
   einen Beat, ENOUGH fünf (Wunsch des Users zu ATTSS, 06.10.2026: das letzte Wort der Hook bleibt einen Takt stehen).
   Die Längen so wählen, dass ein Durchlauf ganze Takte füllt (hier 8 Beats), sonst wandert der Text gegen den Takt.
+- Ein Unterstrich im Wort wird als Leerzeichen gezeichnet, trennt aber nicht: `words: "FUCK_YOU"` steht als ein Bild
+  auf der Matrix (zusammen max. 9 Zeichen). Soll ein Text nur einmal kurz erscheinen, `per` auf die Part-Länge setzen
+  und das Fenster mit `over: true, to: <Beats>, fade_out: <Beats>` begrenzen (Abcdefu, 06.10.2026: „FUCK YOU“ auf
+  den Chorus-Einsatz, 2 Takte ausblenden). Ein Text mitten im Part: Fenster mit `from`/`to` und den Durchlauf so
+  wählen, dass er bei `from` neu beginnt (Abcdefu: `"A B C D E*9"` = 13 Beats, `from: 26` = 2 Durchläufe).
 - `flash: true` (nur `words`, sinnvoll mit `per: beat`) - die Wörter blitzen auf und klingen ab wie die Lampen im
   Beat-Blitz (SCENE_DROP), statt hart an- und auszugehen; mit `over: true` scheint die Szene dabei durch. Ein Wort mit
   `*Zahl` steht voll und klingt erst in seinem letzten `per` ab. Urteil des Users (06.10.2026, Demo 92 Parts 34/36):
@@ -280,9 +297,9 @@ der Tabelle in zwei Zeilen aufzuteilen.
 
 ## Dramaturgie-Regeln
 
-Grundlage der Wahl sind `Energie` und `Effektidee` des Users aus der Tabelle; wo er nichts geschrieben hat, das
+Grundlage der Wahl sind `Energie` und `Änderungswunsch` des Users aus der Tabelle; wo er nichts geschrieben hat, das
 eigene Musikverständnis des Songs (Steigerung, Dichte, Instrumentierung, Dur/Moll). Es gibt keine Audio-Messwerte
-mehr. Die Effektidee geht immer vor der Tabelle unten:
+mehr. Der Änderungswunsch geht immer vor der Tabelle unten:
 
 | Situation | Szene / FX |
 |---|---|

@@ -5,7 +5,9 @@ hook_protect_song.py - Claude-Code-Hook (PreToolUse, siehe .claude/settings.json
 songs/<Song>/quelle/struktur.xlsx gehört dem User: es ist die einzige Datei, die er pro Song pflegt. Der Hook
 blockiert jeden Versuch von Claude, eine solche Tabelle zu schreiben: Edit/Write direkt, Shell-Befehle anhand
 typischer Schreibmuster (Umleitung, mv, rm, sed -i ...). Neu angelegt wird sie nur von `songgen.py <Song> --neu`,
-zurückgeholt nur von `songgen.py <Song> --restore`. Genauso geschützt bleiben die alten song.yaml, solange der
+zurückgeholt nur von `songgen.py <Song> --restore`. Auf Wunsch des Users (06.10.2026) füllt `songgen.py` beim
+Generieren außerdem die Spalte "Effekt (füllt KI)" (struktur.write_effects, mit Kontrolle, dass sonst nichts
+anders ist) - das läuft über das Werkzeug und ist kein Schreibversuch von Claude. Genauso geschützt bleiben die alten song.yaml, solange der
 User sie nicht selbst gelöscht hat. Lesen bleibt erlaubt. Exit 2 = blockieren, die Meldung auf stderr geht an Claude.
 """
 import json
@@ -49,7 +51,7 @@ def main():
 		sys.stderr.reconfigure(encoding="utf-8")
 		print("BLOCKIERT: songs/<Song>/quelle/struktur.xlsx (und eine alte song.yaml) gehört dem User und wird von Claude "
 			  "nie geschrieben, verschoben oder gelöscht. Änderungen dem User im Chat vorschlagen; Gestaltung gehört in "
-			  "show.yaml.", file=sys.stderr)
+			  "show.yaml. (Die Spalte 'Effekt (füllt KI)' schreibt nur songgen.py <Song> bzw. --tabelle.)", file=sys.stderr)
 		return 2
 	return 0
 

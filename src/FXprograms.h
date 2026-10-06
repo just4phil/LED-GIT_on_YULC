@@ -329,6 +329,8 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart, uns
  * so viele Zeitfenster stehen: "THIS IS NOT ENOUGH*5" = drei Wörter je msPerWord, ENOUGH 5 x msPerWord.
  * flash = true (nur progText): jedes Wort blitzt auf und klingt ab wie die Lampen im Beat-Blitz, statt hart
  * an- und auszugehen; ein Wort mit "*Zahl" steht voll und klingt erst in seinem letzten Zeitfenster ab.
+ * Ein Unterstrich im Wort (nur progText) wird als Leerzeichen gezeichnet, trennt aber nicht:
+ * "FUCK_YOU" steht als ein Bild auf der Matrix statt als zwei Wörter nacheinander.
  * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist; gleitet wie progScrollText
  * weich von Pixel zu Pixel (TEXT_SCROLL_BLEND in fxText.cpp).
  * col = CRGB::Black (Standard): Farben des aktiven Schemas (bei jedem Wort bzw. Durchlauf die nächste).

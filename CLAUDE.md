@@ -145,16 +145,23 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 ### Generated songs (songs/<Song>/)
 One folder per song, e.g. `songs/AllTheThingsSheSaid_v1/` (`_v1` = version of the arrangement/audio):
 `quelle/struktur.xlsx` (the user's Excel table and the only file he maintains: song ID, BPM, StartBit, per part
-`von takt`, `Songpart`, `Effektidee`, `Energie 0-5`, `BPM pro Part`; last row `Ende`), `show.yaml` (derived by
+`von takt`, `Songpart`, `Effekt (füllt KI)`, `Änderungswunsch`, `Energie 0-5`, `BPM pro Part`; last row `Ende`), `show.yaml` (derived by
 Claude directly from the table: scenes/schemes per part, matched by part name), `generated.cpp` (generated code of
 this song), `versionen/<timestamp>/` (copy of all three + `info.yaml` per generation). There is no `song.yaml`,
 no audio analysis and no chord-sheet import any more (user decision 06.10.2026); leftover `song.yaml`, MP3s,
 `audio-analyse/` and `quelle/excel-kalkulation.csv` in some folders are read by nothing - leave them, the user
 deletes them himself.
 
-**Never write, move or delete `songs/*/quelle/struktur.xlsx`** - it belongs to the user. A hook
+**Never write, move or delete `songs/*/quelle/struktur.xlsx` yourself** - it belongs to the user. A hook
 (`tools/hook_protect_song.py`) and a deny rule in `.claude/settings.json` enforce this; do not work around
-them. Propose changes to the table in chat instead. His `Effektidee` and `Energie` are binding for the design; all
+them. Propose changes to the table in chat instead. The one exception is his own wish (06.10.2026): on every
+generation `songgen.py` writes the column `Effekt (füllt KI)` - per part the effect that is implemented now, built from
+`show.yaml` (first line the call/scene, then text/layer/output-stage notes, last the `why:` text, so write `why:` as a
+description of what one sees). Nothing else in the file is touched (`struktur.write_effects()` writes a temp file,
+re-reads it and only replaces the table if everything the reader uses is unchanged; table open in Excel -> not
+written, catch up with `songgen.py <Song> --tabelle`). The user enters his wishes in `Änderungswunsch` and deletes
+them himself when done - never clear that column. Old tables still have one column `Effektidee` (his wishes); they
+are converted on their first generation. His `Änderungswunsch` and `Energie` are binding for the design; all
 design lives in `show.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`, `devices`, `text`, `overlay`, `markers` and
 the output-stage keys above), structure (bars, tempo) only in the table. `fade:` lets the scheme colours travel in time with the bars to a
 complementary colour or a second scheme and back, in sync on all devices. `text:` puts words or a scroll text on the matrix devices (auto-centred, in

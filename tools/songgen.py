@@ -9,10 +9,12 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py <Song> --restore <Version>
     tools/.venv/Scripts/python tools/songgen.py --assemble             # nur src/ aus den gespeicherten Songs neu bauen
     tools/.venv/Scripts/python tools/songgen.py <Song> --neu           # neuen Song-Ordner mit leerer Tabelle anlegen
+    tools/.venv/Scripts/python tools/songgen.py <Song> --tabelle       # nur die Spalte "Effekt" der Tabelle nachtragen
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
-    quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Effektidee, Energie.
-                           Format siehe tools/struktur.py. Kein Werkzeug ändert eine vorhandene Tabelle.
+    quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
+                           Format siehe tools/struktur.py. Das Werkzeug schreibt dort nur die Spalte "Effekt": bei jeder
+                           Generierung steht darin je Part, was gerade umgesetzt ist (alles andere bleibt unberührt).
     show.yaml              technisch (von Claude aus der Tabelle abgeleitet): Szenen, Farbschemata, Overrides, Tails
     generated.cpp          erzeugter Code dieses Songs
     versionen/<Zeit>/      Kopie von struktur.xlsx + show.yaml + generated.cpp bei jeder Generierung (+ info.yaml)
@@ -20,6 +22,7 @@ Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gest
 
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
+    songs/<Song>/quelle/struktur.xlsx         (nur die Spalte "Effekt", siehe effect_texts() und struktur.write_effects())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
@@ -85,7 +88,7 @@ OUT_CPP = SRC / "songs_generated.cpp"
 OUT_H = SRC / "songs_generated.h"
 MAIN_CPP = SRC / "main.cpp"
 
-TABLE_FILE = st.TABLE_FILE			# struktur.xlsx: gehört dem User, kein Werkzeug ändert eine vorhandene
+TABLE_FILE = st.TABLE_FILE			# struktur.xlsx: gehört dem User, das Werkzeug schreibt dort nur die Spalte "Effekt"
 TABLE_DIR = "quelle"
 TEMPLATE = SONGS_DIR / "struktur-vorlage.xlsx"	# --neu kopiert sie (der User darf sie anpassen)
 SHOW_FILE = "show.yaml"
@@ -921,8 +924,16 @@ def text_call(part, song, widths):
 			raise SongError(f"{name}: text '{w}' - die Länge hinter * ist eine ganze Zahl ab 1 (so viele per bleibt das Wort stehen)")
 		words.append(m.group(1) if m else w)
 		holds.append(int(m.group(2)) if m else 1)
-	if all(h == 1 for h in holds):
-		info = f'"{txt}": ' + ("pulsiert" if len(words) == 1 else f"{len(words)} Wörter, eins") + f" alle {ms} ms"
+	shown = txt.replace("_", " ")	# so steht es auf der Matrix: der Unterstrich ist ein festes Leerzeichen
+	# Bis wann ist der Text überhaupt zu sehen? Bis zum Part-Ende, oder bis zum Ende seines Zeitfensters (over + to:).
+	seen_ms = part["dur"]
+	if spec.get("over") is True and isinstance(spec.get("to"), (int, float)) and not isinstance(spec.get("to"), bool):
+		seen_ms = min(seen_ms, round(spec["to"] * 60000.0 / part["bpm"]))
+	if len(words) == 1 and holds[0] == 1 and ms - ms // 4 >= seen_ms:
+		# das Wort ist drei Viertel seines Zeitfensters (per) zu sehen - reicht das bis zum Ende, steht es durchgehend
+		info = f'"{shown}": steht durchgehend, ohne Pulsieren'
+	elif all(h == 1 for h in holds):
+		info = f'"{shown}": ' + ("pulsiert" if len(words) == 1 else f"{len(words)} Wörter, eins") + f" alle {ms} ms"
 	else:
 		info = (f'"{" ".join(words)}": ' + ", ".join(f"{w} {h} x" for w, h in zip(words, holds))
 				+ f" {ms} ms, ein Durchlauf {sum(holds) * ms} ms")
@@ -1793,6 +1804,79 @@ def print_timeline(song, timeline):
 
 
 #==================================================================
+#=========== Spalte "Effekt" der Tabelle ==========================
+#==================================================================
+
+# Der User trägt seine Wünsche in die Spalte "Änderungswunsch" ein; in "Effekt" schreibt dieses Werkzeug bei jeder
+# Generierung zurück, was für den Part jetzt wirklich läuft. So sieht er in Excel den Stand, ohne show.yaml zu lesen.
+
+def effect_lines(part, song):
+	"""Ein Part in Worten, wie er in der Spalte "Effekt" steht: erste Zeile der Effekt (Szene mit Farbschema oder der
+	Aufruf aus fx:), danach je eine Zeile für Geräte-Overrides, Text, Ebene und Ausgabestufe."""
+	sec = part["sec"]
+	if "fx" in sec:
+		head = fill(sec["fx"], part, song).rstrip(";")
+	else:
+		m = re.search(r"SCENE_\w+", default_call(part, song))
+		head = (m.group(0) if m else "progBlack") + ("" if sec.get("scene") or not m else " (aus der Energie)")
+	scheme = sec.get("scheme") or song.get("scheme")
+	if scheme:
+		head += f", Farben {scheme}"
+	if sec.get("fade"):
+		f = sec["fade"]
+		head += ", Farbwanderung " + (", ".join(f"{k} {v}" for k, v in f.items()) if isinstance(f, dict) else str(f))
+	lines = [head]
+	for key, expr in (sec.get("devices") or {}).items():
+		if not (sec.get("text") and key in MATRIX_KEYS):		# den Text auf der Matrix beschreibt die Zeile "Text" unten
+			lines.append(f"{key}: " + fill(expr, part, song).rstrip(";"))
+	text_over = isinstance(sec.get("text"), dict) and sec["text"].get("over")	# dann ist die Ebene (overlay) der Text selbst
+	if part.get("text_info"):
+		# der Hinweis auf das GITBOARD (Teensy, nicht mehr im Einsatz) gehört in die Timeline, nicht in die Tabelle des Users
+		lines.append("Text (Matrix): " + re.sub(r" - ACHTUNG: '[^']*' passt nicht auf GITBOARD, läuft dort als Lauftext", "", part["text_info"]))
+	if sec.get("overlay"):
+		info = overlay_code(part, song)[2]
+		if info and text_over:
+			m = re.search(r"\((?:over|cut)(?:, )?(.*)\)$", info)		# vom Text nur Zeitfenster / Fade / Dimmen der Szene nennen
+			if m and m.group(1):
+				lines.append("   " + m.group(1))
+		elif info:
+			lines.append(info)
+	infos = pipeline_calls(part, song)[1]
+	if infos:
+		lines.append("Ausgabe: " + ", ".join(infos))
+	return lines
+
+
+def effect_texts(song, timeline):
+	"""Je Zeile der Tabelle (ohne "Ende") der Text für die Spalte "Effekt": der Part wie in effect_lines(), ein tail als
+	"Schluss (N Beats): ..." und zuletzt die Beschreibung aus why: der show.yaml."""
+	texts = []
+	for sec in song["sections"]:
+		name = sec["name"]
+		main = [p for p in timeline if p["sec"].get("name") == name and "_parent" not in p["sec"]]
+		lines = effect_lines(main[0], song) if main else []
+		for tail in (p for p in timeline if p["sec"].get("_parent") == name):
+			tl = effect_lines(tail, song)
+			lines.append(f"Schluss ({st.fmt(sec['tail']['beats'])} Beats): {tl[0]}")
+			lines += ["   " + l for l in tl[1:]]
+		why = (main[0]["sec"].get("why") if main else None) or sec.get("why")
+		if why:
+			lines.append(" ".join(str(why).split()))
+		texts.append("\n".join(lines))
+	return texts
+
+
+def update_table(song_dir, song, timeline):
+	"""Spalte "Effekt" der Tabelle schreiben; liefert den Text für die Ausgabe. Geht das nicht (Tabelle in Excel
+	geöffnet, Kontrolle nach dem Schreiben schlägt fehl), bleibt die Tabelle unverändert - der Code wird trotzdem erzeugt."""
+	try:
+		return st.write_effects(table_path(song_dir), effect_texts(song, timeline), int(song.get("end_black_ms", 10000)))
+	except st.TableError as e:
+		return (f"ACHTUNG: Spalte 'Effekt' der Tabelle NICHT geschrieben - {e}\n"
+				f"   Nachholen, sobald die Tabelle frei ist: songgen.py {song_dir.name} --tabelle")
+
+
+#==================================================================
 #=========== Kommandos ============================================
 #==================================================================
 
@@ -1836,6 +1920,10 @@ def cmd_generate(song_dir, dry_run, note):
 		print("\n(dry-run, nichts geschrieben)")
 		return 0
 
+	# Zuerst die Spalte "Effekt" der Tabelle nachtragen. Der Fingerabdruck der Tabelle (song["_table_sha"]) ändert
+	# sich dadurch nicht: die Spalte zählt nicht mit, und write_effects() prüft, dass alles andere gleich geblieben ist.
+	print("\nTabelle: " + update_table(song_dir, song, timeline))
+
 	gen = song_dir / GEN_FILE
 	if gen.exists():
 		old = read_fragment(gen)
@@ -1849,6 +1937,21 @@ def cmd_generate(song_dir, dry_run, note):
 	print(f"-> Version {v.name} gespeichert" if v else "-> keine neue Version (genau dieser Stand ist schon gespeichert)")
 	print_assembled(assemble())
 	return 0
+
+
+# <Song> --tabelle: nur die Spalte "Effekt" der Tabelle schreiben (z. B. wenn sie beim Generieren in Excel geöffnet war).
+# Code, Version und src/ bleiben, wie sie sind.
+def cmd_table(song_dir):
+	song = load_song(song_dir)
+	timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))
+	if errors:
+		print("FEHLER (erst beheben, dann generieren):", file=sys.stderr)
+		for e in errors:
+			print("  - " + e, file=sys.stderr)
+		return 1
+	note = update_table(song_dir, song, timeline)
+	print("Tabelle: " + note)
+	return 1 if note.startswith("ACHTUNG") else 0
 
 
 # <Song> --versions: die gespeicherten Versionen auflisten
@@ -1869,8 +1972,8 @@ def cmd_versions(song_dir):
 
 
 # <Song> --restore <Version>: eine Version wieder aktiv machen. Der bisherige Stand wird vorher selbst als
-# Version gesichert, es geht also nichts verloren. Dies ist (neben --neu) die einzige Stelle, an der das
-# Werkzeug eine struktur.xlsx schreibt - und zwar die eigene, früher gespeicherte Fassung des Users.
+# Version gesichert, es geht also nichts verloren. Hier ersetzt das Werkzeug die ganze struktur.xlsx - und zwar
+# durch die eigene, früher gespeicherte Fassung des Users (sonst schreibt es dort nur die Spalte "Effekt").
 def cmd_restore(song_dir, version):
 	hit = [v for v in versions(song_dir) if v.name == version] or [v for v in versions(song_dir) if v.name.startswith(version)]
 	if len(hit) != 1:
@@ -1930,8 +2033,8 @@ def cmd_new(name):
 	path.parent.mkdir(parents=True, exist_ok=True)
 	shutil.copyfile(TEMPLATE, path)
 	print(f"Tabelle angelegt: {path.relative_to(ROOT).as_posix()}\n"
-		  f"In Excel ausfüllen und speichern (Titel, Midi-StartNummer, BPM, StartBit, pro Part eine Zeile, letzte Zeile 'Ende'),\n"
-		  f"dann Claude die Show gestalten lassen.")
+		  f"In Excel ausfüllen und speichern (Titel, Midi-StartNummer, BPM, StartBit, pro Part eine Zeile, letzte Zeile 'Ende';\n"
+		  f"Wünsche in die Spalte '{st.WISH_TITLE}', die Spalte '{st.EFFECT_TITLE}' füllt das Werkzeug), dann Claude die Show gestalten lassen.")
 	return 0
 
 
@@ -1944,6 +2047,7 @@ def main():
 	ap.add_argument("--versions", action="store_true", help="gespeicherte Versionen des Songs auflisten")
 	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (Tabelle + show.yaml + Code)")
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
+	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code)")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
@@ -1962,6 +2066,8 @@ def main():
 			return cmd_versions(song_dir)
 		if args.restore:
 			return cmd_restore(song_dir, args.restore)
+		if args.tabelle:
+			return cmd_table(song_dir)
 		return cmd_generate(song_dir, args.dry_run, args.note)
 	except SongError as e:
 		print(f"FEHLER: {e}", file=sys.stderr)

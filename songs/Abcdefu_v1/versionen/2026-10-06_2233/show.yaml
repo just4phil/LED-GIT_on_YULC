@@ -1,0 +1,95 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Vorgabe des Users: Parts ohne Änderungswunsch behalten erst einmal den alten Effekt aus Abcdefu()
+# (Spalte "bisher (alter Code)") - sie stehen hier 1:1 als fx:. Der alte Code bleibt in src/songs.cpp.
+# Kein Farbschema auf Song-Ebene: die alten Effekte laufen dadurch wie bisher mit freien Zufallsfarben.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Auf Wunsch des Users geändert (06.10.2026):
+#   pause / intro   = die Pause ist ganz schwarz, das Füllen (progBlingBlingColoring) beginnt erst mit dem Intro
+#   strobe          = "FUCK YOU" schwarz ausgestanzt über dem weißen Strobo
+#   A B C D E       = in den letzten 1,5 Takten vor jedem Chorus die Buchstaben auf die Viertel (Matrix, über dem Effekt)
+#   FUCK YOU        = auf jeden Chorus-Einsatz als Text auf der Matrix, immer ohne "!". Chorus 1: schwarz ausgestanzt,
+#                     3 Takte ohne Ausblenden (Weiß hob sich dort nicht ab). Chorus 2 und 3: weiß, blendet über 2 Takte aus
+#   Stopp           = schneller Blinder auf den Stopp und auf den Wiedereinstieg danach
+#   verse 2 weiter  = "was anderes": Puls im Beat (SCENE_VERSE, Neon) statt noch einmal das langsame Füllen
+#   triolen         = Strobo wechselt auf jedem Viertel: ein Viertel an, ein Viertel aus (zwei triolische Fassungen
+#                     mit 78 und 156 ms und ein Blitz pro Viertel mit 234 ms waren es nicht)
+# Bund-Marker: der alte Code setzt in Abcdefu() keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 15) und gelten unverändert - deshalb hier kein markers:-Block.
+# Schluss-Black 10,3 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_Abcdefu
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  intro:
+    fx: "progBlingBlingColoring(${dur}, ${next}, 3000)"
+    why: "Jedes Gerät füllt sich langsam LED für LED mit einer Farbe, alle 3 s kommt die nächste. Beginnt erst hier, nicht schon in der Pause."
+
+  strobe:
+    fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
+    text: {words: "FUCK_YOU", per: 4, color: schwarz, over: true}
+    why: "2 Beats weißes Flimmern als Absprung in die Strophe (alter Effekt). Auf der Matrix steht dabei FUCK YOU schwarz ausgestanzt im Strobo: die Buchstaben bleiben dunkel, das Weiß blitzt drumherum."
+
+  verse 1a:
+    fx: "progPalette(${dur}, 1, ${next})"
+    why: "Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte."
+
+  verse 1b:
+    fx: "progMatrixScanner(${dur}, ${next}, 1)"
+    why: "Alter Effekt: schneller Scanner, eine Leuchtlinie fährt hin und her."
+
+  i was into you:
+    fx: "progPalette(${dur}, 3, ${next})"
+    text: {words: "A B C D E*9", per: beat, color: weiss, over: true, from: 26, to: 31}
+    why: "Alter Effekt: lila und grüne Balken. Ab Takt 6,5 des Parts (Beat 26) erscheinen auf der Matrix A, B, C, D, E in Weiß, je ein Viertel lang, über dem gedimmten Effekt."
+
+  chorus 1:
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    text: {words: "FUCK_YOU", per: 32, color: schwarz, over: true, to: 12}
+    why: "Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe. Auf der Matrix steht die ersten 3 Takte FUCK YOU schwarz ausgestanzt in der Farbfläche (Buchstaben dunkel, Farbe drumherum), ohne Ausblenden - danach ist es hart weg."
+
+  na na na na:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  verse 2:
+    fx: "progBlingBlingColoring(${dur}, ${next}, 5000)"
+    why: "Alter Effekt: langsames Füllen LED für LED, alle 5 s eine neue Farbe."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 1}
+    why: "1 Takt Stille. Auf den Stopp-Schlag blitzt ein schneller Blinder (warmweiß, alle Geräte) und klingt in 1 Beat ins Schwarz ab."
+
+  verse 2 weiter:
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 1}
+    why: "Schneller Blinder (1 Beat) auf den Wiedereinstieg, dann dezenter Puls im Beat in Pink/Cyan/Violett: Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix (statt noch einmal das langsame Füllen)."
+
+  i was into you (2):
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    text: {words: "A B C D E*9", per: beat, color: weiss, over: true, from: 26, to: 31}
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf. Ab Takt 6,5 des Parts (Beat 26) erscheinen auf der Matrix A, B, C, D, E in Weiß, je ein Viertel lang, über dem gedimmten Effekt."
+
+  chorus 2:
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    text: {words: "FUCK_YOU", per: 32, color: weiss, over: true, to: 8, fade_out: 8}
+    why: "Alter Effekt wie Chorus 1: pro Beat eine neue Farbe. Auf der Matrix steht auf den Einsatz FUCK YOU in Weiß und blendet über 2 Takte aus, der Effekt darunter kommt dabei wieder hoch."
+
+  na na na na (2):
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 4)"
+    text: {words: "A B C D E*9", per: beat, color: weiss, over: true, from: 26, to: 31}
+    why: "Alter Effekt: drehender Stern, diesmal wandernd. Ab Takt 6,5 des Parts (Beat 26) erscheinen auf der Matrix A, B, C, D, E in Weiß, je ein Viertel lang, über dem gedimmten Effekt."
+
+  chorus 3:
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    text: {words: "FUCK_YOU", per: 32, color: weiss, over: true, to: 8, fade_out: 8}
+    why: "Alter Effekt: schnelle Einzelblitze für den letzten Chorus. Auf der Matrix steht auf den Einsatz FUCK YOU in Weiß und blendet über 2 Takte aus."
+
+  triolen:
+    fx: "progStrobo(${dur}, ${next}, ${beat}, 255, 255, 255)"
+    why: "Weißer Strobo im Viertel-Raster: ein Viertel lang an, das nächste Viertel aus (469 ms), auf allen Geräten gleich."

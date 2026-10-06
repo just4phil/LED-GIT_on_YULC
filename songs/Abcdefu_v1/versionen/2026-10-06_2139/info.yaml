@@ -1,0 +1,9 @@
+zeit: '2026-10-06 21:39:42'
+notiz: 'Erste generierte Fassung: alte Effekte 1:1, Pause ganz schwarz, verse 2 weiter
+  = SCENE_VERSE Neon, triolen = Strobo 3 Blitze pro Beat'
+werkzeug_git: d4bcd07
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 0a6c33298fb8961713a3dd0a7057e3910b9acbb0b33df77c78f93c46040ee37d
+  show.yaml: 9b6e0eae42d2241969275e57f52b4ab7bafaca27038de08182c609453c7cedef
+  generated.cpp: 364275bea966e52898cbdc75019a93f55b0df6a7b184f7af4005e05ed9d366ab

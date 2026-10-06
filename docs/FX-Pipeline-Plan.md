@@ -11,7 +11,54 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (progText Wortlänge + flash abgenommen, ATTSS-Hook hart)
+Zuletzt aktualisiert: 06.10.2026 (Tabelle mit Spalten „Effekt (füllt KI)“ / „Änderungswunsch“, Abcdefu neu generiert)
+
+- **06.10.2026, neues Tabellenformat (Wunsch des Users) - gebaut, Abnahme offen.** Der User trägt Wünsche in die neue
+  Spalte „Änderungswunsch“ ein und löscht sie selbst; `songgen.py` schreibt bei jeder Generierung in „Effekt (füllt KI)“,
+  was je Part umgesetzt ist (Aufruf/Szene + Schema, Text/Ebene/Ausgabestufe, `why:` der Show). Umsetzung:
+  `tools/struktur.py` (`col_key`, `write_effects`, `ensure_effect_column`, `insert_column`; schreibt erst
+  `struktur.tmp.xlsx`, liest zurück, ersetzt nur bei gleichem Fingerabdruck; nicht bei geöffneter Tabelle; alte
+  Tabellen mit „Effektidee“ werden beim ersten Schreiben umgestellt, außer sie enthalten eigene Formeln),
+  `tools/songgen.py` (`effect_lines`, `effect_texts`, `update_table`, neues Kommando `--tabelle`), Vorlage
+  `songs/struktur-vorlage.xlsx` umgestellt. Auf Kopien aller 24 Tabellen getestet (Fingerabdruck bleibt gleich);
+  echt geschrieben ist bisher nur Abcdefu. Doku: `CLAUDE.md`, SKILL.md, `docs/Song-Workflow.html`, README,
+  `tools/hook_protect_song.py` (Text). Abcdefu (#15, Version `2026-10-06_2233`): „FUCK YOU“ schwarz ausgestanzt
+  über dem Strobo vor Verse 1 und in Chorus 1 jetzt 3 Takte ohne Fade (Chorus 2/3 unverändert weiß mit Fade); die
+  `why:` der Show beschreiben jetzt, was man sieht. Alle fünf Envs gebaut. **Nächster Schritt:** User prüft die
+  Tabelle in Excel (Lesbarkeit der Spalte, Formatierung nach dem Schreiben durch openpyxl) und Song 15 auf den Geräten.
+  **Nachtrag (Wünsche des Users in der Tabelle):** Text über dem Strobo heißt „FUCK OFF“. Zu Chorus 1 schrieb er
+  „muss ausgestanzt werden (schwarz) und darf nicht faden / pulsieren“ - der Code war seit `2026-10-06_2233` schon so
+  (`FX_CUT`, Fenster 3 Takte, kein Fade); irreführend war die Zeile in der Effekt-Spalte („pulsiert alle 15000 ms“).
+  `text_call()` schreibt für ein Wort, das länger steht als der Part, jetzt „steht durchgehend, ohne Pulsieren“ und
+  zeigt den Unterstrich als Leerzeichen. Offen: ob er das Faden auf dem Gerät gesehen hat (dann war die Firmware älter).
+- **06.10.2026, Abcdefu (#15) zweite Fassung nach überarbeiteter Tabelle - Abnahme offen** (Version `2026-10-06_2200`).
+  Neu nach den Effektideen des Users: „A B C D E“ auf die Viertel ab Takt 6,5 in `i was into you`, `i was into you (2)`
+  und `na na na na (2)` (`text: {words: "A B C D E*9", per: beat, over: true, from: 26, to: 31}` - Durchlauf 13 Beats,
+  damit er bei Beat 26 mit A beginnt); „FUCK YOU!“ auf jeden Chorus-Einsatz, blendet über 2 Takte aus
+  (`words: "FUCK_YOU!", per: 32, to: 8, fade_out: 8`); schneller Blinder (1 Beat) auf den Stopp-Schlag und auf den
+  Wiedereinstieg (`STOP`, `verse 2 weiter`); Triolen-Strobo langsamer (156 ms = 3 Blitze auf 2 Beats, 78 ms war zu
+  schnell). **Neu in der Firmware:** `progText` zeichnet einen Unterstrich als Leerzeichen, ohne das Wort zu trennen
+  (`src/fxText.cpp`; Kommentar in `FXprograms.h`, `docs/Song-Workflow.html`, SKILL.md) - noch kein eigener Part in
+  Demo 92. Alle fünf Envs gebaut (`build_ota.py --no-backup`, Backup des Stands vor Abcdefu liegt in
+  `ota/backup/2026-10-06_18`). Wunsch des Users in der Tabelle (Zeile `intro`): die gesetzte Szene in die Excel
+  schreiben - das darf Claude nicht, Text im Chat genannt. **Nächster Schritt:** User aktualisiert die Geräte und
+  prüft Song 15 (Lesbarkeit der Texte, Blinder-Länge, Triolen-Tempo).
+  **Nachtrag am selben Tag:** der Schluss-Strobo (`triolen`) soll nicht triolisch sein, sondern „einfach jeweils auf den
+  vierteln an und aus gehen“ - jetzt `progStrobo` mit 234 ms (ein Blitz pro Viertel), neu generiert und gebaut.
+  **Zweiter Nachtrag:** gemeint war ein Viertel an, ein Viertel aus -> `progStrobo` mit `${beat}` (469 ms). „FUCK YOU“ auf
+  Wunsch des Users überall ohne „!“; in Chorus 1 hob sich Weiß nicht ab -> dort `color: schwarz` (ausgestanzt), Chorus 2
+  und 3 bleiben weiß („ok so“). Neu generiert und gebaut.
+- **06.10.2026, Abcdefu (#15) generiert - Abnahme durch den User offen.** Der User hat die Tabelle geprüft; Zeilen ohne
+  Anmerkung behalten den alten Effekt (in `songs/Abcdefu_v1/show.yaml` 1:1 als `fx:`, kein Schema auf Song-Ebene).
+  Geändert nach seiner Effektidee: Pause ganz schwarz, `progBlingBlingColoring` erst ab dem Intro; `verse 2 weiter`
+  („was anderes“) = `SCENE_VERSE` in `SCHEME_NEON`; `triolen` = `progStrobo` mit 78 ms (3 Blitze pro Beat, alt 155 ms
+  = 3 Blitze auf 2 Beats). Der alte Code setzt in `Abcdefu()` keine Part-Marker und kein Trailer springt hinein;
+  Grund-Marker unverändert in `markerLEDs.cpp`. `main.cpp` case 15 ruft `gen_Abcdefu()`, README-Songtabelle
+  nachgezogen, alle fünf Envs gebaut (`build_ota.py --backup`, Backup des Stands davor in `ota/backup/2026-10-06_18`).
+  Offene Frage des Users aus der Tabelle: „oder triolischer BLINDER?“ - `fxBlinderBeat` kennt nur ganze Beats
+  (`everyBeats`), ein triolisches Raster wäre eine kleine Erweiterung der Firmware. **Nächster Schritt:** User startet
+  `build_ota.py --serve-only`, aktualisiert die Geräte und prüft Song 15; je nach Urteil Triolen-Tempo (78 / 156 ms)
+  oder Blinder-Erweiterung.
 
 - **06.10.2026, `progText` Wortlänge (`*Zahl`) und `flash` vom User abgenommen** („sehr geil!“, dann „beides ist
   super. ich würde aber in diesem fall auf das abklingen verzichten (hier option: hart), da es sich dann etwas besser

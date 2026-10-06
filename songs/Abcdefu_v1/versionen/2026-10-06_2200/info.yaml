@@ -1,0 +1,9 @@
+zeit: '2026-10-06 22:00:49'
+notiz: 'Tabelle überarbeitet: Texte A B C D E vor jedem Chorus und FUCK YOU! auf den
+  Chorus-Einsatz, Blinder am Stopp, Triolen-Strobo langsamer (156 ms)'
+werkzeug_git: d4bcd07 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 527b585d665846ad98e75b06029b404885daacb6071fcb5ec9c6401c7a8943ce
+  show.yaml: f052d54b67b525b1a0c40caebf3a8b509c9c46419779a038fecc65306e62b7ab
+  generated.cpp: ab34e19e9fc58a5e07cb1747730e4f4dc482148b79e298c1cabadf2de8b0d948

@@ -1,0 +1,9 @@
+zeit: '2026-10-06 22:15:29'
+notiz: Schluss-Strobo ein Viertel an / ein Viertel aus (469 ms); FUCK YOU ohne Ausrufezeichen,
+  in Chorus 1 schwarz ausgestanzt
+werkzeug_git: d4bcd07 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 1e55a7cf3cfec2902c7d52d4e85f4852b5e446aa59b365a385ff57edd95238c2
+  show.yaml: 5fc8d86af8fcfe879d125b8e65d9b7ebf7fd820dac160de38e46ae812c557d28
+  generated.cpp: f16953a53e32f373deaab55833258861ca4a44082d6b8284bc6760e6b3b4ba01

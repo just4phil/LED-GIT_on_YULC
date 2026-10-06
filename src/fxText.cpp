@@ -413,6 +413,8 @@ static int textWordLen(const char* p, int len, int& slots) {
 // Ein Wort mit "*Zahl" am Ende bleibt so viele Zeitfenster stehen: "THIS IS NOT ENOUGH*5" mit msPerWord = ein Beat
 // zeigt THIS, IS, NOT je einen Beat und ENOUGH fünf Beats (ab Schlag 4 bis zum Ende des nächsten Takts); die dunkle
 // Pause am Ende bleibt ein Viertel von msPerWord. Ein Durchlauf dauert dann 8 Beats, danach von vorn.
+// Ein Unterstrich im Wort wird als Leerzeichen gezeichnet, trennt aber nicht: "FUCK_YOU" steht als EIN Bild auf der
+// Matrix (zusammen zentriert, ein Zeitfenster), statt als zwei Wörter nacheinander. Die Breite zählt mit (8 Zeichen).
 // flash = false: das Wort steht hart an und geht hart aus (wie oben beschrieben).
 // flash = true: das Wort blitzt auf und klingt ab wie die Lampen bei SCENE_DROP (flashEnvelope, scenes.cpp; msPerWord
 // sollte dann ein Beat sein, damit beide Kurven gleich lang sind). Ein Wort mit "*Zahl" steht erst voll hell und klingt
@@ -485,7 +487,7 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 		int x = (MATRIX_WIDTH - (len * 6 - 1)) / 2;	// linke Kante des Worts, so dass es mittig steht
 		matrix->setCursor(x, textY());
 		textColor(grad, col, wordNr);
-		for (int i = 0; i < len; i++) matrix->print(p[i]);
+		for (int i = 0; i < len; i++) matrix->print(p[i] == '_' ? ' ' : p[i]);	// '_' = festes Leerzeichen: "FUCK_YOU" bleibt ein Wort
 		if (grad.on) textGradPaint(grad, x);
 		if (level < 255 && !inLayer) {	// abklingendes Wort ohne Ebene: alle LEDs dunkler (außer den Buchstaben ist alles schwarz)
 			for (int i = 0; i < NUMMATRIX; i++) leds[i].nscale8(level);

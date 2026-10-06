@@ -191,7 +191,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | 12 | Such A Shame | | 80 | I Love It (trailer) |
 | 13 | In The Dark | | 81 | Dancing On My Own (intro) |
 | 14 | Shivers | | 90-92 | Demo songs for effects, scenes and the output stage |
-| 15 | abcdefu | | 99 | Startup animation |
+| 15 | abcdefu * | | 99 | Startup animation |
 | 16 | Enjoy The Silence | | | |
 
 \* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp` and are being
@@ -201,8 +201,9 @@ replaced one by one.
 
 Each song has a folder `songs/<Song>_v1/`:
 
-- `quelle/struktur.xlsx` - the table with song ID, BPM and, per part: first bar, part name, effect idea,
-  energy 0-5. This is the only file maintained by hand.
+- `quelle/struktur.xlsx` - the table with song ID, BPM and, per part: first bar, part name, change request,
+  energy 0-5. This is the only file maintained by hand. The generator writes one column back into it
+  (`Effekt (füllt KI)`): what is currently implemented for each part.
 - `show.yaml` - the design: scene, colour scheme, transitions, text, overlays and markers per part.
 - `generated.cpp` - the generated code of this song.
 - `versionen/<timestamp>/` - a copy of all three for every generation.

@@ -7,6 +7,7 @@ void setGeneratedMarkerLEDs(byte songID, byte partID);	// Marker der generierten
 bool isGeneratedSong(byte songID);	// exakte Timeline -> main.cpp gleicht die Verspätung der Part-Wechsel aus
 
 void gen_DancingOnMyOwn();	// #8 Dancing On My Own
+void gen_Abcdefu();	// #15 abcdefu
 void gen_BillieJean();	// #28 Billie Jean
 void gen_AllTheThingsSheSaid();	// #31 All The Things She Said
 void gen_GirlsJustWannaHaveFun();	// #33 Girls just wanna have fun
@@ -38,6 +39,22 @@ void gen_GirlsJustWannaHaveFun();	// #33 Girls just wanna have fun
 #define GEN_DANCINGONMYOWN_HOOK_5 115
 #define GEN_DANCINGONMYOWN_HOOK_5_TAIL 120
 #define GEN_DANCINGONMYOWN_OUTRO 125
+#define GEN_ABCDEFU_PAUSE 0
+#define GEN_ABCDEFU_INTRO 5
+#define GEN_ABCDEFU_STROBE 10
+#define GEN_ABCDEFU_VERSE_1A 15
+#define GEN_ABCDEFU_VERSE_1B 20
+#define GEN_ABCDEFU_I_WAS_INTO_YOU 25
+#define GEN_ABCDEFU_CHORUS_1 30
+#define GEN_ABCDEFU_NA_NA_NA_NA 35
+#define GEN_ABCDEFU_VERSE_2 40
+#define GEN_ABCDEFU_STOP 45
+#define GEN_ABCDEFU_VERSE_2_WEITER 50
+#define GEN_ABCDEFU_I_WAS_INTO_YOU_2 55
+#define GEN_ABCDEFU_CHORUS_2 60
+#define GEN_ABCDEFU_NA_NA_NA_NA_2 65
+#define GEN_ABCDEFU_CHORUS_3 70
+#define GEN_ABCDEFU_TRIOLEN 75
 #define GEN_BILLIEJEAN_PAUSE 0
 #define GEN_BILLIEJEAN_DRUMS_INTRO 5
 #define GEN_BILLIEJEAN_BASS_INTRO 10

@@ -64,7 +64,7 @@
 <header>
   <div class="wrap">
     <h1>Song-Workflow: vom Excel zur LED-Show</h1>
-    <p class="sub">Neue Songs werden nicht mehr von Hand in <code>songs.cpp</code> programmiert: Du pflegst pro Song eine einzige Excel-Tabelle (Takte, Effektidee, Energie), Claude gestaltet daraus die Show, der Generator erzeugt den C++-Code. Jeder Song hat einen eigenen Ordner, jede Generierung wird als Version gesichert. Stand 06.10.2026.</p>
+    <p class="sub">Neue Songs werden nicht mehr von Hand in <code>songs.cpp</code> programmiert: Du pflegst pro Song eine einzige Excel-Tabelle (Takte, Änderungswunsch, Energie), Claude gestaltet daraus die Show, der Generator erzeugt den C++-Code. Jeder Song hat einen eigenen Ordner, jede Generierung wird als Version gesichert. Stand 06.10.2026.</p>
     <nav class="toc">
       <a href="#ueberblick"><b>1</b>Überblick</a>
       <a href="#setup"><b>2</b>Einmalige Einrichtung</a>
@@ -96,7 +96,7 @@
   <g font-size="13" fill="#e6edf3">
     <rect x="10" y="40" width="200" height="60" rx="8" fill="#241d12" stroke="#ffb86b"/>
     <text x="110" y="65" text-anchor="middle">quelle/struktur.xlsx</text>
-    <text x="110" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">Takte · Effektidee · Energie · BPM</text>
+    <text x="110" y="83" text-anchor="middle" fill="#9aa7b4" font-size="11">Takte · Wunsch · Energie · BPM</text>
 
     <rect x="270" y="40" width="190" height="60" rx="8" fill="#14211a" stroke="#7ee787"/>
     <text x="365" y="65" text-anchor="middle">show.yaml</text>
@@ -127,7 +127,7 @@
 
 <div class="tablewrap"><table>
 <tr><th>Datei</th><th>Wer</th><th>Inhalt</th></tr>
-<tr><td><code>quelle/struktur.xlsx</code></td><td><b>du</b></td><td>Die einzige Datei, die du pflegst: Song-ID, BPM, StartBit und pro Part Taktnummer, Name, Effektidee, Energie. <b>Wird von Claude nie geschrieben.</b></td></tr>
+<tr><td><code>quelle/struktur.xlsx</code></td><td><b>du</b></td><td>Die einzige Datei, die du pflegst: Song-ID, BPM, StartBit und pro Part Taktnummer, Name, Änderungswunsch, Energie. Das Werkzeug schreibt dort <b>nur die Spalte „Effekt (füllt KI)“</b> – alles andere bleibt, wie du es eingetragen hast.</td></tr>
 <tr><td><code>show.yaml</code></td><td>Claude</td><td>Wie es aussieht: Szene, Farbschema, Geräte-Overrides, Akzente je Part (per Part-Name, ohne Takte)</td></tr>
 <tr><td><code>generated.cpp</code></td><td>Generator</td><td>der erzeugte C++-Code dieses Songs</td></tr>
 <tr><td><code>versionen/&lt;Zeit&gt;/</code></td><td>Generator</td><td>Kopie von <code>struktur.xlsx</code>, <code>show.yaml</code> und <code>generated.cpp</code> bei jeder Generierung, dazu <code>info.yaml</code></td></tr>
@@ -136,7 +136,7 @@
 
 <h3>Ein Ordner pro Song</h3>
 <pre><code>songs/AllTheThingsSheSaid_v1/
-  quelle/struktur.xlsx <span class="c">← DEINE Datei: Takte, Effektideen, Energie</span>
+  quelle/struktur.xlsx <span class="c">← DEINE Datei: Takte, Änderungswünsche, Energie</span>
   show.yaml            <span class="c">← aktive Show, von Claude abgeleitet</span>
   generated.cpp        <span class="c">← aktiver Code dieses Songs</span>
   versionen/
@@ -158,7 +158,7 @@
     Legt <code>songs/Vogue_v1/quelle/struktur.xlsx</code> an, als Kopie der Vorlage <code>songs/struktur-vorlage.xlsx</code> (eine vorhandene Tabelle wird nie überschrieben). Du kannst die Vorlage oder die Tabelle eines anderen Songs auch von Hand dorthin kopieren. Name des Ordners: Songtitel ohne Leerzeichen plus <code>_v1</code>.</li>
 
   <li><b>Tabelle ausfüllen</b><span class="who du">du</span><br>
-    In Excel: Titel, Interpret, Midi-StartNummer (= Song-ID, 1 bis 127), BPM, StartBit und pro Part eine Zeile mit <b>von takt</b>, <b>Songpart</b>, <b>Effektidee</b> und <b>Energie 0–5</b>. Die letzte Zeile heißt „Ende“. Alle Felder in <a href="#struktur">Abschnitt 4</a>. Speichern nicht vergessen.
+    In Excel: Titel, Interpret, Midi-StartNummer (= Song-ID, 1 bis 127), BPM, StartBit und pro Part eine Zeile mit <b>von takt</b>, <b>Songpart</b>, <b>Änderungswunsch</b> und <b>Energie 0–5</b> (die Spalte „Effekt (füllt KI)“ bleibt leer, sie füllt das Werkzeug). Die letzte Zeile heißt „Ende“. Alle Felder in <a href="#struktur">Abschnitt 4</a>. Speichern nicht vergessen.
     <ul>
       <li><b>Ganz neuer Song:</b> eine freie ID nehmen (<code>python tools/songgen.py</code> zeigt die vergebenen).</li>
       <li><b>Neue Fassung eines alten, handgeschriebenen Songs:</b> dieselbe ID wie bisher. Der Generator ersetzt dann den alten Aufruf, siehe <a href="#altsong">Abschnitt 7, „Einen handgeschriebenen Song ersetzen“</a>.</li>
@@ -191,7 +191,7 @@ pio run -e scrollmatrix -t upload --upload-port COM9</code></pre>
   <li><b>Nachsteuern – immer im Excel</b><span class="who du">du</span> <span class="who claude">Claude</span><br>
     <ul>
       <li><b>Timing</b> (Takte, BPM, StartBit, Energie): in der Tabelle ändern, speichern, neu generieren (<code>python tools/songgen.py vogue</code>) – dafür braucht es keine neue Gestaltung.</li>
-      <li><b>Gefällt ein Part nicht:</b> den Wunsch in die Spalte „Effektidee“ schreiben („zu statisch, mehr Bewegung“) und Claude sagen <i>„ich habe das Excel von Vogue geändert“</i>. Oder Claude den Wunsch direkt im Chat nennen.</li>
+      <li><b>Gefällt ein Part nicht:</b> den Wunsch in die Spalte „Änderungswunsch“ schreiben („zu statisch, mehr Bewegung“), speichern, Excel schließen und Claude sagen <i>„ich habe das Excel von Vogue geändert“</i>. Oder Claude den Wunsch direkt im Chat nennen. Nach der Generierung steht in der Spalte „Effekt (füllt KI)“, was jetzt umgesetzt ist; den erledigten Wunsch löschst du selbst.</li>
       <li><b>Part eingefügt, gelöscht oder umbenannt:</b> Claude Bescheid geben, die Show muss dann nachgezogen werden. Der Generator bricht sonst mit einer Liste ab, welche Parts nicht mehr zur Show passen.</li>
     </ul>
     Jede Generierung wird als Version gesichert, samt deiner Tabelle.</li>
@@ -214,7 +214,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td>2</td><td></td><td>Midi-StartNummer</td><td>31</td><td></td><td></td></tr>
 <tr><td>3</td><td></td><td>BPM</td><td>86</td><td></td><td></td></tr>
 <tr><td>4</td><td></td><td>StartBit</td><td>0,375</td><td></td><td></td></tr>
-<tr><td>5</td><td><b>von takt</b></td><td><b>Songpart</b></td><td><b>Effektidee</b></td><td><b>Energie 0-5</b></td><td><b>BPM pro Part</b></td></tr>
+<tr><td>5</td><td><b>von takt</b></td><td><b>Songpart</b></td><td><b>Effekt (füllt KI)</b></td><td><b>Änderungswunsch</b></td><td><b>Energie 0-5</b></td><td><b>BPM pro Part</b></td></tr>
 <tr><td>6</td><td>0</td><td>pause</td><td>black</td><td>0</td><td>86</td></tr>
 <tr><td>7</td><td>1</td><td>synth intro</td><td>ruhig nur synths</td><td>1</td><td>86</td></tr>
 <tr><td>8</td><td>5</td><td>intro: all the …</td><td>action</td><td>4</td><td>86</td></tr>
@@ -233,15 +233,16 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><th>Spalte pro Part</th><th>Pflicht</th><th>Bedeutung</th></tr>
 <tr><td>von takt</td><td>ja</td><td>Taktnummer, an der der Part <b>beginnt</b>. Ab 0 gezählt oder die Taktnummern aus dem DAW – es zählt nur der Abstand zur ersten Zeile. Halbe Takte als Kommazahl: 21,75 = drei Viertel nach Takt 21. Ein Part endet, wo der nächste beginnt.</td></tr>
 <tr><td>Songpart</td><td>ja</td><td>Name. Kommt er mehrfach vor, zählt das Werkzeug mit: <code>chorus 1</code>, <code>chorus 1 (2)</code>, <code>chorus 1 (3)</code>. Unter diesen Namen steht der Part in der Show.</td></tr>
-<tr><td>Effektidee</td><td>nein</td><td>Dein Wunsch in freien Worten („weißer Strobo auf den Auftakt“, „zu statisch“). <b>Er gilt</b>: Claude setzt ihn in der Show um.</td></tr>
+<tr><td>Effekt (füllt KI)</td><td>nein</td><td><b>Schreibt das Werkzeug</b> bei jeder Generierung: der Effekt, der für diesen Part gerade umgesetzt ist – erst der Aufruf bzw. die Szene mit Farbschema, dann Text, Ebene und Blinder, zuletzt eine Beschreibung in Worten. Hier nichts eintragen, es wird überschrieben.</td></tr>
+<tr><td>Änderungswunsch</td><td>nein</td><td>Dein Wunsch in freien Worten („weißer Strobo auf den Auftakt“, „zu statisch“). <b>Er gilt</b>: Claude setzt ihn in der Show um. Kein Werkzeug ändert diese Spalte – ist der Wunsch erledigt, löschst du ihn selbst.</td></tr>
 <tr><td>Energie 0-5</td><td>nein</td><td>Deine Einschätzung des Parts, 0 = schwarz, 5 = Höhepunkt. Grundlage der Szenenwahl.</td></tr>
 <tr><td>BPM pro Part</td><td>nein</td><td>Tempo dieses Parts. Leer oder gleich dem BPM im Kopf (in der Vorlage eine Formel darauf) = Songtempo. Nur bei einem Tempowechsel überschreiben.</td></tr>
 <tr><td>Beschreibung, Akkorde</td><td>nein</td><td>Optional: was musikalisch passiert, welche Akkorde klingen. Nur Information für die Gestaltung.</td></tr>
 <tr><td>bisher (alter Code)</td><td>nein</td><td>Bei den alten Songs: der Effekt, den der handgeschriebene Code an dieser Stelle auf der Gitarre zeigt (<code>!</code> = Hinweis, wo alter Code und alte Kalkulation voneinander abweichen). Nur zur Orientierung.</td></tr>
 </table></div>
 <ul>
-  <li><b>Erste Zeile</b> ist immer die Pause am Anfang: Mit dem Start-MIDI sind alle Geräte schwarz, egal was dort als Effektidee steht.</li>
-  <li><b>Letzte Zeile „Ende“</b> (auch „black“, „fini“): Ihr „von takt“ ist der Schlusstakt des Songs, sie ist kein eigener Part. Danach hängt der Generator Schwarz an – so lange, wie in ihrer Effektidee steht („10 sek.“), ohne Angabe 10 Sekunden.</li>
+  <li><b>Erste Zeile</b> ist immer die Pause am Anfang: Mit dem Start-MIDI sind alle Geräte schwarz, egal was dort als Änderungswunsch steht.</li>
+  <li><b>Letzte Zeile „Ende“</b> (auch „black“, „fini“): Ihr „von takt“ ist der Schlusstakt des Songs, sie ist kein eigener Part. Danach hängt der Generator Schwarz an – so lange, wie in ihrer Spalte „Effekt (füllt KI)“ oder „Änderungswunsch“ steht („10 sek.“; der Wunsch geht vor), ohne Angabe 10 Sekunden.</li>
   <li><b>Weitere Spalten</b> sind erlaubt und werden ignoriert, ebenso weitere Tabellenblätter (z. B. deine alte Kalkulation).</li>
   <li><b>Speichern:</b> Der Generator liest den zuletzt gespeicherten Stand. Die Datei darf in Excel geöffnet bleiben; nur für <code>--restore</code> muss sie geschlossen sein.</li>
   <li>Millisekunden und Rundung übernimmt der Generator: er rechnet jede Part-Grenze aus der absoluten Zeit, dadurch entsteht keine Abweichung, die sich aufsummiert.</li>
@@ -304,6 +305,7 @@ git commit -m "Song Vogue"</code></pre></li>
   <code>text: "THEY JUST WANNA HAVE FUN"</code> – mehrere Wörter, pro Beat das nächste, danach von vorn.<br>
   <code>text: {words: "HAVE FUN", per: bar}</code> – <code>per</code>: <code>beat</code> (Standard), <code>half</code> (2 Beats), <code>bar</code> (ein Takt) oder eine Zahl in Beats.<br>
   <code>text: {words: "THIS IS NOT ENOUGH*5", per: beat}</code> – ein Wort mit <code>*Zahl</code> am Ende bleibt so viele <code>per</code> stehen: THIS, IS, NOT je einen Beat, ENOUGH fünf (ab Schlag 4 bis zum Ende des nächsten Takts), dann von vorn.<br>
+  <code>text: {words: "FUCK_YOU", per: 32}</code> – ein Unterstrich wird als Leerzeichen gezeichnet, trennt aber nicht: beide Wörter stehen zusammen als ein Bild auf der Matrix (zusammen höchstens 9 Zeichen).<br>
   <code>text: {words: "…", flash: true}</code> – die Wörter blitzen auf und klingen ab wie die Lampen im Beat-Blitz (über einer Szene scheint sie dabei durch); ohne <code>flash</code> gehen sie hart an und aus. Ein Wort mit <code>*Zahl</code> steht voll hell und klingt erst in seinem letzten <code>per</code> ab. Nur für <code>words</code>, sinnvoll mit <code>per: beat</code>.<br>
   <code>text: {scroll: "I come home in the morning light"}</code> – Lauftext, der genau am Part-Ende fertig ist (bei langen Parts mehrere Durchläufe).<br>
   Optional <code>color</code>: <code>weiss</code>, <code>rot</code>, <code>blau</code>, <code>gruen</code>, <code>gelb</code>, <code>orange</code>, <code>pink</code>, <code>lila</code>, <code>cyan</code> oder ein CRGB-Ausdruck; ohne Angabe die Farben des Schemas, bei jedem Wort die nächste. <code>schwarz</code> stanzt den Text aus (nur mit <code>over: true</code>): die Buchstaben-LEDs sind aus, die Szene leuchtet drumherum – lesbar nur über hellen, gleichmäßigen Flächen wie Farbband oder Glow.<br>
@@ -440,10 +442,10 @@ python tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 </ul>
 
 <h2 id="beispiel">8 · Beispiel: All The Things She Said (Song 31)</h2>
-<p>Die Tabelle <code>songs/AllTheThingsSheSaid_v1/quelle/struktur.xlsx</code> hat 30 Parts, so geschnitten, wie die Show sie braucht: Synth-Intro, die Hook „this is not enough“, Build-ups und Strobo-Übergänge als eigene Parts, ein Stopp vor dem letzten Chorus. Aus Effektidee und Energie hat Claude in <code>show.yaml</code> drei wiederkehrende Motive gemacht:</p>
+<p>Die Tabelle <code>songs/AllTheThingsSheSaid_v1/quelle/struktur.xlsx</code> hat 30 Parts, so geschnitten, wie die Show sie braucht: Synth-Intro, die Hook „this is not enough“, Build-ups und Strobo-Übergänge als eigene Parts, ein Stopp vor dem letzten Chorus. Aus den Wünschen und der Energie hat Claude in <code>show.yaml</code> drei wiederkehrende Motive gemacht:</p>
 <div class="tablewrap"><table>
 <tr><th>In der Tabelle</th><th>In der Show</th></tr>
-<tr><td>„chorus 1“, Effektidee „action“, Energie 4</td><td>drehender Stern in Neon-Farben (<code>SCENE_STAR</code>), jedes Mal gleich</td></tr>
+<tr><td>„chorus 1“, Wunsch „action“, Energie 4</td><td>drehender Stern in Neon-Farben (<code>SCENE_STAR</code>), jedes Mal gleich</td></tr>
 <tr><td>„this is not enough“, „action stark auf viertel“, Energie 5</td><td>Schläge auf die Viertel in Rot (<code>SCENE_DROP</code>)</td></tr>
 <tr><td>„übergang zum chorus“, „strobo“, 1–2 Beats</td><td>weißer Strobo als Absprung</td></tr>
 <tr><td>„verse 2 a“, „ruhig“, Energie 2</td><td>Geräte füllen sich langsam, die Farbe wandert von Blau nach Pink und zurück</td></tr>
