@@ -241,6 +241,7 @@ struct FxLayer {
 	bool pending;			// seit dem Ende der Ebene wurde noch nicht ausgegeben
 	uint8_t mode, amount, from, to;
 	uint8_t bright;			// FastLED-Helligkeit, die der Effekt der Ebene eingestellt hat
+	uint8_t alpha;			// Deckkraft, die der Effekt der Ebene selbst vorgibt (fxLayerAlpha), 255 = voll
 };
 static FxLayer layers[LAYER_COUNT];	// die beiden Ebenen: [LAYER_FX] und [LAYER_TEXT]
 static CRGB baseBuf[NUMMATRIX];		// Bild des unteren Effekts, solange eine Ebene zeichnet
@@ -291,6 +292,7 @@ static void resetLayers() {
 		L.ctx.scrollZaehler = MATRIX_WIDTH + 1;	// wie switchToPart()
 		L.lastMs = 0;
 		L.used = L.pending = false;
+		L.alpha = 255;
 	}
 }
 
@@ -351,6 +353,13 @@ static bool anyLayer(bool FxLayer::*flag) {
 
 void fxLayerFlush() {
 	if (anyLayer(&FxLayer::pending)) fxPresent();
+}
+
+// Beschreibung: fxPipeline.h. layerCapturing sagt, welche Ebene gerade zeichnet (-1 = keine).
+bool fxLayerAlpha(uint8_t alpha) {
+	if (layerCapturing < 0) return false;
+	layers[layerCapturing].alpha = alpha;
+	return true;
 }
 
 //==================================================================
@@ -589,6 +598,7 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 	uint32_t beatMs = ms + mod.offsetMs;
 	uint8_t env = layerEnvelope(lm, beatMs);
 	uint8_t amount = scale8(L.amount, env);
+	if (L.alpha != 255) amount = scale8(amount, L.alpha);	// der Effekt der Ebene blendet sich selbst aus (fxLayerAlpha, z. B. abklingendes Wort)
 	if (lm.pulseBpm) amount = scale8(amount, pulseLevel(beatMs, lm.pulseBpm, lm.pulseDepth, lm.pulseBeats));
 	if (lm.gateBpm && !gateOpen(beatMs, lm.gateBpm, lm.gatePerBeat, lm.gateDuty)) amount = 0;
 	uint8_t baseScale = 255 - scale8(255 - lm.under, env);	// Helligkeit des Bildes darunter (fxLayerUnder), folgt der Hüllkurve

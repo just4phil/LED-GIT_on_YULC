@@ -1,0 +1,9 @@
+zeit: '2026-10-06 19:29:03'
+notiz: 'Hook-Text: THIS, IS, NOT auf die Viertel, ENOUGH bleibt einen Takt stehen
+  (ENOUGH*5)'
+werkzeug_git: 2e185fb + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: e418698fe04d60e7a6e87c5bd675d5589d6e642b39e0e8950acc0da55515c97e
+  show.yaml: ba1f2e6197629ea95b6af43bea9c8db26167baaf90353dac06a1b89ac88ba156
+  generated.cpp: 436a847a3007ae4107e1c98a9fe68caad35bd2cf437b748f4879e6a219c98881

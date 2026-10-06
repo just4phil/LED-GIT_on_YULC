@@ -4238,8 +4238,36 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 29. Derzeit ist nichts offen:
-	case 0:		switchToPart(29);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 29.
+	case 0:		demoNumber(34);	break;
+
+	case 34:	// progText mit "*Zahl": THIS, IS, NOT je einen Beat (zusammen mit dem Blitz der Lampen), ENOUGH bleibt 5 Beats stehen
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);	// Wellen unter dem Text auf 15 % gedimmt, damit er lesbar bleibt
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 8000, DEMO_NR(36), 500, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 8000, DEMO_NR(36), bpm);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 36:	// wie Part 34, aber mit flash: die Wörter blitzen auf und klingen ab wie die Lampen, ENOUGH steht und klingt im letzten Beat ab
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 8000, 29, 500, CRGB::White, true);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 8000, 29, bpm);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
 
 	//--- ABGENOMMEN (ohne Nummer) ---
 	// fxTextGradient: Farbverlauf in der Schrift statt einer Farbe (nur Matrix; die anderen Geräte atmen ruhig im Schema).

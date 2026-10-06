@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha e418698fe04d60e7a6e87c5bd675d5589d6e642b39e0e8950acc0da55515c97e
-//@show_sha d85db748867a50ee0f4e03604917a6ea51c2f6feaf3cfe4be53a5fe1651a95ca
+//@show_sha ba36858f449b640d631a0d0c63f0591794e22135f63f8a00d82185d69647dc51
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 5
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 10
@@ -80,12 +80,12 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_STAR, 11163, 20, 86);
 		break;
 
-	case 20:	// intro: this is not enough  4 T  11163ms  @0:24.070  -- Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)
+	case 20:	// intro: this is not enough  4 T  11163ms  @0:24.070  -- Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt
 		setColorScheme(SCHEME_RED);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
 		fxLayerBegin();
-		progText("THIS IS NOT ENOUGH*5", 11163, 25, 698, CRGB::White, true);
+		progText("THIS IS NOT ENOUGH", 11163, 25, 698, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
 		scene(SCENE_DROP, 11163, 25, 86);
@@ -122,12 +122,12 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_STAR, 11163, 50, 86);
 		break;
 
-	case 50:	// this is not enough  4 T  11162ms  @1:11.512  -- Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5). Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)
+	case 50:	// this is not enough  4 T  11162ms  @1:11.512  -- Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5). Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt
 		setColorScheme(SCHEME_RED);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
 		fxLayerBegin();
-		progText("THIS IS NOT ENOUGH*5", 11162, 55, 698, CRGB::White, true);
+		progText("THIS IS NOT ENOUGH", 11162, 55, 698, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
 		scene(SCENE_DROP, 11162, 55, 86);
@@ -178,12 +178,12 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_STAR, 11162, 90, 86);
 		break;
 
-	case 90:	// this is not enough (2)  4 T  11163ms  @2:18.488  -- Hook-Motiv: Viertel in Rot. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)
+	case 90:	// this is not enough (2)  4 T  11163ms  @2:18.488  -- Hook-Motiv: Viertel in Rot. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt
 		setColorScheme(SCHEME_RED);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
 		fxLayerBegin();
-		progText("THIS IS NOT ENOUGH*5", 11163, 95, 698, CRGB::White, true);
+		progText("THIS IS NOT ENOUGH", 11163, 95, 698, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
 		scene(SCENE_DROP, 11163, 95, 86);
@@ -231,12 +231,12 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_STAR, 8373, 130, 86);
 		break;
 
-	case 130:	// this is not enough (3)  3 T+2 B  9767ms  @3:03.140  -- Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)
+	case 130:	// this is not enough (3)  3 T+2 B  9767ms  @3:03.140  -- Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt
 		setColorScheme(SCHEME_FIRE);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
 		fxLayerBegin();
-		progText("THIS IS NOT ENOUGH*5", 9767, 135, 698, CRGB::White, true);
+		progText("THIS IS NOT ENOUGH", 9767, 135, 698, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
 		scene(SCENE_DROP, 9767, 135, 86);
@@ -254,12 +254,12 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_SPARKLE, 5582, 145, 86);
 		break;
 
-	case 145:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)
+	case 145:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt
 		setColorScheme(SCHEME_FIRE);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxTextUnder(38);
 		fxTextBegin();
-		progText("THIS IS NOT ENOUGH*5", 5581, 150, 698, CRGB::White, true);
+		progText("THIS IS NOT ENOUGH", 5581, 150, 698, CRGB::White);
 		fxTextEnd();
 #endif
 		fxLayerBegin();

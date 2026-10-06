@@ -11,8 +11,33 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (Titel-Lauftext aller Songs mit Farbverlauf, Abnahme offen)
+Zuletzt aktualisiert: 06.10.2026 (progText: Wörter mit eigener Länge, ATTSS-Hook mit Text; Abnahme offen)
 
+- **06.10.2026, `progText`: Wörter mit eigener Länge (`WORT*Zahl`) - gebaut, Abnahme offen.** Anlass: der User hat in
+  der Tabelle von ATTSS (#31) für alle fünf Hook-Parts „This is not enough“ als einzelne Worte auf die Viertel über
+  dem Effekt gewünscht; danach: THIS, IS, NOT sollen jeweils mit den beiden Lampen zusammen aufleuchten, ENOUGH darf
+  einen ganzen Takt stehen bleiben. Umsetzung: `textWordLen()` in `src/fxText.cpp` liest ein `*Zahl` am Wortende,
+  `progText` rechnet den Durchlauf in Zeitfenstern (`cycleSlots`) und sucht das laufende Wort; die dunkle Pause am
+  Wortende bleibt ein Viertel von `msPerWord`. Ohne `*Zahl` verhält sich alles wie bisher. `tools/songgen.py` reicht
+  die Angabe durch (`text_call()`: Breitenprüfung und Ausgabe ohne `*Zahl`, Fehler bei `*0`). ATTSS `show.yaml`:
+  `text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true}` in den fünf Hook-Parts (cases 20,
+  50, 90, 130, 145) - ein Durchlauf 8 Beats, ENOUGH ab Schlag 4 bis Ende des Folgetakts; Szene darunter auf der
+  Matrix 15 % (Generator-Standard). Demo 92: neuer offener Part 34 am Anfang (Part 0 zeigt die Nummer 34, danach
+  weiter in Part 29), Tabelle in `docs/LED-Effekte-und-Szenen.html` um 11 s verschoben. Doku: `docs/Song-Workflow.html`,
+  `.claude/skills/new-song/SKILL.md`, `docs/effekt-katalog.yaml`. **Hinweis:** Der User sah zuerst gar keinen Text -
+  die Firmware in `ota/` war von 19:07 Uhr, also älter als die Generierung (19:19); nach jeder Generierung
+  `build_ota.py` (ohne `--serve`) laufen lassen. **Nächster Schritt:** User startet `build_ota.py --serve-only`,
+  aktualisiert die Geräte und prüft ATTSS und Demo 92 Part 34; nach der Abnahme Part 34 ohne Nummer nach hinten.
+  **Nachtrag am selben Tag, Wunsch des Users „hart/abklingend als Option“ - gebaut, Abnahme offen:** `progText` hat
+  einen letzten Parameter `flash` (YAML `text: {..., flash: true}`, nur `words`). Das Wort folgt dann
+  `flashEnvelope()` aus `scenes.cpp` (dieselbe Kurve wie `progBeatFlash` der Lampen, dafür nicht mehr `static`,
+  Deklaration in `scenes.h`); ein Wort mit `*Zahl` steht voll und klingt im letzten Zeitfenster ab. In einer Ebene
+  setzt `progText` dafür die Deckkraft der Ebene (neu: `fxLayerAlpha()` in `fxPipeline`, Feld `alpha` in `FxLayer`,
+  in `applyLayer()` auf `amount` gerechnet, Part-Wechsel = 255), damit die Szene durchscheint und keine dunklen
+  Buchstaben stehen bleiben; ohne Ebene dunkelt es die Buchstaben selbst ab. ATTSS: die fünf Hook-Parts stehen auf
+  `flash: true`. Demo 92: Part 34 = hart, Part 36 = abklingend, beide offen am Anfang (Tabelle noch einmal 11 s
+  verschoben). **Nächster Schritt:** Urteil des Users hart gegen abklingend; je nach Urteil `flash` in der
+  `show.yaml` von ATTSS lassen oder entfernen, Katalog und SKILL.md nachtragen, Parts 34/36 nach hinten.
 - **06.10.2026, weicher Lauftext (`TEXT_SCROLL_BLEND`) - dritte Fassung vom User abgenommen („das gefällt mir gut!!"),
   Commit „Lauftext gleitet weich von Pixel zu Pixel"** (Frage des Users: der Lauftext wirkt auf der groben Matrix ruckelig, ob Nachglühen / Weichzeichnen
   hilft). `scrollDraw()` in `src/fxText.cpp` zeichnet den Text an der aktuellen und an der nächsten Position

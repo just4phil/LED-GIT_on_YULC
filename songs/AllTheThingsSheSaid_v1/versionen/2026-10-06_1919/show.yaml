@@ -3,8 +3,7 @@
 # Idee: drei wiederkehrende Motive gliedern den Song -
 #   Chorus "all the things she said"  = drehender Stern (SCENE_STAR)
 #   Hook "this is not enough"         = Schläge auf die Viertel in Rot (SCENE_DROP), jedes Mal gleich;
-#                                       auf den Matrix-Geräten dazu der Text über dem Effekt: THIS, IS, NOT auf die
-#                                       Viertel, ENOUGH bleibt einen Takt stehen
+#                                       auf den Matrix-Geräten dazu der Text, ein Wort pro Viertel, über dem Effekt
 #   Übergang in den Chorus            = weißer Strobo
 # Farben: der Chorus (und das Band-Intro mit derselben Melodie) in NEON, die Hook rot, nach dem Stopp kippt das
 # Finale ins Warme (SUNSET -> FIRE). Verses und Bridge starten kalt (ICE/ROYAL/BLUE, A-Moll), bleiben aber nicht
@@ -40,8 +39,8 @@ sections:
   "intro: this is not enough":
     scene: SCENE_DROP
     scheme: SCHEME_RED
-    text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true, flash: true}
-    why: "Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)"
+    text: {words: "THIS IS NOT ENOUGH", per: beat, color: weiss, over: true}
+    why: "Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt"
 
   verse 1a:
     scene: SCENE_GLOW
@@ -74,8 +73,8 @@ sections:
   this is not enough:
     scene: SCENE_DROP
     scheme: SCHEME_RED
-    text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true, flash: true}
-    why: "Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5). Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)"
+    text: {words: "THIS IS NOT ENOUGH", per: beat, color: weiss, over: true}
+    why: "Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5). Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt"
 
   synth solo a:
     scene: SCENE_COLORS
@@ -119,8 +118,8 @@ sections:
   this is not enough (2):
     scene: SCENE_DROP
     scheme: SCHEME_RED
-    text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true, flash: true}
-    why: "Hook-Motiv: Viertel in Rot. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)"
+    text: {words: "THIS IS NOT ENOUGH", per: beat, color: weiss, over: true}
+    why: "Hook-Motiv: Viertel in Rot. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt"
 
   Mother looking at me:
     scene: SCENE_CALM
@@ -164,8 +163,8 @@ sections:
   this is not enough (3):
     scene: SCENE_DROP
     scheme: SCHEME_FIRE
-    text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true, flash: true}
-    why: "Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)"
+    text: {words: "THIS IS NOT ENOUGH", per: beat, color: weiss, over: true}
+    why: "Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt"
 
   übergang zum chorus (4):
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
@@ -180,8 +179,8 @@ sections:
     scene: SCENE_DROP
     scheme: SCHEME_FIRE
     overlay: {scene: SCENE_SPARKLE, amount: 60}
-    text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true, flash: true}
-    why: "die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; flash: die Wörter klingen ab wie der Lampen-Blitz (flash: false = hart an/aus)"
+    text: {words: "THIS IS NOT ENOUGH", per: beat, color: weiss, over: true}
+    why: "die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten Wort für Wort auf den Vierteln über dem Effekt"
 
   fade out:
     scene: SCENE_FADEOUT

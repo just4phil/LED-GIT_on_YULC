@@ -187,6 +187,13 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 (`progText`/`progTextScroll`):
 - `text: "FUN"` - ein Wort pulsiert im Beat; `text: "THEY JUST WANNA HAVE FUN"` - pro Beat das nächste Wort.
 - `text: {words: "...", per: beat|half|bar|<Beats>, color: weiss|rot|...|CRGB::...}`; ohne `color` Schemafarben.
+- Ein Wort mit `*Zahl` am Ende bleibt so viele `per` stehen: `words: "THIS IS NOT ENOUGH*5"` = THIS, IS, NOT je
+  einen Beat, ENOUGH fünf (Wunsch des Users zu ATTSS, 06.10.2026: das letzte Wort der Hook bleibt einen Takt stehen).
+  Die Längen so wählen, dass ein Durchlauf ganze Takte füllt (hier 8 Beats), sonst wandert der Text gegen den Takt.
+- `flash: true` (nur `words`, sinnvoll mit `per: beat`) - die Wörter blitzen auf und klingen ab wie die Lampen im
+  Beat-Blitz (SCENE_DROP), statt hart an- und auszugehen; mit `over: true` scheint die Szene dabei durch. Ein Wort mit
+  `*Zahl` steht voll und klingt erst in seinem letzten `per` ab. Vom User als Option gewünscht (06.10.2026), Urteil
+  hart gegen abklingend steht noch aus (Demo 92, Parts 34 und 36).
 - `text: {scroll: "..."}` - Lauftext, der genau am Part-Ende fertig ist.
 - `gradient` statt `color` - Farbverlauf in der Schrift (`fxTextGradient`), für `words` und `scroll`, auch mit
   `over: true`: `gradient: scheme|rainbow|party|clouds|stripes|matrix|random|<Paletten-ID>` oder ausführlich

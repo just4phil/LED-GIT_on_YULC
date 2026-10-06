@@ -9,6 +9,7 @@
 #include "fxBase.h"
 #include "fxState.h"
 #include "FXprograms.h"
+#include "scenes.h"		// flashEnvelope(): Abklingkurve des Lampen-Blitzes für progText mit flash
 //---------------------------------------------------------------------
 
 //=====================================================================
@@ -391,20 +392,49 @@ void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart
 	fxShow();
 }
 
+// Länge eines Worts in progText ohne seine Längenangabe. Ein Wort darf mit "*Zahl" enden: "ENOUGH*5" heißt, das Wort
+// ENOUGH bleibt 5 Zeitfenster (5 x msPerWord) stehen statt eines. p zeigt auf den Wortanfang, len = Zeichen bis zum
+// nächsten Leerzeichen. Rückgabe: Zahl der Buchstaben, die gezeichnet werden; in slots steht danach die Länge in
+// Zeitfenstern (ohne Angabe 1). "int& slots": die Funktion schreibt direkt in die Variable des Aufrufers.
+static int textWordLen(const char* p, int len, int& slots) {
+	slots = 1;
+	int star = len - 1;
+	while (star > 0 && p[star] >= '0' && p[star] <= '9') star--;	// von hinten über die Ziffern zurückgehen
+	if (star <= 0 || star == len - 1 || p[star] != '*') return len;	// kein "*Zahl" am Ende: das ganze Wort ist Text
+	int n = 0;
+	for (int i = star + 1; i < len; i++) n = min(n * 10 + (p[i] - '0'), 1000);
+	slots = max(1, n);
+	return star;
+}
+
 // Ein oder mehrere Wörter (durch Leerzeichen getrennt): pro msPerWord erscheint das nächste Wort zentriert,
 // im letzten Viertel ist die Matrix dunkel (ein einzelnes Wort pulsiert so im Takt), nach dem letzten Wort
 // beginnt es von vorn. Passt ein Wort nicht auf die Matrix, läuft der ganze Text als Lauftext.
+// Ein Wort mit "*Zahl" am Ende bleibt so viele Zeitfenster stehen: "THIS IS NOT ENOUGH*5" mit msPerWord = ein Beat
+// zeigt THIS, IS, NOT je einen Beat und ENOUGH fünf Beats (ab Schlag 4 bis zum Ende des nächsten Takts); die dunkle
+// Pause am Ende bleibt ein Viertel von msPerWord. Ein Durchlauf dauert dann 8 Beats, danach von vorn.
+// flash = false: das Wort steht hart an und geht hart aus (wie oben beschrieben).
+// flash = true: das Wort blitzt auf und klingt ab wie die Lampen bei SCENE_DROP (flashEnvelope, scenes.cpp; msPerWord
+// sollte dann ein Beat sein, damit beide Kurven gleich lang sind). Ein Wort mit "*Zahl" steht erst voll hell und klingt
+// in seinem letzten Zeitfenster ab. Läuft der Text in einer Ebene (text: {over: true}), wird dafür die Deckkraft der
+// Ebene verringert (fxLayerAlpha): die Szene scheint durch. Läuft er direkt auf der Matrix, werden die Buchstaben dunkler.
 // col = CRGB::Black -> Farben des aktiven Schemas, bei jedem Wort die nächste.
 // Mit fxTextGradient(...) im case: Farbverlauf in der Schrift statt einer Farbe.
-void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col) {
+void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col, bool flash) {
 	// Wörter zählen und das längste finden. "const char* p" ist ein Zeiger, der Zeichen für Zeichen durch den
 	// Text wandert; "*p" ist das Zeichen an dieser Stelle, das Textende ist das Zeichen mit dem Wert 0.
 	int n = 0, longest = 0;		// Anzahl Wörter, Länge des längsten
+	long cycleSlots = 0;		// Zeitfenster eines ganzen Durchlaufs (jedes Wort 1, mit "*Zahl" entsprechend mehr)
 	for (const char* p = words; *p; ) {
 		while (*p == ' ') p++;
 		int len = 0;
 		while (p[len] && p[len] != ' ') len++;
-		if (len) { n++; longest = max(longest, len); }
+		if (len) {
+			int slots;
+			n++;
+			longest = max(longest, textWordLen(p, len, slots));
+			cycleSlots += slots;
+		}
 		p += len;
 	}
 	if (longest * 6 - 1 > MATRIX_WIDTH) {
@@ -414,9 +444,37 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 	if (!textPartInit(durationMillis, nextPart) || n == 0 || msPerWord == 0) { fxShow(); return; }
 
 	unsigned int t = millisCounterForProgChange;
-	long slot = t / msPerWord;								// das wievielte Wort-Zeitfenster seit Part-Beginn läuft gerade?
-	bool on = (t % msPerWord) < msPerWord - msPerWord / 4;	// in den ersten drei Vierteln des Fensters ist das Wort zu sehen
-	long state = on ? slot : -1;							// "Stand" des Bildes: nur wenn er sich ändert, wird neu gezeichnet
+	long slot = t / msPerWord;				// das wievielte Zeitfenster seit Part-Beginn läuft gerade?
+	long inCycle = slot % cycleSlots;		// ... und das wievielte innerhalb des laufenden Durchlaufs?
+	// Das Wort suchen, in dessen Zeitfenster(n) wir stehen: p = sein Anfang, len = seine Buchstaben, idx = seine Nummer,
+	// wordSlots = seine Länge in Zeitfenstern, first = sein erstes Zeitfenster im Durchlauf.
+	const char* p = words;
+	int len = 0, idx = -1, wordSlots = 0;
+	long first = 0;
+	for (long next = 0; next <= inCycle; next += wordSlots) {	// next = erstes Zeitfenster des nächsten Worts
+		first = next;
+		if (idx >= 0) while (*p && *p != ' ') p++;	// voriges Wort überspringen (samt seiner "*Zahl"); beim ersten Wort gibt es keins
+		while (*p == ' ') p++;
+		int raw = 0;
+		while (p[raw] && p[raw] != ' ') raw++;
+		len = textWordLen(p, raw, wordSlots);
+		idx++;
+	}
+	unsigned long tInWord = (unsigned long)(inCycle - first) * msPerWord + t % msPerWord;	// ms seit dem Erscheinen dieses Worts
+	bool on = tInWord < (unsigned long)wordSlots * msPerWord - msPerWord / 4;	// bis ein Viertel-Zeitfenster vor seinem Ende ist das Wort zu sehen
+	long wordNr = (slot / cycleSlots) * n + idx;	// das wievielte Wort seit Part-Beginn (für die Schemafarbe: bei jedem Wort die nächste)
+	uint8_t level = 255;							// Helligkeit des Worts (nur mit flash kleiner als 255)
+	if (flash) {
+		unsigned long fadeStart = (unsigned long)(wordSlots - 1) * msPerWord;	// bis hier steht das Wort voll (0 bei einem Wort ohne "*Zahl")
+		if (tInWord >= fadeStart) level = flashEnvelope(tInWord - fadeStart, msPerWord);
+		on = level > 0;
+	}
+	// In einer Ebene übernimmt die Ausgabestufe das Abklingen (Deckkraft), das Bild der Ebene bleibt voll hell und muss
+	// dafür nicht neu gezeichnet werden. Der Aufruf steht vor dem "nichts geändert"-Ausstieg, weil sich level in jedem
+	// Durchlauf ändert. Ohne Ebene (inLayer = false) dunkelt der Effekt weiter unten die Buchstaben selbst ab.
+	bool inLayer = fxLayerAlpha(level);
+	long state = on ? wordNr : -1;					// "Stand" des Bildes: nur wenn er sich ändert, wird neu gezeichnet
+	if (on && flash && !inLayer) state = wordNr * 256 + level;	// ohne Ebene zählt auch jede neue Helligkeit als Änderung
 	TextGrad grad = textGradNow();							// Farbverlauf in der Schrift (fxTextGradient)? Wandert er, zählt auch das als Änderung
 	if (state == progTextLastState && !(on && textGradChanged)) { fxShow(); return; }
 	progTextLastState = state;
@@ -424,19 +482,14 @@ void progText(const char* words, unsigned int durationMillis, byte nextPart, uns
 	FastLED.setBrightness(BRIGHTNESS);
 	textSetup();
 	if (on) {
-		const char* p = words;
-		int len = 0;
-		for (int i = 0; i <= (int)(slot % n); i++) {	// zum Wort dieses Slots vorrücken
-			p += len;
-			while (*p == ' ') p++;
-			len = 0;
-			while (p[len] && p[len] != ' ') len++;
-		}
 		int x = (MATRIX_WIDTH - (len * 6 - 1)) / 2;	// linke Kante des Worts, so dass es mittig steht
 		matrix->setCursor(x, textY());
-		textColor(grad, col, slot);
+		textColor(grad, col, wordNr);
 		for (int i = 0; i < len; i++) matrix->print(p[i]);
 		if (grad.on) textGradPaint(grad, x);
+		if (level < 255 && !inLayer) {	// abklingendes Wort ohne Ebene: alle LEDs dunkler (außer den Buchstaben ist alles schwarz)
+			for (int i = 0; i < NUMMATRIX; i++) leds[i].nscale8(level);
+		}
 	}
 	fxShow();
 }

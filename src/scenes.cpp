@@ -64,7 +64,8 @@ static uint8_t hueOf(CRGB c) {
 
 // kurzer Flash am Beatanfang, t = ms seit dem Beat
 // period = Länge eines Beats in ms. Ergebnis: Helligkeit 255 direkt auf dem Schlag, danach schnell abfallend.
-static uint8_t flashEnvelope(unsigned int t, unsigned int period) {
+// Nicht "static": auch progText (fxText.cpp) benutzt die Kurve, damit ein Wort genau wie die Lampen abklingt.
+uint8_t flashEnvelope(unsigned int t, unsigned int period) {
 	unsigned int decay = min(period * 7 / 10, 450u);	// Abklingzeit: 70 % des Beats, höchstens 450 ms
 	if (t >= decay) return 0;
 	uint8_t v = 255 - t * 255 / decay;

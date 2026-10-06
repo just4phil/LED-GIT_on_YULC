@@ -325,14 +325,17 @@ void progBlinkText(String words, unsigned int durationMillis, byte nextPart, uns
  * @brief Text für den text:-Schlüssel der show.yaml generierter Songs (tools/songgen.py), nur Matrix-Geräte
  *
  * progText: ein oder mehrere Wörter (durch Leerzeichen getrennt), pro msPerWord das nächste, automatisch
- * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext.
+ * zentriert; passt ein Wort nicht auf die Matrix, läuft alles als Lauftext. Ein Wort mit "*Zahl" am Ende bleibt
+ * so viele Zeitfenster stehen: "THIS IS NOT ENOUGH*5" = drei Wörter je msPerWord, ENOUGH 5 x msPerWord.
+ * flash = true (nur progText): jedes Wort blitzt auf und klingt ab wie die Lampen im Beat-Blitz, statt hart
+ * an- und auszugehen; ein Wort mit "*Zahl" steht voll und klingt erst in seinem letzten Zeitfenster ab.
  * progTextScroll: Lauftext, der genau am Ende des Parts fertig ist; gleitet wie progScrollText
  * weich von Pixel zu Pixel (TEXT_SCROLL_BLEND in fxText.cpp).
  * col = CRGB::Black (Standard): Farben des aktiven Schemas (bei jedem Wort bzw. Durchlauf die nächste).
  * Farbverlauf in der Schrift statt einer Farbe: vorher im case fxTextGradient(...) anmelden (fxPipeline.h),
  * col gilt dann nicht.
  */
-void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col = CRGB::Black);
+void progText(const char* words, unsigned int durationMillis, byte nextPart, unsigned int msPerWord, CRGB col = CRGB::Black, bool flash = false);
 void progTextScroll(const char* text, unsigned int durationMillis, byte nextPart, CRGB col = CRGB::Black);
 
 //==================================================================

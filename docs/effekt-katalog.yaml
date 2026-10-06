@@ -599,7 +599,7 @@ effekte:
   # ---------- Text (nur Matrix-Geräte; in show.yaml über `text:` statt von Hand) ----------
 
   progText:
-    wirkung: "Wort pulsiert im Beat bzw. pro Beat das nächste Wort, automatisch zentriert"
+    wirkung: "Wort pulsiert im Beat bzw. pro Beat das nächste Wort, automatisch zentriert; ein Wort mit *Zahl am Ende bleibt so viele Beats stehen (THIS IS NOT ENOUGH*5; Demo 92 Part 34, Abnahme offen); mit flash klingen die Wörter ab wie der Lampen-Blitz statt hart an/aus (Demo 92 Part 36, Abnahme offen)"
     art: text
     rolle: [akzent, flaeche]
     energie: [3, 5]

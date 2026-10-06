@@ -1,0 +1,8 @@
+zeit: '2026-10-06 19:33:15'
+notiz: 'Hook-Text mit flash: Woerter klingen ab wie der Lampen-Blitz'
+werkzeug_git: 2e185fb + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: e418698fe04d60e7a6e87c5bd675d5589d6e642b39e0e8950acc0da55515c97e
+  show.yaml: d85db748867a50ee0f4e03604917a6ea51c2f6feaf3cfe4be53a5fe1651a95ca
+  generated.cpp: e2c5f3e3920bdb32afbe7abc471b7f405376e5328e459229387cf671835d5e0f

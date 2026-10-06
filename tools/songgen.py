@@ -860,6 +860,8 @@ def text_gradient_call(part, song):
 def text_call(part, song, widths):
 	"""text: eines Parts -> (Aufruf für die Matrix-Geräte mit ${dur}/${next}, Beschreibung für die Timeline).
 	Formen: "FUN" | "THEY JUST WANNA" (ein Wort pro Beat) | {words: ..., per: beat|half|bar|<Beats>, color: ...}
+	(ein Wort mit "*Zahl" am Ende bleibt so viele per stehen: "THIS IS NOT ENOUGH*5"; flash: true = die Wörter
+	blitzen auf und klingen ab wie die Lampen, statt hart an- und auszugehen)
 	| {scroll: ..., color: ...} (Lauftext, endet genau am Part-Ende). gradient: statt color: färbt die Schrift mit einem
 	Farbverlauf (text_gradient_call). over: true legt den Text über die laufende
 	Szene, statt sie auf der Matrix zu ersetzen - auch zusammen mit overlay: (dann liegt der Text über beidem).
@@ -869,11 +871,11 @@ def text_call(part, song, widths):
 	spec = sec["text"]
 	if not isinstance(spec, dict):
 		spec = {"words": spec}
-	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "gradient", "over") + (LAYER_MOD_KEYS if spec.get("over") is True else ())]
+	unknown = [k for k in spec if k not in ("words", "scroll", "per", "color", "gradient", "over", "flash") + (LAYER_MOD_KEYS if spec.get("over") is True else ())]
 	if not isinstance(spec.get("over", False), bool):
 		raise SongError(f"{name}: text over ist true oder false")
 	if unknown or ("words" in spec) == ("scroll" in spec):
-		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color, gradient, over)"
+		raise SongError(f"{name}: text braucht genau eins von words/scroll (dazu per, color, gradient, over, flash)"
 						+ (f" - unbekannt: {', '.join(unknown)}" if unknown else ""))
 	scroll = "scroll" in spec
 	txt = " ".join(str(spec["scroll"] if scroll else spec["words"]).split())
@@ -895,9 +897,13 @@ def text_call(part, song, widths):
 			raise SongError(f"{name}: text-Farbe '{spec['color']}' unbekannt - {', '.join(sorted(TEXT_COLORS))}, schwarz (ausgestanzt, nur mit over) oder ein CRGB-Ausdruck")
 		color = ", " + c
 
+	# flash: true - die Wörter blitzen auf und klingen ab wie die Lampen im Beat-Blitz (letzter Parameter von progText)
+	flash = spec.get("flash", False)
+	if not isinstance(flash, bool):
+		raise SongError(f"{name}: text flash ist true oder false")
 	if scroll:
-		if "per" in spec:
-			raise SongError(f"{name}: per gilt nur für words, nicht für scroll")
+		if "per" in spec or flash:
+			raise SongError(f"{name}: per und flash gelten nur für words, nicht für scroll")
 		return f"progTextScroll({lit}, ${{dur}}, ${{next}}{color})", f'Lauftext "{txt}", endet am Part-Ende'
 
 	per = spec.get("per", "beat")
@@ -905,12 +911,28 @@ def text_call(part, song, widths):
 	if beats is None:
 		raise SongError(f"{name}: text per '{per}' unbekannt - beat, half, bar oder eine Zahl (Beats pro Wort)")
 	ms = round(beats * 60000.0 / part["bpm"])
-	words = txt.split()
-	info = f'"{txt}": ' + ("pulsiert" if len(words) == 1 else f"{len(words)} Wörter, eins") + f" alle {ms} ms"
+	# Ein Wort mit "*Zahl" am Ende bleibt so viele Zeitfenster (per) stehen: "ENOUGH*5" = 5 Beats bei per: beat.
+	# Die Angabe geht unverändert in den Aufruf, progText (fxText.cpp) wertet sie aus; hier wird sie nur für die
+	# Breitenprüfung und die Ausgabe vom Wort getrennt.
+	words, holds = [], []
+	for w in txt.split():
+		m = re.fullmatch(r"(.+)\*(\d+)", w)
+		if m and int(m.group(2)) < 1:
+			raise SongError(f"{name}: text '{w}' - die Länge hinter * ist eine ganze Zahl ab 1 (so viele per bleibt das Wort stehen)")
+		words.append(m.group(1) if m else w)
+		holds.append(int(m.group(2)) if m else 1)
+	if all(h == 1 for h in holds):
+		info = f'"{txt}": ' + ("pulsiert" if len(words) == 1 else f"{len(words)} Wörter, eins") + f" alle {ms} ms"
+	else:
+		info = (f'"{" ".join(words)}": ' + ", ".join(f"{w} {h} x" for w, h in zip(words, holds))
+				+ f" {ms} ms, ein Durchlauf {sum(holds) * ms} ms")
 	longest = max(len(w) for w in words)
 	wide = [d for d, w in widths.items() if longest * 6 - 1 > w]
 	if wide:
 		info += f" - ACHTUNG: '{max(words, key=len)}' passt nicht auf {', '.join(wide)}, läuft dort als Lauftext"
+	if flash:
+		color = (color or ", CRGB::Black") + ", true"	# die Farbe muss dann dastehen; Black = Schemafarben
+		info += ", blitzt auf und klingt ab (flash)"
 	return f"progText({lit}, ${{dur}}, ${{next}}, {ms}{color})", info
 
 

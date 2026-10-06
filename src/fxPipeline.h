@@ -71,6 +71,11 @@ void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Eb
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// nur die Ebene blitzt im Raster (wie fxGate)
 void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die Ebene da ist (255 = unverändert):
 												// folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor
+// Für den Effekt, der gerade in einer Ebene zeichnet (nicht für den case): Deckkraft seiner Ebene, 255 = voll.
+// progText lässt damit ein Wort abklingen - die Szene darunter scheint zunehmend durch, statt dass dunkle
+// Buchstaben auf ihr stehen bleiben. Rückgabe false = es zeichnet gerade keine Ebene (der Effekt läuft direkt
+// auf den LEDs und muss sein Bild selbst abdunkeln). Gilt, bis der Effekt einen neuen Wert setzt; Part-Wechsel = 255.
+bool fxLayerAlpha(uint8_t alpha);
 
 //--- Text-Ebene: liegt immer zuoberst und deckt, wo sie nicht schwarz ist. So geht Szene + Ebene + Text zugleich:
 //

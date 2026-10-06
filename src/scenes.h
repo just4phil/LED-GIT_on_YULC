@@ -63,6 +63,8 @@ uint8_t sharedRand8(uint32_t salt);
 void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned int periodMillis, uint8_t maxVal);
 void progFadeOut(unsigned int durationMillis, byte nextPart, CRGB col);		// einfarbig, blendet über die Partdauer weich aus
 void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis);
+uint8_t flashEnvelope(unsigned int t, unsigned int period);	// Helligkeit des Beat-Blitzes: t = ms seit dem Schlag, period = ms pro Beat;
+															// 255 auf dem Schlag, klingt in 70 % des Beats (höchstens 450 ms) auf 0 ab
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)
 void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerColor, bool wave);	// einfarbig, Wechsel im Beat
