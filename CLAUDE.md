@@ -104,7 +104,7 @@ up over a song; hand-written songs keep the old behaviour because their part len
 ### Song / part state machine
 `switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The main loop `switch(songID)` dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.
 
-MIDI CC#0 = song select, CC#32 = part select (handled in `midi_in.h`). The proxy re-broadcasts these as BLE notifications using the `BLEmessage` struct (msgTypes 0–6, defined in `functions.h`).
+MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these as BLE notifications using the `BLEmessage` struct (msgTypes 0–7, defined in `functions.h`; 7 = enter OTA update mode). Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/BLE.
 
 ### Key source files
 | File | Purpose |
@@ -120,7 +120,7 @@ MIDI CC#0 = song select, CC#32 = part select (handled in `midi_in.h`). The proxy
 | `midi_in.cpp/.h` | MIDI CC parsing, BLE broadcast in proxy mode |
 | `midiProxyBLEserver_nimBLE.cpp/.h` | NimBLE BLE server (proxy only) |
 | `BLE_client_nimBLE.cpp/.h` | NimBLE BLE client (non-proxy devices) |
-| `rotaryEncoder.cpp/.h` | Song selection knob (short press = select, long press = emergency stop) |
+| `rotaryEncoder.cpp/.h` | Knob: turn = brightness (2..255, fully down = LEDs off, markers stay), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
 | `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
 | `colors.h` | RGB565 color constants at multiple brightness levels |
