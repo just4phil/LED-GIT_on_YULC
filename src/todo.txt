@@ -2,9 +2,6 @@ claude --dangerously-skip-permissions
 ======================================
 
 Auffälligkeiten im code: (06.10.2026):
-2
-6. songs_generated.h: Der Build warnt mehrfach „GEN_ALLTHETHINGSSHESAID_ redefined“. Vermutlich erzeugen Partnamen ohne Buchstaben oder Ziffern eine leere, doppelte Konstante. Die Ursache im Generator habe ich nicht untersucht.
-7. midi_in.h und BLE_client_nimBLE.h: Einige Deklarationen passen nicht mehr zur .cpp-Datei (falsche Parameterzahl, nicht mehr vorhandene Funktionen). Das ist folgenlos, weil sie nie aufgerufen werden.
 ================================================
 
 definitions.h musst du nicht mehr anfassen. Stattdessen wählst du das passende PlatformIO-Env. Für die Gitarre heißt es andresgit, und es setzt ANDRESGIT selbst beim Bauen.

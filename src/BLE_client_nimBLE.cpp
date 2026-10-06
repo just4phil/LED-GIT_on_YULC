@@ -6,6 +6,7 @@
 #include "functions.h"
 #include "FXprograms.h"
 #include "otaUpdate.h"
+#include "BLE_client_nimBLE.h"	// die eigene .h-Datei: so vergleicht der Compiler die Ankündigungen dort mit dem Code hier
 
 //----------------------------
 
@@ -26,6 +27,15 @@ extern boolean waitForLEDsync; // in main
 //
 // Wichtig: Die Callbacks (notifyCallback, onResult ...) laufen im Bluetooth-Teil des Systems, nicht in
 // loop(). Sie legen deshalb nur Werte ab und setzen Merker; ausgeführt wird alles in BLE_client_Loop().
+//
+// In BLE_client_nimBLE.h stehen nur die drei Funktionen, die main.cpp aufruft (BLE_client_initialize,
+// BLE_client_Loop, informServerOnNextChange). Alle anderen Funktionen und die beiden Callback-Klassen
+// werden nur innerhalb dieser Datei benutzt und sind deshalb nur hier beschrieben.
+//
+// Alles Interne ist vor dem Rest des Programms "versteckt", damit sein Name nirgends sonst stören kann
+// (allgemeine Namen wie scan oder connected könnten sonst mit einer Bibliothek zusammenstoßen):
+//   static vor einer Funktion oder Variablen = gilt nur in dieser Datei, von außen nicht erreichbar
+//   namespace { ... } um eine Klasse        = dasselbe für Klassen (für die gibt es kein "static")
 
 // Die Kennnummern von Service und Datenwert des Proxys (aus definitions.h)
 static BLEUUID serviceUUID(SERVICE_UUID);       // verbindung zum midi proxy
@@ -40,34 +50,39 @@ static BLEUUID charUUID(CHARACTERISTIC_UUID);   // verbindung zum midi proxy
 static boolean doConnect = false;	// Merker: der Proxy wurde gefunden -> BLE_client_Loop() soll verbinden
 static boolean connected = false;	// true, solange die Verbindung zum Proxy steht
 static boolean isScanning = false;	// True if scan started or false if there was an error.
-boolean informServerOnNextProgChange = false;	// der Proxy hat nach unserem Stand gefragt: den nächsten Part-Wechsel auch melden
+static boolean informServerOnNextProgChange = false;	// der Proxy hat nach unserem Stand gefragt: den nächsten Part-Wechsel auch melden
 static const NimBLEAdvertisedDevice* advDevice;	// das beim Suchen gefundene Gerät (der Proxy)
-NimBLEScan* pBLEScan;				// das Such-Objekt der Bibliothek
+static NimBLEScan* pBLEScan;				// das Such-Objekt der Bibliothek
 // "Briefkasten": notifyCallback() legt die empfangene Nachricht hier ab, BLE_client_Loop() führt sie aus
-volatile bool newMidiValuesReceivedFromProxy = false;	// true = es liegt eine neue Nachricht vor
-volatile byte newMsgTypeIDfromProxy = 0;	// Byte 1: msgType
-volatile byte newMidiCCfromProxy = 0;		// Byte 2: Song-ID (der Name stammt noch aus der Zeit, als hier die MIDI-CC-Nummer stand)
-volatile byte newMidiValueFromProxy = 0;	// Byte 3: Part-Nummer
+static volatile bool newMidiValuesReceivedFromProxy = false;	// true = es liegt eine neue Nachricht vor
+static volatile byte newMsgTypeIDfromProxy = 0;	// Byte 1: msgType
+static volatile byte newMidiCCfromProxy = 0;		// Byte 2: Song-ID (der Name stammt noch aus der Zeit, als hier die MIDI-CC-Nummer stand)
+static volatile byte newMidiValueFromProxy = 0;	// Byte 3: Part-Nummer
 
 static constexpr uint32_t scanTimeMs = 10 * 1000; // 10 seconds scan time. Danach startet onScanEnd() die Suche neu
 //----------------------------
     /** Now we can read/write/subscribe the characteristics of the services we are interested in */
-    NimBLERemoteService*        pSvc = nullptr;
-    NimBLERemoteCharacteristic *pChr = nullptr;
+    static NimBLERemoteService*        pSvc = nullptr;	// unser Service auf dem Proxy
+    static NimBLERemoteCharacteristic *pChr = nullptr;	// unser Datenwert auf dem Proxy (nullptr = noch nicht verbunden)
     //NimBLERemoteDescriptor*     pDsc = nullptr;
 //=================================================================
 
 /**  None of these are required as they will be handled by the library with defaults. **
  **                       Remove as you see fit for your needs                        */
-// Callbacks für Verbindungsaufbau und -abbau
+// Callbacks für Verbindungsaufbau und -abbau. Die Bibliothek ruft sie von selbst auf.
+// "} clientCallbacks;" am Ende legt gleich das eine Objekt dieser Klasse an, das connectToServer() anmeldet.
+// "namespace {" (ohne Namen) bis zur schließenden Klammer hinter scanCallbacks: die beiden Klassen und ihre
+// Objekte gelten nur in dieser Datei. Eine gleichnamige Klasse in einer anderen Datei stört damit nicht.
+namespace {
 class ClientCallbacks : public NimBLEClientCallbacks {
+    // Die Verbindung zum Proxy steht (hier nur eine Meldung auf Serial)
     void onConnect(NimBLEClient* pClient) override { 
         #if defined(debug_ble_client)
             Serial.printf("Connected\n"); 
         #endif
         }
     // Verbindung verloren (Proxy aus oder außer Reichweite): sofort wieder suchen.
-    // Die Show läuft inzwischen nach der eigenen Uhr weiter.
+    // Die Show läuft inzwischen nach der eigenen Uhr weiter. reason = Grund des Abrisses als Fehlernummer.
     void onDisconnect(NimBLEClient* pClient, int reason) override {
         #if defined(debug_ble_client)
             Serial.printf("%s Disconnected, reason = %d - Starting scan\n", pClient->getPeerAddress().toString().c_str(), reason);
@@ -101,7 +116,8 @@ class ClientCallbacks : public NimBLEClientCallbacks {
     // }
 } clientCallbacks;
 
-// Callbacks der Suche
+// Callbacks der Suche: onResult() für jedes gefundene Gerät, onScanEnd() nach Ablauf der Suchzeit.
+// onDiscovered() (erste Sichtung eines Geräts) wird nicht gebraucht und ist auskommentiert.
 class scanCallbacks : public NimBLEScanCallbacks {
     // /** Initial discovery, advertisement data only. */
     // void onDiscovered(const NimBLEAdvertisedDevice* advertisedDevice) override {
@@ -140,9 +156,11 @@ class scanCallbacks : public NimBLEScanCallbacks {
         }
     }
 } scanCallbacks;
+} // Ende namespace: ab hier wieder normaler Code
 
-// Bluetooth starten (Gerätename "midi-client", volle Sendeleistung)
-void initialize_Device() {
+// Bluetooth starten (Gerätename "midi-client", volle Sendeleistung).
+// Interne Hilfsfunktion von BLE_client_initialize().
+static void initialize_Device() {
     #if defined(debug_ble_client)
         Serial.println("Starting BLE Client ...");
     #endif
@@ -151,16 +169,19 @@ void initialize_Device() {
     NimBLEDevice::setPower(ESP_PWR_LVL_P9); // max power
 } 
 
-// Die Suche einrichten
-void set_values() {
+// Die Suche nach dem Proxy einrichten: legt fest, dass gefundene Geräte an scanCallbacks gemeldet werden.
+// Interne Hilfsfunktion (BLE_client_initialize() und erneut nach einem fehlgeschlagenen Verbinden).
+static void set_values() {
     pBLEScan = NimBLEDevice::getScan(); // Create the scan object.
     pBLEScan->setScanCallbacks(&scanCallbacks, false); // Set the callback for when devices are discovered, no duplicates.
     pBLEScan->setActiveScan(true);          // Set active scanning, this will get more data from the advertiser.
     pBLEScan->setMaxResults(0);             // Do not store the scan results, use callback only.
 } 
 
-// Die Suche starten (läuft im Hintergrund, Ergebnisse kommen über scanCallbacks)
-void scan() {
+// Die Suche starten: sucht 10 Sekunden lang im Hintergrund, Ergebnisse kommen über scanCallbacks.
+// Wurde der Proxy bis dahin nicht gefunden, startet onScanEnd() die Suche von selbst neu - der Client
+// sucht also so lange, bis er den Proxy hat.
+static void scan() {
     pBLEScan->start(scanTimeMs, false, true); // duration, not a continuation of last scan, restart to get all devices again.
     printf("Scanning...\n");
     isScanning = true;
@@ -174,9 +195,19 @@ void BLE_client_initialize() {
 }
 
 /** Notification / Indication receiving handler callback */
-// Der Proxy hat eine Nachricht geschickt. pData zeigt auf die empfangenen Bytes (unsere BLEmessage:
-// msgType, Song, Part). Hier werden sie nur in den Briefkasten gelegt.
-void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
+/**
+ * @brief Wird von der Bibliothek aufgerufen, wenn der Proxy eine Nachricht schickt
+ *
+ * Legt die 3 empfangenen Bytes (unsere BLEmessage: msgType, Song, Part) nur in den Briefkasten und
+ * setzt einen Merker. Ausgeführt wird die Nachricht erst in BLE_client_Loop(), weil dieser Aufruf aus
+ * dem Bluetooth-Teil des Systems kommt und so kurz wie möglich sein muss.
+ *
+ * @param pBLERemoteCharacteristic der Datenwert des Proxys, von dem die Nachricht kommt
+ * @param pData    Zeiger auf die empfangenen Bytes
+ * @param length   Anzahl der empfangenen Bytes
+ * @param isNotify true = Notification, false = Indication (Variante mit Empfangsbestätigung)
+ */
+static void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
     
     // //===== TEST 03.01.2025: =============================
     // // Test, ob man sich ein ESP32 BLE Client zum widi master (central) verbinden kann.
@@ -208,9 +239,21 @@ void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_
     newMidiValuesReceivedFromProxy = true;
 }
 
-// Verbindung zum gefundenen Proxy aufbauen und seine Notifications abonnieren.
-// Rückgabe true = verbunden. Der auskommentierte Block am Anfang ist die alte Fassung (vor NimBLE).
-bool connectToServer() {
+/**
+ * @brief Verbindung zum gefundenen Proxy aufbauen und seine Notifications abonnieren
+ *
+ * Ablauf (die Schritte sind unten im Code markiert):
+ * 1. vorhandenes Verbindungs-Objekt wiederverwenden oder
+ * 2. ein neues anlegen und verbinden (höchstens 5 Sekunden warten)
+ * 3. auf dem Proxy unseren Service und darin unseren Datenwert heraussuchen
+ * 4. Notifications abonnieren - ab dann ruft die Bibliothek notifyCallback() auf
+ *
+ * Der auskommentierte Block am Anfang ist die alte Fassung (vor NimBLE).
+ *
+ * @return true, wenn die Verbindung steht; false, wenn das Verbinden fehlgeschlagen ist
+ *         (BLE_client_Loop() startet dann die Suche neu)
+ */
+static bool connectToServer() {
     // Serial.print("Forming a connection to ");
     // Serial.println(myDevice->getAddress().toString().c_str());
     // BLEClient *pClient = BLEDevice::createClient();
@@ -403,8 +446,23 @@ bool connectToServer() {
     return true;
 }
 
-// Eine vom Proxy empfangene Nachricht ausführen (Nachrichtentypen: siehe BLEmessage in functions.h).
-void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
+/**
+ * @brief Eine vom Proxy empfangene Nachricht ausführen (aufgerufen aus BLE_client_Loop())
+ *
+ * Was je Nachrichtentyp passiert (Nachrichtenformat: siehe BLEmessage in functions.h):
+ * - 1: switchToSong(song)
+ * - 2: switchToPart(part)
+ * - 3: erzwungener Abgleich: in Song + Part springen, dunkel schalten, auf Typ 4 warten
+ * - 4: wenn der Client wartet: switchToPart(part) - ab jetzt zeitgleich mit dem Proxy
+ * - 5: der Proxy fragt nach unserem Stand: Song + Part als Typ 6 an den Proxy schreiben
+ * - 7: OTA-Update-Modus (nur wenn gerade kein Song läuft, songID == 0)
+ * Typ 0 und Typ 6 lösen am Client nichts aus.
+ *
+ * @param msgType Nachrichtentyp (Byte 1 der BLEmessage)
+ * @param song    Song-ID (Byte 2); nur bei Typ 1 und 3 von Bedeutung
+ * @param part    Part-Nummer (Byte 3); nur bei Typ 2, 3 und 4 von Bedeutung
+ */
+static void MidiDatenVomProxyAuswerten(byte msgType, byte song, byte part) {
 
     switch (msgType) {
         case 0:

@@ -6,6 +6,7 @@
 #include "functions.h"
 #include "otaUpdate.h"
 #include <FastLED.h>
+#include "midiProxyBLEserver_nimBLE.h"	// die eigene .h-Datei: so vergleicht der Compiler die Ankündigungen dort mit dem Code hier
 //---------------------------
 
 extern byte songID;
@@ -46,40 +47,47 @@ extern boolean waitForLEDsync; // in main
 //   5       der Proxy bittet einen Client um dessen Stand (needLEDsync); Antwort kommt in onWrite()
 //   7       alle Geräte in den Firmware-Update-Modus (midiProxy_broadcastOTA)
 // Bei Änderungen am Protokoll docs/OTA-Update.html mitziehen.
+//
+// Alles, was nur diese Datei braucht, ist vor dem Rest des Programms "versteckt", damit sein Name nirgends
+// sonst stören kann (Namen wie pService oder bleMessage werden leicht doppelt vergeben):
+//   static vor einer Funktion oder Variablen = gilt nur in dieser Datei, von außen nicht erreichbar
+//   namespace { ... } um eine Klasse        = dasselbe für Klassen (für die gibt es kein "static")
+// Von außen erreichbar bleiben nur die Funktionen aus midiProxyBLEserver_nimBLE.h.
 
 // Nur diese Geräte dürfen sich verbinden (Bluetooth-Adressen aus definitions.h). Fremde Geräte
 // werden in onConnect() sofort wieder getrennt.
-const char* client_addresses[] = {
+static const char* client_addresses[] = {
     CLIENT_ADDRESS_YULC2,   // RINAs YULC
     CLIENT_ADDRESS_YULC4,   // YULC 4 vom 12.3.25
     CLIENT_ADDRESS_YULC5,   // YULC 5 vom 12.3.25
     CLIENT_ADDRESS_YULC6    // YULC 6 vom 12.3.25
 };
 // Größe des Arrays ermitteln
-const size_t client_address_count = sizeof(client_addresses) / sizeof(client_addresses[0]);
+static const size_t client_address_count = sizeof(client_addresses) / sizeof(client_addresses[0]);
 
-uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
+static uint32_t anzahl_BLE_devices;	// zum zählen der BLE Connections
 //volatile bool syncLEDgits = false;
 
 // Merker aus den Callbacks: "es hat sich jemand verbunden / getrennt". midiProxy_midiLoop() wertet sie
 // aus (derzeit nur für die Meldung auf Serial).
-bool aDeviceConnected = false;
-bool aDeviceDISconnected = false;
-volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications (für OTA-Broadcast)
+static bool aDeviceConnected = false;
+static bool aDeviceDISconnected = false;
+static volatile uint8_t subscribedClients = 0;    // Clients mit aktiven Notifications (für OTA-Broadcast)
 
 #define OTA_CLIENT_WAIT_MS      20000   // so lange wartet midiProxy_broadcastOTA() höchstens auf die Clients
 #define OTA_CLIENT_QUIET_MS     5000    // ... und sendet früher, wenn sich so lange kein weiterer Client angemeldet hat
 
 // Zeiger auf die BLE-Objekte, angelegt in midiProxy_initialize_BLE()
 static NimBLEServer* pServer;			// der Server selbst
-NimBLEService *pService;				// unser Service
-NimBLECharacteristic *pCharacteristic;	// unser Datenwert (die BLEmessage)
-NimBLEAdvertising *pAdvertising;		// das "ich bin da"-Senden
+static NimBLEService *pService;				// unser Service
+static NimBLECharacteristic *pCharacteristic;	// unser Datenwert (die BLEmessage)
+static NimBLEAdvertising *pAdvertising;		// das "ich bin da"-Senden
 
-BLEmessage bleMessage;	// die zuletzt gesetzte/gesendete Nachricht
+static BLEmessage bleMessage;	// die zuletzt gesetzte/gesendete Nachricht
 
-// Funktion, um zu prüfen, ob eine Adresse erlaubt ist
-bool is_address_in_array(const char* address) {
+// Funktion, um zu prüfen, ob eine Adresse erlaubt ist (steht sie in client_addresses[]?).
+// Wird nur hier in onConnect() gebraucht und steht deshalb nicht in der .h-Datei.
+static bool is_address_in_array(const char* address) {
     for (size_t i = 0; i < client_address_count; i++) {
         if (strcmp(client_addresses[i], address) == 0) {
             return true; // Adresse gefunden
@@ -92,6 +100,9 @@ bool is_address_in_array(const char* address) {
  **                       Remove as you see fit for your needs                        */
 // Callbacks für Verbindungsaufbau und -abbau. "class X : public Y" heißt: unsere Klasse übernimmt
 // alles von der Bibliotheksklasse Y und ersetzt ("override") nur die Funktionen, die uns interessieren.
+// "namespace {" (ohne Namen) bis zur schließenden Klammer hinter chrCallbacks: die beiden Klassen und ihre
+// Objekte gelten nur in dieser Datei. Eine gleichnamige Klasse in einer anderen Datei stört damit nicht.
+namespace {
 class ServerCallbacks : public NimBLEServerCallbacks {
     // Ein Gerät hat sich verbunden
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
@@ -232,6 +243,7 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         //syncLEDgits = true; // sync here for auto-sync
     }
 } chrCallbacks;
+} // Ende namespace: ab hier wieder normaler Code
 
 // Bluetooth-Server aufbauen und auffindbar machen (einmal aus setup()).
 void midiProxy_initialize_BLE() {

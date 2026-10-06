@@ -1,3 +1,4 @@
+#pragma once	// Include-Schutz: der Inhalt wird pro .cpp-Datei nur einmal gelesen, auch wenn sie die Datei mehrfach einbindet
 #include <Arduino.h>
 
 //=====================================================================
@@ -12,6 +13,10 @@
 //   Kanal 10, CC 23, Wert n  ->  in Part n des laufenden Songs springen
 //
 // Alles andere wird ignoriert.
+//
+// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. Hilfsfunktionen, die nur
+// midi_in.cpp selbst braucht (setBroadcastValues), sind dort beschrieben. midi_in.cpp bindet diese
+// Datei selbst ein, damit der Compiler Ankündigung (hier) und Code (dort) miteinander vergleicht.
 
 /**
  * @brief Eine empfangene Control-Change-Nachricht auswerten
@@ -21,23 +26,14 @@
  * - CC 22: switchToSong(value)
  * - CC 23: switchToPart(value)
  *
- * Auf dem Proxy (IS_MIDI_PROXY) wird der Wechsel zusätzlich über setBroadcastValues() zum
- * Weitersenden per Bluetooth vorgemerkt.
+ * Auf dem Proxy (IS_MIDI_PROXY) wird der Wechsel zusätzlich zum Weitersenden per Bluetooth
+ * vorgemerkt (setBroadcastValues() in midi_in.cpp).
  *
  * @param channel MIDI-Kanal (1-16)
  * @param number  CC-Nummer (0-127)
  * @param value   Wert (0-127) = Song-ID bzw. Part-Nummer
  */
 void MidiDatenAuswerten(byte channel, byte number, byte value);
-
-/**
- * @brief Einen Wechsel zum Weitersenden an die Bluetooth-Clients vormerken
- *
- * ACHTUNG: Diese Deklaration (2 Parameter) passt nicht zur Funktion in midi_in.cpp, die 3 Parameter
- * hat: setBroadcastValues(byte type, byte number, byte value). Das fällt nicht auf, weil die Funktion
- * nur innerhalb von midi_in.cpp aufgerufen wird. Beschreibung der echten Funktion: siehe dort.
- */
-void setBroadcastValues(byte number, byte value);
 
 /**
  * @brief MIDI-Eingang starten (einmal aus setup())

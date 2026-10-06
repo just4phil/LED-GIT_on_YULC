@@ -1,34 +1,17 @@
+#pragma once	// Include-Schutz: der Inhalt wird pro .cpp-Datei nur einmal gelesen, auch wenn sie die Datei mehrfach einbindet
 #ifdef USE_ESP32
 //----------------------------
 #include <Arduino.h>
-#include <NimBLEDevice.h>
 
 //=====================================================================
 // midiProxyBLEserver_nimBLE.h - Bluetooth-Sender des Proxys (nur Gitarre ANDRESGIT)
 //=====================================================================
 // Ausführliche Erklärung (BLE-Begriffe, Nachrichtentypen): siehe midiProxyBLEserver_nimBLE.cpp.
-// Von außen (main.cpp) werden nur die Funktionen am Ende dieser Datei benutzt.
+// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. Die Callback-Klassen
+// (ServerCallbacks, CharacteristicCallbacks) und die Adressprüfung is_address_in_array() braucht nur
+// die .cpp-Datei selbst; sie sind dort beschrieben. Die .cpp-Datei bindet diese Datei selbst ein,
+// damit der Compiler Ankündigung (hier) und Code (dort) miteinander vergleicht.
 
-// Prüft, ob eine Bluetooth-Adresse in der Liste der erlaubten Clients steht
-bool is_address_in_array(const char *address);
-
-// Die beiden Klassen-Deklarationen hier sind nur ein Überblick über die Callbacks. Die tatsächlich
-// benutzten Klassen sind in der .cpp-Datei noch einmal vollständig definiert (die .cpp bindet diese
-// .h-Datei nicht ein, deshalb stören sich beide nicht).
-class ServerCallbacks : public NimBLEServerCallbacks {
-    void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo);
-    void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason);
-    void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo);
-    uint32_t onPassKeyDisplay();
-    void onConfirmPassKey(NimBLEConnInfo& connInfo, uint32_t pass_key);
-    void onAuthenticationComplete(NimBLEConnInfo& connInfo);
-};
-class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
-    void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo);
-    void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo);
-    void onStatus(NimBLECharacteristic* pCharacteristic, int code);
-    void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue);
-};
 // Bluetooth-Server starten und auffindbar machen (einmal aus setup())
 void midiProxy_initialize_BLE();
 // Nachricht (msgType, Song, Part - siehe BLEmessage in functions.h) sofort an alle angemeldeten Clients senden
