@@ -203,7 +203,10 @@ Each song has a folder `songs/<Song>_v1/`:
 
 - `quelle/struktur.xlsx` - the table with song ID, BPM and, per part: first bar, part name, change request,
   energy 0-5. This is the only file maintained by hand. The generator writes one column back into it
-  (`Effekt (füllt KI)`): what is currently implemented for each part.
+  (`Effekt (füllt KI)`): what is currently implemented for each part. Between two parts the table may have
+  sub-rows (a bar number without a part name), for example one row per quarter bar: a change request written
+  there applies to exactly that position, and the generator answers it in the same row. Empty sub-rows mean
+  "the part's effect keeps running".
 - `show.yaml` - the design: scene, colour scheme, transitions, text, overlays and markers per part.
 - `generated.cpp` - the generated code of this song.
 - `versionen/<timestamp>/` - a copy of all three for every generation.
@@ -211,6 +214,7 @@ Each song has a folder `songs/<Song>_v1/`:
 ```bash
 python tools/songgen.py <Song>              # generate this song and rebuild src/songs_generated.*
 python tools/songgen.py --neu <Song>        # create a new song folder with the table template
+python tools/songgen.py --raster <Song>     # write a copy of the table with one row per quarter bar
 python tools/songgen.py --versions <Song>   # list saved versions
 python tools/songgen.py --restore <version> <Song>
 ```

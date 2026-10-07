@@ -11,10 +11,10 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster: Schritt 1 in Arbeit)
+Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster und mehrere Blinder pro Part gebaut, Abnahme offen)
 
 - **07.10.2026, Struktur-Tabelle im Viertel-Raster (Wunsch des Users: „dann könnte ich immer sehr fein meine Ideen auf
-  Vierteltakt angeben“) - in Arbeit.** Sein Beispiel: `Desktop\xls\struktur.xlsx` (APT., eine Zeile je Vierteltakt,
+  Vierteltakt angeben“) - gebaut, Abnahme offen.** Sein Beispiel: `Desktop\xls\struktur.xlsx` (APT., eine Zeile je Vierteltakt,
   Partnamen nur an den Startzeilen). Entscheidungen des Users: leere Zwischenzeilen = das letzte Programm läuft weiter;
   Energie je Vierteltakt ist „noch nicht fertig“ (wird nur mitgelesen, ohne Wirkung); volles Raster und kompakte
   Tabelle sind beide erlaubt, die Vorlage wird gerastert; bestehende Songs bekommen auf Befehl eine gerasterte Kopie
@@ -38,11 +38,24 @@ Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster: Schritt 1 
      618 Zeilen mehr), Fingerabdruck jeweils gleich, zweites Rastern fügt nichts ein, `write_effects()` erhält die
      Gliederung. **Nicht geprüft:** wie Excel die eingeklappte Gliederung anzeigt - das sieht der User beim ersten
      `--raster`.
-  3. **Mehrere Blinder pro Part - in Arbeit.** `fxBlinderSlot()` in `fxPipeline`, `blinder:` als Liste mit `bar:` in
-     `show.yaml`, Demo 92 Part 0.
-  4. Doku (`Song-Workflow.html`, SKILL.md, README, CLAUDE.md) - offen.
-  Kontrolle bei jedem Schritt: Fingerabdruck aller 24 Tabellen und der erzeugte Code der 9 Songs mit Show bleiben
-  gleich. Es wird kein Song neu generiert.
+  3. **Mehrere Blinder pro Part - gebaut, Abnahme offen.** Firmware: `mod.blinder[FX_BLINDER_SLOTS]` (8,
+     `definitions.h`), neue Anmeldung `fxBlinderSlot(slot)` wählt den Platz für die folgenden `fxBlinder` /
+     `fxBlinderBeat` / `fxBlinderShape`; `blinderLevel()` nimmt den stärksten Platz, `applyBlinder()` dessen Farbe.
+     Ohne `fxBlinderSlot` gilt Platz 0 - alter Code und alle generierten Songs unverändert. Generator
+     (`pipeline_calls()`): `blinder:` auch als Liste, je Eintrag statt `at` auch `bar: <Taktnummer der Tabelle>`
+     (`sec["_von"]` / `["_bis"]` aus `load_song()`), `blinder_slots()` liest die Platzzahl aus `definitions.h`; ein
+     einzelner Blinder erzeugt denselben Code wie bisher. Demo 92: neuer offener Part 38 am Anfang (drei Blinder in
+     einem Part), danach 37; Tabelle in `docs/LED-Effekte-und-Szenen.html` (Gesamtzeit 7:40, abgenommene Parts 22 s
+     später). `andresgit` und `scrollmatrix` gebaut (die anderen drei Envs nicht).
+  4. **Doku - fertig.** `docs/Song-Workflow.html` (neuer Abschnitt „Zwischenzeilen“, `cues`, `blinder` mit `bar` und
+     Liste, Befehl `--raster`), SKILL.md, README, CLAUDE.md.
+  Kontrolle nach jedem Schritt: Fingerabdruck aller 24 Tabellen und der erzeugte Code der 9 Songs mit Show sind
+  gleich geblieben. Es wurde kein Song neu generiert und keine Tabelle des Users angefasst.
+  **Nächster Schritt:** User probiert `songgen.py <Song> --raster` an einem Song (sieht die eingeklappte Gliederung
+  in Excel gut aus?), tauscht die Kopie selbst gegen seine Tabelle und trägt Wünsche in Zwischenzeilen ein; Claude
+  setzt sie um (`blinder` mit `bar:`, Antwort in `cues:`). Geräte aktualisieren (`build_ota.py` ohne `--serve` baut
+  Claude, `--serve-only` startet der User) und Demo 92 Part 38 prüfen. Offen bleibt die Energie je Vierteltakt
+  (laut User „noch nicht fertig“): wird gelesen, wirkt nicht.
 
 - **07.10.2026, I Love It (#9): zwei Änderungswünsche aus der Tabelle (00:07 Uhr eingetragen, nach der letzten
   Generierung) - gebaut, Abnahme offen** (Version `2026-10-07_1603`, nur `songs/ILoveIt_v1/show.yaml`, keine Änderung

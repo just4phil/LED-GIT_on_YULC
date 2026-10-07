@@ -54,6 +54,20 @@ der User löscht sie selbst.
 - Altes Format: Tabellen aus der Zeit davor haben eine Spalte `Effektidee` (= seine Wünsche) und keine Effekt-Spalte.
   Sie werden weiter gelesen und bei ihrer ersten Generierung umgestellt (Wünsche wandern nach `Änderungswunsch`).
   Enthält das Blatt eigene Formeln, fügt das Skript keine Spalte ein und sagt dem User, was er in Excel anlegen soll.
+- **Zwischenzeilen / Viertel-Raster** (seit 07.10.2026, Idee des Users: „dann könnte ich immer sehr fein meine Ideen
+  auf Vierteltakt angeben“): eine Zeile mit `von takt`, aber **ohne Songpart**, gehört zum Part darüber. Leer = der
+  Effekt des Parts läuft weiter (zählt nicht zum Fingerabdruck der Tabelle). Mit `Änderungswunsch` = ein Wunsch genau
+  an dieser Stelle; `read_table()` liefert ihn je Part als `wishes: [{von, at, idea, energy}]` (`von` = Taktnummer der
+  Tabelle, `at` = Beats ab Part-Beginn), `--dry-run` listet jeden mit Antwort oder „OFFEN“. Energie in einer
+  Zwischenzeile wird nur mitgelesen (laut User „noch nicht fertig“) - nichts daraus ableiten. Volles Raster und
+  kompakte Tabelle mit einzelnen Zwischenzeilen gelten beide.
+  **Umsetzen:** Akzente über dem laufenden Effekt (Blinder, Text, Ein-/Ausblenden) mit der Taktnummer des Wunsches
+  setzen - `blinder: {bar: <von takt>, ...}`, mehrere als Liste - und in `cues:` je Zwischenzeile beantworten
+  (`cues: {21.75: "Blinder auf den Schlag, nur Lampen"}`); der Text landet in „Effekt (füllt KI)“ genau dieser Zeile.
+  Jeden Wunsch beantworten, auch den nicht umsetzbaren (dann steht dort, warum nicht). Verlangt der Wunsch eine andere
+  Szene ab dieser Stelle, geht das nur mit einem eigenen Part: dem User sagen, dass er der Zeile einen Songpart-Namen gibt.
+  `songgen.py <Song> --raster` legt für eine kompakte Tabelle die gerasterte Kopie `quelle/struktur-raster.xlsx` an;
+  der User tauscht sie selbst gegen seine `struktur.xlsx` - nie selbst umbenennen oder kopieren.
 - `Energie 0-5`: seine Einschätzung, Grundlage der Szenenwahl (0 = Black). Fehlt die Show für einen Part, nimmt
   der Generator als Fallback 1 CALM, 2 VERSE, 3 BUILDUP, 4-5 DROP.
 - `BPM pro Part`: nur bei Tempowechsel anders als das BPM im Kopf.
@@ -279,7 +293,9 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `blinder: bar` oder `{every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss|...,
   devices: [LAMPE1, LAMPE2]}` - helles Aufblenden wie ein Bühnen-Blinder über dem laufenden Effekt (Idee des Users).
   Ohne `every` einmalig bei `at` (z. B. auf den Chorus-Einsatz `{at: 0, len: 2}`). Sparsam einsetzen: Akzent auf
-  Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Ein Blinder je Abschnitt. Urteil des Users
+  Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Mehrere Blinder in einem Abschnitt als Liste (höchstens 8,
+  `blinder: [{bar: 20, len: 2}, {bar: 21.75, len: 1}]`); statt `at` (Beats ab Part-Beginn) geht `bar` = Taktnummer der
+  Tabelle, also das `von takt` der Zwischenzeile mit dem Wunsch. Urteil des Users
   (05.10.2026): nur auf den Lampen (`devices: [LAMPE1, LAMPE2]`, kurz, weiß) gut für Rhythmisches; auf allen Geräten
   war er mit 1 Beat „zu kurz und zu dezent" - dort `len` ab 2 Beats, und er wirkt über dunklen oder ruhigen Effekten
   stärker als über vollflächigen Farbwechseln (`SCENE_COLORS`). So (2 Beats, über Farbband, ruhiger Fläche oder

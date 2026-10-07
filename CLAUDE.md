@@ -90,7 +90,9 @@ a part's `case` on every pass, like the colour scheme; `switchToPart()` resets t
 is registered the same way but is evaluated by the effect itself (`progBeatColors` blends to the next colour at the end
 of each beat, via `fxSoftBlend()`). `fxSmooth(ms)` is a temporal low-pass on the part's effect (below the layers) that
 turns hard jumps of old effects into blends. `fxBlinder` / `fxBlinderBeat` flash a stage-blinder (warm white) on top of
-everything, once or on a beat grid, on all or selected devices. A second
+everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n)` before each of them puts several
+blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
+number of the table). A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
@@ -145,7 +147,10 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 ### Generated songs (songs/<Song>/)
 One folder per song, e.g. `songs/AllTheThingsSheSaid_v1/` (`_v1` = version of the arrangement/audio):
 `quelle/struktur.xlsx` (the user's Excel table and the only file he maintains: song ID, BPM, StartBit, per part
-`von takt`, `Songpart`, `Effekt (füllt KI)`, `Änderungswunsch`, `Energie 0-5`, `BPM pro Part`; last row `Ende`), `show.yaml` (derived by
+`von takt`, `Songpart`, `Effekt (füllt KI)`, `Änderungswunsch`, `Energie 0-5`, `BPM pro Part`; last row `Ende`; rows
+with `von takt` but no `Songpart` are sub-rows of the part above, e.g. one per quarter bar - empty = the part's effect
+keeps running, with an `Änderungswunsch` = a wish for exactly that position, read as `wishes` and answered per row via
+`cues: {<von takt>: "text"}` in `show.yaml`; energy in a sub-row is read but has no effect yet), `show.yaml` (derived by
 Claude directly from the table: scenes/schemes per part, matched by part name), `generated.cpp` (generated code of
 this song), `versionen/<timestamp>/` (copy of all three + `info.yaml` per generation). There is no `song.yaml`,
 no audio analysis and no chord-sheet import any more (user decision 06.10.2026); leftover `song.yaml`, MP3s,
@@ -170,7 +175,9 @@ time with the beat) while the other devices keep playing the scene.
 `tools/songgen.py <Song>` reads table + show, generates only the named song, saves a version and assembles
 `src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
 songs are taken over unchanged). `--neu` creates a new song folder with the table template
-(`songs/struktur-vorlage.xlsx`), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+(`songs/struktur-vorlage.xlsx`, already in the quarter-bar grid), `--raster` writes a quarter-bar copy
+`quelle/struktur-raster.xlsx` next to an existing table (the table itself is only read; the user swaps the files
+himself - never rename or copy it for him), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
 Never edit the generated files by hand. `tools/struktur.py` is the table reader (format documented there). If the
 user changed part names or inserted/removed rows, `songgen.py` stops with a list of what no longer matches -
 adapt `show.yaml`. The old hand-written songs all have a table too (column `bisher (alter Code)` = their old

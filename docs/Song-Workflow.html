@@ -236,10 +236,28 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td>Effekt (füllt KI)</td><td>nein</td><td><b>Schreibt das Werkzeug</b> bei jeder Generierung: der Effekt, der für diesen Part gerade umgesetzt ist – erst der Aufruf bzw. die Szene mit Farbschema, dann Text, Ebene und Blinder, zuletzt eine Beschreibung in Worten. Hier nichts eintragen, es wird überschrieben.</td></tr>
 <tr><td>Änderungswunsch</td><td>nein</td><td>Dein Wunsch in freien Worten („weißer Strobo auf den Auftakt“, „zu statisch“). <b>Er gilt</b>: Claude setzt ihn in der Show um. Kein Werkzeug ändert diese Spalte – ist der Wunsch erledigt, löschst du ihn selbst.</td></tr>
 <tr><td>Energie 0-5</td><td>nein</td><td>Deine Einschätzung des Parts, 0 = schwarz, 5 = Höhepunkt. Grundlage der Szenenwahl.</td></tr>
-<tr><td>BPM pro Part</td><td>nein</td><td>Tempo dieses Parts. Leer oder gleich dem BPM im Kopf (in der Vorlage eine Formel darauf) = Songtempo. Nur bei einem Tempowechsel überschreiben.</td></tr>
+<tr><td>BPM pro Part</td><td>nein</td><td>Tempo dieses Parts. Leer oder gleich dem BPM im Kopf = Songtempo (in der Vorlage leer, in älteren Tabellen eine Formel auf das BPM im Kopf). Nur bei einem Tempowechsel eintragen.</td></tr>
 <tr><td>Beschreibung, Akkorde</td><td>nein</td><td>Optional: was musikalisch passiert, welche Akkorde klingen. Nur Information für die Gestaltung.</td></tr>
 <tr><td>bisher (alter Code)</td><td>nein</td><td>Bei den alten Songs: der Effekt, den der handgeschriebene Code an dieser Stelle auf der Gitarre zeigt (<code>!</code> = Hinweis, wo alter Code und alte Kalkulation voneinander abweichen). Nur zur Orientierung.</td></tr>
 </table></div>
+<h3 id="raster">Zwischenzeilen: Wünsche auf den Vierteltakt genau</h3>
+<p>Zwischen zwei Parts dürfen beliebig viele <b>Zwischenzeilen</b> stehen: Zeilen mit „von takt“, aber <b>ohne Songpart</b>. Eine Zwischenzeile gehört zum Part darüber. So kann die Tabelle eine Zeile je Vierteltakt haben (0 / 0,25 / 0,5 / 0,75 / 1 …), und dein Wunsch steht genau an der Stelle, für die er gilt:</p>
+<div class="tablewrap"><table>
+<tr><th>von takt</th><th>Songpart</th><th>Effekt (füllt KI)</th><th>Änderungswunsch</th><th>Bedeutung</th></tr>
+<tr><td>20</td><td>chorus 1</td><td>SCENE_DROP, Farben SCHEME_SUNSET …</td><td></td><td>Part-Zeile wie bisher</td></tr>
+<tr><td>20,25</td><td></td><td></td><td></td><td>leer: der Effekt des Parts läuft einfach weiter</td></tr>
+<tr><td>21,75</td><td></td><td>Blinder auf den Schlag, nur Lampen</td><td>hier Blinder</td><td>Wunsch genau an dieser Stelle; links daneben trägt der Generator ein, was dort umgesetzt ist</td></tr>
+<tr><td>23</td><td>chorus 1b</td><td>…</td><td>ab hier Strobo</td><td>mit Songpart: keine Zwischenzeile mehr, sondern ein <b>neuer Part</b>, der hier beginnt</td></tr>
+</table></div>
+<ul>
+  <li><b>Leere Zwischenzeilen</b> zählen nicht: eine nur gerasterte Tabelle gilt als unverändert, der Song muss nicht neu generiert werden.</li>
+  <li><b>Beide Formen gelten.</b> Du kannst das volle Raster nehmen oder eine kompakte Tabelle behalten und nur dort eine Zwischenzeile einfügen, wo du einen Wunsch hast (z. B. eine Zeile mit „von takt“ 63,75).</li>
+  <li><b>Soll sich an einer Stelle der ganze Effekt ändern</b> (andere Szene, andere Farben), gib der Zeile einen Songpart-Namen – dann beginnt dort ein neuer Part. Ein Wunsch in einer Zwischenzeile ist für Akzente gedacht, die über dem laufenden Effekt liegen (Blinder, Text, Ein- und Ausblenden).</li>
+  <li><b>Energie</b> in einer Zwischenzeile wird gelesen und geprüft (0–5), hat aber noch keine Wirkung. <b>BPM pro Part</b> bleibt dort leer: ein Tempowechsel braucht einen eigenen Part.</li>
+  <li><b>„von takt“ sind Zahlen, keine Formeln</b> (eine Formel wie <code>=A6+0,25</code> verliert beim Zurückschreiben der Effekt-Spalte ihr Ergebnis; das Werkzeug schreibt die Spalte dann nicht).</li>
+  <li><b>Bestehende Tabelle rastern:</b> <code>python tools/songgen.py &lt;Song&gt; --raster</code> legt <code>quelle/struktur-raster.xlsx</code> an – eine Kopie deiner Tabelle mit allen fehlenden Viertel-Zeilen. Deine Tabelle wird dabei nur gelesen. Die Zwischenzeilen sind je Part eingeklappt: das Plus am linken Rand öffnet einen Part, der Knopf „2“ oben links alle (Parts, in denen schon etwas steht, bleiben offen). Passt die Kopie, schließt du <code>struktur.xlsx</code> in Excel und ersetzt sie selbst durch die Kopie (umbenennen). Tabellen mit eigenen Formeln oder verbundenen Zellen rastert das Werkzeug nicht; dort fügst du die Zeilen in Excel ein.</li>
+  <li><b>Neue Songs:</b> die Vorlage ist schon gerastert. Passen ihre Beispiel-Takte nicht zu deinem Song, lösche die Zwischenzeilen, trage die Parts ein und lass die Tabelle danach mit <code>--raster</code> neu rastern.</li>
+</ul>
 <ul>
   <li><b>Erste Zeile</b> ist immer die Pause am Anfang: Mit dem Start-MIDI sind alle Geräte schwarz, egal was dort als Änderungswunsch steht.</li>
   <li><b>Letzte Zeile „Ende“</b> (auch „black“, „fini“): Ihr „von takt“ ist der Schlusstakt des Songs, sie ist kein eigener Part. Danach hängt der Generator Schwarz an – so lange, wie in ihrer Spalte „Effekt (füllt KI)“ oder „Änderungswunsch“ steht („10 sek.“; der Wunsch geht vor), ohne Angabe 10 Sekunden.</li>
@@ -343,7 +361,10 @@ git commit -m "Song Vogue"</code></pre></li>
   <code>blinder: bar</code> – auf jede 1 ein Blinder (auch <code>beat</code>, <code>half</code> oder eine Zahl in Beats).<br>
   <code>blinder: {at: 8, len: 4}</code> – ein einzelner Blinder 8 Beats nach Part-Beginn, 4 Beats lang (ohne <code>every</code> = einmalig; <code>at: 0</code> = auf den Einsatz).<br>
   <code>blinder: {every: bar, at: 2, len: 1, amount: 80, color: weiss, devices: [LAMPE1, LAMPE2]}</code> – <code>len</code> in Beats (Standard 1), <code>amount</code> in Prozent (Standard 100), <code>color</code>: <code>warm</code> (Standard, wie ein Halogen-Strahler) oder eine Farbe wie bei <code>text</code>, <code>devices</code>: nur diese Geräte blenden (Schlüssel wie bei <code>only</code>). Ein Blinder je Abschnitt.<br>
-  <code>blinder: {at: 0, len: 8, attack: 0.5, hold: 0}</code> – eigener Verlauf: blendet über <code>attack</code> Beats ein (statt aufzuspringen), steht <code>hold</code> Beats voll (Standard 0) und klingt über den Rest von <code>len</code> ab. So entsteht „schnell ein, sehr langsam aus“; <code>attack</code> + <code>hold</code> müssen kürzer sein als <code>len</code>.</td></tr>
+  <code>blinder: {at: 0, len: 8, attack: 0.5, hold: 0}</code> – eigener Verlauf: blendet über <code>attack</code> Beats ein (statt aufzuspringen), steht <code>hold</code> Beats voll (Standard 0) und klingt über den Rest von <code>len</code> ab. So entsteht „schnell ein, sehr langsam aus“; <code>attack</code> + <code>hold</code> müssen kürzer sein als <code>len</code>.<br>
+  <code>blinder: {bar: 63.75, len: 2}</code> – statt <code>at</code> die <b>Taktnummer der Tabelle</b>: das „von takt“ der Zwischenzeile, in der der Wunsch steht. Der Generator rechnet daraus die Beats ab Part-Beginn.<br>
+  <code>blinder: [{bar: 20, len: 2}, {bar: 21.75, len: 1, devices: [LAMPE1, LAMPE2]}]</code> – <b>mehrere Blinder in einem Part</b> als Liste, jeder mit eigenem Zeitpunkt, Verlauf, Farbe und Geräten (höchstens 8 je Part; überlappen sich zwei, zeigt das Gerät den stärkeren).</td></tr>
+<tr><td><code>cues</code></td><td>Die Antwort auf deine Wünsche in den <a href="#raster">Zwischenzeilen</a>: <code>cues: {21.75: "Blinder auf den Schlag, nur Lampen"}</code>. Schlüssel ist das „von takt“ der Zwischenzeile, der Text landet bei der Generierung in ihrer Spalte „Effekt (füllt KI)“. <code>cues</code> beschreibt nur; den Effekt selbst lösen die anderen Schlüssel des Parts aus (z. B. <code>blinder</code> mit <code>bar</code>). <code>--dry-run</code> listet jeden Wunsch mit seiner Antwort oder „OFFEN“.</td></tr>
 <tr><td><code>why</code></td><td>Begründung, landet als Kommentar im C++-Code.</td></tr>
 </table></div>
 <p>Übergang und Modifikatoren wirken auf das fertige Bild und lassen sich mit jeder Szene, jedem Effekt und untereinander kombinieren. Längen stehen in Beats, Stärken in Prozent. Sie gelten nur für den Part, in dem sie stehen; ein <code>tail</code> übernimmt sie nicht und kann eigene haben. Auf der Matrix entfällt der Übergang in dem einen Part, in den sie nach dem Titel-Lauftext mittendrin einsteigt; <code>pulse</code> und <code>gate</code> bleiben dort im Beat.</p>
@@ -379,6 +400,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>songgen.py &lt;Song&gt; --versions</code></td><td>Gespeicherte Versionen auflisten, die aktive ist markiert.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --restore &lt;Version&gt;</code></td><td>Eine Version wieder aktiv machen. Der Anfang des Versionsnamens genügt, wenn er eindeutig ist.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --neu</code></td><td>Neuen Song-Ordner mit <code>quelle/struktur.xlsx</code> aus der Vorlage anlegen. Der Name gilt genau so, wie du ihn schreibst.</td></tr>
+<tr><td><code>songgen.py &lt;Song&gt; --raster</code></td><td>Gerasterte Kopie der Tabelle anlegen: <code>quelle/struktur-raster.xlsx</code> mit einer Zeile je Vierteltakt zwischen den Parts (siehe <a href="#raster">Zwischenzeilen</a>). Deine Tabelle, der Code und die Versionen bleiben unberührt; du ersetzt die Tabelle selbst durch die Kopie.</td></tr>
 <tr><td><code>songgen.py --assemble</code></td><td>Nur <code>src/</code> aus den <code>generated.cpp</code> aller Songs neu zusammensetzen, ohne etwas zu generieren.</td></tr>
 </table></div>
 <p><code>&lt;Song&gt;</code> ist der Ordnername unter <code>songs/</code>. Der Anfang genügt, Groß- und Kleinschreibung ist egal.</p>
