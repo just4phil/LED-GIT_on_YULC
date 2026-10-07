@@ -2187,7 +2187,34 @@ def cmd_new(name):
 	shutil.copyfile(TEMPLATE, path)
 	print(f"Tabelle angelegt: {path.relative_to(ROOT).as_posix()}\n"
 		  f"In Excel ausfüllen und speichern (Titel, Midi-StartNummer, BPM, StartBit, pro Part eine Zeile, letzte Zeile 'Ende';\n"
-		  f"Wünsche in die Spalte '{st.WISH_TITLE}', die Spalte '{st.EFFECT_TITLE}' füllt das Werkzeug), dann Claude die Show gestalten lassen.")
+		  f"Wünsche in die Spalte '{st.WISH_TITLE}', die Spalte '{st.EFFECT_TITLE}' füllt das Werkzeug), dann Claude die Show gestalten lassen.\n"
+		  f"Zwischen den Parts stehen eingeklappte Zwischenzeilen im Viertel-Raster (Plus am linken Rand): dort kann ein Wunsch\n"
+		  f"genau an seiner Stelle stehen. Stimmen die Takte nicht mit der Vorlage überein, die Zwischenzeilen löschen, die Parts\n"
+		  f"eintragen und danach mit 'songgen.py {name} --raster' eine neu gerasterte Kopie anlegen lassen.")
+	return 0
+
+
+# <Song> --raster: neben die Tabelle eine gerasterte Kopie legen (quelle/struktur-raster.xlsx): dieselbe Tabelle mit
+# einer Zeile je Vierteltakt zwischen den Parts. Die Tabelle des Users bleibt unberührt - er sieht sich die Kopie an
+# und ersetzt seine struktur.xlsx selbst damit. Code, Versionen und src/ bleiben, wie sie sind.
+def cmd_raster(song_dir):
+	table = table_path(song_dir)
+	if not table.exists():
+		raise SongError(f"{song_dir.name}: keine {TABLE_FILE}")
+	dst = table.parent / st.RASTER_FILE
+	try:
+		count = st.write_raster(table, dst)
+	except st.TableError as e:
+		raise SongError(f"{song_dir.name}: {e}")
+	rel = dst.relative_to(ROOT).as_posix()
+	if not count:
+		dst.unlink()
+		print(f"{song_dir.name}: die Tabelle hat schon alle Zeilen im Viertel-Raster - keine Kopie angelegt")
+		return 0
+	print(f"Gerasterte Kopie angelegt: {rel} ({count} Zwischenzeilen eingefügt, Inhalt geprüft: derselbe wie in {TABLE_FILE})\n"
+		  f"Die Zwischenzeilen sind eingeklappt: Plus am linken Rand öffnet einen Part, der Knopf '2' oben links alle.\n"
+		  f"Wenn sie passt: {TABLE_FILE} in Excel schließen und selbst durch die Kopie ersetzen (die Kopie in {TABLE_FILE}\n"
+		  f"umbenennen). Deine Tabelle wurde nicht verändert; an Code und Versionen ändert der Tausch nichts.")
 	return 0
 
 
@@ -2202,6 +2229,7 @@ def main():
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
 	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
+	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
 		stream.reconfigure(encoding="utf-8")
@@ -2221,6 +2249,8 @@ def main():
 			return cmd_versions(song_dir)
 		if args.restore:
 			return cmd_restore(song_dir, args.restore)
+		if args.raster:
+			return cmd_raster(song_dir)
 		if args.tabelle:
 			return cmd_table([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)

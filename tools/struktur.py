@@ -41,7 +41,8 @@ Vierteltakt: 0 / 0,25 / 0,5 / 0,75 / 1 ...). Eine Zwischenzeile gehört zum Part
 In "Effekt (füllt KI)" einer Zwischenzeile schreibt das Skript, was an dieser Stelle umgesetzt ist (write_effects).
 Ein Tempowechsel braucht einen Part: 'BPM pro Part' einer Zwischenzeile bleibt leer (oder gleich dem Tempo ihres Parts).
 Beide Formen gelten: das volle Raster genauso wie eine kompakte Tabelle mit einzelnen Zwischenzeilen nur dort, wo ein
-Wunsch steht.
+Wunsch steht. write_raster() legt von einer kompakten Tabelle eine gerasterte Kopie an (songgen.py <Song> --raster),
+die Zwischenzeilen sind darin je Part als Excel-Gliederung zusammengefasst und lassen sich ein- und ausklappen.
 """
 import copy
 import hashlib
@@ -73,6 +74,8 @@ OLD_IDEA_LABEL = "effektidee"			# an dieser Überschrift erkennt write_effects()
 EFFECT_TITLE, WISH_TITLE = "Effekt (füllt KI)", "Änderungswunsch"	# Überschriften der beiden Spalten (so hat der User sie genannt)
 EFFECT_WIDTH, WISH_WIDTH = 70, 40		# Spaltenbreiten, die write_effects() beim Umstellen setzt
 TMP_FILE = "struktur.tmp.xlsx"			# write_effects() schreibt erst hierhin, prüft und ersetzt dann die Tabelle
+RASTER_FILE = "struktur-raster.xlsx"	# die gerasterte Kopie von write_raster() - der User tauscht sie selbst gegen seine Tabelle
+RASTER_STEP = 0.25						# Abstand der Rasterzeilen in Takten (0,25 = ein Vierteltakt = ein Schlag im 4/4-Takt)
 END_NAMES = ("ende", "black", "fini", "finito", "back to default")	# so heißt die letzte Zeile (Schlusstakt)
 # Suchmuster ("regulärer Ausdruck") für eine Zeitangabe wie "10 sek." oder "2,5 s" oder "800 ms" in der
 # Ende-Zeile (Änderungswunsch oder Effekt): eine Zahl (mit Punkt oder Komma), dahinter die Einheit.
@@ -381,9 +384,12 @@ def table_sha(path):
 #=========== schreiben (Vorlage, Umstellung alter Songs) ==========
 #==================================================================
 
-# Legt eine NEUE Tabelle an (Vorlage für einen neuen Song bzw. Rückholen einer alten Version).
+# Legt eine NEUE Tabelle an (so entsteht die Vorlage songs/struktur-vorlage.xlsx).
 # Eine vorhandene Tabelle wird nie überschrieben - sie gehört dem User.
-def write_table(path, song, notes=()):
+#   raster   True = zwischen den Parts leere Zwischenzeilen im Viertel-Raster anlegen, eingeklappt (raster_sheet)
+# Geschrieben werden die Parts; Wünsche aus Zwischenzeilen (sec["wishes"]) gehören nicht dazu. 'BPM pro Part' bleibt
+# leer, wenn der Part im Songtempo läuft (leer = Songtempo).
+def write_table(path, song, notes=(), raster=False):
 	"""Song-Dict (Form wie read_table) als Tabelle im Format des Users schreiben. Überschreibt nie eine vorhandene Datei."""
 	if path.exists():
 		raise TableError(f"{path} gibt es schon - sie wird nicht überschrieben")
@@ -412,7 +418,7 @@ def write_table(path, song, notes=()):
 		ws.cell(r, 2, sec["name"])
 		ws.cell(r, 4, sec.get("idea"))		# Spalte 3 ("Effekt") bleibt leer: sie füllt songgen.py bei der Generierung
 		ws.cell(r, 5, sec.get("energy"))
-		ws.cell(r, 6, sec["bpm"] if "bpm" in sec else "=$C$3")
+		ws.cell(r, 6, sec.get("bpm"))
 		for i, (k, _t, _w) in enumerate(extras):
 			ws.cell(r, len(COLS) + 1 + i, sec.get(k))
 		for c in range(1, len(columns) + 1):
@@ -423,12 +429,116 @@ def write_table(path, song, notes=()):
 	ws.cell(r, 2, "Ende")
 	ws.cell(r, 3, f"{fmt(song.get('end_black_ms', 10000) / 1000).replace('.', ',')} sek. BLACK")
 	ws.cell(r, 5, 0)
-	ws.cell(r, 6, "=$C$3")
 	for i, note in enumerate(notes):
 		ws.cell(1 + i, len(columns) + 2, note).font = grey
 	ws.freeze_panes = ws.cell(HEADER_ROW + 1, 3)
+	if raster:
+		raster_sheet(ws, [(HEADER_ROW + 1 + i, ws.cell(HEADER_ROW + 1 + i, 1).value) for i in range(len(song["sections"]) + 1)], 1)
 	path.parent.mkdir(parents=True, exist_ok=True)
 	wb.save(path)
+
+
+#==================================================================
+#=========== Viertel-Raster anlegen ===============================
+#==================================================================
+
+# Fügt in ein Tabellenblatt die fehlenden Zwischenzeilen des Viertel-Rasters ein.
+#   named     die Zeilen mit Songpart, von oben nach unten: [(Zeilennummer, von takt), ...] - die letzte ist "Ende"
+#   von_col   Nummer der Spalte 'von takt'
+#   existing  schon vorhandene Zwischenzeilen: [(Zeilennummer, von takt), ...] (bleiben, wie sie sind)
+# Zwischen zwei benachbarten Zeilen kommen die Rasterwerte, die dort noch fehlen (0,25 / 0,5 / 0,75 ...). Gearbeitet
+# wird von unten nach oben: so bleiben die Zeilennummern weiter oben gültig, während unten eingefügt wird.
+# Jede neue Zeile bekommt das Aussehen der Zeile über der Lücke (Schrift, Rahmen, Zahlenformat).
+# Alle Zwischenzeilen werden zu einer Excel-Gliederung je Part zusammengefasst und eingeklappt: am linken Rand steht
+# dann an jeder Part-Zeile ein Plus zum Aufklappen, die Knöpfe "1" und "2" oben links klappen alles auf einmal ein/aus.
+# openpyxl verschiebt beim Einfügen nur die Zellen: von Hand eingestellte Zeilenhöhen werden hier mitgenommen;
+# Formeln und verbundene Zellen passt es nicht an - der Aufrufer prüft vorher, dass es unterhalb keine gibt.
+# Rückgabe: Zahl der eingefügten Zeilen.
+def raster_sheet(ws, named, von_col, existing=()):
+	lines = sorted(list(named) + list(existing))		# alle Zeilen mit 'von takt', von oben nach unten
+	names = {r for r, _von in named}
+	heights = {r: d.height for r, d in ws.row_dimensions.items() if d.height}
+	inserts = []		# (vor dieser Zeile, so viele Zeilen) - für die neuen Zeilennummern der alten Zeilen
+	for (row_a, von_a), (row_b, von_b) in reversed(list(zip(lines, lines[1:]))):
+		k = int(von_a / RASTER_STEP + 1e-6) + 1		# Nummer des ersten Rasterpunkts hinter von_a
+		grid = []
+		while k * RASTER_STEP < von_b - 1e-6:
+			grid.append(k * RASTER_STEP)
+			k += 1
+		if not grid:
+			continue
+		ws.insert_rows(row_b, len(grid))
+		inserts.append((row_b, len(grid)))
+		for i, von in enumerate(grid):
+			for col in range(1, ws.max_column + 1):
+				ws.cell(row_b + i, col)._style = copy.copy(ws.cell(row_a, col)._style)
+			ws.cell(row_b + i, von_col, neat(von))
+
+	def moved(row):		# wo eine Zeile von vorher jetzt steht
+		return row + sum(n for at, n in inserts if at <= row)
+	for r in list(ws.row_dimensions):
+		ws.row_dimensions[r].height = None
+	for r, h in heights.items():
+		ws.row_dimensions[moved(r)].height = h
+	first, last = moved(lines[0][0]), moved(lines[-1][0])
+	parts = {moved(r) for r in names}
+	ws.sheet_properties.outlinePr.summaryBelow = False		# das Plus steht an der Part-Zeile ÜBER ihren Zwischenzeilen
+	bounds = sorted(parts)
+	for start, stop in zip(bounds, bounds[1:]):		# je Part: seine Zeile (start) und die Zwischenzeilen bis vor den nächsten Part
+		# Steht in einer Zwischenzeile schon etwas (ein Wunsch, eine Energie, ein Effekt-Text), bleibt der Part aufgeklappt -
+		# sonst wäre der Eintrag nach dem Rastern versteckt
+		filled = any(not empty(ws.cell(r, col).value) for r in range(start + 1, stop)
+					 for col in range(1, ws.max_column + 1) if col != von_col)
+		ws.row_dimensions[start].collapsed = stop > start + 1 and not filled
+		for r in range(start + 1, stop):
+			ws.row_dimensions[r].outlineLevel = 1
+			ws.row_dimensions[r].hidden = not filled
+	return sum(n for _at, n in inserts)
+
+
+# Legt von der Tabelle eines Songs eine gerasterte KOPIE an (songgen.py <Song> --raster): dieselbe Tabelle, zwischen
+# den Parts aber eine Zeile je Vierteltakt für die Wünsche des Users. Die Tabelle selbst (src) wird nur gelesen -
+# der User prüft die Kopie und tauscht sie selbst gegen seine struktur.xlsx.
+# Abgelehnt wird eine Tabelle mit eigenen Formeln oder verbundenen Zellen im Bereich der Parts (das Einfügen von
+# Zeilen würde sie zerstören, siehe raster_sheet) - dort fügt der User die Zeilen in Excel selbst ein.
+# Kontrolle wie bei write_effects(): die Kopie wird wieder gelesen und muss denselben Fingerabdruck haben.
+# Rückgabe: Zahl der eingefügten Zeilen.
+def write_raster(src, dst):
+	if dst.exists():
+		raise TableError(f"{dst.name} gibt es schon - sie wird nicht überschrieben (erst löschen oder umbenennen)")
+	before = read_table(src)
+	wb = openpyxl.load_workbook(src)		# ohne data_only: Formeln bleiben Formeln
+	ws, header_row, cols = find_sheet(wb)
+	hint = "die Zwischenzeilen dort bitte in Excel selbst einfügen (Excel zieht Formeln richtig mit)"
+	for other in wb.worksheets:
+		for row in other.iter_rows():
+			for c in row:
+				if not (isinstance(c.value, str) and c.value.startswith("=")):
+					continue
+				if other is not ws:
+					if ws.title.lower() in c.value.lower():
+						raise TableError(f"das Blatt '{other.title}' rechnet mit dem Blatt '{ws.title}' (z. B. {c.coordinate}) - {hint}")
+					continue
+				m = SIMPLE_REF_RE.fullmatch(c.value.strip())		# erlaubt: schlichter Verweis auf den Kopf, z. B. =$C$3
+				if not m or int(m.group(2)) > header_row:
+					raise TableError(f"die Tabelle enthält eigene Formeln (z. B. {c.coordinate}) - {hint}")
+	if any(rng.max_row > header_row for rng in ws.merged_cells.ranges):
+		raise TableError(f"die Tabelle hat verbundene Zellen unter der Kopfzeile - {hint}")
+	t = before["_table"]
+	named = list(zip(t["rows"] + [t["end_row"]], t["von"] + [t["end_von"]]))
+	existing = [(r, von) for part in t["subs"] for von, r in part.items()]
+	count = raster_sheet(ws, named, cols["von"], existing)
+	try:
+		wb.save(dst)
+		if content_sha(read_table(dst)) != content_sha(before):
+			raise TableError("Kontrolle nach dem Schreiben: die Kopie hätte nicht denselben Inhalt wie die Tabelle - nichts angelegt")
+	except TableError:
+		if dst.exists():
+			dst.unlink()
+		raise
+	except PermissionError:
+		raise TableError(f"{dst.name} lässt sich nicht schreiben (in Excel geöffnet?)")
+	return count
 
 
 #==================================================================
@@ -436,8 +546,8 @@ def write_table(path, song, notes=()):
 #==================================================================
 
 # Suchmuster für die einzige Art Formel, die das Einfügen einer Spalte übersteht: ein schlichter Verweis auf eine
-# Zelle, z. B. "=$C$3" (BPM pro Part = BPM im Kopf). Gruppe 1 = Spaltenbuchstaben.
-SIMPLE_REF_RE = re.compile(r"=\$?([A-Z]{1,3})\$?\d+")
+# Zelle, z. B. "=$C$3" (BPM pro Part = BPM im Kopf). Gruppe 1 = Spaltenbuchstaben, Gruppe 2 = Zeilennummer.
+SIMPLE_REF_RE = re.compile(r"=\$?([A-Z]{1,3})\$?(\d+)")
 
 
 # Fügt links von Spalte idx eine leere Spalte ein. openpyxl verschiebt dabei nur die Zellen - die Spaltenbreiten

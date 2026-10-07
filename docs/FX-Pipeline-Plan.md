@@ -29,10 +29,17 @@ Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster: Schritt 1 
      Nebenbei behoben: eine Tabelle mit leerer „Effekt“-Zelle in der Zeile „Ende“ ließ sich nie zurückschreiben (die
      Kontrolle sah die neu eingetragene Zeit als fremde Änderung). Geprüft am Beispiel des Users (18 Parts wie APT.,
      398 Zwischenzeilen) auf Kopien im Scratchpad.
-  2. **Raster-Kopie und Vorlage - in Arbeit.** `songgen.py <Song> --raster` (`quelle/struktur-raster.xlsx`,
-     einklappbare Gliederung) und gerasterte Vorlage `songs/struktur-vorlage.xlsx`.
-  3. Mehrere Blinder pro Part: `fxBlinderSlot()` in `fxPipeline`, `blinder:` als Liste mit `bar:` in `show.yaml`,
-     Demo 92 Part 0 - offen.
+  2. **Raster-Kopie und Vorlage - fertig.** `songgen.py <Song> --raster` schreibt `quelle/struktur-raster.xlsx`
+     (`struktur.write_raster()` / `raster_sheet()`): fehlende Zeilen im 0,25-Raster zwischen den Parts, Aussehen der
+     Zeile darüber, je Part als Excel-Gliederung eingeklappt (Parts mit gefüllter Zwischenzeile bleiben offen);
+     abgelehnt bei eigenen Formeln oder verbundenen Zellen; Kontrolle über den Fingerabdruck. Die Tabelle des Users
+     wird nur gelesen. `write_table(..., raster=True)`; `songs/struktur-vorlage.xlsx` neu erzeugt (81 Zwischenzeilen,
+     `BPM pro Part` leer, Hinweis zu den Zwischenzeilen). Geprüft: alle 24 Tabellen lassen sich rastern (270 bis
+     618 Zeilen mehr), Fingerabdruck jeweils gleich, zweites Rastern fügt nichts ein, `write_effects()` erhält die
+     Gliederung. **Nicht geprüft:** wie Excel die eingeklappte Gliederung anzeigt - das sieht der User beim ersten
+     `--raster`.
+  3. **Mehrere Blinder pro Part - in Arbeit.** `fxBlinderSlot()` in `fxPipeline`, `blinder:` als Liste mit `bar:` in
+     `show.yaml`, Demo 92 Part 0.
   4. Doku (`Song-Workflow.html`, SKILL.md, README, CLAUDE.md) - offen.
   Kontrolle bei jedem Schritt: Fingerabdruck aller 24 Tabellen und der erzeugte Code der 9 Songs mit Show bleiben
   gleich. Es wird kein Song neu generiert.
