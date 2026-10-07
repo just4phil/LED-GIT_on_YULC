@@ -481,6 +481,7 @@
 #define BLE_WARN_MATRIX_SIZE	3		// Matrix: Kantenlänge des Quadrats unten rechts (3 = 3 x 3 = neun LEDs)
 #define FX_SKIP_UNCHANGED_FRAMES	// ein unverändertes Bild wird nicht noch einmal gesendet -> der Loop bleibt frei, der nächste Frame kommt pünktlich
 #define FX_KEEPALIVE_MS		100		// spätestens so oft wird trotzdem gesendet (heilt Störungen auf der Datenleitung)
+#define FX_BLINDER_SLOTS	8		// so viele Blinder kann ein Part gleichzeitig angemeldet haben (Plätze 0..7, fxBlinderSlot)
 #define FX_OUTPUT_REAL_LENGTH		// nur anz_LEDs statt NUMMATRIX LEDs senden (show() auf Gitarre/Lampen 3-5x schneller).
 									// Bei Problemen auskommentieren und neu bauen -> wieder 506 LEDs je Bild wie früher.
 									// Effekte hängen seit Phase 0c nicht mehr am Bildtakt (FX_REF_FRAME_MS).

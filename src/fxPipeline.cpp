@@ -83,7 +83,7 @@ struct LayerMod {
 	uint8_t under;								// Helligkeit des Bildes darunter, solange die Ebene da ist (255 = unverändert)
 };
 
-// der Blinder des Parts (fxBlinder / fxBlinderBeat / fxBlinderShape)
+// ein Blinder des Parts (fxBlinder / fxBlinderBeat / fxBlinderShape); ein Part hat FX_BLINDER_SLOTS Plätze dafür
 struct BlinderMod {
 	unsigned int atMs, lenMs;	// lenMs 0 = kein Blinder
 	uint8_t bpm, every;			// every 0 = einmalig
@@ -112,7 +112,8 @@ static struct {
 	CRGB tint;									// fxTint
 	uint8_t tintAmount;
 	LayerMod layer[LAYER_COUNT];				// Steuerung der beiden Ebenen
-	BlinderMod blinder;
+	BlinderMod blinder[FX_BLINDER_SLOTS];		// die Blinder des Parts, einer je Platz (lenMs 0 = Platz frei)
+	uint8_t blinderSlot;						// fxBlinderSlot: in diesen Platz schreiben fxBlinder / fxBlinderBeat / fxBlinderShape
 } mod;
 static bool modReady = false;	// false, bis mod zum ersten Mal mit resetMods() gefüllt wurde
 
@@ -147,23 +148,27 @@ void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
 void fxSoft(uint8_t percent)	{ mod.soft = min((uint8_t)100, percent); }
 void fxSmooth(unsigned int millis)	{ mod.smoothMs = millis; }
+// Platz für die folgenden Blinder-Anmeldungen wählen (zu große Nummern landen auf dem letzten Platz statt außerhalb des Arrays)
+void fxBlinderSlot(uint8_t slot)	{ mod.blinderSlot = min(slot, (uint8_t)(FX_BLINDER_SLOTS - 1)); }
 void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount, CRGB col, uint8_t devMask, unsigned int atMillis) {
-	mod.blinder.atMs = atMillis;
-	mod.blinder.lenMs = lenMillis;
-	mod.blinder.bpm = max((uint8_t)1, bpm);
-	mod.blinder.every = everyBeats;
-	mod.blinder.amount = amount;
-	mod.blinder.here = isDev(devMask);	// macht dieses Gerät beim Blinder mit? (devMask = erlaubte Geräte, DEV_... aus definitions.h)
-	mod.blinder.col = col;
+	BlinderMod& b = mod.blinder[mod.blinderSlot];	// "&" = kein Kopieren: b ist der gewählte Platz selbst
+	b.atMs = atMillis;
+	b.lenMs = lenMillis;
+	b.bpm = max((uint8_t)1, bpm);
+	b.every = everyBeats;
+	b.amount = amount;
+	b.here = isDev(devMask);	// macht dieses Gerät beim Blinder mit? (devMask = erlaubte Geräte, DEV_... aus definitions.h)
+	b.col = col;
 }
 // einmaliger Blinder = Blinder im Raster mit everyBeats 0
 void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount, CRGB col, uint8_t devMask) {
 	fxBlinderBeat(1, 0, lenMillis, amount, col, devMask, atMillis);
 }
 void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis) {
-	mod.blinder.shaped = true;
-	mod.blinder.attackMs = attackMillis;
-	mod.blinder.holdMs = holdMillis;
+	BlinderMod& b = mod.blinder[mod.blinderSlot];
+	b.shaped = true;
+	b.attackMs = attackMillis;
+	b.holdMs = holdMillis;
 }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
@@ -450,10 +455,9 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
 }
 
-// Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend.
+// Ein Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend.
 // Mit fxBlinderShape: blendet über attackMs ein, steht holdMs voll und klingt über den Rest von lenMs ab
-static uint8_t blinderLevel(uint32_t beatMs) {
-	const BlinderMod& b = mod.blinder;	// nur ein kürzerer Name für mod.blinder
+static uint8_t blinderLevelOf(const BlinderMod& b, uint32_t beatMs) {
 	if (!b.lenMs || !b.here || beatMs < b.atMs) return 0;	// kein Blinder angemeldet / nicht auf diesem Gerät / noch nicht dran
 	uint32_t t = beatMs - b.atMs;		// Zeit seit dem (ersten) Einsatz des Blinders
 	if (b.every) {	// im Raster wiederholen, Phase exakt über bpm (wie fxBeatPhase)
@@ -471,11 +475,27 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 	return scale8(b.amount, scale8(lin, lin));					// lin * lin: fällt erst schnell, läuft dann lange aus
 }
 
+// Alle Blinder des Parts: die Stärke des gerade stärksten (0 = keiner aktiv). blinderTop merkt sich seinen Platz -
+// von dort nimmt applyBlinder() die Farbe. Gerechnet wird wie bisher nur aus der Zeit seit Part-Beginn, deshalb
+// zeigen alle Geräte denselben Blinder im selben Moment. Freie Plätze kosten nur einen Vergleich (lenMs == 0).
+static uint8_t blinderTop = 0;
+static uint8_t blinderLevel(uint32_t beatMs) {
+	uint8_t top = 0;
+	for (uint8_t i = 0; i < FX_BLINDER_SLOTS; i++) {
+		uint8_t level = blinderLevelOf(mod.blinder[i], beatMs);
+		if (level > top) {
+			top = level;
+			blinderTop = i;
+		}
+	}
+	return top;
+}
+
 // Der Blinder nutzt die volle Leuchtkraft der LEDs: bei vollem Blinder steigt die Gesamthelligkeit auf 255 (100 %),
 // egal wie hell das Gerät sonst eingestellt ist. Das Bild des Effekts wird im selben Maß heruntergerechnet und bleibt
 // so gleich hell - nur der Blinder selbst strahlt.
 static void applyBlinder(CRGB* buf, uint8_t level) {
-	const CRGB col = mod.blinder.col;
+	const CRGB col = mod.blinder[blinderTop].col;	// Farbe des gerade stärksten Blinders (blinderLevel)
 	const uint8_t base = FastLED.getBrightness();	// die normale Gesamthelligkeit
 	uint8_t bright = base + (uint16_t)(255 - base) * level / 255;	// je stärker der Blinder gerade ist, desto näher an 255
 	if (bright != base) {

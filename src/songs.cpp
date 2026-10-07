@@ -4244,8 +4244,20 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 37.
-	case 0:		demoNumber(37);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 38, 37.
+	case 0:		demoNumber(38);	break;
+
+	// fxBlinderSlot (neu am 07.10.2026): mehrere Blinder in EINEM Part, jeder auf seinem eigenen Platz mit eigenem Zeitpunkt,
+	// Verlauf, Farbe und Geräten. Hier drei über dunklem Atmen: sofort ein kurzer auf allen Geräten, nach 3 s ein weißer
+	// nur auf den Lampen, ab 6 s ein langer, der 1 s einblendet und bis zum Part-Ende voll steht.
+	case 38:
+		setColorScheme(SCHEME_ROYAL);
+		fxDim(128);
+		fxBlinderSlot(0);	fxBlinder(0, 1000);
+		fxBlinderSlot(1);	fxBlinder(3000, 500, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);
+		fxBlinderSlot(2);	fxBlinder(6000, 2000);	fxBlinderShape(1000, 1000);
+		scene(SCENE_CALM, 8000, DEMO_NR(37), bpm);
+		break;
 
 	// SCENE_CALL_RESPONSE (Frage/Antwort, neu am 06.10.2026): Beat 1 und 3 blitzen Lampe 1 und Bass, Beat 2 und 4 Gitarre
 	// und Lampe 2; die Matrix macht jeden Beat mit ihrer linken bzw. rechten Hälfte mit. 16 Beats = 2 Farbpaare.

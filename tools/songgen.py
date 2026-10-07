@@ -24,6 +24,7 @@ Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gest
 Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
     songs/<Song>/quelle/struktur.xlsx         (nur die Spalte "Effekt", siehe effect_texts() und struktur.write_effects())
+    songs/<Song>/quelle/struktur-raster.xlsx  (nur mit --raster: gerasterte Kopie der Tabelle, eine Zeile je Vierteltakt)
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
@@ -404,6 +405,15 @@ def percent(v):
 	return round(v * 255 / 100)
 
 
+def blinder_slots():
+	"""So viele Blinder kann ein Part haben: FX_BLINDER_SLOTS aus definitions.h (die Firmware hat genau so viele Plätze)."""
+	text = (SRC / "definitions.h").read_text(encoding="utf-8", errors="ignore")
+	m = re.search(r"#define\s+FX_BLINDER_SLOTS\s+(\d+)", text)
+	if not m:
+		raise SongError("FX_BLINDER_SLOTS in definitions.h nicht gefunden")
+	return int(m.group(1))
+
+
 def pipeline_calls(part, song, offset=0):
 	"""Übergang und Modifikatoren eines Parts (fxPipeline.h) -> (C++-Zeilen, Beschreibungen, Fehler).
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
@@ -412,6 +422,8 @@ def pipeline_calls(part, song, offset=0):
 	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)     smooth: <Beats> (Nachleuchten)
 	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
 		attack: <Beats> (blendet ein statt aufzuspringen), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab
+		statt at auch bar: <Taktnummer der Tabelle> (z. B. 63.75 - das 'von takt' der Zwischenzeile mit dem Wunsch)
+		mehrere Blinder in einem Part: eine Liste solcher Angaben, z. B. [{bar: 20, len: 2}, {bar: 23.75, len: 1}]
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -537,53 +549,88 @@ def pipeline_calls(part, song, offset=0):
 			infos.append(f"Farbwechsel weich ({v} % des Schritts)")
 
 	if "blinder" in sec:
-		spec = as_dict("blinder", "every", ("every", "at", "len", "amount", "color", "devices", "attack", "hold"))
-		ok = True
-		every = 0
-		if "every" in spec:
-			every = per_beats(spec["every"], sec, song)
-			if every is None or float(every) != int(every) or not 1 <= every <= 255:
-				errors.append(f"{name}: blinder every '{spec['every']}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats zwischen zwei Blindern)")
-				ok = False
-		at = spec.get("at", 0)
-		if isinstance(at, bool) or not isinstance(at, (int, float)) or at < 0:
-			errors.append(f"{name}: blinder at ist der Zeitpunkt in Beats ab Part-Beginn (Zahl >= 0), nicht '{at}'")
-			ok = False
-		len_ms = beats_ms("blinder len", spec.get("len", 1))
-		amount = pct("blinder amount", spec.get("amount", 100))
-		color = str(spec.get("color", "warm")).strip()
-		col = "FX_BLINDER_WARM" if color.lower() == "warm" else crgb(color)
-		if col is None:
-			errors.append(f"{name}: blinder-Farbe '{color}' unbekannt - warm, {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
-		devs = spec.get("devices")
-		devs = [devs] if isinstance(devs, str) else list(devs or [])
-		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
-		if bad:
-			errors.append(f"{name}: blinder devices kennt nur {', '.join(DEVICE_MASKS)} - unbekannt: {', '.join(bad)}")
-		shape = None
-		if "attack" in spec or "hold" in spec:
-			sh = [spec.get("attack", 0), spec.get("hold", 0)]
-			if any(isinstance(v, bool) or not isinstance(v, (int, float)) or v < 0 for v in sh):
-				errors.append(f"{name}: blinder attack / hold sind Längen in Beats (Zahl >= 0)")
-				ok = False
-			else:
-				shape = [round(v * 60000.0 / part["bpm"]) for v in sh]
-				if len_ms and sum(shape) >= len_ms:
-					errors.append(f"{name}: blinder attack + hold ({sum(sh)} Beats) müssen kürzer sein als len - der Rest ist das Ausblenden")
+		# Ein Blinder (Kurzform oder ein Dictionary) oder eine Liste mehrerer: jeder Eintrag der Liste belegt in der
+		# Firmware einen eigenen Platz (fxBlinderSlot), höchstens blinder_slots() Stück je Part.
+		many = isinstance(sec["blinder"], list)
+		specs = list(sec["blinder"]) if many else [sec["blinder"]]
+		slots = blinder_slots()
+		if len(specs) > slots:
+			errors.append(f"{name}: {len(specs)} Blinder in einem Part - möglich sind {slots} (FX_BLINDER_SLOTS in definitions.h); "
+						  f"den Part in der Tabelle teilen oder ein Raster nehmen (every)")
+			specs = specs[:slots]
+		allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold")
+		for slot, one in enumerate(specs):
+			what = "blinder" if len(specs) == 1 else f"blinder {slot + 1}"		# Name in Fehlermeldungen: bei mehreren mit Nummer
+			spec = dict(one) if isinstance(one, dict) else {"every": one}
+			unknown = [k for k in spec if k not in allowed]
+			if unknown:
+				errors.append(f"{name}: {what} kennt nur {', '.join(allowed)} - unbekannt: {', '.join(map(str, unknown))}")
+			ok = True
+			every = 0
+			if "every" in spec:
+				every = per_beats(spec["every"], sec, song)
+				if every is None or float(every) != int(every) or not 1 <= every <= 255:
+					errors.append(f"{name}: {what} every '{spec['every']}' unbekannt - beat, half, bar oder eine ganze Zahl (Beats zwischen zwei Blindern)")
 					ok = False
-		if ok and len_ms and amount and col and not bad:
-			at_ms = round(at * 60000.0 / part["bpm"])
-			mask = " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL"
-			if every:
-				calls.append(f"fxBlinderBeat({bpm}, {int(every)}, {len_ms}, {amount}, {col}, {mask}, {at_ms});")
-				infos.append(f"Blinder alle {int(every)} Beat(s), {len_ms} ms" + (f", nur {', '.join(devs)}" if devs else ""))
-			else:
-				calls.append(f"fxBlinder({at_ms}, {len_ms}, {amount}, {col}, {mask});")
-				infos.append(f"Blinder bei {at_ms} ms, {len_ms} ms lang" + (f", nur {', '.join(devs)}" if devs else ""))
-			if shape:
-				calls.append(f"fxBlinderShape({shape[0]}, {shape[1]});")
-				infos.append(f"Blinder blendet {shape[0]} ms ein, {shape[1]} ms voll, {len_ms - sum(shape)} ms aus")
-			timed = True
+			at = spec.get("at", 0)
+			if isinstance(at, bool) or not isinstance(at, (int, float)) or at < 0:
+				errors.append(f"{name}: {what} at ist der Zeitpunkt in Beats ab Part-Beginn (Zahl >= 0), nicht '{at}'")
+				ok = False
+			bar_text = ""
+			if "bar" in spec:
+				# bar: der Zeitpunkt als Taktnummer der Tabelle ('von takt' der Zwischenzeile mit dem Wunsch, z. B. 63.75) -
+				# daraus werden die Beats ab Part-Beginn. Geht nur in einem Part, der selbst in der Tabelle steht.
+				b, von, bis = spec["bar"], sec.get("_von"), sec.get("_bis")
+				if "at" in spec:
+					errors.append(f"{name}: {what} hat at UND bar - bitte nur eins (at = Beats ab Part-Beginn, bar = Taktnummer der Tabelle)")
+					ok = False
+				elif von is None:
+					errors.append(f"{name}: {what} bar geht nur in einem Part der Tabelle (nicht in tail oder end_blinder) - dort at nehmen")
+					ok = False
+				elif isinstance(b, bool) or not isinstance(b, (int, float)) or not von <= b < bis:
+					errors.append(f"{name}: {what} bar '{b}' liegt nicht in diesem Part (Takt {st.fmt(von).replace('.', ',')} "
+								  f"bis vor {st.fmt(bis).replace('.', ',')})")
+					ok = False
+				else:
+					at = round((b - von) * song.get("beats_per_bar", 4), 4)
+					bar_text = f"Takt {st.fmt(b).replace('.', ',')} = "
+			len_ms = beats_ms(f"{what} len", spec.get("len", 1))
+			amount = pct(f"{what} amount", spec.get("amount", 100))
+			color = str(spec.get("color", "warm")).strip()
+			col = "FX_BLINDER_WARM" if color.lower() == "warm" else crgb(color)
+			if col is None:
+				errors.append(f"{name}: {what}-Farbe '{color}' unbekannt - warm, {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+			devs = spec.get("devices")
+			devs = [devs] if isinstance(devs, str) else list(devs or [])
+			bad = [str(d) for d in devs if d not in DEVICE_MASKS]
+			if bad:
+				errors.append(f"{name}: {what} devices kennt nur {', '.join(DEVICE_MASKS)} - unbekannt: {', '.join(bad)}")
+			shape = None
+			if "attack" in spec or "hold" in spec:
+				sh = [spec.get("attack", 0), spec.get("hold", 0)]
+				if any(isinstance(v, bool) or not isinstance(v, (int, float)) or v < 0 for v in sh):
+					errors.append(f"{name}: {what} attack / hold sind Längen in Beats (Zahl >= 0)")
+					ok = False
+				else:
+					shape = [round(v * 60000.0 / part["bpm"]) for v in sh]
+					if len_ms and sum(shape) >= len_ms:
+						errors.append(f"{name}: {what} attack + hold ({sum(sh)} Beats) müssen kürzer sein als len - der Rest ist das Ausblenden")
+						ok = False
+			if ok and len_ms and amount and col and not bad:
+				at_ms = round(at * 60000.0 / part["bpm"])
+				mask = " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL"
+				if len(specs) > 1:
+					calls.append(f"fxBlinderSlot({slot});")		# ein einzelner Blinder bleibt ohne diesen Aufruf auf Platz 0, wie bisher
+				if every:
+					calls.append(f"fxBlinderBeat({bpm}, {int(every)}, {len_ms}, {amount}, {col}, {mask}, {at_ms});")
+					infos.append(f"Blinder alle {int(every)} Beat(s), {len_ms} ms" + (f", nur {', '.join(devs)}" if devs else ""))
+				else:
+					calls.append(f"fxBlinder({at_ms}, {len_ms}, {amount}, {col}, {mask});")
+					infos.append(f"Blinder bei {bar_text}{at_ms} ms, {len_ms} ms lang" + (f", nur {', '.join(devs)}" if devs else ""))
+				if shape:
+					calls.append(f"fxBlinderShape({shape[0]}, {shape[1]});")
+					infos.append(f"Blinder blendet {shape[0]} ms ein, {shape[1]} ms voll, {len_ms - sum(shape)} ms aus")
+				timed = True
 
 	if "smooth" in sec:
 		ms = beats_ms("smooth", sec["smooth"])
@@ -1517,6 +1564,11 @@ def load_song(song_dir, table=None, show_path=None):
 	song = read_table(table, label)
 	song["_table_sha"] = st.content_sha(song)
 	song["_dir"] = song_dir.name
+	# Je Part merken, von welchem bis vor welchen Takt der Tabelle er reicht - für Angaben in Taktnummern (blinder bar:).
+	# Erst NACH dem Fingerabdruck: der zählt nur, was in der Tabelle steht.
+	bounds = song["_table"]["von"] + [song["_table"]["end_von"]]
+	for sec, von, bis in zip(song["sections"], bounds, bounds[1:]):
+		sec["_von"], sec["_bis"] = von, bis
 	if (table.parent / ("~$" + table.name)).exists():
 		song.setdefault("_notes", []).append(f"{TABLE_FILE} ist gerade in Excel geöffnet - gelesen wird der zuletzt gespeicherte Stand")
 

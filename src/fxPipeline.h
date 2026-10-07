@@ -161,6 +161,11 @@ void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint
 				   uint8_t devMask = DEV_ALL, unsigned int atMillis = 0);	// alle everyBeats Beats, erstmals bei atMillis
 void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis = 0);	// eigener Verlauf für den Blinder des Parts: blendet über attackMillis
 												// ein, steht holdMillis voll und klingt über den Rest von lenMillis ab (langes, weiches Ausblenden)
+void fxBlinderSlot(uint8_t slot);				// mehrere Blinder in einem Part: wählt den Platz (0 .. FX_BLINDER_SLOTS-1), in den die folgenden
+												// fxBlinder / fxBlinderBeat / fxBlinderShape schreiben. Ohne Aufruf gilt Platz 0 (ein Blinder wie bisher).
+												// Jeder Platz ist ein eigener Blinder mit eigenem Zeitpunkt, Verlauf, Farbe und Geräten; überlappen
+												// sich zwei, zeigt das Gerät den stärkeren. Wer Plätze benutzt, ruft fxBlinderSlot vor JEDEM Blinder auf
+												// (auch 0 für den ersten), weil die Anmeldungen bei jedem Loop-Durchlauf wiederholt werden
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 
