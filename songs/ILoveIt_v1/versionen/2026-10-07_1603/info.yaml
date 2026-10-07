@@ -1,0 +1,10 @@
+zeit: '2026-10-07 16:03:16'
+notiz: 'Aenderungswuensche 07.10.: Blinder in ''youre on a different road'' ueber
+  den letzten Takt (blendet ein, steht voll), starker Schluss-Blinder in chorus 5
+  mit end_blinder'
+werkzeug_git: d486460
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
+  show.yaml: 6ddf9b91078b7a2804ee2aff1e3255d9c71aac348a1328413560a461edaee1ff
+  generated.cpp: 968428a03cf1c45f5ba88f7ad8e035d7585c5d93dc8230146128c25ace386103

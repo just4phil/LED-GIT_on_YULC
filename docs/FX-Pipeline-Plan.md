@@ -11,7 +11,17 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 06.10.2026 (neue Szene SCENE_CALL_RESPONSE, in APT. eingesetzt, Abnahme offen)
+Zuletzt aktualisiert: 07.10.2026 (I Love It: zwei Blinder-Wünsche vor der Bandprobe umgesetzt, Abnahme offen)
+
+- **07.10.2026, I Love It (#9): zwei Änderungswünsche aus der Tabelle (00:07 Uhr eingetragen, nach der letzten
+  Generierung) - gebaut, Abnahme offen** (Version `2026-10-07_1603`, nur `songs/ILoveIt_v1/show.yaml`, keine Änderung
+  an der Firmware). `youre on a different road` („der Blinder am Ende wirkt nicht! Zu wenig sichtbares Reinblenden und
+  zu kurz“): statt `{at: 31, len: 2, hold: 1}` jetzt `{at: 28, len: 5, attack: 2, hold: 2}` - blendet im letzten Takt
+  1000 ms ein und steht 1000 ms bis zum Part-Ende voll. `chorus 5` („Starker Blinder am Ende“): wie APT. und Be Mine
+  `{at: 15, len: 2, hold: 1}` + `end_blinder: 5`. Sonst war am 07.10. vor der Probe nichts offen: Abcdefu und ATTSS
+  gelten für `songgen.py` nur deshalb als „geändert“, weil der User seine erledigten Wünsche gelöscht hat (Struktur
+  gleich, Code passt); in keiner anderen Tabelle steht ein nicht umgesetzter Wunsch. **Nächster Schritt:** User
+  aktualisiert die Geräte (`build_ota.py --serve-only`) und prüft Song 9 in der Probe.
 
 - **06.10.2026, neue Szene `SCENE_CALL_RESPONSE` (Frage/Antwort) - gebaut, Abnahme offen.** Anlass (User): das
   Ping-Pong in APT. wirke „nicht im Takt“. Der Code rechnet den Beat exakt; die Ursache ist die Art der Szene (ein

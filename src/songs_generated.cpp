@@ -231,9 +231,9 @@ void gen_ILoveIt() {
 		progSternNeu(8000, 1000, 30, 5, 26, 5, true, 3);
 		break;
 
-	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt. Auf der letzten Viertel (Snarewirbel) ein starker Blinder, der bis zum Part-Ende voll steht.
-		fxBlinder(15500, 1000, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 500);
+	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt. Im letzten Takt (Snarewirbel) blendet ein starker Blinder zwei Beats lang ein und steht dann zwei Beats bis zum Part-Ende voll.
+		fxBlinder(14000, 2500, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1000, 1000);
 		progPalette(16000, 11, 35);
 		break;
 
@@ -263,11 +263,15 @@ void gen_ILoveIt() {
 		progSternNeu(16000, 500, 65, 5, 26, 5, false, 4);
 		break;
 
-	case 65:	// chorus 5  4 T  8000ms  @2:37.250  -- Alter Effekt: schnelle Einzelblitze zum Schluss.
+	case 65:	// chorus 5  4 T  8000ms  @2:37.250  -- Alter Effekt: schnelle Einzelblitze zum Schluss. Auf der letzten Viertel ein starker Blinder, der voll stehen bleibt und danach 5 Sekunden lang ins Schluss-Schwarz ausklingt.
+		fxBlinder(7500, 1000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 500);
 		progFastBlingBling(8000, 6, 70);
 		break;
 
-	case 70:	// BLACK (Ende)    10000ms  @2:45.250  -- alle Geräte schwarz, dann Pausen-Loop
+	case 70:	// BLACK (Ende)    10000ms  @2:45.250  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
 		progBlack(10000, 75);
 		break;
 
