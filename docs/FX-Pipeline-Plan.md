@@ -11,7 +11,31 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 07.10.2026 (I Love It: zwei Blinder-Wünsche vor der Bandprobe umgesetzt, Abnahme offen)
+Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster: Schritt 1 in Arbeit)
+
+- **07.10.2026, Struktur-Tabelle im Viertel-Raster (Wunsch des Users: „dann könnte ich immer sehr fein meine Ideen auf
+  Vierteltakt angeben“) - in Arbeit.** Sein Beispiel: `Desktop\xls\struktur.xlsx` (APT., eine Zeile je Vierteltakt,
+  Partnamen nur an den Startzeilen). Entscheidungen des Users: leere Zwischenzeilen = das letzte Programm läuft weiter;
+  Energie je Vierteltakt ist „noch nicht fertig“ (wird nur mitgelesen, ohne Wirkung); volles Raster und kompakte
+  Tabelle sind beide erlaubt, die Vorlage wird gerastert; bestehende Songs bekommen auf Befehl eine gerasterte Kopie
+  **neben** die Tabelle, der User tauscht sie selbst; dazu Rückmeldung je Zwischenzeile in „Effekt (füllt KI)“ und
+  mehrere Blinder pro Part. Vier Schritte, jeder mit eigenem Commit:
+  1. **Tabelle lesen und zurückschreiben - fertig.** `tools/struktur.py`: Zeile mit `von takt` ohne Songpart =
+     Zwischenzeile des Parts darüber (leer: überlesen, zählt nicht zum Fingerabdruck; mit Änderungswunsch oder Energie:
+     `sec["wishes"]` = Liste aus `von`, `at` (Beats ab Part-Beginn), `idea`, `energy`); `song["_table"]` kennt je Part
+     `von` und alle Zwischenzeilen (`subs`); `write_effects(..., cue_texts)` schreibt „Effekt“ auch an Zwischenzeilen.
+     `tools/songgen.py`: `cues:` je Part in `show.yaml` (Rückmeldung je Zwischenzeile, Schlüssel = `von takt`,
+     `check_cues()` prüft gegen die Tabelle), `cue_texts()`, Wünsche mit Antwort bzw. „OFFEN“ in der Timeline.
+     Nebenbei behoben: eine Tabelle mit leerer „Effekt“-Zelle in der Zeile „Ende“ ließ sich nie zurückschreiben (die
+     Kontrolle sah die neu eingetragene Zeit als fremde Änderung). Geprüft am Beispiel des Users (18 Parts wie APT.,
+     398 Zwischenzeilen) auf Kopien im Scratchpad.
+  2. **Raster-Kopie und Vorlage - in Arbeit.** `songgen.py <Song> --raster` (`quelle/struktur-raster.xlsx`,
+     einklappbare Gliederung) und gerasterte Vorlage `songs/struktur-vorlage.xlsx`.
+  3. Mehrere Blinder pro Part: `fxBlinderSlot()` in `fxPipeline`, `blinder:` als Liste mit `bar:` in `show.yaml`,
+     Demo 92 Part 0 - offen.
+  4. Doku (`Song-Workflow.html`, SKILL.md, README, CLAUDE.md) - offen.
+  Kontrolle bei jedem Schritt: Fingerabdruck aller 24 Tabellen und der erzeugte Code der 9 Songs mit Show bleiben
+  gleich. Es wird kein Song neu generiert.
 
 - **07.10.2026, I Love It (#9): zwei Änderungswünsche aus der Tabelle (00:07 Uhr eingetragen, nach der letzten
   Generierung) - gebaut, Abnahme offen** (Version `2026-10-07_1603`, nur `songs/ILoveIt_v1/show.yaml`, keine Änderung

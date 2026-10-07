@@ -1394,7 +1394,7 @@ def pascal(name):
 
 SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "end_blinder", "markers")
 SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text", "overlay") + PIPELINE_KEYS
-STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar", "energy")
+STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar", "energy", "wishes")
 
 
 def merge_show(song, show):
@@ -1426,7 +1426,37 @@ def merge_show(song, show):
 			raise SongError(f"{SHOW_FILE}: '{sec['name']}' darf {', '.join(clash)} nicht setzen - Struktur gehört in {TABLE_FILE}")
 		if "scene" in d and "fx" in d:
 			raise SongError(f"{SHOW_FILE}: '{sec['name']}' hat scene UND fx - bitte nur eins")
+		if "cues" in d:
+			d["cues"] = check_cues(d["cues"], sec, song, song["sections"].index(sec))
 		sec.update(d)
+
+
+# cues (show.yaml, je Part): die Rückmeldung an den User zu seinen Zwischenzeilen im Viertel-Raster der Tabelle.
+#   cues:
+#     63.75: "Blinder, steht bis zum Part-Ende voll"
+# Schlüssel = 'von takt' der Zwischenzeile (Taktnummer wie in der Tabelle), Wert = was an dieser Stelle umgesetzt ist.
+# Der Text steht nach der Generierung in der Spalte "Effekt (füllt KI)" genau dieser Zeile - neben seinem Wunsch.
+# cues beschreibt nur; den Effekt selbst lösen die übrigen Schlüssel des Parts aus (z. B. blinder mit bar: 63.75).
+# Rückgabe: {von takt als Kommazahl: Text}. Fehler, wenn es die Zwischenzeile in der Tabelle nicht gibt.
+def check_cues(cues, sec, song, index):
+	name = sec["name"]
+	if not isinstance(cues, dict):
+		raise SongError(f"{SHOW_FILE}: '{name}' cues ist eine Liste 'von takt: Text' (z. B. 63.75: \"Blinder\")")
+	subs = (song.get("_table") or {}).get("subs") or []
+	known = subs[index] if index < len(subs) else {}		# die Zwischenzeilen dieses Parts: von takt -> Zeilennummer
+	out, bad = {}, []
+	for von, txt in cues.items():
+		if isinstance(von, bool) or not isinstance(von, (int, float)):
+			raise SongError(f"{SHOW_FILE}: '{name}' cues: '{von}' ist keine Taktnummer (von takt der Zwischenzeile, z. B. 63.75)")
+		if float(von) not in known:
+			bad.append(st.fmt(von).replace(".", ","))
+		out[float(von)] = " ".join(str(txt).split())
+	if bad:
+		vons = [st.fmt(v).replace(".", ",") for v in sorted(known)]
+		have = "keine" if not vons else ", ".join(vons) if len(vons) <= 8 else f"{len(vons)} Zeilen von {vons[0]} bis {vons[-1]}"
+		raise SongError(f"{SHOW_FILE}: '{name}' cues {', '.join(bad)}: der Part hat in {TABLE_FILE} keine Zwischenzeile mit diesem "
+						f"'von takt' (vorhanden: {have})")
+	return out
 
 
 def force_black_start(song):
@@ -1827,6 +1857,14 @@ def print_timeline(song, timeline):
 		infos = pipeline_calls(p, song)[1]
 		if infos:
 			print(f"  Ausgabe case {p['case']} '{p['sec'].get('name', '')}': {', '.join(infos)}")
+	# Wünsche aus den Zwischenzeilen der Tabelle (Viertel-Raster), mit der Antwort der Show (cues:) - so fällt beim
+	# --dry-run auf, welcher Wunsch noch offen ist
+	for sec in song["sections"]:
+		for w in sec.get("wishes", []):
+			wish = " / ".join(([w["idea"]] if "idea" in w else []) + ([f"Energie {w['energy']}"] if "energy" in w else []))
+			answer = (sec.get("cues") or {}).get(float(w["von"]))
+			print(f"  Wunsch '{sec['name']}' Takt {st.fmt(w['von']).replace('.', ',')} (Beat {st.fmt(w['at']).replace('.', ',')}): {wish}"
+				  + (f"  -> {answer}" if answer else ("  -> OFFEN (kein cues-Eintrag)" if "idea" in w else "")))
 	for n in song.get("_notes", []):
 		print(f"  Hinweis: {n}")
 	print(f"  Marker: {song.get('_marker_note')}")
@@ -1897,15 +1935,22 @@ def effect_texts(song, timeline):
 	return texts
 
 
+def cue_texts(song):
+	"""Je Zwischenzeile der Tabelle (Viertel-Raster) der Text für die Spalte "Effekt": {von takt: Text} aus den cues:
+	aller Parts der show.yaml. Zwischenzeilen ohne Eintrag fehlen hier - ihre Zelle bleibt leer."""
+	return {von: txt for sec in song["sections"] for von, txt in (sec.get("cues") or {}).items() if txt}
+
+
 def update_table(song_dir, song, timeline):
-	"""Spalte "Effekt" der Tabelle schreiben; liefert den Text für die Ausgabe. Geht das nicht (Tabelle in Excel
-	geöffnet, Kontrolle nach dem Schreiben schlägt fehl), bleibt die Tabelle unverändert - der Code wird trotzdem erzeugt."""
+	"""Spalte "Effekt" der Tabelle schreiben (je Part, dazu je Zwischenzeile die Rückmeldung aus cues:); liefert den Text
+	für die Ausgabe. Geht das nicht (Tabelle in Excel geöffnet, Kontrolle nach dem Schreiben schlägt fehl), bleibt die
+	Tabelle unverändert - der Code wird trotzdem erzeugt."""
 	return write_table_texts(song_dir, effect_texts(song, timeline), song)
 
 
 def write_table_texts(song_dir, texts, song):
 	try:
-		return st.write_effects(table_path(song_dir), texts, int(song.get("end_black_ms", 10000)))
+		return st.write_effects(table_path(song_dir), texts, int(song.get("end_black_ms", 10000)), cue_texts(song))
 	except st.TableError as e:
 		return (f"ACHTUNG: Spalte 'Effekt' der Tabelle NICHT geschrieben - {e}\n"
 				f"   Nachholen, sobald die Tabelle frei ist: songgen.py {song_dir.name} --tabelle")

@@ -10,6 +10,7 @@ Gelesen wird das Blatt "Struktur" (sonst das erste Blatt, das die Kopfzeile hat)
     Kopfzeile        von takt | Songpart | Effekt (füllt KI) | Änderungswunsch | Energie 0-5 | BPM pro Part
                      optional: Beschreibung | Akkorde | bisher (alter Code); andere Spalten werden ignoriert
     eine Zeile pro Part, die erste ist die Pause am Anfang (schwarz), die letzte heißt "Ende"
+    dazwischen beliebig viele Zwischenzeilen: 'von takt' ohne Songpart (siehe "Viertel-Raster" unten)
 
 Wer schreibt was (seit 06.10.2026, Wunsch des Users):
     Änderungswunsch  schreibt der USER: was er sich für den Part wünscht ("zu statisch", "Text einblenden"). Er löscht
@@ -28,6 +29,19 @@ Abstand zur ersten Zeile. Halbe Takte als Kommazahl (21,75). Ein Part endet, wo 
 die Länge des Schluss-Blacks). StartBit: so weit hinter dem Anfang der ersten Zeile kommt das Start-MIDI, als Bruchteil des Takts
 (0,125 = 1/8, 0,25 = 1/4, 0,375 = 3/8). 'BPM pro Part' leer oder gleich dem BPM im Kopf = Songtempo.
 Spalten und Kopf werden an ihrer Beschriftung erkannt, nicht an der Position.
+
+Viertel-Raster (seit 07.10.2026, Wunsch des Users): damit er seine Wünsche auf den Vierteltakt genau angeben kann, darf
+die Tabelle zwischen den Parts ZWISCHENZEILEN haben - Zeilen mit 'von takt', aber ohne Songpart (z. B. eine Zeile je
+Vierteltakt: 0 / 0,25 / 0,5 / 0,75 / 1 ...). Eine Zwischenzeile gehört zum Part darüber:
+    ganz leer                 wird überlesen: dort läuft das Programm des Parts einfach weiter. Sie zählt auch nicht
+                              zum Fingerabdruck - eine nur gerasterte Tabelle gilt als unverändert.
+    mit Änderungswunsch       ein Wunsch genau an dieser Stelle des Parts ("hier Blinder")
+    mit Energie               wird mitgelesen und geprüft (0..5), hat aber noch keine Wirkung
+    mit Songpart              ist keine Zwischenzeile, sondern ein neuer Part, der hier beginnt
+In "Effekt (füllt KI)" einer Zwischenzeile schreibt das Skript, was an dieser Stelle umgesetzt ist (write_effects).
+Ein Tempowechsel braucht einen Part: 'BPM pro Part' einer Zwischenzeile bleibt leer (oder gleich dem Tempo ihres Parts).
+Beide Formen gelten: das volle Raster genauso wie eine kompakte Tabelle mit einzelnen Zwischenzeilen nur dort, wo ein
+Wunsch steht.
 """
 import copy
 import hashlib
@@ -234,26 +248,54 @@ def read_table(path):
 			raise TableError(f"Zeile {r}: {what} ist eine Formel ohne gespeichertes Ergebnis - die Datei einmal in Excel speichern")
 		return v
 
+	def energy_of(r, what):
+		"""Energie einer Zeile als ganze Zahl 0..5; None, wenn die Zelle leer ist."""
+		e = value(r, "energy", "Energie")
+		if empty(e):
+			return None
+		e = int(number(e, f"{what}: Energie"))
+		if not 0 <= e <= 5:
+			raise TableError(f"{what}: Energie {e} liegt nicht in 0..5")
+		return e
+
 	rows = []
+	last = None		# (von takt, Zeilennummer) der Zeile davor - Parts und Zwischenzeilen müssen gemeinsam aufsteigen
 	for r in range(header_row + 1, ws.max_row + 1):
 		name, von = text(value(r, "name", "Songpart")), value(r, "von", "von takt")
 		if not name and empty(von):
 			continue
+		what = f"Zeile {r} '{name}'" if name else f"Zeile {r}"
+		von = number(von, f"{what}: von takt")
+		if last and von <= last[0]:
+			raise TableError(f"{what}: von takt {fmt(von)} liegt nicht nach {fmt(last[0])} (Zeile {last[1]})")
+		last = (von, r)
 		if not name:
-			raise TableError(f"Zeile {r}: Songpart fehlt")
-		von = number(von, f"Zeile {r} '{name}': von takt")
-		if rows and von <= rows[-1]["von"]:
-			raise TableError(f"Zeile {r} '{name}': von takt {fmt(von)} liegt nicht nach {fmt(rows[-1]['von'])} (Zeile {rows[-1]['row']})")
-		p = {"row": r, "name": name, "von": von}
+			# Zwischenzeile (Viertel-Raster): gehört zum Part darüber. Gemerkt wird jede, auch die leere - in ihre
+			# Spalte "Effekt" kann das Skript später schreiben. Ein Wunsch ("idea") oder eine Energie macht sie "gefüllt".
+			if not rows:
+				raise TableError(f"Zeile {r}: 'von takt' ohne Songpart vor dem ersten Part - die erste Zeile braucht einen Namen "
+								 f"(die Pause am Anfang)")
+			sub = {"row": r, "von": von}
+			idea = text(value(r, "idea", "Änderungswunsch"))
+			if idea:
+				sub["idea"] = idea
+			e = energy_of(r, what)
+			if e is not None:
+				sub["energy"] = e
+			b = value(r, "bpm", "BPM pro Part")
+			if not empty(b) and abs(number(b, f"{what}: BPM pro Part") - rows[-1].get("bpm", bpm)) > 0.001:
+				raise TableError(f"{what}: BPM pro Part steht in einer Zeile ohne Songpart - ein Tempowechsel braucht einen "
+								 f"eigenen Part (Namen in die Spalte Songpart eintragen)")
+			rows[-1]["subs"].append(sub)
+			continue
+		p = {"row": r, "name": name, "von": von, "subs": []}
 		for k in INFO_KEYS:
 			v = multiline(value(r, k, k)) if k == "old" else text(value(r, k, k))
 			if v:
 				p[k] = v
-		e = value(r, "energy", "Energie")
-		if not empty(e):
-			p["energy"] = int(number(e, f"Zeile {r} '{name}': Energie"))
-			if not 0 <= p["energy"] <= 5:
-				raise TableError(f"Zeile {r} '{name}': Energie {p['energy']} liegt nicht in 0..5")
+		e = energy_of(r, what)
+		if e is not None:
+			p["energy"] = e
 		b = value(r, "bpm", "BPM pro Part")
 		if not empty(b):
 			b = number(b, f"Zeile {r} '{name}': BPM pro Part")
@@ -269,8 +311,11 @@ def read_table(path):
 		raise TableError("keine Parts eingetragen (mindestens die Pause am Anfang und die Zeile 'Ende')")
 	end = rows.pop()
 	if not end["name"].lower().startswith(END_NAMES):
-		raise TableError(f"Zeile {end['row']} '{end['name']}': die letzte Zeile muss 'Ende' heißen - ihr 'von takt' ist der "
-						 f"Schlusstakt des Songs")
+		raise TableError(f"Zeile {end['row']} '{end['name']}': die letzte Zeile mit Songpart muss 'Ende' heißen - ihr 'von takt' "
+						 f"ist der Schlusstakt des Songs")
+	late = [s for s in end["subs"] if "idea" in s or "energy" in s]	# leere Rasterzeilen hinter "Ende" stören nicht
+	if late:
+		raise TableError(f"Zeile {late[0]['row']}: Eintrag hinter der Zeile 'Ende' (Zeile {end['row']}) - dort ist der Song zu Ende")
 
 	song = {"id": int(song_id), "name": text(head["name"]), "artist": text(head.get("artist")), "bpm": neat(bpm),
 			"beats_per_bar": BEATS_PER_BAR}
@@ -293,6 +338,11 @@ def read_table(path):
 		if beats:
 			sec["beats"] = beats
 		sec.update({k: p[k] for k in ("bpm", "energy") + INFO_KEYS if k in p})
+		# Wünsche aus den Zwischenzeilen des Parts: "von" = Taktnummer wie in der Tabelle, "at" = Beats ab Part-Beginn
+		wishes = [{"von": neat(s["von"]), "at": neat(round((s["von"] - p["von"]) * BEATS_PER_BAR, 4)),
+				   **{k: s[k] for k in ("idea", "energy") if k in s}} for s in p["subs"] if "idea" in s or "energy" in s]
+		if wishes:
+			sec["wishes"] = wishes
 		sections.append(sec)
 	names = [s["name"] for s in sections]
 	dup = sorted({n for n in names if names.count(n) > 1})
@@ -301,7 +351,11 @@ def read_table(path):
 						 f"einen davon umbenennen)")
 	song["sections"] = sections
 	# Wo die Parts in der Datei stehen (für write_effects). Schlüssel mit "_" zählen nicht zum Fingerabdruck.
-	song["_table"] = {"rows": [p["row"] for p in rows], "end_row": end["row"]}
+	#   rows / end_row   Zeilennummer je Part und der Zeile "Ende"
+	#   von / end_von    'von takt' je Part und der Zeile "Ende" (für Angaben in Taktnummern der Tabelle, z. B. blinder bar:)
+	#   subs             je Part seine Zwischenzeilen als {von takt: Zeilennummer}, auch die leeren
+	song["_table"] = {"rows": [p["row"] for p in rows], "end_row": end["row"], "von": [p["von"] for p in rows],
+					  "end_von": end["von"], "subs": [{s["von"]: s["row"] for s in p["subs"]} for p in rows]}
 	return song
 
 
@@ -469,14 +523,21 @@ def ensure_effect_column(ws, header_row, cols, part_rows):
 # nichts, read_table() kennt den Verweis. Andere Formeln (z. B. in 'von takt') fallen bei Schritt 2 auf -> kein Schreiben.
 #   texts         je Part der Text für "Effekt", in der Reihenfolge der Tabelle (ohne die Zeile "Ende")
 #   end_black_ms  Länge des Schluss-Blacks: kommt in die Ende-Zeile, wenn dort in "Effekt" noch nichts steht
+#   cue_texts     {von takt: Text} für die Zwischenzeilen (Viertel-Raster): was an dieser Stelle umgesetzt ist.
+#                 Zwischenzeilen, die hier nicht genannt sind, werden in "Effekt" geleert - die Spalte gehört dem Skript.
 # Rückgabe: Text, was geschehen ist (für die Ausgabe von songgen.py). Fehler: TableError, die Tabelle ist dann unverändert.
-def write_effects(path, texts, end_black_ms):
+def write_effects(path, texts, end_black_ms, cue_texts=None):
 	if (path.parent / ("~$" + path.name)).exists():
 		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
 	before = read_table(path)
 	rows, end_row = before["_table"]["rows"], before["_table"]["end_row"]
 	if len(texts) != len(rows):
 		raise TableError(f"{len(texts)} Effekt-Texte für {len(rows)} Parts")
+	sub_rows = {von: r for part in before["_table"]["subs"] for von, r in part.items()}	# alle Zwischenzeilen: von takt -> Zeile
+	cue_texts = {float(von): t for von, t in (cue_texts or {}).items()}
+	missing = sorted(von for von in cue_texts if von not in sub_rows)
+	if missing:
+		raise TableError("keine Zwischenzeile mit von takt " + ", ".join(fmt(v).replace(".", ",") for v in missing))
 	try:
 		wb = openpyxl.load_workbook(path)		# ohne data_only: Formeln bleiben Formeln
 	except PermissionError:
@@ -500,10 +561,20 @@ def write_effects(path, texts, end_black_ms):
 		cell.alignment = wrap
 		if wish:
 			ws.cell(r, wish).alignment = wrap
+	for von, r in sub_rows.items():
+		cell, t = ws.cell(r, col), cue_texts.get(von)
+		if multiline(cell.value) != multiline(t):
+			changed += 1
+			cell.value = t or None
+		if t:
+			cell.alignment = wrap
 	end_cell = ws.cell(end_row, col)
 	if empty(end_cell.value):
 		end_cell.value = f"{fmt(end_black_ms / 1000).replace('.', ',')} sek. BLACK"
 		changed += 1
+		# Stand in der Ende-Zeile bisher keine Zeit, liest read_table() sie ab jetzt aus dieser Zelle: das ist die eine
+		# gewollte Änderung am Inhalt und gehört für die Kontrolle unten zum erwarteten Stand.
+		before.setdefault("end_black_ms", int(round(end_black_ms)))
 	if not changed and not migrated:
 		return f"Spalte '{EFFECT_TITLE}' der Tabelle ist schon aktuell"
 
