@@ -6,6 +6,8 @@ Die Tabelle ist die einzige Datei, die der User pro Song pflegt. Bibliothek für
 Gelesen wird das Blatt "Struktur" (sonst das erste Blatt, das die Kopfzeile hat):
 
     Zeile 1          Titel, daneben Interpret           (oder beschriftet: Titel / Interpret)
+                     unbeschriftet zählt nur die Spalte der Kopf-Beschriftungen (B): eigene Notizen in A1 oder
+                     rechts neben dem Kopf werden nicht als Titel gelesen
     Kopf             Midi-StartNummer (= Song-ID), BPM, StartBit - der Wert steht rechts neben der Beschriftung
     Kopfzeile        von takt | Songpart | Effekt (füllt KI) | Änderungswunsch | Energie 0-5 | BPM pro Part
                      optional: Beschreibung | Akkorde | bisher (alter Code); andere Spalten werden ignoriert
@@ -211,17 +213,34 @@ def read_table(path):
 	wsf = wbf[ws.title]
 
 	head, used, where = {}, set(), {}
+	label_cols = set()		# Spalten, in denen die Beschriftungen des Kopfs stehen (normalerweise nur B)
 	for row in ws.iter_rows(max_row=header_row - 1):
 		for c in row:
 			key = HEAD_LABELS.get(label(c.value))
 			if not key:
 				continue
 			used.add(c.coordinate)
+			label_cols.add(c.column)
 			cand = ws.cell(c.row, c.column + 1)		# Wert rechts daneben
 			if key not in head and not empty(cand.value) and label(cand.value) not in HEAD_LABELS:
 				head[key], where[key] = cand.value, cand.coordinate
 				used.add(cand.coordinate)
-	if "name" not in head:		# ohne Beschriftung: erste freie Textzeile = Titel, daneben Interpret
+	if "name" not in head and label_cols:
+		# Ohne Beschriftung steht der Titel in der Spalte der Beschriftungen (über "Midi-StartNummer", "BPM" ...), der
+		# Interpret rechts daneben. Nur dort suchen: eine eigene Notiz des Users in einer anderen Spalte (z. B. oben
+		# links in A1 oder rechts neben dem Kopf) darf nicht zum Titel werden. Am 08.10.2026 passiert: "cakewalk" in
+		# A1 wurde zum Titel und der echte Titel zum Interpreten - der Lauftext hieß "cakewalk by Tell It To My Heart".
+		for row in ws.iter_rows(max_row=header_row - 1):
+			c = next((c for c in row if c.column in label_cols and c.coordinate not in used
+					and isinstance(c.value, str) and not empty(c.value)), None)
+			if c is None:
+				continue
+			head["name"] = c.value
+			right = ws.cell(c.row, c.column + 1)
+			if isinstance(right.value, str) and not empty(right.value):
+				head.setdefault("artist", right.value)
+			break
+	if "name" not in head:		# Kopf ganz ohne Beschriftungen: erste freie Textzeile = Titel, daneben Interpret
 		for row in ws.iter_rows(max_row=header_row - 1):
 			free = [c for c in row if isinstance(c.value, str) and not empty(c.value) and c.coordinate not in used]
 			if free and not any(c.coordinate in used for c in row):

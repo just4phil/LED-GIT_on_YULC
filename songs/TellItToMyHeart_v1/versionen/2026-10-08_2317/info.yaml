@@ -1,0 +1,8 @@
+zeit: '2026-10-08 23:17:49'
+notiz: 'chorus 1: die drei Blinder von Takt 30,5-31 nach 32,5 / 32,75 / 33 verschoben'
+werkzeug_git: 1951c21 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: b0e3ca5cc7d7a30a1eb56f6f444ea46f6fb7b2bdf7bfbd048c59c5f176c743b9
+  show.yaml: 4595f18a9d298378d875907ee4ce067200d62e9c035b4ef5bcc589c11e955ff0
+  generated.cpp: 3f9ac1626ea13c221be229702725adf81594eb5506e5d96b63c5315312cefa4e

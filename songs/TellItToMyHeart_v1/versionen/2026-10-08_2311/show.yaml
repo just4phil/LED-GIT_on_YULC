@@ -1,0 +1,129 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 08.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs Tellittomyheart() (Song-ID 21). Der alte Code bleibt in
+# src/songs.cpp stehen. Parts OHNE Änderungswunsch behalten ihren alten Effekt 1:1 als fx: (freie Zufallsfarben wie
+# bisher); von Hand gerundete Zeiten des alten Codes stehen als ${beat} / ${half} (510 ms = 1 Beat, 1015 ms = 2 Beats
+# bei 118 BPM). Umgesetzte Änderungswünsche aus der Tabelle (08.10.2026):
+#   bridge            = "Szene Calm, RED" (2. Wunsch, 08.10.2026; davor "Szene Palette Royal"): SCENE_CALM in SCHEME_RED,
+#                       der Build-up danach (pause (2)) deshalb ebenfalls in Rot
+#   pause (2)/(3)/(4) = "Build up": SCENE_BUILDUP statt Schwarz (2 Beats, Explosion auf den Snare-Auftakt)
+#   verse 2           = "Szene verse, sunset": SCENE_VERSE in SCHEME_SUNSET
+#   bridge (2)        = "grün lila": SCENE_PALETTE in SCHEME_TOXIC (grün), wandert pro Takt zur Gegenfarbe Lila und zurück
+#   snareauftakt (2)  = "starker Blinder": voller Blinder über Schwarz statt Strobo
+#   SOLO              = "Szene Solo Gitarre": SCENE_SOLO_GIT
+#   chorus 3          = "Szene Fire": SCENE_FIRE in SCHEME_FIRE
+#   chorus 4          = "Szene Sparkle": SCENE_SPARKLE
+# "outro A" gab es im alten Code nicht (dort schon Schwarz, in der Tabelle mit "!" markiert): hier klingt der
+# Schlussakkord mit SCENE_FADEOUT in Weiß aus - Vorschlag von Claude, noch nicht vom User bestätigt.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in Tellittomyheart() keine Marker in einzelnen Parts; die Grund-Marker stehen von
+# Hand in src/markerLEDs.cpp (case 21) und gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_TellItToMyHeart
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro chorus":
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
+
+  "verse":
+    fx: "progFullColors(${dur}, ${next}, ${beat})"
+    why: "Alter Effekt: alles in einer Farbe, pro Beat eine neue Zufallsfarbe."
+
+  "bridge":
+    scene: SCENE_CALM
+    scheme: SCHEME_RED
+    why: "Ruhiges Atmen in Rot auf allen Geräten."
+
+  "pause (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_RED
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Rot auf (Farbe der Bridge davor), Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (65 ms) auf den Snare-Auftakt."
+
+  "chorus 1":
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 20, 26, 5, true, 3)"
+    # Wunsch des Users (08.10.2026, Zwischenzeilen Takt 30,5 / 30,75 / 31): drei kurze, sehr helle Blinder auf drei
+    # Vierteln hintereinander, jeder als eigener Akzent sichtbar. Deshalb je nur 0,6 Beat lang (0,2 Beat voll, dann
+    # schnell aus) - zwischen zwei Blindern bleiben 0,4 Beat (ca. 200 ms) ohne Blinder.
+    blinder:
+      - {bar: 30.5, len: 0.6, hold: 0.2, amount: 100}
+      - {bar: 30.75, len: 0.6, hold: 0.2, amount: 100}
+      - {bar: 31, len: 0.6, hold: 0.2, amount: 100}
+    cues:
+      30.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten (ca. 100 ms voll, klingt in 200 ms ab, dann 200 ms Lücke)"
+      30.75: "2. Blinder, eine Viertel später, gleiche Form"
+      31: "3. Blinder auf die 1 von Takt 31, gleiche Form"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats. Im dritten Takt drei kurze Blinder auf drei Vierteln hintereinander."
+
+  "verse 2":
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    why: "Dezenter Puls im Beat in Orange, Pink, Lila und Gelb."
+
+  "bridge (2)":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_TOXIC
+    fade: {to: complement, per: bar}
+    why: "Farbband läuft über die Bühne; die Farben wandern jeden Takt von Grün nach Lila und wieder zurück."
+
+  "pause (3)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_TOXIC
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Grün auf, Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt (2)":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 2, hold: 1.5, amount: 100}
+    why: "Starker Blinder statt Strobo: alle Geräte blenden 2 Beats lang voll warmweiß auf, bis der Chorus einsetzt."
+
+  "chorus 2":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  "SOLO":
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_NEON
+    why: "Gitarrensolo: die Gitarre zeigt schnelle Leuchtspuren in Pink, Cyan und Violett, alle anderen Geräte atmen gedimmt im Hintergrund."
+
+  "love on the run":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  "pause (4)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_FIRE
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Rot/Orange auf, Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt (3)":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (65 ms) auf den Snare-Auftakt."
+
+  "chorus 3":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    why: "Feuer auf allen Geräten in Rot, Orange und Gelb."
+
+  "chorus 4":
+    scene: SCENE_SPARKLE
+    why: "Schnelle Einzelblitze auf allen Geräten, Dichte passend zur LED-Zahl."
+
+  "outro F":
+    fx: "progStrobo(${dur}, ${next}, 95, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (95 ms)."
+
+  "outro G":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: schnellerer weißer Strobo (65 ms)."
+
+  "outro A":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_WHITE
+    why: "Schlussakkord: alle Geräte weiß, blenden über 2 Takte weich nach Schwarz aus (im alten Code war hier schon Schwarz)."

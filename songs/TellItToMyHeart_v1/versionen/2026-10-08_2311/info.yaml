@@ -1,0 +1,8 @@
+zeit: '2026-10-08 23:11:26'
+notiz: 'chorus 1: drei kurze Blinder auf Takt 30,5 / 30,75 / 31'
+werkzeug_git: 1951c21 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 150e6ee3f83fd2268cdb1defc12872353a22dca09dc6cb8e64399c90ffeca78c
+  show.yaml: 45e256eb342524af6ad7e4667c6ce91f7d64a63d05bbee049fb4be396b921290
+  generated.cpp: 9523e515eee106ae68badc242d14b6028278794f074acfd4dfda1916531c6621

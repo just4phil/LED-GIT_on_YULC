@@ -1,0 +1,10 @@
+zeit: '2026-10-08 22:48:37'
+notiz: 'Erste generierte Fassung: alte Effekte 1:1, Wünsche umgesetzt (Palette Royal,
+  Build-ups, Verse Sunset, grün-lila, starker Blinder, Solo Gitarre, Fire, Sparkle),
+  outro A als Fadeout'
+werkzeug_git: 1951c21 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8bb12e91d4d0c9ab427bf5f5d3243b2a6cccec2d8b1a3dae0773ff7e76f066bb
+  show.yaml: 88fa0d3a1d29fce1d3bec1a5cdeea7ce11b06ac2117ea14ef20915770f4735f1
+  generated.cpp: 3fa08d41e5527d0adca9b7c947c0045799c66ac5f4dcf12a9ac1be8bef4c1078

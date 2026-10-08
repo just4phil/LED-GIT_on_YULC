@@ -511,7 +511,8 @@ void loop() {
 			Kids();
 			break;
 		case 21:
-			Tellittomyheart();
+			//Tellittomyheart();
+			gen_TellItToMyHeart(); // <<< GENERATED SONGS <<<
 			break;
 		case 24:
 			enjoyTheSilenceINTRO();

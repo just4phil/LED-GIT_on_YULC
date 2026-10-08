@@ -1,0 +1,8 @@
+zeit: '2026-10-08 23:06:55'
+notiz: 'bridge: Szene Calm in Rot (statt Palette Royal), Build-up danach in Rot'
+werkzeug_git: 1951c21 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 6c6025e95324a8fdecf6ca574dc47a1a4f2565b6605567745ce7bacd56c29cf3
+  show.yaml: 285bed43e4c0abacd6b9f67fffa18b7df2c1d06780e006880732adae09cf8efa
+  generated.cpp: a8adde8991ff9c7911d58c15ae6b7b06751649d45d4bc7e3a62c7d94611009c0

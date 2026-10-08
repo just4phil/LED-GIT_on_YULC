@@ -1,0 +1,9 @@
+zeit: '2026-10-08 23:36:16'
+notiz: Drei-Blinder-Gruppen auch in chorus 2, 3 (zweimal) und 4; Titel-Lauftext korrigiert
+  (Notiz in A1 wurde als Titel gelesen)
+werkzeug_git: 1951c21 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 0832c37cf6927ab024bbae32b6093def3d8dd283f5b06b835c0f73dd2d1822e1
+  show.yaml: bab825a0ab325b3877929079047a386e00587f520f8058e8794db5c10ae6e59e
+  generated.cpp: a4aa259bf2e9c8a5e99bc54db61141981252d33aa686041c887e0645b4724327
