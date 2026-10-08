@@ -525,96 +525,79 @@ void progMovingLines(unsigned int durationMillis, byte nextPart) {
 }
 
 //--- Rahmen ("Outline") -------------------------------------------------------
-// Nur für die LED-Flächen: ein Rahmen wächst von innen nach außen und wieder zurück (pulsierender Tunnel).
-// Die LEDs jedes Rahmens stehen in den Listen outlinePath1..9 am Dateianfang. zaehler = Nummer des Rahmens.
-// "sizeof(liste) / sizeof(liste[0])" = Anzahl der Einträge einer Liste (Gesamtgröße durch Größe eines Eintrags).
+// Nur für die LED-Flächen: ein Rahmen wächst von innen nach außen (pulsierender Tunnel), danach bleibt die Fläche
+// für genauso viele Schritte dunkel, dann beginnt es wieder innen. Die LEDs jedes Rahmens stehen in den Listen
+// outlinePath1..9 am Dateianfang. zaehler = Nummer des Rahmens, reduceSpeed = ms je Schritt.
+//
+// Nachleuchten: der gerade gezeichnete Rahmen leuchtet voll, die Rahmen der letzten OUTLINE_GLOW_STEPS Schritte
+// leuchten abgedunkelt weiter (je älter, desto dunkler) - so zieht der Rahmen einen Schweif hinter sich her, der
+// am Rand in der Dunkelphase ausklingt. Dafür merkt sich der Effekt je Rahmen sein "Alter" in Schritten
+// (outlineAge: 0 = gerade gezeichnet, OUTLINE_AGE_OFF = aus) und die Farbe, in der er gezeichnet wurde.
+
+#define OUTLINE_GLOW_STEPS	3		// so viele ältere Rahmen leuchten nach (0 = kein Nachleuchten, wie früher)
+#define OUTLINE_AGE_OFF		255		// Alter "aus": dieser Rahmen wird nicht gezeichnet
+
+// Tabelle aller Rahmen: Zeiger auf die Liste und Anzahl ihrer Einträge. So genügt eine Schleife statt eines
+// switch mit einem Block je Rahmen. "sizeof(liste) / sizeof(liste[0])" = Anzahl der Einträge einer Liste
+// (Gesamtgröße durch Größe eines Eintrags); das Makro OUTLINE_ENTRY schreibt beides für eine Liste hin.
+#define OUTLINE_ENTRY(liste)	{ liste, (uint16_t)(sizeof(liste) / sizeof(liste[0])) }
+struct OutlineRing { const int* path; uint16_t count; };
+static const OutlineRing outlineRings[] = {
+	OUTLINE_ENTRY(outlinePath1), OUTLINE_ENTRY(outlinePath2), OUTLINE_ENTRY(outlinePath3),
+	OUTLINE_ENTRY(outlinePath4), OUTLINE_ENTRY(outlinePath5),
+#if !defined (SCROLLMATRIX)		// die GITBOARD-Fläche hat 9 Rahmen
+	OUTLINE_ENTRY(outlinePath6), OUTLINE_ENTRY(outlinePath7), OUTLINE_ENTRY(outlinePath8),
+	OUTLINE_ENTRY(outlinePath9),
+#endif
+};
+#define OUTLINE_RINGS	((int)(sizeof(outlineRings) / sizeof(outlineRings[0])))
+
+static uint8_t outlineAge[sizeof(outlineRings) / sizeof(outlineRings[0])];		// Alter je Rahmen in Schritten
+static CRGB    outlineColor[sizeof(outlineRings) / sizeof(outlineRings[0])];	// Farbe, in der er gezeichnet wurde
+
 void progOutline(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 
 	if (fxBegin(durationMillis, nextPart)) {
 		FastLED.clear();
+		for (int r = 0; r < OUTLINE_RINGS; r++) outlineAge[r] = OUTLINE_AGE_OFF;	// kein Nachleuchten vom letzten Mal
 	}
 
 	if (millisToReduceCPUSpeed > reduceSpeed) {
 		millisToReduceCPUSpeed -= reduceSpeed;
 
-		int anz;
-			
+		// 1) alle Rahmen einen Schritt älter machen (bei OUTLINE_AGE_OFF stehen bleiben, sonst liefe die Zahl über)
+		for (int r = 0; r < OUTLINE_RINGS; r++) {
+			if (outlineAge[r] < OUTLINE_AGE_OFF) outlineAge[r]++;
+		}
+
+		// 2) auf dem Weg nach außen den aktuellen Rahmen neu "anzünden" (Alter 0) und seine Farbe merken
+		if (!scannerGoesBack && zaehler >= 0 && zaehler < OUTLINE_RINGS) {
+			outlineAge[zaehler] = 0;
+			#if defined (GITBOARD)
+				outlineColor[zaehler] = (zaehler >= 5) ? getRandomCRGB() : CRGB(255, 0, 0);	// äußere Rahmen: Schemafarbe
+			#else
+				outlineColor[zaehler] = CRGB(255, 0, 0);
+			#endif
+		}
+
+		// 3) Bild neu aufbauen: erst die ältesten, zuletzt der neue Rahmen - wo sich Rahmen LEDs teilen, gewinnt
+		//    so der hellere. Helligkeit fällt quadratisch mit dem Alter (wirkt fürs Auge gleichmäßig):
+		//    bei 3 Nachleucht-Stufen 100 % -> 56 % -> 25 % -> 6 %.
 		clearAll();
-
-		if (!scannerGoesBack) {
-
-			switch (zaehler) {
-			case 0:
-				anz = (sizeof(outlinePath1) / sizeof(outlinePath1[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath1[i];
-					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
+		for (int age = OUTLINE_GLOW_STEPS; age >= 0; age--) {
+			int rest = OUTLINE_GLOW_STEPS + 1 - age;		// 1 (ältester) ... OUTLINE_GLOW_STEPS+1 (neuer Rahmen)
+			uint8_t scale = (uint8_t)((rest * rest * 255) / ((OUTLINE_GLOW_STEPS + 1) * (OUTLINE_GLOW_STEPS + 1)));
+			for (int r = 0; r < OUTLINE_RINGS; r++) {
+				if (outlineAge[r] != age) continue;
+				CRGB c = outlineColor[r];
+				c.nscale8_video(scale);		// abdunkeln; "_video" lässt eine Farbe nie ganz auf 0 fallen
+				for (int i = 0; i < outlineRings[r].count; i++) {
+					leds[outlineRings[r].path[i]] = c;
 				}
-				break;
-			case 1:
-				anz = (sizeof(outlinePath2) / sizeof(outlinePath2[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath2[i];
-					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
-				}
-				break;
-			case 2:
-				anz = (sizeof(outlinePath3) / sizeof(outlinePath3[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath3[i];
-					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
-				}
-				break;
-			case 3:
-				anz = (sizeof(outlinePath4) / sizeof(outlinePath4[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath4[i];
-					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
-				}
-				break;
-			case 4:
-				anz = (sizeof(outlinePath5) / sizeof(outlinePath5[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath5[i];
-					leds[test] = CRGB(255, 0, 0);	//getRandomCRGB();
-				}
-				break;
-
-		#if defined (GITBOARD)
-				
-			case 5:
-				anz = (sizeof(outlinePath6) / sizeof(outlinePath6[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath6[i];
-					leds[test] = getRandomCRGB();
-				}
-				break;
-			case 6:
-				anz = (sizeof(outlinePath7) / sizeof(outlinePath7[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath7[i];
-					leds[test] = getRandomCRGB();
-				}
-				break;
-			case 7:
-				anz = (sizeof(outlinePath8) / sizeof(outlinePath8[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath8[i];
-					leds[test] = getRandomCRGB();
-				}
-				break;
-			case 8:
-				anz = (sizeof(outlinePath9) / sizeof(outlinePath9[0]));
-				for (int i = 0; i < anz; i++) {
-					int test = outlinePath9[i];
-					leds[test] = getRandomCRGB();
-				}
-				break;
-
-		#endif
 			}
 		}
 
+		// 4) weiterzählen: nach außen bis zum letzten Rahmen, dann dieselbe Zahl Schritte dunkel zurück
 		if (!scannerGoesBack) {
 			zaehler++;
 			#if defined (GITBOARD)

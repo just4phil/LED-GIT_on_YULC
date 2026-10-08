@@ -253,8 +253,10 @@ void progMovingLines(unsigned int durationMillis, byte nextPart, unsigned int re
 void progMovingLines(unsigned int durationMillis, byte nextPart);
 
 /**
- * @brief Rahmen: ein Rahmen wächst von innen nach außen und wieder zurück (nur für die LED-Flächen)
+ * @brief Rahmen: ein Rahmen wächst von innen nach außen und zieht einen nachleuchtenden Schweif (nur für die LED-Flächen)
  *
+ * Die letzten OUTLINE_GLOW_STEPS Rahmen (fxMatrixShapes.cpp, Vorgabe 3) leuchten abgedunkelt nach; außen angekommen
+ * klingt der Schweif aus, die Fläche bleibt kurz dunkel und es beginnt wieder innen.
  * Die LEDs der einzelnen Rahmen stehen als feste Listen in fxMatrixShapes.cpp (outlinePath1..9).
  *
  * @param reduceSpeed ms je Schritt (Kurzform: 0)
