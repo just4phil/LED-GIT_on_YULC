@@ -177,7 +177,10 @@ time with the beat) while the other devices keep playing the scene.
 songs are taken over unchanged). `--neu` creates a new song folder with the table template
 (`songs/struktur-vorlage.xlsx`, already in the quarter-bar grid), `--raster` writes a quarter-bar copy
 `quelle/struktur-raster.xlsx` next to an existing table (the table itself is only read; the user swaps the files
-himself - never rename or copy it for him), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+himself - never rename or copy it for him), `--takt-ab 1` renumbers `von takt` of all rows so the table starts at
+bar 1 like the user's DAW (Cakewalk counts from 1; his wish 08.10.2026 - the second place where a tool writes the
+table: `struktur.shift_bars()` with the same write-copy-and-verify safety, `bar:`/`cues:` in `show.yaml` move along,
+the generated code must stay identical; only on his request, per song), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
 Never edit the generated files by hand. `tools/struktur.py` is the table reader (format documented there). If the
 user changed part names or inserted/removed rows, `songgen.py` stops with a list of what no longer matches -
 adapt `show.yaml`. The old hand-written songs all have a table too (column `bisher (alter Code)` = their old

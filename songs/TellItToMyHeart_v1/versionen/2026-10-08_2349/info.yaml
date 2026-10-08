@@ -1,0 +1,8 @@
+zeit: '2026-10-08 23:49:22'
+notiz: Taktnummern der Tabelle ab 1 wie im DAW (--takt-ab 1); Song unverändert
+werkzeug_git: 34a92ac + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 515e7b96b53dd232e6ad26cc263c4efdd93961668bc2ef4bb5ccbd8fdd2732d6
+  show.yaml: 33669207ba566342112236751c96077386466a894305d9306c0f4d8b890bfad9
+  generated.cpp: dd3141113d7598a9cdb28a2fcaa722369c5d45dcbd7e8adb8ed3c7161000e55a

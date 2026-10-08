@@ -215,11 +215,11 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td>3</td><td></td><td>BPM</td><td>86</td><td></td><td></td></tr>
 <tr><td>4</td><td></td><td>StartBit</td><td>0,375</td><td></td><td></td></tr>
 <tr><td>5</td><td><b>von takt</b></td><td><b>Songpart</b></td><td><b>Effekt (füllt KI)</b></td><td><b>Änderungswunsch</b></td><td><b>Energie 0-5</b></td><td><b>BPM pro Part</b></td></tr>
-<tr><td>6</td><td>0</td><td>pause</td><td>black</td><td>0</td><td>86</td></tr>
-<tr><td>7</td><td>1</td><td>synth intro</td><td>ruhig nur synths</td><td>1</td><td>86</td></tr>
-<tr><td>8</td><td>5</td><td>intro: all the …</td><td>action</td><td>4</td><td>86</td></tr>
-<tr><td>…</td><td>21,75</td><td>übergang zum chorus</td><td>strobo</td><td>5</td><td>86</td></tr>
-<tr><td>36</td><td>75</td><td>Ende</td><td>10 sek. BLACK</td><td>0</td><td>86</td></tr>
+<tr><td>6</td><td>1</td><td>pause</td><td>black</td><td>0</td><td>86</td></tr>
+<tr><td>7</td><td>2</td><td>synth intro</td><td>ruhig nur synths</td><td>1</td><td>86</td></tr>
+<tr><td>8</td><td>6</td><td>intro: all the …</td><td>action</td><td>4</td><td>86</td></tr>
+<tr><td>…</td><td>22,75</td><td>übergang zum chorus</td><td>strobo</td><td>5</td><td>86</td></tr>
+<tr><td>36</td><td>76</td><td>Ende</td><td>10 sek. BLACK</td><td>0</td><td>86</td></tr>
 </table></div>
 <div class="tablewrap"><table>
 <tr><th>Feld im Kopf</th><th>Pflicht</th><th>Bedeutung</th></tr>
@@ -231,7 +231,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <p>Ein Wert steht immer rechts neben seiner Beschriftung.</p>
 <div class="tablewrap"><table>
 <tr><th>Spalte pro Part</th><th>Pflicht</th><th>Bedeutung</th></tr>
-<tr><td>von takt</td><td>ja</td><td>Taktnummer, an der der Part <b>beginnt</b>. Ab 0 gezählt oder die Taktnummern aus dem DAW – es zählt nur der Abstand zur ersten Zeile. Halbe Takte als Kommazahl: 21,75 = drei Viertel nach Takt 21. Ein Part endet, wo der nächste beginnt.</td></tr>
+<tr><td>von takt</td><td>ja</td><td>Taktnummer, an der der Part <b>beginnt</b>. Die Taktnummern aus dem DAW (Cakewalk zählt ab 1; alle Tabellen und die Vorlage beginnen seit 08.10.2026 bei 1) – es zählt nur der Abstand zur ersten Zeile, eine Tabelle ab 0 funktioniert genauso. Halbe Takte als Kommazahl: 21,75 = drei Viertel nach Takt 21. Ein Part endet, wo der nächste beginnt.</td></tr>
 <tr><td>Songpart</td><td>ja</td><td>Name. Kommt er mehrfach vor, zählt das Werkzeug mit: <code>chorus 1</code>, <code>chorus 1 (2)</code>, <code>chorus 1 (3)</code>. Unter diesen Namen steht der Part in der Show.</td></tr>
 <tr><td>Effekt (füllt KI)</td><td>nein</td><td><b>Schreibt das Werkzeug</b> bei jeder Generierung: der Effekt, der für diesen Part gerade umgesetzt ist – erst der Aufruf bzw. die Szene mit Farbschema, dann Text, Ebene und Blinder, zuletzt eine Beschreibung in Worten. Hier nichts eintragen, es wird überschrieben.</td></tr>
 <tr><td>Änderungswunsch</td><td>nein</td><td>Dein Wunsch in freien Worten („weißer Strobo auf den Auftakt“, „zu statisch“). <b>Er gilt</b>: Claude setzt ihn in der Show um. Kein Werkzeug ändert diese Spalte – ist der Wunsch erledigt, löschst du ihn selbst.</td></tr>
@@ -401,6 +401,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>songgen.py &lt;Song&gt; --restore &lt;Version&gt;</code></td><td>Eine Version wieder aktiv machen. Der Anfang des Versionsnamens genügt, wenn er eindeutig ist.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --neu</code></td><td>Neuen Song-Ordner mit <code>quelle/struktur.xlsx</code> aus der Vorlage anlegen. Der Name gilt genau so, wie du ihn schreibst.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --raster</code></td><td>Gerasterte Kopie der Tabelle anlegen: <code>quelle/struktur-raster.xlsx</code> mit einer Zeile je Vierteltakt zwischen den Parts (siehe <a href="#raster">Zwischenzeilen</a>). Deine Tabelle, der Code und die Versionen bleiben unberührt; du ersetzt die Tabelle selbst durch die Kopie.</td></tr>
+<tr><td><code>songgen.py &lt;Song&gt; --takt-ab 1</code></td><td>Taktnummern der Tabelle verschieben, so dass die erste Zeile Takt 1 ist – wie im DAW (Cakewalk zählt ab 1). Die Spalte <code>von takt</code> aller Zeilen wandert um denselben Betrag, Taktnummern in der <code>show.yaml</code> (<code>bar:</code>, <code>cues:</code>) wandern mit. Der Song bleibt derselbe (es zählen nur die Abstände), das Werkzeug prüft, dass der erzeugte Code gleich bleibt. Tabelle vorher in Excel schließen, danach einmal normal generieren.</td></tr>
 <tr><td><code>songgen.py --assemble</code></td><td>Nur <code>src/</code> aus den <code>generated.cpp</code> aller Songs neu zusammensetzen, ohne etwas zu generieren.</td></tr>
 </table></div>
 <p><code>&lt;Song&gt;</code> ist der Ordnername unter <code>songs/</code>. Der Anfang genügt, Groß- und Kleinschreibung ist egal.</p>

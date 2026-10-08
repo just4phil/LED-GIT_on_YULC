@@ -25,8 +25,8 @@ Altes Format (Tabellen vor dem 06.10.2026): eine Spalte "Effektidee" mit den Wü
 Es wird weiter gelesen; write_effects() stellt eine solche Tabelle beim ersten Schreiben um (die Wünsche wandern in die
 neue Spalte "Änderungswunsch" rechts daneben).
 
-'von takt' ist die Taktnummer, an der der Part beginnt - ab 0 gezählt oder als Taktnummer im DAW, es zählt nur der
-Abstand zur ersten Zeile. Halbe Takte als Kommazahl (21,75). Ein Part endet, wo der nächste beginnt; die Zeile
+'von takt' ist die Taktnummer, an der der Part beginnt - als Taktnummer im DAW (Cakewalk zählt ab 1) oder ab 0
+gezählt, es zählt nur der Abstand zur ersten Zeile (umnummerieren: songgen.py <Song> --takt-ab 1, siehe shift_bars()). Halbe Takte als Kommazahl (21,75). Ein Part endet, wo der nächste beginnt; die Zeile
 "Ende" liefert nur den Schlusstakt (steht in ihrem Änderungswunsch oder ihrem Effekt eine Zeit wie "10 sek.", ist das
 die Länge des Schluss-Blacks). StartBit: so weit hinter dem Anfang der ersten Zeile kommt das Start-MIDI, als Bruchteil des Takts
 (0,125 = 1/8, 0,25 = 1/4, 0,375 = 3/8). 'BPM pro Part' leer oder gleich dem BPM im Kopf = Songtempo.
@@ -60,6 +60,7 @@ from openpyxl.utils import column_index_from_string, get_column_letter
 TABLE_FILE = "struktur.xlsx"	# Dateiname der Tabelle in songs/<Song>/quelle/
 SHEET = "Struktur"				# Name des Tabellenblatts
 BEATS_PER_BAR = 4				# Schläge je Takt (alle Songs stehen im 4/4-Takt)
+FIRST_BAR = 1					# 'von takt' der ersten Zeile in neu geschriebenen Tabellen: 1 wie im DAW Cakewalk (bis 08.10.2026: 0)
 # Wörterbücher "Beschriftung in der Tabelle (klein geschrieben) -> interner Name". So werden Kopf-Felder und
 # Spalten an ihrem Text erkannt, egal wo sie stehen; mehrere Schreibweisen führen zum selben internen Namen.
 HEAD_LABELS = {"midi-startnummer": "id", "song-id": "id", "bpm": "bpm", "startbit": "startbit", "titel": "name",
@@ -430,7 +431,7 @@ def write_table(path, song, notes=(), raster=False):
 		ws.column_dimensions[get_column_letter(c)].width = width
 	wrap = Alignment(wrap_text=True, vertical="top")
 	top = Alignment(vertical="top")
-	von, r = 0.0, HEADER_ROW
+	von, r = float(FIRST_BAR), HEADER_ROW
 	for sec in song["sections"]:
 		r += 1
 		ws.cell(r, 1, neat(von)).number_format = "0.00"
@@ -735,3 +736,55 @@ def write_effects(path, texts, end_black_ms, cue_texts=None):
 		if tmp.exists():
 			tmp.unlink()
 	return (migrated + "\n   " if migrated else "") + f"Spalte '{EFFECT_TITLE}' der Tabelle geschrieben ({changed} Zeile(n) neu)"
+
+
+# Verschiebt alle Taktnummern der Tabelle um denselben Betrag (songgen.py <Song> --takt-ab 1): die Spalte 'von takt'
+# jeder Zeile - Parts, Zwischenzeilen und "Ende". Wunsch des Users (08.10.2026): sein DAW (Cakewalk) zählt die Takte
+# ab 1, die Tabellen begannen bei 0 - beim Editieren musste er immer 1 abziehen.
+# Am Song ändert das nichts: read_table() rechnet nur mit den ABSTÄNDEN zwischen den Zeilen (Länge eines Parts =
+# nächstes 'von takt' minus eigenes). Nur wo die Show eine Taktnummer der Tabelle nennt (blinder mit bar:, cues:),
+# muss sie mitwandern - das erledigt songgen.py (shift_show_bars).
+# Sicherung wie bei write_effects(): erst eine Kopie schreiben, zurücklesen und prüfen, dass der Inhalt bis auf die
+# verschobenen Taktnummern derselbe ist; erst dann die Tabelle ersetzen. In Excel geöffnet -> nichts geschrieben.
+#   start   Taktnummer, die die erste Zeile (die Pause am Anfang) bekommen soll, z. B. 1
+# Rückgabe: um wie viele Takte verschoben wurde (0 = die Tabelle beginnt schon dort, nichts geschrieben).
+def shift_bars(path, start):
+	if (path.parent / ("~$" + path.name)).exists():
+		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
+	before = read_table(path)
+	tbl = before["_table"]
+	delta = neat(start - tbl["von"][0])
+	if not delta:
+		return 0
+	try:
+		wb = openpyxl.load_workbook(path)		# ohne data_only: Formeln bleiben Formeln
+	except PermissionError:
+		raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	ws, header_row, cols = find_sheet(wb)
+	rows = list(tbl["rows"]) + [tbl["end_row"]] + [r for part in tbl["subs"] for r in part.values()]
+	for r in rows:
+		cell = ws.cell(r, cols["von"])
+		if isinstance(cell.value, bool) or not isinstance(cell.value, (int, float)):
+			raise TableError(f"Zeile {r}: 'von takt' ist keine reine Zahl ({cell.value!r}, Formel?) - nichts geändert")
+		cell.value = neat(cell.value + delta)
+
+	# So muss der gelesene Inhalt danach aussehen: alles gleich, nur die Taktnummern der Wünsche um delta weiter.
+	# json.loads(json.dumps(...)) macht eine vollständige Kopie, damit "before" nicht mit verändert wird.
+	expected = json.loads(json.dumps({k: v for k, v in before.items() if not k.startswith("_")}))
+	for sec in expected["sections"]:
+		for w in sec.get("wishes", []):
+			w["von"] = neat(w["von"] + delta)
+	tmp = path.with_name(TMP_FILE)
+	try:
+		wb.save(tmp)
+		after = read_table(tmp)
+		if content_sha(after) != content_sha(expected) or after["_table"]["von"] != [neat(v + delta) for v in tbl["von"]]:
+			raise TableError("Kontrolle nach dem Schreiben: der Inhalt der Tabelle wäre nicht mehr derselbe - nichts geändert")
+		try:
+			os.replace(tmp, path)
+		except OSError:
+			raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	finally:
+		if tmp.exists():
+			tmp.unlink()
+	return delta

@@ -30,14 +30,17 @@ der User löscht sie selbst.
 3       BPM                86
 4       StartBit           0,375         Start-MIDI kommt 3/8 Takt nach dem Anfang der ersten Zeile
 5  von takt | Songpart | Effekt (füllt KI) | Änderungswunsch | Energie 0-5 | BPM pro Part   (+ beliebige weitere Spalten)
-6  0          pause      progBlack(…) …                        0
-7  1          synth intro SCENE_CALM, … ruhiges Atmen  zu statisch       1
+6  1          pause      progBlack(…) …                        0
+7  2          synth intro SCENE_CALM, … ruhiges Atmen  zu statisch       1
 …
-36 75         Ende       10 sek. BLACK                         0      <- letzte Zeile: nur der Schlusstakt
+36 76         Ende       10 sek. BLACK                         0      <- letzte Zeile: nur der Schlusstakt
 ```
 
-- `von takt`: Taktnummer, an der der Part beginnt (ab 0 oder DAW-Taktnummern - es zählt der Abstand zur ersten
-  Zeile; halbe Takte als Kommazahl). Ein Part endet, wo der nächste beginnt. Die erste Zeile ist die Pause am
+- `von takt`: Taktnummer, an der der Part beginnt (DAW-Taktnummern - es zählt der Abstand zur ersten Zeile; halbe
+  Takte als Kommazahl). Cakewalk zählt ab 1, und seit 08.10.2026 beginnen alle Tabellen und die Vorlage bei Takt 1; `songgen.py <Song> --takt-ab 1` nummeriert eine Tabelle,
+  die bei 0 beginnt, entsprechend um (Wunsch des Users, 08.10.2026; `bar:`/`cues:` der Show wandern mit, der Code
+  bleibt gleich; nur auf seinen Wunsch und Song für Song ausführen, danach einmal generieren). Beim Lesen von `bar:`
+  und `cues:` also immer die Zählung der jeweiligen Tabelle nehmen, nie umrechnen. Ein Part endet, wo der nächste beginnt. Die erste Zeile ist die Pause am
   Anfang (immer Black), die letzte heißt „Ende" und liefert den Schlusstakt; eine Zeit in ihrem Änderungswunsch
   oder ihrem Effekt („10 sek.") ist die Länge des Schluss-Blacks.
 - `Änderungswunsch`: Wunsch des Users in Worten („zu statisch", „langsames fade out rot", „Text einblenden") - **er

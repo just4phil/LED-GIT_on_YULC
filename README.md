@@ -215,6 +215,7 @@ Each song has a folder `songs/<Song>_v1/`:
 python tools/songgen.py <Song>              # generate this song and rebuild src/songs_generated.*
 python tools/songgen.py --neu <Song>        # create a new song folder with the table template
 python tools/songgen.py --raster <Song>     # write a copy of the table with one row per quarter bar
+python tools/songgen.py <Song> --takt-ab 1  # renumber the table's bars to start at 1 (as the DAW counts); song unchanged
 python tools/songgen.py --versions <Song>   # list saved versions
 python tools/songgen.py --restore <version> <Song>
 ```

@@ -25,6 +25,7 @@ Schreibt:
     songs/<Song>/generated.cpp + versionen/   (nur für den angegebenen Song)
     songs/<Song>/quelle/struktur.xlsx         (nur die Spalte "Effekt", siehe effect_texts() und struktur.write_effects())
     songs/<Song>/quelle/struktur-raster.xlsx  (nur mit --raster: gerasterte Kopie der Tabelle, eine Zeile je Vierteltakt)
+    songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --takt-ab N: Taktnummern verschoben, siehe cmd_shift())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
@@ -2268,6 +2269,103 @@ def cmd_raster(song_dir):
 	return 0
 
 
+# Taktnummern in einer show.yaml um delta verschieben - als Text, damit Kommentare und Schreibweise bleiben.
+# Betroffen sind nur die zwei Stellen, an denen die Show eine Taktnummer der Tabelle nennt:
+#   bar: 31.5            (Position eines Blinders = 'von takt' der Zwischenzeile)
+#   cues: {31.5: "..."}  (Antwort auf den Wunsch in dieser Zwischenzeile; als Block oder in einer Zeile mit {})
+# Alles andere in der Show sind Beats ab Part-Beginn und hängt nicht an der Zählung der Tabelle.
+# Zur Kontrolle wird die Show vorher und nachher als YAML gelesen: der Unterschied darf nur in genau diesen Zahlen
+# liegen, sonst SongError (dann wird nichts geschrieben). Taktnummern in Kommentaren und Texten bleiben stehen.
+# Die drei Muster unten sind "reguläre Ausdrücke" (Suchmuster): \d+(?:\.\d+)? = eine Zahl mit oder ohne Komma-Teil.
+BAR_KEY_RE = re.compile(r"(\bbar:\s*)(\d+(?:\.\d+)?)")			# "bar: 31.5"
+CUE_KEY_RE = re.compile(r"^(\s*)(\d+(?:\.\d+)?)(\s*:)")			# Zeile im cues-Block: "      31.5: ..."
+CUE_FLOW_RE = re.compile(r"([{,]\s*)(\d+(?:\.\d+)?)(\s*:)")		# in einer Zeile: "{31.5: ..., 32: ...}"
+def shift_show_bars(text, delta):
+	def moved(num):
+		return st.fmt(st.neat(float(num) + delta))
+	out, cue_indent = [], None		# cue_indent: Einrückung der Zeile "cues:", solange wir in ihrem Block sind
+	for line in text.split("\n"):
+		comment = line.lstrip().startswith("#")
+		indent = len(line) - len(line.lstrip())
+		if cue_indent is not None and line.strip() and not comment:
+			if indent > cue_indent:		# tiefer eingerückt als "cues:" -> eine Zeile "von takt: Text"
+				out.append(CUE_KEY_RE.sub(lambda m: m.group(1) + moved(m.group(2)) + m.group(3), line, count=1))
+				continue
+			cue_indent = None			# Block zu Ende
+		if line.strip() and not comment:
+			line = BAR_KEY_RE.sub(lambda m: m.group(1) + moved(m.group(2)), line)
+			m = re.match(r"\s*cues:\s*(.*)$", line)
+			if m:
+				rest = m.group(1).strip()
+				if rest.startswith("{"):
+					head, flow = line.split("{", 1)
+					line = head + CUE_FLOW_RE.sub(lambda k: k.group(1) + moved(k.group(2)) + k.group(3), "{" + flow)
+				elif not rest or rest.startswith("#"):
+					cue_indent = indent
+		out.append(line)
+	new = "\n".join(out)
+
+	def expect(node):		# so muss die gelesene Show danach aussehen
+		if isinstance(node, dict):
+			res = {}
+			for k, v in node.items():
+				if k == "cues" and isinstance(v, dict):
+					res[k] = {st.neat(float(von) + delta): t for von, t in v.items()}
+				elif k == "bar" and isinstance(v, (int, float)) and not isinstance(v, bool):
+					res[k] = st.neat(v + delta)
+				else:
+					res[k] = expect(v)
+			return res
+		return [expect(x) for x in node] if isinstance(node, list) else node
+	if yaml.safe_load(new) != expect(yaml.safe_load(text)):
+		raise SongError(f"{SHOW_FILE}: die Taktnummern (bar:, cues:) lassen sich nicht sicher automatisch verschieben - nichts geändert")
+	return new
+
+
+# Der erzeugte Code eines Songs ohne Kommentare - zum Vergleich "ist der Song noch derselbe?" (in den Kommentaren
+# können Taktnummern stehen, die sich beim Umnummerieren ändern dürfen).
+def code_without_comments(song_dir):
+	code = generate(load_song(song_dir), fragments(skip=song_dir))[1]
+	return [line.split("//", 1)[0].rstrip() for line in code.split("\n")]
+
+
+# <Song> --takt-ab N: die Tabelle so umnummerieren, dass ihre erste Zeile Takt N ist (N = 1: wie im DAW Cakewalk),
+# und die Taktnummern in der show.yaml mitziehen. Der Song bleibt derselbe (es zählen nur die Abstände) - zur Kontrolle
+# wird der erzeugte Code vorher und nachher verglichen (ohne Kommentare). Danach normal generieren: die Spalte "Effekt"
+# der Zwischenzeilen und die gespeicherte Version passen dann wieder zum neuen Stand.
+# Reihenfolge: erst alles berechnen und prüfen (Show), dann die Tabelle schreiben (struktur.shift_bars prüft selbst),
+# zuletzt die Show. Songs ohne show.yaml: nur die Tabelle.
+def cmd_shift(song_dir, start):
+	table, show_path = table_path(song_dir), song_dir / SHOW_FILE
+	if not table.exists():
+		raise SongError(f"{song_dir.name}: keine {TABLE_FILE}")
+	try:
+		first = st.read_table(table)["_table"]["von"][0]
+		delta = st.neat(start - first)
+		if not delta:
+			print(f"{song_dir.name}: die Tabelle beginnt schon bei Takt {st.fmt(start)} - nichts zu tun")
+			return 0
+		new_show = code_before = None
+		if show_path.exists():
+			raw = show_path.read_bytes().decode("utf-8")
+			crlf = "\r\n" in raw		# Zeilenenden der Datei beibehalten (Windows: \r\n)
+			new_show = shift_show_bars(raw.replace("\r\n", "\n"), delta)
+			code_before = code_without_comments(song_dir)
+		st.shift_bars(table, start)
+	except st.TableError as e:
+		raise SongError(f"{song_dir.name}: {e}")
+	checked = ""
+	if new_show is not None:
+		show_path.write_bytes((new_show.replace("\n", "\r\n") if crlf else new_show).encode("utf-8"))
+		if code_without_comments(song_dir) != code_before:
+			raise SongError(f"{song_dir.name}: der erzeugte Code wäre nach dem Umnummerieren nicht mehr derselbe - bitte prüfen "
+							f"(Tabelle und {SHOW_FILE} sind schon geändert; zurück mit --takt-ab {st.fmt(first)})")
+		checked = f"; bar: und cues: in {SHOW_FILE} mitgezogen, erzeugter Code geprüft: unverändert"
+	print(f"{song_dir.name}: Taktnummern um {st.fmt(delta)} verschoben, die Tabelle beginnt jetzt bei Takt {st.fmt(start)}{checked}.\n"
+		  f"Jetzt neu generieren (songgen.py {song_dir.name}), damit Version und Spalte '{st.EFFECT_TITLE}' zum neuen Stand passen.")
+	return 0
+
+
 # Hauptprogramm: Befehlszeile auswerten und das passende Kommando ausführen
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -2280,6 +2378,7 @@ def main():
 	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
+	ap.add_argument("--takt-ab", type=float, metavar="N", help="Taktnummern der Tabelle verschieben, so dass ihre erste Zeile Takt N ist (1 = wie im DAW); bar:/cues: der Show wandern mit, der Song bleibt derselbe")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
 		stream.reconfigure(encoding="utf-8")
@@ -2301,6 +2400,8 @@ def main():
 			return cmd_restore(song_dir, args.restore)
 		if args.raster:
 			return cmd_raster(song_dir)
+		if args.takt_ab is not None:
+			return cmd_shift(song_dir, args.takt_ab)
 		if args.tabelle:
 			return cmd_table([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)
