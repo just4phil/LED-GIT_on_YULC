@@ -1,6 +1,19 @@
 claude --dangerously-skip-permissions
 ======================================
 
+CAKEWALK TAKT IMMER -1 FÜR EDITS IN DER EXCEL TABELLE (cakewalk zählt ab 1 / excel zählt ab 0)
+------------------------------------------------------
+
+
+wir müssen die zonen auf andresgit noch testen
+
+neuer fx:
+- ausblend-fx alle geräte stehen voll in einer farbe und dann fährt wird auf der matrix zeilenweise nach unten gefahren bis alles schwarze ist (inkl fading damit es smooth wirkt)
+    genauso bei den Lampen (von oben nach unten) -> uind die gits?
+- einblend ef wäre dann reverse
+
+
+---------
 definitions.h musst du nicht mehr anfassen. Stattdessen wählst du das passende PlatformIO-Env. Für die Gitarre heißt es andresgit, und es setzt ANDRESGIT selbst beim Bauen.
 
 In VS Code:
@@ -27,7 +40,7 @@ alle firmwares neu bauen:
 ==========================
 e:
 cd E:\00_DATEN\PlatformIO\Projects\LED-GIT_on_YULC
-Bauen ohne Server: 
+alle Bauen ohne Server: 
 tools\.venv\Scripts\python tools/build_ota.py
 bauen und ausliefern
 tools\.venv\Scripts\python tools/build_ota.py --serve
