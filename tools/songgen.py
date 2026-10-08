@@ -2259,12 +2259,10 @@ def cmd_raster(song_dir):
 	except st.TableError as e:
 		raise SongError(f"{song_dir.name}: {e}")
 	rel = dst.relative_to(ROOT).as_posix()
-	if not count:
-		dst.unlink()
-		print(f"{song_dir.name}: die Tabelle hat schon alle Zeilen im Viertel-Raster - keine Kopie angelegt")
-		return 0
+	# Hat die Tabelle schon alle Zeilen, entsteht die Kopie trotzdem: sie bekommt die Gliederung in drei Ebenen neu
 	print(f"Gerasterte Kopie angelegt: {rel} ({count} Zwischenzeilen eingefügt, Inhalt geprüft: derselbe wie in {TABLE_FILE})\n"
-		  f"Die Zwischenzeilen sind eingeklappt: Plus am linken Rand öffnet einen Part, der Knopf '2' oben links alle.\n"
+		  f"Drei Ebenen, Knöpfe oben links: 1 = nur die Parts, 2 = dazu die vollen Takte, 3 = dazu die Viertel.\n"
+		  f"Das Plus am linken Rand öffnet einen einzelnen Part bzw. Takt. Angelegt ist alles eingeklappt.\n"
 		  f"Wenn sie passt: {TABLE_FILE} in Excel schließen und selbst durch die Kopie ersetzen (die Kopie in {TABLE_FILE}\n"
 		  f"umbenennen). Deine Tabelle wurde nicht verändert; an Code und Versionen ändert der Tausch nichts.")
 	return 0

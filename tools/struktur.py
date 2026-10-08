@@ -442,6 +442,11 @@ def write_table(path, song, notes=(), raster=False):
 #=========== Viertel-Raster anlegen ===============================
 #==================================================================
 
+# Ist das eine ganze Taktnummer (20 oder 20.0, nicht 20.25)? Leere Zellen und Texte: nein.
+def _whole_bar(von):
+	return isinstance(von, (int, float)) and not isinstance(von, bool) and abs(von - round(von)) < 1e-6
+
+
 # Fügt in ein Tabellenblatt die fehlenden Zwischenzeilen des Viertel-Rasters ein.
 #   named     die Zeilen mit Songpart, von oben nach unten: [(Zeilennummer, von takt), ...] - die letzte ist "Ende"
 #   von_col   Nummer der Spalte 'von takt'
@@ -449,8 +454,12 @@ def write_table(path, song, notes=(), raster=False):
 # Zwischen zwei benachbarten Zeilen kommen die Rasterwerte, die dort noch fehlen (0,25 / 0,5 / 0,75 ...). Gearbeitet
 # wird von unten nach oben: so bleiben die Zeilennummern weiter oben gültig, während unten eingefügt wird.
 # Jede neue Zeile bekommt das Aussehen der Zeile über der Lücke (Schrift, Rahmen, Zahlenformat).
-# Alle Zwischenzeilen werden zu einer Excel-Gliederung je Part zusammengefasst und eingeklappt: am linken Rand steht
-# dann an jeder Part-Zeile ein Plus zum Aufklappen, die Knöpfe "1" und "2" oben links klappen alles auf einmal ein/aus.
+# Die Zwischenzeilen werden zu einer Excel-Gliederung in drei Ebenen zusammengefasst (Wunsch des Users, 08.10.2026):
+#   Ebene 1   nur die Part-Zeilen
+#   Ebene 2   dazu die vollen Takte (Zwischenzeilen mit ganzer Taktnummer: 1 / 2 / 3 ...)
+#   Ebene 3   dazu die Viertel (0,25 / 0,5 / 0,75)
+# Die Knöpfe "1", "2", "3" oben links schalten die ganze Tabelle auf eine Ebene; am linken Rand steht an jeder
+# Part-Zeile ein Plus für ihre Takte und an jeder Takt-Zeile ein Plus für ihre Viertel. Angelegt wird alles eingeklappt.
 # openpyxl verschiebt beim Einfügen nur die Zellen: von Hand eingestellte Zeilenhöhen werden hier mitgenommen;
 # Formeln und verbundene Zellen passt es nicht an - der Aufrufer prüft vorher, dass es unterhalb keine gibt.
 # Rückgabe: Zahl der eingefügten Zeilen.
@@ -491,8 +500,13 @@ def raster_sheet(ws, named, von_col, existing=()):
 					 for col in range(1, ws.max_column + 1) if col != von_col)
 		ws.row_dimensions[start].collapsed = stop > start + 1 and not filled
 		for r in range(start + 1, stop):
-			ws.row_dimensions[r].outlineLevel = 1
-			ws.row_dimensions[r].hidden = not filled
+			von = ws.cell(r, von_col).value
+			whole = _whole_bar(von)		# voller Takt oder Viertel?
+			d = ws.row_dimensions[r]
+			d.outlineLevel = 1 if whole else 2		# Excel zählt ab 0: 1 = zweite Ebene (Takte), 2 = dritte Ebene (Viertel)
+			d.hidden = not filled
+			# eine Takt-Zeile ist selbst die Kopfzeile ihrer Viertel: eingeklappt, wenn gleich darunter ein Viertel folgt
+			d.collapsed = whole and not filled and r + 1 < stop and not _whole_bar(ws.cell(r + 1, von_col).value)
 	return sum(n for _at, n in inserts)
 
 

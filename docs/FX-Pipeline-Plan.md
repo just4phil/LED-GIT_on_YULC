@@ -51,6 +51,10 @@ Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster und mehrere
      Liste, Befehl `--raster`), SKILL.md, README, CLAUDE.md.
   Kontrolle nach jedem Schritt: Fingerabdruck aller 24 Tabellen und der erzeugte Code der 9 Songs mit Show sind
   gleich geblieben. Es wurde kein Song neu generiert und keine Tabelle des Users angefasst.
+  **Nachtrag 08.10.2026:** Die Gliederung hat auf Wunsch des Users drei Ebenen statt zwei (`raster_sheet()`): 1 = nur
+  Parts, 2 = dazu die vollen Takte, 3 = dazu die Viertel; `--raster` legt die Kopie jetzt auch an, wenn keine Zeile
+  fehlt (erneuert die Gliederung). Vorlage neu erzeugt. Für Maniac liegt `quelle/struktur-raster.xlsx` bereit; den
+  Tausch gegen `struktur.xlsx` (alte als `struktur_backup.xlsx`) macht der User selbst, der Hook sperrt ihn für Claude.
   **Nächster Schritt:** User probiert `songgen.py <Song> --raster` an einem Song (sieht die eingeklappte Gliederung
   in Excel gut aus?), tauscht die Kopie selbst gegen seine Tabelle und trägt Wünsche in Zwischenzeilen ein; Claude
   setzt sie um (`blinder` mit `bar:`, Antwort in `cues:`). Geräte aktualisieren (`build_ota.py` ohne `--serve` baut
