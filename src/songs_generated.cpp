@@ -232,7 +232,7 @@ void gen_ILoveIt() {
 		break;
 
 	case 30:	// youre on a different road  8 T  16000ms  @1:01.250  -- Alter Effekt: grüner Verlauf, der zu Weiß aufhellt. Im letzten Takt (Snarewirbel) blendet ein starker Blinder zwei Beats lang ein und steht dann zwei Beats bis zum Part-Ende voll.
-		fxBlinder(14000, 2500, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinder(15000, 2500, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(1000, 1000);
 		progPalette(16000, 11, 35);
 		break;
@@ -632,14 +632,14 @@ void gen_TellItToMyHeart() {
 
 	case 30:	// chorus 1  8 T  16272ms  @0:56.186  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats. Ende des vierten Takts drei kurze Blinder auf drei Vierteln hintereinander.
 		fxBlinderSlot(0);
-		fxBlinder(7119, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7119, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(1);
-		fxBlinder(7627, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7627, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(2);
-		fxBlinder(8136, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(8136, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		progSternNeu(16272, 1017, 35, 20, 26, 5, true, 3);
 		break;
 
@@ -667,14 +667,14 @@ void gen_TellItToMyHeart() {
 
 	case 55:	// chorus 2  8 T  16271ms  @1:45.000  -- Alter Effekt: schnelle Einzelblitze. Ende des vierten Takts drei kurze Blinder auf drei Vierteln hintereinander.
 		fxBlinderSlot(0);
-		fxBlinder(7119, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7119, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(1);
-		fxBlinder(7627, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7627, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(2);
-		fxBlinder(8136, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(8136, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		progFastBlingBling(16271, 8, 60);
 		break;
 
@@ -699,36 +699,39 @@ void gen_TellItToMyHeart() {
 	case 80:	// chorus 3  8 T  16272ms  @2:35.847  -- Feuer auf allen Geräten in Rot, Orange und Gelb. Ende des vierten Takts drei kurze Blinder auf drei Vierteln; auf den letzten zwei Vierteln noch zwei, der dritte fällt auf die 1 von chorus 4.
 		setColorScheme(SCHEME_FIRE);
 		fxBlinderSlot(0);
-		fxBlinder(7119, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7119, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(1);
-		fxBlinder(7627, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7627, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(2);
-		fxBlinder(8136, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(8136, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(3);
-		fxBlinder(15254, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(15254, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(4);
-		fxBlinder(15763, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(15763, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
+		fxBlinderSlot(5);
+		fxBlinder(16272, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		scene(SCENE_FIRE, 16272, 85, 118);
 		break;
 
 	case 85:	// chorus 4  8 T  16271ms  @2:52.119  -- Schnelle Einzelblitze auf allen Geräten. Auf die 1 der dritte Blinder der Gruppe aus chorus 3; Ende des vierten Takts noch einmal drei kurze Blinder auf drei Vierteln.
 		fxBlinderSlot(0);
-		fxBlinder(0, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(0, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(1);
-		fxBlinder(7119, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7119, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(2);
-		fxBlinder(7627, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(7627, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		fxBlinderSlot(3);
-		fxBlinder(8136, 305, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 102);
+		fxBlinder(8136, 407, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(102, 102);
 		scene(SCENE_SPARKLE, 16271, 90, 118);
 		break;
 
@@ -1341,7 +1344,7 @@ void gen_BillieJean() {
 	case 145:	// the ONE …..halftime  2 T  3750ms  @3:27.422  -- Idee des Users 'BLINDER fadet schnell ein und sehr langsam aus': der Blinder blendet in einem halben Beat auf allen Geräten auf und klingt dann über die ganzen 2 Takte ab; darunter atmet die Bühne dunkel in Blau/Lila und kommt langsam hervor
 		setColorScheme(SCHEME_ROYAL);
 		fxDim(128);
-		fxBlinder(0, 3750, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinder(234, 3750, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(234, 0);
 		scene(SCENE_CALM, 3750, 150, 128);
 		break;

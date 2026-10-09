@@ -451,7 +451,7 @@
 
 	// Der LED-Streifen läuft einmal rund um die Gitarre (Form "SG"). Damit Effekte der Form folgen können
 	// (z.B. vom Korpus zur Kopfplatte laufen), wird die Kontur hier in Zonen eingeteilt.
-	//--- Geometrie der SG-Kontur für guitarShapeFX (geschätzt aus Foto vom 27.09.2026 -> mit progTestRange ausmessen!) ---
+	//--- Geometrie der SG-Kontur für guitarShapeFX (geschätzt aus Foto vom 27.09.2026 -> mit der Zonen-Karte progZoneMap ausmessen: Song 90, Part 0) ---
 	#define GUITAR_HEAD_TIP_IDX		77	// LED-Index an der Spitze der Kopfplatte
 	#define GUITAR_LOOP_DIR			1	// +1: LED-Index steigt von der Kopfspitze Richtung Hals-UNTERkante (Diskant-Seite ohne Marker), sonst -1
 	// Zonen als Position entlang der Kontur, gezählt ab Kopfspitze in GUITAR_LOOP_DIR-Richtung (0..anz_LEDs-1)

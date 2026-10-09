@@ -92,7 +92,9 @@ of each beat, via `fxSoftBlend()`). `fxSmooth(ms)` is a temporal low-pass on the
 turns hard jumps of old effects into blends. `fxBlinder` / `fxBlinderBeat` flash a stage-blinder (warm white) on top of
 everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n)` before each of them puts several
 blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
-number of the table). A second
+number of the table). A blinder's position is always the moment of FULL brightness (user rule 09.10.2026): a fade-in
+(`fxBlinderShape` / YAML `attack`) runs before it, and if that starts before the part does, `songgen.py` registers the
+blinder in the previous part as well. A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the

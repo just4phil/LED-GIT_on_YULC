@@ -456,10 +456,15 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 }
 
 // Ein Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend.
-// Mit fxBlinderShape: blendet über attackMs ein, steht holdMs voll und klingt über den Rest von lenMs ab
+// Mit fxBlinderShape: blendet über attackMs ein, steht holdMs voll und klingt über den Rest von lenMs ab.
+// atMs ist immer der Moment, in dem der Blinder VOLL hell ist (Wunsch des Users, 09.10.2026: "an dieser Stelle die
+// volle Leuchtkraft"). Ohne Einblenden springt er dort auf; mit Einblenden beginnt er deshalb attackMs FRÜHER
+// ("lead"), damit das Einblenden genau bei atMs oben ankommt. Liegt dieser Beginn vor dem Part-Beginn, fehlt hier
+// der Anfang des Einblendens - songgen.py meldet ihn dann zusätzlich im Part davor an.
 static uint8_t blinderLevelOf(const BlinderMod& b, uint32_t beatMs) {
-	if (!b.lenMs || !b.here || beatMs < b.atMs) return 0;	// kein Blinder angemeldet / nicht auf diesem Gerät / noch nicht dran
-	uint32_t t = beatMs - b.atMs;		// Zeit seit dem (ersten) Einsatz des Blinders
+	uint32_t lead = b.shaped ? b.attackMs : 0;	// so viele ms vor atMs beginnt der Blinder
+	if (!b.lenMs || !b.here || beatMs + lead < b.atMs) return 0;	// kein Blinder angemeldet / nicht auf diesem Gerät / noch nicht dran
+	uint32_t t = beatMs + lead - b.atMs;	// Zeit seit dem (ersten) Beginn des Blinders (= Beginn des Einblendens)
 	if (b.every) {	// im Raster wiederholen, Phase exakt über bpm (wie fxBeatPhase)
 		t = (((uint64_t)t * b.bpm) % (60000UL * b.every)) / b.bpm;
 	}

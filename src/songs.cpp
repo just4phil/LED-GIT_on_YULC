@@ -4134,12 +4134,15 @@ void INTROdancing() { // für die V1 vom Intro!! gecheckt am 26.04.2026
 
 //#90
 //==== DEMO: neue Effekte aus guitarShapeFX (Songwahl per MIDI: Kanal 10, CC 22, Wert 90 - oder START_WITH_FX_DEMO) ====
-// Zeigt jeden Kontur-Effekt nacheinander für 8 bis 12 Sekunden. Kompakte Schreibweise: ein Part je Zeile.
+// Beginnt mit der Zonen-Karte (Testbild zum Ausmessen der ZONE_..._START-Werte in definitions.h, 30 s), danach
+// jeder Kontur-Effekt nacheinander für 8 bis 12 Sekunden. Kompakte Schreibweise: ein Part je Zeile.
+// Zurück zur Zonen-Karte: Part 0 wählen (CC 23, Wert 0) - oder das Ende der Schleife abwarten.
 void neueEffekteDemo() {
 
 	switch (prog) {
 
-	case 0:		progCometLoop(12000, 5);									break;	// 2 Kometen gegenläufig
+	case 0:		progZoneMap(30000, 2);										break;	// Testbild: Zonen in festen Farben, Grenzen als Lücke
+	case 2:		progCometLoop(12000, 5);									break;	// 2 Kometen gegenläufig
 	case 5:		progChargeBlast(12000, 10, 2000, 160);						break;
 	case 10:	progSymmetricVU(12000, 15, 120);							break;
 	case 15:	progShockwave(12000, 20, 700);								break;	// Zufallsfarben
@@ -4249,13 +4252,14 @@ void pipelineDemo() {
 
 	// fxBlinderSlot (neu am 07.10.2026): mehrere Blinder in EINEM Part, jeder auf seinem eigenen Platz mit eigenem Zeitpunkt,
 	// Verlauf, Farbe und Geräten. Hier drei über dunklem Atmen: sofort ein kurzer auf allen Geräten, nach 3 s ein weißer
-	// nur auf den Lampen, ab 6 s ein langer, der 1 s einblendet und bis zum Part-Ende voll steht.
+	// nur auf den Lampen, ab 6 s ein langer, der 1 s einblendet und bis zum Part-Ende voll steht (fxBlinder nennt den
+	// Moment der vollen Helligkeit: 7000 ms - das Einblenden läuft in der Sekunde davor).
 	case 38:
 		setColorScheme(SCHEME_ROYAL);
 		fxDim(128);
 		fxBlinderSlot(0);	fxBlinder(0, 1000);
 		fxBlinderSlot(1);	fxBlinder(3000, 500, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);
-		fxBlinderSlot(2);	fxBlinder(6000, 2000);	fxBlinderShape(1000, 1000);
+		fxBlinderSlot(2);	fxBlinder(7000, 2000);	fxBlinderShape(1000, 1000);
 		scene(SCENE_CALM, 8000, DEMO_NR(37), bpm);
 		break;
 
@@ -4345,8 +4349,9 @@ void pipelineDemo() {
 	case 22:	setColorScheme(SCHEME_TOXIC);	fxBlinderBeat(bpm, 4, 1000);	scene(SCENE_RAIN,    8000, 21, bpm);	break;	// Blinder über einem dunklen Effekt (fallende Leuchtspuren)
 	case 21:	setColorScheme(SCHEME_ICE);		fxBlinderBeat(bpm, 2, 300, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2);			// nur die Lampen blenden: weiß, alle 2 Beats
 				scene(SCENE_PALETTE, 8000, 28, bpm);	break;
-	// fxBlinderShape: Blinder mit eigenem Verlauf - blendet schnell ein (1/2 Beat) und klingt sehr lang aus (Idee des Users, Billie Jean)
-	case 28:	setColorScheme(SCHEME_ROYAL);	fxDim(128);	fxBlinderBeat(bpm, 8, 4000);	fxBlinderShape(250);	scene(SCENE_CALM, 8000, 1, bpm);	break;	// alle 2 Takte ein Blinder über dunklem Atmen
+	// fxBlinderShape: Blinder mit eigenem Verlauf - blendet schnell ein (1/2 Beat) und klingt sehr lang aus (Idee des Users, Billie Jean).
+	// Letzter Parameter 250 = Moment der vollen Helligkeit: das Einblenden (250 ms) beginnt damit genau am Part-Anfang.
+	case 28:	setColorScheme(SCHEME_ROYAL);	fxDim(128);	fxBlinderBeat(bpm, 8, 4000, 255, FX_BLINDER_WARM, DEV_ALL, 250);	fxBlinderShape(250);	scene(SCENE_CALM, 8000, 1, bpm);	break;	// alle 2 Takte ein Blinder über dunklem Atmen
 
 	// eigene Text-Ebene: der Text liegt zuoberst, darunter die Ebene, darunter der Effekt des Parts
 	case 1:		// Farbband + Glitzern + Text zugleich (Text nur auf der Matrix; dort ist alles unter dem Text stark gedimmt, sonst ist er nicht lesbar)

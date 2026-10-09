@@ -11,7 +11,46 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 07.10.2026 (Struktur-Tabelle im Viertel-Raster und mehrere Blinder pro Part gebaut, Abnahme offen)
+Zuletzt aktualisiert: 09.10.2026 (Blinder: Position = volle Helligkeit - abgenommen)
+
+- **09.10.2026, Blinder-Position = Moment der vollen Helligkeit (Wunsch des Users nach den Blindern in Tell It To My
+  Heart: „wenn ich einen Blinder auf eine Viertel setze, ist immer gemeint, dass er an dieser Stelle die volle
+  Leuchtkraft hat“) - abgenommen am 09.10.2026 („sehr gut ... sieht top aus!“).** Befund vorab: ohne `attack` sprang der Blinder schon bisher genau an
+  der Position auf volle Helligkeit (auch die neun Dreiergruppen in Tell It To My Heart); verschoben war die volle
+  Helligkeit nur mit `attack` (sie kam `attack` Beats NACH der Position).
+  - Firmware (`blinderLevelOf()` in `fxPipeline.cpp`, Kommentare in `fxPipeline.h`): mit `fxBlinderShape` ist
+    `atMillis` der Moment der vollen Helligkeit, der Blinder beginnt `attackMillis` früher (`lead`); gilt auch für
+    jeden Einsatz im Raster. Ohne `fxBlinderShape` unverändert.
+  - Generator (`tools/songgen.py`): neue Funktion `blinder_specs()` (Prüfen + Umrechnen, aus `pipeline_calls()`
+    herausgelöst); `at` / `bar` = volle Helligkeit. Reicht das Einblenden vor den Part-Beginn, meldet
+    `pipeline_calls()` den Blinder zusätzlich im Part davor an (`part["_next"]`, `full_dur` aus `build_timeline()`;
+    Zeitpunkt = Part-Länge + `at`, belegt dort einen Platz). Im allerersten Part fällt das Stück vor Songbeginn weg.
+  - Gleiches Bild wie bisher, nur umgeschrieben: I Love It `youre on a different road` `at: 28` -> `at: 30`
+    (Code `fxBlinder(15000 …)` statt 14000), Billie Jean `the ONE … halftime` `at: 0` -> `at: 0.5`
+    (`fxBlinder(234 …)`); Demo 92 Part 38 (`fxBlinder(7000, 2000)` statt 6000) und Part 28 (`fxBlinderBeat(…, 250)`).
+    Alle anderen Shows erzeugen denselben Code wie vorher (per `--dry-run` vorher/nachher verglichen).
+  - Test an Tell It To My Heart (#21, Version `2026-10-09_1610`): alle 15 kurzen Blinder
+    `{len: 0.8, attack: 0.2, hold: 0.2}` statt `{len: 0.6, hold: 0.2}` - blenden ca. 100 ms vor der Viertel ein,
+    sind auf der Viertel voll (100 ms), klingen in 200 ms ab; Lücke zwischen zweien jetzt 100 ms statt 200 ms. Der
+    Blinder auf Takt 86 (die 1 von `chorus 4`) blendet schon am Ende von `chorus 3` ein (dort Platz 5,
+    `fxBlinder(16272 …)`). `snareauftakt (2)` (`{at: 0, len: 2, hold: 1.5}`, ohne `attack`) ist unverändert.
+  - Doku: SKILL.md (Regel „Position = volle Helligkeit“), `docs/Song-Workflow.html`, `docs/LED-Effekte-und-Szenen.html`,
+    `docs/effekt-katalog.yaml`, `CLAUDE.md`. Versionen `2026-10-09_1610` auch für I Love It und Billie Jean.
+  - Gebaut: `andresgit` einzeln, danach alle Geräte mit `build_ota.py` (ohne `--serve`). Vom User auf den
+    Geräten gesehen und abgenommen. Kein nächster Schritt offen.
+
+- **08.10.2026, Zonen der Gitarre testen (Notiz des Users in `src/todo.txt`: „wir müssen die zonen auf andresgit noch
+  testen“) - Testbild gebaut, Messung an der Gitarre offen.** Die `ZONE_*_START`-Werte, `GUITAR_HEAD_TIP_IDX`,
+  `GUITAR_LOOP_DIR` und `GUITAR_STRAP_PIN_POS` (`definitions.h`, Block `GITMARKER_GIT1`) sind aus dem Foto vom
+  27.09.2026 geschätzt und nie an der Hardware geprüft. Neu: `progZoneMap()` in `guitarShapeFX.cpp/.h` - jede Zone in
+  fester Farbe (Kopf gedämpftes Weiß, Hals unten Blau, unteres Horn Orange, Korpus Rot, oberes Horn Violett, Hals oben
+  Grün), erste LED jeder Zone dunkel (Grenze als Lücke), Kopfspitze blinkt weiß, Gurtansatz türkis. Steht als Part 0
+  (30 s) am Anfang von Demo 90 (`neueEffekteDemo()`), der Komet ist jetzt Part 2. Doku:
+  `docs/LED-Effekte-und-Szenen.html` (Demo-Tabelle, Kalibrier-Checkliste). `andresgit` gebaut, **nicht geflasht,
+  nicht auf der Gitarre gesehen**. Nicht sichtbar ist die Grenze `ZONE_HEAD_UP_START` (liegt im dunklen
+  Griffbrett-Bereich `Bund_min..Bund_max`). **Nächster Schritt:** User flasht die Gitarre, wählt Song 90 und nennt je
+  Grenze die Abweichung in LEDs (und ob die Seiten vertauscht sind); Claude trägt die Werte in `definitions.h` und in
+  die Zonen-Tabelle der Doku ein. Danach `progZoneBeat` / `progHeartbeat` / `progFuse` (Parts 45, 50, 65) ansehen.
 
 - **07.10.2026, Struktur-Tabelle im Viertel-Raster (Wunsch des Users: „dann könnte ich immer sehr fein meine Ideen auf
   Vierteltakt angeben“) - gebaut, Abnahme offen.** Sein Beispiel: `Desktop\xls\struktur.xlsx` (APT., eine Zeile je Vierteltakt,

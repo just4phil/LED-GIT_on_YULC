@@ -148,7 +148,8 @@ void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts fol
 												// Puls, Tor und Ein-/Ausblenden bleiben scharf. Rechnet mit der echten Zeit je Bild -> auf allen Geräten gleich
 //--- Blinder: helles Aufblenden wie bei einem Bühnen-Blinder, punktuell über dem laufenden Effekt. Voll hell in der ersten
 //    Hälfte von lenMillis, klingt dann ab; liegt über allem (auch über Tor, Dimmen und Übergang). Der Blinder hebt dabei
-//    die Gesamthelligkeit bis auf volle 255 an (der Effekt darunter bleibt gleich hell) ---
+//    die Gesamthelligkeit bis auf volle 255 an (der Effekt darunter bleibt gleich hell).
+//    atMillis ist immer der Moment, in dem der Blinder voll hell ist (siehe fxBlinderShape) ---
 #define FX_BLINDER_WARM	CRGB(255, 150, 50)	// warmes Weiß wie ein Halogen-Blinder
 
 // Fällige Schritte eines schrittweisen Effekts seit dem letzten Aufruf (zieht sie vom Zähler ab). Schritte unter
@@ -160,7 +161,10 @@ void fxBlinder(unsigned int atMillis, unsigned int lenMillis, uint8_t amount = 2
 void fxBlinderBeat(uint8_t bpm, uint8_t everyBeats, unsigned int lenMillis, uint8_t amount = 255, CRGB col = FX_BLINDER_WARM,
 				   uint8_t devMask = DEV_ALL, unsigned int atMillis = 0);	// alle everyBeats Beats, erstmals bei atMillis
 void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis = 0);	// eigener Verlauf für den Blinder des Parts: blendet über attackMillis
-												// ein, steht holdMillis voll und klingt über den Rest von lenMillis ab (langes, weiches Ausblenden)
+												// ein, steht holdMillis voll und klingt über den Rest von lenMillis ab (langes, weiches Ausblenden).
+												// atMillis des Blinders bleibt der Moment der VOLLEN Helligkeit: das Einblenden läuft in den attackMillis
+												// davor (der Blinder beginnt also früher), lenMillis zählt ab diesem Beginn. Im Raster (fxBlinderBeat)
+												// gilt dasselbe für jeden Einsatz. Was vor dem Part-Beginn läge, fällt weg
 void fxBlinderSlot(uint8_t slot);				// mehrere Blinder in einem Part: wählt den Platz (0 .. FX_BLINDER_SLOTS-1), in den die folgenden
 												// fxBlinder / fxBlinderBeat / fxBlinderShape schreiben. Ohne Aufruf gilt Platz 0 (ein Blinder wie bisher).
 												// Jeder Platz ist ein eigener Blinder mit eigenem Zeitpunkt, Verlauf, Farbe und Geräten; überlappen

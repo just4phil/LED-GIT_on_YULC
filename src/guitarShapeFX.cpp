@@ -702,3 +702,44 @@ void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMilli
 void progFuse(unsigned int durationMillis, byte nextPart) {
 	progFuse(durationMillis, nextPart, 3000);
 }
+
+//==================================================================
+//=========== Test: Zonen-Karte ====================================
+//==================================================================
+
+// Testbild zum Ausmessen der Geometrie an der echten Gitarre - kein Effekt für einen Song.
+// Die ZONE_..._START-Werte in definitions.h sind aus einem Foto geschätzt. Dieses Bild zeigt, wo sie wirklich
+// liegen: jede Zone steht ruhig in ihrer eigenen Farbe (dieselben Farben wie in der Zonen-Tabelle in
+// docs/LED-Effekte-und-Szenen.html). Dazu drei Hilfen:
+//   - die ERSTE LED jeder Zone bleibt dunkel -> die Grenze ist als Lücke zu sehen und lässt sich abzählen
+//   - die Kopfspitze (k = 0, GUITAR_HEAD_TIP_IDX) blinkt weiß
+//   - der Gurtansatz (GUITAR_STRAP_PIN_POS) leuchtet türkis
+// Sitzt eine Lücke z.B. 3 LEDs zu weit Richtung Korpus, wird der passende ZONE_..._START-Wert um 3 geändert.
+// Achtung Gitarre/Bass: der Griffbrett-Bereich (Bund_min..Bund_max) bleibt wie immer dunkel bis auf die Marker;
+// die Grenze Hals-Oberkante -> Kopfplatte (ZONE_HEAD_UP_START) liegt dort und ist deshalb nicht zu sehen.
+void progZoneMap(unsigned int durationMillis, byte nextPart) {
+	// Farbe je Zone, Reihenfolge wie im enum GuitarZone. "static const" = die Tabelle wird nur einmal angelegt.
+	static const CRGB zoneMapCol[ZONE_COUNT] = {
+		CRGB(70, 70, 70),		// ZONE_HEAD		Kopfplatte: gedämpftes Weiß (damit die blinkende Kopfspitze auffällt)
+		CRGB(0, 60, 255),		// ZONE_NECK_LOW	Hals-Unterkante: Blau
+		CRGB(255, 110, 0),		// ZONE_HORN_LOW	unteres Horn: Orange
+		CRGB(255, 0, 40),		// ZONE_BODY		Korpus: Rot
+		CRGB(150, 0, 255),		// ZONE_HORN_UP		oberes Horn: Violett
+		CRGB(0, 255, 0)			// ZONE_NECK_UP		Hals-Oberkante: Grün
+	};
+	// Konturposition, an der jede Zone beginnt (die Kopfplatte beginnt auf ihrer oberen Seite)
+	static const uint16_t zoneMapStart[ZONE_COUNT] = {
+		ZONE_HEAD_UP_START, ZONE_NECK_LOW_START, ZONE_HORN_LOW_START, ZONE_BODY_START, ZONE_HORN_UP_START, ZONE_NECK_UP_START
+	};
+
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		for (int k = 0; k < anz_LEDs; k++) leds[loopToLed(k)] = zoneMapCol[zoneOfLoop(k)];
+		for (int z = 0; z < ZONE_COUNT; z++) leds[loopToLed(zoneMapStart[z])] = CRGB::Black;		// Lücke an jeder Grenze
+		leds[loopToLed(GUITAR_STRAP_PIN_POS)] = CRGB(0, 255, 255);									// Gurtansatz
+		// Kopfspitze: 300 ms an, 300 ms aus - gerechnet aus der Zeit seit Part-Start, also auf allen Geräten gleich
+		leds[loopToLed(0)] = (millisCounterForProgChange / 300) % 2 == 0 ? CRGB::White : CRGB::Black;
+	}
+	fxShow();
+}

@@ -67,6 +67,8 @@ der User löscht sie selbst.
   **Umsetzen:** Akzente über dem laufenden Effekt (Blinder, Text, Ein-/Ausblenden) mit der Taktnummer des Wunsches
   setzen - `blinder: {bar: <von takt>, ...}`, mehrere als Liste - und in `cues:` je Zwischenzeile beantworten
   (`cues: {21.75: "Blinder auf den Schlag, nur Lampen"}`); der Text landet in „Effekt (füllt KI)“ genau dieser Zeile.
+  Die Zeile eines Blinder-Wunsches ist immer der Moment der **vollen Helligkeit** (siehe `blinder` unten) - `bar:`
+  bekommt genau das `von takt` der Zeile, nie einen von Hand vorgezogenen Wert.
   Jeden Wunsch beantworten, auch den nicht umsetzbaren (dann steht dort, warum nicht). Verlangt der Wunsch eine andere
   Szene ab dieser Stelle, geht das nur mit einem eigenen Part: dem User sagen, dass er der Zeile einen Songpart-Namen gibt.
   `songgen.py <Song> --raster` legt für eine kompakte Tabelle die gerasterte Kopie `quelle/struktur-raster.xlsx` an;
@@ -298,18 +300,31 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Ohne `every` einmalig bei `at` (z. B. auf den Chorus-Einsatz `{at: 0, len: 2}`). Sparsam einsetzen: Akzent auf
   Einsätze, Hits und den letzten Chorus, nicht als Dauerzustand. Mehrere Blinder in einem Abschnitt als Liste (höchstens 8,
   `blinder: [{bar: 20, len: 2}, {bar: 21.75, len: 1}]`); statt `at` (Beats ab Part-Beginn) geht `bar` = Taktnummer der
-  Tabelle, also das `von takt` der Zwischenzeile mit dem Wunsch. Urteil des Users
+  Tabelle, also das `von takt` der Zwischenzeile mit dem Wunsch.
+  **Position = volle Helligkeit** (Regel des Users, 09.10.2026: „wenn ich einen Blinder auf eine Viertel oder einen
+  Part setze, ist immer gemeint, dass er an dieser Stelle die volle Leuchtkraft hat“): `at` / `bar` nennen immer den
+  Moment, in dem der Blinder voll hell ist - nie den Beginn des Einblendens. Ohne `attack` springt er dort auf; mit
+  `attack` beginnt er von selbst `attack` Beats **früher** (Firmware und Generator rechnen das, nichts von Hand
+  vorziehen), `hold` und Ausklingen folgen danach, `len` ist die ganze Länge inklusive `attack`. Liegt der Beginn
+  vor dem Part-Anfang (Blinder auf die 1 eines Parts, `at: 0` oder `bar` = erste Zeile des Parts), meldet der
+  Generator das Einblenden zusätzlich im Part davor an - kostet dort einen der 8 Plätze, `--dry-run` zeigt es als
+  „Blinder von '<Part>' blendet in den letzten … ms ein“. Nur im allerersten Part fällt das Stück vor dem Songbeginn
+  weg. Steht der Wunsch auf dem Schlag/Einsatz und soll der Blinder nicht hart aufspringen, also `attack` dazunehmen
+  und `at` / `bar` trotzdem auf dem Schlag lassen; kurze Blinder auf Vierteln z. B.
+  `{bar: 32.5, len: 0.8, attack: 0.2, hold: 0.2}` (Tell It To My Heart: 100 ms ein, auf der Viertel 100 ms voll,
+  200 ms aus). Urteil des Users
   (05.10.2026): nur auf den Lampen (`devices: [LAMPE1, LAMPE2]`, kurz, weiß) gut für Rhythmisches; auf allen Geräten
   war er mit 1 Beat „zu kurz und zu dezent" - dort `len` ab 2 Beats, und er wirkt über dunklen oder ruhigen Effekten
   stärker als über vollflächigen Farbwechseln (`SCENE_COLORS`). So (2 Beats, über Farbband, ruhiger Fläche oder
   Leuchtspuren) hat er ihn abgenommen: „ja top!! gefällt mir gut". Der Blinder ist heller als der Effekt (er hebt
   die Gesamthelligkeit an), `color: weiss` bringt diese Anhebung nicht mit - `warm` ist deshalb die kräftigere Wahl.
-  Eigener Verlauf (06.10.2026, Idee des Users „fadet schnell ein und sehr langsam aus"): `attack: <Beats>` blendet ein
-  statt aufzuspringen, `hold: <Beats>` (Standard 0) steht voll, der Rest von `len` klingt ab - z. B.
-  `{at: 0, len: 8, attack: 0.5}` über einem 2-Takte-Part. Vom User abgenommen (06.10.2026: „sehr cool“; Demo 92, Part 28).
+  Eigener Verlauf (06.10.2026, Idee des Users „fadet schnell ein und sehr langsam aus"): `attack: <Beats>` blendet in
+  den Beats vor `at` / `bar` ein statt aufzuspringen, `hold: <Beats>` (Standard 0) steht ab `at` voll, der Rest von
+  `len` klingt ab - z. B. `{at: 0.5, len: 8, attack: 0.5}` über einem 2-Takte-Part (Einblenden ab Part-Beginn, nach
+  einem halben Beat voll). Vom User abgenommen (06.10.2026: „sehr cool“; Demo 92, Part 28).
   Ein Blinder endet immer mit seinem Part. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
   Users zu APT., 06.10.2026: „erst auf der letzten Viertel, dann 5 Sekunden ausfaden“): im letzten Part
-  `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
+  `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (springt dort auf und steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
   (Sekunden; ausführlich `{seconds, amount, color, devices}`) - der Blinder läuft im Schluss-Black weiter und klingt aus.
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.

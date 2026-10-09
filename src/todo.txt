@@ -1,7 +1,8 @@
 claude --dangerously-skip-permissions
 ======================================
 
-CAKEWALK TAKT IMMER -1 FÜR EDITS IN DER EXCEL TABELLE (cakewalk zählt ab 1 / excel zählt ab 0)
+i love it -> blinder auf i dont care
+billi: ganz kure blinder auf die synths im intro?
 ------------------------------------------------------
 
 
@@ -11,6 +12,8 @@ neuer fx:
 - ausblend-fx alle geräte stehen voll in einer farbe und dann fährt wird auf der matrix zeilenweise nach unten gefahren bis alles schwarze ist (inkl fading damit es smooth wirkt)
     genauso bei den Lampen (von oben nach unten) -> uind die gits?
 - einblend ef wäre dann reverse
+- horiontale sound bar balken mit ausschlag links und rechts symmetrisch
+- song #90 hat coole FX!
 
 
 ---------

@@ -1,0 +1,8 @@
+zeit: '2026-10-09 16:10:27'
+notiz: 'Blinder: Position = volle Helligkeit'
+werkzeug_git: 12b3f44 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
+  show.yaml: 3d36e1f59d6dafe4394aba0ce4fffbb2741a60406cf31dc745d0beaf6bc54661
+  generated.cpp: 3ca710448aa963a59d39103d6c81e9c130eb40e573fdcdbd994c822aeb37a95b

@@ -8,6 +8,7 @@
  * Zusätzlich gibt es XY-Koordinaten je LED, gewonnen aus einem Foto-Umriss der SG.
  *
  * Kalibrierung: GUITAR_HEAD_TIP_IDX, GUITAR_LOOP_DIR und die ZONE_* Werte in definitions.h.
+ * Ausmessen an der echten Gitarre: Testbild progZoneMap() (Song 90, Part 0).
  *
  * Alle prog-Funktionen folgen dem üblichen Muster (durationMillis, nextPart, ...) und rufen
  * am Ende fxShow() auf (-> fxPresent() in fxPipeline.cpp: Ausgabestufe, Marker, FastLED.show()).
@@ -118,3 +119,7 @@ void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotatin
 // 11: Funke läuft den Gurt runter und entzündet die Gitarre
 void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMillis);
 void progFuse(unsigned int durationMillis, byte nextPart);
+
+// Test: Zonen-Karte zum Ausmessen der ZONE_..._START-Werte an der echten Gitarre (kein Song-Effekt).
+// Jede Zone in fester Farbe, die erste LED jeder Zone dunkel (= Grenze), Kopfspitze blinkt weiß, Gurtansatz türkis.
+void progZoneMap(unsigned int durationMillis, byte nextPart);
