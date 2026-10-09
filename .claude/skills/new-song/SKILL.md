@@ -322,8 +322,9 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `dim: 60` - Part auf 60 % Helligkeit. `tint: rot` oder `{color: rot, amount: 40}` - Farbstich.
 - `only: [guitar, LAMPE1]` oder `{devices: [...], others: 15}` - nur diese Geräte leuchten voll (Schlüssel wie `devices`).
 - `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
-- `soft: 30` - weiche Farbwechsel im Beat, nur mit `SCENE_COLORS` / `SCENE_COLORS_WAVE` (sonst Fehler): die Farbe blendet
-  im letzten Anteil des Beats in die nächste, `soft: 100` fließt durchgehend. Ohne `soft` harter Sprung wie bisher.
+- `soft: 30` - weiche Farbwechsel, nur mit `SCENE_COLORS` / `SCENE_COLORS_WAVE` und dem Stern (`SCENE_STAR`, `progStern`,
+  `progSternNeu`; sonst Fehler): die Farbe blendet im letzten Anteil des Farbschritts in die nächste, `soft: 100` fließt
+  durchgehend. Ohne `soft` harter Sprung wie bisher.
 - `smooth: 0.5` - Nachleuchten für jeden Effekt (Länge in Beats, bis ein Sprung vollzogen ist): macht harte Wechsel
   alter Effekte (`progFullColors`, `progSternNeu`) zu Blenden. Wirkt nicht auf `overlay` und `text`. Ab etwa einem
   Beat verschwimmt der Takt - für Beat-Effekte kurz halten (0.25 bis 0.5).

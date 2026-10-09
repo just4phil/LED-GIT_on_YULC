@@ -90,12 +90,56 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart) {
 	progMatrixScanner(durationMillis, nextPart, 0);
 }
 
+//--- Farben der beiden Sterne (progStern und progSternNeu) ------------------
+// Der Stern hat zwei Farben: col1 für die Linien, col2 für die leicht versetzten Doppellinien. Beim Farbwechsel
+// springt er normalerweise hart auf ein neues Zufallspaar. Mit fxSoft(percent) (im Song: "soft: 30") blendet er
+// stattdessen im letzten percent-Anteil der Zeit zwischen zwei Farbwechseln weich in das nächste Paar über
+// (100 = die Farben fließen durchgehend). Dafür muss das NÄCHSTE Paar schon bekannt sein, bevor es dran ist -
+// deshalb wird es immer einen Wechsel im Voraus gewürfelt und hier aufgehoben.
+static int sternNextCol1;	// das Farbpaar, das beim nächsten Farbwechsel drankommt (16-Bit-Format wie col1 / col2)
+static int sternNextCol2;
+
+// Neues Farbpaar holen. partStart = true: am Part-Beginn werden beide Paare (jetzt + danach) frisch gewürfelt;
+// sonst rückt das vorgemerkte Paar nach und ein neues wird vorgemerkt.
+static void sternNewColors(bool partStart) {
+	if (partStart) {
+		col1 = getRandomColor();
+		col2 = getRandomColor();
+	}
+	else {
+		col1 = sternNextCol1;
+		col2 = sternNextCol2;
+	}
+	sternNextCol1 = getRandomColor();
+	sternNextCol2 = getRandomColor();
+}
+
+// Zwei 16-Bit-Farben (RGB565: 5 Bit Rot, 6 Bit Grün, 5 Bit Blau) mischen: amount 0 = from, 255 = (fast) to.
+// Die 16-Bit-Zahl wird dazu in ihre drei Anteile zerlegt (">> 11" holt Rot nach unten, "& 0x1F" schneidet 5 Bit
+// heraus, "<< 3" macht aus 5 Bit wieder einen 8-Bit-Wert), als CRGB gemischt und mit toRGB565 zurückgewandelt.
+static int blend565(int from, int to, uint8_t amount) {
+	if (amount == 0) return from;	// der Normalfall ohne fxSoft: nichts zu rechnen, exakt die alte Farbe
+	CRGB a(((from >> 11) & 0x1F) << 3, ((from >> 5) & 0x3F) << 2, (from & 0x1F) << 3);
+	CRGB b(((to >> 11) & 0x1F) << 3, ((to >> 5) & 0x3F) << 2, (to & 0x1F) << 3);
+	return toRGB565(blend(a, b, amount));
+}
+
+// Die beiden Farben, mit denen der Stern JETZT gemalt wird: ohne fxSoft einfach col1 / col2, mit fxSoft gegen Ende
+// des Farbschritts zunehmend die vorgemerkten Farben. millisCounterTimer zählt die ms seit dem letzten Farbwechsel
+// (fxEvery zieht bei jedem Wechsel msForColorChange ab) - das ist die Lage im laufenden Farbschritt.
+static void sternDrawColors(unsigned int msForColorChange, int& c1, int& c2) {
+	uint8_t next = (msForColorChange > 0) ? fxSoftBlendAt(millisCounterTimer, msForColorChange) : 0;
+	c1 = blend565(col1, sternNextCol1, next);
+	c2 = blend565(col2, sternNextCol2, next);
+}
+
 //--- Stern (alte Fassung) --------------------------------------------------
 // Ein drehender Stern aus Linien durch die Mitte der Fläche. msForColorChange = ms zwischen zwei Farbwechseln,
 // reduceSpeed = ms je Drehschritt. Die neuere Fassung mit frei wählbarer Mitte ist progSternNeu.
 // Hier ist jede Drehstellung von Hand als Satz von Linien festgelegt (zaehler = Nummer der Stellung): auf der
-// Scrollmatrix 8 Stellungen (jeweils einmal in col1 und leicht versetzt in col2), sonst 10 Stellungen aus je
+// Scrollmatrix 8 Stellungen (jeweils einmal in c1 und leicht versetzt in c2), sonst 10 Stellungen aus je
 // 8 Linien. matrix->drawLine(x1, y1, x2, y2, farbe) zieht eine Linie von Punkt 1 nach Punkt 2.
+// Weiche Farbwechsel: fxSoft(percent) vor dem Aufruf anmelden (siehe "Farben der beiden Sterne" oben).
 void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed) {
 int c_x;
 int c_y;
@@ -104,16 +148,12 @@ int c_y;
 		clearAll();
 
 		//--- init.:
-		col1 = getRandomColor();
-		col2 = getRandomColor();
+		sternNewColors(true);
 	}
 
 	// change color every x seconds
 	if (msForColorChange > 0) {
-		if (fxEvery(millisCounterTimer, msForColorChange)) {
-			col1 = getRandomColor();
-			col2 = getRandomColor();
-		}
+		if (fxEvery(millisCounterTimer, msForColorChange)) sternNewColors(false);
 	}
 	//-------------------------------------
 
@@ -127,6 +167,9 @@ int c_y;
 
 		clearAll();
 
+		int c1, c2;		// die Farben dieses Bildes (mit fxSoft schon auf dem Weg zum nächsten Farbpaar)
+		sternDrawColors(msForColorChange, c1, c2);
+
 		#if defined (SCROLLMATRIX)
 
 			c_x = center_x;		// Mitte der Fläche (definitions.h)
@@ -134,43 +177,43 @@ int c_y;
 
 			switch (zaehler) {
 			case 0:
-				matrix->drawLine(c_x, c_y-5, c_x, c_y+4, col1);		// 90/270 grad
-				matrix->drawLine(c_x-26, c_y, c_x+26, c_y, col1);	// 0/180 grad
+				matrix->drawLine(c_x, c_y-5, c_x, c_y+4, c1);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y, c_x+26, c_y, c1);	// 0/180 grad
 				break;
 
 			case 1:
-				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col1);		// 90/270 grad
-				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col1);	// 0/180 grad
+				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, c1);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, c1);	// 0/180 grad
 				break;
 
 			case 2:
-				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col1);		// 68/248 Grad
-				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col1);	// 338/158 Grad 
+				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, c1);		// 68/248 Grad
+				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, c1);	// 338/158 Grad 
 				break;
 			
 			case 3:	//ist kein 90 grad winkel!!
-				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col1);		// 68/248 Grad
-				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col1);	// 338/158 Grad 
+				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, c1);		// 68/248 Grad
+				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, c1);	// 338/158 Grad 
 				break;
 
 			case 4:
-				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col1);	//45/225 Grad
-				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col1);	//315/135 Grad
+				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, c1);	//45/225 Grad
+				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, c1);	//315/135 Grad
 				break;
 				
 			case 5://ist kein 90 grad winkel!!
-				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col1);		// 68/248 Grad
-				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col1);	// 338/158 Grad 
+				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, c1);		// 68/248 Grad
+				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, c1);	// 338/158 Grad 
 				break;
 
 			case 6:
-				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col1);
-				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col1);
+				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, c1);
+				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, c1);
 				break;
 
 			case 7:
-				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col1);		// 68/248 Grad
-				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col1);	// 338/158 Grad 
+				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, c1);		// 68/248 Grad
+				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, c1);	// 338/158 Grad 
 				break;
 			}
 
@@ -179,55 +222,55 @@ int c_y;
 				case 0:
 				c_x = center_x +1;
 				c_y = center_y -1;
-				matrix->drawLine(c_x, c_y-5, c_x, c_y+5, col2);		// 90/270 grad
-				matrix->drawLine(c_x-27, c_y, c_x+27, c_y, col2);	// 0/180 grad
+				matrix->drawLine(c_x, c_y-5, c_x, c_y+5, c2);		// 90/270 grad
+				matrix->drawLine(c_x-27, c_y, c_x+27, c_y, c2);	// 0/180 grad
 				break;
 
 			case 1:
 				c_x = center_x +1;
 				c_y = center_y +1;	// hier entsteht eine mini lücke
-				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, col2);		// 90/270 grad
-				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, col2);	// 0/180 grad
+				matrix->drawLine(c_x-1, c_y-5, c_x+1, c_y+5, c2);		// 90/270 grad
+				matrix->drawLine(c_x-26, c_y+5, c_x+26, c_y-5, c2);	// 0/180 grad
 				break;
 
 			case 2:
 				c_x = center_x +1;
-				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, col2);		// 68/248 Grad
-				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, col2);	// 338/158 Grad 
+				matrix->drawLine(c_x-2, c_y-5, c_x+2, c_y+5, c2);		// 68/248 Grad
+				matrix->drawLine(c_x-10, c_y+4, c_x+12, c_y-5, c2);	// 338/158 Grad 
 				break;
 			
 			case 3:
 				c_x = center_x +1;
-				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, col2);		// 68/248 Grad
-				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, col2);	// 338/158 Grad 
+				matrix->drawLine(c_x-3, c_y-5, c_x+3, c_y+5, c2);		// 68/248 Grad
+				matrix->drawLine(c_x-7, c_y+5, c_x+7, c_y-5, c2);	// 338/158 Grad 
 				break;
 
 			case 4:
 				c_x = center_x +1;
-				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, col2);	//45/225 Grad
-				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, col2);	//315/135 Grad
+				matrix->drawLine(c_x-5, c_y-5, c_x+4, c_y+4, c2);	//45/225 Grad
+				matrix->drawLine(c_x-4, c_y+4, c_x+5, c_y-5, c2);	//315/135 Grad
 				break;
 
 			case 5:
 				c_x = center_x;
 				c_y = center_y -1;
-				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, col2);		// 68/248 Grad
+				matrix->drawLine(c_x-7, c_y-5, c_x+7, c_y+5, c2);		// 68/248 Grad
 				
 				c_x = center_x+1;
 				c_y = center_y;
-				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, col2);	// 338/158 Grad 
+				matrix->drawLine(c_x-4, c_y+5, c_x+4, c_y-5, c2);	// 338/158 Grad 
 				break;
 
 			case 6:
 				c_x = center_x +1;
-				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, col2);
-				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, col2);
+				matrix->drawLine(c_x-11, c_y-5, c_x+10, c_y+4, c2);
+				matrix->drawLine(c_x-2, c_y+5, c_x+2, c_y-5, c2);
 				break;
 				
 			case 7:
 				c_y = center_y +1;
-				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, col2);		// 68/248 Grad
-				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, col2);	// 338/158 Grad 
+				matrix->drawLine(c_x-23, c_y-5, c_x+19, c_y+4, c2);		// 68/248 Grad
+				matrix->drawLine(c_x-1, c_y+5, c_x+1, c_y-5, c2);	// 338/158 Grad 
 				break;
 			}
 
@@ -239,14 +282,14 @@ int c_y;
 			zaehler++;
 			if (zaehler >= 10) zaehler = 0;
 
-			matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, col1);
-			matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, col2);
-			matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, col1);
-			matrix->drawLine(0, zaehler, 21, 21 - zaehler, col2);
-			matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, col1);
-			matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, col2);
-			matrix->drawLine(zaehler, 22, 22 - zaehler, 0, col1);
-			matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, col2);
+			matrix->drawLine(center_x - zaehler, 0, center_x + zaehler, 22, c1);
+			matrix->drawLine(center_x - zaehler + 1, 0, center_x + zaehler + 1, 22, c2);
+			matrix->drawLine(0, zaehler + 1, 21, 22 - zaehler, c1);
+			matrix->drawLine(0, zaehler, 21, 21 - zaehler, c2);
+			matrix->drawLine(0, center_y + zaehler + 1, 21, center_y - zaehler + 1, c1);
+			matrix->drawLine(0, center_y + zaehler, 21, center_y - zaehler, c2);
+			matrix->drawLine(zaehler, 22, 22 - zaehler, 0, c1);
+			matrix->drawLine(zaehler - 1, 22, 21 - zaehler, 0, c2);
 
 		#endif
 	}
@@ -272,6 +315,7 @@ void progStern(unsigned int durationMillis, unsigned char nextPart) {
 //   cx_base, cy_base  Mitte des Sterns
 //   wander            true: die Mitte wandert in einer geschwungenen Bahn über die Fläche
 //   numArms           Anzahl der Linien (2 = Kreuz mit 4 Zacken, 3 = 6 Zacken ...)
+// Weiche Farbwechsel: fxSoft(percent) vor dem Aufruf anmelden (siehe "Farben der beiden Sterne" weiter oben).
 // Diese "Core"-Funktion macht die Arbeit; die vier progSternNeu-Fassungen darunter rufen sie nur mit
 // unterschiedlichen Vorgaben auf.
 
@@ -281,22 +325,21 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
 
 	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
-		col1 = getRandomColor();
-		col2 = getRandomColor();
+		sternNewColors(true);
 		sternAngle   = 0.0f;
 		sternWanderT = 0.0f;
 	}
 
 	if (msForColorChange > 0) {
-		if (fxEvery(millisCounterTimer, msForColorChange)) {
-			col1 = getRandomColor();
-			col2 = getRandomColor();
-		}
+		if (fxEvery(millisCounterTimer, msForColorChange)) sternNewColors(false);
 	}
 
 	uint8_t steps = fxStepsDue(millisToReduceCPUSpeed, reduceSpeed);
 	if (steps) {
 		clearAll();
+
+		int c1, c2;		// die Farben dieses Bildes (mit fxSoft schon auf dem Weg zum nächsten Farbpaar)
+		sternDrawColors(msForColorChange, c1, c2);
 
 		// versäumte Schritte nachholen
 		sternAngle = fmodf(sternAngle + 0.06f * (steps - 1), (float)M_PI);
@@ -318,14 +361,14 @@ static void progSternNeuCore(unsigned int durationMillis, unsigned int msForColo
 
 		for (byte a = 0; a < numArms; a++) {
 			float a1 = sternAngle + a * armStep;
-			float a2 = a1 + 0.08f;   // leichter Versatz fuer Doppellinien-Effekt (col2)
+			float a2 = a1 + 0.08f;   // leichter Versatz fuer Doppellinien-Effekt (c2)
 
 			matrix->drawLine(
 				(int)(cx + cosf(a1) * R), (int)(cy + sinf(a1) * R),
-				(int)(cx - cosf(a1) * R), (int)(cy - sinf(a1) * R), col1);
+				(int)(cx - cosf(a1) * R), (int)(cy - sinf(a1) * R), c1);
 			matrix->drawLine(
 				(int)(cx + cosf(a2) * R), (int)(cy + sinf(a2) * R),
-				(int)(cx - cosf(a2) * R), (int)(cy - sinf(a2) * R), col2);
+				(int)(cx - cosf(a2) * R), (int)(cy - sinf(a2) * R), c2);
 		}
 
 		sternAngle += 0.06f;

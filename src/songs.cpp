@@ -4249,8 +4249,19 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(39);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(44);	break;
+
+	// fxSoft auf dem Stern (neu am 09.10.2026, Wunsch des Users: "eine option einbauen, dass man die farbwechsel auch
+	// faden kann"): progStern und progSternNeu blenden im letzten Anteil ihres Farbschritts weich in das nächste Farbpaar,
+	// statt zu springen. Ohne fxSoft bleibt alles wie bisher (harter Sprung).
+	//   44: SCENE_STAR mit fxSoft(40) - Farbwechsel jeden Beat (500 ms), die letzten 200 ms davon wird geblendet. Die Lampen
+	//       (kreisende Lichtpunkte) blenden im selben Moment mit.
+	//   46: progSternNeu mit Farbwechsel alle 2 Beats und fxSoft(100) - die Farben fließen durchgehend ineinander.
+	//   47: der alte progStern mit Farbwechsel alle 2 Beats und fxSoft(50) - eine Sekunde: halb stehend, halb blendend.
+	case 44:	setColorScheme(SCHEME_NEON);	fxSoft(40);		scene(SCENE_STAR, 8000, DEMO_NR(46), bpm);	break;
+	case 46:	setColorScheme(SCHEME_SUNSET);	fxSoft(100);	progSternNeu(8000, 1000, DEMO_NR(47), 5, center_x, center_y, true, 3);	break;
+	case 47:	setColorScheme(SCHEME_RANDOM);	fxSoft(50);		progStern(8000, 1000, DEMO_NR(39), 5);	break;
 
 	// SCENE_DNA / SCENE_DNA_FLIP (neu am 09.10.2026): auf der Matrix die DNA-Doppelhelix (progDNA - vom User am selben Tag
 	// abgenommen: "sehen alle gut aus"), dazu pulsieren Gitarre, Bass und Lampen in den Strangfarben (progDnaPulse; sein

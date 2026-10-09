@@ -11,7 +11,36 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 09.10.2026 (Vorspann „I Love It Intro“ #80 als erster generierter Vorspann - vom User abgenommen und committet)
+Zuletzt aktualisiert: 09.10.2026 (weiche Farbwechsel für progStern / progSternNeu über `fxSoft` - vom User abgenommen und committet)
+
+- **09.10.2026, weiche Farbwechsel für den Stern (Wunsch des Users: „progStern / progSternNeu -> bitte eine option
+  einbauen, dass man die farbwechsel auch faden kann“) - abgenommen am 09.10.2026 („sieht gut aus, bitte committen“)
+  und committet.**
+  - Lösung: kein neuer Parameter, sondern das vorhandene `fxSoft(percent)` (YAML `soft: <Prozent>`), das bisher nur
+    `progBeatColors` auswertete. Der Stern blendet im letzten `percent`-Anteil von `msForColorChange` in sein
+    nächstes Farbpaar (100 = durchgehend). Ohne `fxSoft` unverändert harter Sprung - alte Songs und alle bestehenden
+    Shows sehen aus wie vorher.
+  - Firmware: `fxMatrixShapes.cpp` - das nächste Farbpaar wird einen Wechsel im Voraus gewürfelt
+    (`sternNextCol1/2`, `sternNewColors()`), gemalt wird mit der Mischfarbe (`sternDrawColors()`, `blend565()`);
+    beide Fassungen (`progStern`, `progSternNeu`). `fxPipeline.cpp/.h`: neu `fxSoftBlendAt(pos, span)` für Effekte
+    mit eigenem Farbtakt in ms, `fxSoftBlend()` ruft es auf (rechnet wie bisher). `scenes.cpp`: `progLampSpin`
+    (Lampen-Teil von `SCENE_STAR`) blendet mit `fxSoftBlend(bpm)` mit, damit `soft` auf der ganzen Bühne wirkt.
+  - Generator: `SOFT_EFFECTS` um `SCENE_STAR`, `progStern`, `progSternNeu`, `progLampSpin` erweitert (sonst hätte
+    `soft:` auf einem Stern-Part den Fehler „wirkt nur auf …“ gemeldet). Kein bestehender Song nutzt es, nichts neu
+    generiert.
+  - Demo 92: neu am Anfang Part 44 (`SCENE_STAR`, `fxSoft(40)`), 46 (`progSternNeu`, 2 Beats, `fxSoft(100)`),
+    47 (alter `progStern`, 2 Beats, `fxSoft(50)`); danach wie bisher 39, 41, 42, 43, 38, 37.
+  - Doku mitgezogen: `LED-Effekte-und-Szenen.html` (Baustein-Tabelle, Szenen-Tabelle, Demo-Tabelle mit neuen
+    Zeiten), `Song-Workflow.html`, SKILL.md, Effekt-Katalog, CLAUDE.md. Der Simulator in der Doku zeigt `soft` nicht
+    (auch bisher nicht für `SCENE_COLORS`).
+  - Geprüft: `andresgit`, `lampe1`, `scrollmatrix` übersetzt; `songgen.py ILoveIt_v1 --dry-run` läuft.
+  - Grenze: die Mischung läuft im 16-Bit-Farbformat der Matrix-Zeichenfunktionen (32 bzw. 64 Stufen je Farbanteil) -
+    bei sehr langen Blenden dunkler Farben könnten Stufen sichtbar sein. Die Zufallsfarben des Sterns sind wie bisher
+    je Gerät verschieden; gleich ist der Zeitpunkt der Blende.
+  - Alle fünf Geräte mit `build_ota.py --backup` gebaut (vorheriger Stand von 19:44 gesichert).
+  - **Nächster Schritt:** ggf. `soft:` in den Refrains der Songs einsetzen (nur auf Wunsch des Users). Aufräumen: die
+    Parts 44, 46, 47 stehen in Demo 92 noch vorn bei den nicht abgenommenen und können nach hinten rücken
+    (Doku-Tabelle und Kommentar mitziehen).
 
 - **09.10.2026, „I Love It Intro“ (#80) als generierter Song, Wünsche des Users aus den Zwischenzeilen - gebaut,
   alle fünf ESP32-Envs übersetzt, vom User nach dem OTA-Test abgenommen („mega!!!!“) und committet.** Erster Vorspann aus Tabelle + `show.yaml`

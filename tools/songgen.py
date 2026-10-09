@@ -138,7 +138,8 @@ FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT"
 
 # Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
 PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth", "blinder")
-SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors")	# nur diese Effekte werten soft: (fxSoft) aus
+SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors",	# nur diese Effekte werten soft: (fxSoft) aus
+				"SCENE_STAR", "progStern", "progSternNeu", "progLampSpin")
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
@@ -570,7 +571,7 @@ def pipeline_calls(part, song, offset=0):
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
-	soft: <Prozent> (weiche Farbwechsel im Beat, nur SCENE_COLORS / SCENE_COLORS_WAVE)     smooth: <Beats> (Nachleuchten)
+	soft: <Prozent> (weiche Farbwechsel, nur SCENE_COLORS / SCENE_COLORS_WAVE / SCENE_STAR / progStern / progSternNeu)     smooth: <Beats> (Nachleuchten)
 	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
 		at / bar = der Moment der VOLLEN Helligkeit. attack: <Beats> (blendet ein statt aufzuspringen - in den Beats VOR at / bar,
 		notfalls schon im Part davor), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab

@@ -388,9 +388,12 @@ void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		unsigned int period = 2 * 60000 / max((uint8_t)1, bpm);	// eine Schwingung pro 2 Beats
 		uint8_t phase = (uint32_t)(millisCounterForProgChange % period) * 256 / period;
 		uint32_t beat = fxBeats(bpm);
+		uint8_t next = fxSoftBlend(bpm);	// fxSoft(): zum Ende des Beats in die nächste Farbe blenden (wie der Stern der anderen Geräte)
 		for (uint8_t a = 0; a < 3; a++) {
 			int h = (int)sin8(phase + a * 85) * (anz_LEDs - 2) / 255;	// Sinus-Schwingung; die drei Punkte sind um je ein Drittel (85/256) versetzt
-			leds[lampLed(h)] = leds[lampLed(h + 1)] = sharedColor(beat + a);
+			CRGB c = sharedColor(beat + a);
+			if (next) c = blend(c, sharedColor(beat + a + 1), next);
+			leds[lampLed(h)] = leds[lampLed(h + 1)] = c;
 		}
 	}
 	fxShow();

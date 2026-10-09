@@ -47,7 +47,7 @@ effekte:
     traegt_takte: "8-16"
     alt: {parts: 57, takte: 406, wofuer: "DER Chorus-Effekt (45 von 99 Chorus-Parts)",
           parameter: "Farbwechsel 1 Beat (31x) oder 2 Beats (19x); reduceSpeed 5; wander true/false etwa gleich oft; 3 oder 4 Arm-Paare"}
-    regler: "msForColorChange (1 Beat = treibend, 2 Beats/1 Takt = ruhiger), wander, numArms"
+    regler: "msForColorChange (1 Beat = treibend, 2 Beats/1 Takt = ruhiger), wander, numArms; soft: <Prozent> blendet die Farbwechsel (fxSoft, seit 09.10.2026)"
     urteil: gern
     notiz: "für die Matrix entwickelt, sieht aber auch auf den Gitarren sehr geil aus - gern für Refrains"
 
@@ -62,6 +62,7 @@ effekte:
     traegt_takte: "8-16"
     alt: {parts: 0, takte: 0, wofuer: "in den übernommenen Songs durch progSternNeu ersetzt"}
     urteil: gern
+    regler: "msForColorChange, reduceSpeed; soft: <Prozent> blendet die Farbwechsel (fxSoft, seit 09.10.2026)"
     notiz: "wie progSternNeu: Matrix-Effekt, der auf den Gitarren sehr geil aussieht - Refrains"
 
   progFastBlingBling:
@@ -1032,7 +1033,7 @@ ausgabestufe:
     fxTint:           {wirkung: "zieht das Bild zu einer Farbe hin", yaml: "tint: <Farbe> | {color: blau, amount: 50}", demo: 60, genutzt: 0, urteil: , notiz: }
     fxMaskStage:      {wirkung: "nur bestimmte Geräte leuchten voll, der Rest gedimmt oder schwarz", yaml: "only: guitar | {devices: [guitar], others: 20}", demo: 62, genutzt: 0, urteil: , notiz: }
     fxMaskSpan:       {wirkung: "nur ein Abschnitt jedes Geräts leuchtet", yaml: "span: [von, bis]", demo: 64, genutzt: 0, urteil: , notiz: }
-    fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (nur SCENE_COLORS / SCENE_COLORS_WAVE)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne", genutzt: 0, urteil: , notiz: }
+    fxSoft:           {wirkung: "weiche Farbwechsel im Beat: die Farbe blendet am Ende des Beats in die nächste statt zu springen (SCENE_COLORS / SCENE_COLORS_WAVE; seit 09.10.2026 auch der Stern: SCENE_STAR, progStern, progSternNeu)", yaml: "soft: <Prozent>", demo: "7 (30 %), 8 (100 %), 9 (Welle, 60 %); zum Vergleich 6 ohne; Stern: 44 (40 %), 46 (100 %), 47 (alter Stern, 50 %)", genutzt: 0, urteil: , notiz: }
     fxSmooth:         {wirkung: "Nachleuchten für jeden Effekt: harte Wechsel werden zu Blenden, ohne den Effekt anzufassen (z. B. progFullColors, progSternNeu)", yaml: "smooth: <Beats>", demo: "4 (250 ms), 11 (1000 ms), 12 (Ping-Pong); zum Vergleich 18 ohne", genutzt: 0, urteil: , notiz: }
     fxBlinder:        {wirkung: "Blinder: helles, warmweißes Aufblenden über dem laufenden Effekt (heller als der Effekt), einmalig oder im Raster, auf allen oder einzelnen Geräten", yaml: "blinder: bar | {every: , at: , len: , amount: , color: , devices: }", demo: "17 (jede 1), 19 (einmal, lang), 22 (über dunklem Effekt), 21 (nur Lampen)", genutzt: 0, urteil: , notiz: }
     fxBlinderShape:   {wirkung: "Blinder mit eigenem Verlauf: blendet schnell ein und klingt sehr lang aus (statt aufzuspringen und halb so lang zu stehen)", yaml: "blinder: {at: , len: , attack: <Beats>, hold: <Beats>} - at/bar = Moment der vollen Helligkeit, attack läuft davor", demo: "28", genutzt: 3, urteil: , notiz: }
@@ -1073,7 +1074,7 @@ luecken:
   - "Geschlossen am 04.10.2026 durch SCENE_STAR, SPARKLE, GLOW, COLORS, COLORS_WAVE, RAIN, PALETTE: Glitzern, Stern, ruhige Flächen, Farbband über die Bühne."
   - "Offen: progRandomLines/progCircles im Beat, progMatrixScanner und progWaterRipple haben noch keine eigene Szene (WaterRipple nur als Matrix-Teil von CALM/DROP)."
   - "Geschlossen am 05.10.2026: progPalette hat Tempo und Fade-Wahl als optionale Parameter. Offen: Palette 12 ist nicht definiert. Die schönen festen Paletten (3, 6, 7, 8, 9/10, 11) gibt es nicht als Szene, SCENE_PALETTE nutzt nur die Schemafarben."
-  - "Teilweise geschlossen am 05.10.2026: Fading-Option für SCENE_COLORS / SCENE_COLORS_WAVE (soft: <Prozent>, fxSoft). Für progFullColors / progSternNeu und alle anderen Effekte seit 05.10.2026 über smooth: <Beats> (fxSmooth)."
+  - "Teilweise geschlossen am 05.10.2026: Fading-Option für SCENE_COLORS / SCENE_COLORS_WAVE (soft: <Prozent>, fxSoft). Für progFullColors / progSternNeu und alle anderen Effekte seit 05.10.2026 über smooth: <Beats> (fxSmooth). Seit 09.10.2026 blenden progStern / progSternNeu / SCENE_STAR ihre Farbwechsel selbst (soft: <Prozent>), abgenommen am 09.10.2026."
   - "Geschlossen am 04.10.2026: weiches Ausblenden am Songende (SCENE_FADEOUT / progFadeOut)."
   - "Offen: progSternschnuppen als ruhiges Pausen-Preset für Gitarren und Lampen überarbeiten."
   - "Geschlossen am 04.10.2026: Effekte lassen sich übereinanderlegen (overlay in show.yaml/song.yaml, fxLayerBegin/End), z. B. Glitzern über einer ruhigen Fläche. Eine Ebene pro Part, oben und unten verschiedene Effekte."

@@ -448,13 +448,20 @@ static bool gateOpen(uint32_t beatMs, uint8_t bpm, uint8_t perBeat, uint8_t duty
 // Weicher Farbwechsel: wie weit der Effekt im laufenden Farbschritt schon zur nächsten Farbe geblendet hat.
 // Rechnet wie fxBeats() aus der Zeit seit Part-Beginn -> auf allen Geräten gleich.
 uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
-	if (!modReady) resetMods();
-	if (mod.soft == 0) return 0;
 	uint32_t span = 60000UL * max((uint8_t)1, beatsPerStep);
 	uint32_t t = ((uint64_t)millisCounterForProgChange * bpm) % span;	// Lage im Farbschritt
-	uint32_t start = span / 100 * (100 - mod.soft);						// ab hier wird geblendet
-	if (t < start) return 0;
-	return ease8InOutQuad((uint64_t)(t - start) * 255 / (span - start));
+	return fxSoftBlendAt(t, span);
+}
+
+// Dasselbe für Effekte, die ihre Farbschritte selbst zählen (progStern / progSternNeu: Farbwechsel alle x ms):
+// pos = Lage im laufenden Farbschritt, span = Länge des Schritts, beide in derselben Einheit (z.B. ms).
+uint8_t fxSoftBlendAt(uint32_t pos, uint32_t span) {
+	if (!modReady) resetMods();
+	if (mod.soft == 0 || span == 0) return 0;
+	if (pos >= span) pos = span - 1;	// der Schritt ist schon um, der Effekt hat nur noch nicht gewechselt: bei der nächsten Farbe bleiben
+	uint32_t start = (uint64_t)span * (100 - mod.soft) / 100;	// ab hier wird geblendet
+	if (pos < start) return 0;
+	return ease8InOutQuad((uint64_t)(pos - start) * 255 / (span - start));
 }
 
 // Ein Blinder: Stärke 0..255 zur Zeit beatMs - voll in der ersten Hälfte, danach quadratisch abklingend.

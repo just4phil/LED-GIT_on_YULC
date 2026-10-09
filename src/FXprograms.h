@@ -199,6 +199,9 @@ void progMatrixScanner(unsigned int durationMillis, byte nextPart);
  * @param reduceSpeed      ms je Drehschritt
  *
  * ACHTUNG: Reihenfolge der Parameter - bei der langen Fassung steht msForColorChange VOR nextPart.
+ *
+ * Weiche Farbwechsel: fxSoft(percent) vor dem Aufruf anmelden (fxPipeline.h; im Song "soft: 30") - dann blendet
+ * der Stern im letzten percent-Anteil von msForColorChange in das nächste Farbpaar, statt zu springen.
  */
 void progStern(unsigned int durationMillis, unsigned int msForColorChange, unsigned char nextPart, unsigned char reduceSpeed);
 void progStern(unsigned int durationMillis, unsigned char nextPart, unsigned char reduceSpeed);
@@ -212,6 +215,8 @@ void progStern(unsigned int durationMillis, unsigned char nextPart);
  * @param cx, cy           Mitte des Sterns (ohne Angabe: Mitte der Fläche)
  * @param wander           true = die Mitte wandert in einer geschwungenen Bahn über die Fläche
  * @param numArms          Anzahl der Linien (2 = Kreuz mit 4 Zacken, 3 = 6 Zacken ...)
+ *
+ * Weiche Farbwechsel wie bei progStern: fxSoft(percent) vor dem Aufruf (100 = die Farben fließen durchgehend).
  */
 // Trig-basierte Version: sin/cos-Berechnung, variable Mitte, opt. Lissajous-Wanderung
 // numArms = Anzahl Arm-Paare (2 = Kreuz/X, 3 = 6-zackig, ...)

@@ -141,8 +141,10 @@ void fxMaskStage(uint8_t devMask, uint8_t others = 0);	// nur Geräte aus devMas
 void fxMaskSpan(uint8_t from, uint8_t to);		// nur ein Abschnitt des Geräts leuchtet (0..255 entlang der Wipe-Richtung)
 void fxTint(CRGB col, uint8_t amount);			// zieht das Bild zur Farbe hin (255 = einfarbig)
 void fxSoft(uint8_t percent);					// weiche Farbwechsel im Beat: im letzten percent-Anteil eines Farbschritts blendet der Effekt
-												// zur nächsten Farbe (100 = durchgehend). Wirkt nur auf Effekte, die es auswerten (progBeatColors)
+												// zur nächsten Farbe (100 = durchgehend). Wirkt nur auf Effekte, die es auswerten
+												// (progBeatColors, progStern, progSternNeu, progLampSpin)
 uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep = 1);	// für diese Effekte: Anteil der nächsten Farbe (0 = noch die alte, 255 = fast die neue)
+uint8_t fxSoftBlendAt(uint32_t pos, uint32_t span);	// dasselbe für Effekte mit eigenem Farbtakt: pos = Lage im Farbschritt, span = seine Länge (z.B. beide in ms)
 void fxSmooth(unsigned int millis);				// Nachleuchten: das Bild des Effekts folgt träge, ein Sprung ist nach millis zu 95 % vollzogen.
 												// Macht harte Wechsel alter Effekte zu Blenden. Wirkt auf den Effekt des Parts, nicht auf Ebene und Text;
 												// Puls, Tor und Ein-/Ausblenden bleiben scharf. Rechnet mit der echten Zeit je Bild -> auf allen Geräten gleich

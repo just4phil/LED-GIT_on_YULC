@@ -88,7 +88,8 @@ Transitions between parts (`fxTransition`: fade, black, flash, wipe, stage, diss
 frame (`fxFadeIn/Out`, `fxPulse`, `fxGate`, `fxDim`, `fxTint`, `fxMaskStage`, `fxMaskSpan`) are registered at the top of
 a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. `fxSoft(percent)`
 is registered the same way but is evaluated by the effect itself (`progBeatColors` blends to the next colour at the end
-of each beat, via `fxSoftBlend()`). `fxSmooth(ms)` is a temporal low-pass on the part's effect (below the layers) that
+of each beat, via `fxSoftBlend()`; `progStern` / `progSternNeu` blend to their next colour pair at the end of
+`msForColorChange`, via `fxSoftBlendAt()`). `fxSmooth(ms)` is a temporal low-pass on the part's effect (below the layers) that
 turns hard jumps of old effects into blends. `fxBlinder` / `fxBlinderBeat` flash a stage-blinder (warm white) on top of
 everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n)` before each of them puts several
 blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
