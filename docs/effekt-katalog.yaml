@@ -356,6 +356,21 @@ effekte:
     urteil: gern
     notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
 
+  progDNA:
+    wirkung: "DNA-Doppelhelix: zwei Stränge winden sich quer über die Fläche umeinander, dazwischen zweifarbige Sprossen; dreht sich um die Längsachse (vorn hell, hinten dunkel); mit DNA_FLIP bleibt sie stehen und die Stränge tauschen nur die Seiten, mit DNA_FLIP_SCROLL wandert sie dabei langsam quer"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: rotierend
+    beat: param          # turnMillis = Dauer einer Umdrehung (1 oder 2 Takte)
+    farbe: schema        # ohne Schema Cyan/Magenta mit bunten Sprossen; Strangfarben auch als Parameter
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL"}
+    regler: "turnMillis (1 Takt = lebhaft, 2-4 Takte = ruhig); mode DNA_ROTATE (dreht/wandert) / DNA_FLIP (steht, Seiten tauschen) / DNA_FLIP_SCROLL (Seiten tauschen + langsames Wandern); DNA_WAVELENGTH / DNA_RUNG_STEP in fxMatrixSim.cpp"
+    demo: "92: Part 39, 41, 42, 43 (als Szenen SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL)"
+    urteil:
+    notiz: "neu am 09.10.2026 nach einer Vorlage des Users. Sein Urteil am selben Tag: \"die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden mit eher pulsierenden effekten auf den anderen geräten\" - deshalb in Songs als SCENE_DNA / SCENE_DNA_FLIP verwenden, nicht als fx für alle Geräte. energie/traegt_takte geschätzt"
+
   progEqualizer:
     wirkung: "Springende Pegelbalken (ohne Audio, simuliert)"
     art: raster
@@ -938,6 +953,33 @@ szenen:
     genutzt: 0
     urteil:
     notiz:
+  SCENE_DNA:
+    wirkung: "Matrix: DNA-Doppelhelix dreht sich (2 Takte je Umdrehung). Übrige Geräte pulsieren weich und einfarbig in den Strangfarben: linke Bühnenhälfte Strang 1, rechte Strang 2, abwechselnd hell (wenn ihr Strang vorn ist), dazwischen ganz dunkel"
+    geraete: {matrix: progDNA, rest: progDnaPulse}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 09.10.2026 auf Wunsch des Users (Helix mit pulsierenden Effekten auf den anderen Geräten kombinieren). Demo 92 Part 39 und 41, Abnahme des Pulsierens offen"
+  SCENE_DNA_FLIP:
+    wirkung: "Matrix: stehende Helix, die Stränge tauschen jeden Takt die Seiten. Übrige Geräte pulsieren gemeinsam einmal je Takt, dunkel im Moment des Tauschs; danach haben die Bühnenhälften die Farben getauscht"
+    geraete: {matrix: "progDNA mit DNA_FLIP", rest: progDnaPulse}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 09.10.2026, Demo 92 Part 42, Abnahme des Pulsierens offen"
+  SCENE_DNA_FLIP_SCROLL:
+    wirkung: "wie SCENE_DNA_FLIP, zusätzlich wandert die Helix auf der Matrix langsam quer durchs Bild (eine Windungslänge in 4 Takten); übrige Geräte pulsieren wie bei SCENE_DNA_FLIP"
+    geraete: {matrix: "progDNA mit DNA_FLIP_SCROLL", rest: progDnaPulse}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 09.10.2026 auf Wunsch des Users (beide DNA-Bewegungen kombinieren). Demo 92 Part 43, Abnahme offen"
   SCENE_FADEOUT:
     wirkung: "jedes Gerät in seiner Schemafarbe, blendet über die ganze Partdauer weich nach Schwarz aus"
     geraete: {alle: progFadeOut}

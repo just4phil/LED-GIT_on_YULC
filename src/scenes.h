@@ -54,6 +54,14 @@ enum SceneID : uint8_t {
 	//--- Frage/Antwort: die Bühnenhälften wechseln sich ab ---
 	SCENE_CALL_RESPONSE,	// Beat 1 und 3 blitzt die linke Hälfte (Lampe 1, Bass), Beat 2 und 4 die rechte (Gitarre, Lampe 2);
 							// die Matrix in der Mitte macht jeden Beat mit: ihre linke bzw. rechte Hälfte
+
+	//--- Matrix-Bild in der Mitte, die übrigen Geräte pulsieren dazu ---
+	SCENE_DNA,			// Matrix: DNA-Doppelhelix dreht sich (progDNA, eine Umdrehung in 2 Takten). Die anderen pulsieren in den
+						// Strangfarben: linke Bühnenhälfte = Strang 1, rechte = Strang 2, hell wenn "ihr" Strang vorn ist - also abwechselnd
+	SCENE_DNA_FLIP,		// Matrix: stehende Helix, die Stränge tauschen jeden Takt die Seiten. Die anderen pulsieren gemeinsam:
+						// dunkel im Moment des Tauschs, danach haben auch die Bühnenhälften ihre Farben getauscht
+	SCENE_DNA_FLIP_SCROLL,	// wie SCENE_DNA_FLIP, zusätzlich schiebt sich die Helix auf der Matrix langsam quer durchs Bild
+						// (eine Windungslänge in 4 Takten); die anderen Geräte pulsieren wie bei SCENE_DNA_FLIP
 };
 
 #define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen
@@ -71,6 +79,8 @@ uint8_t flashEnvelope(unsigned int t, unsigned int period);	// Helligkeit des Be
 															// 255 auf dem Schlag, klingt in 70 % des Beats (höchstens 450 ms) auf 0 ab
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm);	// Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat
+void progDnaPulse(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode);	// Begleitung zur DNA-Helix der Matrix:
+															// einfarbiges Pulsieren in den Strangfarben, im Gleichlauf mit progDNA (mode = DNA_ROTATE / DNA_FLIP / DNA_FLIP_SCROLL)
 CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)
 void progBeatColors(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerColor, bool wave);	// einfarbig, Wechsel im Beat
 void progGlow(unsigned int durationMillis, byte nextPart, unsigned int periodMillis);		// füllt sich Pixel für Pixel, Farbe wechselt alle periodMillis

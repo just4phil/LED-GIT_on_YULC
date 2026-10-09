@@ -359,6 +359,7 @@ mehr. Der Änderungswunsch geht immer vor der Tabelle unten:
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
 | energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |
 | energy 2-4, Strophe oder Chorus im Beat | SCENE_COLORS (ganze Bühne eine Farbe pro Beat), SCENE_COLORS_WAVE |
+| Energie 2-3, schwebend/kreisend, Matrix soll ein Bild tragen (Bridge, Zwischenspiel, ruhiger Refrain) | SCENE_DNA (Helix dreht sich auf der Matrix, Bühnenhälften pulsieren abwechselnd in den Strangfarben, 2 Takte je Umdrehung), SCENE_DNA_FLIP (stehende Helix, alle pulsieren gemeinsam einmal je Takt, dunkel beim Seitentausch), SCENE_DNA_FLIP_SCROLL (wie FLIP, die Helix wandert zusätzlich in 4 Takten um eine Windungslänge - für längere Parts ab 4 Takten). Regel des Users (09.10.2026): ein Matrix-Bild nie allein als `fx` für alle Geräte, sondern als Szene mit pulsierenden Effekten auf den anderen Geräten |
 | Schlussakkord klingt aus, "fade out" | SCENE_FADEOUT (blendet über die Partdauer weich nach Schwarz; ab 2 Takten richtig sanft) |
 | energy 4-5, Chorus | SCENE_STAR (der Refrain-Look der alten Songs) |
 | energy 5, Action, Höhepunkt am Songende | SCENE_SPARKLE |

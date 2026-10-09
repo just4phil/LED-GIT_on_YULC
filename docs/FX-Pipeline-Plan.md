@@ -11,7 +11,59 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 09.10.2026 (Blinder: Position = volle Helligkeit - abgenommen)
+Zuletzt aktualisiert: 09.10.2026 (`progDNA` und die drei DNA-Szenen abgenommen und committet)
+
+- **09.10.2026, neuer Effekt `progDNA` (DNA-Doppelhelix; Frage des Users mit einem FastLED-Beispiel für 54 x 10 als
+  Vorlage) - gebaut, Abnahme offen.** `src/fxMatrixSim.cpp` (nach `progSineCos`), Deklaration in `FXprograms.h`:
+  `progDNA(dauer, folgePart, turnMillis = 2000 [, strand1, strand2])`. Aus der Vorlage übernommen: zwei Stränge als
+  Sinus und Gegen-Sinus, Tiefe = Kosinus (vorn hell, hinten dunkel), weiche Linien über zwei Zeilen, Sprossen alle
+  3 Spalten, alles additiv. Anders als die Vorlage:
+  - kein eigener Phasenzähler, das Bild wird aus `millisCounterForProgChange` berechnet (`turnMillis` = Dauer einer
+    Umdrehung) - gleicher Drehwinkel auf allen Geräten, kein Gedächtnis (`static`) im Effekt;
+  - Farben aus dem Farbschema (Stränge = Farbe 0 und 1, Sprossen = die folgenden), ohne Schema wie in der Vorlage
+    Cyan/Magenta und Rot/Blau bzw. Grün/Gelb;
+  - jede Sprossen-Hälfte hängt an ihrem Strang und wird mit dessen Tiefe gedimmt (Vorlage: oben/unten fest, beide
+    Hälften gleich hell); die Zeilen der Stränge selbst bleiben von der Sprosse frei;
+  - Größen aus `MATRIX_WIDTH` / `MATRIX_HEIGHT` (`DNA_WAVELENGTH`, `DNA_AMPLITUDE`), steile Kurven auf der
+    22 x 23-Fläche von Gitarre/Bass/Lampen werden lückenlos gefüllt.
+  - Erste Rückmeldung des Users (09.10.2026, nach dem OTA-Update): „die DNA ist schon ganz cool“, Wunsch: wahlweise
+    statt der waagerechten Bewegung „an der Stelle stehend wechseln die Seiten“. Dazu neuer Parameter `mode` vor den
+    Farben: `DNA_ROTATE` (Vorgabe, wie bisher) / `DNA_FLIP` (stehend: Höhe = sin(Spalte) · cos(Drehwinkel), Tiefe =
+    sin(Spalte) · sin(Drehwinkel) - eine flache Wellen-Leiter, die sich als Ganzes um die Längsachse dreht; die
+    Kreuzungspunkte bleiben in ihren Spalten). Das ist Claudes Deutung seines Satzes - Abnahme offen. Demo 92 Part 42.
+  - **Zweite Rückmeldung (09.10.2026): „die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden
+    mit eher pulsierenden effekten auf den anderen geräten“** - `progDNA` (beide Arten) ist damit auf der Matrix
+    abgenommen. Neu: Szenen `SCENE_DNA` und `SCENE_DNA_FLIP` (`scenes.h/.cpp`, ans Ende der Aufzählung gehängt -
+    bestehende Nummern unverändert; `songgen.py` liest die Namen aus `scenes.h`). Matrix: `progDNA` mit einer
+    Umdrehung in 2 Takten. Gitarre, Bass, Lampen: neues `progDnaPulse()` (`scenes.cpp`) - einfarbiges, weiches
+    Pulsieren in den Strangfarben (`dnaStrandColor()`), aus demselben Drehwinkel wie die Helix gerechnet.
+    `SCENE_DNA`: linke Bühnenhälfte = Strang 1, rechte = Strang 2, abwechselnd hell (Tiefe des Strangs), je einmal in
+    2 Takten. `SCENE_DNA_FLIP`: alle gemeinsam, ein Puls je Takt, dunkel beim Seitentausch, danach Farben getauscht.
+    Form und Tempo des Pulsierens sind Claudes Vorschlag - **Abnahme offen**.
+  - **Dritte Rückmeldung (09.10.2026): „top! kann man auch beide DNA effekte kombinieren, also horizontales scrolling
+    + vertikale drehung?“** - die beiden Szenen samt Pulsieren gelten damit als abgenommen (Claudes Deutung von
+    „top!“). Neu: `DNA_FLIP_SCROLL` (`progDNA`) und `SCENE_DNA_FLIP_SCROLL`: Seitentausch wie `DNA_FLIP` im Tempo von
+    `turnMillis`, dazu wandert die Form quer (eine Windungslänge in 2 × `turnMillis`, in der Szene 4 Takte); Höhe =
+    sin(Spalte + Verschiebung) · cos(Drehwinkel). `progDnaPulse` behandelt den neuen Modus wie `DNA_FLIP`. Das
+    Verhältnis der beiden Tempi (1 : 2) ist Claudes Wahl - **Abnahme offen**, Demo 92 Part 43 (16 s).
+    Nachbesserung nach dem ersten Ansehen („schon gut, aber die inneren verbindungen in grün, rot, blau etc müssten
+    doch auch mit scrollen“): die Sprossen standen fest in den Spalten `x % 3 == 0`. Jetzt wandern sie bei
+    `DNA_FLIP_SCROLL` mit der Form (`rungShift`, Kommazahl in Spalten; eine Sprosse zwischen zwei Spalten teilt ihre
+    Helligkeit auf beide = weiches Gleiten; Zählung über 6 Windungslängen, damit beim Neubeginn nichts springt). Bei
+    `DNA_ROTATE` und `DNA_FLIP` unverändert fest (dort ist `rungShift` 0 und die Rechnung ergibt dasselbe Bild wie
+    vorher). Simulator in der Doku ebenso.
+  - **Abgenommen am 09.10.2026 („jetzt passt es, bitte committen“)**, Commit „DNA-Doppelhelix: progDNA und Szenen
+    SCENE_DNA / _FLIP / _FLIP_SCROLL“. Offen bleibt nur Aufräumen: die Parts 39, 41, 42, 43 stehen in Demo 92 noch
+    vorn bei den nicht abgenommenen und können nach hinten rücken (Doku-Tabelle und Kommentar mitziehen).
+  - Demo 92: Part 39 (`SCENE_DNA`, ohne Schema), Part 41 (`SCENE_DNA`, NEON), Part 42 (`SCENE_DNA_FLIP`) und Part 43
+    (`SCENE_DNA_FLIP_SCROLL`) stehen am Anfang, danach 38 und 37. Doku zusätzlich: Szenen-Tabelle und Simulator in `docs/LED-Effekte-und-Szenen.html`,
+    `docs/Song-Workflow.html`, SKILL.md (Szenenwahl), Katalog (zwei Szenen).
+    Doku: `docs/LED-Effekte-und-Szenen.html` (Demo-Tabelle, Zeiten), `docs/effekt-katalog.yaml`, `README.md`, `CLAUDE.md`.
+  - Geprüft: Bild der 54 x 10-Matrix als Text-Simulation derselben Formeln; `scrollmatrix` und `andresgit` gebaut.
+    Alle Geräte mit `build_ota.py` gebaut (zuletzt mit den beiden Szenen), nicht committet. In generierten Songs:
+    `scene: SCENE_DNA` / `SCENE_DNA_FLIP` / `SCENE_DNA_FLIP_SCROLL` in `show.yaml`. **Nächster Schritt:** User sieht Song 92 an (Fragen je Part in der
+    Demo-Tabelle) und urteilt über Part 43 (Tempo des Wanderns); danach ggf. anpassen und die vier
+    DNA-Parts in der Demo nach hinten zu den abgenommenen rücken.
 
 - **09.10.2026, Blinder-Position = Moment der vollen Helligkeit (Wunsch des Users nach den Blindern in Tell It To My
   Heart: „wenn ich einen Blinder auf eine Viertel setze, ist immer gemeint, dass er an dieser Stelle die volle

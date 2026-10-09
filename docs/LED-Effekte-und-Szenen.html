@@ -282,6 +282,10 @@
   <tr><td><code>SCENE_RAIN</code></td><td><code>progMatrixHorizontal(…, 70, true)</code></td><td><code>progLampRain</code>: drei Leuchtspuren fallen von oben, die Lampen laufen versetzt</td><td><code>progMatrixHorizontal(…, 70, true)</code></td></tr>
   <tr><td><code>SCENE_PALETTE</code></td><td colspan="3">alle: <code>progStageBand</code>. Ein Farbband aus den Schemafarben liegt über der ganzen Bühne, jedes Gerät zeigt sein Fünftel. Das Band läuft in 4 Takten einmal von links nach rechts durch.</td></tr>
   <tr><td><code>SCENE_FADEOUT</code></td><td colspan="3">alle: <code>progFadeOut</code>. Jedes Gerät leuchtet in seiner Schemafarbe und blendet über die ganze Partdauer weich nach Schwarz aus (erst zügig, dann lang und flach). Für den Schlussakkord; je länger der Part, desto sanfter.</td></tr>
+  <tr><td colspan="4" style="color:var(--muted)">Ein Bild auf der Matrix in der Mitte, die übrigen Geräte pulsieren dazu:</td></tr>
+  <tr><td><code>SCENE_DNA</code></td><td><code>progDnaPulse</code>: das ganze Gerät pulsiert weich in einer Strangfarbe. Bass (links) = Strang 1, Gitarre (rechts) = Strang 2; hell, wenn „ihr“ Strang auf der Matrix vorn ist – die Bühnenhälften schwellen abwechselnd an und gehen dazwischen ganz aus (jede einmal in 2 Takten)</td><td><code>progDnaPulse</code>: Lampe 1 wie der Bass, Lampe 2 wie die Gitarre</td><td><code>progDNA</code>: DNA-Doppelhelix quer über die Matrix, dreht sich in 2 Takten einmal um ihre Längsachse (Stränge = erste und zweite Schemafarbe, ohne Schema Cyan/Magenta)</td></tr>
+  <tr><td><code>SCENE_DNA_FLIP</code></td><td><code>progDnaPulse</code>: alle pulsieren gemeinsam, einmal je Takt – voll, wenn die Helix weit offen ist, dunkel im Moment des Seitentauschs. Danach haben auch die Bühnenhälften ihre Farben getauscht</td><td>wie Gitarre/Bass</td><td><code>progDNA(…, DNA_FLIP)</code>: die Helix bleibt an ihrer Stelle, die Stränge tauschen jeden Takt die Seiten</td></tr>
+  <tr><td><code>SCENE_DNA_FLIP_SCROLL</code></td><td>wie <code>SCENE_DNA_FLIP</code></td><td>wie <code>SCENE_DNA_FLIP</code></td><td><code>progDNA(…, DNA_FLIP_SCROLL)</code>: Seitentausch jeden Takt, dabei wandert die Helix langsam quer durchs Bild (eine Windungslänge in 4 Takten)</td></tr>
 </table></div>
 <p>Bei STAR, SPARKLE und RAIN würfelt jedes Gerät seine Farben selbst aus dem Farbschema. Bei GLOW, COLORS und PALETTE rechnen alle Geräte dieselbe Farbe aus (<code>sharedColor()</code>): mit Schema die Schemafarben der Reihe nach, ohne Schema weit auseinanderliegende Farbtöne.</p>
 
@@ -424,11 +428,15 @@
   <tr><td>86</td><td>NEON</td><td><code>SCENE_CALL_RESPONSE</code></td></tr>
 </table></div>
 <div class="tablewrap"><table>
-  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 7:40 min)</th></tr>
+  <tr><th colspan="4">Song 92: <code>pipelineDemo()</code> (Ausgabestufe, 120 BPM, ca. 8:30 min)</th></tr>
   <tr><th>Part</th><th>ab</th><th>Baustein</th><th>Worauf du achten sollst</th></tr>
-  <tr><th colspan="4">Noch nicht abgenommen. Neue Bausteine stehen immer hier am Anfang; vor jedem offenen Part zeigt die Matrix 3 s lang seine Nummer (übrige Geräte dunkel), und in dieser Spalte steht genau, worauf zu achten ist. Die Zeiten der abgenommenen Parts darunter verschieben sich dadurch um 22 s.</th></tr>
-  <tr><td>38</td><td>0:03</td><td><code>fxBlinderSlot(0 / 1 / 2)</code>: drei Blinder in einem Part, 8 s über dunklem Atmen (ROYAL, 50 %)</td><td><b>1.</b> Sofort beim Start ein kurzer warmweißer Blinder auf allen Geräten (0,5 s voll, 0,5 s abklingend). <b>2.</b> Nach 3 s blitzen <b>nur die beiden Lampen</b> kurz weiß auf, Gitarre, Bass und Matrix atmen ungestört weiter. <b>3.</b> Ab 6 s blendet auf allen Geräten ein Blinder über 1 s ein und steht dann bis zum Ende des Parts voll. Alle drei kommen auf allen Geräten im selben Moment, zwischen ihnen ist das Atmen normal hell.</td></tr>
-  <tr><td>37</td><td>0:14</td><td><code>SCENE_CALL_RESPONSE</code> (Frage/Antwort), 8 s, NEON</td><td><b>1.</b> Auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2 – nie beide Seiten zugleich. <b>2.</b> Die Matrix blitzt auf jeden Schlag, abwechselnd mit ihrer linken und rechten Hälfte. <b>3.</b> Zwischen zwei Blitzen ist jedes Gerät kurz ganz dunkel, der Takt ist auch auf einem einzelnen Gerät klar zu sehen. <b>4.</b> Nach 2 Takten (4 s) wechseln beide Seiten die Farbe. Dein Urteil: ist das der Takt, der beim Ping-Pong gefehlt hat? Im Einsatz: APT., <code>verse 1</code> und <code>apt apt apt</code>.</td></tr>
+  <tr><th colspan="4">Noch nicht abgenommen. Neue Bausteine stehen immer hier am Anfang; vor jedem offenen Part zeigt die Matrix 3 s lang seine Nummer (übrige Geräte dunkel), und in dieser Spalte steht genau, worauf zu achten ist. Die Zeiten der abgenommenen Parts darunter verschieben sich dadurch um 74 s.</th></tr>
+  <tr><td>39</td><td>0:03</td><td><code>SCENE_DNA</code>, 8 s, ohne Farbschema</td><td>Die Helix auf der Matrix hast du abgenommen („sehen alle gut aus“) – neu ist, was die anderen Geräte dazu tun. <b>1.</b> Matrix: die Helix dreht sich, jetzt eine Umdrehung in 4 s (2 Takte). <b>2.</b> Lampe 1 und Bass pulsieren in Cyan, Gitarre und Lampe 2 in Magenta – weich an- und abschwellend, das ganze Gerät einfarbig. <b>3.</b> Die beiden Seiten wechseln sich ab: ist links voll, ist rechts dunkel und umgekehrt; jede Seite kommt einmal in 2 Takten und geht dazwischen ganz aus. <b>4.</b> Dein Urteil: passt dieses ruhige Pulsieren zur Helix, oder soll es schneller (jeder Takt / jeder Beat) oder härter sein?</td></tr>
+  <tr><td>41</td><td>0:14</td><td><code>SCENE_DNA</code>, 8 s, NEON</td><td>Dasselbe im Farbschema: die Stränge der Helix und die beiden Bühnenhälften nehmen die erste und zweite Schemafarbe (Pink und Cyan), die Sprossen die übrigen. Gehören Matrix und die anderen Geräte farblich sichtbar zusammen?</td></tr>
+  <tr><td>42</td><td>0:25</td><td><code>SCENE_DNA_FLIP</code>, 8 s, ohne Farbschema</td><td><b>1.</b> Matrix: die stehende Helix, Cyan und Magenta tauschen alle 2 s (jeden Takt) die Seiten. <b>2.</b> Alle anderen Geräte pulsieren gemeinsam, ein Puls je Takt: voll, wenn die Helix weit offen ist, ganz dunkel genau in dem Moment, in dem die Stränge auf der Mittellinie liegen. <b>3.</b> Nach jedem dunklen Moment haben die Seiten die Farbe getauscht: wer Cyan war, ist jetzt Magenta. Kommt der dunkle Moment auf allen Geräten gleichzeitig mit dem Tausch auf der Matrix?</td></tr>
+  <tr><td>43</td><td>0:36</td><td><code>SCENE_DNA_FLIP_SCROLL</code>, 16 s, ohne Farbschema</td><td>Beide Bewegungen zugleich. <b>1.</b> Matrix: die Stränge tauschen wie in Part 42 jeden Takt die Seiten, und dabei schiebt sich die ganze Helix langsam nach links – die Kreuzungspunkte wandern, in 8 s um eine Windungslänge (in den 16 s also zweimal). Die farbigen Sprossen wandern im selben Tempo mit und gleiten dabei weich von Spalte zu Spalte (deine Rückmeldung nach dem ersten Ansehen: sie standen vorher fest). <b>2.</b> Sind beide Bewegungen gut zu unterscheiden, oder soll das Wandern schneller bzw. langsamer sein? <b>3.</b> Die anderen Geräte pulsieren genau wie in Part 42 (ein Puls je Takt, dunkel beim Tausch, danach Farben getauscht).</td></tr>
+  <tr><td>38</td><td>0:55</td><td><code>fxBlinderSlot(0 / 1 / 2)</code>: drei Blinder in einem Part, 8 s über dunklem Atmen (ROYAL, 50 %)</td><td><b>1.</b> Sofort beim Start ein kurzer warmweißer Blinder auf allen Geräten (0,5 s voll, 0,5 s abklingend). <b>2.</b> Nach 3 s blitzen <b>nur die beiden Lampen</b> kurz weiß auf, Gitarre, Bass und Matrix atmen ungestört weiter. <b>3.</b> Ab 6 s blendet auf allen Geräten ein Blinder über 1 s ein und steht dann bis zum Ende des Parts voll. Alle drei kommen auf allen Geräten im selben Moment, zwischen ihnen ist das Atmen normal hell.</td></tr>
+  <tr><td>37</td><td>1:06</td><td><code>SCENE_CALL_RESPONSE</code> (Frage/Antwort), 8 s, NEON</td><td><b>1.</b> Auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2 – nie beide Seiten zugleich. <b>2.</b> Die Matrix blitzt auf jeden Schlag, abwechselnd mit ihrer linken und rechten Hälfte. <b>3.</b> Zwischen zwei Blitzen ist jedes Gerät kurz ganz dunkel, der Takt ist auch auf einem einzelnen Gerät klar zu sehen. <b>4.</b> Nach 2 Takten (4 s) wechseln beide Seiten die Farbe. Dein Urteil: ist das der Takt, der beim Ping-Pong gefehlt hat? Im Einsatz: APT., <code>verse 1</code> und <code>apt apt apt</code>.</td></tr>
   <tr><th colspan="4">Wörter mit eigener Länge und <code>flash</code> (<code>progText</code>), je 8 s über <code>SCENE_DROP</code> (abgenommen am 06.10.2026: „beides ist super“ – in ATTSS nahm der User hart, weil sich der Text so besser vom Effekt darunter abhebt)</th></tr>
   <tr><td>34</td><td>0:00</td><td><code>progText("THIS IS NOT ENOUGH*5", …)</code> über <code>SCENE_DROP</code></td><td>Wörter, die unterschiedlich lange stehen (<code>*Zahl</code> hinter dem Wort, YAML: <code>words: "THIS IS NOT ENOUGH*5"</code>). Matrix: THIS, IS, NOT erscheinen auf Schlag 1, 2, 3 – jeweils im selben Moment, in dem die Lampen aufblitzen; ENOUGH kommt auf Schlag 4 und bleibt den ganzen folgenden Takt stehen. Nach 2 Takten von vorn (2 Durchläufe in 8 s). Darunter laufen die roten Wellen gedimmt weiter. Kommen die Wörter genau mit den Lampen, und ist der Text über den Wellen gut lesbar?</td></tr>
   <tr><td>36</td><td>0:08</td><td><code>progText("THIS IS NOT ENOUGH*5", …, true)</code> (<code>flash</code>)</td><td>Wie Part 34, aber die Wörter blitzen auf und klingen ab wie die Lampen (YAML: <code>flash: true</code>), statt hart an- und auszugehen: THIS, IS, NOT verlöschen jeweils im selben Verlauf wie der Lampen-Blitz, die Wellen scheinen dabei zunehmend durch. ENOUGH steht voll hell und klingt erst im letzten Beat des zweiten Takts ab. Vergleich mit Part 34: Was liest sich besser, was passt besser zu den Lampen?</td></tr>
@@ -893,7 +901,7 @@ const SCENES=[
   ["SCENE_WAVE_LR","Wave →"],["SCENE_WAVE_RL","Wave ←"],["SCENE_WAVE_OUT","Wave ↔"],["SCENE_PINGPONG","PingPong"],
   ["SCENE_SOLO_GIT","Solo Git"],["SCENE_SOLO_BASS","Solo Bass"],["SCENE_SOLO_DRUMS","Solo Drums"],
   ["SCENE_STAR","Star"],["SCENE_SPARKLE","Sparkle"],["SCENE_GLOW","Glow"],["SCENE_COLORS","Colors"],["SCENE_COLORS_WAVE","Colors →"],
-  ["SCENE_RAIN","Rain"],["SCENE_PALETTE","Palette"],["SCENE_FADEOUT","Fade out"],["SCENE_CALL_RESPONSE","Frage/Antwort"]];
+  ["SCENE_RAIN","Rain"],["SCENE_PALETTE","Palette"],["SCENE_FADEOUT","Fade out"],["SCENE_CALL_RESPONSE","Frage/Antwort"],["SCENE_DNA","DNA"],["SCENE_DNA_FLIP","DNA stehend"],["SCENE_DNA_FLIP_SCROLL","DNA stehend + wandernd"]];
 const DEVICES=[{name:"Lampe 1",cls:"lamp",pos:0,dev:"LAMPE1"},{name:"Bass",cls:"guitar",pos:1,dev:"BASS"},{name:"Drums (Matrix)",cls:"matrix",pos:2,dev:"DRUMS"},
   {name:"Gitarre",cls:"guitar",pos:3,dev:"GIT"},{name:"Lampe 2",cls:"lamp",pos:4,dev:"LAMPE2"}];
 
@@ -929,6 +937,21 @@ const lookFX={
         for(let j=0;j<tail;j++){ const h=head+j; if(h>=0&&h<L.length) L[h]= j===0? blend(col,WHITE,200) : scale(col,255-j*15); } } }}),
 };
 
+// Nachbau von progDNA (Matrix) und progDnaPulse (übrige Geräte): mode 0 = dreht sich, 1 = stehend, 2 = stehend + wandernd; turn = ms je Umdrehung
+function dnaFX(mode,d,turn,sch){ const flip=mode>0;
+  const strand=n=> sch.active? sch.color(n) : (n===0?[0,255,255]:[255,0,255]);
+  const add=(L,x,y,c)=>{ if(x<0||x>=MW||y<0||y>=MH) return; const o=L[y*MW+x]||BLACK; L[y*MW+x]=[Math.min(255,o[0]+c[0]),Math.min(255,o[1]+c[1]),Math.min(255,o[2]+c[2])]; };
+  return {step(ms,L){ const ph=2*Math.PI*(ms%turn)/turn, sc=mode===2?Math.PI*(ms%(2*turn))/turn:0;
+    if(d.cls!=="matrix"){ const c=Math.cos(ph), left=d.pos<2; let lin,n;
+      if(flip){ lin=Math.abs(c); n=((c>=0)===left)?0:1; } else { lin=((left?c:-c)+1)/2; n=left?0:1; }
+      fill(L,scale(strand(n),lin*lin*255)); return; }
+    fill(L,BLACK); const wl=Math.min(MW,Math.floor(MH*9/2)), amp=(MH-1)*0.4, cy=(MH-1)/2, fr=2*Math.PI/wl, rs=mode===2?(ms%(12*turn))*wl/(2*turn):0;
+    for(let x=0;x<MW;x++){ const sv=flip?Math.sin(x*fr+sc)*Math.cos(ph):Math.sin(x*fr+ph), z=flip?Math.sin(x*fr+sc)*Math.sin(ph):Math.cos(x*fr+ph), y1=cy+amp*sv, y2=cy-amp*sv;
+      const u=x+rs, ri=Math.round(u/3), rw=1-Math.abs(u-ri*3); if(rw>0){ const pair=ri%2, b1=sch.active?sch.color(2+pair*2):(pair?[0,255,0]:[255,0,0]), b2=sch.active?sch.color(3+pair*2):(pair?[255,255,0]:[0,0,255]);
+        for(let y=Math.floor(Math.min(y1,y2))+2;y<=Math.floor(Math.max(y1,y2))-1;y++) add(L,x,y, scale(((y<cy)===(y1<cy))? scale(b1,30+(z+1)*40) : scale(b2,30+(1-z)*40), rw*255)); }
+      [[y1,z,0],[y2,-z,1]].forEach(([y,zz,n])=>{ const y0=Math.floor(y), w=y-y0, c=scale(strand(n),40+(zz+1)/2*215); add(L,x,y0,scale(c,255*(1-w))); add(L,x,y0+1,scale(c,255*w)); }); } }};
+}
+
 // Nachbau von scene() in scenes.cpp
 function makeSceneFX(id,d,dur,bpm,sch){
   const beat=60000/bpm, me=sch.device(d.pos), cls=d.cls;
@@ -943,6 +966,7 @@ function makeSceneFX(id,d,dur,bpm,sch){
         const c=scale(sharedColor((b&1)+Math.floor(b/8),sch),flashEnv(ms%p,p));
         if(cls==="matrix"){ for(let y=0;y<MH;y++) for(let x=0;x<MW;x++) L[y*MW+x]=((x<MW/2)===left)?c:BLACK; }
         else fill(L,(d.pos===2||(d.pos<2)===left)?c:BLACK); }};
+    case "SCENE_DNA": case "SCENE_DNA_FLIP": case "SCENE_DNA_FLIP_SCROLL": return dnaFX(id==="SCENE_DNA"?0:id==="SCENE_DNA_FLIP"?1:2,d,beat*8,sch);
     case "SCENE_SPARKLE": return lookFX.sparkle(sch);
     case "SCENE_GLOW": return lookFX.glow(bpm,sch);
     case "SCENE_COLORS": return lookFX.colors(bpm,d.pos,false,sch);

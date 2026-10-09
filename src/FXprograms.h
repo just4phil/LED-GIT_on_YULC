@@ -479,6 +479,26 @@ void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduce
 void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 40);
 void progSineCos(unsigned int durationMillis, byte nextPart);
 
+// DNA-Doppelhelix: zwei Stränge winden sich quer über die Fläche umeinander, dazwischen zweifarbige Sprossen; die
+// Helix dreht sich um ihre Längsachse (der Strang vorn ist hell, der hinten dunkel).
+//   turnMillis        Dauer einer vollen Umdrehung in ms (Vorgabe 2000; im Song z.B. die Länge von 1 oder 2 Takten).
+//                     Anders als bei den Effekten darüber ist das KEINE Wartezeit je Schritt: das Bild wird aus der
+//                     Zeit seit Part-Beginn berechnet und steht deshalb auf allen Geräten im selben Drehwinkel.
+//   strand1, strand2  Farben der beiden Stränge. Ohne Angabe: die ersten beiden Farben des Farbschemas, ohne Schema
+//                     Cyan und Magenta. Die Sprossen nehmen die weiteren Schemafarben, ohne Schema Rot/Blau und Grün/Gelb.
+//   mode              DNA_ROTATE (Vorgabe): die Helix dreht sich wie eine Schraube, die Wellen wandern quer durchs Bild.
+//                     DNA_FLIP: die Helix bleibt an ihrer Stelle stehen und die Stränge tauschen nur die Seiten (jeder
+//                     schrumpft zur Mittellinie und taucht gegenüber wieder auf); die Kreuzungspunkte wandern nicht.
+//                     In turnMillis tauschen sie zweimal und sind wieder am Anfang.
+//                     DNA_FLIP_SCROLL: beides zugleich - Seitentausch wie DNA_FLIP, dabei schiebt sich die ganze Form
+//                     langsam quer durchs Bild (eine Windungslänge in 2 x turnMillis), die Sprossen wandern mit.
+// Windungslänge, Ausschlag und Abstand der Sprossen: DNA_... in fxMatrixSim.cpp.
+enum DnaMode : uint8_t { DNA_ROTATE = 0, DNA_FLIP, DNA_FLIP_SCROLL };
+void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode, CRGB strand1, CRGB strand2);
+void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis = 2000, uint8_t mode = DNA_ROTATE);
+CRGB dnaStrandColor(uint8_t n);		// Farbe von Strang 0 / 1 ohne eigene Angabe (Farbschema oder Cyan / Magenta)
+// Als Szene für alle Geräte: SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL (scenes.h) - Matrix zeigt die Helix, die übrigen pulsieren dazu.
+
 // Equalizer: Balken von unten, 5px breit + 1px Lücke, grün→gelb→orange→rot, pro Band konfigurierbarer Mittelwert
 // Es wird kein Ton gemessen: die Balken tanzen zufällig. centers = Liste der mittleren Höhen je Balken (Pixel),
 // numCenters = Länge der Liste, deviation = so weit schwankt ein Balken um seine mittlere Höhe.

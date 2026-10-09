@@ -68,7 +68,7 @@ LED-GIT_on_YULC/
 │   ├── fxText.cpp                # text effects
 │   ├── fxPalette.cpp             # palette effects
 │   ├── fxMatrixRain.cpp          # "Matrix" rain
-│   ├── fxMatrixSim.cpp           # fire, plasma, starfield, Lissajous, equalizer, water ripple
+│   ├── fxMatrixSim.cpp           # fire, plasma, starfield, Lissajous, DNA helix, equalizer, water ripple
 │   ├── fxState.h                 # state shared by the effect files
 │   ├── guitarShapeFX.h/cpp       # effects that follow the outline of the guitar
 │   ├── matrixFunctions.h/cpp     # matrix drawing helpers

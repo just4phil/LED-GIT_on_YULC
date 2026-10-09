@@ -381,6 +381,44 @@ void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPer
 	fxShow();
 }
 
+// Begleitung zur DNA-Helix der Matrix (SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL) für Gitarre, Bass und Lampen: das ganze Gerät
+// leuchtet in einer Strangfarbe und pulsiert weich. Gerechnet wird mit demselben Drehwinkel wie in progDNA
+// (aus der Zeit seit Part-Beginn und turnMillis = Dauer einer Umdrehung), deshalb passt das Pulsieren genau zur Helix.
+// Die Bühne ist dabei in zwei Hälften geteilt: links (Lampe 1, Bass) und rechts (Gitarre, Lampe 2).
+//   DNA_ROTATE  Die linke Hälfte gehört zu Strang 1, die rechte zu Strang 2. Jede Hälfte ist so hell, wie "ihr" Strang
+//               gerade vorn ist (Tiefe z am linken Rand der Matrix): die Hälften schwellen abwechselnd an und ab,
+//               einmal je Umdrehung, und gehen dazwischen ganz aus.
+//   DNA_FLIP    Beide Hälften pulsieren gemeinsam: voll, wenn die Helix weit offen ist, dunkel im Moment, in dem die
+//               Stränge auf der Mittellinie liegen und die Seiten tauschen. Nach jedem Tausch haben auch die beiden
+//               Hälften ihre Farben getauscht - zwei Pulse je Umdrehung.
+//   DNA_FLIP_SCROLL  wie DNA_FLIP: der Seitentausch ist derselbe, das seitliche Wandern der Helix hat hier kein Gegenstück.
+// cos8() ist der schnelle FastLED-Kosinus: Winkel 0..255 (= eine volle Umdrehung) hinein, 0..255 heraus (128 = Null).
+void progDnaPulse(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		if (turnMillis == 0) turnMillis = 1;
+		uint8_t angle = (uint32_t)(millisCounterForProgChange % turnMillis) * 256 / turnMillis;	// Drehwinkel 0..255
+		uint8_t c = cos8(angle);										// 255 = Strang 1 ganz vorn, 0 = ganz hinten
+		bool left = STAGE_POS < (STAGE_POSITIONS - 1) / 2;				// steht dieses Gerät links von der Matrix?
+
+		uint8_t lin;		// Helligkeit 0..255, noch gleichmäßig
+		uint8_t strand;		// welche Strangfarbe dieses Gerät jetzt zeigt (0 oder 1)
+		if (mode != DNA_ROTATE) {
+			int d = (int)c - 128;										// -128..127: Vorzeichen = welche Seite Strang 1 gerade hat
+			lin    = (uint8_t)min(255, abs(d) * 2);						// Öffnung der Helix: 0 = Stränge auf der Mittellinie
+			strand = ((d >= 0) == left) ? 0 : 1;
+		} else {
+			lin    = left ? c : 255 - c;								// rechts: Strang 2 liegt gegenüber
+			strand = left ? 0 : 1;
+		}
+		// scale8(lin, lin) = lin zum Quadrat: unten lange dunkel, oben eine runde Spitze - wirkt wie ein Puls
+		CRGB col = dnaStrandColor(strand);
+		fill_solid(leds, anz_LEDs, col.nscale8(scale8(lin, lin)));
+	}
+	fxShow();
+}
+
 //==================================================================
 //=========== Szenen ===============================================
 //==================================================================
@@ -445,6 +483,20 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_FADEOUT:
 		progFadeOut(durationMillis, nextPart, me);
 		return;
+	case SCENE_DNA:
+	case SCENE_DNA_FLIP:
+	case SCENE_DNA_FLIP_SCROLL: {
+		// Matrix: die Helix; alle anderen pulsieren im selben Drehwinkel dazu. Eine Umdrehung = 2 Takte (8 Beats):
+		// bei SCENE_DNA wechseln sich die Bühnenhälften jeden Takt ab, bei SCENE_DNA_FLIP und SCENE_DNA_FLIP_SCROLL kommt
+		// ein Puls je Takt (bei der letzten wandert die Helix zusätzlich in 4 Takten um eine Windungslänge).
+		uint8_t mode = (sceneID == SCENE_DNA_FLIP) ? DNA_FLIP : (sceneID == SCENE_DNA_FLIP_SCROLL) ? DNA_FLIP_SCROLL : DNA_ROTATE;
+#if DEVICE_CLASS == CLASS_MATRIX
+		progDNA(durationMillis, nextPart, beatMs * 8, mode);
+#else
+		progDnaPulse(durationMillis, nextPart, beatMs * 8, mode);
+#endif
+		return;
+	}
 	}
 
 	//--- geräteabhängige Umsetzung ---

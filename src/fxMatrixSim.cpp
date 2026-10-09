@@ -10,8 +10,8 @@
 //=====================================================================
 // fxMatrixSim.cpp - berechnete Bilder für die LED-Fläche
 //=====================================================================
-// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, Equalizer und Wasserwellen: Effekte, die ihr Bild
-// in jedem Schritt aus einer kleinen Rechnung (Simulation oder Formel) neu erzeugen. Gemalt wird über
+// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, DNA-Doppelhelix, Equalizer und Wasserwellen: Effekte,
+// die ihr Bild in jedem Schritt aus einer kleinen Rechnung (Simulation oder Formel) neu erzeugen. Gemalt wird über
 // x/y-Koordinaten (matrix->drawPixel); auf Gitarre, Bass und Lampen landen die Punkte auf dem Streifen und
 // wirken dort als bewegte Muster. Die Beschreibung der Parameter steht in FXprograms.h.
 //
@@ -28,6 +28,7 @@
 
 extern volatile unsigned int millisToReduceCPUSpeed;
 extern volatile unsigned int millisCounterTimer;	// wird von den progs fürs timing bzw. delay-ersatz verwendet
+extern volatile unsigned int millisCounterForProgChange;	// Zeit seit Part-Beginn in ms (progDNA rechnet sein Bild daraus)
 extern FastLED_NeoMatrix* matrix;
 extern CRGB leds[NUMMATRIX];
 //---------------------------------------------------------------------
@@ -401,6 +402,180 @@ void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduce
 
 void progSineCos(unsigned int durationMillis, byte nextPart) {
 	progSineCos(durationMillis, nextPart, 40);
+}
+
+//==================================================================
+//=========== progDNA ==============================================
+//==================================================================
+
+// DNA-Doppelhelix: zwei Stränge winden sich umeinander, dazwischen stehen die "Sprossen" (Basenpaare) wie bei einer
+// verdrehten Strickleiter. Die Helix liegt quer über der Fläche und dreht sich um ihre Längsachse.
+//
+// So entsteht das Bild: von der Seite gesehen ist eine Schraubenlinie eine Sinuswelle. Strang 1 liegt in der Spalte x
+// auf der Höhe  Mitte + Ausschlag * sin(Winkel), Strang 2 genau gegenüber (Winkel + 180 Grad = Vorzeichen gedreht).
+// Der Winkel wächst von Spalte zu Spalte (die Windung) und mit der Zeit (die Drehung). Der Kosinus desselben Winkels
+// ist die TIEFE "z": +1 = der Strang ist gerade vorn beim Betrachter, -1 = hinten. Vorn wird er hell gemalt, hinten
+// dunkel - nur dadurch wirkt das flache Bild räumlich. Wo sich die Stränge kreuzen, addieren sich ihre Farben.
+//
+// Zwei Arten der Bewegung (mode):
+//   DNA_ROTATE  die Helix dreht sich wie eine Schraube - von der Seite gesehen wandern die Wellen dabei quer durchs Bild.
+//   DNA_FLIP    die Helix bleibt an ihrer Stelle stehen, nichts wandert seitwärts: die Bögen klappen nur auf und ab.
+//               Jeder Strang schrumpft zur Mittellinie, taucht auf der anderen Seite wieder auf und kommt zurück - die
+//               Stränge tauschen die Seiten. Die Kreuzungspunkte bleiben dabei immer in denselben Spalten.
+//               Gerechnet ist das eine flache, wellenförmige Leiter, die sich als Ganzes um ihre Längsachse dreht:
+//               Höhe = sin(Spalte) * cos(Drehwinkel), Tiefe = sin(Spalte) * sin(Drehwinkel). Steht die Leiter gerade
+//               hochkant zum Betrachter, liegen beide Stränge auf der Mittellinie (vorn hell, hinten dunkel).
+//   DNA_FLIP_SCROLL  beides zugleich: die Stränge tauschen die Seiten wie bei DNA_FLIP, und dabei schiebt sich die
+//               ganze Form langsam quer durchs Bild - die Kreuzungspunkte wandern, und die Sprossen wandern mit
+//               (bei DNA_ROTATE stehen sie fest in ihren Spalten: dort dreht sich die Helix nur). Der Seitentausch läuft im Tempo
+//               von turnMillis, das Wandern halb so schnell (eine Windungslänge in 2 x turnMillis), damit man beide
+//               Bewegungen auseinanderhalten kann.
+//
+// Alles wird aus der Zeit seit Part-Beginn berechnet (millisCounterForProgChange), der Effekt merkt sich nichts:
+// die Helix steht auf allen Geräten zu jedem Zeitpunkt im selben Drehwinkel, egal wie schnell ein Gerät seine
+// Bilder ausgibt.
+#define DNA_WAVELENGTH	((MATRIX_HEIGHT * 9 / 2) < MATRIX_WIDTH ? (MATRIX_HEIGHT * 9 / 2) : MATRIX_WIDTH)	// Spalten je voller Windung: 4,5-mal die Höhe (Matrix 54 x 10: 45 Spalten = 1,2 Windungen im Bild), höchstens die ganze Breite
+#define DNA_AMPLITUDE	((MATRIX_HEIGHT - 1) * 0.4f)	// Ausschlag der Stränge um die Mitte in Zeilen (Matrix: 3,6 - oben und unten bleibt knapp eine Zeile frei)
+#define DNA_RUNG_STEP	3		// alle so viele Spalten steht eine Sprosse
+#define DNA_STRAND_MIN	40		// Helligkeit eines Strangs ganz hinten (vorn immer 255)
+#define DNA_RUNG_MIN	30		// Helligkeit einer Sprossen-Hälfte ganz hinten ...
+#define DNA_RUNG_MAX	110		// ... und ganz vorn: die Sprossen bleiben dunkler als die Stränge
+
+// Addiert eine Farbe auf einen Pixel der Fläche (nichts passiert, wenn er außerhalb liegt). Addieren statt
+// Überschreiben: wo zwei Dinge übereinander liegen, mischen sich ihre Farben, und die Reihenfolge beim Malen ist egal.
+static void dnaAddPixel(int x, int y, CRGB col) {
+	if (x < 0 || x >= MATRIX_WIDTH || y < 0 || y >= MATRIX_HEIGHT) return;
+	leds[matrix->XY((uint8_t)x, (uint8_t)y)] += col;
+}
+
+// Malt einen Strang in der Spalte x auf der Höhe y. y ist eine Kommazahl: liegt der Strang zwischen zwei Zeilen,
+// bekommen beide Zeilen ihren Anteil der Helligkeit (y = 3,25 -> Zeile 3 zu 75 %, Zeile 4 zu 25 %). So gleitet die
+// Linie weich über die wenigen Zeilen statt zu springen ("Anti-Aliasing").
+// yPrev = Höhe des Strangs in der Spalte davor. Ist die Kurve so steil, dass zwischen beiden Spalten Zeilen leer
+// blieben (nur auf den hohen, schmalen Flächen von Gitarre, Bass und Lampen), werden sie gefüllt.
+static void dnaStrandPoint(int x, float y, float yPrev, CRGB col) {
+	int   y0 = (int)floorf(y);							// die obere der beiden Zeilen
+	uint8_t w1 = (uint8_t)((y - (float)y0) * 255.0f);	// Anteil der unteren Zeile (0..255)
+	CRGB c0 = col;	c0.nscale8(255 - w1);
+	CRGB c1 = col;	c1.nscale8(w1);
+	dnaAddPixel(x, y0,     c0);
+	dnaAddPixel(x, y0 + 1, c1);
+
+	int p0 = (int)floorf(yPrev);
+	for (int yy = min(y0, p0) + 2; yy <= max(y0, p0) - 1; yy++) dnaAddPixel(x, yy, col);
+}
+
+// turnMillis = Dauer einer vollen Umdrehung (z.B. die Länge von 1 oder 2 Takten; bei DNA_FLIP und DNA_FLIP_SCROLL tauschen
+// die Stränge in dieser Zeit zweimal die Seiten und sind dann wieder am Anfang), mode = DNA_ROTATE, DNA_FLIP oder
+// DNA_FLIP_SCROLL (siehe oben),
+// strand1/strand2 = Farben der Stränge.
+// Die Sprossen bestehen aus zwei Hälften in zwei Farben (bei der echten DNA die beiden Basen eines Paars), zwei
+// Farbpaare wechseln sich ab: mit Farbschema dessen dritte und vierte Farbe und die beiden folgenden, ohne Schema
+// Rot/Blau und Grün/Gelb. Jede Hälfte hängt an "ihrem" Strang und dreht sich mit ihm nach vorn und hinten.
+void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode, CRGB strand1, CRGB strand2) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(FX_REF_FRAME_MS)) {
+		clearAll();
+
+		if (turnMillis == 0) turnMillis = 1;
+		const float cy    = (MATRIX_HEIGHT - 1) / 2.0f;							// Mittellinie der Helix (Zeile, Kommazahl)
+		const float freq  = 2.0f * (float)M_PI / (float)DNA_WAVELENGTH;			// Winkel-Zuwachs je Spalte
+		const float phase = 2.0f * (float)M_PI * (float)(millisCounterForProgChange % turnMillis) / (float)turnMillis;	// Drehwinkel jetzt
+
+		// nur DNA_FLIP_SCROLL: so weit ist die Form jetzt seitlich verschoben (als Winkel; ein voller Kreis = eine Windungslänge
+		// in der doppelten Zeit von turnMillis). Bei DNA_FLIP bleibt das 0 - die Form steht.
+		const uint32_t scrollMillis = (uint32_t)turnMillis * 2;
+		const float scroll = (mode == DNA_FLIP_SCROLL)
+			? 2.0f * (float)M_PI * (float)(millisCounterForProgChange % scrollMillis) / (float)scrollMillis : 0.0f;
+
+		// Dieselbe Verschiebung für die Sprossen, hier in Spalten (Kommazahl): sie wandern genauso schnell wie die Form,
+		// eine Windungslänge je scrollMillis. Gezählt wird über 6 Windungslängen, bevor es von vorn beginnt - das ist
+		// immer ein Vielfaches von zwei Sprossen-Abständen, so springen beim Neubeginn weder Sprossen noch Farbpaare.
+		const float rungShift = (mode == DNA_FLIP_SCROLL)
+			? (float)(millisCounterForProgChange % (scrollMillis * 6)) * (float)DNA_WAVELENGTH / (float)scrollMillis : 0.0f;
+
+		// Helligkeit aus der Tiefe z (-1 hinten .. +1 vorn), gleichmäßig zwischen lo und hi
+		auto depth = [](float z, uint8_t lo, uint8_t hi) {
+			return (uint8_t)(lo + (z + 1.0f) * 0.5f * (float)(hi - lo));
+		};
+
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			// s = Höhe von Strang 1 (-1 oben .. +1 unten), z = seine Tiefe; Strang 2 liegt gegenüber, also bei -s und -z.
+			// sPrev = dieselbe Höhe für die Spalte davor (nur zum Lückenfüllen).
+			float s, z, sPrev;
+			if (mode != DNA_ROTATE) {
+				// stehend: die Form entlang der Spalten ist fest (bei DNA_FLIP_SCROLL um "scroll" verschoben), der
+				// Drehwinkel verteilt sie nur auf Höhe und Tiefe
+				float a = x * freq + scroll;
+				s     = sinf(a) * cosf(phase);
+				z     = sinf(a) * sinf(phase);
+				sPrev = sinf(a - freq) * cosf(phase);
+			} else {
+				// drehend: der Drehwinkel wird zum Winkel der Spalte addiert - die Welle wandert
+				float angle = x * freq + phase;
+				s     = sinf(angle);
+				z     = cosf(angle);
+				sPrev = sinf(angle - freq);
+			}
+			float y1 = cy + DNA_AMPLITUDE * s;
+			float y2 = cy - DNA_AMPLITUDE * s;
+
+			// 1. Sprosse: alle DNA_RUNG_STEP Spalten eine, und nur in den Zeilen ZWISCHEN den Strängen
+			//    (die beiden Zeilen, in denen ein Strang selbst liegt, bleiben frei - dort mischte sich sonst die Farbe).
+			//    u = Platz dieser Spalte auf der (evtl. verschobenen) Helix, rung = Nummer der nächstgelegenen Sprosse,
+			//    dist = Abstand zu ihr in Spalten. Ohne Verschiebung ist dist genau 0 (Sprosse) oder mindestens 1 (keine).
+			//    Wandert die Helix, liegt eine Sprosse meist ZWISCHEN zwei Spalten: dann teilen sich beide ihre Helligkeit
+			//    (weight) - so gleitet die Sprosse weich seitwärts, statt von Spalte zu Spalte zu springen.
+			float u    = (float)x + rungShift;
+			long  rung = lroundf(u / DNA_RUNG_STEP);
+			float dist = fabsf(u - (float)(rung * DNA_RUNG_STEP));
+			if (dist < 1.0f) {
+				uint8_t weight = (uint8_t)((1.0f - dist) * 255.0f);
+				byte pair = rung % 2;					// 0 oder 1: welches der beiden Farbpaare
+				CRGB base1, base2;						// Hälfte an Strang 1 / an Strang 2
+				if (colorSchemeActive()) {
+					base1 = schemeColor(2 + pair * 2);
+					base2 = schemeColor(3 + pair * 2);
+				} else {
+					base1 = pair == 0 ? CRGB(255, 0, 0) : CRGB(0, 255, 0);
+					base2 = pair == 0 ? CRGB(0, 0, 255) : CRGB(255, 255, 0);
+				}
+				base1.nscale8_video(depth( z, DNA_RUNG_MIN, DNA_RUNG_MAX));
+				base2.nscale8_video(depth(-z, DNA_RUNG_MIN, DNA_RUNG_MAX));
+				base1.nscale8(weight);
+				base2.nscale8(weight);
+
+				int top    = (int)floorf(min(y1, y2)) + 2;	// erste freie Zeile unter dem oberen Strang
+				int bottom = (int)floorf(max(y1, y2)) - 1;	// letzte freie Zeile über dem unteren Strang
+				for (int yy = top; yy <= bottom; yy++) {
+					// Liegt die Zeile auf derselben Seite der Mitte wie Strang 1, gehört sie zu dessen Hälfte
+					bool onSide1 = ((float)yy < cy) == (y1 < cy);
+					dnaAddPixel(x, yy, onSide1 ? base1 : base2);
+				}
+			}
+
+			// 2. die beiden Stränge darüber: vorn hell, hinten dunkel
+			CRGB c1 = strand1;	c1.nscale8_video(depth( z, DNA_STRAND_MIN, 255));
+			CRGB c2 = strand2;	c2.nscale8_video(depth(-z, DNA_STRAND_MIN, 255));
+			dnaStrandPoint(x, y1, cy + DNA_AMPLITUDE * sPrev, c1);
+			dnaStrandPoint(x, y2, cy - DNA_AMPLITUDE * sPrev, c2);
+		}
+	}
+	fxShow();
+}
+
+// Farbe von Strang n (0 oder 1), wenn keine angegeben ist: mit Farbschema dessen erste bzw. zweite Farbe, sonst
+// Cyan bzw. Magenta. Eine eigene Funktion, weil auch progDnaPulse (scenes.cpp) genau diese Farben braucht: in den
+// Szenen SCENE_DNA / SCENE_DNA_FLIP pulsieren die anderen Geräte in den Farben der Stränge auf der Matrix.
+CRGB dnaStrandColor(uint8_t n) {
+	if (colorSchemeActive()) return schemeColor(n);
+	return n == 0 ? CRGB(0, 255, 255) : CRGB(255, 0, 255);
+}
+
+// Ohne Farbangabe: die Farben aus dnaStrandColor().
+void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode) {
+	progDNA(durationMillis, nextPart, turnMillis, mode, dnaStrandColor(0), dnaStrandColor(1));
 }
 
 //==================================================================

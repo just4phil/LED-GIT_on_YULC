@@ -4247,8 +4247,22 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 38, 37.
-	case 0:		demoNumber(38);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(39);	break;
+
+	// SCENE_DNA / SCENE_DNA_FLIP (neu am 09.10.2026): auf der Matrix die DNA-Doppelhelix (progDNA - vom User am selben Tag
+	// abgenommen: "sehen alle gut aus"), dazu pulsieren Gitarre, Bass und Lampen in den Strangfarben (progDnaPulse; sein
+	// Wunsch: in Szenen mit eher pulsierenden Effekten auf den anderen Geräten kombinieren). Eine Umdrehung = 2 Takte = 4 s.
+	//   39: Helix dreht sich, ohne Farbschema (Cyan/Magenta). Linke Bühnenhälfte Cyan, rechte Magenta, abwechselnd hell.
+	//   41: dasselbe im Farbschema NEON.
+	//   42: stehende Helix, die Stränge tauschen jeden Takt die Seiten. Alle Geräte pulsieren gemeinsam, dunkel beim Tausch,
+	//       danach haben die Bühnenhälften die Farben getauscht.
+	//   43: beides kombiniert (Wunsch des Users nach "top!" zu den Szenen): Seitentausch wie 42, dabei wandert die Helix
+	//       langsam quer über die Matrix (eine Windungslänge in 8 s). 16 s lang, damit man das Wandern einmal ganz sieht.
+	case 39:	setColorScheme(SCHEME_RANDOM);	scene(SCENE_DNA,      8000, DEMO_NR(41), bpm);	break;
+	case 41:	setColorScheme(SCHEME_NEON);	scene(SCENE_DNA,      8000, DEMO_NR(42), bpm);	break;
+	case 42:	setColorScheme(SCHEME_RANDOM);	scene(SCENE_DNA_FLIP, 8000, DEMO_NR(43), bpm);	break;
+	case 43:	setColorScheme(SCHEME_RANDOM);	scene(SCENE_DNA_FLIP_SCROLL, 16000, DEMO_NR(38), bpm);	break;
 
 	// fxBlinderSlot (neu am 07.10.2026): mehrere Blinder in EINEM Part, jeder auf seinem eigenen Platz mit eigenem Zeitpunkt,
 	// Verlauf, Farbe und Geräten. Hier drei über dunklem Atmen: sofort ein kurzer auf allen Geräten, nach 3 s ein weißer
