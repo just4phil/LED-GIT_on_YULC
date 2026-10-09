@@ -188,7 +188,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | 9 | I Love It * | | 29 | Maniac |
 | 10 | Bloody Mary | | 31 | All The Things She Said * |
 | 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
-| 12 | Such A Shame | | 80 | I Love It (trailer) |
+| 12 | Such A Shame | | 80 | I Love It (trailer) * |
 | 13 | In The Dark | | 81 | Dancing On My Own (intro) |
 | 14 | Shivers | | 90-92 | Demo songs for effects, scenes and the output stage |
 | 15 | abcdefu * | | 99 | Startup animation |
@@ -196,6 +196,11 @@ firmware. Details: `docs/OTA-Update.html`.
 
 \* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp` and are being
 replaced one by one.
+
+A trailer (the backing-track intro before a song) is a song folder of its own. Its `show.yaml` names the song it
+leads into (`next_song: ILoveIt_v1`): there is no closing blackout, the last part jumps straight into that song. The
+target song says where (`trailer_entry: "chorus 1"`); from that point the matrix devices first scroll the song title
+in a few extra parts of their own and then rejoin, so the song itself runs exactly as it does without the trailer.
 
 ### Adding or changing a song
 

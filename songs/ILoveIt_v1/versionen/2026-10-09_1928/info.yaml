@@ -1,0 +1,9 @@
+zeit: '2026-10-09 19:28:57'
+notiz: 'trailer_entry chorus 1: Titel-Lauftext der Matrix beim Einstieg aus dem Vorspann
+  (Zusatz-cases 16/17), normaler Ablauf unveraendert'
+werkzeug_git: 4c7759a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
+  show.yaml: 0a2cafd41c578c06f5813276e95b0e05c53d5e417fea96b6a895305391e79302
+  generated.cpp: 01b7e200d5c429299eee7fee9616a606434e6186543d176ca45dd63ab429914e

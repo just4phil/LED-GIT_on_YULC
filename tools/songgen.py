@@ -286,7 +286,9 @@ def build_timeline(song):
 
 	if bounds[1] <= 0:
 		raise SongError(f"midi_offset ({offset:.0f} ms) ist länger als der erste Part")
+	lead = 0	# so viele ms des ersten Parts der Tabelle liegen VOR dem Start-MIDI (StartBit) und fehlen ihm deshalb
 	if bounds[0] < 0:
+		lead = round(-bounds[0])
 		bounds[0] = 0.0	# erster Part beginnt mit dem MIDI-Signal, ist also um den Offset kürzer
 	elif bounds[0] > 0:
 		# MIDI kommt vor Takt 1 -> Vorlauf in Schwarz
@@ -294,12 +296,20 @@ def build_timeline(song):
 		bounds.insert(0, 0.0)
 
 	end_black = int(song.get("end_black_ms", 10000))
-	end_sec = {"name": "BLACK (Ende)", "fx": BLACK, "why": "alle Geräte schwarz, dann Pausen-Loop"}
-	if song.get("end_blinder"):
-		end_sec["blinder"] = end_blinder_spec(song, end_black)
-		end_sec["why"] = "Blinder klingt ins Schwarz aus, dann Pausen-Loop"
-	secs.append(end_sec)
-	bounds.append(bounds[-1] + end_black)
+	# Vorspann (next_song in show.yaml): am Ende geht es ohne Pause in den nächsten Song. Nennt die Zeile "Ende" der
+	# Tabelle dann 0 Sekunden, gibt es gar kein Schluss-Black - der letzte Part der Tabelle ist der letzte Part.
+	has_end = not (song.get("next_song") and end_black == 0)
+	if has_end:
+		end_sec = {"name": "BLACK (Ende)", "fx": BLACK, "why": "alle Geräte schwarz, dann "
+				   + ("weiter in den nächsten Song" if song.get("next_song") else "Pausen-Loop")}
+		if song.get("end_blinder"):
+			end_sec["blinder"] = end_blinder_spec(song, end_black)
+			end_sec["why"] = "Blinder klingt ins Schwarz aus, dann Pausen-Loop"
+		secs.append(end_sec)
+		bounds.append(bounds[-1] + end_black)
+	elif song.get("end_blinder"):
+		raise SongError("end_blinder braucht ein Schluss-Black - mit next_song und 0 Sekunden in der Zeile 'Ende' gibt es keins")
+	song["_has_end"] = has_end
 
 	ms = [round(b) for b in bounds]
 	n = len(secs)
@@ -325,6 +335,10 @@ def build_timeline(song):
 	# muss schon am Ende dieses Parts beginnen (pipeline_calls)
 	for part, nxt in zip(timeline, timeline[1:]):
 		part["_next"] = nxt
+		nxt["_prev"] = part		# ... und seinen Vorgänger: ein Blinder, der dort noch nicht ausgeklungen ist, läuft hier weiter
+	# Zeitangaben im ersten Part (blinder at / bar, ${bar:...}) zählen wie in der Tabelle ab dem Anfang der ersten Zeile.
+	# Der Part selbst beginnt aber erst mit dem Start-MIDI: "lead" ist das Stück, das abgezogen werden muss.
+	timeline[0]["lead"] = lead
 	return timeline, n * step
 
 
@@ -333,7 +347,8 @@ def build_timeline(song):
 #==================================================================
 
 # Setzt in einer fx:-Angabe die Platzhalter ein: ${dur} Dauer des Parts, ${next} Folge-case, ${bpm} Tempo,
-# ${beat} / ${half} / ${bar} Länge von 1 Beat / 2 Beats / 1 Takt in ms. Ergebnis endet immer mit ";".
+# ${beat} / ${half} / ${bar} Länge von 1 Beat / 2 Beats / 1 Takt in ms, ${beats:N} Länge von N Beats in ms,
+# ${bar:N} Zeitpunkt der Taktnummer N der Tabelle in ms seit Part-Beginn. Ergebnis endet immer mit ";".
 def fill(expr, part, song):
 	bpm = part["bpm"]
 	beat = 60000.0 / bpm
@@ -345,6 +360,21 @@ def fill(expr, part, song):
 	out = expr
 	for k, v in vals.items():
 		out = out.replace("${" + k + "}", str(v))
+
+	# ${bar:10.5} = ms seit Part-Beginn bis zu dieser Taktnummer der Tabelle ('von takt' einer Zwischenzeile; auch Werte
+	# dazwischen wie 10.55), ${beats:2} = Länge von 2 Beats in ms. Für Effekte, die ihren Zeitpunkt selbst als Parameter
+	# bekommen (z. B. progLampFireBurst). Im ersten Part wird das Stück vor dem Start-MIDI abgezogen (lead).
+	def bar_ms(m):
+		b, von, bis = float(m.group(1)), part["sec"].get("_von"), part["sec"].get("_bis")
+		if von is None:
+			raise SongError(f"'{expr}': ${{bar:...}} geht nur in einem Part der Tabelle (nicht im tail)")
+		ms = round((b - von) * bpb * beat) - part.get("lead", 0)
+		if not von <= b < bis or ms < 0:
+			raise SongError(f"'{expr}': Takt {m.group(1)} liegt nicht in diesem Part (Takt {st.fmt(von)} bis vor {st.fmt(bis)})"
+							+ (" bzw. vor dem Start-MIDI" if von <= b < bis else ""))
+		return str(ms)
+	out = re.sub(r"\$\{bar:(\d+(?:\.\d+)?)\}", bar_ms, out)
+	out = re.sub(r"\$\{beats:(\d+(?:\.\d+)?)\}", lambda m: str(round(float(m.group(1)) * beat)), out)
 	if "${" in out:
 		raise SongError(f"unbekannter Platzhalter in '{expr}'")
 	return out.rstrip(";") + ";"
@@ -461,7 +491,7 @@ def blinder_specs(part, song, offset=0):
 		errors.append(f"{name}: {len(specs)} Blinder in einem Part - möglich sind {slots} (FX_BLINDER_SLOTS in definitions.h); "
 					  f"den Part in der Tabelle teilen oder ein Raster nehmen (every)")
 		specs = specs[:slots]
-	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold")
+	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold", "carry")
 	for slot, one in enumerate(specs):
 		what = "blinder" if len(specs) == 1 else f"blinder {slot + 1}"		# Name in Fehlermeldungen: bei mehreren mit Nummer
 		spec = dict(one) if isinstance(one, dict) else {"every": one}
@@ -519,11 +549,19 @@ def blinder_specs(part, song, offset=0):
 				if len_ms and sum(shape) >= len_ms:
 					errors.append(f"{name}: {what} attack + hold ({sum(sh)} Beats) müssen kürzer sein als len - der Rest ist das Ausblenden")
 					ok = False
+		# im ersten Part zählen at / bar ab dem Anfang der Tabellenzeile; der Part beginnt erst mit dem Start-MIDI (lead)
+		at_ms = round(at * 60000.0 / part["bpm"]) - part.get("lead", 0) if ok else 0
+		if ok and at_ms < 0:
+			errors.append(f"{name}: {what} liegt vor dem Start-MIDI (StartBit der Tabelle) - dort läuft der Song noch nicht")
+			ok = False
 		if ok and len_ms and amount and col and not bad:
 			out.append({
-				"every": int(every), "at_ms": round(at * 60000.0 / part["bpm"]), "len_ms": len_ms, "amount": amount, "col": col,
+				"every": int(every), "at_ms": at_ms, "len_ms": len_ms, "amount": amount, "col": col,
 				"mask": " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL", "devs": devs, "shape": shape, "bar_text": bar_text,
+				"carry": spec.get("carry") is True,
 			})
+		if not isinstance(spec.get("carry", False), bool) or (spec.get("carry") and "every" in spec):
+			errors.append(f"{name}: {what} carry ist true oder false und gilt nur für einen einmaligen Blinder (ohne every)")
 	return out, errors
 
 
@@ -538,6 +576,7 @@ def pipeline_calls(part, song, offset=0):
 		notfalls schon im Part davor), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab
 		statt at auch bar: <Taktnummer der Tabelle> (z. B. 63.75 - das 'von takt' der Zwischenzeile mit dem Wunsch)
 		mehrere Blinder in einem Part: eine Liste solcher Angaben, z. B. [{bar: 20, len: 2}, {bar: 23.75, len: 1}]
+		carry: true - ein einmaliger Blinder, der am Part-Ende noch nicht ausgeklungen ist, klingt im Part danach zu Ende
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
 	name = sec.get("name", "?")
@@ -675,7 +714,22 @@ def pipeline_calls(part, song, offset=0):
 		errors.append(f"{name}: {len(own)} eigene Blinder + {len(carry)} Einblenden für den Part danach - möglich sind {slots} "
 					  f"(FX_BLINDER_SLOTS in definitions.h)")
 	carry = carry[:max(0, slots - len(own))]
-	many = len(own) + len(carry) > 1
+	# Umgekehrt: ein einmaliger Blinder des Parts DAVOR mit carry: true, der an dessen Ende noch nicht ausgeklungen ist
+	# (z. B. "Blinder über 1,5 Takte ausfaden", der Part endet aber nach 1,25 Takten), klingt hier zu Ende
+	# (fxBlinderCarry). Ohne carry endet ein Blinder wie bisher mit seinem Part - so bleiben alle Songs, die vor dem
+	# 09.10.2026 entstanden sind, unverändert.
+	prev = part.get("_prev")
+	tails = []
+	if prev:
+		for b in blinder_specs(prev, song)[0]:
+			begin = b["at_ms"] - (b["shape"][0] if b["shape"] else 0)
+			if b["carry"] and not b["every"] and begin + b["len_ms"] > prev["full_dur"]:
+				tails.append(b)
+	if own and len(own) + len(carry) + len(tails) > slots:
+		errors.append(f"{name}: {len(own)} eigene Blinder + {len(carry)} Einblenden für den Part danach + {len(tails)} Ausklingen aus dem "
+					  f"Part davor - möglich sind {slots} (FX_BLINDER_SLOTS in definitions.h)")
+	tails = tails[:max(0, (slots or blinder_slots()) - len(own) - len(carry))]
+	many = len(own) + len(carry) + len(tails) > 1
 	for slot, b in enumerate(own):
 		devs = b["devs"]
 		if many:
@@ -701,6 +755,18 @@ def pipeline_calls(part, song, offset=0):
 		calls.append(f"fxBlinder({part.get('full_dur', part['dur']) + b['at_ms']}, {b['len_ms']}, {b['amount']}, {b['col']}, {b['mask']});")
 		calls.append(f"fxBlinderShape({attack}, {hold});")
 		infos.append(f"Blinder von '{nxt['sec'].get('name', '?')}' blendet in den letzten {attack - b['at_ms']} ms ein"
+					 + (f", nur {', '.join(b['devs'])}" if b["devs"] else ""))
+		timed = True
+
+	for slot, b in enumerate(tails, len(own) + len(carry)):
+		attack, hold = b["shape"] or (0, b["len_ms"] // 2)	# ohne eigenen Verlauf: erste Hälfte voll (wie in der Firmware)
+		gone = prev["full_dur"] - b["at_ms"]				# so lange vor diesem Part war der Moment der vollen Helligkeit
+		if many:
+			calls.append(f"fxBlinderSlot({slot});")
+		calls.append(f"fxBlinder(0, {b['len_ms']}, {b['amount']}, {b['col']}, {b['mask']});")
+		calls.append(f"fxBlinderShape({attack}, {hold});")
+		calls.append(f"fxBlinderCarry({gone});")
+		infos.append(f"Blinder von '{prev['sec'].get('name', '?')}' klingt noch {b['at_ms'] - attack + b['len_ms'] - prev['full_dur']} ms aus"
 					 + (f", nur {', '.join(b['devs'])}" if b["devs"] else ""))
 		timed = True
 
@@ -932,39 +998,43 @@ def scroll_title(song):
 	return song.get("scroll_title") or (song["name"] + (f" by {song['artist']}" if song.get("artist") else ""))
 
 
-def plan_scroll(song, timeline, width):
+def plan_scroll(song, timeline, width, start=0):
 	"""Lauftext am Songanfang für ein Scroll-Gerät planen (wie in den handgeschriebenen Songs):
 	- wait: Matrix bleibt erst schwarz, damit der Text genau an einer Part-Grenze endet
 	- fill: Text läuft sofort, danach der Rest des laufenden Parts verkürzt (ab einem Beat), dann Wiedereinstieg
 	Dauer eines Durchlaufs wie in progScrollText(): (MATRIX_WIDTH - 2 + 6 * Zeichen) * delay (in der Firmware:
 	scrollTextMillis). Die geplante Dauer ist nie kürzer als ein Durchlauf, oft aber etwas länger (bis zum nächsten
 	Beat oder zur Part-Grenze): progScrollText zeigt dann genau einen Durchlauf und bleibt den Rest dunkel - der Text
-	fängt nicht noch einmal an."""
+	fängt nicht noch einmal an.
+	start > 0: derselbe Plan für einen Lauftext, der erst mitten im Song beginnt (trailer_entry: der Vorspann springt
+	in den Song, die Matrix zeigt ab dort den Titel). start = Zeit im Song in ms, an der der Text losläuft. Die Längen
+	im Ergebnis (wait, scroll) zählen ab start, fill_offset = wo im Rest-Part die Matrix wieder einsteigt."""
 	text = scroll_title(song)
 	delay = int(song.get("scroll_delay", 90))
 	S = (width - 2 + 6 * len(text)) * delay
+	T = start + S			# Zeit im Song, zu der ein Durchlauf fertig ist
 	inner = timeline[1:-1]	# Grenzen, an denen die Matrix wieder einsteigen kann (nicht das End-BLACK)
 	if not inner:
 		raise SongError("Song zu kurz für den Lauftext")
 	base = {"text": text, "delay": delay, "natural": S}
 
-	k = next((p for p in inner if p["start"] >= S), None)
-	if k is not None and k["start"] - S <= SCROLL_MAX_WAIT_MS:
-		wait = k["start"] - S
+	k = next((p for p in inner if p["start"] >= T), None)
+	if k is not None and k["start"] - T <= SCROLL_MAX_WAIT_MS:
+		wait = k["start"] - T
 		if wait < 50:	# progBlack mit ~0 ms vermeiden -> Text minimal länger laufen lassen
-			return dict(base, mode="wait", wait=0, scroll=k["start"], join=k)
+			return dict(base, mode="wait", wait=0, scroll=k["start"] - start, join=k)
 		return dict(base, mode="wait", wait=wait, scroll=S, join=k)
 
 	# Part, in dem der Text endet; Ende auf den nächsten Beat dieses Parts runden (Beat-Phase bleibt korrekt)
-	idx = max(i for i, p in enumerate(timeline[:-1]) if p["start"] <= S)
+	idx = max(i for i, p in enumerate(timeline[:-1]) if p["start"] <= T)
 	j = timeline[idx]
 	beat = 60000.0 / j["bpm"]
 	end_j = j["start"] + j["dur"]
-	s2 = round(j["start"] + -(-(S - j["start"]) // beat) * beat)
+	s2 = round(j["start"] + -(-(T - j["start"]) // beat) * beat)
 	nxt = timeline[idx + 1]
 	if end_j - s2 < beat:
-		return dict(base, mode="wait", wait=0, scroll=end_j, join=nxt)
-	return dict(base, mode="fill", scroll=s2, fill_part=j, fill_dur=end_j - s2, join=nxt)
+		return dict(base, mode="wait", wait=0, scroll=end_j - start, join=nxt)
+	return dict(base, mode="fill", scroll=s2 - start, fill_part=j, fill_dur=end_j - s2, fill_offset=s2 - j["start"], join=nxt)
 
 
 def text_is_cut(spec):
@@ -1144,8 +1214,9 @@ def device_call(part, song, device):
 	return default_call(part, song)
 
 
-def scroll_code(song, device, plan):
-	"""(Zeilen für case 0 dieses Geräts, Zusatz-cases 1/2)"""
+def scroll_code(song, device, plan, wait_case=1, fill_case=2):
+	"""(Zeilen für case 0 dieses Geräts, Zusatz-cases 1/2). wait_case / fill_case: die Nummern der Zusatz-cases -
+	am Songanfang 1 und 2, beim Einstieg aus einem Vorspann (trailer_entry_lines) freie Nummern hinter dem Part."""
 	title = plan["text"].replace('"', '\\"')
 
 	def scroll(dur, nxt):
@@ -1157,15 +1228,16 @@ def scroll_code(song, device, plan):
 	if plan["mode"] == "wait" and plan["wait"] == 0:
 		head.append(scroll(plan["scroll"], join["case"]) + f", Einstieg case {join['case']}")
 	elif plan["mode"] == "wait":
-		head.append(f"\t\tprogBlack({plan['wait']}, 1);\t// Lauftext verzögern, damit er genau an case {join['case']} endet")
-		extra += [f"\tcase 1:\t// Lauftext bis {fmt_time(join['start'])}, Einstieg case {join['case']}",
+		head.append(f"\t\tprogBlack({plan['wait']}, {wait_case});\t// Lauftext verzögern, damit er genau an case {join['case']} endet")
+		extra += [f"\tcase {wait_case}:\t// Lauftext bis {fmt_time(join['start'])}, Einstieg case {join['case']}",
 				  scroll(plan["scroll"], join["case"]), "\t\tbreak;"]
 	else:
 		fp = dict(plan["fill_part"], dur=plan["fill_dur"], next=join["case"])
-		head.append(scroll(plan["scroll"], 2))
-		extra.append(f"\tcase 2:\t// Rest von '{fp['sec'].get('name')}' ab {fmt_time(plan['scroll'])}, Einstieg case {join['case']}")
-		extra += scheme_lines(fp, song, plan["scroll"] - plan["fill_part"]["start"])	# Farbwanderung synchron zu den anderen Geräten
-		extra += pipeline_calls(fp, song, plan["scroll"] - plan["fill_part"]["start"])[0]
+		head.append(scroll(plan["scroll"], fill_case))
+		off = plan["fill_offset"]	# so viel vom Rest-Part ist schon vorbei, wenn die Matrix einsteigt
+		extra.append(f"\tcase {fill_case}:\t// Rest von '{fp['sec'].get('name')}' ab {fmt_time(plan['fill_part']['start'] + off)}, Einstieg case {join['case']}")
+		extra += scheme_lines(fp, song, off)	# Farbwanderung synchron zu den anderen Geräten
+		extra += pipeline_calls(fp, song, off)[0]
 		extra +=["\t\t" + device_call(fp, song, device), "\t\tbreak;"]
 	return head, extra
 
@@ -1240,10 +1312,19 @@ def gen_function(song, timeline, end_case):
 		lines += layer_post + text_post
 		lines.append("\t\tbreak;")
 		lines.append("")
+		if song.get("_entry") and song["_entry"]["part"] is part:
+			lines += trailer_entry_lines(song, song["_entry"])
 
 	lines.append(f"\tcase {end_case}:")
 	lines.append("\t\tclearAll();")
-	lines.append("\t\tswitchToSong(0);\t// SongID 0 == DEFAULT loop")
+	if song.get("_next"):
+		# Vorspann: ohne Pause weiter in den eigentlichen Song. Nicht über switchToSong() - das würde die Bund-Marker
+		# abschalten und den Song von vorn beginnen; so geht es direkt in den Part hinter dessen Intro.
+		nx = song["_next"]
+		lines.append(f"\t\tsongID = {nx['id']};\t// weiter in #{nx['id']} {nx['name']} (songs/{nx['dir']}, trailer_entry)")
+		lines.append(f"\t\tswitchToPart({nx['const']});\t// Konstante aus songs_generated.h: Matrix-Geräte zeigen dort erst den Titel-Lauftext")
+	else:
+		lines.append("\t\tswitchToSong(0);\t// SongID 0 == DEFAULT loop")
 	lines.append("\t\tbreak;")
 	lines.append("\t}")
 	lines.append("}")
@@ -1403,12 +1484,84 @@ def part_constants(song, timeline):
 	anderen springt man mit der Zahl oder gibt ihnen in der Tabelle eindeutige Namen."""
 	base = "GEN_" + c_name(song["function"][4:] if song["function"].startswith("gen_") else song["function"])
 	out, seen = [], set()
-	for p in timeline[:-1]:
+	for p in (timeline[:-1] if song.get("_has_end", True) else timeline):
 		part = c_name(str(p["sec"].get("name", "")))
 		c = base + "_" + part
 		if part and c not in seen:
 			seen.add(c)
 			out.append((c, p["case"]))
+	return out
+
+
+# trailer_entry (show.yaml des Songs, Song-Ebene): "in diesen Part springt ein Vorspann".
+#   trailer_entry: "chorus 1"
+# Der Vorspann (eigener Song-Ordner mit next_song:) zeigt keinen Titel mehr; stattdessen läuft der Titel-Lauftext auf
+# den Matrix-Geräten ab dem Einstieg, während alle anderen Geräte den Part normal spielen (Wunsch des Users zu
+# "I Love It", 09.10.2026). Dafür bekommen NUR die Scroll-Geräte zwei zusätzliche cases direkt hinter dem Part
+# (case + 1 und case + 2, frei, weil die Parts mindestens 3 auseinander liegen) - geplant wie der Lauftext am
+# Songanfang (plan_scroll): Text, danach der Rest des laufenden Parts, Wiedereinstieg an der nächsten Part-Grenze.
+# Der normale Ablauf des Songs (Start ohne Vorspann) benutzt diese cases nie und bleibt unverändert.
+# Wohin der Vorspann springt, sagt die Konstante GEN_<SONG>_TRAILER (songs_generated.h): auf den Scroll-Geräten
+# case + 1, auf allen anderen der Part selbst.
+# Rückgabe: None oder {"part": Part der Timeline, "const": Name, "plans": {Gerät: Plan}}; Fehler landen in errors.
+def plan_trailer_entry(song, timeline, errors):
+	name = song.get("trailer_entry")
+	if not name:
+		return None
+	hits = [i for i, p in enumerate(timeline) if p["sec"].get("name") == name and "_parent" not in p["sec"]]
+	if not hits or hits[0] == 0 or hits[0] >= len(timeline) - 2:
+		errors.append(f"trailer_entry '{name}': " + ("diesen Part gibt es nicht" if not hits else
+					  "der Einstieg darf nicht der erste oder letzte Part sein") + f" (Parts: {', '.join(s['name'] for s in song['sections'])})")
+		return None
+	part = timeline[hits[0]]
+	if timeline[hits[0] + 1]["case"] - part["case"] < 3:
+		errors.append(f"trailer_entry '{name}': hinter dem Part sind keine zwei case-Nummern frei")
+		return None
+	base = "GEN_" + c_name(song["function"][4:] if song["function"].startswith("gen_") else song["function"])
+	widths = matrix_widths()
+	return {"part": part, "const": base + "_TRAILER",
+			"plans": {d: plan_scroll(song, timeline, widths[d], part["start"]) for d in SCROLL_DEVICES}}
+
+
+def trailer_entry_lines(song, entry):
+	"""Die Zusatz-cases der Scroll-Geräte für den Einstieg aus dem Vorspann (plan_trailer_entry) als C++-Zeilen."""
+	part = entry["part"]
+	c1, c2 = part["case"] + 1, part["case"] + 2
+	lines = []
+	for dev, plan in entry["plans"].items():
+		head, extra = scroll_code(song, dev, plan, wait_case=c2, fill_case=c2)
+		lines += [f"#if defined({dev})",
+				  f"\tcase {c1}:\t// Einstieg aus dem Vorspann ({entry['const']}): Titel-Lauftext, die anderen Geräte spielen ab case {part['case']}"]
+		lines += head + ["\t\tbreak;"] + extra + ["#endif", ""]
+	return lines
+
+
+# next_song (show.yaml eines Vorspanns, Song-Ebene): der Ordnername des Songs, in den es am Ende ohne Pause weitergeht.
+#   next_song: ILoveIt_v1
+# Der Ziel-Song muss generiert sein und in seiner show.yaml mit trailer_entry: sagen, in welchen Part gesprungen wird.
+# Rückgabe: None oder {"id": Song-ID, "const": Konstante für switchToPart, "name": Titel}; Fehler landen in errors.
+def resolve_next_song(song, others, errors):
+	target = song.get("next_song")
+	if not target:
+		return None
+	hit = [o for o in others if o["dir"].lower() == str(target).lower()] or [o for o in others if o["dir"].lower().startswith(str(target).lower())]
+	if len(hit) != 1:
+		errors.append(f"next_song '{target}': " + ("kein generierter Song mit diesem Ordnernamen" if not hit else "ist nicht eindeutig")
+					  + f" (generiert: {', '.join(o['dir'] for o in others)})")
+		return None
+	if not hit[0]["entries"]:
+		errors.append(f"next_song '{target}': songs/{hit[0]['dir']}/{SHOW_FILE} nennt keinen Einstieg - dort trailer_entry: \"<Partname>\" "
+					  f"eintragen und den Song einmal neu generieren")
+		return None
+	return {"id": hit[0]["id"], "const": hit[0]["entries"][0][0], "name": hit[0]["name"], "dir": hit[0]["dir"]}
+
+
+def generated_jumps(song_id, others):
+	"""[(Ordner, Ziel)]: generierte Vorspanne (next_song), die mit 'songID = N; switchToPart(x);' in diesen Song springen."""
+	out = []
+	for o in others:
+		for m in re.finditer(r"\bsongID\s*=\s*" + str(song_id) + r"\s*;\s*switchToPart\(\s*(\w+)\s*\)", o["code"]):
+			out.append((o["dir"], m.group(1)))
 	return out
 
 
@@ -1511,7 +1664,8 @@ def pascal(name):
 	return "".join(w[:1].upper() + w[1:] for w in re.split(r"[^A-Za-z0-9]+", name) if w)
 
 
-SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "end_blinder", "markers")
+SONG_DESIGN_KEYS = ("function", "scheme", "scroll_text", "scroll_title", "scroll_delay", "end_black_ms", "end_blinder", "markers",
+					"next_song", "trailer_entry")
 SECTION_DESIGN_KEYS = ("scene", "fx", "devices", "tail", "scheme", "fade", "text", "overlay") + PIPELINE_KEYS
 STRUCTURE_KEYS = ("name", "bars", "beats", "bpm", "beats_per_bar", "energy", "wishes")
 
@@ -1578,15 +1732,24 @@ def check_cues(cues, sec, song, index):
 	return out
 
 
+# Im ersten Abschnitt erlaubt, wenn der Song keinen Titel-Lauftext hat (scroll_text: false, z. B. ein Vorspann): Akzente
+# über dem Schwarz - Blinder, ein Effekt auf einzelnen Geräten, ein tail. Mit Lauftext geht das nicht, weil case 0 dann
+# je Gerät anders aufgebaut ist (Lauftext / Warten / Schwarz).
+FIRST_SECTION_ACCENTS = ("devices", "blinder", "tail")
+
+
 def force_black_start(song):
-	"""Mit dem Start-MIDI sind immer erst alle Geräte schwarz: der erste Abschnitt ist immer progBlack."""
+	"""Mit dem Start-MIDI sind immer erst alle Geräte schwarz: der Effekt des ersten Abschnitts ist immer progBlack.
+	Ohne Titel-Lauftext (scroll_text: false) bleiben Akzente darüber erhalten (FIRST_SECTION_ACCENTS)."""
 	first = song["sections"][0]
-	design = [k for k in SECTION_DESIGN_KEYS if k in first and first[k] != BLACK]
+	keep = FIRST_SECTION_ACCENTS if song.get("scroll_text", True) is False else ()
+	design = [k for k in SECTION_DESIGN_KEYS if k in first and first[k] != BLACK and k not in keep]
 	if design:
 		song.setdefault("_notes", []).append(
-			f"erster Abschnitt '{first['name']}' ist immer BLACK - ignoriert: {', '.join(design)}")
+			f"erster Abschnitt '{first['name']}' ist immer BLACK - ignoriert: {', '.join(design)}"
+			+ ("" if keep else f" (Akzente {', '.join(FIRST_SECTION_ACCENTS)} gehen dort nur mit scroll_text: false)"))
 	for k in SECTION_DESIGN_KEYS:
-		if k != "fx":
+		if k != "fx" and k not in keep:
 			first.pop(k, None)
 	first["fx"] = BLACK
 	first.setdefault("why", "Start-MIDI: alle Geräte schwarz")
@@ -1674,6 +1837,8 @@ def generate(song, others):
 	if song.get("scroll_text", True):
 		widths = matrix_widths()
 		song["_scroll_plans"] = {d: plan_scroll(song, timeline, widths[d]) for d in SCROLL_DEVICES}
+	song["_entry"] = plan_trailer_entry(song, timeline, errors)		# ein Vorspann springt in diesen Song
+	song["_next"] = resolve_next_song(song, others, errors)			# dieser Song ist ein Vorspann
 	errors += validate(song, timeline)
 
 	# Bund-Marker: Handarbeit in markerLEDs.cpp hat immer Vorrang. Slot-Angaben einzelner Parts
@@ -1722,6 +1887,14 @@ def generate(song, others):
 			errors.append(f"songs.cpp Zeile {n}: switchToPart({target}) - diese Konstante gibt es für den Song nicht")
 		else:
 			notes.append(f"Trailer-Einsprung songs.cpp Zeile {n}: {target} = case {consts[target]}")
+	# dasselbe für generierte Vorspanne (next_song): ihre Konstante muss es nach dieser Generierung noch geben
+	entry_const = song["_entry"]["const"] if song.get("_entry") else None
+	for d, target in generated_jumps(song["id"], others):
+		if target not in consts and target != entry_const:
+			errors.append(f"songs/{d} springt mit switchToPart({target}) in diesen Song - die Konstante gäbe es danach nicht mehr "
+						  f"(trailer_entry in {SHOW_FILE} entfernt?)")
+		else:
+			notes.append(f"Vorspann songs/{d} springt in diesen Song: {target}")
 	return timeline, gen_function(song, timeline, end_case), marker_lines, errors
 
 
@@ -1765,7 +1938,11 @@ def write_lf(path, text):
 def fragment_text(song, code, marker_lines, song_dir):
 	head = [FRAG_HEAD, f"//@id {song['id']}", f"//@function {song['function']}", f"//@name {song['name']}",
 			f"//@struktur_sha {song['_table_sha']}", f"//@show_sha {sha(song_dir / SHOW_FILE)}"]
-	head += [f"//@part {c} {n}" for c, n in song.get("_parts", [])] + ["//@code"]
+	head += [f"//@part {c} {n}" for c, n in song.get("_parts", [])]
+	if song.get("_entry"):	# Einstieg eines Vorspanns: Name, case auf den Scroll-Geräten, case auf allen anderen
+		e = song["_entry"]
+		head.append(f"//@entry {e['const']} {e['part']['case'] + 1} {e['part']['case']}")
+	head.append("//@code")
 	return "\n".join(head) + "\n" + code + "\n//@markers\n" + "".join(l + "\n" for l in marker_lines)
 
 
@@ -1785,6 +1962,7 @@ def read_fragment(path):
 	return {"id": int(meta["id"]), "function": meta["function"], "name": meta["name"],
 			"struktur_sha": meta.get("struktur_sha"), "show_sha": meta.get("show_sha"),
 			"parts": list(parts.items()),
+			"entries": [(c, int(a), int(b)) for c, a, b in re.findall(r"^//@entry (\w+) (\d+) (\d+)$", m.group(1), re.M)],
 			"code": m.group(2), "markers": [l for l in m.group(3).splitlines() if l.strip()],
 			"dir": path.parent.name}
 
@@ -1883,6 +2061,7 @@ CPP_HEADER = """//==============================================================
 #include "songs_generated.h"
 
 extern volatile byte prog;
+extern byte songID;	// für einen Vorspann (next_song), der am Ende in seinen Song springt
 extern byte markerLED1, markerLED2, markerLED3, markerLED4, markerLED5, markerLED6, markerLED7;
 """
 
@@ -1942,6 +2121,13 @@ def assemble():
 		h += ["", "// Part-Nummern (case) der generierten Songs - für handgeschriebenen Code, der in einen Song springt (Trailer)"]
 		for f in frags:
 			h += [f"#define {c} {n}" for c, n in f["parts"]]
+	entries = [e for f in frags for e in f["entries"]]
+	if entries:
+		h += ["", "// Einstieg eines Vorspanns in seinen Song (trailer_entry in show.yaml): die Matrix-Geräte zeigen dort erst den",
+			  "// Titel-Lauftext (eigene Zusatz-cases), alle anderen Geräte beginnen direkt mit dem Part"]
+		for c, scroll_case, part_case in entries:
+			h += ["#if " + " || ".join(f"defined({d})" for d in SCROLL_DEVICES), f"#define {c} {scroll_case}", "#else",
+				  f"#define {c} {part_case}", "#endif"]
 	write_if_changed(OUT_H, "\n".join(h) + "\n")
 
 	text = MAIN_CPP.read_text(encoding="utf-8")
@@ -1970,6 +2156,18 @@ def print_timeline(song, timeline):
 		else:
 			how = f"Lauftext {pl['scroll']} ms, dann Rest von '{pl['fill_part']['sec'].get('name')}' ({pl['fill_dur']} ms)"
 		print(f"  {dev:<12} \"{pl['text']}\": {how} -> Einstieg case {pl['join']['case']} @{fmt_time(pl['join']['start'])}")
+	if song.get("_entry"):
+		e = song["_entry"]
+		for dev, pl in e["plans"].items():
+			if pl["mode"] == "wait":
+				how = (f"{pl['wait']} ms schwarz, dann " if pl["wait"] else "") + f"Lauftext {pl['scroll']} ms"
+			else:
+				how = f"Lauftext {pl['scroll']} ms, dann Rest von '{pl['fill_part']['sec'].get('name')}' ({pl['fill_dur']} ms)"
+			print(f"  Einstieg aus dem Vorspann ({e['const']}) {dev}: ab '{e['part']['sec'].get('name')}' case {e['part']['case'] + 1} - {how} "
+				  f"-> weiter case {pl['join']['case']} @{fmt_time(pl['join']['start'])}")
+	if song.get("_next"):
+		nx = song["_next"]
+		print(f"  Schluss: ohne Pause weiter in #{nx['id']} {nx['name']} (switchToPart({nx['const']}))")
 	for p in timeline:
 		if p.get("text_info"):
 			print(f"  Text (Matrix) case {p['case']} '{p['sec'].get('name', '')}': {p['text_info']}")

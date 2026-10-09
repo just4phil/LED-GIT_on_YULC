@@ -1,0 +1,9 @@
+zeit: '2026-10-09 19:29:50'
+notiz: 'erste generierte Fassung: Blinder Takt 4-7/13/15/33, Feuer-Impulse Lampe 1+2,
+  dreimal THE mit Blinder, Titel-Lauftext nach Song 9 verlegt, Sprung per next_song'
+werkzeug_git: 4c7759a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: ac840bb9b08b12b51535bd97bc86b9809b9836379d78acfe0d0e2a0315674629
+  show.yaml: 990c248f18d56bba0cb693b58cdc9ab098bc768be2f95c561c55984883c43ba0
+  generated.cpp: 4c2eabf32a09ddb7d571e5d2bd381987e115d7aa5a14ca9a1c87d54d1c02168e

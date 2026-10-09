@@ -11,7 +11,44 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 09.10.2026 (`progDNA` und die drei DNA-Szenen abgenommen und committet)
+Zuletzt aktualisiert: 09.10.2026 (Vorspann „I Love It Intro“ #80 als erster generierter Vorspann - vom User abgenommen und committet)
+
+- **09.10.2026, „I Love It Intro“ (#80) als generierter Song, Wünsche des Users aus den Zwischenzeilen - gebaut,
+  alle fünf ESP32-Envs übersetzt, vom User nach dem OTA-Test abgenommen („mega!!!!“) und committet.** Erster Vorspann aus Tabelle + `show.yaml`
+  (`songs/ILoveItIntro_v1`, Version `2026-10-09_1929`; ersetzt `ILoveItTRAILER()` in `main.cpp` case 80, alter Code
+  bleibt in `songs.cpp`). Part-Längen exakt wie im alten Code (21175 / 23400 / 21175 / 16500 / 1000 ms).
+  - Umgesetzt: kurze Blinder auf Takt 4, 5, 6, 7, 13, 15, 33 (`len: 1, hold: 0.3`); Feuer-Impuls auf Lampe 1 (Takt
+    10,55) und Lampe 2 (Takt 11); dreimal Blinder + „THE“ auf der Matrix (Takt 37, 39, 41, `tail` 22 Beats mit
+    `pulse: {depth: 100, per: 8}`); Strobo wie bisher.
+  - **Entscheidung des Users:** der Titel-Lauftext „I love it by Icona Pop“ läuft nicht mehr im Vorspann, sondern am
+    Anfang des eigentlichen Songs; der Ablauf von #9 ohne Vorspann darf sich nicht ändern. Lösung: `trailer_entry:
+    "chorus 1"` in `songs/ILoveIt_v1/show.yaml` - nur die Scroll-Geräte bekommen die Zusatz-cases 16 / 17 (Lauftext
+    17 s, Rest von `verse 2`, Wiedereinstieg `chorus 2`), Konstante `GEN_ILOVEIT_TRAILER` (Matrix 16, sonst 15). #9
+    neu generiert (Version `2026-10-09_1928`): im Diff nur diese Zusatz-cases, alles andere identisch.
+  - Neu im Generator (`tools/songgen.py`): `next_song` (Vorspann: kein Schluss-Black bei „0 sek.“, Schluss-case
+    springt mit `songID = N; switchToPart(...)`), `trailer_entry` (`plan_trailer_entry`, `trailer_entry_lines`,
+    `plan_scroll(..., start)`; Fragment-Zeile `//@entry`, bedingtes `#define` in `songs_generated.h`),
+    `generated_jumps()` (prüft beim Ziel-Song, dass die Konstante bleibt), Akzente im ersten Part bei
+    `scroll_text: false` (`FIRST_SECTION_ACCENTS`: `devices`, `blinder`, `tail`; Zeiten minus StartBit über `lead`),
+    Platzhalter `${bar:N}` / `${beats:N}`, `extern byte songID` im Kopf von `songs_generated.cpp`.
+  - Neu in der Firmware: `progLampFireBurst(dauer, folgePart, startMillis, fadeMillis, blueFire)` (`scenes.cpp/.h`).
+    Nicht in Demo 92 eingebaut (Lampen-Effekt mit festem Zeitpunkt, kein Baustein der Ausgabestufe).
+  - Doku mitgezogen: README, CLAUDE.md, SKILL.md (Abschnitt „Vorspann“), `Song-Workflow.html`, Effekt-Katalog,
+    `LED-Effekte-und-Szenen.html`.
+  - **Zweite Runde Wünsche (09.10.2026, Version `2026-10-09_1943`, alle fünf Envs gebaut):** Blinder Takt 7 klingt
+    über 2 Takte aus (`len: 8`), Blinder Takt 33 über 1,5 Takte - das reicht 500 ms über das Part-Ende hinaus, dafür
+    neu `carry: true` am Blinder (Generator: `tails` in `pipeline_calls()`, `part["_prev"]`; Firmware:
+    `fxBlinderCarry(elapsedMillis)`, Feld `preMs` in `BlinderMod`). Bewusst nur auf Angabe: automatisch hätte sich der
+    Code von #9 geändert (Blinder in `youre on a different road`). Wörter jetzt THE / NERDS / ON
+    (`"THE*4 NERDS*4 ON*4"`, `per: half`), dazu „FIRE“ schwarz ausgestanzt über dem Strobo
+    (`text: {words: "FIRE", per: bar, over: true, color: schwarz}`). Die erledigten Wünsche der ersten Runde hat der
+    User aus der Tabelle gelöscht (= angenommen). Kontrolle: alle 11 Songs mit Show erzeugen weiter identischen Code.
+  - **Offen beim User:** (1) „auf der Achtel (10,55)“ ist wörtlich als Takt 10,55 umgesetzt (100 ms nach 10,5; die
+    Achtel wäre 10,625); (2) Abnahme auf der Bühne: Feuer-Impuls, lange Blinder, ausgestanztes FIRE im Strobo,
+    Titel-Lauftext beim Einstieg.
+  - **Nächster Schritt:** Die anderen drei
+    Vorspanne (`DancingOnMyOwnIntro_v1`, `KidsIntro_v1`, `PhysicalIntro_v1`) haben Tabellen, aber noch keine Show -
+    sie können denselben Weg gehen (`DancingOnMyOwn_v1` ist eingefroren, dort ginge `trailer_entry` erst mit Show).
 
 - **09.10.2026, neuer Effekt `progDNA` (DNA-Doppelhelix; Frage des Users mit einem FastLED-Beispiel für 54 x 10 als
   Vorlage) - gebaut, Abnahme offen.** `src/fxMatrixSim.cpp` (nach `progSineCos`), Deklaration in `FXprograms.h`:

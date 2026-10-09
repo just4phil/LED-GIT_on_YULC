@@ -377,6 +377,8 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>${next}</code></td><td>case-Nummer des nächsten Parts</td></tr>
 <tr><td><code>${bpm}</code></td><td>Tempo des Parts, gerundet</td></tr>
 <tr><td><code>${beat}</code>, <code>${half}</code>, <code>${bar}</code></td><td>Dauer eines Beats, zweier Beats und eines Takts in ms</td></tr>
+<tr><td><code>${beats:2}</code></td><td>Länge von 2 Beats (beliebige Zahl) in ms</td></tr>
+<tr><td><code>${bar:10.5}</code></td><td>Zeitpunkt der Taktnummer 10,5 der Tabelle in ms seit Part-Beginn (auch Werte zwischen den Vierteln). Für Effekte, die ihren Zeitpunkt als Parameter bekommen, z. B. <code>progLampFireBurst(${dur}, ${next}, ${bar:10.5}, ${beats:2})</code>: Feuer-Impuls auf einer Lampe. Nicht im <code>tail</code>.</td></tr>
 </table></div>
 <div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Tabelle vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code> oder <code>text</code>, gilt deine Angabe und nicht die der Show.</div>
 
@@ -384,12 +386,21 @@ git commit -m "Song Vogue"</code></pre></li>
 <p>Diese Regeln setzt der Generator automatisch um, genau wie in den handgeschriebenen Songs:</p>
 <div class="tablewrap"><table>
 <tr><th>Moment</th><th>Verhalten</th></tr>
-<tr><td>Start-MIDI</td><td>Der erste Part ist auf allen Geräten <code>progBlack</code>. Eine Gestaltung dafür in der Show wird ignoriert, mit Hinweis.</td></tr>
+<tr><td>Start-MIDI</td><td>Der erste Part ist auf allen Geräten <code>progBlack</code>. Eine Gestaltung dafür in der Show wird ignoriert, mit Hinweis (Ausnahme: Akzente in einem <a href="#vorspann">Vorspann</a>).</td></tr>
 <tr><td>Lauftext</td><td>SCROLLMATRIX (und GITBOARD) zeigt „Titel by Interpret“, mit Farbverlauf in der Schrift (bei jedem Start per Zufall einer von vieren: Party-Palette je Buchstabe, Schemafarben schräg und wandernd, Schemafarben quer über die Matrix, Regenbogen von oben nach unten und wandernd). Abschalten oder ändern mit <code>scroll_text</code>, <code>scroll_title</code>, <code>scroll_delay</code>. Ein Durchlauf dauert <code>(MATRIX_WIDTH − 2 + 6 × Zeichen) × delay</code> ms, die Breite liest der Generator aus <code>definitions.h</code>.</td></tr>
 <tr><td>Wiedereinstieg<br>Variante 1</td><td>Endet der Text höchstens 4 s vor einer Part-Grenze, bleibt die Matrix erst schwarz. Der Text endet dann genau an der Grenze (wie im Original von „Dancing On My Own“).</td></tr>
 <tr><td>Wiedereinstieg<br>Variante 2</td><td>Sonst läuft der Text sofort. Danach zeigt die Matrix den Rest des laufenden Parts verkürzt und steigt an der nächsten Grenze ein. Der Rest beginnt auf einem Beat, damit Szenen, die im Takt blinken, nicht versetzt laufen.</td></tr>
 <tr><td>Ende</td><td>Nach dem letzten Part 10 s (<code>end_black_ms</code>) <code>progBlack</code> auf allen Geräten, dann <code>clearAll(); switchToSong(0);</code> (Pausen-Loop).</td></tr>
 </table></div>
+
+<h3 id="vorspann">Vorspann (Einspieler vor einem Song)</h3>
+<p>Ein Vorspann ist ein eigener Song-Ordner mit eigener Tabelle und eigener Song-ID (Beispiel: <code>ILoveItIntro_v1</code>, Song 80, führt in „I Love It“, Song 9). Zwei Angaben in den Show-Dateien verbinden die beiden:</p>
+<div class="tablewrap"><table>
+<tr><th>Wo</th><th>Angabe</th><th>Wirkung</th></tr>
+<tr><td>Vorspann</td><td><code>next_song: ILoveIt_v1</code><br><code>scroll_text: false</code></td><td>Steht in der Zeile „Ende“ der Tabelle „0 sek.“, gibt es kein Schluss-Schwarz: nach dem letzten Part geht es ohne Pause im Song weiter.</td></tr>
+<tr><td>Song</td><td><code>trailer_entry: "chorus 1"</code></td><td>In diesen Part springt der Vorspann. Die Matrix zeigt ab dort erst den Titel-Lauftext und steigt danach an der nächsten Part-Grenze wieder ein; alle anderen Geräte spielen den Part sofort. Startest du den Song ohne Vorspann, läuft er genau wie bisher.</td></tr>
+</table></div>
+<p>Reihenfolge beim Generieren: erst den Song, dann den Vorspann. Im ersten Part eines Vorspanns (ohne Titel-Lauftext) dürfen über dem Schwarz Akzente stehen: Blinder, ein Effekt auf einzelnen Geräten und ein <code>tail</code>. Taktnummern gelten dort wie in der Tabelle, das StartBit rechnet der Generator heraus.</p>
 
 <h2 id="generator">7 · Generator, Versionen &amp; Timing</h2>
 <pre><code>python tools/songgen.py [&lt;Song&gt;] [Optionen]</code></pre>

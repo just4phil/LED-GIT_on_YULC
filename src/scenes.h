@@ -90,5 +90,7 @@ void progStageBand(unsigned int durationMillis, byte nextPart, unsigned int peri
 void progLampFill(unsigned int durationMillis, byte nextPart, CRGB col);				// füllt sich synchron zum Partfortschritt
 void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);	// Flash + Schuss nach oben auf jedem Beat
 void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire);
+// einzelner Feuer-Impuls: bis startMillis dunkel, dann die ganze Lampe in voller Flamme, klingt in fadeMillis auf Schwarz ab
+void progLampFireBurst(unsigned int durationMillis, byte nextPart, unsigned int startMillis, unsigned int fadeMillis, bool blueFire = false);
 void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm);				// drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat
 void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col);	// Leuchtspuren fallen von oben

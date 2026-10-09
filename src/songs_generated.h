@@ -17,6 +17,7 @@ void gen_IWannaDanceWithSomebody();	// #27 I Wanna Dance With Somebody
 void gen_BillieJean();	// #28 Billie Jean
 void gen_AllTheThingsSheSaid();	// #31 All The Things She Said
 void gen_GirlsJustWannaHaveFun();	// #33 Girls just wanna have fun
+void gen_ILoveItIntro();	// #80 I Love It Intro
 
 // Part-Nummern (case) der generierten Songs - für handgeschriebenen Code, der in einen Song springt (Trailer)
 #define GEN_DANCINGONMYOWN_PAUSE 0
@@ -273,3 +274,17 @@ void gen_GirlsJustWannaHaveFun();	// #33 Girls just wanna have fun
 #define GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_3 85
 #define GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_4 90
 #define GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_4_TAIL 95
+#define GEN_ILOVEITINTRO_PAUSE 0
+#define GEN_ILOVEITINTRO_TEXT_NERDS_ON_FIRE 5
+#define GEN_ILOVEITINTRO_PAUSE_2 10
+#define GEN_ILOVEITINTRO_TEXT_SONGTITEL 15
+#define GEN_ILOVEITINTRO_TEXT_SONGTITEL_TAIL 20
+#define GEN_ILOVEITINTRO_STROBO 25
+
+// Einstieg eines Vorspanns in seinen Song (trailer_entry in show.yaml): die Matrix-Geräte zeigen dort erst den
+// Titel-Lauftext (eigene Zusatz-cases), alle anderen Geräte beginnen direkt mit dem Part
+#if defined(SCROLLMATRIX) || defined(GITBOARD)
+#define GEN_ILOVEIT_TRAILER 16
+#else
+#define GEN_ILOVEIT_TRAILER 15
+#endif

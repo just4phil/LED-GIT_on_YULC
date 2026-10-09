@@ -94,7 +94,8 @@ everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n
 blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
 number of the table). A blinder's position is always the moment of FULL brightness (user rule 09.10.2026): a fade-in
 (`fxBlinderShape` / YAML `attack`) runs before it, and if that starts before the part does, `songgen.py` registers the
-blinder in the previous part as well. A second
+blinder in the previous part as well. A blinder ends with its part unless it has `carry: true`: then `songgen.py`
+registers its remaining fade in the next part (`fxBlinderCarry`). A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
@@ -183,6 +184,13 @@ himself - never rename or copy it for him), `--takt-ab 1` renumbers `von takt` o
 bar 1 like the user's DAW (Cakewalk counts from 1; his wish 08.10.2026 - the second place where a tool writes the
 table: `struktur.shift_bars()` with the same write-copy-and-verify safety, `bar:`/`cues:` in `show.yaml` move along,
 the generated code must stay identical; only on his request, per song), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+A trailer (backing-track intro before a song, e.g. `ILoveItIntro_v1` = song 80) is a song folder of its own: its
+`show.yaml` has `next_song: <target folder>` + `scroll_text: false`, and with "0 sek." in the table's `Ende` row
+there is no closing blackout - the end case does `songID = N; switchToPart(GEN_<SONG>_TRAILER)`. The target song's
+`show.yaml` names the entry part (`trailer_entry: "chorus 1"`); the title scroll text then runs on the matrix devices
+from that entry (user decision 09.10.2026) in two extra cases right behind the part (case+1/+2, scroll devices only),
+so the song's flow without the trailer stays untouched. Without a title scroll text the first section may carry
+accents over its black (`blinder`, `devices`, `tail`).
 Never edit the generated files by hand. `tools/struktur.py` is the table reader (format documented there). If the
 user changed part names or inserted/removed rows, `songgen.py` stops with a list of what no longer matches -
 adapt `show.yaml`. The old hand-written songs all have a table too (column `bisher (alter Code)` = their old

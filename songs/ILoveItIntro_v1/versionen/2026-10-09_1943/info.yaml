@@ -1,0 +1,9 @@
+zeit: '2026-10-09 19:43:36'
+notiz: '2. Runde: Blinder Takt 7 klingt 2 Takte aus, Takt 33 1,5 Takte (carry ueber
+  die Part-Grenze), Woerter THE/NERDS/ON, FIRE ausgestanzt ueber dem Strobo'
+werkzeug_git: 4c7759a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 6802f619206dcb5b08523569576554b4040fe92b6f3f28a5b564604b5c893d3e
+  show.yaml: f90d44d1e3f65b4875e059ccf14ddca1c7a7bbe9a32387bcad852892fd0e28ce
+  generated.cpp: df27c40956b7b69be9b7aef02a3614ac383a316780ac4d3a5aff9d8ddc8cd433

@@ -4025,6 +4025,8 @@ void Maniac_Tminus1() {
 //-----------
 
 //#80 INTRO fuer ILoveIt
+// Wird seit 09.10.2026 nicht mehr aufgerufen: in main.cpp (case 80) läuft die generierte Fassung gen_ILoveItIntro()
+// aus songs/ILoveItIntro_v1. Der alte Code bleibt als Referenz stehen (wie bei allen ersetzten Songs).
 void ILoveItTRAILER() {
 		
 	switch (prog) {

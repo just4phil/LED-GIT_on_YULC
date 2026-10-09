@@ -624,6 +624,19 @@ effekte:
     urteil:
     notiz:
 
+  progLampFireBurst:
+    wirkung: "Einzelner Feuer-Impuls: Lampe bleibt dunkel, steht zum angegebenen Zeitpunkt sofort in voller Flamme und klingt ab"
+    art: lampe
+    rolle: [akzent]
+    energie: [0, 1, 2, 3, 4, 5]
+    bewegung: flackernd
+    beat: fest
+    farbe: eigen
+    traegt_takte: "Akzent"
+    alt: {parts: 0, takte: 0, wofuer: "neu 09.10.2026 für den Vorspann von I Love It (Wunsch: Farbimpuls auf Lampe 1, dann Lampe 2)"}
+    urteil:
+    notiz: "in show.yaml unter devices: mit ${bar:N} (Zeitpunkt) und ${beats:N} (Ausklingen); Abnahme offen"
+
   # ---------- Text (nur Matrix-Geräte; in show.yaml über `text:` statt von Hand) ----------
 
   progText:

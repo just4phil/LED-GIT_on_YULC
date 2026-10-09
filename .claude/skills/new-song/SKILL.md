@@ -141,7 +141,8 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
    die feste Zahl durch die Konstante des entsprechenden Parts ersetzen (`GEN_<SONG>_<PART>` aus
    `songs_generated.h`, Liste in der `--dry-run`-Ausgabe) - denselben musikalischen Einstiegspunkt wie bisher
    wählen (alte Part-Dauern nachrechnen). Der Generator bricht ab, solange dort eine Zahl steht. Braucht der
-   Trailer einen Einstieg mitten in einem Part, diesen per `tail` als eigenen Part abtrennen.
+   Trailer einen Einstieg mitten in einem Part, diesen per `tail` als eigenen Part abtrennen. Wird der Trailer
+   selbst generiert, läuft der Sprung über `next_song` / `trailer_entry` (Abschnitt „Vorspann“).
 3. Die Struktur aus den alten Part-Dauern ableiten und die alten Effekte als Geschmacksreferenz lesen (siehe
    Dramaturgie-Regeln).
 4. Will der User den alten Look behalten und nur einzelne Stellen ändern: die alten Aufrufe 1:1 als `fx:` in
@@ -165,8 +166,39 @@ Der alte Code bleibt in `songs.cpp` stehen. Neue IDs landen hinter `// >>> GENER
 Neben `sections:` (Gestaltung je Partname) auf oberster Ebene: `function` (Name der C++-Funktion), `scheme`
 (Grundschema), `scroll_text` / `scroll_title` / `scroll_delay` (Lauftext am Songanfang), `markers` (siehe unten),
 `end_black_ms` (nur wenn die Zeile „Ende" der Tabelle keine Zeit nennt - sonst gilt die Tabelle), `end_blinder`
-(Blinder klingt ins Schluss-Black aus, siehe `blinder`).
+(Blinder klingt ins Schluss-Black aus, siehe `blinder`), `next_song` / `trailer_entry` (Vorspann, siehe unten).
 Struktur (Takte, Tempo, Energie) darf die Show nicht setzen; `songgen.py` verweigert das.
+
+## Vorspann (Trailer / Intro-Einspieler) als generierter Song
+
+Ein Vorspann ist ein eigener Song-Ordner (`ILoveItIntro_v1`, Song-ID 80; erster seiner Art am 09.10.2026). Zwei
+Schlüssel auf Song-Ebene verbinden ihn mit seinem Song:
+
+- **Im Vorspann:** `next_song: <Ordner des Songs>` (z. B. `ILoveIt_v1`) und `scroll_text: false`. Steht in der Zeile
+  „Ende“ der Tabelle „0 sek.“, gibt es kein Schluss-Black: nach dem letzten Part springt der Code ohne Pause in den
+  Song (`songID = N; switchToPart(GEN_<SONG>_TRAILER);` - nicht über `switchToSong()`, das würde die Marker abschalten).
+- **Im Ziel-Song:** `trailer_entry: "<Partname>"` - der Part, in den gesprungen wird. Der Titel-Lauftext läuft dann
+  nicht im Vorspann, sondern **ab diesem Einstieg auf der Matrix** (Entscheidung des Users, 09.10.2026), während alle
+  anderen Geräte den Part normal spielen. Dafür bekommen nur die Scroll-Geräte zwei Zusatz-cases direkt hinter dem
+  Part (case + 1 / + 2: Lauftext, Rest des laufenden Parts, Wiedereinstieg an der nächsten Part-Grenze - geplant wie
+  der Lauftext am Songanfang). **Der Ablauf des Songs ohne Vorspann ändert sich dadurch nicht** (Bedingung des Users):
+  nach dem Eintragen den Ziel-Song einmal generieren und im Diff prüfen, dass nur die Zusatz-cases dazukommen.
+  `GEN_<SONG>_TRAILER` in `songs_generated.h` ist je Gerät verschieden (Matrix: case + 1, sonst der Part).
+- Reihenfolge: erst den Ziel-Song mit `trailer_entry` generieren, dann den Vorspann. Entfernt man `trailer_entry`
+  später, meldet `songgen.py` den Vorspann, der dann ins Leere spränge.
+- **Akzente im ersten Part:** der erste Abschnitt bleibt immer Schwarz, aber mit `scroll_text: false` dürfen darüber
+  `blinder`, `devices` (Effekt auf einzelnen Geräten) und `tail` stehen (ein `overlay` nicht). Zeitangaben (`at`,
+  `bar`, `${bar:...}`) zählen dort wie in der Tabelle ab dem Anfang der ersten Zeile; der Generator zieht das StartBit
+  ab. Mit Titel-Lauftext wird alles im ersten Abschnitt weiter ignoriert.
+- **Akzent auf einem einzelnen Gerät zu einem Zeitpunkt** (Wunsch „Farbimpuls auf Lampe 1“): ein Effekt, der seinen
+  Zeitpunkt als Parameter bekommt, unter `devices:` - z. B.
+  `LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:10.55}, ${beats:2})"` (bis dahin dunkel, dann die ganze Lampe in
+  voller Flamme, klingt in 2 Beats ab; Abnahme durch den User offen). `${bar:N}` = ms seit Part-Beginn bis zur
+  Taktnummer N der Tabelle (auch Werte zwischen den Vierteln), `${beats:N}` = Länge von N Beats in ms.
+- **Mehrere Einblendungen im festen Abstand** (dreimal „THE“ alle 2 Takte, jeweils ausblendend): den Part per `tail`
+  so teilen, dass der erste Einsatz auf dem Tail-Beginn liegt, das Wort mit `per` länger als der Tail durchgehend
+  stehen lassen und `pulse: {depth: 100, per: <Beats>}` setzen - das Bild springt im Raster voll auf und klingt bis
+  Schwarz ab; Blinder liegen darüber. (`flash: true` klingt dagegen immer in höchstens 450 ms ab.)
 
 ## Bund-Marker-LEDs (`markers:` in `show.yaml`)
 
@@ -186,7 +218,7 @@ Struktur (Takte, Tempo, Energie) darf die Show nicht setzen; `songgen.py` verwei
 ## Feste Regeln für Anfang und Ende (macht der Generator automatisch)
 
 - **Anfang**: Der erste Abschnitt ist immer `progBlack` auf allen Geräten (Start-MIDI). Eine Gestaltung
-  dafür in der Show wird ignoriert (Hinweis in der Ausgabe).
+  dafür in der Show wird ignoriert (Hinweis in der Ausgabe) - Ausnahme: Akzente bei `scroll_text: false`, siehe „Vorspann“.
 - **Lauftext**: SCROLLMATRIX und GITBOARD zeigen "<name> by <artist>". Dauer eines Durchlaufs wie in
   `progScrollText()`: (MATRIX_WIDTH − 2 + 6 × Zeichen) × delay (Firmware: `scrollTextMillis()`), die Breite liest der
   Generator aus `definitions.h`. `progScrollText` zeigt nur ganze Durchläufe (seit 06.10.2026, Wunsch des Users): ist
@@ -322,7 +354,10 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   den Beats vor `at` / `bar` ein statt aufzuspringen, `hold: <Beats>` (Standard 0) steht ab `at` voll, der Rest von
   `len` klingt ab - z. B. `{at: 0.5, len: 8, attack: 0.5}` über einem 2-Takte-Part (Einblenden ab Part-Beginn, nach
   einem halben Beat voll). Vom User abgenommen (06.10.2026: „sehr cool“; Demo 92, Part 28).
-  Ein Blinder endet immer mit seinem Part. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
+  Ein Blinder endet mit seinem Part - außer mit `carry: true` (seit 09.10.2026, nur einmalige Blinder): dann klingt
+  er im Part danach zu Ende (`fxBlinderCarry`, kostet dort einen der 8 Plätze; `--dry-run`: „Blinder von '<Part>'
+  klingt noch … ms aus“). Nötig, wenn ein gewünschtes langes Ausklingen über die Part-Grenze reicht („Blinder über
+  1,5 Takte ausfaden“, der Part endet früher). Ohne `carry` bleibt alles wie bisher. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
   Users zu APT., 06.10.2026: „erst auf der letzten Viertel, dann 5 Sekunden ausfaden“): im letzten Part
   `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (springt dort auf und steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
   (Sekunden; ausführlich `{seconds, amount, color, devices}`) - der Blinder läuft im Schluss-Black weiter und klingt aus.
@@ -335,7 +370,8 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 Noch nicht auf der Bühne erprobt (Stand 04.10.2026): zurückhaltend einsetzen, bis der User die Wirkung gesehen und im
 Katalog bewertet hat. Naheliegend: `fade` zwischen ruhigen Parts statt hartem Schnitt, `flash` in den Chorus, `stage_*`
 vor einem Solo, `fade_out` am Songende, `pulse` gegen statische ruhige Szenen, `only` für Solo-Momente.
-Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms).
+Platzhalter: `${dur}`, `${next}`, `${bpm}`, `${beat}`, `${half}`, `${bar}` (ms), dazu `${beats:N}` (Länge von N Beats
+in ms) und `${bar:N}` (Zeitpunkt der Taktnummer N der Tabelle in ms seit Part-Beginn, nicht im `tail`).
 `devices`-Schlüssel: `guitar`, `lamp`, `matrix` oder einzelne Geräte `ANDRESGIT`, `RINASBASS`, `LAMPE1`,
 `LAMPE2`, `SCROLLMATRIX`, `GITBOARD` (Einzelgerät schlägt Klasse). Geräte ohne Override zeigen die Szene.
 Muss ein Abschnitt für einen Akzent geteilt werden (mehr als ein `tail`), den User bitten, ihn in

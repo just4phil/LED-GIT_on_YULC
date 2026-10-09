@@ -1,0 +1,92 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 09.10.2026).
+# Vorspann (Einspieler) zu "I Love It": erste generierte Fassung des handgeschriebenen ILoveItTRAILER() (Song-ID 80).
+# Der alte Code bleibt in src/songs.cpp stehen. Der Einspieler ist fast durchgehend dunkel; umgesetzt sind die
+# Änderungswünsche aus den Zwischenzeilen der Tabelle (09.10.2026):
+#   pause              Takt 4, 5, 6, 7: je ein kurzer starker Blinder (auf dem Schlag voll, am Ende der Viertel dunkel)
+#                      Takt 10,5 / 11: Feuer-Impuls erst auf Lampe 1, dann auf Lampe 2 (progLampFireBurst, neu für diesen
+#                      Wunsch: ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab)
+#   text nerds on fire Takt 13 und 15: kurzer starker Blinder; der Lauftext "Nerds on Fire" läuft wie bisher
+#   pause (2)          Takt 33: kurzer starker Blinder
+#   text songtitel     Takt 37, 39, 41: Blinder + "THE" auf der Matrix, das Wort blendet über 2 Takte aus
+# Annahmen von Claude, noch nicht vom User bestätigt:
+#   - "auf der Achtel (10,55)" ist wörtlich genommen: Takt 10,55 = 100 ms nach der Viertel 10,5 (die Achtel wäre 10,625)
+#   - an allen drei Stellen steht in der Tabelle dasselbe Wort "THE" - so umgesetzt
+# Entscheidung des Users (09.10.2026): der Titel-Lauftext "I love it by Icona Pop" läuft nicht mehr im Vorspann,
+# sondern am Anfang des eigentlichen Songs - auf der Matrix ab dem Einstieg in "chorus 1" (trailer_entry in
+# songs/ILoveIt_v1/show.yaml). Deshalb hier scroll_text: false; das erlaubt auch die Akzente im ersten Part.
+# Schluss: kein Schluss-Black (Zeile "Ende" der Tabelle: 0 sek.), next_song springt ohne Pause nach Song #9.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: stehen von Hand in src/markerLEDs.cpp (case 80) und gelten unverändert - deshalb hier kein markers:-Block.
+# Taktnummern (bar:, cues:, ${bar:...}) zählen wie die Tabelle ab 1.
+
+function: gen_ILoveItIntro
+scroll_text: false
+next_song: ILoveIt_v1
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    # Feuer-Impulse: nur auf den beiden Lampen, alle anderen Geräte bleiben schwarz. ${bar:...} = Zeitpunkt der
+    # Taktnummer in ms seit Part-Beginn, ${beats:2} = ein halber Takt Ausklingen.
+    devices:
+      LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:10.55}, ${beats:2})"
+      LAMPE2: "progLampFireBurst(${dur}, ${next}, ${bar:11}, ${beats:2})"
+    # "kurzer starker Blinder (am Ende der Viertel wieder dunkel)": springt auf dem Schlag voll auf, steht 0,3 Beat
+    # (150 ms) und ist nach genau einer Viertel (500 ms) wieder aus.
+    blinder:
+      - {bar: 4, len: 1, hold: 0.3, amount: 100}
+      - {bar: 5, len: 1, hold: 0.3, amount: 100}
+      - {bar: 6, len: 1, hold: 0.3, amount: 100}
+      - {bar: 7, len: 1, hold: 0.3, amount: 100}
+    cues:
+      4: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf der 1 auf, 150 ms voll, am Ende der Viertel wieder dunkel"
+      5: "Blinder auf der 1, gleiche Form"
+      6: "Blinder auf der 1, gleiche Form"
+      7: "Blinder auf der 1, gleiche Form"
+      10.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 10,55 (100 ms nach dieser Viertel): ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab"
+      11: "Feuer-Impuls nur auf Lampe 2 auf die 1: ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab"
+    why: "Alles dunkel, der Einspieler läuft. Vier kurze Blinder auf die 1 von Takt 4 bis 7, am Ende ein Feuer-Impuls auf Lampe 1 und gleich danach auf Lampe 2."
+
+  "text nerds on fire":
+    fx: "progBlack(${dur}, ${next})"
+    devices:
+      matrix: "progScrollText(\"Nerds on Fire\", ${dur}, 90, getRandomColor(), ${next})"
+    blinder:
+      - {bar: 13, len: 1, hold: 0.3, amount: 100}
+      - {bar: 15, len: 1, hold: 0.3, amount: 100}
+    cues:
+      13: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf der 1 auf, 150 ms voll, am Ende der Viertel wieder dunkel"
+      15: "Blinder auf der 1, gleiche Form"
+    why: "Nur die Matrix zeigt den Lauftext \"Nerds on Fire\" (wie bisher), alle anderen Geräte sind dunkel. Kurze Blinder auf die 1 von Takt 13 und 15."
+
+  "pause (2)":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {bar: 33, len: 1, hold: 0.3, amount: 100}
+    cues:
+      33: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf der 1 auf, 150 ms voll, am Ende der Viertel wieder dunkel"
+    why: "Alles dunkel. Ein kurzer Blinder auf die 1 von Takt 33."
+
+  "text songtitel":
+    fx: "progBlack(${dur}, ${next})"
+    # Ab Takt 37 (die letzten 22 Beats des Parts) als eigener Schluss-Part, damit die drei Einsätze auf seinem
+    # 2-Takte-Raster liegen (Beat 0, 8, 16 = Takt 37, 39, 41): "THE" steht weiß auf der Matrix, pulse lässt das Bild
+    # alle 2 Takte voll aufspringen und bis auf Schwarz abklingen (= Ausblenden über 2 Takte). Das dritte "THE" hat bis
+    # zum Strobo nur noch 1,5 Takte. Die Blinder liegen über allem und pulsieren nicht mit.
+    tail:
+      beats: 22
+      fx: "progBlack(${dur}, ${next})"
+      text: {words: "THE", per: 32, color: weiss}
+      pulse: {depth: 100, per: 8}
+      blinder:
+        - {at: 0, len: 2, hold: 0.5, amount: 100}
+        - {at: 8, len: 2, hold: 0.5, amount: 100}
+        - {at: 16, len: 2, hold: 0.5, amount: 100}
+    cues:
+      37: "voller warmweißer Blinder auf allen Geräten (1 Sekunde), dazu \"THE\" weiß auf der Matrix: springt auf, blendet über 2 Takte aus"
+      39: "Blinder + \"THE\" noch einmal, gleiche Form"
+      41: "Blinder + \"THE\" zum dritten Mal; bis zum Strobo bleiben 1,5 Takte Ausblenden"
+    why: "Alles dunkel bis Takt 37 (der Songtitel läuft jetzt erst am Anfang des eigentlichen Songs). Dann dreimal im Abstand von 2 Takten: Blinder auf allen Geräten und \"THE\" auf der Matrix, das jeweils ausblendet."
+
+  "strobo":
+    fx: "progStrobo(${dur}, ${next}, 83, getRandomColor(), getRandomColor(), getRandomColor())"
+    why: "Alter Effekt: Strobo in Zufallsfarben auf allen Geräten ('I don't care'), danach ohne Pause in den Chorus von I Love It."

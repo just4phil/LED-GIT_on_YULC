@@ -170,6 +170,10 @@ void fxBlinderSlot(uint8_t slot);				// mehrere Blinder in einem Part: wählt de
 												// Jeder Platz ist ein eigener Blinder mit eigenem Zeitpunkt, Verlauf, Farbe und Geräten; überlappen
 												// sich zwei, zeigt das Gerät den stärkeren. Wer Plätze benutzt, ruft fxBlinderSlot vor JEDEM Blinder auf
 												// (auch 0 für den ersten), weil die Anmeldungen bei jedem Loop-Durchlauf wiederholt werden
+void fxBlinderCarry(unsigned int elapsedMillis);	// der Blinder dieses Platzes hat schon im Part DAVOR begonnen und klingt hier nur noch aus:
+												// elapsedMillis = so lange vor dem Part-Beginn war sein Moment der vollen Helligkeit. Anmelden wie im
+												// Part davor (gleiche Länge, gleicher Verlauf), aber mit atMillis 0 - dann läuft die Kurve nahtlos weiter.
+												// So kann ein langes Ausklingen über eine Part-Grenze reichen (songgen.py meldet das von selbst an)
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 

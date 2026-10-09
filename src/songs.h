@@ -91,7 +91,7 @@ void Firework();
 // #8
 void DancingOnMyOwn();
 
-/** @brief #9 I Love It (Icona Pop). Der Vorspann dazu ist #80 ILoveItTRAILER. */
+/** @brief #9 I Love It (Icona Pop). Der Vorspann dazu ist #80 (alt: ILoveItTRAILER, jetzt generiert: gen_ILoveItIntro). */
 //#9 ILoveIt
 void ILoveIt();
 
@@ -180,6 +180,8 @@ void Maniac_Tminus1();
  *
  * Bleibt während des Einspielers dunkel (auf der LED-Fläche Lauftexte) und springt am Ende direkt
  * in Song #9 I Love It, hinter dessen Intro.
+ * Seit 09.10.2026 läuft stattdessen die generierte Fassung gen_ILoveItIntro() (songs/ILoveItIntro_v1,
+ * Aufruf in main.cpp); diese alte Funktion bleibt als Referenz stehen und wird nicht mehr aufgerufen.
  */
 // #80
 void ILoveItTRAILER();

@@ -342,6 +342,43 @@ void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire) {
 	fxShow();
 }
 
+// Feuer-Impuls an der Lampe: ein einzelner Akzent mitten in einem sonst dunklen Part (Wunsch des Users zum Intro von
+// "I Love It", 09.10.2026: "kurzer Farbimpuls auf Lampe 1, Vollausschlag mit dem FIRE-Muster, Fade-out innerhalb
+// eines halben Taktes").
+//   startMillis  Zeitpunkt des Impulses in ms seit Part-Beginn - bis dahin bleibt die Lampe dunkel
+//   fadeMillis   so lange klingt er danach ab (ms); danach ist die Lampe wieder dunkel bis zum Part-Ende
+// Ablauf: genau bei startMillis wird die ganze Lampe "angezündet" - die Temperatur jeder LED startet hoch (unten
+// weißglühend, nach oben gelb und orange), die Flamme steht also sofort in voller Höhe ("Vollausschlag"). Ab da
+// rechnet dieselbe Feuer-Simulation wie in progLampFire weiter (es flackert und kühlt von oben her ab), und
+// zusätzlich wird das ganze Bild gleichmäßig bis auf Schwarz heruntergeregelt.
+// Die Zeit kommt aus millisCounterForProgChange (ms seit Part-Beginn): so sitzt der Impuls auf jedem Gerät an
+// derselben Stelle, egal wie schnell es seine Bilder ausgibt.
+void progLampFireBurst(unsigned int durationMillis, byte nextPart, unsigned int startMillis, unsigned int fadeMillis, bool blueFire) {
+	static bool lit;	// brennt der Impuls schon? (static = der Wert bleibt zwischen den Aufrufen erhalten)
+	if (fxPartStart(durationMillis, nextPart)) lit = false;
+
+	if (fxFrameDue(20)) {
+		unsigned long ms = millisCounterForProgChange;
+		if (ms < startMillis || fadeMillis == 0 || ms - startMillis >= fadeMillis) {
+			fill_solid(leds, anz_LEDs, CRGB::Black);	// vor und nach dem Impuls: dunkel
+		}
+		else {
+			if (!lit) {
+				lit = true;
+				// Zündung: unten 255 (weiß), nach oben gleichmäßig fallend bis 150 (kräftiges Orange) - nichts bleibt dunkel
+				for (int h = 0; h < anz_LEDs; h++) lampHeat[h] = 255 - (long)h * 105 / anz_LEDs;
+			}
+			else fire2012Step(lampHeat, anz_LEDs);	// erst ab dem zweiten Bild: das erste zeigt die volle Flamme
+			uint8_t level = 255 - (ms - startMillis) * 255 / fadeMillis;	// Helligkeit: 255 beim Impuls, 0 am Ende
+			for (int h = 0; h < anz_LEDs; h++) {
+				CRGB c = blueFire ? ColorFromPalette(outlineBlueFire_p, lampHeat[h]) : HeatColor(lampHeat[h]);
+				leds[lampLed(h)] = c.nscale8(level);
+			}
+		}
+	}
+	fxShow();
+}
+
 // Drei Lichtpunkte pendeln an der Lampe auf und ab (Gegenstück der Lampen zum drehenden Stern der anderen Geräte).
 void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	fxPartStart(durationMillis, nextPart);

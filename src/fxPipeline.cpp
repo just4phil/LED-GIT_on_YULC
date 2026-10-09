@@ -92,6 +92,7 @@ struct BlinderMod {
 	CRGB col;
 	bool shaped;				// eigener Verlauf (fxBlinderShape), sonst: erste Hälfte voll, dann abklingend
 	unsigned int attackMs, holdMs;
+	unsigned int preMs;			// fxBlinderCarry: so viele ms lief der Blinder schon, als der Part begann (0 = beginnt in diesem Part)
 };
 
 //--- Modifikatoren ---
@@ -170,6 +171,7 @@ void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis) {
 	b.attackMs = attackMillis;
 	b.holdMs = holdMillis;
 }
+void fxBlinderCarry(unsigned int elapsedMillis)	{ mod.blinder[mod.blinderSlot].preMs = elapsedMillis; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -462,7 +464,9 @@ uint8_t fxSoftBlend(uint8_t bpm, uint8_t beatsPerStep) {
 // ("lead"), damit das Einblenden genau bei atMs oben ankommt. Liegt dieser Beginn vor dem Part-Beginn, fehlt hier
 // der Anfang des Einblendens - songgen.py meldet ihn dann zusätzlich im Part davor an.
 static uint8_t blinderLevelOf(const BlinderMod& b, uint32_t beatMs) {
-	uint32_t lead = b.shaped ? b.attackMs : 0;	// so viele ms vor atMs beginnt der Blinder
+	// so viele ms vor atMs beginnt der Blinder: sein Einblenden (attack) und - bei einem Blinder, der aus dem Part davor
+	// herüberklingt (fxBlinderCarry) - die Zeit, die er dort schon gelaufen ist
+	uint32_t lead = (b.shaped ? b.attackMs : 0) + b.preMs;
 	if (!b.lenMs || !b.here || beatMs + lead < b.atMs) return 0;	// kein Blinder angemeldet / nicht auf diesem Gerät / noch nicht dran
 	uint32_t t = beatMs + lead - b.atMs;	// Zeit seit dem (ersten) Beginn des Blinders (= Beginn des Einblendens)
 	if (b.every) {	// im Raster wiederholen, Phase exakt über bpm (wie fxBeatPhase)

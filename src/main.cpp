@@ -565,7 +565,8 @@ void loop() {
 
 
 		case 80:
-			ILoveItTRAILER();
+			//ILoveItTRAILER();
+			gen_ILoveItIntro(); // <<< GENERATED SONGS <<<
 			break;
 			
 		case 81:
