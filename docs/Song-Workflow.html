@@ -378,7 +378,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>${bpm}</code></td><td>Tempo des Parts, gerundet</td></tr>
 <tr><td><code>${beat}</code>, <code>${half}</code>, <code>${bar}</code></td><td>Dauer eines Beats, zweier Beats und eines Takts in ms</td></tr>
 <tr><td><code>${beats:2}</code></td><td>Länge von 2 Beats (beliebige Zahl) in ms</td></tr>
-<tr><td><code>${bar:10.5}</code></td><td>Zeitpunkt der Taktnummer 10,5 der Tabelle in ms seit Part-Beginn (auch Werte zwischen den Vierteln). Für Effekte, die ihren Zeitpunkt als Parameter bekommen, z. B. <code>progLampFireBurst(${dur}, ${next}, ${bar:10.5}, ${beats:2})</code>: Feuer-Impuls auf einer Lampe. Nicht im <code>tail</code>.</td></tr>
+<tr><td><code>${bar:10.5}</code></td><td>Zeitpunkt der Taktnummer 10,5 der Tabelle in ms seit Part-Beginn (auch Werte zwischen den Vierteln). Für Effekte, die ihren Zeitpunkt als Parameter bekommen, z. B. <code>progLampFireBurst(${dur}, ${next}, ${bar:10.5}, ${beats:2})</code>: Feuer-Impuls auf einer Lampe; mehrere Impulse in einem Part mit <code>progLampFireBursts(${dur}, ${next}, ${beats:2}, ${bar:12.5}, ${bar:16.5}, …)</code> (bis zu 8 Zeitpunkte). Nicht im <code>tail</code>.</td></tr>
 </table></div>
 <div class="warn">In der Show-Datei stehen <b>keine</b> Takte oder Tempi. Der Generator bricht ab, wenn doch, oder wenn ein Part-Name nicht in der Tabelle vorkommt. So kann die Show nicht unbemerkt von der Struktur abweichen. Setzt du in <code>song.yaml</code> selbst <code>scene</code>, <code>fx</code>, <code>scheme</code>, <code>fade</code>, <code>tail</code>, <code>devices</code> oder <code>text</code>, gilt deine Angabe und nicht die der Show.</div>
 

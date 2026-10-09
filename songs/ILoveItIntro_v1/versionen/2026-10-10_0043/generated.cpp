@@ -2,8 +2,8 @@
 //@id 80
 //@function gen_ILoveItIntro
 //@name I Love It Intro
-//@struktur_sha f822bd4610a0e861ca6b88009c49f4e98114b82b17b4ec253717f25d36f022fa
-//@show_sha 30735b7742a8c4f9f5e8fd33f9e6b15bb84d89c457491488b8eec3068fdfe059
+//@struktur_sha a790c6b3749d834bb02adda86e81491c51a0fdc9fcb211a419f13484c0f46b43
+//@show_sha a47597a5c2c7596aebf78c75c3cdaf1d97d740dd62f66a662c481c29dd608128
 //@part GEN_ILOVEITINTRO_PAUSE 0
 //@part GEN_ILOVEITINTRO_TEXT_NERDS_ON_FIRE 5
 //@part GEN_ILOVEITINTRO_PAUSE_2 10
@@ -56,7 +56,7 @@ void gen_ILoveItIntro() {
 #endif
 		break;
 
-	case 10:	// pause (2)  10 T+2.35 B  21175ms  @0:44.575  -- Gitarren dunkel. Die Feuer-Impulse springen weiter zwischen Lampe 1 und Lampe 2 hin und her (neun Stück, Takt 24,5 bis 32,5). Ab Takt 27 laufen auf der Matrix Wasserwellen. Ein Blinder auf die 1 von Takt 33, der lang über 1,5 Takte ausklingt.
+	case 10:	// pause (2)  10 T+2.35 B  21175ms  @0:44.575  -- Gitarren dunkel. Am Anfang noch je ein Feuer-Impuls auf Lampe 1 und Lampe 2. Ab Takt 27 laufen auf der Matrix Wasserwellen. Ein Blinder auf die 1 von Takt 33, der lang über 1,5 Takte ausklingt.
 		fxBlinder(18675, 3000, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 150);
 #if DEVICE_CLASS == CLASS_MATRIX
@@ -67,9 +67,9 @@ void gen_ILoveItIntro() {
 		fxLayerEnd(FX_ADD);
 #endif
 #if defined(LAMPE1)
-		progLampFireBursts(21175, 15, 1000, 1775, 5775, 9775, 13775, 17775);
+		progLampFireBurst(21175, 15, 1775, 1000);
 #elif defined(LAMPE2)
-		progLampFireBursts(21175, 15, 1000, 2675, 6675, 10675, 14675);
+		progLampFireBurst(21175, 15, 2675, 1000);
 #else
 		progBlack(21175, 15);
 #endif
@@ -78,16 +78,12 @@ void gen_ILoveItIntro() {
 #endif
 		break;
 
-	case 15:	// text songtitel  8 T+1 B  5500ms  @1:05.750  -- Gitarren dunkel, auf der Matrix laufen die Wasserwellen weiter, auf den Lampen noch fünf Feuer-Impulse im Wechsel (Takt 34,5 bis 40,5). Ab Takt 37 dreimal im Abstand von 2 Takten: Blinder auf allen Geräten und ein Wort weiß auf der Matrix über den Wellen, das jeweils ausblendet - THE, NERDS, ON.
+	case 15:	// text songtitel  8 T+1 B  5500ms  @1:05.750  -- Gitarren und Lampen dunkel, auf der Matrix laufen die Wasserwellen weiter. Ab Takt 37 dreimal im Abstand von 2 Takten: Blinder auf allen Geräten und ein Wort weiß auf der Matrix über den Wellen, das jeweils ausblendet - THE, NERDS, ON.
 		fxTransition(TRANS_FADE, 1000);
 		fxBlinder(0, 3000, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 150);
 		fxBlinderCarry(2500);
-#if defined(LAMPE1)
-		progLampFireBurst(5500, 20, 1500, 1000);
-#elif defined(LAMPE2)
-		progLampFireBursts(5500, 20, 1000, 600, 4600);
-#elif DEVICE_CLASS == CLASS_MATRIX
+#if DEVICE_CLASS == CLASS_MATRIX
 		progWaterRipple(5500, 20, 50, true, false);
 #else
 		progBlack(5500, 20);
@@ -111,11 +107,7 @@ void gen_ILoveItIntro() {
 		progText("THE*4 NERDS*4 ON*4", 11000, 25, 1000, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
-#if defined(LAMPE1)
-		progLampFireBurst(11000, 25, 3100, 1000);
-#elif defined(LAMPE2)
-		progLampFireBurst(11000, 25, 7100, 1000);
-#elif DEVICE_CLASS == CLASS_MATRIX
+#if DEVICE_CLASS == CLASS_MATRIX
 		progWaterRipple(11000, 25, 50, true, false);
 #else
 		progBlack(11000, 25);

@@ -92,5 +92,11 @@ void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire);
 // einzelner Feuer-Impuls: bis startMillis dunkel, dann die ganze Lampe in voller Flamme, klingt in fadeMillis auf Schwarz ab
 void progLampFireBurst(unsigned int durationMillis, byte nextPart, unsigned int startMillis, unsigned int fadeMillis, bool blueFire = false);
+// mehrere Feuer-Impulse in einem Part: wie progLampFireBurst, aber mit bis zu 8 Zeitpunkten (ms seit Part-Beginn).
+// fadeMillis steht vor den Zeitpunkten; nicht benötigte Zeitpunkte weglassen (LAMP_BURST_NONE = "kein Impuls").
+const unsigned int LAMP_BURST_NONE = 0xFFFFFFFF;
+void progLampFireBursts(unsigned int durationMillis, byte nextPart, unsigned int fadeMillis,
+                        unsigned int t1, unsigned int t2 = LAMP_BURST_NONE, unsigned int t3 = LAMP_BURST_NONE, unsigned int t4 = LAMP_BURST_NONE,
+                        unsigned int t5 = LAMP_BURST_NONE, unsigned int t6 = LAMP_BURST_NONE, unsigned int t7 = LAMP_BURST_NONE, unsigned int t8 = LAMP_BURST_NONE);
 void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm);				// drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat
 void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col);	// Leuchtspuren fallen von oben

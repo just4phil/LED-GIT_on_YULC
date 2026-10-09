@@ -23,12 +23,6 @@
 #                      Strobo. Takt 27 liegt mitten in "pause (2)", deshalb dort als Ebene mit Zeitfenster (from);
 #                      in "text songtitel" ist es der Matrix-Effekt des Parts, die Wörter THE / NERDS / ON liegen als
 #                      Text-Ebene darüber.
-# Vierte Runde Wünsche (10.10.2026, die der dritten Runde hat der User aus der Tabelle gelöscht = angenommen):
-#   pause (2)          die Reihe der Feuer-Impulse geht weiter: Lampe 1 bei Takt 26,55 / 28,55 / 30,55 / 32,55,
-#                      Lampe 2 bei Takt 27 / 29 / 31
-#   text songtitel     hier tauschen die Lampen die Rollen (so steht es in der Tabelle): Lampe 2 bei Takt 34,55 / 36,55 /
-#                      40,55, Lampe 1 bei Takt 35 / 38,55. Die Impulse ab Takt 37 liegen im Schluss-Part (tail); dort gibt
-#                      es kein ${bar:...}, deshalb stehen sie als Beats ab Takt 37 (38,55 = 6,2 Beats, 40,55 = 14,2 Beats).
 # Annahmen von Claude, noch nicht vom User bestätigt:
 #   - Zeitpunkt der Impulse wie in der ersten Runde: Lampe 1 (Zeilen x,5) 100 ms nach der Viertel = Takt x,55;
 #     Lampe 2 in den Zeilen auf ganzen Takten (17, 19, 21, 23, 25) genau auf der 1 - dort steht "bei Takt 17,00" bzw.
@@ -106,11 +100,10 @@ sections:
     # 1,5 Takte Ausklingen ab Takt 33 enden bei 34,5 - der Part aber schon bei 34,25. carry: true lässt den Blinder im
     # Part danach ("text songtitel") die letzten 500 ms zu Ende klingen statt abzureißen.
     blinder: {bar: 33, len: 6, hold: 0.3, amount: 100, carry: true}
-    # Die Reihe der Feuer-Impulse aus dem Part davor läuft weiter (Wünsche 10.10.2026, dritte und vierte Runde):
-    # Lampe 1 immer 100 ms nach der dritten Viertel (x,55), Lampe 2 auf der 1 des Takts danach.
+    # Die letzten beiden Feuer-Impulse der Reihe aus dem Part davor (Wunsch 10.10.2026).
     devices:
-      LAMPE1: "progLampFireBursts(${dur}, ${next}, ${beats:2}, ${bar:24.55}, ${bar:26.55}, ${bar:28.55}, ${bar:30.55}, ${bar:32.55})"
-      LAMPE2: "progLampFireBursts(${dur}, ${next}, ${beats:2}, ${bar:25}, ${bar:27}, ${bar:29}, ${bar:31})"
+      LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:24.55}, ${beats:2})"
+      LAMPE2: "progLampFireBurst(${dur}, ${next}, ${bar:25}, ${beats:2})"
     # Wasserwellen ab Takt 27, nur auf der Matrix (Wunsch 10.10.2026). Takt 27 liegt mitten im Part (13,35 Beats nach
     # seinem Anfang bei Takt 23,6625), deshalb als Ebene mit Zeitfenster: from = ab hier sichtbar, fade_in = die
     # Wellen tauchen über 2 Beats auf statt aufzuspringen. Der Aufruf ist der, den die alten Songs fast immer nehmen
@@ -123,24 +116,15 @@ sections:
       33: "voller warmweißer Blinder auf allen Geräten auf der 1, klingt lang über 1,5 Takte aus (bis Takt 34,5, über die Part-Grenze hinweg)"
       24.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 24,55 (100 ms nach dieser Viertel): ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab"
       25: "Feuer-Impuls nur auf Lampe 2, genau auf der 1, gleiche Form"
-      26.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 26,55 (100 ms nach dieser Viertel): ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab"
-      27: "Feuer-Impuls nur auf Lampe 2, genau auf der 1, gleiche Form. Ab hier außerdem Wasserwellen (progWaterRipple, bunte Ringe) nur auf der Matrix, tauchen über 2 Beats auf; sie laufen als Grundbild unter allem weiter bis zum Strobo"
-      28.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 28,55, gleiche Form"
-      29: "Feuer-Impuls nur auf Lampe 2, genau auf der 1, gleiche Form"
-      30.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 30,55, gleiche Form"
-      31: "Feuer-Impuls nur auf Lampe 2, genau auf der 1, gleiche Form"
-      32.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 32,55, gleiche Form"
-    why: "Gitarren dunkel. Die Feuer-Impulse springen weiter zwischen Lampe 1 und Lampe 2 hin und her (neun Stück, Takt 24,5 bis 32,5). Ab Takt 27 laufen auf der Matrix Wasserwellen. Ein Blinder auf die 1 von Takt 33, der lang über 1,5 Takte ausklingt."
+      27: "ab hier Wasserwellen (progWaterRipple, bunte Ringe) nur auf der Matrix, tauchen über 2 Beats auf; sie laufen als Grundbild unter allem weiter bis zum Strobo"
+    why: "Gitarren dunkel. Am Anfang noch je ein Feuer-Impuls auf Lampe 1 und Lampe 2. Ab Takt 27 laufen auf der Matrix Wasserwellen. Ein Blinder auf die 1 von Takt 33, der lang über 1,5 Takte ausklingt."
 
   "text songtitel":
     fx: "progBlack(${dur}, ${next})"
     # Die Wasserwellen von Takt 27 laufen auf der Matrix weiter (Wunsch 10.10.2026). Jeder Part startet den Effekt
     # neu; transition: fade blendet deshalb über 2 Beats vom letzten Wellenbild des Parts davor ins neue.
-    # Feuer-Impulse (Wunsch 10.10.2026, vierte Runde): hier beginnt Lampe 2, Lampe 1 antwortet auf der 1 von Takt 35.
     devices:
       matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
-      LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:35}, ${beats:2})"
-      LAMPE2: "progLampFireBursts(${dur}, ${next}, ${beats:2}, ${bar:34.55}, ${bar:36.55})"
     transition: {type: fade, beats: 2}
     # Ab Takt 37 (die letzten 22 Beats des Parts) als eigener Schluss-Part, damit die drei Einsätze auf seinem
     # 2-Takte-Raster liegen (Beat 0, 8, 16 = Takt 37, 39, 41): je Einsatz das nächste Wort weiß auf der Matrix
@@ -154,12 +138,8 @@ sections:
     tail:
       beats: 22
       fx: "progBlack(${dur}, ${next})"
-      # Feuer-Impulse bei Takt 38,55 (Lampe 1) und 40,55 (Lampe 2). Im tail gibt es kein ${bar:...}: der Schluss-Part
-      # beginnt bei Takt 37, also 1,55 Takte = 6,2 Beats und 3,55 Takte = 14,2 Beats nach seinem Anfang.
       devices:
         matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
-        LAMPE1: "progLampFireBurst(${dur}, ${next}, ${beats:6.2}, ${beats:2})"
-        LAMPE2: "progLampFireBurst(${dur}, ${next}, ${beats:14.2}, ${beats:2})"
       text: {words: "THE*4 NERDS*4 ON*4", per: half, color: weiss, over: true, pulse: {depth: 100, per: 8}, under: 30}
       blinder:
         - {at: 0, len: 2, hold: 0.5, amount: 100}
@@ -169,12 +149,7 @@ sections:
       37: "voller warmweißer Blinder auf allen Geräten (1 Sekunde), dazu \"THE\" weiß auf der Matrix: springt auf, blendet über 2 Takte aus"
       39: "Blinder + \"NERDS\" weiß auf der Matrix, gleiche Form"
       41: "Blinder + \"ON\" weiß auf der Matrix; bis zum Strobo bleiben 1,5 Takte Ausblenden"
-      34.5: "Feuer-Impuls nur auf Lampe 2, bei Takt 34,55 (100 ms nach dieser Viertel): ganze Lampe sofort in voller Flamme, klingt in einem halben Takt ab"
-      35: "Feuer-Impuls nur auf Lampe 1, genau auf der 1, gleiche Form"
-      36.5: "Feuer-Impuls nur auf Lampe 2, bei Takt 36,55, gleiche Form"
-      38.5: "Feuer-Impuls nur auf Lampe 1, bei Takt 38,55, gleiche Form"
-      40.5: "Feuer-Impuls nur auf Lampe 2, bei Takt 40,55, gleiche Form"
-    why: "Gitarren dunkel, auf der Matrix laufen die Wasserwellen weiter, auf den Lampen noch fünf Feuer-Impulse im Wechsel (Takt 34,5 bis 40,5). Ab Takt 37 dreimal im Abstand von 2 Takten: Blinder auf allen Geräten und ein Wort weiß auf der Matrix über den Wellen, das jeweils ausblendet - THE, NERDS, ON."
+    why: "Gitarren und Lampen dunkel, auf der Matrix laufen die Wasserwellen weiter. Ab Takt 37 dreimal im Abstand von 2 Takten: Blinder auf allen Geräten und ein Wort weiß auf der Matrix über den Wellen, das jeweils ausblendet - THE, NERDS, ON."
 
   "strobo":
     fx: "progStrobo(${dur}, ${next}, 83, getRandomColor(), getRandomColor(), getRandomColor())"

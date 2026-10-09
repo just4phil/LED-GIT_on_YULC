@@ -11,7 +11,35 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 09.10.2026 (weiche Farbwechsel für progStern / progSternNeu über `fxSoft` - vom User abgenommen und committet)
+Zuletzt aktualisiert: 10.10.2026 (dritte Runde Wünsche zu „I Love It Intro“ #80 - gebaut, Abnahme offen)
+
+- **10.10.2026, „I Love It Intro“ (#80), dritte Runde Wünsche aus den Zwischenzeilen - gebaut (Version
+  `2026-10-10_0043`), alle fünf ESP32-Envs übersetzt; auf Wunsch des Users committet und gepusht (10.10.2026), Abnahme auf der Bühne offen.**
+  - Wünsche: zwölf Feuer-Impulse abwechselnd auf Lampe 1 / Lampe 2 (Takt 12,5 bis 25, in `text nerds on fire` und
+    `pause (2)`), ab Takt 27 `progWaterRipple` als Grundbild auf der Matrix unter allen folgenden Takten.
+  - Firmware: neu `progLampFireBursts(dauer, folgePart, fadeMillis, t1 … t8)` (`scenes.cpp/.h`, Vorgabe
+    `LAMP_BURST_NONE` für nicht benutzte Zeitpunkte); gemeinsamer Kern `lampFireBurstCore()` mit
+    `progLampFireBurst` (dessen Verhalten ist unverändert). Nicht in Demo 92 (Lampen-Effekt mit festen Zeitpunkten).
+  - Show: `text nerds on fire` - `LAMPE1` bei Takt 12,55 / 16,55 / 18,55 / 20,55 / 22,55, `LAMPE2` bei 14,55 / 17 /
+    19 / 21 / 23; `pause (2)` - `LAMPE1` 24,55, `LAMPE2` 25, Wellen als `overlay` nur auf der Matrix mit
+    `from: 13.35` (= Takt 27) und `fade_in: 2`; `text songtitel` - Wellen als Matrix-Effekt, `transition: fade`
+    (2 Beats) über den Neustart des Effekts; Tail - Wellen darunter, THE / NERDS / ON als Text-Ebene
+    (`over: true`, `pulse` und `under: 30` im `text:` statt `pulse` auf dem ganzen Bild). Strobo unverändert.
+  - **Vierte Runde (10.10.2026, Version `2026-10-10_0056`, alle fünf Envs + OTA gebaut):** die Wünsche der dritten
+    Runde hat der User aus der Tabelle gelöscht (= angenommen) und zwölf weitere Feuer-Impulse eingetragen.
+    `pause (2)`: `LAMPE1` 24,55 / 26,55 / 28,55 / 30,55 / 32,55, `LAMPE2` 25 / 27 / 29 / 31 (jetzt
+    `progLampFireBursts`); `text songtitel`: `LAMPE2` 34,55 / 36,55, `LAMPE1` 35; im Tail (ab Takt 37, dort kein
+    `${bar:...}`) `LAMPE1` bei `${beats:6.2}` = Takt 38,55 und `LAMPE2` bei `${beats:14.2}` = Takt 40,55. Der
+    `cues`-Eintrag 27 beschreibt jetzt Impuls und Beginn der Wellen.
+  - Generator unverändert. Die anderen Songs wurden nicht neu generiert.
+  - Doku mitgezogen: Effekt-Katalog, `LED-Effekte-und-Szenen.html`, `Song-Workflow.html`, SKILL.md.
+  - **Offen beim User:** (1) Zeitpunkte der Lampe-2-Impulse auf ganzen Takten (17, 19, 21, 23, 25) sind genau auf
+    die 1 gesetzt, 14,5 auf 14,55 - so gelesen, nicht bestätigt; (2) der Strobo am Schluss zeigt auf der Matrix
+    weiter Strobo mit „FIRE“, keine Wellen; (3) die Wellen starten an den Part-Grenzen (Takt 34,25 und 37) neu -
+    falls das stört, bräuchte `progWaterRipple` eine Fassung, die ihren Zustand über die Part-Grenze behält;
+    (4) Abnahme auf der Bühne.
+  - **Nächster Schritt:** Rückmeldung des Users nach dem Test abwarten. Danach ggf. die anderen drei Vorspanne
+    (`DancingOnMyOwnIntro_v1`, `KidsIntro_v1`, `PhysicalIntro_v1`).
 
 - **09.10.2026, weiche Farbwechsel für den Stern (Wunsch des Users: „progStern / progSternNeu -> bitte eine option
   einbauen, dass man die farbwechsel auch faden kann“) - abgenommen am 09.10.2026 („sieht gut aus, bitte committen“)

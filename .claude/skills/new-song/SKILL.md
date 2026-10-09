@@ -193,7 +193,14 @@ Schlüssel auf Song-Ebene verbinden ihn mit seinem Song:
 - **Akzent auf einem einzelnen Gerät zu einem Zeitpunkt** (Wunsch „Farbimpuls auf Lampe 1“): ein Effekt, der seinen
   Zeitpunkt als Parameter bekommt, unter `devices:` - z. B.
   `LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:10.55}, ${beats:2})"` (bis dahin dunkel, dann die ganze Lampe in
-  voller Flamme, klingt in 2 Beats ab; Abnahme durch den User offen). `${bar:N}` = ms seit Part-Beginn bis zur
+  voller Flamme, klingt in 2 Beats ab; Abnahme durch den User offen). Mehrere Impulse in einem Part (10.10.2026, Impulse springen
+  zwischen den Lampen hin und her): `progLampFireBursts(${dur}, ${next}, ${beats:2}, ${bar:12.55}, ${bar:16.55}, ...)`
+  - das Ausklingen steht vor den bis zu 8 Zeitpunkten, jede Lampe bekommt nur ihre eigenen.
+- **Grundbild ab einer Stelle mitten im Part** (Wunsch „ab Takt 27 Wasserwellen auf der Matrix unter allem, was
+  folgt“): im Part der Stelle als `overlay: {devices: {matrix: "..."}, from: <Beats ab Part-Beginn>, fade_in: 2}`,
+  in den Parts danach als `devices: {matrix: ...}`. Text darüber dann mit `over: true` und `pulse` / `under` IM
+  `text:` (ein `pulse` auf Abschnittsebene ließe das Grundbild mitpumpen). Jeder Part startet den Effekt neu:
+  `transition: fade` oder ein Blinder auf der Grenze verdecken das. `${bar:N}` = ms seit Part-Beginn bis zur
   Taktnummer N der Tabelle (auch Werte zwischen den Vierteln), `${beats:N}` = Länge von N Beats in ms.
 - **Mehrere Einblendungen im festen Abstand** (dreimal „THE“ alle 2 Takte, jeweils ausblendend): den Part per `tail`
   so teilen, dass der erste Einsatz auf dem Tail-Beginn liegt, das Wort mit `per` länger als der Tail durchgehend

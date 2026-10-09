@@ -1,0 +1,9 @@
+zeit: '2026-10-10 00:43:41'
+notiz: '3. Runde Wünsche: Feuer-Impulse im Wechsel Lampe 1/2 (Takt 12,5-25), Wasserwellen
+  ab Takt 27 auf der Matrix unter allem'
+werkzeug_git: 56a2a74 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a790c6b3749d834bb02adda86e81491c51a0fdc9fcb211a419f13484c0f46b43
+  show.yaml: a47597a5c2c7596aebf78c75c3cdaf1d97d740dd62f66a662c481c29dd608128
+  generated.cpp: dee87c609f845281e56b0c17862e2f04fdfe1d7fa3b914ed0db567ebddf6df7f

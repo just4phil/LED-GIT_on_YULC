@@ -1,0 +1,8 @@
+zeit: '2026-10-10 00:56:51'
+notiz: '4. Runde Wünsche: Feuer-Impulse im Wechsel Lampe 1/2 weiter bis Takt 40,5'
+werkzeug_git: 56a2a74 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f822bd4610a0e861ca6b88009c49f4e98114b82b17b4ec253717f25d36f022fa
+  show.yaml: 30735b7742a8c4f9f5e8fd33f9e6b15bb84d89c457491488b8eec3068fdfe059
+  generated.cpp: faf408ae30cff2e29ac618b964f096101176dbca705b2d25774aff1f2434a137

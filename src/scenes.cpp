@@ -342,6 +342,45 @@ void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire) {
 	fxShow();
 }
 
+// Gemeinsamer Kern von progLampFireBurst() (ein Impuls) und progLampFireBursts() (mehrere Impulse in einem Part).
+//   starts  Liste der Zeitpunkte in ms seit Part-Beginn ("const unsigned int*" = Zeiger auf das erste Element eines
+//           Arrays, das hier nur gelesen wird); Einträge mit LAMP_BURST_NONE zählen nicht
+//   count   Anzahl der Einträge in der Liste
+// "static" vor der Funktion: sie ist nur in dieser Datei sichtbar.
+static void lampFireBurstCore(unsigned int durationMillis, byte nextPart, const unsigned int* starts, uint8_t count,
+                              unsigned int fadeMillis, bool blueFire) {
+	static int8_t litBurst;	// Nummer des Impulses, der gerade brennt (-1 = keiner); static = bleibt zwischen den Aufrufen erhalten
+	if (fxPartStart(durationMillis, nextPart)) litBurst = -1;
+
+	if (fxFrameDue(20)) {
+		unsigned long ms = millisCounterForProgChange;
+		// Welcher Impuls ist dran? Der späteste, dessen Zeitpunkt schon erreicht ist. Die Reihenfolge der Liste ist
+		// dadurch egal, und überlappen sich zwei Impulse, zündet der neuere die Lampe einfach neu.
+		int8_t cur = -1;
+		for (uint8_t i = 0; i < count; i++) {
+			if (starts[i] == LAMP_BURST_NONE || starts[i] > ms) continue;
+			if (cur < 0 || starts[i] > starts[cur]) cur = i;
+		}
+		if (cur < 0 || fadeMillis == 0 || ms - starts[cur] >= fadeMillis) {
+			fill_solid(leds, anz_LEDs, CRGB::Black);	// vor, zwischen und nach den Impulsen: dunkel
+		}
+		else {
+			if (litBurst != cur) {
+				litBurst = cur;
+				// Zündung: unten 255 (weiß), nach oben gleichmäßig fallend bis 150 (kräftiges Orange) - nichts bleibt dunkel
+				for (int h = 0; h < anz_LEDs; h++) lampHeat[h] = 255 - (long)h * 105 / anz_LEDs;
+			}
+			else fire2012Step(lampHeat, anz_LEDs);	// erst ab dem zweiten Bild: das erste zeigt die volle Flamme
+			uint8_t level = 255 - (ms - starts[cur]) * 255 / fadeMillis;	// Helligkeit: 255 beim Impuls, 0 am Ende
+			for (int h = 0; h < anz_LEDs; h++) {
+				CRGB c = blueFire ? ColorFromPalette(outlineBlueFire_p, lampHeat[h]) : HeatColor(lampHeat[h]);
+				leds[lampLed(h)] = c.nscale8(level);
+			}
+		}
+	}
+	fxShow();
+}
+
 // Feuer-Impuls an der Lampe: ein einzelner Akzent mitten in einem sonst dunklen Part (Wunsch des Users zum Intro von
 // "I Love It", 09.10.2026: "kurzer Farbimpuls auf Lampe 1, Vollausschlag mit dem FIRE-Muster, Fade-out innerhalb
 // eines halben Taktes").
@@ -354,29 +393,19 @@ void progLampFire(unsigned int durationMillis, byte nextPart, bool blueFire) {
 // Die Zeit kommt aus millisCounterForProgChange (ms seit Part-Beginn): so sitzt der Impuls auf jedem Gerät an
 // derselben Stelle, egal wie schnell es seine Bilder ausgibt.
 void progLampFireBurst(unsigned int durationMillis, byte nextPart, unsigned int startMillis, unsigned int fadeMillis, bool blueFire) {
-	static bool lit;	// brennt der Impuls schon? (static = der Wert bleibt zwischen den Aufrufen erhalten)
-	if (fxPartStart(durationMillis, nextPart)) lit = false;
+	lampFireBurstCore(durationMillis, nextPart, &startMillis, 1, fadeMillis, blueFire);	// "&startMillis" = Liste mit genau einem Eintrag
+}
 
-	if (fxFrameDue(20)) {
-		unsigned long ms = millisCounterForProgChange;
-		if (ms < startMillis || fadeMillis == 0 || ms - startMillis >= fadeMillis) {
-			fill_solid(leds, anz_LEDs, CRGB::Black);	// vor und nach dem Impuls: dunkel
-		}
-		else {
-			if (!lit) {
-				lit = true;
-				// Zündung: unten 255 (weiß), nach oben gleichmäßig fallend bis 150 (kräftiges Orange) - nichts bleibt dunkel
-				for (int h = 0; h < anz_LEDs; h++) lampHeat[h] = 255 - (long)h * 105 / anz_LEDs;
-			}
-			else fire2012Step(lampHeat, anz_LEDs);	// erst ab dem zweiten Bild: das erste zeigt die volle Flamme
-			uint8_t level = 255 - (ms - startMillis) * 255 / fadeMillis;	// Helligkeit: 255 beim Impuls, 0 am Ende
-			for (int h = 0; h < anz_LEDs; h++) {
-				CRGB c = blueFire ? ColorFromPalette(outlineBlueFire_p, lampHeat[h]) : HeatColor(lampHeat[h]);
-				leds[lampLed(h)] = c.nscale8(level);
-			}
-		}
-	}
-	fxShow();
+// Mehrere Feuer-Impulse in einem Part (Wunsch des Users zum Intro von "I Love It", 10.10.2026: die Impulse springen
+// über viele Takte zwischen Lampe 1 und Lampe 2 hin und her - jede Lampe bekommt ihre eigenen Zeitpunkte).
+//   fadeMillis  so lange klingt jeder Impuls ab (ms) - steht hier VOR den Zeitpunkten, weil deren Anzahl wechselt
+//   t1 ... t8   Zeitpunkte in ms seit Part-Beginn; nicht benötigte einfach weglassen (Vorgabe LAMP_BURST_NONE im Header)
+// Zwischen den Impulsen und danach ist die Lampe dunkel.
+void progLampFireBursts(unsigned int durationMillis, byte nextPart, unsigned int fadeMillis,
+                        unsigned int t1, unsigned int t2, unsigned int t3, unsigned int t4,
+                        unsigned int t5, unsigned int t6, unsigned int t7, unsigned int t8) {
+	const unsigned int starts[] = { t1, t2, t3, t4, t5, t6, t7, t8 };
+	lampFireBurstCore(durationMillis, nextPart, starts, 8, fadeMillis, false);
 }
 
 // Drei Lichtpunkte pendeln an der Lampe auf und ab (Gegenstück der Lampen zum drehenden Stern der anderen Geräte).
