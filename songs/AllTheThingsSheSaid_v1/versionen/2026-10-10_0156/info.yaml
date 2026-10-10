@@ -1,0 +1,9 @@
+zeit: '2026-10-10 01:56:23'
+notiz: 'trailer_entry: Einstieg des neuen Vorspanns (Song 82) in ''intro: all thet
+  ….'', Titel-Lauftext ab dort auf der Matrix'
+werkzeug_git: 4b382c8 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
+  show.yaml: 2ebf5e9b09de0904108657936a3413ed23c8ed0246f110956d335441eabed482
+  generated.cpp: 4722623d65691abb52d386c92f8ce81267c2aeefbecf0fdbe544d3dca7f743a7

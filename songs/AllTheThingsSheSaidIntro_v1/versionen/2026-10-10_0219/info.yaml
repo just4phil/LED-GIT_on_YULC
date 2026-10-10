@@ -1,0 +1,8 @@
+zeit: '2026-10-10 02:19:31'
+notiz: NERDS ON FIRE nur 1x (90 ms je Pixel), FIRE bei Takt 28 laut Tabelle
+werkzeug_git: 4b382c8 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a2a4655adb0f2e12684d79b337a0dab490720c1b07df02c35c4b23289c316931
+  show.yaml: 05f6eb9927e28014c94d833298c16b977c7261457e72d9046e09af147e2fefc1
+  generated.cpp: 1064abcd399f9ac95937525a2c6e814ef2c475ffc520385aca0957119b0a6ec5

@@ -1,0 +1,9 @@
+zeit: '2026-10-10 01:56:28'
+notiz: 'erste grobe Fassung: Effekte aus ILoveItIntro_v1 über die Zeit auf 86 BPM
+  umgerechnet, Schluss gestaucht'
+werkzeug_git: 4b382c8 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 22d9a04937579427d8961810414998a7778c60f04092e38af22431a80961edad
+  show.yaml: 069105003a5c5d862611972f0d4d4705d6bb9dadce94f419fd9fe83866f5784d
+  generated.cpp: e2c43169770e04ecd32a6c53b75457fd85c2a0db0e7c39c8645e19d33fd104e9

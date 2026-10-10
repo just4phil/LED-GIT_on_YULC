@@ -1,0 +1,8 @@
+zeit: '2026-10-10 02:23:16'
+notiz: 'Titel-Lauftext bei Takt 17 entfernt: er läuft erst im Song (trailer_entry)'
+werkzeug_git: 4b382c8 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a2a4655adb0f2e12684d79b337a0dab490720c1b07df02c35c4b23289c316931
+  show.yaml: 1b394f0109bc8afc04b00baa71bb964edf933a08f548aff6c52ced29b1f71927
+  generated.cpp: c272683c816939acc440635275549e7f4ce1a47330200d9c4f234a99cf99951e

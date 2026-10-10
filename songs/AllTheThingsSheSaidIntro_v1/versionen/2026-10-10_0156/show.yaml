@@ -1,0 +1,160 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 10.10.2026).
+# Vorspann (Einspieler) zu "All The Things She Said" (Song-ID 82), springt bei Takt 29 ohne Pause in dessen
+# Part "intro: all thet …." (Takt 6 der Tabelle von Song #31, die Chorus-Melodie mit der ganzen Band).
+# Erste, GROBE Fassung: alle Effekte sind aus dem Vorspann zu "I Love It" (songs/ILoveItIntro_v1, 120 BPM, 42 Takte)
+# übernommen. Der Einspieler ist derselbe, liegt hier aber auf 86 BPM und endet schon bei Takt 29. Umgerechnet ist
+# deshalb über die ZEIT: ein Takt dauert dort 2000 ms, hier 2791 ms, also
+#     Takt hier = 1 + (Takt dort - 1) x 0,7167      und dann auf die nächste Viertel der Tabelle gerundet.
+# Jeder Effekt sitzt damit höchstens eine Achtel (350 ms) neben seiner Stelle im Einspieler - der User schiebt sie in
+# der Tabelle zurecht (Spalte "Änderungswunsch" der Zwischenzeile).
+# Was dabei anders ist als im Vorbild:
+#   - die 100 ms Versatz der Feuer-Impulse (dort "Takt x,55") fallen weg: hier liegt jeder Impuls auf seiner Viertel
+#   - das Ausklingen der Feuer-Impulse ist 1,5 Beats statt 2 (beides rund eine Sekunde)
+#   - der Schluss ist gestaucht: der Einspieler ist hier rund 6 Sekunden kürzer. Die drei Wörter THE / NERDS / ON
+#     kommen deshalb im Abstand von 1 Takt (Takt 25,5 / 26,5 / 27,5) statt alle 2 Takte, dazwischen je ein
+#     Feuer-Impuls; der Strobo mit "FIRE" liegt wie dort auf dem letzten halben Takt
+# Annahmen von Claude, noch nicht vom User bestätigt:
+#   - der Einspieler läuft in derselben Geschwindigkeit wie vor "I Love It" (sonst stimmt die Umrechnung über die
+#     Zeit nicht und alles muss neu aufs Raster)
+#   - die Part-Grenzen 8,75 / 17,25 / 24,75 / 28,5 sind genauso umgerechnet
+#   - Bund-Marker: dieselben vier wie bei Song #31 (case 31 in src/markerLEDs.cpp), damit sie schon im Vorspann
+#     leuchten und beim Sprung in den Song stehen bleiben - so wie case 80 die Marker von Song #9 trägt
+# Kein Titel-Lauftext im Vorspann (scroll_text: false): er läuft am Anfang des eigentlichen Songs auf der Matrix,
+# ab dem Einstieg in "intro: all thet …." (trailer_entry in songs/AllTheThingsSheSaid_v1/show.yaml).
+# Schluss: kein Schluss-Black (Zeile "Ende" der Tabelle: 0 sek.), next_song springt ohne Pause nach Song #31.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Taktnummern (bar:, cues:, ${bar:...}) zählen wie die Tabelle ab 1.
+
+function: gen_AllTheThingsSheSaidIntro
+scroll_text: false
+next_song: AllTheThingsSheSaid_v1
+
+markers:
+  all: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    # Feuer-Impulse: nur auf den beiden Lampen, alle anderen Geräte bleiben schwarz. ${bar:...} = Zeitpunkt der
+    # Taktnummer in ms seit Part-Beginn, ${beats:1.5} = Ausklingen (rund eine Sekunde).
+    devices:
+      LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:7.75}, ${beats:1.5})"
+      LAMPE2: "progLampFireBurst(${dur}, ${next}, ${bar:8.25}, ${beats:1.5})"
+    # Kurze starke Blinder: springen auf der Viertel voll auf, stehen 0,2 Beat (140 ms) und sind nach 0,7 Beat
+    # (knapp 500 ms) wieder aus. Der vierte klingt stattdessen lang über 6 Beats (gut 4 Sekunden) aus.
+    blinder:
+      - {bar: 3.25, len: 0.7, hold: 0.2, amount: 100}
+      - {bar: 3.75, len: 0.7, hold: 0.2, amount: 100}
+      - {bar: 4.5, len: 0.7, hold: 0.2, amount: 100}
+      - {bar: 5.25, len: 6, hold: 0.2, amount: 100}
+    cues:
+      3.25: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf dieser Viertel auf, 140 ms voll, nach einer halben Sekunde wieder dunkel"
+      3.75: "Blinder, gleiche Form"
+      4.5: "Blinder, gleiche Form"
+      5.25: "voller warmweißer Blinder, klingt lang über 1,5 Takte aus (bis Takt 6,75)"
+      7.75: "Feuer-Impuls nur auf Lampe 1: ganze Lampe sofort in voller Flamme, klingt in einer Sekunde ab"
+      8.25: "Feuer-Impuls nur auf Lampe 2, gleiche Form"
+    why: "Alles dunkel, der Einspieler läuft. Drei kurze Blinder (Takt 3,25 / 3,75 / 4,5), bei Takt 5,25 einer, der lang über 1,5 Takte ausklingt; am Ende ein Feuer-Impuls auf Lampe 1 und gleich danach auf Lampe 2."
+
+  "text nerds on fire":
+    fx: "progBlack(${dur}, ${next})"
+    devices:
+      matrix: "progScrollText(\"Nerds on Fire\", ${dur}, 90, getRandomColor(), ${next})"
+      # Feuer-Impulse im Wechsel: progLampFireBursts(Dauer, Folge-Part, Ausklingen, Zeitpunkte...).
+      # Jede Lampe bekommt nur ihre eigenen Zeitpunkte, dazwischen bleibt sie dunkel.
+      LAMPE1: "progLampFireBursts(${dur}, ${next}, ${beats:1.5}, ${bar:9.25}, ${bar:12.25}, ${bar:13.5}, ${bar:15}, ${bar:16.5})"
+      LAMPE2: "progLampFireBursts(${dur}, ${next}, ${beats:1.5}, ${bar:10.75}, ${bar:12.5}, ${bar:14}, ${bar:15.25}, ${bar:16.75})"
+    blinder:
+      - {bar: 9.5, len: 0.7, hold: 0.2, amount: 100}
+      - {bar: 11, len: 0.7, hold: 0.2, amount: 100}
+    cues:
+      9.25: "Feuer-Impuls nur auf Lampe 1: ganze Lampe sofort in voller Flamme, klingt in einer Sekunde ab"
+      9.5: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf dieser Viertel auf, 140 ms voll, nach einer halben Sekunde wieder dunkel"
+      10.75: "Feuer-Impuls nur auf Lampe 2, gleiche Form"
+      11: "Blinder auf der 1, gleiche Form wie bei Takt 9,5"
+      12.25: "Feuer-Impuls nur auf Lampe 1"
+      12.5: "Feuer-Impuls nur auf Lampe 2"
+      13.5: "Feuer-Impuls nur auf Lampe 1"
+      14: "Feuer-Impuls nur auf Lampe 2"
+      15: "Feuer-Impuls nur auf Lampe 1"
+      15.25: "Feuer-Impuls nur auf Lampe 2"
+      16.5: "Feuer-Impuls nur auf Lampe 1"
+      16.75: "Feuer-Impuls nur auf Lampe 2"
+    why: "Nur die Matrix zeigt den Lauftext \"Nerds on Fire\", die Gitarren sind dunkel. Kurze Blinder bei Takt 9,5 und 11. Ab Takt 9,25 springen Feuer-Impulse zwischen Lampe 1 und Lampe 2 hin und her (zehn Stück bis Takt 16,75)."
+
+  "pause (2)":
+    fx: "progBlack(${dur}, ${next})"
+    # 4 Beats Ausklingen ab Takt 24 enden bei Takt 25 - der Part aber schon bei 24,75. carry: true lässt den Blinder
+    # im Part danach ("text songtitel") den letzten Beat zu Ende klingen statt abzureißen.
+    blinder: {bar: 24, len: 4, hold: 0.2, amount: 100, carry: true}
+    # Die Reihe der Feuer-Impulse aus dem Part davor läuft weiter.
+    devices:
+      LAMPE1: "progLampFireBursts(${dur}, ${next}, ${beats:1.5}, ${bar:18}, ${bar:19.25}, ${bar:20.75}, ${bar:22.25}, ${bar:23.5})"
+      LAMPE2: "progLampFireBursts(${dur}, ${next}, ${beats:1.5}, ${bar:18.25}, ${bar:19.75}, ${bar:21}, ${bar:22.5})"
+    # Wasserwellen ab Takt 19,75, nur auf der Matrix. Die Stelle liegt mitten im Part (10 Beats nach seinem Anfang
+    # bei Takt 17,25), deshalb als Ebene mit Zeitfenster: from = ab hier sichtbar, fade_in = die Wellen tauchen über
+    # 2 Beats auf statt aufzuspringen (50 ms je Schritt, Zufallsfarben mit Farbverlauf, Einschlagstellen zufällig).
+    overlay:
+      devices: {matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"}
+      from: 10
+      fade_in: 2
+    cues:
+      18: "Feuer-Impuls nur auf Lampe 1: ganze Lampe sofort in voller Flamme, klingt in einer Sekunde ab"
+      18.25: "Feuer-Impuls nur auf Lampe 2, gleiche Form"
+      19.25: "Feuer-Impuls nur auf Lampe 1"
+      19.75: "Feuer-Impuls nur auf Lampe 2. Ab hier außerdem Wasserwellen (progWaterRipple, bunte Ringe) nur auf der Matrix, tauchen über 2 Beats auf; sie laufen als Grundbild unter allem weiter bis zum Strobo"
+      20.75: "Feuer-Impuls nur auf Lampe 1"
+      21: "Feuer-Impuls nur auf Lampe 2"
+      22.25: "Feuer-Impuls nur auf Lampe 1"
+      22.5: "Feuer-Impuls nur auf Lampe 2"
+      23.5: "Feuer-Impuls nur auf Lampe 1"
+      24: "voller warmweißer Blinder auf allen Geräten auf der 1, klingt über einen Takt aus (bis Takt 25, über die Part-Grenze hinweg)"
+    why: "Gitarren dunkel. Die Feuer-Impulse springen weiter zwischen Lampe 1 und Lampe 2 hin und her (neun Stück, Takt 18 bis 23,5). Ab Takt 19,75 laufen auf der Matrix Wasserwellen. Ein Blinder auf die 1 von Takt 24, der über einen Takt ausklingt."
+
+  "text songtitel":
+    fx: "progBlack(${dur}, ${next})"
+    # Die Wasserwellen laufen auf der Matrix weiter. Jeder Part startet den Effekt neu; transition: fade blendet
+    # deshalb über 2 Beats vom letzten Wellenbild des Parts davor ins neue.
+    # Feuer-Impulse: hier beginnt Lampe 2 (Takt 25), Lampe 1 antwortet eine Viertel später.
+    devices:
+      matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+      LAMPE1: "progLampFireBurst(${dur}, ${next}, ${bar:25.25}, ${beats:1.5})"
+      LAMPE2: "progLampFireBurst(${dur}, ${next}, ${bar:25}, ${beats:1.5})"
+    transition: {type: fade, beats: 2}
+    # Ab Takt 25,5 (die letzten 12 Beats des Parts) als eigener Schluss-Part, damit die drei Einsätze auf seinem
+    # Takt-Raster liegen (Beat 0, 4, 8 = Takt 25,5 / 26,5 / 27,5): je Einsatz das nächste Wort weiß auf der Matrix
+    # (THE, NERDS, ON - jedes 2 x 2 Beats = 1 Takt), pulse lässt das Wort jeden Takt voll aufspringen und bis auf
+    # Schwarz abklingen. Die Blinder liegen über allem und pulsieren nicht mit.
+    # Der Text ist eine Ebene über den Wasserwellen (over: true), und pulse steht IM text - so klingt nur das Wort
+    # ab, nicht die Wellen. under: 30 = solange das Wort voll da ist, sind die Wellen auf 30 % gedimmt (weiß auf
+    # bunt wäre sonst schlecht lesbar); mit dem Ausblenden des Wortes kommen sie wieder hoch.
+    tail:
+      beats: 12
+      fx: "progBlack(${dur}, ${next})"
+      # Feuer-Impulse bei Takt 26 (Lampe 1) und Takt 27 (Lampe 2), jeweils einen halben Takt vor dem nächsten Wort.
+      # Im tail gibt es kein ${bar:...}: der Schluss-Part beginnt bei Takt 25,5, also 2 und 6 Beats nach seinem Anfang.
+      devices:
+        matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+        LAMPE1: "progLampFireBurst(${dur}, ${next}, ${beats:2}, ${beats:1.5})"
+        LAMPE2: "progLampFireBurst(${dur}, ${next}, ${beats:6}, ${beats:1.5})"
+      text: {words: "THE*2 NERDS*2 ON*2", per: half, color: weiss, over: true, pulse: {depth: 100, per: 4}, under: 30}
+      blinder:
+        - {at: 0, len: 2, hold: 0.5, amount: 100}
+        - {at: 4, len: 2, hold: 0.5, amount: 100}
+        - {at: 8, len: 2, hold: 0.5, amount: 100}
+    cues:
+      25: "Feuer-Impuls nur auf Lampe 2: ganze Lampe sofort in voller Flamme, klingt in einer Sekunde ab"
+      25.25: "Feuer-Impuls nur auf Lampe 1, gleiche Form"
+      25.5: "voller warmweißer Blinder auf allen Geräten (1,4 Sekunden), dazu \"THE\" weiß auf der Matrix: springt auf, blendet über einen Takt aus"
+      26: "Feuer-Impuls nur auf Lampe 1"
+      26.5: "Blinder + \"NERDS\" weiß auf der Matrix, gleiche Form"
+      27: "Feuer-Impuls nur auf Lampe 2"
+      27.5: "Blinder + \"ON\" weiß auf der Matrix, gleiche Form"
+    why: "Gitarren dunkel, auf der Matrix laufen die Wasserwellen weiter, auf den Lampen noch vier Feuer-Impulse im Wechsel (Takt 25 bis 27). Ab Takt 25,5 dreimal im Abstand von einem Takt: Blinder auf allen Geräten und ein Wort weiß auf der Matrix über den Wellen, das jeweils ausblendet - THE, NERDS, ON."
+
+  "strobo":
+    fx: "progStrobo(${dur}, ${next}, 83, getRandomColor(), getRandomColor(), getRandomColor())"
+    # "FIRE" schwarz ausgestanzt über dem Strobo. per: bar (länger als der Part) = das Wort steht den ganzen Part,
+    # die Buchstaben bleiben dunkel, drumherum blitzt der Strobo.
+    text: {words: "FIRE", per: bar, over: true, color: schwarz}
+    why: "Strobo in Zufallsfarben auf allen Geräten; auf der Matrix ist \"FIRE\" schwarz aus dem Strobo ausgestanzt. Danach ohne Pause in den Band-Einsatz von All The Things She Said (Stern in Neon)."

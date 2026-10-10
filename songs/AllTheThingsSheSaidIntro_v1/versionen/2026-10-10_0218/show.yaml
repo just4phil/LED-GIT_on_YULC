@@ -1,0 +1,123 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 10.10.2026).
+# Vorspann (Einspieler) zu "All The Things She Said" (Song-ID 82), springt bei Takt 29 ohne Pause in dessen
+# Part "intro: all thet …." (Takt 6 der Tabelle von Song #31, die Chorus-Melodie mit der ganzen Band).
+# Zweite Fassung (10.10.2026): der User hat alle Stellen selbst aufs Raster gelegt (Spalte "Änderungswunsch" der
+# Zwischenzeilen) - es gilt nur noch, was dort steht. Die erste Fassung war aus dem Vorspann zu "I Love It"
+# umgerechnet; ihre Feuer-Impulse auf den Lampen stehen nicht mehr in der Tabelle und sind deshalb entfallen.
+# Wünsche und ihre Umsetzung:
+#   Takt 3, 4, 5        kurzer starker Blinder, eine Viertel lang
+#   Takt 6, 8, 9,5      starker Blinder, klingt über 1 Takt aus (der bei 9,5 reicht über die Part-Grenze: carry)
+#   Takt 10             Lauftext "NERDS ON FIRE" 2x auf der Matrix (bis Takt 17, 75 ms je Pixel)
+#   Takt 15             Wasserwellen (progWaterRipple) auf der Matrix, bis zum Strobo
+#   Takt 17             Lauftext Songtitel + Interpret 1x über den Wellen (bis Takt 23,5, 69 ms je Pixel)
+#   Takt 20, 21,5       starker Blinder, klingt über 1 Takt aus
+#   Takt 23,5 / 25 / 26,5 / 28   Blinder + ein Wort weiß auf der Matrix: THE, NERDS, ON, FIRE
+#   Takt 28,5           Strobo, "FIRE" schwarz ausgestanzt
+# Die Matrix zeigt ab Takt 10 und ab Takt 17 etwas anderes als davor - das geht nur mit eigenen Parts. Die Zeilen
+# 10 und 17 der Tabelle brauchen deshalb einen Songpart-Namen: "text nerds on fire" und "text songtitel".
+# Annahmen von Claude, noch nicht vom User bestätigt:
+#   - Takt 28: in der Tabelle steht dort ein zweites Mal "NERDS" (wie bei Takt 25). Umgesetzt ist "FIRE" - zusammen
+#     THE NERDS ON FIRE, das Wort bleibt dann im Strobo ausgestanzt stehen
+#   - "NERDS ON FIRE" 2x läuft bis Takt 17 (dort beginnt der nächste Lauftext); ab Takt 15 liegen die Wellen darüber
+#   - der Songtitel ist bei Takt 23,5 fertig, weil dort das erste Wort kommt
+#   - Bund-Marker: dieselben vier wie bei Song #31 (case 31 in src/markerLEDs.cpp), damit sie schon im Vorspann
+#     leuchten und beim Sprung in den Song stehen bleiben - so wie case 80 die Marker von Song #9 trägt
+# scroll_text: false = kein automatischer Titel-Lauftext am Anfang des Vorspanns (der Titel kommt bei Takt 17 als
+# Wunsch). Achtung: nach dem Sprung läuft der Titel auf der Matrix noch einmal (trailer_entry in
+# songs/AllTheThingsSheSaid_v1/show.yaml macht das immer so).
+# Schluss: kein Schluss-Black (Zeile "Ende" der Tabelle: 0 sek.), next_song springt ohne Pause nach Song #31.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Taktnummern (bar:, cues:, ${bar:...}) zählen wie die Tabelle ab 1.
+
+function: gen_AllTheThingsSheSaidIntro
+scroll_text: false
+next_song: AllTheThingsSheSaid_v1
+
+markers:
+  all: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    # "kurzer starker Blinder eine viertel": springt auf dem Schlag voll auf, steht 0,3 Beat (210 ms) und ist nach
+    # genau einer Viertel (698 ms) wieder aus.
+    # "starker Blinder fadet 1 takt lang aus": springt auf, steht 0,2 Beat (140 ms), klingt bis zum Ende des Takts
+    # (4 Beats) aus. Der bei Takt 9,5 endet erst bei 10,5 - der Part aber schon bei 10: carry: true lässt ihn im
+    # Part danach zu Ende klingen statt abzureißen.
+    blinder:
+      - {bar: 3, len: 1, hold: 0.3, amount: 100}
+      - {bar: 4, len: 1, hold: 0.3, amount: 100}
+      - {bar: 5, len: 1, hold: 0.3, amount: 100}
+      - {bar: 6, len: 4, hold: 0.2, amount: 100}
+      - {bar: 8, len: 4, hold: 0.2, amount: 100}
+      - {bar: 9.5, len: 4, hold: 0.2, amount: 100, carry: true}
+    cues:
+      3: "kurzer voller warmweißer Blinder auf allen Geräten: springt auf der 1 auf, 210 ms voll, am Ende der Viertel wieder dunkel"
+      4: "Blinder auf der 1, gleiche Form"
+      5: "Blinder auf der 1, gleiche Form"
+      6: "voller warmweißer Blinder auf allen Geräten auf der 1, klingt über 1 Takt aus (bis Takt 7)"
+      8: "Blinder auf der 1, klingt über 1 Takt aus (bis Takt 9)"
+      9.5: "Blinder, klingt über 1 Takt aus (bis Takt 10,5, über die Part-Grenze hinweg)"
+    why: "Alles dunkel, der Einspieler läuft. Kurze Blinder auf die 1 von Takt 3, 4 und 5; bei Takt 6, 8 und 9,5 je ein Blinder, der über einen Takt ausklingt."
+
+  "text nerds on fire":
+    fx: "progBlack(${dur}, ${next})"
+    # 2 Durchläufe in 7 Takten (19535 ms): ein Durchlauf ist (54 - 2 + 6 x 13 Zeichen) x 75 ms = 9750 ms.
+    devices:
+      matrix: "progScrollText(\"NERDS ON FIRE\", ${dur}, 75, getRandomColor(), ${next})"
+    # Wasserwellen ab Takt 15, nur auf der Matrix. Takt 15 liegt mitten im Part (20 Beats nach seinem Anfang bei
+    # Takt 10), deshalb als Ebene mit Zeitfenster: from = ab hier sichtbar, fade_in = die Wellen tauchen über
+    # 2 Beats auf statt aufzuspringen (50 ms je Schritt, Zufallsfarben mit Farbverlauf, Einschlagstellen zufällig).
+    overlay:
+      devices: {matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"}
+      from: 20
+      fade_in: 2
+    cues:
+      15: "Ab hier Wasserwellen (progWaterRipple, bunte Ringe) nur auf der Matrix, tauchen über 2 Beats auf; sie laufen als Grundbild weiter bis zum Strobo. Der Lauftext läuft darin weiter"
+    why: "Nur die Matrix: Lauftext \"NERDS ON FIRE\", zweimal bis Takt 17. Ab Takt 15 kommen Wasserwellen dazu. Alle anderen Geräte sind dunkel."
+
+  "text songtitel":
+    fx: "progBlack(${dur}, ${next})"
+    # Die Wasserwellen laufen auf der Matrix weiter. Jeder Part startet den Effekt neu; transition: fade blendet
+    # deshalb über 2 Beats vom letzten Wellenbild des Parts davor ins neue.
+    devices:
+      matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    transition: {type: fade, beats: 2}
+    # Songtitel 1x als Lauftext über den Wellen, genau bei Takt 23,5 fertig (dort beginnt der Schluss-Part).
+    # under: 30 = die Wellen sind unter der Schrift auf 30 % gedimmt, sonst wäre sie schlecht lesbar.
+    text: {scroll: "All The Things She Said by t.A.T.u.", color: weiss, over: true, under: 30}
+    blinder:
+      - {bar: 20, len: 4, hold: 0.2, amount: 100}
+      - {bar: 21.5, len: 4, hold: 0.2, amount: 100}
+    # Ab Takt 23,5 (die letzten 20 Beats des Parts) als eigener Schluss-Part, damit die vier Einsätze auf seinem
+    # Raster von 1,5 Takten liegen (Beat 0, 6, 12, 18 = Takt 23,5 / 25 / 26,5 / 28): je Einsatz das nächste Wort
+    # weiß auf der Matrix (THE, NERDS, ON je 3 x 2 Beats, FIRE die letzten 2 Beats bis zum Strobo), pulse lässt das
+    # Wort alle 6 Beats voll aufspringen und bis auf Schwarz abklingen. Die Blinder liegen über allem.
+    # Der Text ist eine Ebene über den Wellen (over: true), und pulse steht IM text - so klingt nur das Wort ab,
+    # nicht die Wellen. under: 30 = solange das Wort voll da ist, sind die Wellen auf 30 % gedimmt.
+    tail:
+      beats: 20
+      fx: "progBlack(${dur}, ${next})"
+      devices:
+        matrix: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+      text: {words: "THE*3 NERDS*3 ON*3 FIRE*1", per: half, color: weiss, over: true, pulse: {depth: 100, per: 6}, under: 30}
+      blinder:
+        - {at: 0, len: 2, hold: 0.5, amount: 100}
+        - {at: 6, len: 2, hold: 0.5, amount: 100}
+        - {at: 12, len: 2, hold: 0.5, amount: 100}
+        - {at: 18, len: 2, hold: 0.5, amount: 100}
+    cues:
+      20: "voller warmweißer Blinder auf allen Geräten auf der 1, klingt über 1 Takt aus (bis Takt 21)"
+      21.5: "Blinder, klingt über 1 Takt aus (bis Takt 22,5)"
+      23.5: "voller warmweißer Blinder auf allen Geräten (1,4 Sekunden), dazu \"THE\" weiß auf der Matrix über den Wellen: springt auf, blendet über 1,5 Takte aus"
+      25: "Blinder + \"NERDS\" weiß auf der Matrix, gleiche Form"
+      26.5: "Blinder + \"ON\" weiß auf der Matrix, gleiche Form"
+      28: "Blinder + \"FIRE\" weiß auf der Matrix (in der Tabelle steht hier noch einmal NERDS - als Tippfehler gelesen: THE NERDS ON FIRE); bleibt im Strobo ausgestanzt stehen"
+    why: "Auf der Matrix laufen die Wasserwellen weiter, darüber einmal der Lauftext \"All The Things She Said by t.A.T.u.\" (bis Takt 23,5). Blinder bei Takt 20 und 21,5, je über einen Takt ausklingend. Ab Takt 23,5 viermal im Abstand von 1,5 Takten: Blinder auf allen Geräten und ein Wort weiß über den Wellen - THE, NERDS, ON, FIRE. Alle anderen Geräte sind dunkel."
+
+  "strobo":
+    fx: "progStrobo(${dur}, ${next}, 83, getRandomColor(), getRandomColor(), getRandomColor())"
+    # "FIRE" schwarz ausgestanzt über dem Strobo. per: bar (länger als der Part) = das Wort steht den ganzen Part,
+    # die Buchstaben bleiben dunkel, drumherum blitzt der Strobo.
+    text: {words: "FIRE", per: bar, over: true, color: schwarz}
+    why: "Strobo in Zufallsfarben auf allen Geräten; auf der Matrix ist \"FIRE\" schwarz aus dem Strobo ausgestanzt. Danach ohne Pause in den Band-Einsatz von All The Things She Said (Stern in Neon)."

@@ -8,8 +8,6 @@ billi: ganz kure blinder auf die synths im intro?
 
 wir müssen die zonen auf andresgit noch testen
 
-progStern / progSternNeu -> bitte eine option einbauen, dass man die farbwechsel auch faden kann
-
 neuer fx:
 - ausblend-fx alle geräte stehen voll in einer farbe und dann fährt wird auf der matrix zeilenweise nach unten gefahren bis alles schwarze ist (inkl fading damit es smooth wirkt)
     genauso bei den Lampen (von oben nach unten) -> uind die gits?

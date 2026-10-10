@@ -556,6 +556,9 @@ void loop() {
 		// bei case 8 und 28, wo ein generierter Song einen handgeschriebenen ersetzt). Markierung und
 		// Kennzeichen nicht von Hand ändern oder löschen - songgen.py findet seine Stellen darüber.
 		// >>> GENERATED SONGS (tools/songgen.py) >>>
+		case 82:
+			gen_AllTheThingsSheSaidIntro(); // <<< GENERATED SONGS <<<
+			break;
 		case 33:
 			gen_GirlsJustWannaHaveFun(); // <<< GENERATED SONGS <<<
 			break;

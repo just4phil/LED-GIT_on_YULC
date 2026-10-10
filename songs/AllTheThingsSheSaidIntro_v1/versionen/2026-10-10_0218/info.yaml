@@ -1,0 +1,9 @@
+zeit: '2026-10-10 02:18:22'
+notiz: 'Fassung nach der Tabelle des Users: Blinder, NERDS ON FIRE 1x, Wellen ab 15,
+  Songtitel ab 17, THE/NERDS/ON/FIRE ab 23,5; Feuer-Impulse entfallen'
+werkzeug_git: 4b382c8 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a2a4655adb0f2e12684d79b337a0dab490720c1b07df02c35c4b23289c316931
+  show.yaml: c4617d9265adf823bed74e71f9263fdf636eab034827f5d730ea875f54dc26dd
+  generated.cpp: dc5a38049290af92ea77fbacbced00a97f62923c4e20fed31771becefba027e2

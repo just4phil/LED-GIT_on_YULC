@@ -190,9 +190,9 @@ firmware. Details: `docs/OTA-Update.html`.
 | 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
 | 12 | Such A Shame | | 80 | I Love It (trailer) * |
 | 13 | In The Dark | | 81 | Dancing On My Own (intro) |
-| 14 | Shivers | | 90-92 | Demo songs for effects, scenes and the output stage |
-| 15 | abcdefu * | | 99 | Startup animation |
-| 16 | Enjoy The Silence | | | |
+| 14 | Shivers | | 82 | All The Things She Said (trailer) * |
+| 15 | abcdefu * | | 90-92 | Demo songs for effects, scenes and the output stage |
+| 16 | Enjoy The Silence | | 99 | Startup animation |
 
 \* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp` and are being
 replaced one by one.
