@@ -1,0 +1,9 @@
+zeit: '2026-10-10 17:09:55'
+notiz: 'Riff: Blinder leuchten nicht mehr in die Aus-Viertel (Einsatz-Blinder 1 Beat,
+  Lampen-Blitz in chorus 2 auf 1 und 3)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 6b4099762f7d7494b3269b08e599d441c4a47f318909d546e8da0fa593c8a4cb
+  show.yaml: dc69ba227a4e4a6c92594d648ce93c32c9072ef889d0d8f3185a88929c90939b
+  generated.cpp: 33451619318f263736e39b14bccd6ad9c8b1d709f0ef49160bc2f7dc640fabe3

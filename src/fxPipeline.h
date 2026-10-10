@@ -71,6 +71,9 @@ void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Eb
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// nur die Ebene blitzt im Raster (wie fxGate)
 void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die Ebene da ist (255 = unverändert):
 												// folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor
+void fxLayerOutline();							// schwarzer Rand (1 LED, auch schräg) um alles, was die Ebene zeichnet - nur auf der Matrix.
+												// Für Text über hellem Bild oder über einem Blinder (fxBlinderUnderText): die Buchstaben
+												// bleiben lesbar. Der Rand ist so stark, wie die Ebene gerade deckt, und blendet mit ihr aus
 // Für den Effekt, der gerade in einer Ebene zeichnet (nicht für den case): Deckkraft seiner Ebene, 255 = voll.
 // progText lässt damit ein Wort abklingen - die Szene darunter scheint zunehmend durch, statt dass dunkle
 // Buchstaben auf ihr stehen bleiben. Rückgabe false = es zeichnet gerade keine Ebene (der Effekt läuft direkt
@@ -96,6 +99,7 @@ void fxTextFadeOut(unsigned int millis);
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);
 void fxTextUnder(uint8_t brightness);
+void fxTextOutline();	// schwarzer Rand um die Buchstaben der Text-Ebene (wie fxLayerOutline)
 
 //--- Farbverlauf in der Schrift: progText / progTextScroll färben die Buchstaben nicht einfarbig, sondern mit einer
 //    Palette (paletteID wie bei progPalette, FXprograms.h; PALETTE_SCHEME = Verlauf aus dem aktiven Farbschema).
@@ -135,7 +139,8 @@ void fxTransition(uint8_t type, unsigned int durationMillis);	// type = einer de
 void fxFadeIn(unsigned int millis);				// Helligkeit steigt am Part-Anfang von 0 an
 void fxFadeOut(unsigned int millis);			// Helligkeit fällt in den letzten millis des Parts auf 0
 void fxPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);	// pumpt im Beat: hell auf dem Schlag, fällt bis auf (255 - depth) ab; ein Puls = beats Beats
-void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// Strobo-Tor: perBeat-mal pro Beat an/aus
+void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50, uint8_t beats = 1);	// Strobo-Tor: perBeat-mal pro Beat an/aus;
+												// beats > 1 = langsamer: ein An/Aus-Schritt dauert beats Beats (2 = Viertel an, Viertel aus)
 void fxDim(uint8_t brightness);					// gleichmäßig dunkler (255 = unverändert)
 void fxMaskStage(uint8_t devMask, uint8_t others = 0);	// nur Geräte aus devMask (DEV_…) leuchten voll, der Rest mit others
 void fxMaskSpan(uint8_t from, uint8_t to);		// nur ein Abschnitt des Geräts leuchtet (0..255 entlang der Wipe-Richtung)
@@ -172,6 +177,8 @@ void fxBlinderSlot(uint8_t slot);				// mehrere Blinder in einem Part: wählt de
 												// Jeder Platz ist ein eigener Blinder mit eigenem Zeitpunkt, Verlauf, Farbe und Geräten; überlappen
 												// sich zwei, zeigt das Gerät den stärkeren. Wer Plätze benutzt, ruft fxBlinderSlot vor JEDEM Blinder auf
 												// (auch 0 für den ersten), weil die Anmeldungen bei jedem Loop-Durchlauf wiederholt werden
+void fxBlinderUnderText();		// die Blinder dieses Parts liegen UNTER der obersten Ebene (dem Text) statt über allem: der Text
+								// steht dann auf dem hellen Blinder als Hintergrund, statt überstrahlt zu werden. Geräte ohne Ebene: wie bisher
 void fxBlinderCarry(unsigned int elapsedMillis);	// der Blinder dieses Platzes hat schon im Part DAVOR begonnen und klingt hier nur noch aus:
 												// elapsedMillis = so lange vor dem Part-Beginn war sein Moment der vollen Helligkeit. Anmelden wie im
 												// Part davor (gleiche Länge, gleicher Verlauf), aber mit atMillis 0 - dann läuft die Kurve nahtlos weiter.

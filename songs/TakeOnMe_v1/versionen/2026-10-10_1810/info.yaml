@@ -1,0 +1,9 @@
+zeit: '2026-10-10 18:10:58'
+notiz: Blinder unter dem Text nur 50 % und kuerzer (Takt 44, 48, 52); erster tom-halfTime
+  = Wasserringe + TAKE ON ME in Takt 52
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a7e0b958a084a397956d3a735df31f6f9981589a2408b57d7c89b7eb5f8756d9
+  show.yaml: 50c5529dad304813f35922b6cfbe0308ea9bd5b83490aec248f6a9e297bc4320
+  generated.cpp: d39db5a001988bf5bec7f160f9a26056429dcb441e62c3ec329e5c73258562df

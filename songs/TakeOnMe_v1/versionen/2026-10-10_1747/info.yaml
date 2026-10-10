@@ -1,0 +1,8 @@
+zeit: '2026-10-10 17:47:40'
+notiz: 'Erster Refrain: Text und Blinder auch in Takt 48 (neue Zeilen in der Tabelle)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a6d7052f4bd2838479821e6c236cada533ca2b95b37cfc7476aa31adc3ceffde
+  show.yaml: 348f2603de13cd4feb6da67bbff841592785a69fb6f1b1d0efadf77089408f55
+  generated.cpp: 8a09b3cb233510b3c5f80bac544f0013b6b45cc363795575851ef3285bc3daf6

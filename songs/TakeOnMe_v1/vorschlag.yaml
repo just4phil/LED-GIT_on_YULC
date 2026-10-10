@@ -1,39 +1,5 @@
-# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# Vorschläge von Claude für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
 # In die Tabelle schreiben: python tools/songgen.py TakeOnMe --vorschlag
-# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
-# Leitidee: 80er-Synth-Pop, hell und bunt (NEON, RETRO). Das Riff ("chorus" = 12 Takte Strobo in Achteln) bleibt als
-# Motiv, bekommt aber Blinder und beim letzten Mal Glitzern. Der Refrain "take on me" wird vom ruhigen Wasser zum
-# großen Moment (Stern + Text). Die Marker (letzter durchgang (2), BRIDGE, SOLO SYNTH) müssen in eine spätere Show.
-parts:
-  "drumIntro": |-
-    Szene Pingpong, WHITE: pro Beat leuchtet ein Gerät weiß auf - nur das Schlagzeug.
-  "synthIntro": |-
-    Szene Colors Wave, NEON, soft 60: die Farbe wandert pro Beat von Gerät zu Gerät.
-  "gitIntro": |-
-    wie synthIntro, dazu Glitzern als Ebene (Sparkle 40), baut sich über die 4 Takte auf.
-  "chorus 1": |-
-    Riff-Motiv bleibt (Strobo in Achteln), aber in NEON statt Zufallsfarben; Blinder auf den Einsatz (2 Beats). Fester Look für alle Riff-Parts.
-  "verse 1": |-
-    Szene Verse, ROYAL, Farbwanderung (triad, 2 Takte): dezenter Puls, Blau/Lila wandern nach Pink (12 Takte brauchen Bewegung).
-  "take on me": |-
-    Szene Star, SUNSET mit weichen Farbwechseln (soft 60) statt Wasserringe - der Refrain. Auf der Matrix "TAKE ON ME" (ein Wort pro Takt) über dem Stern. Fester Look für alle drei.
-  "tom-halfTime": |-
-    Halftime sichtbar machen: Blinder auf jede Halbe (alle 2 Beats, je 1,5 Beats lang), darunter Schwarz oder dunkles Atmen. Gilt für alle drei.
-  "letzter durchgang": |-
-    Szene Buildup über die 4 Takte, NEON: lädt sich auf, Explosion genau auf das Riff. Gilt für alle drei.
-  "chorus 2": |-
-    Riff-Motiv wie chorus 1, dazu blitzen die Lampen weiß auf 2 und 4.
-  "verse 2": |-
-    Szene Rain, NEON, Farbwanderung (triad, 2 Takte) - anderer Look als verse 1.
-  "BRIDGE": |-
-    Szene DNA Flip Scroll, ROYAL: Helix auf der Matrix wandert langsam, alle anderen pulsieren einmal je Takt (12 Takte, Marker bleiben).
-  "SOLO SYNTH": |-
-    Statt 4 Takten Schwarz: Szene Buildup, SUNSET - oder Schwarz lassen und nur in den letzten 2 Beats einen Blinder einblenden, voll auf Takt 109.
-  "chorus 3": |-
-    Riff-Motiv, SUNSET; Blinder auf den Einsatz.
-  "verse 3": |-
-    Wasserringe bleiben, weich eingeblendet (fade, 4 Beats), Farbwanderung.
-  "take on me (3)": |-
-    Stern + Text wie vorher, jetzt in FIRE.
-  "chorus 3 (2)": |-
-    Riff-Motiv in FIRE mit Glitzern darüber (Ebene Sparkle 60) - Höhepunkt. Starker Blinder auf der letzten Viertel (Takt 160,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).
+# Die Vorschläge vom 10.10.2026 hat der User in "Änderungswunsch" übernommen; sie sind in show.yaml umgesetzt
+# (Version 2026-10-10_1500). Deshalb ist die Liste leer - neue Ideen wieder unter parts: eintragen.
+parts: {}

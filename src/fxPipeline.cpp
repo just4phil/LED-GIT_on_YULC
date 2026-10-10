@@ -81,6 +81,7 @@ struct LayerMod {
 	uint8_t pulseBpm, pulseDepth, pulseBeats;	// Pumpen im Beat (pulseBpm 0 = aus)
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// Strobo-Tor (gateBpm 0 = aus)
 	uint8_t under;								// Helligkeit des Bildes darunter, solange die Ebene da ist (255 = unverändert)
+	bool outline;								// fxLayerOutline / fxTextOutline: schwarzer Rand um alles, was die Ebene zeichnet
 };
 
 // ein Blinder des Parts (fxBlinder / fxBlinderBeat / fxBlinderShape); ein Part hat FX_BLINDER_SLOTS Plätze dafür
@@ -103,6 +104,7 @@ static struct {
 	unsigned int smoothMs;						// fxSmooth
 	uint8_t pulseBpm, pulseDepth, pulseBeats;	// fxPulse
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// fxGate
+	uint8_t gateBeats;							// fxGate: ein Rasterschritt dauert so viele Beats (1 = wie bisher)
 	uint8_t dim, stageDim;						// fxDim und fxMaskStage (255 = volle Helligkeit)
 	uint8_t soft;								// fxSoft (Prozent)
 	bool textGrad;								// fxTextGradient: Farbverlauf in der Schrift angemeldet
@@ -115,6 +117,7 @@ static struct {
 	LayerMod layer[LAYER_COUNT];				// Steuerung der beiden Ebenen
 	BlinderMod blinder[FX_BLINDER_SLOTS];		// die Blinder des Parts, einer je Platz (lenMs 0 = Platz frei)
 	uint8_t blinderSlot;						// fxBlinderSlot: in diesen Platz schreiben fxBlinder / fxBlinderBeat / fxBlinderShape
+	bool blinderUnderText;						// fxBlinderUnderText: die Blinder des Parts liegen UNTER dem Text (heller Hintergrund)
 } mod;
 static bool modReady = false;	// false, bis mod zum ersten Mal mit resetMods() gefüllt wurde
 
@@ -140,10 +143,13 @@ void fxPulse(uint8_t bpm, uint8_t depth, uint8_t beats) {
 	mod.pulseDepth = depth;
 	mod.pulseBeats = max((uint8_t)1, beats);	// mindestens 1 (sonst später Division durch 0)
 }
-void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent) {
+// beats > 1 macht das Tor langsamer als der Beat: ein An/Aus-Schritt dauert dann beats Beats. Beispiel perBeat 1,
+// duty 50, beats 2: eine Viertel an, eine Viertel aus (Wunsch zu "Take On Me", 10.10.2026).
+void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent, uint8_t beats) {
 	mod.gateBpm = bpm;
 	mod.gatePerBeat = max((uint8_t)1, perBeat);
 	mod.gateDuty = min((uint8_t)100, dutyPercent);
+	mod.gateBeats = max((uint8_t)1, beats);	// mindestens 1 (sonst später Division durch 0)
 }
 // alle Anmeldungen setzen nur Werte: sie werden bei jedem Loop-Durchlauf wiederholt
 void fxDim(uint8_t brightness)	{ mod.dim = brightness; }
@@ -172,6 +178,7 @@ void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis) {
 	b.holdMs = holdMillis;
 }
 void fxBlinderCarry(unsigned int elapsedMillis)	{ mod.blinder[mod.blinderSlot].preMs = elapsedMillis; }
+void fxBlinderUnderText()	{ mod.blinderUnderText = true; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -196,6 +203,7 @@ void fxLayerFadeOut(unsigned int millis)	{ mod.layer[LAYER_FX].fadeOutMs = milli
 void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_FX], bpm, depth, beats); }
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_FX], bpm, perBeat, dutyPercent); }
 void fxLayerUnder(uint8_t brightness)		{ mod.layer[LAYER_FX].under = brightness; }
+void fxLayerOutline()						{ mod.layer[LAYER_FX].outline = true; }
 
 void fxTextWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layer[LAYER_TEXT].fromMs = fromMillis; mod.layer[LAYER_TEXT].toMs = toMillis; }
 void fxTextFadeIn(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeInMs = millis; }
@@ -203,6 +211,7 @@ void fxTextFadeOut(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeOutMs = mil
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_TEXT], bpm, depth, beats); }
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_TEXT], bpm, perBeat, dutyPercent); }
 void fxTextUnder(uint8_t brightness)		{ mod.layer[LAYER_TEXT].under = brightness; }
+void fxTextOutline()						{ mod.layer[LAYER_TEXT].outline = true; }
 
 // Farbverlauf in der Schrift: hier wird er nur gemerkt, gezeichnet wird er in fxText.cpp (progText / progTextScroll
 // fragen ihn mit fxTextGradientGet() ab).
@@ -437,11 +446,13 @@ static uint8_t pulseLevel(uint32_t beatMs, uint8_t bpm, uint8_t depth, uint8_t b
 }
 
 // Strobo-Tor: offen im ersten duty-Anteil jedes Rasterschritts
-static bool gateOpen(uint32_t beatMs, uint8_t bpm, uint8_t perBeat, uint8_t duty) {
+// beats = Länge eines Rasterschritts in Beats (1 = perBeat Schritte pro Beat; 2 = halb so schnell). Auch das wird
+// aus der Zeit seit Part-Beginn gerechnet: der erste Schritt beginnt immer genau am Part-Anfang, auf allen Geräten.
+static bool gateOpen(uint32_t beatMs, uint8_t bpm, uint8_t perBeat, uint8_t duty, uint8_t beats = 1) {
 	// Phase im Raster exakt über bpm rechnen (wie fxBeatPhase), sonst läuft das Tor gegen den Beat
 	// Beispiel: bpm 120, perBeat 2 -> 4 Rasterschritte pro Sekunde. slots % 100 läuft in jedem Schritt von 0 bis 99;
 	// bei duty 50 ist das Tor in der ersten Hälfte jedes Schritts offen.
-	uint32_t slots = (uint64_t)beatMs * bpm * perBeat * 100 / 60000;	// in Hundertstel-Rasterschritten
+	uint32_t slots = (uint64_t)beatMs * bpm * perBeat * 100 / ((uint32_t)60000 * max((uint8_t)1, beats));	// in Hundertstel-Rasterschritten
 	return slots % 100 < duty;
 }
 
@@ -544,7 +555,7 @@ static uint8_t modBrightness(uint32_t ms) {
 		}
 	}
 	if (mod.pulseBpm) v = scale8(v, pulseLevel(beatMs, mod.pulseBpm, mod.pulseDepth, mod.pulseBeats));
-	if (mod.gateBpm && !gateOpen(beatMs, mod.gateBpm, mod.gatePerBeat, mod.gateDuty)) v = 0;
+	if (mod.gateBpm && !gateOpen(beatMs, mod.gateBpm, mod.gatePerBeat, mod.gateDuty, mod.gateBeats)) v = 0;
 	return v;
 }
 
@@ -628,6 +639,37 @@ static void applySmooth(CRGB* buf) {
 	}
 }
 
+// Schwarzer Rand um alles, was die Ebene zeichnet (fxLayerOutline / fxTextOutline; Wunsch zu "Take On Me",
+// 10.10.2026: "der rote Text sollte drumherum schwarz ausgestanzt sein", damit er auch auf einem hellen Blinder
+// lesbar bleibt). Nur auf der Matrix: dort hat jede LED Nachbarn in zwei Richtungen. Jede LED, die selbst nicht zur
+// Ebene gehört, aber direkt neben einer leuchtenden LED der Ebene liegt (auch schräg), wird im Bild darunter
+// abgedunkelt - so stark, wie die Ebene gerade deckt (amount). Blendet der Text aus, verschwindet der Rand mit ihm.
+#if DEVICE_CLASS == CLASS_MATRIX
+static void applyOutline(CRGB* buf, const FxLayer& L, uint8_t amount) {
+	static uint8_t edge[NUMMATRIX];		// 1 = diese LED liegt neben einer LED der Ebene ("static": nicht bei jedem Aufruf neu auf dem Stack)
+	memset(edge, 0, sizeof(edge));
+	for (int x = 0; x < MATRIX_WIDTH; x++) {
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			uint16_t i = matrix->XY(x, y);
+			if (i >= NUMMATRIX || !L.buf[i]) continue;	// nur von den leuchtenden LEDs der Ebene aus
+			// die bis zu 8 Nachbarn markieren (dx, dy = -1, 0, +1; über den Rand der Matrix hinaus gibt es keine)
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					int nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= MATRIX_WIDTH || ny >= MATRIX_HEIGHT) continue;
+					uint16_t n = matrix->XY(nx, ny);
+					if (n < NUMMATRIX) edge[n] = 1;
+				}
+			}
+		}
+	}
+	uint8_t keep = 255 - amount;	// so viel bleibt vom Bild darunter stehen (0 = ganz schwarz)
+	for (int i = 0; i < NUMMATRIX; i++) {
+		if (edge[i] && !L.buf[i]) buf[i].nscale8(keep);	// die LEDs der Ebene selbst bleiben, wie sie sind
+	}
+}
+#endif
+
 // legt eine Ebene über buf (das Bild darunter); bright = Gesamthelligkeit, für die buf gerechnet ist
 static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod& lm, uint8_t& bright) {
 	//--- Stärke der Ebene aus der Part-Zeit; das Bild darunter folgt nur der Hüllkurve, nicht Puls und Tor ---
@@ -657,6 +699,10 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 
 	const bool span = (L.from > 0 || L.to < 255);	// wirkt die Ebene nur in einem Abschnitt des Geräts?
 	if (span && !pixelPosReady) initPixelPos();
+	#if DEVICE_CLASS == CLASS_MATRIX
+		// schwarzer Rand um die Ebene (nicht bei Maske und Stanze: die bringen kein eigenes Bild mit)
+		if (lm.outline && L.mode != FX_MASK && L.mode != FX_CUT) applyOutline(buf, L, amount);
+	#endif
 	// Jetzt LED für LED mischen: buf[i] = Bild darunter, l = Farbe der Ebene an dieser Stelle
 	for (int i = 0; i < NUMMATRIX; i++) {
 		if (baseScale != 255) buf[i].nscale8_video(baseScale);
@@ -685,16 +731,44 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 }
 
 // legt alle angemeldeten Ebenen über buf: erst den zweiten Effekt, zuoberst den Text
-static void applyLayers(CRGB* buf, uint32_t ms) {
+// skip = Nummer einer Ebene, die hier ausgelassen wird (-1 = keine): fxPresent() legt sie dann erst NACH dem
+// Blinder auf (fxBlinderUnderText), siehe applyTextOverBlinder().
+static void applyLayers(CRGB* buf, uint32_t ms, int skip = -1) {
 	if (!baseBrightKnown) {		// nur einmal je Durchlauf lesen, danach steht in FastLED schon die gemeinsame Helligkeit
 		baseBright = FastLED.getBrightness();
 		baseBrightKnown = true;
 	}
 	uint8_t bright = baseBright;
 	for (int k = 0; k < LAYER_COUNT; k++) {
+		if (k == skip) continue;
 		if (layers[k].used) applyLayer(buf, ms, layers[k], mod.layer[k], bright);
 	}
 	if (bright != baseBright) FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+}
+
+// fxBlinderUnderText: der Blinder soll ein heller Hintergrund UNTER dem Text sein (Wunsch zu "Take On Me",
+// 10.10.2026: "weißen Background unter den Text einblenden und ausfaden"). Normalerweise liegt ein Blinder über
+// allem und würde den Text überstrahlen. Deshalb wird die Text-Ebene in zwei Schritten gemischt:
+//   1. dimUnderText():        das Abdunkeln des Bildes unter dem Text (fxTextUnder) - VOR dem Blinder, sonst würde
+//                             es den Blinder mit abdunkeln
+//   2. (fxPresent legt den Blinder auf)
+//   3. applyTextOverBlinder(): die Buchstaben selbst - NACH dem Blinder, ohne noch einmal abzudunkeln
+// k = die Ebene, in der der Text läuft: die oberste angemeldete (Text über einer Szene nutzt die Effekt-Ebene;
+// die eigene Text-Ebene nur, wenn der Part zusätzlich ein Overlay hat).
+static void dimUnderText(CRGB* buf, uint32_t ms, int k) {
+	const LayerMod& lm = mod.layer[k];
+	uint8_t baseScale = 255 - scale8(255 - lm.under, layerEnvelope(lm, ms + mod.offsetMs));	// wie in applyLayer()
+	if (baseScale != 255) {
+		for (int i = 0; i < NUMMATRIX; i++) buf[i].nscale8_video(baseScale);
+	}
+}
+static void applyTextOverBlinder(CRGB* buf, uint32_t ms, int k) {
+	LayerMod lm = mod.layer[k];	// Kopie: das Abdunkeln ist schon geschehen (dimUnderText)
+	lm.under = 255;
+	uint8_t was = FastLED.getBrightness();	// die Gesamthelligkeit, die der Blinder gerade eingestellt hat
+	uint8_t bright = was;
+	applyLayer(buf, ms, layers[k], lm, bright);	// gleicht die Helligkeit des Textes an die des Blinders an
+	if (bright != was) FastLED.setBrightness(bright);
 }
 
 // Hash je LED für TRANS_DISSOLVE (auf jedem Gerät fest, sieht zufällig aus)
@@ -829,10 +903,17 @@ void fxPresent() {
 		if (trans || modsActive(bright) || layered || mod.smoothMs || blinder) {
 			memcpy(ledsOut, leds, sizeof(ledsOut));
 			if (mod.smoothMs) applySmooth(ledsOut);
-			if (layered) applyLayers(ledsOut, ms);
+			// Blinder als Hintergrund unter dem Text (fxBlinderUnderText)? Nur wenn auf diesem Gerät gerade beides läuft.
+			int textLast = -1;	// Nummer der Ebene, die erst nach dem Blinder kommt (-1 = keine)
+			if (blinder && mod.blinderUnderText) {
+				for (int k = 0; k < LAYER_COUNT; k++) if (layers[k].used) textLast = k;	// die oberste angemeldete Ebene
+			}
+			if (layered) applyLayers(ledsOut, ms, textLast);
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
+			if (textLast >= 0) dimUnderText(ledsOut, ms, textLast);
 			if (blinder) applyBlinder(ledsOut, blinder);
+			if (textLast >= 0) applyTextOverBlinder(ledsOut, ms, textLast);
 			fxFrame = ledsOut;
 		}
 	}

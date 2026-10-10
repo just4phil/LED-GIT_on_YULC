@@ -1,0 +1,192 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 10.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs TakeOnMe() (Song-ID 3). Der alte Code bleibt als Backup in
+# src/songs.cpp stehen; in main.cpp ist nur sein Aufruf auskommentiert.
+# Grundlage sind die Änderungswünsche des Users in der Tabelle (10.10.2026, aus der Spalte "Neuer Vorschlag (KI)"
+# übernommen). Leitidee: 80er-Synth-Pop, hell und bunt.
+#   Riff ("chorus ...")  = fester Look: Strobo in Achteln (eine Achtel an, eine Achtel aus) in Schemafarben, Blinder
+#                          auf den Einsatz. Die Farbe steigert sich über den Song: NEON (chorus 1, chorus 2) ->
+#                          SUNSET (chorus 3) -> FIRE + Glitzern (Schluss).
+#                          Rückmeldung des Users nach dem ersten Test (10.10.2026): "die Geräte leuchten am Anfang
+#                          und im Chorus nicht in sync". Die erste Fassung nahm dafür den alten progStrobo mit
+#                          getRandomCRGB() - damit würfelt jedes Gerät seine Farbe selbst. Jetzt SCENE_COLORS (alle
+#                          Geräte dieselbe Farbe, pro Beat die nächste) mit gate (an/aus aus der Zeit seit Part-Beginn
+#                          gerechnet): gleiches Blitzmuster, aber auf allen Geräten gleichzeitig dieselbe Farbe.
+#   Intro                = aus demselben Grund ohne Ping-Pong und ohne wandernde Farbe (beides zeigt mit Absicht auf
+#                          jedem Gerät etwas anderes): alle Geräte gemeinsam, drumIntro weiß pulsierend, danach
+#                          SCENE_COLORS statt SCENE_COLORS_WAVE.
+#   Refrain "take on me" = Stern mit weichen Farbwechseln, auf der Matrix der Text darüber - erste 4 Takte TAKE, ON,
+#                          ME, zweite 4 Takte TAKE, ME, ON (Korrektur des Users, 10.10.2026); SUNSET, beim dritten
+#                          Mal FIRE.
+#   tom-halfTime         = Blinder auf jede Halbe über dunklem Atmen (Wunsch: "darunter Schwarz oder dunkles Atmen" -
+#                          genommen ist das dunkle Atmen, damit zwischen den Blindern nicht alles aus ist).
+#   letzter durchgang    = Build-up in NEON, Explosion genau auf den nächsten Part ("gilt für alle drei").
+#   SOLO SYNTH           = der Wunsch nennt zwei Möglichkeiten; genommen ist die erste (Build-up in SUNSET, der Farbe
+#                          des folgenden Riffs) statt 4 Takten Schwarz.
+# Parts ohne eigenen Wunsch ("take on me (2)", "tom-halfTime (2)/(3)", "letzter durchgang (2)/(3)") folgen dem Wunsch
+# beim ersten Part dieses Namens ("gilt für alle drei").
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: die Grund-Marker stehen von Hand in src/markerLEDs.cpp (case 3) und gelten unverändert. Die Marker,
+# die der alte Code in einzelnen Parts setzt, stehen 1:1 unter markers.parts (siehe dort).
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 = Taktnummer im DAW Cakewalk.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_TakeOnMe
+
+end_blinder: 5    # der Blinder vom letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus (wie in APT.)
+
+# 1:1 aus TakeOnMe() in src/songs.cpp übernommen:
+#   case 65 (letzter durchgang, 2. Mal): markerLED4 = ESaite_Fis  ("nächsten Bund schon mal präventiv anzeigen")
+#   case 70 (BRIDGE), unter #ifdef GIT und #ifdef BASS gleich: markerLED1 = ESaite_F, 2 und 3 aus, 4 = ESaite_Fis
+#   case 75 (SOLO SYNTH): markerLED4 = 0 - das macht der Generator von selbst (Slot 4 ist außerhalb der Parts aus)
+markers:
+  parts:
+    "letzter durchgang (2)": {all: {4: ESaite_Fis}}
+    # Slot 4 steht bei beiden Parts unter "all": stünde er hier unter guitar/bass, würde deren "sonst aus" den
+    # Marker von "letzter durchgang (2)" wieder löschen (je Instrument-Schlüssel entsteht ein eigener Block).
+    "BRIDGE":
+      all: {4: ESaite_Fis}
+      guitar: {1: ESaite_F, 2: 0, 3: 0}
+      bass: {1: ESaite_F, 2: 0, 3: 0}
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "drumIntro":
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    pulse: {depth: 70, per: beat}
+    why: "Nur das Schlagzeug: alle Geräte gemeinsam weiß (abwechselnd hell und gedimmt), auf jeden Beat springt die Helligkeit auf und klingt ab."
+
+  "synthIntro":
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Der Synth setzt ein: die ganze Bühne in einer Farbe, pro Beat weich zur nächsten (Pink, Cyan, Violett) - auf allen Geräten gleichzeitig."
+
+  "gitIntro":
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    soft: 60
+    overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 16}
+    why: "Wie synthIntro, dazu ein Glitzern, das sich über die 4 Takte bis zum Riff aufbaut."
+
+  "chorus 1":
+    scene: SCENE_COLORS
+    gate: {per_beat: 1, duty: 50}
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Riff-Motiv: Strobo in Achteln, alle Geräte gleichzeitig in derselben Farbe, pro Beat die nächste (Pink, Cyan, Violett). Warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "verse 1":
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    fade: {to: triad, per: 8}
+    why: "Dezenter Puls im Beat in Blau, Lila und Weiß; die Farben wandern alle 2 Takte nach Pink und wieder zurück."
+
+  "take on me":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    soft: 60
+    text: {words: "TAKE ON ME*2 TAKE ME ON*2", per: bar, color: weiss, over: true}
+    why: "Der Refrain: drehender Stern in Orange, Pink, Lila und Gelb mit weichen Farbwechseln. Auf der Matrix darüber ein Wort pro Takt wie im Gesang: erst TAKE - ON - ME, dann TAKE - ME - ON (das letzte Wort bleibt je 2 Takte stehen)."
+
+  "tom-halfTime":
+    scene: SCENE_CALM
+    scheme: SCHEME_SUNSET
+    dim: 25
+    blinder: {every: 2, at: 0, len: 1.5}
+    why: "Halftime: auf jede Halbe ein warmweißer Blinder (1,5 Beats, klingt ab), darunter nur dunkles Atmen in den Refrain-Farben."
+
+  "letzter durchgang":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett: lädt sich auf, Explosion genau auf das Riff."
+
+  "chorus 2":
+    scene: SCENE_COLORS
+    gate: {per_beat: 1, duty: 50}
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Riff-Motiv wie chorus 1 (Strobo in Achteln, Pink/Cyan/Violett, Blinder auf den Einsatz), dazu blitzen die beiden Lampen weiß auf 2 und 4."
+
+  "verse 2":
+    scene: SCENE_RAIN
+    scheme: SCHEME_NEON
+    fade: {to: triad, per: 8}
+    why: "Fallende Leuchtspuren in Pink, Cyan und Violett; die Farben wandern alle 2 Takte weiter und wieder zurück."
+
+  "take on me (2)":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    soft: 60
+    text: {words: "TAKE ON ME*2 TAKE ME ON*2", per: bar, color: weiss, over: true}
+    why: "Refrain wie beim ersten Mal: Stern in Orange, Pink, Lila und Gelb mit weichen Farbwechseln, auf der Matrix erst TAKE - ON - ME, dann TAKE - ME - ON."
+
+  "tom-halfTime (2)":
+    scene: SCENE_CALM
+    scheme: SCHEME_SUNSET
+    dim: 25
+    blinder: {every: 2, at: 0, len: 1.5}
+    why: "Halftime wie beim ersten Mal: Blinder auf jede Halbe über dunklem Atmen."
+
+  "letzter durchgang (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf die Bridge. (Marker: Fis leuchtet schon vor.)"
+
+  "BRIDGE":
+    scene: SCENE_DNA_FLIP_SCROLL
+    scheme: SCHEME_ROYAL
+    why: "Auf der Matrix eine DNA-Helix in Blau und Lila, die langsam durchs Bild wandert; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)"
+
+  "SOLO SYNTH":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Statt 4 Takten Schwarz: Build-up in Orange, Pink und Gelb, Explosion genau auf das Riff."
+
+  "chorus 3":
+    scene: SCENE_COLORS
+    gate: {per_beat: 1, duty: 50}
+    scheme: SCHEME_SUNSET
+    blinder: {at: 0, len: 2}
+    why: "Riff-Motiv (Strobo in Achteln), jetzt wärmer in Orange, Pink, Lila und Gelb. Warmweißer Blinder auf den Einsatz."
+
+  "verse 3":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    transition: {type: fade, beats: 4}
+    why: "Wasserringe wie bisher, blenden über einen Takt weich aus dem Riff ein. Die Ringe sind blau und eisblau, die Farben wandern alle 2 Takte weiter und zurück."
+
+  "take on me (3)":
+    scene: SCENE_STAR
+    scheme: SCHEME_FIRE
+    soft: 60
+    text: {words: "TAKE ON ME*2 TAKE ME ON*2", per: bar, color: weiss, over: true}
+    why: "Letzter Refrain: derselbe Stern mit Text (TAKE - ON - ME, dann TAKE - ME - ON), jetzt in Rot, Orange und Gelb."
+
+  "tom-halfTime (3)":
+    scene: SCENE_CALM
+    scheme: SCHEME_FIRE
+    dim: 25
+    blinder: {every: 2, at: 0, len: 1.5}
+    why: "Halftime: Blinder auf jede Halbe, darunter dunkles Atmen in Rot und Orange."
+
+  "letzter durchgang (3)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf das letzte Riff."
+
+  "chorus 3 (2)":
+    scene: SCENE_COLORS
+    gate: {per_beat: 1, duty: 50}
+    scheme: SCHEME_FIRE
+    overlay: {scene: SCENE_SPARKLE, amount: 60}
+    blinder:
+      - {at: 0, len: 2}
+      - {bar: 160.75, len: 2, hold: 1}
+    why: "Höhepunkt: Riff-Motiv in Rot, Orange und Gelb mit Glitzern darüber, Blinder auf den Einsatz. Auf der letzten Viertel (Takt 160,75) springt ein starker Blinder auf und klingt 5 Sekunden ins Schluss-Schwarz aus."

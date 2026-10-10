@@ -180,7 +180,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | 0 | Pause between songs | | 17 | Apt. * |
 | 1 | Physical (trailer) | | 20 | Kids |
 | 2 | Physical | | 21 | Tell It To My Heart * |
-| 3 | Take On Me | | 24 | Enjoy The Silence (intro) |
+| 3 | Take On Me * | | 24 | Enjoy The Silence (intro) |
 | 4 | Don't Stop The Music | | 25 | Friday I'm In Love * |
 | 6 | No Roots | | 26 | Be Mine * |
 | 7 | Firework | | 27 | I Wanna Dance With Somebody * |
@@ -223,6 +223,7 @@ python tools/songgen.py <Song>              # generate this song and rebuild src
 python tools/songgen.py --neu <Song>        # create a new song folder with the table template
 python tools/songgen.py --raster <Song>     # write a copy of the table with one row per quarter bar
 python tools/songgen.py <Song> --takt-ab 1  # renumber the table's bars to start at 1 (as the DAW counts); song unchanged
+python tools/songgen.py <Song> --midi       # only (re)write songs/<Song>/<Song>.mid: channel 10, CC 22 = song at the StartBit, CC 23 = part number on every part start - import into the DAW to jump straight into a transition (also written on every generation)
 python tools/songgen.py <Song> --vorschlag  # write songs/<Song>/vorschlag.yaml (redesign ideas per part) into the table column "Neuer Vorschlag (KI)"
 python tools/songgen.py --versions <Song>   # list saved versions
 python tools/songgen.py --restore <version> <Song>

@@ -1,0 +1,9 @@
+zeit: '2026-10-10 16:09:16'
+notiz: Halbes Tempo in der ersten Haelfte der Riff-Parts und in drumIntro/synthIntro
+  (Wunsch des Users)
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: aa097e692e6634f691a8e9ba8da835108f4443ba7e995a63015119c66418f001
+  generated.cpp: d6583e4509a620034df2219ad5288f8dc687a218579822ed26ffc3c03ec75a50

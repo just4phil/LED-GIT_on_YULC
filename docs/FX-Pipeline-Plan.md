@@ -11,7 +11,167 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 10.10.2026 (dritte Runde Wünsche zu „I Love It Intro“ #80 - gebaut, Abnahme offen)
+Zuletzt aktualisiert: 10.10.2026 („Take On Me“ #3: nach der fünfzehnten Runde vom User beendet - „halbwegs ok, noch nicht perfekt“, committet)
+
+- **10.10.2026, „Take On Me“ (#3): erste generierte Fassung nach den Wünschen des Users - generiert (Version
+  `2026-10-10_1500`), alle fünf ESP32-Envs mit `build_ota.py --backup` gebaut (vorheriger Stand in `ota/backup/`),
+  nicht committet; Test auf der Bühne durch den User offen.**
+  - Der User hat die Vorschläge aus der Spalte „Neuer Vorschlag (KI)“ in „Änderungswunsch“ übernommen und um die
+    Umsetzung gebeten („lass uns das mal testen“, alter Song nur als Backup auskommentiert). `TakeOnMe()` bleibt in
+    `src/songs.cpp`, in `main.cpp` (case 3) ist der Aufruf auskommentiert, darunter `gen_TakeOnMe()`.
+  - Show (`songs/TakeOnMe_v1/show.yaml`): Riff-Parts = `progStrobo` in Achteln wie bisher, aber in Schemafarben
+    (NEON, NEON, SUNSET, FIRE + Ebene Sparkle 60) mit Blinder auf den Einsatz, chorus 2 mit weißem Lampen-Backbeat;
+    Refrain = `SCENE_STAR` mit `soft: 60` und Text „TAKE ON ME“ darüber (SUNSET, SUNSET, FIRE); tom-halfTime =
+    Blinder alle 2 Beats über `SCENE_CALM` mit `dim: 25`; letzter durchgang und SOLO SYNTH = `SCENE_BUILDUP`;
+    BRIDGE = `SCENE_DNA_FLIP_SCROLL` (erster Einsatz einer DNA-Szene in einem Song); verse 1 = VERSE/ROYAL, verse 2 =
+    RAIN/NEON, verse 3 = Wasserringe in ICE mit `transition: fade`; Intro = PINGPONG weiß, dann COLORS_WAVE;
+    Schluss-Blinder auf Takt 160,75 mit `end_blinder: 5`.
+  - Marker 1:1 aus dem alten Code unter `markers.parts` (letzter durchgang (2): Slot 4 = Fis; BRIDGE: 1 = F, 2 und 3
+    aus, 4 = Fis). Slot 4 steht bei beiden Parts unter `all` - getrennt nach `all` / `guitar` hätte der zweite Block
+    den Marker des ersten wieder gelöscht (jeder Instrument-Schlüssel erzeugt einen eigenen if/else-Block).
+  - Eigene Entscheidungen, dem User genannt: tom-halfTime mit dunklem Atmen (nicht Schwarz), SOLO SYNTH als Build-up
+    (erste der beiden Möglichkeiten im Wunsch), verse 3 in ICE, Text „TAKE ON ME*2“ (ME steht 2 Takte).
+  - **Zweite Runde (10.10.2026, Version `2026-10-10_1602`, alle fünf Envs + OTA gebaut):** Rückmeldung des Users
+    nach dem ersten Test: „die Geräte leuchten am Anfang und im Chorus nicht in sync“. Gelesen als: genau die Parts,
+    die mit Absicht auf jedem Gerät etwas anderes zeigen (Ping-Pong, wandernde Farbe, `progStrobo` mit
+    `getRandomCRGB()` = jedes Gerät würfelt seine Farbe). Geändert: Riff-Parts = `SCENE_COLORS` +
+    `gate: {per_beat: 1, duty: 50}` (gleiches Blitzmuster, alle Geräte gleichzeitig dieselbe Farbe, aus der Zeit
+    seit Part-Beginn gerechnet), drumIntro = `SCENE_COLORS` weiß mit `pulse`, synthIntro/gitIntro = `SCENE_COLORS`
+    statt `SCENE_COLORS_WAVE`. **Offen:** ob er das meinte oder einen echten Zeitversatz zwischen den Geräten -
+    dann läge es nicht an der Show.
+  - **Dritte und vierte Runde (10.10.2026, Versionen `2026-10-10_1604` und `_1609`, alle fünf Envs + OTA gebaut,
+    `FW_VERSION=1791641356`):** (a) Refrain-Text auf Korrektur des Users `"TAKE ON ME*2 TAKE ME ON*2"` (erste 4 Takte
+    TAKE, ON, ME, zweite 4 Takte TAKE, ME, ON). (b) Wunsch „erste Hälfte der schnellen Teile nur halb so schnell, nur
+    am Ende in diesem Tempo“: Riff-Parts vorn `progStrobo(${dur}, ${next}, ${beat}, sharedColor(fxBeats(${bpm}) / 2))`
+    (Viertel an/aus, Farbe aus der Zeit gerechnet = auf allen Geräten gleich), die zweite Hälfte als `tail` mit
+    `SCENE_COLORS` + `gate` (Achtel) - `gate` kann nicht langsamer als einmal pro Beat. drumIntro und synthIntro =
+    `progBeatColors(..., 2, false)` (alle 2 Beats), gitIntro pro Beat. Durch die Tails haben sich die case-Nummern
+    verschoben (Marker wandern automatisch mit: 75 / 80). **Offen:** ob er beim Intro diese Aufteilung meinte.
+  - **Fünfte Runde (10.10.2026, Version `2026-10-10_1610`, `FW_VERSION=1791641431`):** verse 1 - Lampen-Blitz „zu
+    hektisch, nur halb so oft“: `devices: {lamp: "progLampPulse(${dur}, ${next}, ${bpm} / 2, deviceColor())"}`
+    (alle 2 Beats), die anderen Geräte weiter `SCENE_VERSE`.
+  - **Sechste Runde (10.10.2026, Version `2026-10-10_1617`, `FW_VERSION=1791641829`, alle fünf Envs + OTA gebaut):**
+    Rückmeldung „mit diesem progStrobo im Chorus stimmt was nicht: nicht synchron und nicht auf dem Takt - auf der
+    Viertel an, auf der nächsten Viertel aus, über alle Geräte in sync“. `progStrobo` ist aus der Show raus. Neu in
+    der Firmware: `fxGate(bpm, perBeat, duty, beats = 1)` - `beats` > 1 = ein An/Aus-Schritt dauert so viele Beats
+    (`fxPipeline.cpp/.h`, Ebenen-Tore unverändert); Generator: `gate: {per: <Beats>}` (nur Abschnittsebene).
+    Riff vorn = `progBeatColors(..., 2, false)` + `gate: {per: 2}`, hinten wie bisher `SCENE_COLORS` + `gate`.
+    Doku: SKILL.md (Regel „Strobo im Takt immer über gate, nie progStrobo“), `Song-Workflow.html`,
+    `LED-Effekte-und-Szenen.html`. Nicht in Demo 92 eingebaut (nur ein zusätzlicher Parameter). Die anderen Songs
+    wurden nicht neu generiert (Abcdefu steht seit dem 08.10. auf „seit der Generierung geändert“ - nicht von hier). **Offen:** warum `progStrobo` aus dem Takt läuft, ist nicht untersucht.
+  - **Siebte Runde (10.10.2026, Version `2026-10-10_1640`, `FW_VERSION=1791643207`, alle fünf Envs + OTA gebaut):**
+    Wünsche aus der Tabelle - sie stehen aber in `quelle/struktur-raster.xlsx` (Viertel-Raster, vom User am 10.10.
+    16:38 bearbeitet), NICHT in `struktur.xlsx`: er hat die Kopie noch nicht getauscht. Die Show ist nach der
+    Raster-Datei gebaut; `Effekt (füllt KI)` schrieb das Werkzeug in die alte `struktur.xlsx`.
+    Umgesetzt: Riff-Parts durchgehend Viertel an/aus (`progBeatColors` 2 Beats + `gate: {per: 2}`, Tails wieder
+    raus - „keine Temposteigerung“); Refrain ohne durchlaufenden Text, stattdessen TAKE / ON / ME nur in Takt 44, 48,
+    52 (80, 84, 88 / 136, 140, 144) als `text: {words: "_*24 TAKE*2 ON*3 _ ME*2", per: 0.5, over: true, from: 12}`
+    (Achtel-Raster, `_` = leeres Bild; „take on me“ dafür per `tail` in zwei Hälften, weil ein Part nur ein
+    Text-Fenster hat); gitIntro Sparkle `amount: 100, fade_in: 4`.
+    **Offen:** (1) sobald der User die Raster-Tabelle getauscht hat: `cues:` für die 27 Zwischenzeilen in die Show
+    eintragen und einmal generieren (vorher gibt es die Zeilen in `struktur.xlsx` nicht); (2) Länge von ME (jetzt
+    1 Beat bis zum Taktende) und der Neuansatz des Sterns in der Refrain-Mitte - Rückmeldung abwarten.
+  - **Achte Runde (10.10.2026, Version `2026-10-10_1655`):** der User hat die Raster-Tabelle selbst getauscht (alte
+    Datei = `quelle/_alt_struktur.xlsx`) und verlangt: „NIE MEHR in der alten Excel-Struktur arbeiten, Updates nur
+    in die neue Struktur“. `cues:` für alle 27 Zwischenzeilen in die Show eingetragen und generiert - der Stand
+    steht jetzt in seiner Raster-Tabelle. Der Code ist derselbe wie in `_1640`, die Firmware in `ota/`
+    (`FW_VERSION=1791643207`) gilt weiter. Regel für alle Songs: liegt eine `struktur-raster.xlsx` neben der
+    Tabelle, vor dem Generieren den Tausch klären (Memory `only-raster-table`).
+  - **MIDI-Datei je Song (10.10.2026, Wunsch des Users, fertig):** `songgen.py` schreibt bei jeder Generierung
+    `songs/<Song>/<Song>.mid` (Kanal 10, CC 22 = Song-ID am StartBit, CC 23 = Part-Nummer auf der 1 jedes
+    Tabellen-Parts; `midi_bytes()` / `write_midi()`, nur schreiben: `--midi`, ohne Song alle generierten). Für alle
+    14 generierten Songs einmal gelaufen. Grenzen: kein Eintrag während des Titel-Lauftexts der Matrix, für Tails und
+    für case > 127 (betrifft das Ende von ATTSS, Billie Jean, I Wanna Dance - dort 5er-Schritte der case-Nummern).
+    Anlass war seine `tom.mid` auf dem Desktop, die ich vorher von Hand ergänzt hatte (Inhalt identisch).
+  - **Neunte Runde (10.10.2026, Version `2026-10-10_1709`, `FW_VERSION=1791644995`, alle fünf Envs + OTA gebaut):**
+    Rückmeldung „oft nicht auf dem Klick, Eindruck: die Blinder führen dazu, dass die Chorus-Parts nicht mehr auf
+    dem Klick blinken - sehr genau prüfen“. Geprüft: `gateOpen`, `blinderLevelOf`, `fxBeats`, Part-Wechsel in
+    `loop()` gelesen und die Formeln in Python nachgerechnet - die Tor-Kanten liegen über 12 Takte unter 1 ms am
+    Beat, Blinder und Tor rechnen aus derselben Part-Zeit, ein Blinder kann das Tor nicht verschieben. Gefunden: die
+    Blinder leuchteten in die Aus-Viertel (Einsatz-Blinder 2 Beats lang; Lampen-Backbeat in chorus 2 auf 2 und 4).
+    Geändert: Einsatz-Blinder `{at: 0, len: 1, hold: 0.75}`, Lampen-Blitz `at: 0` (auf 1 und 3). Kein Firmware-
+    Fehler gefunden; nicht messbar von hier: Latenz MIDI/BLE (Proxy schaltet sofort, Clients erst bei Empfang der
+    BLE-Nachricht - ohne Ausgleich) und der Versatz zwischen Klick (Audio) und MIDI im DAW.
+    **Offen:** `Effekt (füllt KI)` nicht geschrieben, Tabelle war in Excel offen - `songgen.py TakeOnMe --tabelle`
+    nachholen, sobald sie zu ist.
+  - **Zehnte Runde (10.10.2026, Version `2026-10-10_1737`, `FW_VERSION=1791646650`, alle fünf Envs + OTA gebaut):**
+    Der Takt-Verdacht hat sich erledigt (User: „es ist alles im Takt, das war wohl eine Audio-Täuschung“). Neue
+    Wünsche aus der Tabelle: Refrain - Text nur noch in Takt 44 / 80 / 136, rot auf schwarzer Matrix (`color: rot,
+    under: 0, flash: true`, Fenster 12 bis 16,5, `fade_out: 1.5`), je Wort ein Blinder nur auf Gitarre, Bass und
+    Lampen (auf der Matrix würde er den Text überstrahlen - eigene Entscheidung); tail im Refrain wieder raus.
+    letzter durchgang - „TWO“ ab der 2. Viertel, blendet 2 Takte aus, langer Blinder (1 Takt). tom-halfTime - ohne
+    Text und Blinder, `progBeatColors` alle 2 Beats mit `soft: 70, dim: 60`. Part-Nummern haben sich dadurch wieder
+    verschoben (chorus 2 = 45 statt 50 usw.) - die MIDI-Datei ist neu geschrieben, der User muss sie neu importieren.
+  - **Elfte Runde (10.10.2026, Version `2026-10-10_1747`, `FW_VERSION=1791647261`, alle fünf Envs + OTA gebaut):**
+    der User hatte um 17:46 drei Zeilen in Takt 48 / 48,25 / 48,75 nachgetragen (nur im ersten Refrain) und fragte,
+    ob die Tabelle nicht aktuell sei - sie war es bis auf diese neuen Zeilen. Umgesetzt: „take on me“ (nur der
+    erste) hat wieder einen `tail` (12 Beats ab Takt 46) mit demselben Text und den Blindern auf Tail-Beat 8 / 9 /
+    11; ME blendet dort nur 1 Viertel aus (Part-Ende). Part-Nummern erneut verschoben (ab tom-halfTime +5).
+  - **Zwölfte Runde (10.10.2026, Version `2026-10-10_1759`, `FW_VERSION=1791647949`, alle fünf Envs + OTA gebaut):**
+    Wünsche 17:56, nur erster Refrain und erster „letzter durchgang“: „weißen Background unter den Text einblenden
+    und ausfaden“, Takt 48 „exakte Wiederholung wie Takt 44 ff.“. Neu in der Firmware: `fxBlinderUnderText()`
+    (`fxPipeline.cpp/.h`: die oberste Ebene wird erst nach dem Blinder gemischt, ihr Abdunkeln `under` davor -
+    `dimUnderText()` / `applyTextOverBlinder()`); Generator: Schlüssel `blinder_under_text: true`. In der Show laufen
+    die Wort-Blinder dort jetzt auf allen Geräten (`attack: 0.2`, `hold: 0.3`), auf der Matrix unter dem roten Text.
+    Refrain 2 / 3 und letzter durchgang (2) / (3) unverändert (schwarzer Hintergrund, Blinder nicht auf der Matrix) -
+    deren Wünsche hat der User nicht geändert. Doku: SKILL.md, Song-Workflow.html, LED-Effekte-und-Szenen.html,
+    CLAUDE.md. Nicht in Demo 92. **Abnahme offen** (Lesbarkeit Rot auf Weiß, Helligkeit des Textes neben dem Blinder).
+  - **Dreizehnte Runde (10.10.2026, Version `2026-10-10_1810`, `FW_VERSION=1791648662`, alle fünf Envs + OTA gebaut,
+    vorheriger Stand in `ota/backup/2026-10-10_5`):** neue Wünsche aus der Tabelle, nur `show.yaml` geändert (keine
+    Firmware-Änderung). (a) Takt 44 / 48 (alle sechs Zwischenzeilen): „der Blinder darf nur 50 % Leuchtkraft haben
+    und muss kürzer sein, sonst sieht man den Text nicht“ - die Wort-Blinder haben `amount: 50` und sind 0,7 Beats
+    lang (ON 0,6; vorher 100 % und 1,2 / 0,9), weiter auf allen Geräten und auf der Matrix unter dem Text. (b) erster
+    „tom-halfTime“: „dieses Programm ist hier ungünstig, besser eine Szene mit progWaterRipple“ -
+    `fx: progWaterRipple(..., 50, true, false)` in SUNSET mit `transition: fade` 2 Beats (derselbe Aufruf wie verse 3).
+    (c) neue Zwischenzeilen Takt 52 / 52,25 / 52,75 im ersten tom-halfTime: TAKE - ON - ME wie in Takt 44, Blinder
+    50 % und kurz, unter dem Text. Part-Nummern unverändert (MIDI-Datei muss nicht neu importiert werden).
+    Eigene Entscheidungen, dem User genannt: die 50 % gelten auf allen Geräten (ein Blinder, nicht getrennt nach
+    Matrix / Rest); tom-halfTime (2) / (3) bleiben bei den ruhigen Farbwechseln (ihr eigener Wunsch steht
+    unverändert in der Tabelle); der lange Blinder unter „TWO“ (Takt 53,25) bleibt bei 100 % (Wunsch dort unverändert).
+    **Abnahme offen.**
+  - **Vierzehnte Runde (10.10.2026, Version `2026-10-10_1821`, `FW_VERSION=1791649295`, alle fünf Envs + OTA gebaut,
+    vorheriger Stand in `ota/backup/2026-10-10_6`):** Rückmeldung im Chat: „das ist schon besser. Aber der Text muss
+    IMMER ÜBER allem anderen liegen, damit es gut sichtbar ist. Dafür sollte der rote Text drumherum auch schwarz
+    ausgestanzt sein. Der Text ME sollte länger stehen bleiben und 2 Takte ausfaden.“
+    - Firmware (`fxPipeline.cpp/.h`): `fxLayerOutline()` / `fxTextOutline()` - schwarzer Rand von 1 LED (auch schräg)
+      um alles, was die Ebene zeichnet; nur `CLASS_MATRIX` (`applyOutline()`, vor dem Mischen in `applyLayer()`), so
+      stark wie die Deckkraft der Ebene. Nicht bei `FX_MASK` / `FX_CUT`.
+    - Generator (`songgen.py`): `outline: true` als Ebenen-Schlüssel (`LAYER_MOD_KEYS`, also in `text:` mit
+      `over: true` und in `overlay`). `fxBlinderUnderText()` wird jetzt von selbst angemeldet, sobald ein Part Text
+      mit `over: true` und irgendeinen Blinder hat (eigener, Einblenden für den Folge-Part, Ausklingen aus dem Part
+      davor) - „Text immer über allem“ als Regel. `blinder_under_text: true` bleibt gültig. **Wirkt auf andere Songs
+      erst bei ihrer nächsten Generierung** (keiner wurde neu generiert): dort liegt ein Blinder dann unter statt über
+      dem Text.
+    - Show: alle Texte mit `outline: true`. ME steht den Rest seines Takts (1 Viertel) voll und blendet dann 2 Takte
+      aus: Refrain 1 / 2 / 3 Fenster bis Beat 24 mit `fade_out: 8`; nach Takt 48 läuft das Ausblenden im ersten
+      tom-halfTime weiter (`text: "ME"`, `fade_out: 7.9`). Dafür tail von „take on me“ jetzt ab Takt 47 (8 Beats)
+      und der erste tom-halfTime per tail geteilt (ab Takt 51, dort TAKE - ON - ME von Takt 52). Takt 52,75: ME steht
+      voll bis TWO (Takt 53,25) - `words: "ME TWO*40"` im ersten „letzter durchgang“; das Ausblenden über 2 Takte
+      trägt dort TWO (ein Wort zur Zeit - dem User genannt).
+    - Part-Nummern ab „letzter durchgang“ +5 (chorus 2 = 55, BRIDGE = 80 ...): MIDI-Datei neu geschrieben, der User
+      muss sie neu importieren. Marker wandern automatisch mit.
+    - Refrain 2 / 3: Blinder weiter nur auf Gitarre, Bass und Lampen, Matrix dort schwarz um den Text (Wünsche dort
+      unverändert) - der Rand hat dort keine sichtbare Wirkung.
+    - Doku: SKILL.md, CLAUDE.md, Song-Workflow.html, LED-Effekte-und-Szenen.html. Nicht in Demo 92.
+    - **Abnahme offen** (Lesbarkeit Rot mit Rand auf 50 % Weiß; Neuansatz der Wasserringe in Takt 51).
+  - **Fünfzehnte Runde (10.10.2026, Version `2026-10-10_1829`, `FW_VERSION=1791649761`, alle fünf Envs + OTA gebaut,
+    vorheriger Stand in `ota/backup/2026-10-10_7`):** vierzehnte Runde abgenommen („ok top!“). Wunsch im Chat: „das
+    Schema von Takt 44,00 bis 48,75 (Texte in Rot mit den Blindern) jetzt bitte 2x wiederholen -> ab 80,00 und ab
+    136,00“. Nur `show.yaml`: „take on me (2)“ und „(3)“ sind gebaut wie der erste Refrain (Text im 4. und 8. Takt,
+    Blinder `amount: 50` auf allen Geräten, auf der Matrix unter dem Text, tail ab Takt 83 / 139). ME aus Takt 84,75 /
+    140,75 blendet in den ersten 2 Takten von tom-halfTime (2) / (3) aus (`text: "ME"`, `to: 8`, `fade_out: 7.9`);
+    dort sonst weiter kein Text und keine Blinder. Bekannt: tom-halfTime (2) / (3) haben `dim: 60`, das dimmt auch
+    die Text-Ebene - ME fällt an der Part-Grenze von 100 auf 60 %, dem User genannt. Part-Nummern erneut verschoben
+    (letzter durchgang (2) = 80, BRIDGE = 85, chorus 3 (2) = 125) - MIDI-Datei neu, neu importieren.
+    **Abnahme offen.**
+  - **Abschluss (10.10.2026):** der User beendet die Arbeit an „Take On Me“ für jetzt („halbwegs ok, aber noch nicht
+    perfekt ... wir machen damit jetzt Schluss, weil es zu lange dauert“). **Er hat in der Tabelle
+    (`Änderungswunsch`) noch Fehler hinterlegt, die nicht umgesetzt sind.** Alles committet (Show, Code, Versionen,
+    Firmware-Baustein `outline`, MIDI-Dateien aller generierten Songs). Nicht von selbst weitermachen; greift er den
+    Song wieder auf: `songgen.py TakeOnMe --dry-run` und die Wünsche der Tabelle mit der Show vergleichen.
+  - `vorschlag.yaml` des Songs geleert und Spalte E der Tabelle damit geleert (Vorschläge sind umgesetzt).
+  - README: Song 3 als generiert markiert. Die anderen Songs wurden nicht neu generiert.
+  - **Nächster Schritt:** Rückmeldung des Users vom Test; danach der nächste alte Song, den er nennt.
 
 - **10.10.2026, Durchsicht aller alten Songs: Spalte „Neuer Vorschlag (KI)“ in den Tabellen - fertig,
   committet und gepusht; Rückmeldung des Users offen.**

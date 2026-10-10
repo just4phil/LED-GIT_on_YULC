@@ -1,0 +1,9 @@
+zeit: '2026-10-10 15:00:25'
+notiz: 'Erste generierte Fassung: Wuensche des Users vom 10.10.2026 (Riff-Motiv in
+  Schemafarben mit Blindern, Stern + Text im Refrain, Build-ups, DNA-Bridge, Schluss-Blinder)'
+werkzeug_git: 831283b
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: f5f1a050b4f72d66f1396d3cea1d6cc9ada06aa873dc90c68aab378b2cf79d4a
+  generated.cpp: fc082a1232b64da597ebf517e1367ec3e81484d321161ee3f7f8328e64520ab1

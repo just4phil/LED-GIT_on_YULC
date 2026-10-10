@@ -1,0 +1,8 @@
+zeit: '2026-10-10 16:04:32'
+notiz: 'Refrain-Text: erst TAKE ON ME, dann TAKE ME ON (Korrektur des Users)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: 1068991c35771ccb50c64f21993da4b5ec7d090cad12a957f84a612563be3f9c
+  generated.cpp: 0cf78318221a034088a2a885c215d47e7e9341ff21b56ef97a1b3799a11da6f6

@@ -1,0 +1,9 @@
+zeit: '2026-10-10 16:55:08'
+notiz: Tabelle jetzt im Viertel-Raster (vom User getauscht); Antworten auf die 27
+  Zwischenzeilen (cues)
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 6b4099762f7d7494b3269b08e599d441c4a47f318909d546e8da0fa593c8a4cb
+  show.yaml: 8795c1d9359f75ca5b12d2791d7805d7148cf69078c0f213988a8a2d8cf9811c
+  generated.cpp: 2be09a0fa15c7cbca1418716f73bdbb0cf9f547aebffc66831a066a51c4ecb6e

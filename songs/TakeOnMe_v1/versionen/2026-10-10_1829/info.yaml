@@ -1,0 +1,9 @@
+zeit: '2026-10-10 18:29:21'
+notiz: 'Refrain 2 und 3 wie Refrain 1: TAKE ON ME im 4. und 8. Takt (80/84, 136/140)
+  mit 50-%-Blindern unter dem Text'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a7e0b958a084a397956d3a735df31f6f9981589a2408b57d7c89b7eb5f8756d9
+  show.yaml: fd023250a798f137d2a4ccee514c11c359ac463539b847211a4bf1067c7add37
+  generated.cpp: ed95cc44447beeecffe0acf779eb07a9f7a4bf397fc858a77f5d80cce631e452

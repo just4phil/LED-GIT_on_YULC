@@ -1,0 +1,276 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 10.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs TakeOnMe() (Song-ID 3). Der alte Code bleibt als Backup in
+# src/songs.cpp stehen; in main.cpp ist nur sein Aufruf auskommentiert.
+# Grundlage sind die Änderungswünsche des Users in der Tabelle (10.10.2026, aus der Spalte "Neuer Vorschlag (KI)"
+# übernommen). Leitidee: 80er-Synth-Pop, hell und bunt.
+#   Riff ("chorus ...")  = fester Look: Strobo in Achteln (eine Achtel an, eine Achtel aus) in Schemafarben, Blinder
+#                          auf den Einsatz. Die Farbe steigert sich über den Song: NEON (chorus 1, chorus 2) ->
+#                          SUNSET (chorus 3) -> FIRE + Glitzern (Schluss).
+#                          Kein progStrobo: mit getRandomCRGB() würfelt jedes Gerät seine Farbe selbst (Rückmeldung
+#                          des Users nach dem ersten Test: "nicht in sync"). Farbe aus SCENE_COLORS / progBeatColors
+#                          (alle Geräte dieselbe), An/Aus über gate - beides aus der Zeit seit Part-Beginn gerechnet.
+#   Tempo des Blinkens   = Wunsch des Users in der Tabelle (10.10.2026, alle vier Riff-Parts): "blinken soll hier auf
+#                          den vierteln ein und wieder ausgehen. Bitte ändern: keine temposteigerung des blinkens!!"
+#                          Der ganze Part läuft deshalb in einem Tempo: progBeatColors (alle 2 Beats eine neue Farbe)
+#                          + gate: {per: 2} (auf der Viertel an, auf der nächsten Viertel aus). Die schnellere zweite
+#                          Hälfte (tail in Achteln) aus der Runde davor ist wieder raus. Kein progStrobo: der lief
+#                          laut User weder auf dem Takt noch auf allen Geräten gleich.
+#                          Intro: drumIntro und synthIntro alle 2 Beats, gitIntro pro Beat (dort kein Wunsch).
+#   Blinder im Riff      = Rückmeldung des Users (10.10.2026): "ich habe den Eindruck, dass die Blinder dazu führen,
+#                          dass die Chorus-Parts nicht mehr auf dem Klick blinken". Nachgerechnet: das An/Aus liegt
+#                          auf dem Beat (unter 1 ms Abweichung), aber die Blinder leuchteten in den DUNKLEN Vierteln:
+#                          der Einsatz-Blinder war 2 Beats lang (klang über die Aus-Viertel hinweg aus), und die
+#                          Lampen blitzten in chorus 2 auf 2 und 4 - genau die Aus-Viertel. Jetzt: Einsatz-Blinder
+#                          nur 1 Beat (0,75 voll, dann aus), Lampen-Blitz auf 1 und 3 (zusammen mit dem Angehen).
+#                          Regel: in einem Blink-Part darf kein Blinder in eine Aus-Phase leuchten. Ausnahme ist der
+#                          Schluss-Blinder auf Takt 160,75 (gewollter Schlussakzent).
+#   Text                 = Wünsche des Users in den Viertel-Zeilen (Stand 10.10.2026, 17:35): im Refrain nur noch im
+#                          4. Takt (44 / 80 / 136) TAKE (1. Viertel), ON (2. Viertel), ME (4. Viertel), "in roter
+#                          Schrift und drumherum schwarz ausgestanzt" = rote Buchstaben, die Matrix sonst schwarz
+#                          (under: 0), auf jedes Wort ein Blinder. Wortfolge im Achtel-Raster, Fenster Beat 12 bis
+#                          16,5; flash lässt TAKE und ON innerhalb ihrer Viertel abklingen, fade_out lässt ME über
+#                          1,5 Viertel ausblenden. TAKE soll laut Wunsch 1,5 Viertel faden - nach einer Viertel kommt
+#                          aber schon ON (eine Text-Ebene zeigt ein Wort zur Zeit), deshalb klingt es in der Viertel ab.
+#                          Die Blinder laufen NICHT auf der Matrix: ein Blinder liegt über allem und würde den Text
+#                          überstrahlen (eigene Entscheidung, dem User genannt).
+#                          letzter durchgang: "TWO" auf der 2. Viertel, blendet 2 Takte aus, langer Blinder (1 Takt).
+#                          tom-halfTime: "ohne Text und keine Blinder, nur leichte Farbwechsel auf dem Takt".
+#                          Der Refrain ist nicht mehr per tail geteilt (nur noch ein Text-Fenster) - der Stern läuft durch.
+#   Intro                = aus demselben Grund ohne Ping-Pong und ohne wandernde Farbe (beides zeigt mit Absicht auf
+#                          jedem Gerät etwas anderes): alle Geräte gemeinsam, drumIntro weiß pulsierend, danach
+#                          SCENE_COLORS statt SCENE_COLORS_WAVE.
+#   Refrain "take on me" = Stern mit weichen Farbwechseln, auf der Matrix der Text darüber - erste 4 Takte TAKE, ON,
+#                          ME, zweite 4 Takte TAKE, ME, ON (Korrektur des Users, 10.10.2026); SUNSET, beim dritten
+#                          Mal FIRE.
+#   tom-halfTime         = Blinder auf jede Halbe über dunklem Atmen (Wunsch: "darunter Schwarz oder dunkles Atmen" -
+#                          genommen ist das dunkle Atmen, damit zwischen den Blindern nicht alles aus ist).
+#   letzter durchgang    = Build-up in NEON, Explosion genau auf den nächsten Part ("gilt für alle drei").
+#   SOLO SYNTH           = der Wunsch nennt zwei Möglichkeiten; genommen ist die erste (Build-up in SUNSET, der Farbe
+#                          des folgenden Riffs) statt 4 Takten Schwarz.
+# Parts ohne eigenen Wunsch ("take on me (2)", "tom-halfTime (2)/(3)", "letzter durchgang (2)/(3)") folgen dem Wunsch
+# beim ersten Part dieses Namens ("gilt für alle drei").
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: die Grund-Marker stehen von Hand in src/markerLEDs.cpp (case 3) und gelten unverändert. Die Marker,
+# die der alte Code in einzelnen Parts setzt, stehen 1:1 unter markers.parts (siehe dort).
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 = Taktnummer im DAW Cakewalk.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_TakeOnMe
+
+end_blinder: 5    # der Blinder vom letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus (wie in APT.)
+
+# 1:1 aus TakeOnMe() in src/songs.cpp übernommen:
+#   case 65 (letzter durchgang, 2. Mal): markerLED4 = ESaite_Fis  ("nächsten Bund schon mal präventiv anzeigen")
+#   case 70 (BRIDGE), unter #ifdef GIT und #ifdef BASS gleich: markerLED1 = ESaite_F, 2 und 3 aus, 4 = ESaite_Fis
+#   case 75 (SOLO SYNTH): markerLED4 = 0 - das macht der Generator von selbst (Slot 4 ist außerhalb der Parts aus)
+markers:
+  parts:
+    "letzter durchgang (2)": {all: {4: ESaite_Fis}}
+    # Slot 4 steht bei beiden Parts unter "all": stünde er hier unter guitar/bass, würde deren "sonst aus" den
+    # Marker von "letzter durchgang (2)" wieder löschen (je Instrument-Schlüssel entsteht ein eigener Block).
+    "BRIDGE":
+      all: {4: ESaite_Fis}
+      guitar: {1: ESaite_F, 2: 0, 3: 0}
+      bass: {1: ESaite_F, 2: 0, 3: 0}
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "drumIntro":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_WHITE
+    pulse: {depth: 70, per: 2}
+    why: "Nur das Schlagzeug, halbes Tempo: alle Geräte gemeinsam weiß (abwechselnd hell und gedimmt), alle 2 Beats springt die Helligkeit auf und klingt ab."
+
+  "synthIntro":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Der Synth setzt ein, halbes Tempo: die ganze Bühne in einer Farbe, alle 2 Beats weich zur nächsten (Pink, Cyan, Violett) - auf allen Geräten gleichzeitig. Ab gitIntro dann pro Beat."
+
+  "gitIntro":
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    soft: 60
+    # Wunsch (10.10.2026): "Sparkle noch etwas früher und vor allem deutlicher" - vorher 40 %, über alle 4 Takte
+    # aufgebaut; jetzt volle Stärke, schon nach dem ersten Takt ganz da.
+    overlay: {scene: SCENE_SPARKLE, amount: 100, fade_in: 4}
+    why: "Die ganze Bühne in einer Farbe, pro Beat weich zur nächsten (Pink, Cyan, Violett). Dazu kräftiges Glitzern, das im ersten Takt einblendet und dann voll bis zum Riff läuft."
+
+  "chorus 1":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    gate: {per: 2}
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 1, hold: 0.75}
+    why: "Riff-Motiv über den ganzen Part im selben Tempo: auf der Viertel an, auf der nächsten Viertel aus, jedes Mal eine neue Farbe (Pink, Cyan, Violett), alle Geräte gleichzeitig. Warmweißer Blinder auf den Einsatz, nur eine Viertel lang - auf der zweiten Viertel ist es dunkel wie im Blink-Raster."
+
+  "verse 1":
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    fade: {to: triad, per: 8}
+    # Wunsch des Users (10.10.2026): der Blitz auf den beiden Lampen war pro Beat "zu hektisch, sollte nur halb so oft
+    # kommen". Die Lampen bekommen deshalb denselben Effekt wie in der Szene (progLampPulse), aber mit halbem Tempo:
+    # ein Blitz alle 2 Beats, auf die 1 und die 3.
+    devices:
+      lamp: "progLampPulse(${dur}, ${next}, ${bpm} / 2, deviceColor())"
+    why: "Dezenter Puls im Beat in Blau, Lila und Weiß; die Farben wandern alle 2 Takte nach Pink und wieder zurück. Die beiden Lampen blitzen nur alle 2 Beats (auf 1 und 3)."
+
+  "take on me":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    soft: 60
+    text: {words: "_*24 TAKE*2 ON*2 _*2 ME*40", per: 0.5, color: rot, flash: true, over: true, under: 0, from: 12, to: 16.5, fade_out: 1.5}
+    blinder:
+      - {bar: 44, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 44.25, len: 0.7, hold: 0.3, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 44.75, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    # Zweiter Einsatz im 8. Takt (Wunsch in den Zeilen 48 / 48,25 / 48,75, nur in diesem ersten Refrain): ein Part hat
+    # nur EIN Text-Fenster, deshalb sind die letzten 3 Takte (ab Takt 46) ein tail mit demselben Bild. Der Stern setzt
+    # dort einmal neu an. Im tail zählen Beats ab seinem Beginn: Beat 8 = Takt 48, 9 = 48,25, 11 = 48,75.
+    tail:
+      beats: 12
+      scene: SCENE_STAR
+      scheme: SCHEME_SUNSET
+      soft: 60
+      text: {words: "_*16 TAKE*2 ON*2 _*2 ME*40", per: 0.5, color: rot, flash: true, over: true, under: 0, from: 8, fade_out: 1}
+      blinder:
+        - {at: 8, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+        - {at: 9, len: 0.7, hold: 0.3, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+        - {at: 11, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      44: "TAKE in Rot auf schwarzer Matrix, klingt innerhalb der Viertel ab (bei 1,5 Vierteln käme schon ON). Dazu Blinder auf Gitarre, Bass und Lampen: voll auf der 1, nach der Viertel aus"
+      44.25: "ON in Rot auf Schwarz, nach der Viertel wieder aus. Dazu kurzer starker Blinder (voll auf dem Schlag, nach gut einer halben Viertel aus)"
+      44.75: "ME in Rot auf Schwarz, blendet über 1,5 Viertel aus, der Stern kommt dabei zurück. Dazu Blinder, nach der Viertel aus"
+      48: "wie Takt 44: TAKE in Rot auf schwarzer Matrix, klingt in der Viertel ab; Blinder auf Gitarre, Bass und Lampen, nach der Viertel aus"
+      48.25: "wie Takt 44,25: ON in Rot auf Schwarz, kurzer starker Blinder"
+      48.75: "ME in Rot auf Schwarz mit Blinder; blendet bis zum Part-Ende aus (1 Viertel statt 1,5 - danach beginnt tom-halfTime)"
+    why: "Refrain: drehender Stern in Orange, Pink, Lila und Gelb mit weichen Farbwechseln. Im 4. und im 8. Takt (44 und 48) wird die Matrix schwarz und zeigt in Rot TAKE - ON - ME; auf jedes Wort ein Blinder auf Gitarre, Bass und Lampen (nicht auf der Matrix, sonst wäre der Text überstrahlt)."
+
+  "tom-halfTime":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_SUNSET
+    soft: 70
+    dim: 60
+    why: "Halftime, ruhig: ohne Text und ohne Blinder. Die ganze Bühne in einer Farbe, etwas gedimmt, alle 2 Beats weich zur nächsten Farbe."
+
+  "letzter durchgang":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    text: {words: "TWO", per: 16, color: rot, over: true, under: 0, from: 1, to: 9, fade_out: 7.9}
+    blinder: {bar: 53.25, len: 4, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      53.25: "TWO in Rot auf schwarzer Matrix, blendet über 2 Takte aus (der Build-up kommt dabei zurück). Dazu langer Blinder über 1 Takt auf Gitarre, Bass und Lampen: 2 Viertel voll, dann ausklingend"
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf das Riff. Auf der 2. Viertel ein langer Blinder (1 Takt) und auf der Matrix TWO in Rot auf Schwarz, das über 2 Takte ausblendet."
+
+  "chorus 2":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    gate: {per: 2}
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 1, hold: 0.75}
+      - {every: 2, at: 0, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Riff-Motiv wie chorus 1 (Viertel an, Viertel aus, Pink/Cyan/Violett, Blinder auf den Einsatz). Der Blinder auf den Einsatz dauert nur eine Viertel. Die beiden Lampen blitzen zusätzlich weiß auf 1 und 3, also genau dann, wenn alle angehen - auf 2 und 4 bleibt alles dunkel."
+
+  "verse 2":
+    scene: SCENE_RAIN
+    scheme: SCHEME_NEON
+    fade: {to: triad, per: 8}
+    why: "Fallende Leuchtspuren in Pink, Cyan und Violett; die Farben wandern alle 2 Takte weiter und wieder zurück."
+
+  "take on me (2)":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    soft: 60
+    text: {words: "_*24 TAKE*2 ON*2 _*2 ME*40", per: 0.5, color: rot, flash: true, over: true, under: 0, from: 12, to: 16.5, fade_out: 1.5}
+    blinder:
+      - {bar: 80, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 80.25, len: 0.7, hold: 0.3, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 80.75, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      80: "TAKE in Rot auf schwarzer Matrix, klingt innerhalb der Viertel ab (bei 1,5 Vierteln käme schon ON). Dazu Blinder auf Gitarre, Bass und Lampen: voll auf der 1, nach der Viertel aus"
+      80.25: "ON in Rot auf Schwarz, nach der Viertel wieder aus. Dazu kurzer starker Blinder (voll auf dem Schlag, nach gut einer halben Viertel aus)"
+      80.75: "ME in Rot auf Schwarz, blendet über 1,5 Viertel aus, der Stern kommt dabei zurück. Dazu Blinder, nach der Viertel aus"
+    why: "Refrain: drehender Stern in Orange, Pink, Lila und Gelb mit weichen Farbwechseln, läuft durch. Im 4. Takt (Takt 80) wird die Matrix schwarz und zeigt in Rot TAKE - ON - ME; auf jedes Wort ein Blinder auf Gitarre, Bass und Lampen (nicht auf der Matrix, sonst wäre der Text überstrahlt)."
+
+  "tom-halfTime (2)":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_SUNSET
+    soft: 70
+    dim: 60
+    why: "Halftime, ruhig: ohne Text und ohne Blinder. Die ganze Bühne in einer Farbe, etwas gedimmt, alle 2 Beats weich zur nächsten Farbe."
+
+  "letzter durchgang (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    text: {words: "TWO", per: 16, color: rot, over: true, under: 0, from: 1, to: 9, fade_out: 7.9}
+    blinder: {bar: 89.25, len: 4, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      89.25: "TWO in Rot auf schwarzer Matrix, blendet über 2 Takte aus (der Build-up kommt dabei zurück). Dazu langer Blinder über 1 Takt auf Gitarre, Bass und Lampen: 2 Viertel voll, dann ausklingend"
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf die Bridge. (Marker: Fis leuchtet schon vor.) Auf der 2. Viertel ein langer Blinder (1 Takt) und auf der Matrix TWO in Rot auf Schwarz, das über 2 Takte ausblendet."
+
+  "BRIDGE":
+    scene: SCENE_DNA_FLIP_SCROLL
+    scheme: SCHEME_ROYAL
+    why: "Auf der Matrix eine DNA-Helix in Blau und Lila, die langsam durchs Bild wandert; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)"
+
+  "SOLO SYNTH":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Statt 4 Takten Schwarz: Build-up in Orange, Pink und Gelb, Explosion genau auf das Riff."
+
+  "chorus 3":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    gate: {per: 2}
+    scheme: SCHEME_SUNSET
+    blinder: {at: 0, len: 1, hold: 0.75}
+    why: "Riff-Motiv (Viertel an, Viertel aus), jetzt wärmer in Orange, Pink, Lila und Gelb. Warmweißer Blinder auf den Einsatz, eine Viertel lang."
+
+  "verse 3":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    transition: {type: fade, beats: 4}
+    why: "Wasserringe wie bisher, blenden über einen Takt weich aus dem Riff ein. Die Ringe sind blau und eisblau, die Farben wandern alle 2 Takte weiter und zurück."
+
+  "take on me (3)":
+    scene: SCENE_STAR
+    scheme: SCHEME_FIRE
+    soft: 60
+    text: {words: "_*24 TAKE*2 ON*2 _*2 ME*40", per: 0.5, color: rot, flash: true, over: true, under: 0, from: 12, to: 16.5, fade_out: 1.5}
+    blinder:
+      - {bar: 136, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 136.25, len: 0.7, hold: 0.3, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+      - {bar: 136.75, len: 1, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      136: "TAKE in Rot auf schwarzer Matrix, klingt innerhalb der Viertel ab (bei 1,5 Vierteln käme schon ON). Dazu Blinder auf Gitarre, Bass und Lampen: voll auf der 1, nach der Viertel aus"
+      136.25: "ON in Rot auf Schwarz, nach der Viertel wieder aus. Dazu kurzer starker Blinder (voll auf dem Schlag, nach gut einer halben Viertel aus)"
+      136.75: "ME in Rot auf Schwarz, blendet über 1,5 Viertel aus, der Stern kommt dabei zurück. Dazu Blinder, nach der Viertel aus"
+    why: "Refrain: drehender Stern in Rot, Orange und Gelb mit weichen Farbwechseln, läuft durch. Im 4. Takt (Takt 136) wird die Matrix schwarz und zeigt in Rot TAKE - ON - ME; auf jedes Wort ein Blinder auf Gitarre, Bass und Lampen (nicht auf der Matrix, sonst wäre der Text überstrahlt)."
+
+  "tom-halfTime (3)":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_FIRE
+    soft: 70
+    dim: 60
+    why: "Halftime, ruhig: ohne Text und ohne Blinder. Die ganze Bühne in einer Farbe, etwas gedimmt, alle 2 Beats weich zur nächsten Farbe."
+
+  "letzter durchgang (3)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    text: {words: "TWO", per: 16, color: rot, over: true, under: 0, from: 1, to: 9, fade_out: 7.9}
+    blinder: {bar: 145.25, len: 4, devices: [ANDRESGIT, RINASBASS, LAMPE1, LAMPE2]}
+    cues:
+      145.25: "TWO in Rot auf schwarzer Matrix, blendet über 2 Takte aus (der Build-up kommt dabei zurück). Dazu langer Blinder über 1 Takt auf Gitarre, Bass und Lampen: 2 Viertel voll, dann ausklingend"
+    why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf das letzte Riff. Auf der 2. Viertel ein langer Blinder (1 Takt) und auf der Matrix TWO in Rot auf Schwarz, das über 2 Takte ausblendet."
+
+  "chorus 3 (2)":
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    gate: {per: 2}
+    scheme: SCHEME_FIRE
+    overlay: {scene: SCENE_SPARKLE, amount: 60}
+    blinder:
+      - {at: 0, len: 1, hold: 0.75}
+      - {bar: 160.75, len: 2, hold: 1}
+    why: "Höhepunkt: Riff-Motiv (Viertel an, Viertel aus) in Rot, Orange und Gelb mit Glitzern darüber, Blinder auf den Einsatz (eine Viertel lang). Auf der letzten Viertel (Takt 160,75) springt ein starker Blinder auf und klingt 5 Sekunden ins Schluss-Schwarz aus."

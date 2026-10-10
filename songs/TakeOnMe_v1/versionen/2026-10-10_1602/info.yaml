@@ -1,0 +1,9 @@
+zeit: '2026-10-10 16:02:34'
+notiz: 'Sync: Intro und Riff zeigen auf allen Geraeten gleichzeitig dasselbe (SCENE_COLORS
+  + gate statt progStrobo mit Zufallsfarben, kein Ping-Pong, keine wandernde Farbe)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: 18f3342177bbb441a11aa62e3d2af49555111ed4d7de18c5f5d628516982333d
+  generated.cpp: f9ef69c7914e0120f2f1c6ef96d0009fa9fa45ffa447de8330d75083bea11934

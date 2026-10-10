@@ -22,6 +22,8 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     vorschlag.yaml         optional: Vorschläge von Claude je Part, wie ein alter Song umgestaltet werden könnte. Nur
                            Text für den User (--vorschlag schreibt ihn in die Tabelle), keine Wirkung auf den Code.
     generated.cpp          erzeugter Code dieses Songs
+    <Song>.mid             MIDI-Datei fürs DAW, bei jeder Generierung neu: Kanal 10, CC 22 = Song-ID am StartBit und
+                           CC 23 = Part-Nummer auf jedem Part-Anfang (siehe midi_bytes(); nur schreiben: --midi)
     versionen/<Zeit>/      Kopie von struktur.xlsx + show.yaml + generated.cpp bei jeder Generierung (+ info.yaml)
 Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gestaltung steht nur in show.yaml.
 
@@ -143,14 +145,14 @@ FADE_TARGETS = {"complement": "FADE_COMPLEMENT", "komplement": "FADE_COMPLEMENT"
 				"analog": "FADE_ANALOG", "rainbow": "FADE_RAINBOW", "regenbogen": "FADE_RAINBOW"}
 
 # Ausgabestufe (fxPipeline.h): Übergang in den Part und Modifikatoren auf das fertige Bild. Längen in Beats, Stärken in Prozent.
-PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth", "blinder")
+PIPELINE_KEYS = ("transition", "fade_in", "fade_out", "pulse", "gate", "dim", "tint", "only", "span", "soft", "smooth", "blinder", "blinder_under_text")
 SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors",	# nur diese Effekte werten soft: (fxSoft) aus
 				"SCENE_STAR", "progStern", "progSternNeu", "progLampSpin")
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
 LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK", "cut": "FX_CUT"}	# overlay: mode
-LAYER_MOD_KEYS = ("from", "to", "fade_in", "fade_out", "pulse", "gate", "under")	# steuern nur die Ebene (fxLayer...)
+LAYER_MOD_KEYS = ("from", "to", "fade_in", "fade_out", "pulse", "gate", "under", "outline")	# steuern nur die Ebene (fxLayer...)
 OVERLAY_KEYS = ("scene", "fx", "mode", "amount", "span", "devices") + LAYER_MOD_KEYS
 DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
 	"LAMPE1": "DEV_LAMPE1", "LAMPE2": "DEV_LAMPE2", "RINASBASS": "DEV_BASS", "ANDRESGIT": "DEV_GIT",
@@ -575,7 +577,7 @@ def blinder_specs(part, song, offset=0):
 def pipeline_calls(part, song, offset=0):
 	"""Übergang und Modifikatoren eines Parts (fxPipeline.h) -> (C++-Zeilen, Beschreibungen, Fehler).
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
-	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30}
+	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30} | {per: <Beats>, duty: 50}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
 	soft: <Prozent> (weiche Farbwechsel, nur SCENE_COLORS / SCENE_COLORS_WAVE / SCENE_STAR / progStern / progSternNeu)     smooth: <Beats> (Nachleuchten)
 	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
@@ -650,15 +652,21 @@ def pipeline_calls(part, song, offset=0):
 			timed = True
 
 	if "gate" in sec:
-		spec = as_dict("gate", "per_beat", ("per_beat", "duty"))
+		spec = as_dict("gate", "per_beat", ("per_beat", "duty", "per"))
 		n, duty = spec.get("per_beat", 1), spec.get("duty", 50)
+		# per: <Beats> = langsamer als der Beat: ein An/Aus-Schritt dauert so viele Beats (2 = Viertel an, Viertel aus)
+		per = spec.get("per", 1)
 		if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 16:
 			errors.append(f"{name}: gate per_beat ist eine ganze Zahl von 1 bis 16 (Blitze pro Beat), nicht '{n}'")
+		elif isinstance(per, bool) or not isinstance(per, int) or not 1 <= per <= 16:
+			errors.append(f"{name}: gate per ist die Länge eines An/Aus-Schritts in ganzen Beats (1 bis 16), nicht '{per}'")
+		elif per > 1 and n != 1:
+			errors.append(f"{name}: gate - entweder per_beat (Blitze pro Beat) oder per (Beats pro Blitz), nicht beides")
 		elif isinstance(duty, bool) or not isinstance(duty, int) or not 1 <= duty <= 99:
 			errors.append(f"{name}: gate duty ist der Hell-Anteil in Prozent (1..99), nicht '{duty}'")
 		else:
-			calls.append(f"fxGate({bpm}, {n}" + (f", {duty}" if duty != 50 else "") + ");")
-			infos.append(f"Tor {n}x pro Beat, {duty} % hell")
+			calls.append(f"fxGate({bpm}, {n}" + (f", {duty}, {per}" if per > 1 else f", {duty}" if duty != 50 else "") + ");")
+			infos.append(f"Tor alle {per} Beats, {duty} % hell" if per > 1 else f"Tor {n}x pro Beat, {duty} % hell")
 			timed = True
 
 	if "dim" in sec:
@@ -777,6 +785,19 @@ def pipeline_calls(part, song, offset=0):
 					 + (f", nur {', '.join(b['devs'])}" if b["devs"] else ""))
 		timed = True
 
+	# Text liegt IMMER über allem (Regel des Users, 10.10.2026: "der Text muss IMMER ÜBER allem anderen liegen, damit
+	# es gut sichtbar ist"): hat der Part einen Text über der Szene (text: {..., over: true}) und läuft in ihm irgendein
+	# Blinder (eigener, Einblenden für den Part danach oder Ausklingen aus dem Part davor), liegen die Blinder auf der
+	# Matrix von selbst UNTER dem Text (fxBlinderUnderText) - als heller Hintergrund statt als Überstrahlen. Die
+	# anderen Geräte haben keine Ebene: dort blendet der Blinder wie immer.
+	# blinder_under_text: true (Schlüssel aus der Zeit davor) verlangt dasselbe ausdrücklich und bleibt gültig.
+	text_over = isinstance(sec.get("text"), dict) and sec["text"].get("over") is True
+	if sec.get("blinder_under_text") and (sec["blinder_under_text"] is not True or not own):
+		errors.append(f"{name}: blinder_under_text ist true und braucht einen blinder im selben Part")
+	elif sec.get("blinder_under_text") or (text_over and (own or carry or tails)):
+		calls.append("fxBlinderUnderText();")
+		infos.append("Blinder liegt unter dem Text")
+
 	if "smooth" in sec:
 		ms = beats_ms("smooth", sec["smooth"])
 		if ms:
@@ -874,6 +895,15 @@ def layer_mod_calls(spec, part, sec, song, name, errors, prefix="fxLayer", label
 		elif v != 255:
 			calls.append(f"{prefix}Under({v});")
 			infos.append(f"darunter {spec['under']} %")
+
+	# outline: true - schwarzer Rand um alles, was die Ebene zeichnet (nur auf der Matrix; fxLayerOutline / fxTextOutline).
+	# Gedacht für Text über hellem Bild oder über einem Blinder: die Buchstaben bleiben lesbar.
+	if "outline" in spec:
+		if not isinstance(spec["outline"], bool):
+			errors.append(f"{name}: {label} outline ist true oder false, nicht '{spec['outline']}'")
+		elif spec["outline"]:
+			calls.append(f"{prefix}Outline();")
+			infos.append("schwarzer Rand um die Schrift")
 	return calls, infos
 
 
@@ -884,7 +914,8 @@ def overlay_code(part, song):
 	overlay: {scene: ... | fx: "...", mode: add|max|over|mask|cut, amount: <Prozent>, span: [von, bis],
 	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices
 	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster), fade_in / fade_out: <Beats>,
-	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler)"""
+	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler),
+	outline: true (schwarzer Rand um alles, was die Ebene zeichnet - nur auf der Matrix, für lesbaren Text)"""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec.get("overlay")
@@ -2413,8 +2444,126 @@ def cmd_generate(song_dir, dry_run, note):
 	v = save_version(song_dir, note)
 	print(f"\n-> songs/{song_dir.name}/{GEN_FILE}")
 	print(f"-> Version {v.name} gespeichert" if v else "-> keine neue Version (genau dieser Stand ist schon gespeichert)")
+	print(write_midi(song_dir, song, timeline))		# MIDI-Datei mit den Part-Sprüngen fürs DAW, passend zu diesem Code
 	print_assembled(assemble())
 	return 0
+
+
+#==================================================================
+#=========== MIDI-Datei mit den Part-Sprüngen =====================
+#==================================================================
+# Wunsch des Users (10.10.2026): zu jedem generierten Song eine kleine MIDI-Datei, die er in sein DAW (Cakewalk)
+# importiert. Sie enthält genau die Befehle, die die LED-Geräte verstehen (alle auf MIDI-Kanal 10):
+#   Control Change 22 = Song-ID      einmal, am StartBit (so weit hinter dem Anfang der ersten Zeile wie in der Tabelle)
+#   Control Change 23 = Part-Nummer  auf der 1 jedes Parts der Tabelle (die case-Nummer im erzeugten Code)
+# Damit kann er im DAW mitten im Song starten ("gezielt in einzelne Übergänge reinschauen"): sobald die Wiedergabe
+# über eine Part-Grenze läuft, springen alle Geräte in diesen Part - ohne den Song von vorn zu hören.
+# Die Part-Nummern hängen an der Show (ein tail verschiebt alle folgenden) - deshalb wird die Datei bei jeder
+# Generierung neu geschrieben und heißt wie der Song-Ordner (songs/<Song>/<Song>.mid).
+# Nicht enthalten sind:
+#   - der erste Part (den startet CC 22) und die Parts, die beginnen, während auf der Matrix noch der Titel-Lauftext
+#     läuft: die Matrix spielt dort eigene cases, ein Sprung würde den Lauftext abbrechen
+#   - die zweite Hälfte geteilter Parts (tail): sie ist kein Part der Tabelle und läuft von selbst
+#   - Part-Nummern über 127: mehr passt nicht in einen MIDI-Wert (Hinweis in der Ausgabe)
+# Aufbau der Datei ("Standard MIDI File", Format 0 = eine Spur): Kopf "MThd", dann eine Spur "MTrk" aus Ereignissen.
+# Vor jedem Ereignis steht der Abstand zum vorigen in Ticks (MIDI_PPQ Ticks = eine Viertel), geschrieben als Zahl
+# variabler Länge (midi_vlq). Positionen werden aus den Taktnummern der Tabelle gerechnet, nicht aus Millisekunden -
+# sie liegen im DAW deshalb exakt auf dem Taktstrich, auch bei einem Tempowechsel (BPM pro Part -> Tempo-Ereignis).
+MIDI_PPQ = 960			# Ticks pro Viertelnote (Auflösung der Datei; so exportiert auch Cakewalk)
+MIDI_CHANNEL = 10		# auf diesen Kanal hören die Geräte (midi_in.cpp)
+MIDI_CC_SONG, MIDI_CC_PART = 22, 23
+
+
+def midi_file_name(song_dir):
+	return song_dir.name + ".mid"
+
+
+# Zahl variabler Länge: je 7 Bit pro Byte, bei allen Bytes außer dem letzten ist das oberste Bit gesetzt
+def midi_vlq(n):
+	out = [n & 0x7F]
+	n >>= 7
+	while n:
+		out.append((n & 0x7F) | 0x80)
+		n >>= 7
+	return bytes(reversed(out))
+
+
+def midi_bytes(song, timeline):
+	"""MIDI-Datei des Songs als Bytes + Liste von Hinweisen (was nicht enthalten ist)."""
+	bpb = int(song.get("beats_per_bar", 4))
+	first_bpm = timeline[0]["bpm"]
+	# StartBit in Ticks. Kommt das Start-MIDI VOR Takt 1 (negativer Wert), rückt alles um diesen Vorlauf nach hinten.
+	start_tick = round(midi_offset_ms(song) * first_bpm / 60000.0 * MIDI_PPQ)
+	shift = max(0, -start_tick)
+	# Ab wann spielt die Matrix wieder die gemeinsamen Parts? (Ende des Titel-Lauftexts; ohne Lauftext: von Anfang an)
+	plans = song.get("_scroll_plans") or {}
+	plan = plans.get("SCROLLMATRIX") or next(iter(plans.values()), None)
+	join_ms = plan["join"]["start"] if plan else 0
+
+	status = 0xB0 | (MIDI_CHANNEL - 1)		# 0xB0 = Control Change, untere 4 Bit = Kanal (ab 0 gezählt)
+	events = [(start_tick + shift, 1, bytes([status, MIDI_CC_SONG, song["id"]]))]	# (Tick, Rang bei gleichem Tick, Bytes)
+	notes, skipped, bpm = [], [], first_bpm
+	first_von = song["sections"][0]["_von"]
+	for i, p in enumerate(timeline):
+		sec = p["sec"]
+		if "_von" not in sec:			# tail, Vorlauf, Schluss-Black: keine Zeile der Tabelle
+			continue
+		tick = round((sec["_von"] - first_von) * bpb * MIDI_PPQ) + shift
+		if p["bpm"] != bpm:				# Tempowechsel (BPM pro Part): Tempo-Ereignis vor dem Sprung
+			bpm = p["bpm"]
+			events.append((tick, 0, b"\xFF\x51\x03" + round(60000000 / bpm).to_bytes(3, "big")))
+		if i == 0:
+			continue					# den ersten Part startet CC 22
+		if p["start"] < join_ms:
+			skipped.append(sec["name"])
+		elif p["case"] > 127:
+			notes.append(f"'{sec['name']}' hat Part-Nummer {p['case']} - über 127 geht nicht als MIDI-Wert, kein Eintrag")
+		else:
+			events.append((tick, 1, bytes([status, MIDI_CC_PART, p["case"]])))
+	if skipped:
+		notes.append("ohne Eintrag, weil dort auf der Matrix noch der Titel-Lauftext läuft: " + ", ".join(skipped))
+
+	name = (song["name"] + " LED").encode("ascii", "replace")
+	track = bytearray(b"\x00\xFF\x03" + midi_vlq(len(name)) + name)						# Spurname
+	track += b"\x00\xFF\x58\x04" + bytes([bpb, 2, 24, 8])									# Taktart bpb/4 (2 = 2 hoch 2 = Viertel)
+	track += b"\x00\xFF\x51\x03" + round(60000000 / first_bpm).to_bytes(3, "big")			# Tempo: Mikrosekunden pro Viertel
+	last = 0
+	for tick, _rank, data in sorted(events):
+		track += midi_vlq(tick - last) + data
+		last = tick
+	track += b"\x00\xFF\x2F\x00"															# Spurende
+	head = b"MThd" + (6).to_bytes(4, "big") + (0).to_bytes(2, "big") + (1).to_bytes(2, "big") + MIDI_PPQ.to_bytes(2, "big")
+	return head + b"MTrk" + len(track).to_bytes(4, "big") + bytes(track), notes
+
+
+def write_midi(song_dir, song, timeline):
+	"""songs/<Song>/<Song>.mid schreiben; Rückgabe: Text für die Ausgabe."""
+	data, notes = midi_bytes(song, timeline)
+	path = song_dir / midi_file_name(song_dir)
+	try:
+		path.write_bytes(data)
+	except OSError as e:		# z. B. im DAW geöffnet und gesperrt
+		return f"MIDI: {path.name} nicht geschrieben ({e})"
+	count = data.count(bytes([0xB0 | (MIDI_CHANNEL - 1), MIDI_CC_PART]))
+	return (f"-> songs/{song_dir.name}/{path.name}  (Kanal {MIDI_CHANNEL}: CC {MIDI_CC_SONG} = {song['id']} am StartBit, "
+			f"{count} x CC {MIDI_CC_PART} = Part-Nummer auf den Part-Anfängen)" + "".join(f"\n   {n}" for n in notes))
+
+
+# <Song> --midi: nur die MIDI-Datei schreiben (kein neuer Code). Ohne <Song>: für alle generierten Songs.
+# Gerechnet wird aus Tabelle + Show, wie sie jetzt sind - passt also nur zum Code, wenn der Song "aktuell" ist.
+def cmd_midi(song_dirs_):
+	rc = 0
+	for song_dir in song_dirs_:
+		try:
+			song = load_song(song_dir)
+			timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))
+			if errors:
+				raise SongError("; ".join(errors))
+			print(write_midi(song_dir, song, timeline))
+		except SongError as e:
+			print(f"{song_dir.name}: {e}", file=sys.stderr)
+			rc = 1
+	return rc
 
 
 # <Song> --tabelle: nur die Spalte "Effekt" der Tabelle schreiben (z. B. wenn sie beim Generieren in Excel geöffnet war).
@@ -2696,6 +2845,7 @@ def main():
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
 	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
 	ap.add_argument("--vorschlag", action="store_true", help=f"{PROPOSAL_FILE} des Songs in die Spalte '{st.PROPOSAL_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Songs mit {PROPOSAL_FILE}")
+	ap.add_argument("--midi", action="store_true", help="nur die MIDI-Datei mit den Part-Sprüngen schreiben (songs/<Song>/<Song>.mid, Kanal 10: CC 22 Song, CC 23 Parts; kein neuer Code); ohne <Song>: alle generierten Songs")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
 	ap.add_argument("--takt-ab", type=float, metavar="N", help="Taktnummern der Tabelle verschieben, so dass ihre erste Zeile Takt N ist (1 = wie im DAW); bar:/cues: der Show wandern mit, der Song bleibt derselbe")
@@ -2711,6 +2861,8 @@ def main():
 			return cmd_table(song_dirs())
 		if args.vorschlag and not args.song:
 			return cmd_proposal([d for d in song_dirs() if (d / PROPOSAL_FILE).exists()])
+		if args.midi and not args.song:
+			return cmd_midi([d for d in song_dirs() if (d / GEN_FILE).exists() and (d / SHOW_FILE).exists()])
 		if not args.song:
 			return cmd_list()
 		if args.neu:
@@ -2726,6 +2878,8 @@ def main():
 			return cmd_shift(song_dir, args.takt_ab)
 		if args.vorschlag:
 			return cmd_proposal([song_dir])
+		if args.midi:
+			return cmd_midi([song_dir])
 		if args.tabelle:
 			return cmd_table([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)

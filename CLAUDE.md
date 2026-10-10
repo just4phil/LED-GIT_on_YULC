@@ -95,13 +95,14 @@ everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n
 blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
 number of the table). A blinder's position is always the moment of FULL brightness (user rule 09.10.2026): a fade-in
 (`fxBlinderShape` / YAML `attack`) runs before it, and if that starts before the part does, `songgen.py` registers the
-blinder in the previous part as well. A blinder ends with its part unless it has `carry: true`: then `songgen.py`
+blinder in the previous part as well. `fxBlinderUnderText()` (set by `songgen.py` on its own whenever a part has a text with `over: true` and a blinder - user rule 10.10.2026: text always lies on top of everything; YAML `blinder_under_text: true` still asks for it explicitly) puts the part's blinders below the topmost layer (the text) instead of
+on top of everything, as a bright background the text stays readable on. A blinder ends with its part unless it has `carry: true`: then `songgen.py`
 registers its remaining fade in the next part (`fxBlinderCarry`). A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
 same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
-layer's strength, `fxLayerUnder` dims only the effect below while the layer is present. A second layer reserved
+layer's strength, `fxLayerUnder` dims only the effect below while the layer is present, `fxLayerOutline` / `fxTextOutline` (YAML `outline: true` inside `text:` or `overlay`) draw a black rim of one LED around whatever the layer draws (matrix only), so text stays readable on a bright picture or blinder. A second layer reserved
 for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run
 together. `fxTextGradient(paletteID, dir, cycleMillis)` is registered the same way and evaluated by
 `progText` / `progTextScroll` themselves: a palette gradient in the font instead of one colour (YAML: `gradient` inside `text:`). Everything is
@@ -181,7 +182,10 @@ the output-stage keys above), structure (bars, tempo) only in the table. `fade:`
 complementary colour or a second scheme and back, in sync on all devices. `text:` puts words or a scroll text on the matrix devices (auto-centred, in
 time with the beat) while the other devices keep playing the scene.
 
-`tools/songgen.py <Song>` reads table + show, generates only the named song, saves a version and assembles
+`tools/songgen.py <Song>` reads table + show, generates only the named song, saves a version, writes
+`songs/<Song>/<Song>.mid` (for the user's DAW, his wish 10.10.2026: channel 10, CC 22 = song ID at the StartBit, CC 23 =
+part number on every table part's first beat, so he can start playback mid-song and watch one transition; not for parts
+during the matrix title scroll, tails or cases > 127; `--midi` writes only this file) and assembles
 `src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
 songs are taken over unchanged). `--neu` creates a new song folder with the table template
 (`songs/struktur-vorlage.xlsx`, already in the quarter-bar grid), `--raster` writes a quarter-bar copy

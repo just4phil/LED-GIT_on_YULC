@@ -14,6 +14,7 @@ Ordner mit eigener ID):
 | `quelle/struktur.xlsx` | **User** | die einzige Datei, die er pflegt: Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie. **Nie selbst schreiben** - nur `songgen.py` füllt die Spalte „Effekt (füllt KI)“. |
 | `show.yaml` | Claude | technisch: Szenen, Farbschemata, Overrides, Tails, Marker - per Partname |
 | `generated.cpp` | Generator | erzeugter Code dieses Songs |
+| `<Song>.mid` | Generator | MIDI-Datei fürs DAW des Users (seit 10.10.2026, zum Testen einzelner Übergänge): Kanal 10, CC 22 = Song-ID am StartBit, CC 23 = Part-Nummer (case) auf der 1 jedes Tabellen-Parts. Bei jeder Generierung neu, nur schreiben mit `--midi`. Ohne Eintrag: Parts während des Titel-Lauftexts der Matrix, Tails, case > 127. Nach einer Änderung, die Parts teilt (tail), dem User sagen, dass er die neue Datei importieren muss. |
 | `versionen/<Zeit>/` | Generator | Kopie von struktur.xlsx + show.yaml + generated.cpp + info.yaml je Generierung |
 
 Es gibt keine `song.yaml`, keine Audio-Analyse und keinen Songsheet-Import mehr (Entscheidung des Users,
@@ -334,7 +335,12 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `fade_in: <Beats>` / `fade_out: <Beats>` - Helligkeit von/nach Schwarz (nicht mit der Farbwanderung `fade` verwechseln).
   Mit `tail` endet `fade_out` vor dem Tail.
 - `pulse: 50` oder `{depth: 50, per: beat|half|bar|<Beats>}` - Helligkeit pumpt im Beat.
-- `gate: 2` oder `{per_beat: 2, duty: 30}` - Strobo-Tor über dem laufenden Effekt.
+- `gate: 2` oder `{per_beat: 2, duty: 30}` - Strobo-Tor über dem laufenden Effekt. Langsamer als der Beat mit
+  `gate: {per: 2}` (ein An/Aus-Schritt dauert 2 Beats = eine Viertel an, eine Viertel aus; nur auf Abschnittsebene,
+  nicht im `overlay`). **Strobo im Takt immer so bauen** (Szene/Effekt + `gate`), nie mit `progStrobo`: der zählt mit
+  einem eigenen Zähler, lief in „Take On Me“ (10.10.2026) weder auf dem Takt noch auf allen Geräten gleich, und mit
+  `getRandomCRGB()` würfelt jedes Gerät seine eigene Farbe. Für eine gemeinsame Farbe darunter `SCENE_COLORS` (pro
+  Beat) oder `fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"` (alle 2 Beats).
 - `dim: 60` - Part auf 60 % Helligkeit. `tint: rot` oder `{color: rot, amount: 40}` - Farbstich.
 - `only: [guitar, LAMPE1]` oder `{devices: [...], others: 15}` - nur diese Geräte leuchten voll (Schlüssel wie `devices`).
 - `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
@@ -378,6 +384,26 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Users zu APT., 06.10.2026: „erst auf der letzten Viertel, dann 5 Sekunden ausfaden“): im letzten Part
   `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (springt dort auf und steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
   (Sekunden; ausführlich `{seconds, amount, color, devices}`) - der Blinder läuft im Schluss-Black weiter und klingt aus.
+- **Text liegt immer über allem** (Regel des Users, 10.10.2026: „der Text muss IMMER ÜBER allem anderen liegen, damit
+  es gut sichtbar ist“). Hat ein Part einen Text mit `over: true` und läuft in ihm ein Blinder (eigener, Einblenden für
+  den Part danach, Ausklingen aus dem Part davor), legt `songgen.py` die Blinder auf der Matrix von selbst UNTER den
+  Text (`fxBlinderUnderText`): der Blinder ist dort ein heller Hintergrund, die anderen Geräte blenden wie immer.
+  Dafür ist nichts einzutragen; `blinder_under_text: true` (Schlüssel vom selben Tag, aus der Runde davor) bleibt
+  gültig und verlangt dasselbe. Damit die Schrift auf dem hellen Hintergrund lesbar bleibt, **immer `outline: true`
+  im `text:` dazunehmen** (sein Wunsch im selben Satz: „dafür sollte der rote Text drumherum auch schwarz ausgestanzt
+  sein“) und den Blinder schwach und kurz halten (Take On Me: `amount: 50`, 0,7 Beats - bei 100 % und 1,2 Beats sah
+  man „den Text nicht“). Abnahme von Rand + 50 % durch den User offen.
+- `outline: true` im `text:` (mit `over: true`) oder im `overlay` - schwarzer Rand von 1 LED (auch schräg) um alles,
+  was die Ebene zeichnet, nur auf der Matrix (`fxLayerOutline` / `fxTextOutline`). So stark, wie die Ebene gerade
+  deckt: blendet der Text aus, verschwindet der Rand mit ihm. Sein „drumherum schwarz ausgestanzt“ meint genau das -
+  nicht eine ganz schwarze Matrix (`under: 0`) und nicht `color: schwarz` (dunkle Buchstaben in heller Fläche).
+- **Ein Wort länger stehen lassen, als sein Part dauert** („ME soll 2 Takte ausfaden“, der Part endet nach einer
+  Viertel): ein Part hat nur EIN Text-Fenster und die Matrix zeigt ein Wort zur Zeit. Im Part bleibt das Wort bis zum
+  Ende voll stehen (kein `to`, kein `fade_out`), der Part danach zeigt es von Beginn an weiter und blendet es aus:
+  `text: {words: "ME", per: 16, over: true, fade_out: 7.9}` (`per` länger als der Part = steht durchgehend; `fade_out`
+  knapp unter der Part-Länge). Braucht der Part danach selbst noch ein Text-Fenster, ihn per `tail` teilen. Kommt
+  schon vorher das nächste Wort, beide in eine Wortfolge (`words: "ME TWO*40", per: 1`) - das Ausblenden gilt dann
+  dem zweiten.
 - Text über einer Szene (`text: {..., over: true}`): Der User fand weißen Text auf hellem Hintergrund schlecht lesbar
   (05.10.2026). Ohne `under:` dimmt der Generator die Szene deshalb auf 15 %; nur bei dunklen Szenen höher setzen.
   Ausgestanzter Text (`color: schwarz`) braucht dagegen eine helle, gleichmäßige Fläche.

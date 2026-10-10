@@ -6,6 +6,7 @@
 void setGeneratedMarkerLEDs(byte songID, byte partID);	// Marker der generierten Songs
 bool isGeneratedSong(byte songID);	// exakte Timeline -> main.cpp gleicht die Verspätung der Part-Wechsel aus
 
+void gen_TakeOnMe();	// #3 Take On Me
 void gen_DancingOnMyOwn();	// #8 Dancing On My Own
 void gen_ILoveIt();	// #9 I Love It
 void gen_Abcdefu();	// #15 abcdefu
@@ -21,6 +22,32 @@ void gen_ILoveItIntro();	// #80 I Love It Intro
 void gen_AllTheThingsSheSaidIntro();	// #82 All The Things She Said Intro
 
 // Part-Nummern (case) der generierten Songs - für handgeschriebenen Code, der in einen Song springt (Trailer)
+#define GEN_TAKEONME_PAUSE 0
+#define GEN_TAKEONME_DRUMINTRO 5
+#define GEN_TAKEONME_SYNTHINTRO 10
+#define GEN_TAKEONME_GITINTRO 15
+#define GEN_TAKEONME_CHORUS_1 20
+#define GEN_TAKEONME_VERSE_1 25
+#define GEN_TAKEONME_TAKE_ON_ME 30
+#define GEN_TAKEONME_TAKE_ON_ME_TAIL 35
+#define GEN_TAKEONME_TOM_HALFTIME 40
+#define GEN_TAKEONME_TOM_HALFTIME_TAIL 45
+#define GEN_TAKEONME_LETZTER_DURCHGANG 50
+#define GEN_TAKEONME_CHORUS_2 55
+#define GEN_TAKEONME_VERSE_2 60
+#define GEN_TAKEONME_TAKE_ON_ME_2 65
+#define GEN_TAKEONME_TAKE_ON_ME_2_TAIL 70
+#define GEN_TAKEONME_TOM_HALFTIME_2 75
+#define GEN_TAKEONME_LETZTER_DURCHGANG_2 80
+#define GEN_TAKEONME_BRIDGE 85
+#define GEN_TAKEONME_SOLO_SYNTH 90
+#define GEN_TAKEONME_CHORUS_3 95
+#define GEN_TAKEONME_VERSE_3 100
+#define GEN_TAKEONME_TAKE_ON_ME_3 105
+#define GEN_TAKEONME_TAKE_ON_ME_3_TAIL 110
+#define GEN_TAKEONME_TOM_HALFTIME_3 115
+#define GEN_TAKEONME_LETZTER_DURCHGANG_3 120
+#define GEN_TAKEONME_CHORUS_3_2 125
 #define GEN_DANCINGONMYOWN_PAUSE 0
 #define GEN_DANCINGONMYOWN_BASS 5
 #define GEN_DANCINGONMYOWN_VERSE_1 10

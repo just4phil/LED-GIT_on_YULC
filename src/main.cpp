@@ -453,7 +453,8 @@ void loop() {
 			Physical();
 			break;
 		case 3:
-			TakeOnMe();
+			//TakeOnMe();
+			gen_TakeOnMe(); // <<< GENERATED SONGS <<<
 			break;
 		case 4:
 			DontStopTheMusic();

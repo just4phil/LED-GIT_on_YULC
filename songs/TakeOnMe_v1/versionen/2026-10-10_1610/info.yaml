@@ -1,0 +1,8 @@
+zeit: '2026-10-10 16:10:31'
+notiz: 'verse 1: Lampen blitzen nur alle 2 Beats (Wunsch des Users)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: f874144ccd1bca2c95e074629fc546469ef21fde936519245900a1064c8538e5
+  generated.cpp: 6361afb91524a9baf5a6d9566b459a45c1b5adbf6d906ec90ad9c2f016ca0119

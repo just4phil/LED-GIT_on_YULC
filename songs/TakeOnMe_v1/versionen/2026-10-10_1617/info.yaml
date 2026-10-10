@@ -1,0 +1,9 @@
+zeit: '2026-10-10 16:17:09'
+notiz: 'Riff erste Haelfte: progBeatColors + gate per 2 statt progStrobo (Viertel
+  an, Viertel aus, auf allen Geraeten synchron)'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: 6edda634ca4a359c9c190777842f599954ab3a25b13a4162b5e04af54a0e3f48
+  generated.cpp: 114b6596a859eb070a80c3c337f89a1c031d24ea3094e9e927cd18baf2a5502c

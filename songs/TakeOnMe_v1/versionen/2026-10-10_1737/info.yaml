@@ -1,0 +1,9 @@
+zeit: '2026-10-10 17:37:30'
+notiz: 'Wuensche 17:35: roter Text auf Schwarz mit Blindern in Takt 44/80/136, TWO
+  im letzten Durchgang, tom-halfTime ruhig ohne Text und Blinder'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9f3f6daf5a18c12a16c45ef2a73b50a125c5d0187417903c3f0c34b371e6b2a3
+  show.yaml: 3c76c6d52abf786b74fda2a9ed16edb83dd59572ebdd4afc5e0b1ddf4473aef3
+  generated.cpp: b4adb1c444a415fc1d01d4e47378a0e24bea8b17d7a6b8843dadaa4ec607e7e6

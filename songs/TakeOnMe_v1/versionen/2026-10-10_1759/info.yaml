@@ -1,0 +1,9 @@
+zeit: '2026-10-10 17:59:08'
+notiz: 'Erster Refrain + erster letzter Durchgang: weisser Hintergrund (Blinder) unter
+  dem roten Text, Takt 48 wie Takt 44'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 95d84316bfd9ab02f75669cb9b6ce3c283789d68e285f3f9e44c710bcd5858ce
+  show.yaml: db1ba590e9887afc732fef754562a745ddd8f514e60efc35b0ffe06f83b8ddc7
+  generated.cpp: f55af28fbdb7cb2bad6e156a8257842ad9250026ba8906707dec9e1bbeb2fb2a

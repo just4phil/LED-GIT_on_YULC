@@ -1,0 +1,9 @@
+zeit: '2026-10-10 18:21:28'
+notiz: Text immer ueber allem + schwarzer Rand (outline), ME steht 1 Viertel und blendet
+  2 Takte aus; tom-halfTime per tail geteilt
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: a7e0b958a084a397956d3a735df31f6f9981589a2408b57d7c89b7eb5f8756d9
+  show.yaml: 8812ec380d4c8e8d0b013b13be964bb70e41014831b1b8299541b784c5d04b95
+  generated.cpp: c54d6af6b1943f526de05946197cb646839bcfcba2b5e7393069cf79ad4e2490

@@ -1,0 +1,9 @@
+zeit: '2026-10-10 16:40:07'
+notiz: 'Wuensche aus struktur-raster.xlsx: Riff durchgehend Viertel an/aus, Text nur
+  in Takt 44/48/52 usw. (TAKE, ON, ME), Sparkle im gitIntro frueher und staerker'
+werkzeug_git: 831283b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 8b23df8fee4ae2a1e0259dbdf42d37cfb5e55222d6248e3aa8de72dbf7d7e304
+  show.yaml: fff1daec21cd023ebba297e465a92e24235e5c7353dfd5cf852658cf0664aae7
+  generated.cpp: 0401de8b7465611e883e875f1b401c51e761fae814a366ff2d12d35d204c5090
