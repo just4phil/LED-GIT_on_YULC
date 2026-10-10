@@ -1,0 +1,15 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py PhysicalIntro --vorschlag
+# Vorspann zu "Physical" (#2), bisher durchgehend Schwarz mit zwei Lauftexten auf der Matrix.
+# Leitidee: wie der Vorspann von "I Love It" (#80): Feuer-Impulse auf den Lampen als Erkennungszeichen, dazu ein
+# Herzschlag auf Gitarre und Bass ("physical"), der bis zum Songtitel schneller und heller wird.
+# Die genauen Takte der Akzente kommen vom User (Zwischenzeilen), hier steht nur die Idee je Part.
+parts:
+  "pause": |-
+    Schwarz bleibt; zwei bis vier kurze starke Blinder auf markante Schläge des Einspielers (Takt als Zwischenzeile eintragen), der letzte klingt lang über 2 Takte aus.
+  "text nerds on fire": |-
+    Lauftext "Nerds on Fire" bleibt. Dazu Feuer-Impulse, die zwischen Lampe 1 und Lampe 2 hin und her springen (wie in #80).
+  "pause (2)": |-
+    14 Takte Schwarz sind lang: Gitarre und Bass zeigen einen Herzschlag in Rot (progHeartbeat), sehr dunkel; ab der Hälfte (Takt 31) kommen Wasserringe auf der Matrix dazu (blenden ein). Blinder auf die 1 des letzten Takts (Takt 38), klingt über die Part-Grenze aus (carry).
+  "text songtitel": |-
+    Statt Lauftext: "PHYSICAL" auf der Matrix, pulsiert einmal je Takt und blendet jedes Mal aus (pulse 100), Wasserringe darunter; Herzschlag auf Gitarre und Bass wird heller (fade_in). Auf der letzten Viertel (Takt 47,25) starker Blinder als Absprung in den Song. Der Titel-Lauftext kann wie bei #9 beim Einstieg in den Song laufen (trailer_entry).

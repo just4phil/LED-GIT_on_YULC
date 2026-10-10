@@ -11,12 +11,16 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py <Song> --neu           # neuen Song-Ordner mit leerer Tabelle anlegen
     tools/.venv/Scripts/python tools/songgen.py <Song> --tabelle       # nur die Spalte "Effekt" der Tabelle nachtragen
     tools/.venv/Scripts/python tools/songgen.py --tabelle              # ... in den Tabellen ALLER Songs (kein neuer Code)
+    tools/.venv/Scripts/python tools/songgen.py <Song> --vorschlag     # vorschlag.yaml in die Spalte "Neuer Vorschlag (KI)" schreiben
+    tools/.venv/Scripts/python tools/songgen.py --vorschlag            # ... für alle Songs, die eine vorschlag.yaml haben
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
     quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
                            Format siehe tools/struktur.py. Das Werkzeug schreibt dort nur die Spalte "Effekt": bei jeder
                            Generierung steht darin je Part, was gerade umgesetzt ist (alles andere bleibt unberührt).
     show.yaml              technisch (von Claude aus der Tabelle abgeleitet): Szenen, Farbschemata, Overrides, Tails
+    vorschlag.yaml         optional: Vorschläge von Claude je Part, wie ein alter Song umgestaltet werden könnte. Nur
+                           Text für den User (--vorschlag schreibt ihn in die Tabelle), keine Wirkung auf den Code.
     generated.cpp          erzeugter Code dieses Songs
     versionen/<Zeit>/      Kopie von struktur.xlsx + show.yaml + generated.cpp bei jeder Generierung (+ info.yaml)
 Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gestaltung steht nur in show.yaml.
@@ -26,6 +30,7 @@ Schreibt:
     songs/<Song>/quelle/struktur.xlsx         (nur die Spalte "Effekt", siehe effect_texts() und struktur.write_effects())
     songs/<Song>/quelle/struktur-raster.xlsx  (nur mit --raster: gerasterte Kopie der Tabelle, eine Zeile je Vierteltakt)
     songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --takt-ab N: Taktnummern verschoben, siehe cmd_shift())
+    songs/<Song>/quelle/struktur.xlsx         (nur mit --vorschlag: die Spalte "Neuer Vorschlag (KI)", siehe cmd_proposal())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
 
@@ -95,6 +100,7 @@ TABLE_FILE = st.TABLE_FILE			# struktur.xlsx: gehört dem User, das Werkzeug sch
 TABLE_DIR = "quelle"
 TEMPLATE = SONGS_DIR / "struktur-vorlage.xlsx"	# --neu kopiert sie (der User darf sie anpassen)
 SHOW_FILE = "show.yaml"
+PROPOSAL_FILE = "vorschlag.yaml"	# Vorschläge von Claude je Part (--vorschlag schreibt sie in die Tabelle), siehe cmd_proposal()
 GEN_FILE = "generated.cpp"
 VERSIONS_DIR = "versionen"
 VERSION_FILES = (TABLE_FILE, SHOW_FILE, GEN_FILE)	# so heißen sie im Versions-Ordner (die Tabelle liegt dort flach)
@@ -2430,6 +2436,49 @@ def cmd_table(song_dirs_):
 	return 1 if failed else 0
 
 
+# <Song> --vorschlag: die Vorschläge aus songs/<Song>/vorschlag.yaml in die Spalte "Neuer Vorschlag (KI)" der Tabelle
+# schreiben (Wunsch des Users, 10.10.2026: beim Durchsehen der alten Songs sollen die Ideen für neue Szenen, Blinder und
+# Farbwanderungen direkt neben dem Part stehen). Ohne <Song>: alle Songs, die eine vorschlag.yaml haben.
+# Die Spalte ist nur Text zum Lesen: Code, Show, Versionen und src/ bleiben, wie sie sind. Was der User von den
+# Vorschlägen haben will, trägt er selbst in "Änderungswunsch" ein - erst daraus entsteht eine Show.
+# Aufbau der vorschlag.yaml:
+#   parts:                    Partname (wie in der Tabelle, gleiche Namen nummeriert: "chorus 1 (2)") -> Vorschlag
+#     "chorus 1": "SCENE_STAR in NEON, Blinder auf den Einsatz"
+#   zeilen:                   optional, für Zwischenzeilen des Viertel-Rasters: von takt -> Vorschlag
+#     32.75: "kurzer Blinder nur auf den Lampen"
+# Parts ohne Eintrag bekommen eine leere Zelle (= "kann bleiben, wie es ist"). Ein Name, den es in der Tabelle nicht
+# gibt, ist ein Fehler - sonst ginge ein Vorschlag nach einer Umbenennung still verloren.
+def cmd_proposal(song_dirs_):
+	failed = 0
+	for song_dir in song_dirs_:
+		src = song_dir / PROPOSAL_FILE
+		try:
+			if not src.exists():
+				raise SongError(f"keine {PROPOSAL_FILE}")
+			if not table_path(song_dir).exists():
+				raise SongError(f"keine {TABLE_FILE}")
+			data = yaml.safe_load(src.read_text(encoding="utf-8")) or {}
+			parts, lines = data.get("parts") or {}, data.get("zeilen") or {}
+			unknown = sorted(set(data) - {"parts", "zeilen"})
+			if unknown or not isinstance(parts, dict) or not isinstance(lines, dict):
+				raise SongError(f"{PROPOSAL_FILE}: erlaubt sind nur 'parts:' und 'zeilen:' (je Name bzw. von takt -> Text)"
+								+ (f", unbekannt: {', '.join(unknown)}" if unknown else ""))
+			names = [sec["name"] for sec in read_table(table_path(song_dir), song_dir.name)["sections"]]
+			wrong = [str(n) for n in parts if str(n) not in names]
+			if wrong:
+				raise SongError(f"{PROPOSAL_FILE}: diese Parts gibt es in der Tabelle nicht: {', '.join(wrong)}\n"
+								f"   Parts der Tabelle: {', '.join(names)}")
+			by_name = {str(n): str(t).strip() for n, t in parts.items() if t}
+			note = st.write_proposals(table_path(song_dir), [by_name.get(n) for n in names],
+									  {von: str(t).strip() for von, t in lines.items() if t})
+			note += f" - {len(by_name)} von {len(names)} Parts mit Vorschlag"
+		except (SongError, st.TableError, yaml.YAMLError) as e:
+			note = f"ACHTUNG: nicht geschrieben - {e}"
+		failed += note.startswith("ACHTUNG")
+		print(f"{song_dir.name}: {note}")
+	return 1 if failed else 0
+
+
 # <Song> --versions: die gespeicherten Versionen auflisten
 def cmd_versions(song_dir):
 	vs = versions(song_dir)
@@ -2646,6 +2695,7 @@ def main():
 	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (Tabelle + show.yaml + Code)")
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
 	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
+	ap.add_argument("--vorschlag", action="store_true", help=f"{PROPOSAL_FILE} des Songs in die Spalte '{st.PROPOSAL_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Songs mit {PROPOSAL_FILE}")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
 	ap.add_argument("--takt-ab", type=float, metavar="N", help="Taktnummern der Tabelle verschieben, so dass ihre erste Zeile Takt N ist (1 = wie im DAW); bar:/cues: der Show wandern mit, der Song bleibt derselbe")
@@ -2659,6 +2709,8 @@ def main():
 			return 0
 		if args.tabelle and not args.song:
 			return cmd_table(song_dirs())
+		if args.vorschlag and not args.song:
+			return cmd_proposal([d for d in song_dirs() if (d / PROPOSAL_FILE).exists()])
 		if not args.song:
 			return cmd_list()
 		if args.neu:
@@ -2672,6 +2724,8 @@ def main():
 			return cmd_raster(song_dir)
 		if args.takt_ab is not None:
 			return cmd_shift(song_dir, args.takt_ab)
+		if args.vorschlag:
+			return cmd_proposal([song_dir])
 		if args.tabelle:
 			return cmd_table([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)

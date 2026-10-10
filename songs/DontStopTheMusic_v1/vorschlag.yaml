@@ -1,0 +1,42 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py DontStop --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: Club-Song - kühl und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET/FIRE).
+# Die vier Chorus-Zeilen bekommen ein festes Paar: "take it away" = Stern, "cant refuse it" = Einzelblitze.
+parts:
+  "intro": |-
+    Szene Palette, NEON, pumpt im Beat (pulse 40): Farbband über die ganze Bühne, das mit der Kick atmet.
+  "ist gettin late": |-
+    Szene Verse, ROYAL: dezenter Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen).
+  "who knew …": |-
+    Szene Call Response, ROYAL -> Farbwanderung nach NEON: Bühnenhälften blitzen abwechselnd, eine Stufe mehr als der Part davor.
+  "do u know what u started": |-
+    Szene Palette, SUNSET, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 8 Takte) - Spannung bis zum Chorus. Letzter halber Takt weißer Strobo (tail 2 Beats).
+  "chorus 1a: i wanna take it away": |-
+    Szene Star, NEON, Blinder auf den Einsatz (2 Beats). Fester Look für alle "take it away".
+  "chorus 1a: i just cant refuse it": |-
+    Einzelblitze bleiben (Szene Sparkle, NEON). Fester Look für alle "cant refuse it".
+  "chorus 1b": |-
+    Szene Colors, NEON, soft 30: ganze Bühne eine Farbe pro Beat, mit kurzer Blende statt hartem Sprung.
+  "verse 2": |-
+    Wasserringe bleiben, weich eingeblendet (fade, 4 Beats) - Ruhe nach dem Chorus.
+  "do u know what u started (2)": |-
+    wie beim ersten Mal: Palette SUNSET + Glitzern baut sich auf.
+  "bridge: bass solo": |-
+    Szene Solo Bass, SUNSET: zwei Kometen laufen um den Bass, alle anderen atmen dunkel. Übergang läuft über die Bühne zum Bass hin (stage_rl).
+  "STROBO": |-
+    Weißer Strobo statt Zufallsfarbe - härterer Absprung.
+  "chorus 2a: i wanna take it away": |-
+    Szene Star, NEON, Blinder auf den Einsatz; Lampen blitzen weiß auf 2 und 4 (eine Stufe mehr als Chorus 1).
+  "chorus 2a: i just cant refuse it": |-
+    Szene Sparkle, NEON. Auf der Matrix der Text "DONT STOP THE MUSIC" (ein Wort pro Beat) über der Szene.
+  "chorus 2a: i wanna take it away (2)": |-
+    Szene Star, SUNSET - ab hier kippt die Farbe ins Warme.
+  "chorus 2a: i just cant refuse it (2)": |-
+    Szene Sparkle, SUNSET, Text "DONT STOP THE MUSIC" wie oben.
+  "chorus 4a: i wanna take it away": |-
+    Im alten Code schon Schwarz. Vorschlag: Szene Fire, FIRE - Höhepunkt, Blinder auf den Einsatz.
+  "chorus 4a: i just cant refuse it": |-
+    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 100,75), klingt in "Bass Ende" aus (carry).
+  "Bass Ende": |-
+    Szene Solo Bass, RED, blendet über die letzten 2 Takte aus (fade_out 8 Beats).

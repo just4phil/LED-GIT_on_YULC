@@ -1,0 +1,18 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py DancingOnMyOwnIntro --vorschlag
+# Vorspann zu "Dancing On My Own" (#8), bisher fast durchgehend Schwarz mit zwei Lauftexten auf der Matrix.
+# Leitidee: wie der Vorspann von "I Love It" (#80), aber mit eigenem Bild - statt Feuer kühle Akzente in Blau/Pink,
+# passend zum Song. Die genauen Takte der Akzente kommen vom User (Zwischenzeilen), hier steht nur die Idee je Part.
+parts:
+  "pause": |-
+    Schwarz bleibt; zwei bis vier kurze starke Blinder auf markante Schläge des Einspielers (Takt als Zwischenzeile eintragen), der letzte klingt lang über 2 Takte aus.
+  "text nerds on fire": |-
+    Lauftext "Nerds on Fire" bleibt. Dazu Feuer-Impulse, die zwischen Lampe 1 und Lampe 2 hin und her springen (wie in #80) - das Erkennungszeichen aller Vorspanne.
+  "pause (2)": |-
+    Ab hier Wasserringe als Grundbild auf der Matrix (blenden über 2 Beats ein), übrige Geräte dunkel; ein Blinder auf die 1 von Takt 21, klingt über 1,5 Takte aus.
+  "pause (3)": |-
+    Gitarre und Bass beginnen ganz dunkel zu atmen (Szene Calm, BLUE, 20 %), wird bis zum Songtitel heller (fade_in über den Part).
+  "text songtitel": |-
+    Statt Lauftext: "DANCING" / "ON MY" / "OWN" als drei Wörter auf der Matrix, je mit Blinder und über 2 Takte ausblendend (wie THE / NERDS / ON in #80), Wasserringe darunter. Der Titel-Lauftext kann dann wie bei #9 beim Einstieg in den Song laufen (trailer_entry).
+  "strobo": |-
+    Weißer Strobo statt drei Zufallsfarben; auf der Matrix "OWN" schwarz ausgestanzt über dem Strobo.

@@ -1,0 +1,38 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Titanium --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: Titan = kalt und metallisch (ICE, WHITE) in Strophe und Chorus; der Drop ("bridge") explodiert in NEON.
+# "im bulletproof" wird der Aufbau zum Chorus, "STONE HEART" ein Herzschlag im Dunkeln.
+parts:
+  "intro": |-
+    Szene Glow, ICE, weich eingeblendet (fade_in 4 Beats): füllt sich langsam in Eisblau (bisher Kreise im Beat).
+  "v1: u shout it out": |-
+    Szene Calm, ICE, Farbwanderung (triad, 2 Takte): ruhiges Atmen, nur Gitarre und Stimme.
+  "v1: im criticised": |-
+    Szene Rain, ROYAL: Leuchtspuren, kleine Steigerung; weich eingeblendet (fade, 2 Beats).
+  "im bulletproof": |-
+    Szene Verse, ICE, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 8 Takte); letzter Takt Szene Buildup (tail 4 Beats), Explosion auf "I am titanium". Fester Look für beide.
+  "chorus 1": |-
+    Szene Colors, WHITE -> Farbwanderung nach ICE, soft 30; Blinder auf den Einsatz (2 Beats). Auf der Matrix "TITANIUM" über der Szene, blendet nach 2 Takten aus.
+  "bridge": |-
+    Der Drop: Szene Drop, NEON (Schockwellen und Beat-Blitze) statt dezenter Einzelblitze; weißer Blitz auf den Einsatz (Übergang flash).
+  "half time": |-
+    Blinder auf jede Halbe (alle 2 Beats, je 1,5 Beats lang) über dunklem Atmen - Halftime sichtbar.
+  "v2: cut me down": |-
+    Szene DNA Flip, ICE: stehende Helix auf der Matrix, alle anderen pulsieren einmal je Takt.
+  "v2: race your voice": |-
+    Wasserringe bleiben, Farbwanderung.
+  "im bulletproof (2)": |-
+    wie beim ersten Mal (Verse ICE + Glitzern, Buildup-Tail).
+  "chorus 2": |-
+    wie chorus 1 (Colors WHITE/ICE, Text TITANIUM), dazu blitzen die Lampen weiß auf 2 und 4.
+  "bridge (2)": |-
+    Drop wie beim ersten Mal (Szene Drop, NEON); starker Blinder auf der letzten Viertel (Takt 91,5), danach Schwarz.
+  "Pause: STONE HEART ..": |-
+    Statt 8 Takten Schwarz: nur Gitarre und Bass zeigen einen Herzschlag in Rot (progHeartbeat), Lampen und Matrix bleiben dunkel. In den letzten 2 Takten blendet ein Blinder ein, voll auf Takt 100.
+  "chorus 3": |-
+    Anwachsende Einzelblitze bleiben (16 Takte), in ICE -> ab der Hälfte FIRE (bei Takt 108 eine eigene Zeile anlegen); der Blinder aus der Pause steht auf dem Einsatz.
+  "bridge triolisch": |-
+    Weißer Strobo bleibt (triolisch); drei kurze Blinder auf den letzten drei Vierteln (Takt 122,25 / 122,5 / 122,75).
+  "matrix": |-
+    Szene Fadeout, ICE: blendet über die 4 Takte weich nach Schwarz (die Matrix kann ihren Regen behalten).

@@ -1,0 +1,39 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Friday --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Stand heute: generiert, aber 1:1 die alten Effekte (fünf Strophen = fünfmal progPalette, freie Zufallsfarben).
+# Leitidee: fröhlich und warm (SUNSET, NEON) - die Strophen bekommen je einen eigenen Look, "Saturday went" ein
+# festes Motiv, das Gitarrensolo die Solo-Szene.
+parts:
+  "intro": |-
+    Einzelblitze bleiben, weich eingeblendet (fade_in 4 Beats).
+  "intro 2": |-
+    Stern bleibt, in SUNSET mit weichen Farbwechseln (soft 40); Blinder auf den Einsatz (2 Beats).
+  "verse 1": |-
+    Szene Palette, SUNSET: warmes Farbband über die ganze Bühne, weich eingeblendet (fade, 2 Beats).
+  "verse 1b": |-
+    Szene Verse, SUNSET: dezenter Puls im Beat - kleine Steigerung.
+  "Saturday went": |-
+    Szene Call Response, NEON: Bühnenhälften blitzen abwechselnd im Beat. Fester Look für beide "Saturday went". Blinder auf die letzte Viertel (Takt 41,75).
+  "verse 2": |-
+    Szene Colors, SUNSET, soft 100: die ganze Bühne fließt pro Beat in die nächste Farbe.
+  "SOLO": |-
+    Szene Solo Gitarre, NEON: zwei Kometen laufen um die Gitarre, alle anderen atmen dunkel. Übergang läuft über die Bühne zur Gitarre (stage_lr).
+  "verse 3": |-
+    Szene Rain, NEON, Farbwanderung (triad, 2 Takte).
+  "Saturday went (2)": |-
+    wie beim ersten Mal (Call Response, NEON); letzter Takt Szene Buildup (tail 4 Beats).
+  "dressed up": |-
+    Stern, NEON, Blinder auf den Einsatz; Lampen blitzen weiß auf 2 und 4.
+  "dressed up 2": |-
+    Anwachsende Einzelblitze bleiben; drei kurze Blinder am Ende (Takt 86,5 / 86,75 und die 1 des Strobo-Takts 87).
+  "verse 4a": |-
+    Szene DNA, SUNSET: Helix dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd - Ruhe nach dem Strobo.
+  "verse 4b": |-
+    Wasserringe bleiben; darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 8 Takte) - Anlauf zum Schluss.
+  "outro chorus 1": |-
+    Szene Star, FIRE, Blinder auf den Einsatz (2 Beats).
+  "outro chorus 2": |-
+    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 118,75), klingt ins Fade-out aus (carry).
+  "git fade out": |-
+    Szene Fadeout, SUNSET: blendet über die 3 Takte weich nach Schwarz.

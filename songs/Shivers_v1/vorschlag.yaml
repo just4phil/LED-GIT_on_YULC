@@ -1,0 +1,42 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Shivers --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: warmer Pop-Song (SUNSET), Chorus als Stern in NEON. Der lange dunkle Mittelteil ("you burn", 16 Takte)
+# wird zum roten Glimmen, das zu Feuer anwächst - passend zum Text.
+parts:
+  "intro": |-
+    Szene Glow, SUNSET, Farbwanderung (analog, 2 Takte): füllt sich langsam, die Farbe wandert leicht.
+  "verse 1": |-
+    Szene Verse, SUNSET: dezenter Puls im Beat - Wechsel beim Gesangseinsatz (bisher lief der Intro-Effekt 16 Takte durch).
+  "verse 1b": |-
+    Szene Call Response, SUNSET: Bühnenhälften blitzen abwechselnd.
+  "i wanna be that guy": |-
+    Szene Palette, NEON, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 8 Takte). Letzter halber Takt weißer Strobo (tail 2 Beats). Fester Look für beide.
+  "Chorus 1": |-
+    Stern bleibt, in NEON, Blinder auf den Einsatz (2 Beats).
+  "mini pause": |-
+    Schwarz bleibt; starker Blinder auf den Wiedereinsatz (Takt 45,25).
+  "Chorus 1b": |-
+    Einzelblitze bleiben (Szene Sparkle, NEON).
+  "verse 2": |-
+    Szene Colors, SUNSET, soft 100: die ganze Bühne fließt alle 2 Beats in die nächste Farbe.
+  "verse 2b": |-
+    Szene Rain, SUNSET, Farbwanderung (triad, 2 Takte).
+  "i wanna be that guy (2)": |-
+    wie beim ersten Mal (Palette NEON + Glitzern, Strobo-Tail) - bisher Wasserringe.
+  "Chorus 1 (2)": |-
+    Stern, NEON, Blinder auf den Einsatz, Lampen blitzen weiß auf 2 und 4.
+  "mini pause (2)": |-
+    Weißer Strobo bleibt; Blinder auf den Einsatz von Chorus 1b (Takt 85).
+  "you burn ….": |-
+    Statt 8 Takten Schwarz: Szene Calm, RED, auf 30 % gedimmt - es glimmt nur. (Oder Schwarz lassen, wenn die Stille gewollt ist.)
+  "you burn …. 2": |-
+    Szene Fire, RED statt 8 Takten Strobo: aus dem Glimmen wird Feuer, blendet über 2 Takte ein (fade_in 8 Beats).
+  "SOLO VOC": |-
+    Schwarz bleibt (Stille vor dem Finale); in den letzten 2 Beats blendet ein Blinder ein, voll auf dem Chorus-Einsatz (Takt 111).
+  "Chorus 1 (3)": |-
+    Szene Star, FIRE - eine Stufe wärmer.
+  "mini pause (3)": |-
+    Starker Blinder statt Strobo (2 Beats voll bis zum Einsatz).
+  "Chorus 1b (3)": |-
+    Szene Sparkle, FIRE; drei kurze Blinder Ende des 4. Takts (Takt 120,5 / 120,75 / 121); starker Blinder auf der letzten Viertel (Takt 124,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).

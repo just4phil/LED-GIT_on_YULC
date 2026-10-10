@@ -1,0 +1,44 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Kids_v1 --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: bunt und verspielt (NEON, TOXIC = grün/gelb). Das Synth-Riff bekommt ein festes Motiv (Frage/Antwort der
+# Bühnenhälften) in "synth intro" und "chorus 1"; die zwei langen Pausen vor den Einsätzen werden zu Aufladen + Blinder.
+parts:
+  "synth intro": |-
+    Szene Call Response, NEON: die Bühnenhälften blitzen abwechselnd im Beat - das Riff als Motiv (bisher Strobo in drei Zufallsfarben). Kommt in chorus 1 wieder.
+  "chorus intro": |-
+    Einzelblitze bleiben, Übergang mit weißem Blitz (flash) auf den Band-Einsatz.
+  "verse 1": |-
+    Szene Verse, TOXIC (grün/gelb): dezenter Puls im Beat.
+  "verse 1b": |-
+    Linien im Beat bleiben; letzter Takt Szene Buildup (tail 4 Beats), Explosion auf den Chorus.
+  "chorus 1": |-
+    Motiv vom Intro: Call Response, NEON, Blinder auf den Einsatz (2 Beats).
+  "chorus 1b": |-
+    Stern bleibt, in NEON mit weichen Farbwechseln (soft 40).
+  "verse 2": |-
+    Szene Glow, TOXIC, Farbwanderung zur Gegenfarbe Lila (complement, 2 Takte), weich eingeblendet (fade, 2 Beats).
+  "verse 2b": |-
+    Szene Colors Wave, TOXIC, soft 60; letzter Takt Szene Buildup (tail 4 Beats).
+  "chorus 2": |-
+    Stern, NEON, Blinder auf den Einsatz; Lampen blitzen weiß auf 2 und 4.
+  "chorus 2b": |-
+    Einzelblitze bleiben; drei kurze Blinder am Ende (Takt 84,5 / 84,75 und die 1 von SOLO, Takt 85).
+  "SOLO": |-
+    Szene DNA, NEON: Helix dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben (neue Szene) - schwebend, passt zum Synth-Teil.
+  "SAMPLE": |-
+    Schwarz bleibt; Blinder springt auf die 1 (Takt 93) und klingt über den ganzen Takt aus.
+  "snarewirbel": |-
+    Szene Buildup (1 Takt), FIRE statt Strobo: lädt sich auf, Explosion auf den Chorus.
+  "chorus 3": |-
+    Szene Star, SUNSET - eine Stufe wärmer, Blinder auf den Einsatz.
+  "chorus 3b": |-
+    Szene Sparkle, SUNSET; starker Blinder auf der letzten Viertel (Takt 110,75), danach Schwarz.
+  "pause (2)": |-
+    Schwarz bleibt (Stille macht den Einsatz stärker). Idee: ab Takt 113 atmet nur die Gitarre ganz dunkel (Calm, 20 %).
+  "snareauftakt": |-
+    Starker Blinder statt Strobo: blendet über den Takt ein und steht bis zum Einsatz voll (wie "snareauftakt (2)" in Tell It To My Heart).
+  "chorus 4": |-
+    Szene Fire, FIRE oder dichteste Einzelblitze wie bisher - Höhepunkt; Blinder auf die 1 von Takt 120 (Mitte).
+  "outro F": |-
+    Szene Fadeout, WHITE: blendet über 2 Takte weich nach Schwarz.

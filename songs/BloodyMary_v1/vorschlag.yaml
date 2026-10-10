@@ -1,0 +1,41 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py BloodyMary --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: dunkel und "blutig" - Rot als Erkennungsfarbe (dance dance, Schluss), Strophen in Blau/Lila.
+# "dance dance" wird ein festes Motiv (3x gleich), der Chorus bleibt der Stern.
+parts:
+  "synth intro": |-
+    Szene Glow, ROYAL, Farbwanderung (triad, 2 Takte): füllt sich langsam in Blau/Lila und wandert nach Pink - dunkler Einstieg statt Linien im Beat.
+  "verse 1": |-
+    Szene Rain, RED: blutrote Leuchtspuren, weich eingeblendet (Übergang fade, 2 Beats).
+  "dance dance": |-
+    Szene Call Response, RETRO (rot/weiß/blau): die Bühnenhälften blitzen abwechselnd im Beat. Als Motiv bei allen drei "dance dance" gleich.
+    Dazu auf der Matrix der Text "DANCE" im Beat über der Szene.
+  "chorus 1": |-
+    Stern bleibt, aber in festen Farben (NEON) und mit weichen Farbwechseln (soft 40). Blinder auf den Einsatz (2 Beats).
+  "FX": |-
+    Blinder auf die 1 (Takt 38), klingt über den ganzen Takt aus, darunter Schwarz - Atempause vor verse 2.
+  "verse 2": |-
+    Szene DNA Flip Scroll, ROYAL: Helix auf der Matrix, alle anderen pulsieren einmal je Takt (neue Szene, bisher in keinem Song).
+  "dance dance (2)": |-
+    Motiv wie beim ersten Mal (Call Response, RETRO, Text DANCE).
+  "chorus 1 (2)": |-
+    Stern wie chorus 1, eine Stufe mehr: die Lampen blitzen weiß auf 2 und 4 (Blinder nur Lampen, wie Billie Jean chorus 2).
+  "synth break": |-
+    Szene Colors Wave, NEON, soft 60: die Farbe wandert pro Beat weich von Gerät zu Gerät.
+  "git vs synth (git)": |-
+    Idee für alle 8 Paare: "git" = Strobo nur auf Gitarre und Bass (only guitar), Rest dunkel; "synth" = Einzelblitze nur auf Lampen und Matrix. So sieht man das Duell auch auf der Bühne.
+  "git vs synth (synth)": |-
+    siehe Zeile darüber: Einzelblitze nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+  "git vs synth (synth) (8)": |-
+    Letztes Paar: starker Blinder auf die letzte Viertel (Takt 74,75) als Absprung ins Instrumental.
+  "instrumental": |-
+    Wasserringe bleiben, weich eingeblendet (fade, 2 Beats). Falls hier ein Gitarrensolo liegt: Szene Solo Gitarre, SUNSET.
+  "dance dance (3)": |-
+    Motiv wie vorher, dazu baut sich über den ganzen Part ein Glitzern auf (Ebene Sparkle, fade_in 8 Takte) - Anlauf zum letzten Chorus.
+  "chorus a": |-
+    Szene Star, FIRE (eine Stufe wärmer), Blinder auf den Einsatz; Ende des 4. Takts drei kurze Blinder auf drei Vierteln (Takt 94,5 / 94,75 / 95) wie in Tell It To My Heart.
+  "chorus b": |-
+    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 106,75), der ins Outro ausklingt (carry).
+  "outro": |-
+    Szene Fadeout, RED: Rot blendet über die 2 Takte weich nach Schwarz (im alten Code war hier schon Schwarz).

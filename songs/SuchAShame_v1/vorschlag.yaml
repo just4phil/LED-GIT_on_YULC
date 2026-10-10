@@ -1,0 +1,42 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py SuchAShame --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: düster und kühl (ICE/ROYAL), der Chorus als Stern. Die Chorusse sind 12 und 16 Takte lang - dort helfen
+# Blinder, Lampen-Backbeat und ein Farbwechsel in der Mitte. Die Pausen vor den Einsätzen bekommen Blinder.
+parts:
+  "intro + verse 1": |-
+    Szene Glow, ICE, Farbwanderung (triad, 2 Takte). 11 Takte ein Effekt: besser beim Gesangseinsatz eine eigene Zeile "verse 1" anlegen - ab dort Szene Rain.
+  "bridge 1": |-
+    Szene Verse, ROYAL: Puls im Beat; letzter Takt Szene Buildup (tail 4 Beats), Explosion auf den Chorus.
+  "chorus 1": |-
+    Stern bleibt, in ROYAL mit weichen Farbwechseln (soft 40), Blinder auf den Einsatz (2 Beats).
+  "übergang": |-
+    Einzelblitze bleiben, blenden über die letzten 2 Takte aus (fade_out 8 Beats) in die Pause.
+  "pause": |-
+    Schwarz bleibt; kurzer Blinder auf die 1 (Takt 40), der in 2 Beats abklingt.
+  "verse 2": |-
+    Szene DNA Flip, ICE: stehende Helix auf der Matrix, alle anderen pulsieren einmal je Takt.
+  "bridge 2": |-
+    Szene Palette, ROYAL, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 5 Takte).
+  "pause (2)": |-
+    Szene Buildup (1 Takt), NEON statt Strobo: Explosion genau auf den Chorus.
+  "chorus 2": |-
+    Stern, NEON, Blinder auf den Einsatz; Lampen blitzen weiß auf 2 und 4.
+  "pause (3)": |-
+    Schwarz bleibt; kurzer Blinder auf die 1 (Takt 72,5).
+  "strobo": |-
+    Starker Blinder statt Strobo (2 Beats voll bis zum Einsatz).
+  "solopart 1": |-
+    Szene Solo Gitarre (oder das Instrument, das hier spielt), SUNSET: zwei Kometen, alle anderen atmen dunkel.
+  "solopart 2": |-
+    Wasserringe bleiben, weich eingeblendet (fade, 2 Beats), Farbwanderung.
+  "bridge 3": |-
+    Szene Call Response, ROYAL: Bühnenhälften blitzen abwechselnd.
+  "pause (4)": |-
+    Szene Buildup (1 Takt), FIRE.
+  "chorus 2 (2)": |-
+    Stern, SUNSET, Blinder auf den Einsatz, Lampen-Backbeat. 16 Takte sind lang: bei Takt 104 eine eigene Zeile anlegen - ab dort Szene Fire (FIRE) oder der Stern in FIRE mit Glitzern darüber.
+  "übergang (3)": |-
+    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 115,75), klingt ins Fade-out aus (carry).
+  "fade out": |-
+    Szene Fadeout, RED: blendet über die 3 Takte weich nach Schwarz.

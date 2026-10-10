@@ -1,0 +1,49 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py IWannaDance --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Stand heute: generiert, aber 1:1 die alten Effekte mit freien Zufallsfarben.
+# Leitidee: 80er-Party in NEON und SUNSET. Die Hook-Zeile "with somebody who loves me" (6x, je 1 Takt) wird ein
+# festes Motiv: jedes Mal derselbe Akzent, beim ersten und letzten Mal weiß (Regel "Hook-Zeile als Motiv").
+parts:
+  "intro": |-
+    Szene Palette, NEON, pumpt im Beat (pulse 40) - statt weißer Wellen.
+  "strobo (2)": |-
+    Szene Buildup (1 Takt), NEON: lädt sich auf, Explosion auf den Gesangseinsatz.
+  "verse 1": |-
+    Szene Verse, NEON: dezenter Puls im Beat.
+  "ive done alright": |-
+    Szene Palette, SUNSET, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 6 Takte). Fester Look für beide "ive done alright".
+  "übergang chorus": |-
+    Weißer Strobo statt Zufallsfarbe. Gilt für alle drei "übergang chorus".
+  "chorus 1": |-
+    Stern bleibt, in NEON mit weichen Farbwechseln (soft 40), Blinder auf den Einsatz (2 Beats).
+  "w. smbdy who loves me": |-
+    Hook-Motiv: Szene Drop, WHITE (Schläge auf die Viertel), auf der Matrix "LOVES ME" über der Szene. Bei allen sechs gleich, dazwischen farbig (RED), beim ersten und letzten Mal weiß.
+  "chorus 1 weiter": |-
+    Stern, NEON, Lampen blitzen weiß auf 2 und 4.
+  "stehender chord": |-
+    Blinder springt auf die 1 (Takt 45) und klingt über den ganzen Takt aus, darunter Schwarz.
+  "übergang verse": |-
+    Leuchtspuren bleiben, weich eingeblendet.
+  "verse 2": |-
+    Szene Rain, SUNSET, Farbwanderung (triad, 2 Takte) - anderer Look als verse 1.
+  "ive done alright (2)": |-
+    wie beim ersten Mal (Palette SUNSET + Glitzern).
+  "chorus 2": |-
+    Stern, NEON, Blinder auf den Einsatz, Lampen-Backbeat.
+  "Say you wanna dance": |-
+    Szene Call Response, NEON: Bühnenhälften blitzen abwechselnd - "say you wanna dance" als Frage und Antwort. Auf der Matrix "DANCE" im Beat.
+  "i need a man …": |-
+    Szene DNA Flip, ROYAL: stehende Helix auf der Matrix, alle anderen pulsieren einmal je Takt (bisher Palette 12, die es nicht gibt - zeigt die zuletzt geladene).
+  "chorus 3": |-
+    Szene Star, SUNSET - eine Stufe wärmer; Blinder auf den Einsatz.
+  "chorus 3 weiter": |-
+    Szene Star, FIRE, Lampen-Backbeat.
+  "Say you wanna dance (2)": |-
+    Call Response wie oben, jetzt in FIRE. Gilt für (2), (3), (4).
+  "strobe": |-
+    Kurzer starker Blinder statt Einzelblitzen (auf den Schlag voll, klingt bis zum Part-Ende ab). Gilt für alle drei, jedes Mal etwas länger voll.
+  "w. some…": |-
+    Stern in WHITE, Text "SOMEBODY" auf der Matrix.
+  "...bdy who loves me": |-
+    Hook-Motiv zum letzten Mal in Weiß mit Glitzern; starker Blinder auf der letzten Viertel (Takt 116,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).

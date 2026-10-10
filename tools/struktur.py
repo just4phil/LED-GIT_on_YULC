@@ -20,6 +20,10 @@ Wer schreibt was (seit 06.10.2026, Wunsch des Users):
     Effekt (füllt KI) schreibt das SKRIPT (songgen.py über write_effects() unten): der Effekt, der für den Part gerade
                      umgesetzt ist, mit Beschreibung. Wird bei jeder Generierung überschrieben - dort nichts eintragen.
                      Erkannt wird jede Überschrift, die mit "Effekt" beginnt (außer dem alten "Effektidee").
+    Neuer Vorschlag (KI)  schreibt das SKRIPT (songgen.py <Song> --vorschlag über write_proposals() unten, seit
+                     10.10.2026): Vorschläge von Claude, wie der Part umgestaltet werden könnte. Nur zum Lesen für den
+                     User - kein Werkzeug liest die Spalte, sie ändert nichts am Code. Was er davon haben will, trägt
+                     er selbst in "Änderungswunsch" ein. Die Spalte darf er jederzeit löschen.
     alle anderen     gehören dem User (Takte, Partnamen, Energie, BPM ...), das Skript rührt sie nicht an.
 Altes Format (Tabellen vor dem 06.10.2026): eine Spalte "Effektidee" mit den Wünschen des Users, keine Spalte "Effekt".
 Es wird weiter gelesen; write_effects() stellt eine solche Tabelle beim ersten Schreiben um (die Wünsche wandern in die
@@ -76,6 +80,10 @@ INFO_KEYS = ("idea", "description", "chords", "old")		# nur für Claude (Gestalt
 OLD_IDEA_LABEL = "effektidee"			# an dieser Überschrift erkennt write_effects() das alte Format
 EFFECT_TITLE, WISH_TITLE = "Effekt (füllt KI)", "Änderungswunsch"	# Überschriften der beiden Spalten (so hat der User sie genannt)
 EFFECT_WIDTH, WISH_WIDTH = 70, 40		# Spaltenbreiten, die write_effects() beim Umstellen setzt
+# Spalte "Neuer Vorschlag (KI)" (seit 10.10.2026, Wunsch des Users): Vorschläge von Claude, wie ein Part umgestaltet
+# werden könnte. Schreibt nur write_proposals(); erkannt wird jede Überschrift, die so beginnt (klein geschrieben).
+PROPOSAL_TITLE, PROPOSAL_WIDTH = "Neuer Vorschlag (KI)", 60
+PROPOSAL_LABELS = ("neuer vorschlag", "vorschlag")
 TMP_FILE = "struktur.tmp.xlsx"			# write_effects() schreibt erst hierhin, prüft und ersetzt dann die Tabelle
 RASTER_FILE = "struktur-raster.xlsx"	# die gerasterte Kopie von write_raster() - der User tauscht sie selbst gegen seine Tabelle
 RASTER_STEP = 0.25						# Abstand der Rasterzeilen in Takten (0,25 = ein Vierteltakt = ein Schlag im 4/4-Takt)
@@ -178,6 +186,8 @@ def col_key(v):
 	lab = label(v)
 	if lab in COL_LABELS:
 		return COL_LABELS[lab]
+	if lab.startswith(PROPOSAL_LABELS):		# "Neuer Vorschlag (KI)": schreibt das Skript (write_proposals), gelesen wird sie nicht
+		return "proposal"
 	return "effect" if lab.startswith("effekt") else None
 
 
@@ -736,6 +746,90 @@ def write_effects(path, texts, end_black_ms, cue_texts=None):
 		if tmp.exists():
 			tmp.unlink()
 	return (migrated + "\n   " if migrated else "") + f"Spalte '{EFFECT_TITLE}' der Tabelle geschrieben ({changed} Zeile(n) neu)"
+
+
+#==================================================================
+#=========== Spalte "Neuer Vorschlag (KI)" schreiben ==============
+#==================================================================
+
+# Sorgt dafür, dass es die Spalte "Neuer Vorschlag (KI)" gibt, und liefert ihre Nummer.
+# Sie entsteht rechts neben "Änderungswunsch" (dort liest der User den Vorschlag und trägt links daneben ein, was er
+# davon haben will); ohne Wunsch-Spalte rechts neben "Effekt" bzw. "Songpart". Lässt sich dort keine Spalte einfügen
+# (eigene Formeln im Blatt, siehe insert_column), kommt sie in die erste freie Spalte ganz rechts.
+# Rückgabe: (Spaltennummer, Text was angelegt wurde oder "")
+def ensure_proposal_column(ws, header_row, cols):
+	if "proposal" in cols:
+		return cols["proposal"], ""
+	left = cols.get("idea") or cols.get("effect") or cols["name"]		# rechts von dieser Spalte soll sie stehen
+	try:
+		insert_column(ws, left + 1, PROPOSAL_WIDTH)
+		c = left + 1
+	except TableError:
+		c = ws.max_column + 1
+		ws.column_dimensions[get_column_letter(c)].width = PROPOSAL_WIDTH
+		ws.cell(header_row, c)._style = copy.copy(ws.cell(header_row, left)._style)	# Überschrift wie die der anderen Spalten
+	ws.cell(header_row, c, PROPOSAL_TITLE)
+	return c, f"Spalte '{PROPOSAL_TITLE}' angelegt (Spalte {get_column_letter(c)})"
+
+
+# Schreibt die Vorschläge von Claude in die Spalte "Neuer Vorschlag (KI)" (songgen.py <Song> --vorschlag).
+# Wunsch des Users (10.10.2026): beim Durchsehen der alten Songs sollen die Ideen für neue Szenen, Blinder und
+# Farbwanderungen direkt in der Tabelle neben dem Part stehen. Die Spalte ist nur Ausgabe wie "Effekt (füllt KI)":
+# kein Werkzeug liest sie, sie zählt nicht zum Fingerabdruck und hat keine Wirkung auf den Code. Was der User davon
+# haben will, trägt er selbst in "Änderungswunsch" ein.
+# Gesichert wie write_effects(): erst in eine zweite Datei schreiben, zurücklesen, Fingerabdruck und die Lage aller
+# Zeilen vergleichen - erst dann die Tabelle ersetzen. In Excel geöffnet -> nichts geschrieben.
+#   texts      je Part der Vorschlag, in der Reihenfolge der Tabelle (ohne die Zeile "Ende"); None oder "" = kein Vorschlag
+#   row_texts  {von takt: Text} für einzelne Zwischenzeilen (Viertel-Raster)
+# Die Spalte gehört dem Skript: Zellen von Parts und Zwischenzeilen ohne Vorschlag werden geleert.
+# Rückgabe: Text, was geschehen ist. Fehler: TableError, die Tabelle ist dann unverändert.
+def write_proposals(path, texts, row_texts=None):
+	if (path.parent / ("~$" + path.name)).exists():
+		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
+	before = read_table(path)
+	rows = before["_table"]["rows"]
+	if len(texts) != len(rows):
+		raise TableError(f"{len(texts)} Vorschläge für {len(rows)} Parts")
+	sub_rows = {von: r for part in before["_table"]["subs"] for von, r in part.items()}	# alle Zwischenzeilen: von takt -> Zeile
+	row_texts = {float(von): t for von, t in (row_texts or {}).items()}
+	missing = sorted(von for von in row_texts if von not in sub_rows)
+	if missing:
+		raise TableError("keine Zwischenzeile mit von takt " + ", ".join(fmt(v).replace(".", ",") for v in missing))
+	try:
+		wb = openpyxl.load_workbook(path)		# ohne data_only: Formeln bleiben Formeln
+	except PermissionError:
+		raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	ws, header_row, cols = find_sheet(wb)
+	if "proposal" not in cols and not any(texts) and not any(row_texts.values()):
+		return "keine Vorschläge - nichts geschrieben"
+	col, created = ensure_proposal_column(ws, header_row, cols)
+	wrap = Alignment(wrap_text=True, vertical="top")
+	changed = 0
+	for r, t in list(zip(rows, texts)) + [(r, row_texts.get(von)) for von, r in sub_rows.items()]:
+		cell = ws.cell(r, col)
+		if multiline(cell.value) != multiline(t):
+			changed += 1
+			cell.value = t or None
+		if t:
+			cell.alignment = wrap
+	if not changed and not created:
+		return f"Spalte '{PROPOSAL_TITLE}' der Tabelle ist schon aktuell"
+
+	tmp = path.with_name(TMP_FILE)
+	try:
+		wb.save(tmp)
+		after = read_table(tmp)
+		# Der Inhalt muss derselbe sein, und jede Zeile muss stehen, wo sie stand (es kam nur eine Spalte dazu)
+		if content_sha(after) != content_sha(before) or after["_table"] != before["_table"]:
+			raise TableError("Kontrolle nach dem Schreiben: der Inhalt der Tabelle wäre nicht mehr derselbe (Formeln?) - nichts geändert")
+		try:
+			os.replace(tmp, path)
+		except OSError:
+			raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	finally:
+		if tmp.exists():
+			tmp.unlink()
+	return (created + "\n   " if created else "") + f"Spalte '{PROPOSAL_TITLE}' der Tabelle geschrieben ({changed} Zeile(n) neu)"
 
 
 # Verschiebt alle Taktnummern der Tabelle um denselben Betrag (songgen.py <Song> --takt-ab 1): die Spalte 'von takt'

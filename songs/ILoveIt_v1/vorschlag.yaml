@@ -1,0 +1,31 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py ILoveIt_v1 --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Stand heute: generiert mit den alten Effekten und den vier Blindern des Users - die bleiben alle.
+# Leitidee: laut und frech (NEON, zum Schluss FIRE). Fünf Chorusse zeigen fünfmal fast denselben Stern: sie bekommen
+# eine Steigerung. Der Einstieg des Vorspanns in "chorus 1" bleibt unberührt.
+parts:
+  "synth intro": |-
+    Szene Palette, NEON, pumpt im Beat (pulse 40) - statt weißer Wellen.
+  "verse 1": |-
+    Szene Colors, NEON, soft 30: wie bisher eine Farbe alle 2 Beats, aber feste Farben und kurze Blende.
+  "chorus 1": |-
+    Stern bleibt (NEON, soft 30). Auf der Matrix "I LOVE IT" (ein Wort pro Beat, IT bleibt stehen) über dem Stern - nur wenn es den Titel-Lauftext nach dem Vorspann nicht stört.
+  "verse 2": |-
+    Szene Call Response, NEON: Bühnenhälften blitzen abwechselnd (bisher Scanner).
+  "chorus 2": |-
+    Stern, NEON; Lampen blitzen weiß auf 2 und 4.
+  "youre on a different road": |-
+    Szene DNA Flip Scroll, TOXIC (grün wie bisher): Helix auf der Matrix, alle anderen pulsieren einmal je Takt. Der Blinder im letzten Takt bleibt.
+  "i love it": |-
+    Stern, SUNSET, Blinder auf den Einsatz (2 Beats).
+  "verse 3": |-
+    Szene Colors Wave, NEON, soft 60: die Farbe wandert pro Beat von Gerät zu Gerät.
+  "chorus 3": |-
+    Stern, SUNSET, Lampen-Backbeat.
+  "youre on a different road (2)": |-
+    Wasserringe bleiben; darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über den Part) bis zum STOP.
+  "chorus 4": |-
+    Szene Star, FIRE - der Blinder am Anfang bleibt.
+  "chorus 5": |-
+    Szene Sparkle, FIRE (Einzelblitze wie bisher, in Feuerfarben); der starke Schluss-Blinder bleibt.

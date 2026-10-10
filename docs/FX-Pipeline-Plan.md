@@ -13,6 +13,28 @@ kann.
 
 Zuletzt aktualisiert: 10.10.2026 (dritte Runde Wünsche zu „I Love It Intro“ #80 - gebaut, Abnahme offen)
 
+- **10.10.2026, Durchsicht aller alten Songs: Spalte „Neuer Vorschlag (KI)“ in den Tabellen - fertig,
+  committet und gepusht; Rückmeldung des Users offen.**
+  - Ergebnis: `vorschlag.yaml` für 18 Songs geschrieben und mit `songgen.py --vorschlag` in die Tabellen eingetragen
+    (neue Spalte E rechts neben „Änderungswunsch“): BloodyMary, DontStopTheMusic, EnjoyTheSilence, Firework,
+    InTheDark, Kids, Maniac, NoRoots, Shivers, SuchAShame, TakeOnMe, Titanium (alle noch handgeschrieben),
+    FridayImInLove, IWannaDanceWithSomebody, BeMine, ILoveIt (generiert, aber alte Effekte) und die Vorspanne
+    DancingOnMyOwnIntro, PhysicalIntro. Nicht dabei: DancingOnMyOwn (eingefrorener, schon mit Szenen gestalteter
+    Code), KidsIntro (Tabelle ist noch die leere Vorlage), Abcdefu / Apt / Physical (schon umgestaltet).
+  - Es wurde kein Code erzeugt, keine Show angelegt, nichts gebaut. Der Stand der generierten Songs ist unverändert
+    „aktuell“ (die Spalte zählt nicht zum Fingerabdruck).
+  - Die Vorschläge beruhen nur auf Struktur, altem Code und Songkenntnis: `Energie` ist in allen alten Tabellen leer,
+    die Taktnummern der Blinder sind aus den Part-Grenzen gerechnet (Ende des 4. Takts, letzte Viertel), nicht gehört.
+  - **Nächster Schritt:** der User liest die Spalte und trägt je Song in „Änderungswunsch“ (und „Energie“) ein, was er
+    haben will; dann Song für Song mit dem Skill `new-song` umsetzen (Marker und Trailer-Regeln beachten).
+  - Auftrag des Users: alle alten, noch nicht umgestalteten Songs prüfen und je Part vorschlagen, wo neue Szenen,
+    Farbwanderung (`fade`), Übergänge und Blinder hinpassen - „am besten schreibst du das in eine spalte ‚neuer
+    vorschlag‘ in die xlsx tabellen rein“.
+  - Weg: die Vorschläge stehen je Song in `songs/<Song>/vorschlag.yaml` (Partname -> Text), in die Tabelle schreibt
+    sie `songgen.py <Song> --vorschlag` über `struktur.write_proposals()` (dieselbe Sicherung wie `write_effects`:
+    Kopie schreiben, zurücklesen, Fingerabdruck vergleichen). Es wird kein Code erzeugt und keine Show angelegt.
+  - Schritte: (1) Werkzeug + Doku, (2) `vorschlag.yaml` je Song schreiben, (3) `songgen.py --vorschlag` für alle.
+
 - **10.10.2026, „I Love It Intro“ (#80), dritte Runde Wünsche aus den Zwischenzeilen - gebaut (Version
   `2026-10-10_0043`), alle fünf ESP32-Envs übersetzt; auf Wunsch des Users committet und gepusht (10.10.2026), Abnahme auf der Bühne offen.**
   - Wünsche: zwölf Feuer-Impulse abwechselnd auf Lampe 1 / Lampe 2 (Takt 12,5 bis 25, in `text nerds on fire` und

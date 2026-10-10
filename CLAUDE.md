@@ -168,7 +168,12 @@ generation `songgen.py` writes the column `Effekt (füllt KI)` - per part the ef
 `show.yaml` (first line the call/scene, then text/layer/output-stage notes, last the `why:` text, so write `why:` as a
 description of what one sees). Nothing else in the file is touched (`struktur.write_effects()` writes a temp file,
 re-reads it and only replaces the table if everything the reader uses is unchanged; table open in Excel -> not
-written, catch up with `songgen.py <Song> --tabelle`). The user enters his wishes in `Änderungswunsch` and deletes
+written, catch up with `songgen.py <Song> --tabelle`). A third column the tool writes on his wish (10.10.2026) is
+`Neuer Vorschlag (KI)`: Claude's ideas per part for reworking an old song (new scenes, blinders, colour fades). The
+texts live in `songs/<Song>/vorschlag.yaml` (`parts: {<part name>: text}`, optional `zeilen: {<von takt>: text}`),
+`songgen.py <Song> --vorschlag` writes them into the table (`struktur.write_proposals()`, same write-copy-and-verify
+safety; without `<Song>`: every song that has a `vorschlag.yaml`). The column is output only - nothing reads it, no
+code or show comes from it; what he wants from it he enters in `Änderungswunsch` himself. The user enters his wishes in `Änderungswunsch` and deletes
 them himself when done - never clear that column. Old tables still have one column `Effektidee` (his wishes); they
 are converted on their first generation. His `Änderungswunsch` and `Energie` are binding for the design; all
 design lives in `show.yaml` (`scene`, `fx`, `scheme`, `fade`, `tail`, `devices`, `text`, `overlay`, `markers` and

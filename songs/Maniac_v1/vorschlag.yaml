@@ -1,0 +1,60 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Maniac --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: schnell und hell (157 BPM). Strophen in ROYAL/NEON, der Chorus als Stern in NEON, zum Schluss FIRE.
+# Die drei Chorusse sind je 14 Takte lang - dort helfen Blinder und der Lampen-Backbeat gegen die Länge.
+# Die Marker in "instrumental a/b" müssen in eine spätere Show übernommen werden.
+parts:
+  "drums intro": |-
+    Szene Pingpong, WHITE: pro Beat leuchtet genau ein Gerät weiß auf, der Rest ist dunkel - nur das Schlagzeug spielt (wie das Drum-Intro in Billie Jean).
+  "rock intro": |-
+    Einzelblitze bleiben; weißer Blitz auf den Band-Einsatz (Übergang flash).
+  "verse 1a": |-
+    Szene Verse, ROYAL: dezenter Puls im Beat.
+  "verse 1b": |-
+    Linien bleiben (stapeln sich), in NEON statt Zufallsfarben.
+  "it could cut you like a knife": |-
+    Szene Palette, SUNSET, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 7 Takte). Fester Look für beide "cut you like a knife".
+  "uebergang": |-
+    Szene Buildup (1 Takt), NEON: lädt sich auf, Explosion genau auf den Chorus.
+  "chorus 1": |-
+    Stern bleibt (NEON, soft 30), Blinder auf den Einsatz (2 Beats). Auf der Matrix "MANIAC" über dem Stern, blendet nach 2 Takten aus.
+    14 Takte sind lang: ab der Hälfte (Takt 51) blitzen die Lampen weiß auf 2 und 4 - dafür bei Takt 51 eine eigene Zeile "chorus 1b" anlegen.
+  "stehender chord": |-
+    Blinder blendet schnell ein und klingt über die ganzen 3 Takte aus, darunter atmet die Bühne dunkel (Szene Calm, ROYAL, 50 %) - wie "the ONE … halftime" in Billie Jean.
+  "strobe": |-
+    Weißer Strobo statt Zufallsfarbe. Gilt für alle fünf "strobe".
+  "verse 2a": |-
+    Szene Rain, NEON: fallende Leuchtspuren, Farbwanderung (triad, 2 Takte) - anderer Look als verse 1.
+  "verse 2b": |-
+    Szene Call Response, NEON: Bühnenhälften blitzen abwechselnd.
+  "ist a cold cinetic heat": |-
+    Szene Drop, RED: Schläge auf die Viertel in Rot statt Strobo im Beat - "heat".
+  "chorus 2": |-
+    Stern wie chorus 1, Blinder auf den Einsatz, Lampen blitzen von Anfang an weiß auf 2 und 4.
+  "uebergang zum instrumental": |-
+    Szene Wave LR, NEON: der Blitz läuft pro Beat von links nach rechts über die Bühne.
+  "instrumental a": |-
+    Szene DNA, NEON: Helix dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd (Marker bleiben).
+  "instrumental b": |-
+    Szene Colors Wave, NEON, soft 60 (Marker bleiben).
+  "solo a": |-
+    Szene Solo Gitarre, NEON: zwei Kometen laufen um die Gitarre, alle anderen atmen dunkel. Übergang läuft über die Bühne zur Gitarre.
+  "solo b": |-
+    Solo Gitarre weiter, in SUNSET.
+  "solo c": |-
+    Einzelblitze bleiben - das Solo dreht auf.
+  "solo d": |-
+    Szene Buildup über die 4 Takte, FIRE: alles lädt sich auf, Explosion auf "cut you like a knife".
+  "it could cut you like a knife (2)": |-
+    wie beim ersten Mal (Palette SUNSET + Glitzern) - bisher Strobo im Beat.
+  "uebergang (2)": |-
+    Szene Buildup (1 Takt), FIRE.
+  "chorus 3": |-
+    Szene Star, FIRE - eine Stufe wärmer; Blinder auf den Einsatz, Lampen-Backbeat, Text "MANIAC".
+  "stehender chord (2)": |-
+    Blinder auf die 1 (Takt 156), klingt über 2 Takte aus.
+  "abschluss": |-
+    Szene Sparkle, FIRE.
+  "strobe (5)": |-
+    Starker Blinder statt Strobo: voll auf der letzten Viertel (Takt 160,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).

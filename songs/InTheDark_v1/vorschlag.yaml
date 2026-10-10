@@ -1,0 +1,29 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py InTheDark --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: "In the dark" - dunkle, gedimmte Strophen (ROYAL/BLUE), aus denen der Chorus in NEON herausspringt.
+# Die Marker (chorus 2, am i going under, bass solo, chrous 3) müssen in eine spätere Show übernommen werden.
+parts:
+  "intro+verse 1": |-
+    16 Takte ein Effekt sind lang. Szene Glow, ROYAL, Farbwanderung (triad, 2 Takte), auf 60 % gedimmt - "in the dark".
+    Besser: bei Takt 13 eine eigene Zeile "verse 1" anlegen - dann ab dort Szene Verse (Puls im Beat).
+  "bridge 1": |-
+    Szene Colors Wave, SUNSET, soft 60: die Farbe wandert pro Beat weich von Gerät zu Gerät. Letzter Takt weißer Strobo (tail 4 Beats).
+  "chorus 1": |-
+    Szene Star, NEON, Blinder auf den Einsatz (2 Beats).
+  "verse 2": |-
+    Szene DNA Flip Scroll, ROYAL: Helix auf der Matrix, alle anderen pulsieren einmal je Takt. Weich eingeblendet (fade, 2 Beats).
+  "bridge 2": |-
+    Szene Call Response, SUNSET: Bühnenhälften blitzen abwechselnd im Beat. Letzter Takt weißer Strobo (tail 4 Beats).
+  "chorus 2": |-
+    Szene Star, NEON wie chorus 1, dazu blitzen die Lampen weiß auf 2 und 4.
+  "am i going under": |-
+    Wasserringe bleiben (passt zum Text), in BLUE und weich eingeblendet (fade, 4 Beats); Farbwanderung nach ICE.
+  "bass solo": |-
+    Szene Solo Bass, NEON: zwei Kometen laufen um den Bass, alle anderen atmen dunkel. In den letzten 2 Takten baut sich ein Blinder auf (blendet 2 Takte ein, voll auf Takt 77).
+  "chrous 3": |-
+    Szene Star, SUNSET - eine Stufe wärmer, der Blinder vom Bass-Solo steht auf dem Einsatz.
+  "chorus 4": |-
+    Szene Sparkle, FIRE; drei kurze Blinder Ende des 4. Takts (Takt 88,5 / 88,75 / 89); starker Blinder auf der letzten Viertel (Takt 92,75), klingt ins Fade-out aus (carry).
+  "fade out": |-
+    Szene Fadeout, ROYAL: blendet über die 3 Takte weich nach Schwarz.

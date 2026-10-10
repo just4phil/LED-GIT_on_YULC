@@ -1,0 +1,42 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py NoRoots --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: das ROOTS-Motiv (Strobo + "ROOTS" auf der Matrix) ist das Herz des Songs und bleibt. Neu: feste Farben
+# (RETRO = rot/weiß/blau für den Chorus, erdig-warm SUNSET für die Strophen) und Blinder auf die ROOTS-Schläge.
+parts:
+  "git": |-
+    Strobo nur auf Gitarre und Bass (only guitar), Rest dunkel - der Gitarren-Einwurf. Gilt auch für "git (2)".
+  "intro1": |-
+    Szene Calm, SUNSET, weich eingeblendet (fade_in 2 Beats).
+  "verse 1b": |-
+    Szene Verse, SUNSET: dezenter Puls im Beat.
+  "verse 1b (2)": |-
+    Szene Call Response, SUNSET: Bühnenhälften blitzen abwechselnd - Steigerung.
+  "bridge": |-
+    Wasserringe bleiben; in den letzten 2 Beats blendet ein Blinder ein, der genau auf dem ersten "ROOTS" voll ist (Takt 30,825).
+  "ROOTS 1": |-
+    Motiv bleibt: Strobo auf allen Geräten, "ROOTS" auf der Matrix - neu mit Farbverlauf in der Schrift und in Weiß statt Zufallsfarbe. Gilt für alle ROOTS 1 / ROOTS 2.
+  "chorus a": |-
+    Szene Colors, RETRO, soft 30: eine Farbe pro Beat auf der ganzen Bühne, mit kurzer Blende. Gilt für alle "chorus a".
+  "chorus rooooots": |-
+    Szene Sparkle, RETRO (Einzelblitze wie bisher, in festen Farben). Gilt für alle "chorus rooooots".
+  "chorus rooooots (2)": |-
+    wie oben; starker Blinder auf der letzten Viertel (Takt 46,75), danach weich in die Strophe (verse 2a mit Übergang fade, 4 Beats).
+  "verse 2a": |-
+    Szene Rain, SUNSET, Farbwanderung (triad, 2 Takte).
+  "verse 2b": |-
+    Szene Verse, SUNSET (Kreise im Beat können auf der Matrix bleiben).
+  "bridge (2)": |-
+    Szene Palette, SUNSET; in den letzten 2 Beats blendet der Blinder für "ROOTS" ein (voll auf Takt 66,75).
+  "chorus rooooots (4)": |-
+    wie oben; drei kurze Blinder am Ende (Takt 82,5 / 82,75 und die 1 von Takt 83).
+  "zwischenspiel": |-
+    Szene DNA Flip Scroll, ROYAL: Helix auf der Matrix, alle anderen pulsieren einmal je Takt - Farbwechsel ins Kühle als Kontrast (9 Takte).
+  "solo": |-
+    Szene Solo Gitarre (oder Solo Bass - wer spielt hier?), NEON: zwei Kometen um das Solo-Instrument, alle anderen atmen dunkel. Letzter Takt Szene Buildup (tail 4 Beats).
+  "chorus": |-
+    Stern bleibt, in RETRO, Blinder auf den Einsatz (2 Beats).
+  "chorus (3)": |-
+    Szene Fire, FIRE statt Wasserringe - der letzte Chorus soll nicht absacken.
+  "chorus (4)": |-
+    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 115,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).

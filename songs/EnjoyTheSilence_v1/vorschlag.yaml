@@ -1,0 +1,49 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py EnjoyTheSilence --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: kühl und getragen (ICE/ROYAL), "all i ever wanted" warm (SUNSET) als Gegenpol. Die langen Strobo-Parts
+# "words are very" (4 Takte Flimmern) werden zu Schlägen im Beat. Das Anwachsen der Einzelblitze am Schluss bleibt.
+# Die Marker in "bass slap part" / "all i ever wanted (3)" müssen in eine spätere Show übernommen werden.
+parts:
+  "synth": |-
+    Stern bleibt, in festen Farben (ROYAL) und mit weichen Farbwechseln (soft 60) - passt besser zum getragenen Riff.
+  "verse 1a": |-
+    Szene Rain, ICE, Farbwanderung (triad, 2 Takte): ruhige Leuchtspuren, Eisblau wandert nach Pink und zurück.
+  "all i ever wanted": |-
+    Szene Colors, SUNSET, soft 100: die ganze Bühne fließt von Farbe zu Farbe (alle 2 Beats) statt zu springen. Fester Look für alle vier "all i ever wanted".
+  "words are very (2)": |-
+    Statt 4 Takten Flimmern: Szene Wave Out, WHITE - ein Blitz läuft pro Beat von der Mitte nach außen. Fester Look für alle "words are very".
+  "drumloop": |-
+    Szene Buildup (3 Beats), ROYAL statt wandernder Linien: lädt sich auf, Explosion auf den Snarewirbel.
+  "snarewirbel": |-
+    Weißer Strobo; starker Blinder auf den Einsatz von "synth (3)" (Takt 30).
+  "synth (3)": |-
+    Stern wie am Anfang (ROYAL, soft 60), Blinder auf den Einsatz (2 Beats).
+  "verse 1a (2)": |-
+    Szene DNA Flip, ROYAL: stehende Helix auf der Matrix, alle anderen pulsieren einmal je Takt.
+  "verse 1b": |-
+    Szene Verse, ICE: dezenter Puls im Beat - kleine Steigerung zum Part davor.
+  "all i ever wanted (2)": |-
+    wie beim ersten Mal (Colors, SUNSET, soft 100).
+  "words are very (3)": |-
+    wie oben (Wave Out, WHITE).
+  "2 3 4": |-
+    Text "2 3 4" auf der Matrix, eine Zahl pro Beat; dazu kurzer weißer Blinder nur auf den Lampen auf jeden Beat.
+  "enjoy the silence": |-
+    Einzelblitze bleiben (wachsen von Mal zu Mal). Blinder auf den Einsatz (2 Beats).
+  "bass slap part": |-
+    Szene Solo Bass, ROYAL: zwei Kometen laufen um den Bass, alle anderen atmen dunkel (Marker bleibt).
+  "all i ever wanted (3)": |-
+    wie vorher (Colors, SUNSET, soft 100).
+  "words are very (4)": |-
+    wie oben (Wave Out, WHITE).
+  "all i ever wanted (4)": |-
+    Colors, jetzt in FIRE - eine Stufe wärmer zum Schluss.
+  "words are very (5)": |-
+    Wave Out, WHITE, dazu Glitzern als Ebene (Sparkle 40).
+  "2 3 4 (2)": |-
+    wie beim ersten Mal (Text 2 3 4, Lampen-Blinder im Beat).
+  "enjoy the silence (3)": |-
+    Blinder auf den Einsatz (2 Beats), Einzelblitze wachsen wie bisher.
+  "enjoy the silence (6)": |-
+    Dichteste Einzelblitze in FIRE; starker Blinder auf der letzten Viertel (Takt 103,75), der 5 Sekunden ins Schluss-Schwarz ausklingt (wie APT.).

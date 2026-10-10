@@ -1,0 +1,41 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py Firework --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Leitidee: der Song heißt Firework - bisher brennt nirgends Feuer. Strophen kühl (ROYAL), jeder Chorus eine Stufe
+# heißer (SUNSET -> FIRE -> Feuer-Szene), die BOOM-Parts mit Blindern auf die 1.
+parts:
+  "intro1": |-
+    Stern bleibt, in ROYAL mit weichen Farbwechseln (soft 60) - ruhiger Anfang.
+  "verse 1a": |-
+    16 Takte ein Effekt sind lang. Szene Glow, ROYAL, Farbwanderung (triad, 2 Takte).
+    Besser: bei Takt 21 eine eigene Zeile "verse 1b" anlegen - dann ab dort Szene Rain als kleine Steigerung.
+  "bridge": |-
+    Szene Palette, SUNSET, darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 7 Takte) - "ignite the light".
+  "übergang": |-
+    Weißer Strobo (statt Zufallsfarbe) als Absprung.
+  "chorus 1": |-
+    Szene Star, SUNSET, Blinder auf den Einsatz (2 Beats). Auf der Matrix "FIREWORK" über dem Stern, blendet nach 2 Takten aus.
+  "verse 2a": |-
+    Szene Colors, NEON, soft 30: eine Farbe pro Beat auf der ganzen Bühne, mit kurzer Blende.
+  "verse 2b": |-
+    Szene Call Response, NEON: die Bühnenhälften blitzen abwechselnd - Steigerung zu verse 2a.
+  "bridge (2)": |-
+    wie bridge 1 (Palette SUNSET + Glitzern baut sich auf).
+  "chorus 2a": |-
+    Szene Fire, FIRE statt Wasserringe: Feuer auf allen Geräten, Blinder auf den Einsatz. Text "FIREWORK" wie in chorus 1.
+  "BOOM 1": |-
+    Szene Drop, SUNSET: Schläge auf die Viertel; dazu Blinder auf jede 1 (jeder Takt, 2 Beats) - "boom boom boom".
+  "nur vocals": |-
+    Szene Calm, BLUE, auf 50 % gedimmt, weich eingeblendet (fade, 4 Beats): die Bühne tritt zurück, nur die Stimme.
+  "BOOM 3": |-
+    Szene Wave Out, SUNSET: der Blitz läuft pro Beat von der Mitte nach außen; Blinder auf die 1 (Takt 93).
+  "BOOM 4": |-
+    Wasserringe bleiben, darüber baut sich Glitzern auf (Ebene Sparkle, fade_in 7 Takte) - Anlauf zum Finale.
+  "strobo snarewirbel": |-
+    Szene Buildup (1 Takt), FIRE: Explosion genau auf den Chorus.
+  "chorus 2a (2)": |-
+    Szene Star, FIRE, Blinder auf den Einsatz; Lampen blitzen weiß auf 2 und 4.
+  "chorus 2": |-
+    Szene Sparkle, FIRE - Höhepunkt. Drei kurze Blinder auf den letzten drei Vierteln (Takt 124 / 124,25 / 124,5 = Einsatz des Snarewirbels).
+  "strobo snarewirbel (2)": |-
+    Starker Blinder statt Strobo: voll auf der letzten Viertel (Takt 124,75), klingt 5 Sekunden ins Schluss-Schwarz aus (wie APT.).

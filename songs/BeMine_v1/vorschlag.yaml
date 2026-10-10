@@ -1,0 +1,33 @@
+# Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
+# In die Tabelle schreiben: python tools/songgen.py BeMine --vorschlag
+# Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
+# Stand heute: generiert mit den alten Effekten; die zwei Blinder des Users (chorus 1 Anfang, chorus 3 Ende) bleiben.
+# Leitidee: leichter Sommer-Pop in SUNSET/NEON; der Chorus (bisher Farbwechsel im Beat) bekommt feste Farben und
+# weiche Blenden, die Strophen mehr Unterschied.
+parts:
+  "intro": |-
+    Szene Glow, SUNSET, weich eingeblendet (fade_in 4 Beats).
+  "verse 1a": |-
+    Szene Verse, SUNSET: dezenter Puls im Beat (bisher Regenbogen-Streifen).
+  "verse 1b": |-
+    Szene Palette, SUNSET -> Farbwanderung nach NEON (2 Takte): Farbband über die ganze Bühne.
+  "you got me so high": |-
+    Linien bleiben (stapeln sich), darüber baut sich ein Glitzern auf (Ebene Sparkle, fade_in über 7 Takte). Fester Look für beide.
+  "snareroll": |-
+    Szene Buildup (1 Takt), NEON: lädt sich auf, Explosion genau auf den Chorus - der Blinder des Users steht dann auf dem Einsatz.
+  "chorus 1": |-
+    Szene Colors, NEON, soft 30 (feste Farben, kurze Blende); Blinder am Anfang bleibt. Auf der Matrix "BE MINE" über der Szene (2 Takte, blendet aus).
+  "uebergang": |-
+    Schwarz bleibt; in den letzten 2 Beats weich ins Verse (verse 2 mit Übergang fade).
+  "verse 2": |-
+    Leuchtspuren bleiben (Szene Rain, ROYAL) - kühler Kontrast zum Chorus.
+  "im going crazy": |-
+    Szene DNA Flip, NEON: stehende Helix auf der Matrix, alle anderen pulsieren einmal je Takt (bisher Wasserringe).
+  "snareroll (2)": |-
+    wie beim ersten Mal (Buildup).
+  "chorus 2": |-
+    Colors wie chorus 1, Blinder auf den Einsatz, Lampen blitzen weiß auf 2 und 4.
+  "strobe": |-
+    Starker Blinder statt Strobo: blendet 2 Beats ein und steht 2 Beats voll bis zum Einsatz von chorus 3.
+  "chorus 3": |-
+    Anwachsende Einzelblitze bleiben, in FIRE; drei kurze Blinder Ende des 4. Takts (Takt 80,5 / 80,75 / 81). Der Blinder am Ende bleibt.

@@ -54,6 +54,15 @@ der User löscht sie selbst.
   24 Songs gelaufen). Was dort steht, hängt davon ab, was in der Firmware läuft: Show + Code = die Gestaltung der Show;
   Show ohne Code (Physical) = die Gestaltung mit dem Vermerk „noch NICHT generiert“; eingefrorener Code ohne Show
   (Dancing On My Own) = dessen Parts, über die Zeit zugeordnet (Näherung); sonst der alte Code aus „bisher (alter Code)“.
+- `Neuer Vorschlag (KI)` (seit 10.10.2026, Wunsch des Users bei der Durchsicht der alten Songs): Vorschläge von
+  Claude je Part, wie ein alter Song umgestaltet werden könnte. Die Texte stehen in `songs/<Song>/vorschlag.yaml`
+  (`parts: {<Partname>: Text}`, optional `zeilen: {<von takt>: Text}` für Zwischenzeilen), in die Tabelle schreibt sie
+  `python tools/songgen.py <Song> --vorschlag` (ohne Song: alle Songs mit `vorschlag.yaml`; `struktur.write_proposals()`
+  mit derselben Sicherung wie `write_effects`). Nur Ausgabe: nichts liest die Spalte, es entsteht weder Show noch Code.
+  **Ein Vorschlag ist kein Auftrag** - umgesetzt wird erst, was der User in `Änderungswunsch` einträgt. Schreibweise so,
+  dass er es dorthin übernehmen kann: zuerst Szene + Schema („Szene Rain, RED“), dann Akzente mit Taktnummer der
+  Tabelle („Blinder auf die letzte Viertel (Takt 41,75)“), kurz warum. Parts ohne Eintrag = der alte Effekt kann bleiben.
+  Nach einer Umgestaltung die `vorschlag.yaml` des Songs anpassen oder leeren und `--vorschlag` erneut laufen lassen.
 - Altes Format: Tabellen aus der Zeit davor haben eine Spalte `Effektidee` (= seine Wünsche) und keine Effekt-Spalte.
   Sie werden weiter gelesen und bei ihrer ersten Generierung umgestellt (Wünsche wandern nach `Änderungswunsch`).
   Enthält das Blatt eigene Formeln, fügt das Skript keine Spalte ein und sagt dem User, was er in Excel anlegen soll.
@@ -84,8 +93,8 @@ der User löscht sie selbst.
 
 **Die Tabelle ist unantastbar.** Claude schreibt, verschiebt oder löscht `songs/*/quelle/struktur.xlsx` nie selbst
 (auch nicht per Shell oder openpyxl). Ein Hook (`tools/hook_protect_song.py`) und eine deny-Regel in
-`.claude/settings.json` blockieren das; den Schutz nicht umgehen. Einzige Ausnahme ist `songgen.py`, das die Spalte
-„Effekt (füllt KI)“ füllt (`struktur.write_effects()`: schreibt erst eine Kopie, liest sie zurück und ersetzt die
+`.claude/settings.json` blockieren das; den Schutz nicht umgehen. Einzige Ausnahme ist `songgen.py`, das die Spalten
+„Effekt (füllt KI)“ und - nur mit `--vorschlag` - „Neuer Vorschlag (KI)“ füllt (`struktur.write_effects()`: schreibt erst eine Kopie, liest sie zurück und ersetzt die
 Tabelle nur, wenn alles andere unverändert ist). Ist die Tabelle in Excel geöffnet, wird der Code trotzdem erzeugt und
 die Spalte nicht geschrieben - dem User sagen und später `songgen.py <Song> --tabelle` nachholen. Braucht die Tabelle eine Änderung
 (Strukturfehler, Part für einen zweiten Akzent teilen), dem User die konkreten Zeilen im Chat nennen - er trägt
