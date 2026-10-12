@@ -2,13 +2,14 @@
 //@id 82
 //@function gen_AllTheThingsSheSaidIntro
 //@name All The Things She Said Intro
-//@struktur_sha a2a4655adb0f2e12684d79b337a0dab490720c1b07df02c35c4b23289c316931
-//@show_sha 1b394f0109bc8afc04b00baa71bb964edf933a08f548aff6c52ced29b1f71927
+//@struktur_sha 81787eb3e30ba7c5596c717ad8a8ed9f5e29a207cddc39b973bf99bc1f667bc4
+//@show_sha 3e068578f614ff0dfd575c129664b517d926eb153bff0fd565a4934abb4b1b1f
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_NERDS_ON_FIRE 5
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_SONGTITEL 10
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_SONGTITEL_TAIL 15
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_STROBO 20
+//@part GEN_ALLTHETHINGSSHESAIDINTRO_STROBO_TAIL 25
 //@code
 //#82 All The Things She Said Intro - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaidIntro_v1: struktur.xlsx + show.yaml)
 void gen_AllTheThingsSheSaidIntro() {
@@ -58,7 +59,7 @@ void gen_AllTheThingsSheSaidIntro() {
 #endif
 		break;
 
-	case 10:	// text songtitel  11 T+2 B  18139ms  @0:43.605  -- Auf der Matrix laufen die Wasserwellen weiter (der Titel-Lauftext kommt erst nach dem Sprung im Song). Blinder bei Takt 20 und 21,5, je über einen Takt ausklingend. Ab Takt 23,5 viermal im Abstand von 1,5 Takten: Blinder auf allen Geräten und ein Wort weiß über den Wellen - THE, NERDS, ON, FIRE. Alle anderen Geräte sind dunkel.
+	case 10:	// text songtitel  10 T+2 B  18139ms  @0:43.605  -- Auf der Matrix laufen die Wasserwellen weiter (der Titel-Lauftext kommt erst nach dem Sprung im Song). Blinder bei Takt 20 und 21,5, je über einen Takt ausklingend. Ab Takt 23,5 dreimal im Abstand von 1,5 Takten: Blinder auf allen Geräten und ein Wort weiß über den Wellen - THE, NERDS, ON. Bei Takt 27,25 STOP: alles blendet in einer Achtel auf Schwarz. Alle anderen Geräte sind dunkel.
 		fxTransition(TRANS_FADE, 1395);
 		fxBlinderSlot(0);
 		fxBlinder(8372, 2791, 255, FX_BLINDER_WARM, DEV_ALL);
@@ -73,7 +74,7 @@ void gen_AllTheThingsSheSaidIntro() {
 #endif
 		break;
 
-	case 15:	// text songtitel (tail)  20 B  13954ms  @1:01.744
+	case 15:	// text songtitel (tail)  16 B  11163ms  @1:01.744
 		fxBlinderSlot(0);
 		fxBlinder(0, 1395, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 349);
@@ -83,39 +84,65 @@ void gen_AllTheThingsSheSaidIntro() {
 		fxBlinderSlot(2);
 		fxBlinder(8372, 1395, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 349);
-		fxBlinderSlot(3);
-		fxBlinder(12558, 1395, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 349);
+		fxBlinderUnderText();
 #if DEVICE_CLASS == CLASS_MATRIX
-		fxLayerPulse(86, 255, 6);
+		fxTextWindow(0, 10814);
+		fxTextFadeOut(349);
+		fxTextPulse(86, 255, 6);
+		fxTextUnder(76);
+		fxTextBegin();
+		progText("THE*3 NERDS*3 ON*2", 11163, 20, 1395, CRGB::White);
+		fxTextEnd();
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 10814);
+		fxLayerFadeOut(349);
+		fxLayerBegin();
+		progWaterRipple(11163, 20, 50, true, false);
+		fxLayerEnd(FX_ADD);
+#endif
+		progBlack(11163, 20);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 20:	// strobo  2 B  698ms  @1:12.907  -- Takt 27,5: voller warmweißer Blinder auf allen Geräten (eine Viertel) und "FIRE" weiß auf der Matrix über den Wellen. Takt 27,75: Strobo in Zufallsfarben auf allen Geräten, "FIRE" schwarz ausgestanzt. Bei Takt 28 ohne Pause in den Band-Einsatz von All The Things She Said.
+		fxBlinder(0, 698, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 349);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(76);
 		fxLayerBegin();
-		progText("THE*3 NERDS*3 ON*3 FIRE*1", 13954, 20, 1395, CRGB::White);
+		progText("FIRE", 698, 25, 2791, CRGB::White);
 		fxLayerEnd(FX_OVER);
 #endif
 #if DEVICE_CLASS == CLASS_MATRIX
-		progWaterRipple(13954, 20, 50, true, false);
+		progWaterRipple(698, 25, 50, true, false);
 #else
-		progBlack(13954, 20);
+		progBlack(698, 25);
 #endif
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerFlush();
 #endif
 		break;
 
-	case 20:	// strobo  2 B  1395ms  @1:15.698  -- Strobo in Zufallsfarben auf allen Geräten; auf der Matrix ist "FIRE" schwarz aus dem Strobo ausgestanzt. Danach ohne Pause in den Band-Einsatz von All The Things She Said (Stern in Neon).
+	case 25:	// strobo (tail)  1 B  697ms  @1:13.605
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerBegin();
-		progText("FIRE", 1395, 25, 2791, CRGB::White);
+		progText("FIRE", 697, 30, 2791, CRGB::White);
 		fxLayerEnd(FX_CUT);
 #endif
-		progStrobo(1395, 25, 83, getRandomColor(), getRandomColor(), getRandomColor());
+		progStrobo(697, 30, 83, getRandomColor(), getRandomColor(), getRandomColor());
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerFlush();
 #endif
 		break;
 
-	case 25:
+	case 30:
 		clearAll();
 		songID = 31;	// weiter in #31 All The Things She Said (songs/AllTheThingsSheSaid_v1, trailer_entry)
 		switchToPart(GEN_ALLTHETHINGSSHESAID_TRAILER);	// Konstante aus songs_generated.h: Matrix-Geräte zeigen dort erst den Titel-Lauftext

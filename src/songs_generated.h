@@ -313,6 +313,7 @@ void gen_AllTheThingsSheSaidIntro();	// #82 All The Things She Said Intro
 #define GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_SONGTITEL 10
 #define GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_SONGTITEL_TAIL 15
 #define GEN_ALLTHETHINGSSHESAIDINTRO_STROBO 20
+#define GEN_ALLTHETHINGSSHESAIDINTRO_STROBO_TAIL 25
 
 // Einstieg eines Vorspanns in seinen Song (trailer_entry in show.yaml): die Matrix-Geräte zeigen dort erst den
 // Titel-Lauftext (eigene Zusatz-cases), alle anderen Geräte beginnen direkt mit dem Part

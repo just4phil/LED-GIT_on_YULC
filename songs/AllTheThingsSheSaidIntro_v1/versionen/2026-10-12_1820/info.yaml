@@ -1,0 +1,9 @@
+zeit: '2026-10-12 18:20:25'
+notiz: 'Ende um einen Takt gekuerzt (Sprung bei Takt 28): STOP bei 27,25, FIRE bei
+  27,5, Strobo bei 27,75'
+werkzeug_git: 4aa9ea4
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 81787eb3e30ba7c5596c717ad8a8ed9f5e29a207cddc39b973bf99bc1f667bc4
+  show.yaml: 3e068578f614ff0dfd575c129664b517d926eb153bff0fd565a4934abb4b1b1f
+  generated.cpp: cf492bc6b7d05dabfd7e49a79ac6eae403494cd4f6869133a4933f9534c274cb
