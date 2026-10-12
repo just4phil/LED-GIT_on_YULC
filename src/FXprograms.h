@@ -516,11 +516,14 @@ CRGB dnaStrandColor(uint8_t n);		// Farbe von Strang 0 / 1 ohne eigene Angabe (F
 //               Wie bei progDNA KEINE Wartezeit je Schritt: die Generationen werden aus der Zeit seit Part-Beginn
 //               gezählt und wechseln deshalb genau im Raster.
 //   spots       so viele Startfiguren liegen am Anfang im Feld (Vorgabe 2).
+//   resume      true = das Spiel beginnt nicht bei jedem Part-Start neu, sondern läuft bei jedem Aufruf dort weiter,
+//               wo es zuletzt stand (auch über Song-Wechsel hinweg; angelegt wird es einmal nach dem Einschalten,
+//               jedes Mal mit anderem Zufall). So läuft es in der Songpause (Song 0). Vorgabe false.
 // Farben: jeder Spot hat eine eigene Farbe aus dem Verlauf über das Farbschema (ohne Schema: Regenbogen), Kinder erben
 // sie von einem Elternteil - eine Struktur behält ihre Farbe; wo zwei zusammenstoßen, mischen sie sich. Neue Zellen
 // blenden hell ein, alte werden ruhiger, gestorbene glimmen aus.
 // Derselbe Part zeigt bei jedem Durchlauf dasselbe Spiel (fester Startwert). Stellgrößen: LIFE_... in fxMatrixSim.cpp.
-void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis = 150, uint8_t spots = 2);
+void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis = 150, uint8_t spots = 2, bool resume = false);
 // Als Szene für alle Geräte: SCENE_LIFE (scenes.h) - Matrix zeigt das Spiel in seinem eigenen Tempo, die übrigen blitzen im Beat.
 
 // Equalizer: Balken von unten, 5px breit + 1px Lücke, grün→gelb→orange→rot, pro Band konfigurierbarer Mittelwert

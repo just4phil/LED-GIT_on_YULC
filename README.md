@@ -131,7 +131,7 @@ There are no unit tests.
 - Automatic part changes are *not* transmitted: every device knows the part lengths and switches on its own timer.
   A device that joins late can fetch the current song and part from the proxy (see knob).
 
-Song 0 is the pause between songs.
+Song 0 is the pause between songs: a calm sparkle on the instruments and lamps, Conway's Game of Life in colour on the matrix (it keeps running across pauses instead of restarting).
 
 **Connection warning:** during song 0 a few LEDs pulse slowly in red (2 s up, 2 s down) for as long as the
 Bluetooth link is missing - on a client until it has found the guitar, on the guitar until the first client has

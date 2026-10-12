@@ -227,6 +227,9 @@ void STARTUP()  {	// #99 // BLACK bis zum Start des Intros
 
 // #0 - Pause zwischen den Songs: ruhiges Glitzern. Die Lampen bekommen seltener neue Lichtpunkte (alle 2000 ms
 // statt alle 250 ms), weil sie weniger LEDs haben. case 100 startet Song 0 neu -> Dauerschleife.
+// Nur die Matrix zeigt stattdessen das Game of Life (progGameOfLife, zum Testen seit 12.10.2026, Wunsch des Users).
+// Mit resume = true beginnt es nicht bei jedem Part-Start neu: es läuft durch die Dauerschleife hindurch weiter und
+// auch nach einem Song dort, wo es vor dem Song stand - so wie das Glitzern der anderen Geräte sein Bild behält.
 void SONGPAUSE()  {	// soft / static LEDs
 
 	switch (prog) {
@@ -243,6 +246,8 @@ void SONGPAUSE()  {	// soft / static LEDs
 				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
 			#elif defined(LAMPE2)
 				progBlingBlingColoringSONGPAUSE(11700, 10, 2000);	// TODO: warum sind die beiden Lampen anders?
+			#elif DEVICE_CLASS == CLASS_MATRIX
+				progGameOfLife(11700, 10, 150, 2, true);	// Matrix: Game of Life, läuft über alle Wiederholungen weiter (resume)
 			#else
 				progBlingBlingColoringSONGPAUSE(11700, 10, 250);
 			#endif
@@ -259,6 +264,8 @@ void SONGPAUSE()  {	// soft / static LEDs
 			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
 		#elif defined(LAMPE2)
 			progBlingBlingColoringSONGPAUSE(50000, 100, 2000);
+		#elif DEVICE_CLASS == CLASS_MATRIX
+			progGameOfLife(50000, 100, 150, 2, true);
 		#else
 			progBlingBlingColoringSONGPAUSE(50000, 100, 250);
 		#endif

@@ -619,11 +619,23 @@ void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis
 //   Weich     Zwischen zwei Generationen wird geblendet statt gesprungen: eine neue Zelle blendet am Anfang des Schritts
 //             hell und etwas weißlich ein, eine gestorbene glimmt über den ganzen Schritt aus. Wer länger lebt, wird
 //             ruhiger (dunkler) - so ist das Helle im Bild immer das, was sich gerade bewegt.
-//   Rand      Die Fläche hat keinen Rand: was rechts hinausläuft, kommt links wieder herein, oben/unten genauso
-//             (ein "Torus"). Auf nur 10 Zeilen Höhe wäre das Feld sonst zu eng.
+//   Rand      Was aus dem Bild hinausläuft, ist weg - es kommt NICHT auf der anderen Seite wieder herein (Wunsch des
+//             Users, 12.10.2026; die erste Fassung ließ die Ränder umlaufen). Damit eine Figur dabei sauber aus dem
+//             Bild gleitet und nicht an der Kante zerschellt, ist das gerechnete Feld rundherum LIFE_MARGIN Zellen
+//             größer als die sichtbare Fläche. In diesem unsichtbaren Rand gelten die Regeln ganz normal weiter;
+//             erst wer seine äußerste Reihe erreicht, wird gelöscht.
 //   Zufall    Ein eigener kleiner Zufallsgenerator mit festem Startwert je Song und Part: derselbe Part zeigt bei
 //             jedem Durchlauf dasselbe Spiel, und der Zufall der anderen Effekte wird nicht verstellt.
-#define LIFE_CELLS				(MATRIX_WIDTH * MATRIX_HEIGHT)
+//   Weiter-   Mit resume = true (für die Songpause, Song 0) beginnt das Spiel NICHT bei jedem Part-Start neu: es
+//   laufen    wird nur beim allerersten Aufruf nach dem Einschalten angelegt und läuft danach bei jedem weiteren
+//             Aufruf dort weiter, wo es stehen geblieben ist - auch wenn die Pause ihren Part wiederholt oder
+//             dazwischen ein Song lief. Der Startwert des Zufalls kommt dann zusätzlich aus der Uhr, damit die
+//             Pause nicht nach jedem Einschalten gleich aussieht.
+#define LIFE_MARGIN				3		// unsichtbarer Rand rund um die sichtbare Fläche, in Zellen
+#define LIFE_W					(MATRIX_WIDTH + 2 * LIFE_MARGIN)	// Breite ...
+#define LIFE_H					(MATRIX_HEIGHT + 2 * LIFE_MARGIN)	// ... und Höhe des gerechneten Felds
+#define LIFE_CELLS				(LIFE_W * LIFE_H)					// alle Zellen, auch die unsichtbaren
+#define LIFE_VISIBLE			(MATRIX_WIDTH * MATRIX_HEIGHT)		// die sichtbaren Zellen (Bezug für alle Prozent-Angaben unten)
 #define LIFE_AGE_STEPS			6		// nach so vielen Generationen hat eine Zelle ihre ruhige Helligkeit erreicht
 #define LIFE_OLD_LEVEL			130		// Helligkeit einer ruhigen Zelle (neu geboren: 255)
 #define LIFE_MAX_AGE			40		// so viele Generationen wird eine Zelle höchstens alt (bei 150 ms = 6 s), dann stirbt sie
@@ -670,6 +682,9 @@ static uint32_t lifeRng;					// Zustand des Zufallsgenerators
 static uint32_t lifeGen;					// Nummer der Generation, die gerade im Feld steht
 static uint16_t lifeSinceSpawn;				// Generationen seit dem letzten neuen Spot
 static uint32_t lifeAlive;					// Anzahl lebender Zellen nach der letzten Generation
+static bool     lifeSeeded = false;			// gibt es schon ein Spiel? (für resume: nur einmal anlegen)
+static uint32_t lifeTimeBase = 0;			// resume: Spielzeit in ms, die vor dem Start des laufenden Parts schon vergangen war
+static uint32_t lifeTimeNow = 0;			// Spielzeit in ms beim zuletzt gemalten Bild
 static uint8_t  lifeSpotHue;				// Farbe des zuletzt gesetzten Spots
 
 // Zufallszahl 0..n-1 ("xorshift": drei Schiebe- und Mischschritte, schnell und für Lichteffekte zufällig genug).
@@ -690,28 +705,46 @@ static uint8_t lifeLevel(uint8_t age) {
 	return LIFE_OLD_LEVEL - (LIFE_OLD_LEVEL - LIFE_LAST_LEVEL) * (age - (LIFE_MAX_AGE - LIFE_FADE_AGES)) / LIFE_FADE_AGES;
 }
 
-// Platz der Zelle (x, y) in den Feldern oben. x und y dürfen bis zu einer Flächenbreite/-höhe außerhalb liegen:
-// "+ Breite, dann Rest der Division" führt auf der anderen Seite wieder herein (der Torus).
+// Koordinaten: x und y zählen wie auf der Matrix (0/0 = sichtbare Ecke oben links). Der unsichtbare Rand hat deshalb
+// negative Werte (bis -LIFE_MARGIN) bzw. Werte ab MATRIX_WIDTH / MATRIX_HEIGHT.
+
+// Liegt (x, y) überhaupt im gerechneten Feld (sichtbare Fläche + Rand)?
+static inline bool lifeInField(int x, int y) {
+	return x >= -LIFE_MARGIN && x < MATRIX_WIDTH + LIFE_MARGIN && y >= -LIFE_MARGIN && y < MATRIX_HEIGHT + LIFE_MARGIN;
+}
+
+// Liegt (x, y) in der äußersten Reihe des Felds? Dort wird gelöscht.
+static inline bool lifeOnEdge(int x, int y) {
+	return x == -LIFE_MARGIN || x == MATRIX_WIDTH + LIFE_MARGIN - 1 || y == -LIFE_MARGIN || y == MATRIX_HEIGHT + LIFE_MARGIN - 1;
+}
+
+// Platz der Zelle (x, y) in den Feldern oben. Nur für Koordinaten im Feld aufrufen (lifeInField).
 static inline int lifeIndex(int x, int y) {
-	return ((y + MATRIX_HEIGHT) % MATRIX_HEIGHT) * MATRIX_WIDTH + (x + MATRIX_WIDTH) % MATRIX_WIDTH;
+	return (y + LIFE_MARGIN) * LIFE_W + (x + LIFE_MARGIN);
+}
+
+// Lebt die Zelle (x, y)? Außerhalb des Felds lebt nichts.
+static inline bool lifeIsAlive(int x, int y) {
+	return lifeInField(x, y) && lifeAge[lifeIndex(x, y)] != 0;
 }
 
 // Setzt einen neuen Spot: eine zufällige Figur aus lifePatterns, zufällig gespiegelt (so fliegen Gleiter und
-// Raumschiffe in verschiedene Richtungen), an eine Stelle, an der sie samt Rand frei liegt. Liefert false, wenn sich
-// keine freie Stelle gefunden hat.
+// Raumschiffe in verschiedene Richtungen), an eine Stelle im SICHTBAREN Bereich, an der sie samt etwas Abstand frei
+// liegt. Liefert false, wenn sich keine freie Stelle gefunden hat.
 static bool lifeSpawn() {
 	const LifePattern& p = lifePatterns[lifeRandom(LIFE_PATTERN_COUNT)];	// "&" = kein Kopieren, nur ein zweiter Name für den Eintrag
 	const bool flipX = lifeRandom(2) != 0;
 	const bool flipY = lifeRandom(2) != 0;
 
 	for (int attempt = 0; attempt < LIFE_SPAWN_TRIES; attempt++) {
-		const int x0 = lifeRandom(MATRIX_WIDTH);
-		const int y0 = lifeRandom(MATRIX_HEIGHT);
+		// linke obere Ecke so wählen, dass die ganze Figur im Bild liegt (alle Figuren sind kleiner als die Fläche)
+		const int x0 = lifeRandom(MATRIX_WIDTH - p.w + 1);
+		const int y0 = lifeRandom(MATRIX_HEIGHT - p.h + 1);
 
 		bool isFree = true;
 		for (int dy = -LIFE_SPAWN_MARGIN; dy < p.h + LIFE_SPAWN_MARGIN && isFree; dy++) {
 			for (int dx = -LIFE_SPAWN_MARGIN; dx < p.w + LIFE_SPAWN_MARGIN; dx++) {
-				if (lifeAge[lifeIndex(x0 + dx, y0 + dy)] != 0) { isFree = false; break; }
+				if (lifeIsAlive(x0 + dx, y0 + dy)) { isFree = false; break; }
 			}
 		}
 		if (!isFree) continue;
@@ -742,6 +775,7 @@ static void lifeSeed(uint8_t spots) {
 	lifeGen = 0;
 	lifeSinceSpawn = 0;
 	lifeAlive = 0;
+	lifeSeeded = true;
 	lifeSpotHue = lifeRandom(256);
 	memset(lifeAge, 0, sizeof(lifeAge));
 	memset(lifeFade, 0, sizeof(lifeFade));
@@ -751,19 +785,27 @@ static void lifeSeed(uint8_t spots) {
 // Rechnet eine Generation weiter.
 static void lifeStep() {
 	// Bis zu welcher Tiefe darf noch geboren werden? Normal LIFE_MAX_DEPTH, bei vollem Feld nur LIFE_CROWD_DEPTH.
-	const bool crowded = lifeAlive * 100 >= (uint32_t)LIFE_CELLS * LIFE_CROWD_PERCENT;
+	const bool crowded = lifeAlive * 100 >= (uint32_t)LIFE_VISIBLE * LIFE_CROWD_PERCENT;
 	const uint8_t depthLimit = crowded ? LIFE_CROWD_DEPTH : LIFE_MAX_DEPTH;
 
-	// 1. Für jede Zelle die lebenden Nachbarn zählen und entscheiden, was aus ihr wird (Ergebnis in lifeNext...).
-	for (int y = 0; y < MATRIX_HEIGHT; y++) {
-		for (int x = 0; x < MATRIX_WIDTH; x++) {
+	// 1. Für jede Zelle des Felds (auch im unsichtbaren Rand) die lebenden Nachbarn zählen und entscheiden, was aus
+	//    ihr wird (Ergebnis in lifeNext...).
+	for (int y = -LIFE_MARGIN; y < MATRIX_HEIGHT + LIFE_MARGIN; y++) {
+		for (int x = -LIFE_MARGIN; x < MATRIX_WIDTH + LIFE_MARGIN; x++) {
+			const int i = lifeIndex(x, y);
+			lifeNextHue[i] = lifeHue[i];
+			if (lifeOnEdge(x, y)) {		// äußerste Reihe: hier wird alles gelöscht, was so weit hinausgelaufen ist
+				lifeNextAge[i] = 0;
+				continue;
+			}
+
 			uint8_t n = 0;				// Anzahl lebender Nachbarn
 			uint8_t parentHue[3];		// Farben der ersten drei gefundenen (bei genau 3 Nachbarn sind das die Eltern)
 			uint8_t parentDepth = 0;	// größte Tiefe unter den Nachbarn
 			for (int dy = -1; dy <= 1; dy++) {
 				for (int dx = -1; dx <= 1; dx++) {
 					if (dx == 0 && dy == 0) continue;		// das ist die Zelle selbst
-					const int j = lifeIndex(x + dx, y + dy);
+					const int j = lifeIndex(x + dx, y + dy);	// immer im Feld: die äußerste Reihe wurde oben schon abgefangen
 					if (lifeAge[j] == 0) continue;
 					if (n < 3) parentHue[n] = lifeHue[j];
 					if (lifeDepth[j] > parentDepth) parentDepth = lifeDepth[j];
@@ -771,8 +813,6 @@ static void lifeStep() {
 				}
 			}
 
-			const int i = y * MATRIX_WIDTH + x;
-			lifeNextHue[i] = lifeHue[i];
 			if (lifeAge[i] != 0) {
 				// überlebt mit 2 oder 3 Nachbarn - außer sie hat ihr Höchstalter erreicht
 				lifeNextAge[i] = ((n == 2 || n == 3) && lifeAge[i] < LIFE_MAX_AGE) ? lifeAge[i] + 1 : 0;
@@ -788,34 +828,63 @@ static void lifeStep() {
 		}
 	}
 
-	// 2. Umschalten. Dabei merken, wer gerade gestorben ist (glimmt in diesem Schritt aus), und die Lebenden zählen.
-	uint32_t alive = 0;
+	// 2. Umschalten. Dabei merken, wer gerade gestorben ist (glimmt in diesem Schritt aus).
 	for (int i = 0; i < LIFE_CELLS; i++) {
 		lifeFade[i] = (lifeAge[i] != 0 && lifeNextAge[i] == 0) ? lifeLevel(lifeAge[i]) : 0;
 		lifeAge[i]  = lifeNextAge[i];
 		lifeHue[i]  = lifeNextHue[i];
-		if (lifeAge[i] != 0) alive++;
+	}
+
+	//    Die Lebenden zählen - nur die sichtbaren: was im Rand lebt, sieht niemand und soll den Nachschub nicht bremsen.
+	uint32_t alive = 0;
+	for (int y = 0; y < MATRIX_HEIGHT; y++) {
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			if (lifeAge[lifeIndex(x, y)] != 0) alive++;
+		}
 	}
 	lifeAlive = alive;
 
 	// 3. Nachschub: ein neuer Spot, wenn seit dem letzten genug Zeit vergangen UND wenig los ist - oder schon früher,
 	//    wenn das Feld fast leer ist. Nie mehr als einer auf einmal.
 	if (lifeSinceSpawn < 0xFFFF) lifeSinceSpawn++;
-	const bool calm  = alive * 100 < (uint32_t)LIFE_CELLS * LIFE_SPAWN_BELOW_PERCENT;
-	const bool empty = alive * 100 < (uint32_t)LIFE_CELLS * LIFE_MIN_ALIVE_PERCENT;
+	const bool calm  = alive * 100 < (uint32_t)LIFE_VISIBLE * LIFE_SPAWN_BELOW_PERCENT;
+	const bool empty = alive * 100 < (uint32_t)LIFE_VISIBLE * LIFE_MIN_ALIVE_PERCENT;
 	if ((calm && lifeSinceSpawn >= LIFE_SPAWN_EVERY) || (empty && lifeSinceSpawn >= LIFE_SPAWN_MIN_GAP)) {
 		if (lifeSpawn()) lifeSinceSpawn = 0;
 	}
 }
 
 // stepMillis = Dauer einer Generation in ms (Vorgabe 150: gut zu verfolgen; kleiner = hektischer, ab etwa 300 wirkt es wie Einzelbilder),
-// spots = so viele Startfiguren liegen am Anfang im Feld (Vorgabe 2; weitere kommen von selbst, sobald es ruhig wird).
-void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis, uint8_t spots) {
-	if (fxPartStart(durationMillis, nextPart)) lifeSeed(spots);
+// spots = so viele Startfiguren liegen am Anfang im Feld (Vorgabe 2; weitere kommen von selbst, sobald es ruhig wird),
+// resume = true: das Spiel läuft über Part- und Song-Wechsel hinweg weiter statt neu zu beginnen (siehe "Weiterlaufen" oben).
+void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis, uint8_t spots, bool resume) {
+	bool firstCall;		// erster Aufruf in diesem Part?
+	if (resume) {
+		// fxBegin statt fxPartStart: das Bild wird beim Part-Start NICHT gelöscht, sonst würde die Fläche bei jeder
+		// Wiederholung des Parts kurz schwarz.
+		firstCall = fxBegin(durationMillis, nextPart);
+		if (firstCall) {
+			if (!lifeSeeded) {
+				lifeSeed(spots);
+				lifeRng ^= micros();				// Uhr seit dem Einschalten: jedes Mal ein anderes Spiel
+				if (lifeRng == 0) lifeRng = 1;
+				lifeTimeNow = 0;
+			}
+			lifeTimeBase = lifeTimeNow;				// die Spielzeit läuft dort weiter, wo das letzte Bild stand
+		}
+	} else {
+		firstCall = fxPartStart(durationMillis, nextPart);
+		if (firstCall) {
+			lifeSeed(spots);
+			lifeTimeBase = 0;
+		}
+	}
 
-	if (fxFrameDue(FX_REF_FRAME_MS)) {
+	// firstCall: das erste Bild eines Parts sofort malen, nicht erst nach 16 ms
+	if (firstCall || fxFrameDue(FX_REF_FRAME_MS)) {
 		if (stepMillis == 0) stepMillis = 1;
-		const uint32_t ms  = millisCounterForProgChange;
+		const uint32_t ms  = lifeTimeBase + millisCounterForProgChange;	// Spielzeit (ohne resume einfach die Zeit seit Part-Beginn)
+		lifeTimeNow = ms;
 		const uint32_t gen = ms / stepMillis;						// diese Generation ist jetzt dran
 		if (gen > lifeGen + LIFE_MAX_CATCHUP) lifeGen = gen - LIFE_MAX_CATCHUP;
 		while (lifeGen < gen) { lifeStep(); lifeGen++; }
@@ -829,7 +898,7 @@ void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int ste
 
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			for (int x = 0; x < MATRIX_WIDTH; x++) {
-				int i = y * MATRIX_WIDTH + x;
+				int i = lifeIndex(x, y);
 				uint8_t level;		// Helligkeit der Zelle in diesem Bild
 				uint8_t white = 0;	// Weiß-Anteil (nur kurz nach der Geburt)
 

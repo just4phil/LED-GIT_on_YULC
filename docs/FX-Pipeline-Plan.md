@@ -11,7 +11,7 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 12.10.2026 (neuer Effekt `progGameOfLife` + `SCENE_LIFE`: dritte Fassung mit wenigen Spots gebaut, Abnahme durch den User offen, nicht committet)
+Zuletzt aktualisiert: 12.10.2026 (neuer Effekt `progGameOfLife` + `SCENE_LIFE`: abgenommen und gepusht; Einbau in Song 0 auf der Matrix gebaut, Test offen, nicht committet)
 
 - **12.10.2026, neuer Effekt `progGameOfLife` (Conways „Game of Life“, Frage des Users: „kann man das game of life
   als effekt bauen?“, nach dem Vorschlag: „ja top!...aber es sollte hübsch farbig werden“) - gebaut, Abnahme offen,
@@ -77,6 +77,26 @@ Zuletzt aktualisiert: 12.10.2026 (neuer Effekt `progGameOfLife` + `SCENE_LIFE`: 
     abgenommen (Claudes Deutung). Seine Idee „Pausen-Animation“ ist nicht gebaut - erst klären, wo sie laufen soll
     (Song 0 / zwischen den Songs?). Zum Beat-Blitz der anderen Geräte und zum Verschwinden der Raumschiffe nach 12 s
     hat er nichts gesagt. Noch nicht committet.
+  - Committet und gepusht am 12.10.2026 auf seinen Auftrag „alles pushen“: `c233ba1` (Game of Life), davor
+    `34a935d` (die offenen Änderungen an `AllTheThingsSheSaidIntro_v1` und `docs/TakeOnMe-Fehlerplan.md`).
+  - **12.10.2026, Auftrag: „lass uns das mal testen: bau das game of life in song 0 (song pausen) ein (nur auf der
+    matrix!) es muss sich aber bei jedem neuen aufruf ohne neustart fortsetzen (so es aktuell auch ist)“ - gebaut,
+    Test durch den User offen, nicht committet.** `SONGPAUSE()` (`src/songs.cpp`): auf `CLASS_MATRIX` in Part 0 und
+    10 `progGameOfLife(…, 150, 2, true)` statt `progBlingBlingColoringSONGPAUSE`; alle anderen Geräte unverändert,
+    `SONGPAUSE_ohne_switchToSong0()` nicht angefasst. Neuer fünfter Parameter `resume` (Vorgabe false): das Spiel
+    wird nur einmal nach dem Einschalten angelegt (Zufall zusätzlich aus `micros()`), bei jedem weiteren Part-Start
+    läuft die Spielzeit weiter (`lifeTimeBase` = Spielzeit des letzten Bilds + Zeit seit Part-Beginn), `fxBegin`
+    statt `fxPartStart` (kein Löschen des Bilds), erstes Bild sofort. Claudes Deutung von „bei jedem neuen Aufruf“:
+    sowohl die Wiederholung der Pausen-Parts (alle 61,7 s) als auch die Rückkehr in Song 0 nach einem Song - während
+    eines Songs steht das Spiel still und macht danach dort weiter. Ohne `resume` (Szene, Demo 92) unverändert.
+  - **Vierte Rückmeldung (12.10.2026, nach dem Test in Song 0): „ja das ist cool! aber kommt das von oben wieder
+    unten in die matrix rein? das finde ich nicht so gut....sollten wir nicht besser sagen was sich zu weit
+    rausbewegt aus dem sichtbaren bereich wird dann gelöscht?“** Umgebaut: kein Torus mehr. Das gerechnete Feld ist
+    rundherum `LIFE_MARGIN` = 3 Zellen größer als die sichtbare Fläche (60 x 16 statt 54 x 10); im unsichtbaren Rand
+    gelten die Regeln weiter (eine Figur gleitet sauber aus dem Bild), in seiner äußersten Reihe wird alles gelöscht.
+    Neue Spots liegen ganz im sichtbaren Bereich; gezählt (Nachschub, „zu voll“) werden nur sichtbare Zellen. Gilt
+    für alle Aufrufe (Song 0, Szene, Demo 92). Simulator und Doku nachgezogen. Der Einbau in Song 0 gilt mit „ja das
+    ist cool“ als abgenommen (Claudes Deutung).
   - **Offen beim User (Stand vor der dritten Rückmeldung):** Urteil zur Menge (zwei Spots am Anfang, Nachschub alle 6 s), zum Tempo (150 ms), zum
     Alterstod nach 6 s und zum Beat-Blitz der anderen Geräte. **Nächster Schritt:** Rückmeldung einarbeiten, dann
     committen.
