@@ -11,7 +11,75 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 10.10.2026 („Take On Me“ #3: nach der fünfzehnten Runde vom User beendet - „halbwegs ok, noch nicht perfekt“, committet)
+Zuletzt aktualisiert: 12.10.2026 (neuer Effekt `progGameOfLife` + `SCENE_LIFE`: dritte Fassung mit wenigen Spots gebaut, Abnahme durch den User offen, nicht committet)
+
+- **12.10.2026, neuer Effekt `progGameOfLife` (Conways „Game of Life“, Frage des Users: „kann man das game of life
+  als effekt bauen?“, nach dem Vorschlag: „ja top!...aber es sollte hübsch farbig werden“) - gebaut, Abnahme offen,
+  nicht committet.** Alle fünf ESP32-Envs mit `build_ota.py --backup` gebaut (`FW_VERSION=1791822959`, vorheriger
+  Stand in `ota/backup/`); der Build enthält auch die noch nicht committeten Änderungen an
+  `AllTheThingsSheSaidIntro_v1` aus dem Arbeitsverzeichnis (nicht von hier).
+  - Code: `src/fxMatrixSim.cpp` (nach `progDNA`), Deklaration in `FXprograms.h`:
+    `progGameOfLife(dauer, folgePart, stepMillis = 500, density = 35)`. Szene `SCENE_LIFE` am Ende der Aufzählung in
+    `scenes.h` (bestehende Nummern unverändert): Matrix = `progGameOfLife` mit einer Generation je Beat, alle anderen
+    = `progBeatFlash` in ihrer Schemafarbe (Blitz im Moment der neuen Generation - Claudes Vorschlag).
+  - So ist es gebaut: Generationen aus `millisCounterForProgChange / stepMillis` gezählt (kein eigener Takt-Zähler,
+    höchstens `LIFE_MAX_CATCHUP` = 4 werden nachgeholt); je Zelle Alter, Farbnummer und Ausglimm-Helligkeit (5 Felder
+    je 540 Byte, `static`); Ränder laufen um (Torus). Farbe: Farbnummer 0..255 = Platz in `schemePalette()` bzw.
+    Farbton ohne Schema; Startbild mit Verlauf von links nach rechts, Kinder erben die Farbe eines zufälligen
+    Elternteils (± `LIFE_HUE_MUTATION`), alle Farben wandern gemeinsam (`LIFE_HUE_DRIFT` = 4 je Generation). Zwischen
+    den Generationen wird geblendet: Geburt blendet in 35 % des Schritts ein (mit etwas Weiß), alte Zellen fallen in
+    6 Generationen auf Helligkeit 110, Gestorbene glimmen quadratisch über den Schritt aus. Nachschub: weniger als
+    10 % lebend -> zwei Kleckse (5 x 5, halb gefüllt, eine Farbe), Bild wie vor 1..6 Generationen (FNV-Hash) -> drei.
+    Eigener Zufall (xorshift, Startwert aus `sharedRand8` = je Song/Part fest): derselbe Part zeigt immer dasselbe
+    Spiel.
+  - Geprüft ohne Hardware: Regeln und Nachschub in einer Simulation über 240 Generationen (54 x 10 und 22 x 23):
+    es leben durchgehend 10-20 % der Zellen, Nachschub fällt etwa alle 25-30 Generationen. Nicht geprüft: wie
+    Helligkeiten, Weiß-Anteil und Kleckse auf den LEDs wirken.
+  - Demo 92: Part 48 (`SCENE_LIFE`, ohne Schema, 16 s) und Part 49 (NEON, 16 s) stehen am Anfang, Part 0 zeigt die
+    48, danach 44, 46, 47, 39, 41, 42, 43, 38, 37 (die offenen Zeiten in der Doku-Tabelle um 38 s verschoben, Demo
+    jetzt ca. 9:41 min).
+  - Doku: `docs/LED-Effekte-und-Szenen.html` (Szenen-Tabelle, Demo-Tabelle mit Prüfpunkten, Simulator `lifeFX` -
+    in Node 60 s lang durchgerechnet, im Browser nicht angesehen), `docs/effekt-katalog.yaml` (`progGameOfLife`,
+    `SCENE_LIFE`), `docs/Song-Workflow.html`, SKILL.md (Dramaturgie-Tabelle, mit dem Hinweis „noch nicht
+    abgenommen“), README, CLAUDE.md.
+  - **Erste Rückmeldung (12.10.2026, vor dem Ansehen auf der Hardware): „ich finde man sollte das besser unabhängig
+    vom beat animieren, damit man die entwicklung gut nachvollziehen kann“.** Geändert: festes Tempo statt Beat -
+    Vorgabe `stepMillis = 150` (rund 6,7 Generationen je Sekunde; der Wert ist Claudes Wahl), `SCENE_LIFE` ruft
+    `progGameOfLife(dauer, folgePart)` ohne Tempo auf. Weiter aus der Zeit seit Part-Beginn gezählt (derselbe Part =
+    dasselbe Spiel). `LIFE_HUE_DRIFT` von 4 auf 1 (sonst liefen die Farben bei dem Tempo in 10 s rundum; jetzt rund
+    38 s). Die anderen Geräte blitzen weiter im Beat (`progBeatFlash`) - sie halten den Takt, die Matrix läuft frei;
+    ob das noch passt, ist offen. Kommentare, Doku, Katalog, SKILL.md und Simulator nachgezogen, alle fünf Envs neu
+    gebaut (`FW_VERSION=1791823311`, ohne neues Backup).
+  - **Zweite Rückmeldung (12.10.2026, nach dem Ansehen): „es fällt mir schwer die entwicklung einzelner strukturen zu
+    sehen. vielleicht ist es einfach zu viel? besser ein paar wenige spots die sich dann entwickeln?“** Umgebaut
+    (gilt statt der Beschreibung oben, soweit sie Startbild, Kleckse und Stillstands-Erkennung betrifft):
+    - Das Feld beginnt leer mit `spots` Startfiguren (Vorgabe 2; der Parameter ersetzt `density`) aus der Liste
+      `lifePatterns`: Gleiter, leichtes und mittleres Raumschiff, T-Tetromino, Reihe aus 7, kleiner Exploder,
+      Century, B-Heptomino - zufällig gespiegelt, an einer freien Stelle (2 Zellen Rand). R-Pentomino,
+      Pi-Heptomino und Diehard sind mit Absicht nicht dabei: in der Simulation füllten sie das 54 x 10-Feld.
+    - Jeder Spot hat eine eigene Farbe (`LIFE_SPOT_HUE_STEP` = 97 weiter als der vorige), Kinder erben sie mit nur
+      noch ± 4 Abweichung - eine Struktur bleibt an ihrer Farbe erkennbar.
+    - Neu, abweichend von den reinen Regeln: eine Zelle stirbt nach `LIFE_MAX_AGE` = 40 Generationen (6 s), in den
+      letzten 8 wird sie dunkler. Liegengebliebene Klötzchen und Blinker räumen sich so selbst weg; Gleiter und
+      Raumschiffe betrifft es nicht.
+    - Nachschub: ein neuer Spot frühestens alle `LIFE_SPAWN_EVERY` = 40 Generationen und nur bei weniger als 5 %
+      lebenden Zellen; bei weniger als 2 % schon nach 10 Generationen. Kleckse und Hash-Vergleich gibt es nicht mehr.
+    - Ebenfalls abweichend von den reinen Regeln: jede Zelle trägt ihre „Tiefe“ (Generation seit der Startfigur,
+      Kind = größte Tiefe der Nachbarn + 1); ab `LIFE_MAX_DEPTH` = 80 (12 s) wird nichts mehr geboren, der Spot
+      verlischt. Leben mehr als `LIFE_CROWD_PERCENT` = 8 % der Zellen, gilt vorübergehend `LIFE_CROWD_DEPTH` = 20.
+      Grund: ohne diese Grenze füllte ein Zusammenstoß in der Simulation bis zu 25 % des Felds - genau das „zu viel“.
+    - Simulation (1200 Generationen, sechs Startwerte, 54 x 10): im Mittel leben 4,3 % der Zellen (rund 23; erste
+      Fassung 10-20 %), in 90 % der Zeit höchstens 6,6 %, Spitze 11,5 %; das Feld wurde nie leer.
+    - Demo 92: Part 48 und 49 jetzt je 24 s (160 Generationen), die offenen Zeiten in der Doku-Tabelle um weitere
+      16 s verschoben (Demo ca. 9:57 min). Kommentare, Doku, Katalog, SKILL.md und Simulator nachgezogen.
+  - **Dritte Rückmeldung (12.10.2026, nach dem Ansehen der Fassung mit wenigen Spots, `FW_VERSION=1791824078`): „ja
+    mega das ist jetzt viel besser! könnte auch eine pausen animation sein.“** Die Matrix-Fassung gilt damit als
+    abgenommen (Claudes Deutung). Seine Idee „Pausen-Animation“ ist nicht gebaut - erst klären, wo sie laufen soll
+    (Song 0 / zwischen den Songs?). Zum Beat-Blitz der anderen Geräte und zum Verschwinden der Raumschiffe nach 12 s
+    hat er nichts gesagt. Noch nicht committet.
+  - **Offen beim User (Stand vor der dritten Rückmeldung):** Urteil zur Menge (zwei Spots am Anfang, Nachschub alle 6 s), zum Tempo (150 ms), zum
+    Alterstod nach 6 s und zum Beat-Blitz der anderen Geräte. **Nächster Schritt:** Rückmeldung einarbeiten, dann
+    committen.
 
 - **10.10.2026, „Take On Me“ (#3): erste generierte Fassung nach den Wünschen des Users - generiert (Version
   `2026-10-10_1500`), alle fünf ESP32-Envs mit `build_ota.py --backup` gebaut (vorheriger Stand in `ota/backup/`),

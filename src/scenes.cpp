@@ -566,6 +566,16 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 #endif
 		return;
 	}
+	case SCENE_LIFE:
+		// Matrix: Game of Life in seinem eigenen, festen Tempo (150 ms je Generation, unabhängig vom Beat - so lässt sich
+		// die Entwicklung verfolgen). Alle anderen halten den Takt: sie blitzen auf jeden Beat in ihrer Schemafarbe auf
+		// und klingen ab.
+#if DEVICE_CLASS == CLASS_MATRIX
+		progGameOfLife(durationMillis, nextPart);
+#else
+		progBeatFlash(durationMillis, nextPart, bpm, me, 0);
+#endif
+		return;
 	}
 
 	//--- geräteabhängige Umsetzung ---

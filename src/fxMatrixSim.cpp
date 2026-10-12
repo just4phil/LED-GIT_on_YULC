@@ -5,12 +5,13 @@
 #include "colorSchemes.h"
 #include "fxBase.h"
 #include "FXprograms.h"
+#include "scenes.h"		// sharedRand8(): fester Startwert für den Zufall von progGameOfLife
 //---------------------------------------------------------------------
 
 //=====================================================================
 // fxMatrixSim.cpp - berechnete Bilder für die LED-Fläche
 //=====================================================================
-// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, DNA-Doppelhelix, Equalizer und Wasserwellen: Effekte,
+// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, DNA-Doppelhelix, Game of Life, Equalizer und Wasserwellen: Effekte,
 // die ihr Bild in jedem Schritt aus einer kleinen Rechnung (Simulation oder Formel) neu erzeugen. Gemalt wird über
 // x/y-Koordinaten (matrix->drawPixel); auf Gitarre, Bass und Lampen landen die Punkte auf dem Streifen und
 // wirken dort als bewegte Muster. Die Beschreibung der Parameter steht in FXprograms.h.
@@ -576,6 +577,288 @@ CRGB dnaStrandColor(uint8_t n) {
 // Ohne Farbangabe: die Farben aus dnaStrandColor().
 void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode) {
 	progDNA(durationMillis, nextPart, turnMillis, mode, dnaStrandColor(0), dnaStrandColor(1));
+}
+
+//==================================================================
+//=========== progGameOfLife =======================================
+//==================================================================
+
+// Conways "Game of Life" ("Spiel des Lebens"), in Farbe. Die Fläche ist ein Feld aus Zellen, jede LED ist eine Zelle:
+// sie lebt (leuchtet) oder ist tot (dunkel). Von einer "Generation" zur nächsten gelten nur zwei Regeln, gezählt
+// werden jeweils die 8 Nachbarn einer Zelle (auch die schrägen):
+//   - eine lebende Zelle überlebt mit genau 2 oder 3 lebenden Nachbarn, sonst stirbt sie (Einsamkeit / Gedränge)
+//   - auf einem leeren Platz wird eine Zelle geboren, wenn er genau 3 lebende Nachbarn hat
+// Mehr steckt nicht dahinter - trotzdem entstehen daraus Muster, die wachsen, wandern, blinken und zerfallen.
+//
+// Was hier dazukommt, damit es auf der Bühne gut aussieht:
+//   Wenige    Das Feld beginnt LEER, bis auf ein paar kleine Startfiguren ("Spots") an zufälligen Stellen, jede in
+//   Spots     ihrer eigenen Farbe. Die Figuren stammen aus einer Liste bekannter Formen (lifePatterns): Gleiter und
+//             Raumschiffe, die über die Fläche wandern, und kleine Keime, die in einigen Dutzend Generationen zu einer
+//             größeren Form aufblühen. So kann man zusehen, wie sich EINE Struktur entwickelt (Wunsch des Users,
+//             12.10.2026: die erste Fassung mit dicht gefülltem Feld war "zu viel"). Ist es ruhig geworden, kommt
+//             ein neuer Spot dazu (LIFE_SPAWN_...), aber nur an einer freien Stelle und nur, solange wenig los ist.
+//   Alter     Abweichend von den reinen Regeln stirbt eine Zelle nach LIFE_MAX_AGE Generationen an Altersschwäche
+//             (kurz vorher wird sie dunkler). Feste Klötzchen und Blinker, die sonst ewig liegen blieben, räumen
+//             sich so von selbst weg und machen Platz für Neues. Wandernde Figuren betrifft das nicht: sie bestehen
+//             in jeder Generation aus neu geborenen Zellen.
+//   Lebens-   Ebenfalls abweichend von den reinen Regeln hat jeder Spot nur eine begrenzte Zeit: jede Zelle merkt sich,
+//   dauer     die wievielte Generation seit der Startfigur sie ist ("Tiefe": Kind = Elternteil + 1). Ab der Tiefe
+//             LIFE_MAX_DEPTH wird nichts mehr geboren - die Struktur wächst nicht weiter und verlischt. Ohne diese
+//             Grenze kann ein einziger Zusammenstoß das halbe Feld mit Gewimmel füllen. Wird es trotzdem zu voll
+//             (LIFE_CROWD_PERCENT), gilt vorübergehend die viel kürzere Grenze LIFE_CROWD_DEPTH: nur junge Spots
+//             dürfen dann noch wachsen, das Alte räumt sich ab.
+//   Tempo     Eine Generation dauert stepMillis - ein festes Tempo, mit Absicht NICHT am Beat des Songs (Wunsch des
+//             Users, 12.10.2026: "unabhängig vom beat animieren, damit man die entwicklung gut nachvollziehen kann").
+//             Gezählt wird aus der Zeit seit Part-Beginn (millisCounterForProgChange): die Generation Nr. 8 beginnt
+//             immer genau 8 x stepMillis nach dem Part-Start, egal wie schnell das Gerät seine Bilder ausgibt.
+//   Farbe     Jede Zelle trägt eine Farbnummer 0..255: mit Farbschema ein Platz im Verlauf über die Schemafarben, ohne
+//             Schema ein Farbton des Regenbogens. Jeder Spot bekommt eine eigene, deutlich andere Farbe. Eine neue
+//             Zelle erbt die Farbe von einem ihrer drei "Eltern" (zufällig gewählt, ganz leicht verändert): eine
+//             Struktur behält so ihre Farbe und bleibt erkennbar; wo zwei zusammenstoßen, mischen sich die Farben.
+//             Zusätzlich wandern alle Farben sehr langsam gemeinsam weiter (LIFE_HUE_DRIFT).
+//   Weich     Zwischen zwei Generationen wird geblendet statt gesprungen: eine neue Zelle blendet am Anfang des Schritts
+//             hell und etwas weißlich ein, eine gestorbene glimmt über den ganzen Schritt aus. Wer länger lebt, wird
+//             ruhiger (dunkler) - so ist das Helle im Bild immer das, was sich gerade bewegt.
+//   Rand      Die Fläche hat keinen Rand: was rechts hinausläuft, kommt links wieder herein, oben/unten genauso
+//             (ein "Torus"). Auf nur 10 Zeilen Höhe wäre das Feld sonst zu eng.
+//   Zufall    Ein eigener kleiner Zufallsgenerator mit festem Startwert je Song und Part: derselbe Part zeigt bei
+//             jedem Durchlauf dasselbe Spiel, und der Zufall der anderen Effekte wird nicht verstellt.
+#define LIFE_CELLS				(MATRIX_WIDTH * MATRIX_HEIGHT)
+#define LIFE_AGE_STEPS			6		// nach so vielen Generationen hat eine Zelle ihre ruhige Helligkeit erreicht
+#define LIFE_OLD_LEVEL			130		// Helligkeit einer ruhigen Zelle (neu geboren: 255)
+#define LIFE_MAX_AGE			40		// so viele Generationen wird eine Zelle höchstens alt (bei 150 ms = 6 s), dann stirbt sie
+#define LIFE_FADE_AGES			8		// in den letzten so vielen Generationen vor LIFE_MAX_AGE wird sie dunkler ...
+#define LIFE_LAST_LEVEL			50		// ... bis auf diese Helligkeit
+#define LIFE_BIRTH_PERCENT		35		// in diesem Anteil des Schritts blendet eine neue Zelle ein
+#define LIFE_BIRTH_WHITE		110		// so viel Weiß (von 255) ist im Moment der Geburt beigemischt, klingt im Schritt ab
+#define LIFE_HUE_DRIFT			1		// um so viel wandern alle Farbnummern je Generation weiter (256 = einmal rundum; 1 = in 256 Generationen, bei 150 ms rund 38 s)
+#define LIFE_HUE_MUTATION		4		// um höchstens so viel weicht die Farbe eines Kindes von der des Elternteils ab
+#define LIFE_SPOT_HUE_STEP		97		// um so viel unterscheidet sich die Farbe eines neuen Spots von der des vorigen (97 von 256: Nachbarn nie ähnlich)
+#define LIFE_MAX_DEPTH			80		// so viele Generationen lang darf sich ein Spot entwickeln (bei 150 ms = 12 s), danach wird aus ihm nichts mehr geboren
+#define LIFE_CROWD_PERCENT		8		// lebt mehr als dieser Anteil der Fläche, ist es "zu voll" ...
+#define LIFE_CROWD_DEPTH		20		// ... und es gilt diese kürzere Grenze statt LIFE_MAX_DEPTH
+#define LIFE_SPAWN_EVERY		40		// frühestens nach so vielen Generationen kommt der nächste Spot ...
+#define LIFE_SPAWN_BELOW_PERCENT	5	// ... und nur, wenn weniger als dieser Anteil der Fläche lebt (sonst ist genug los)
+#define LIFE_MIN_ALIVE_PERCENT	2		// ist das Feld fast leer (weniger als dieser Anteil), ...
+#define LIFE_SPAWN_MIN_GAP		10		// ... kommt der nächste Spot schon nach so vielen Generationen
+#define LIFE_SPAWN_MARGIN		2		// so viele freie Zellen braucht ein neuer Spot rundherum
+#define LIFE_SPAWN_TRIES		8		// so oft wird nach einer freien Stelle gesucht (findet sich keine: in der nächsten Generation wieder)
+#define LIFE_MAX_CATCHUP		4		// höchstens so viele Generationen werden auf einmal nachgeholt, falls das Gerät hängen blieb
+
+// Eine Startfigur: Breite, Höhe und die Zeilen als Bitmuster ("0b" = Binärzahl; eine 1 ist eine lebende Zelle, das
+// linke Bit ist die linke Spalte der Figur). Die Namen sind die in der Game-of-Life-Welt üblichen.
+struct LifePattern { uint8_t w, h; uint8_t rows[5]; };
+static const LifePattern lifePatterns[] = {
+	{ 3, 3, { 0b010, 0b001, 0b111 } },								// Gleiter: wandert schräg über die Fläche, für immer
+	{ 5, 4, { 0b01001, 0b10000, 0b10001, 0b11110 } },				// leichtes Raumschiff: fliegt waagerecht
+	{ 6, 5, { 0b001000, 0b100010, 0b000001, 0b100001, 0b011111 } },	// mittleres Raumschiff: dasselbe, etwas größer
+	{ 3, 2, { 0b111, 0b010 } },										// T-Tetromino: blüht in 9 Generationen zur "Ampel" auf (4 Blinker im Kreuz)
+	{ 7, 1, { 0b1111111 } },										// Reihe aus 7: wächst zu einer größeren, symmetrischen Form
+	{ 3, 4, { 0b010, 0b111, 0b101, 0b010 } },						// kleiner Exploder: dehnt sich symmetrisch aus
+	{ 4, 3, { 0b0011, 0b1110, 0b0100 } },							// "Century": entwickelt sich einige Dutzend Generationen lang
+	{ 4, 3, { 0b1011, 0b1110, 0b0100 } },							// B-Heptomino: wächst unruhig
+};
+#define LIFE_PATTERN_COUNT	(sizeof(lifePatterns) / sizeof(lifePatterns[0]))
+
+static uint8_t  lifeAge[LIFE_CELLS];		// 0 = tot, sonst Alter in Generationen (1 = in dieser Generation geboren)
+static uint8_t  lifeHue[LIFE_CELLS];		// Farbnummer der Zelle; bleibt nach dem Tod stehen, damit sie in ihrer Farbe ausglimmt
+static uint8_t  lifeDepth[LIFE_CELLS];		// "Tiefe": die wievielte Generation seit der Startfigur diese Zelle ist (Startfigur = 0)
+static uint8_t  lifeFade[LIFE_CELLS];		// für Zellen, die in DIESER Generation gestorben sind: ihre letzte Helligkeit (sonst 0)
+static uint8_t  lifeNextAge[LIFE_CELLS];	// Zwischenspeicher für die nächste Generation: alle Zellen müssen aus dem ALTEN Bild
+static uint8_t  lifeNextHue[LIFE_CELLS];	// berechnet werden, erst danach wird umgeschaltet
+static uint32_t lifeRng;					// Zustand des Zufallsgenerators
+static uint32_t lifeGen;					// Nummer der Generation, die gerade im Feld steht
+static uint16_t lifeSinceSpawn;				// Generationen seit dem letzten neuen Spot
+static uint32_t lifeAlive;					// Anzahl lebender Zellen nach der letzten Generation
+static uint8_t  lifeSpotHue;				// Farbe des zuletzt gesetzten Spots
+
+// Zufallszahl 0..n-1 ("xorshift": drei Schiebe- und Mischschritte, schnell und für Lichteffekte zufällig genug).
+static uint32_t lifeRandom(uint32_t n) {
+	lifeRng ^= lifeRng << 13;
+	lifeRng ^= lifeRng >> 17;
+	lifeRng ^= lifeRng << 5;
+	return lifeRng % n;
+}
+
+// Helligkeit einer lebenden Zelle nach ihrem Alter: 255 bei der Geburt, fällt in LIFE_AGE_STEPS Generationen auf
+// LIFE_OLD_LEVEL, bleibt dort und sinkt in den letzten LIFE_FADE_AGES Generationen vor dem Alterstod auf LIFE_LAST_LEVEL.
+static uint8_t lifeLevel(uint8_t age) {
+	if (age <= 1) return 255;
+	if (age < LIFE_AGE_STEPS) return 255 - (255 - LIFE_OLD_LEVEL) * (age - 1) / (LIFE_AGE_STEPS - 1);
+	if (age <= LIFE_MAX_AGE - LIFE_FADE_AGES) return LIFE_OLD_LEVEL;
+	if (age >= LIFE_MAX_AGE) return LIFE_LAST_LEVEL;
+	return LIFE_OLD_LEVEL - (LIFE_OLD_LEVEL - LIFE_LAST_LEVEL) * (age - (LIFE_MAX_AGE - LIFE_FADE_AGES)) / LIFE_FADE_AGES;
+}
+
+// Platz der Zelle (x, y) in den Feldern oben. x und y dürfen bis zu einer Flächenbreite/-höhe außerhalb liegen:
+// "+ Breite, dann Rest der Division" führt auf der anderen Seite wieder herein (der Torus).
+static inline int lifeIndex(int x, int y) {
+	return ((y + MATRIX_HEIGHT) % MATRIX_HEIGHT) * MATRIX_WIDTH + (x + MATRIX_WIDTH) % MATRIX_WIDTH;
+}
+
+// Setzt einen neuen Spot: eine zufällige Figur aus lifePatterns, zufällig gespiegelt (so fliegen Gleiter und
+// Raumschiffe in verschiedene Richtungen), an eine Stelle, an der sie samt Rand frei liegt. Liefert false, wenn sich
+// keine freie Stelle gefunden hat.
+static bool lifeSpawn() {
+	const LifePattern& p = lifePatterns[lifeRandom(LIFE_PATTERN_COUNT)];	// "&" = kein Kopieren, nur ein zweiter Name für den Eintrag
+	const bool flipX = lifeRandom(2) != 0;
+	const bool flipY = lifeRandom(2) != 0;
+
+	for (int attempt = 0; attempt < LIFE_SPAWN_TRIES; attempt++) {
+		const int x0 = lifeRandom(MATRIX_WIDTH);
+		const int y0 = lifeRandom(MATRIX_HEIGHT);
+
+		bool isFree = true;
+		for (int dy = -LIFE_SPAWN_MARGIN; dy < p.h + LIFE_SPAWN_MARGIN && isFree; dy++) {
+			for (int dx = -LIFE_SPAWN_MARGIN; dx < p.w + LIFE_SPAWN_MARGIN; dx++) {
+				if (lifeAge[lifeIndex(x0 + dx, y0 + dy)] != 0) { isFree = false; break; }
+			}
+		}
+		if (!isFree) continue;
+
+		lifeSpotHue += LIFE_SPOT_HUE_STEP;
+		for (int dy = 0; dy < p.h; dy++) {
+			const uint8_t row = p.rows[flipY ? p.h - 1 - dy : dy];
+			for (int dx = 0; dx < p.w; dx++) {
+				const int bit = flipX ? dx : p.w - 1 - dx;		// ungespiegelt steht die linke Spalte im höchsten Bit
+				if (((row >> bit) & 1) == 0) continue;
+				const int i = lifeIndex(x0 + dx, y0 + dy);
+				lifeAge[i]   = 1;
+				lifeHue[i]   = lifeSpotHue;
+				lifeDepth[i] = 0;
+				lifeFade[i]  = 0;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+// Startbild: leeres Feld mit "spots" Startfiguren.
+static void lifeSeed(uint8_t spots) {
+	// Startwert aus sharedRand8 (hängt nur von Song und Part ab); 0 darf er nicht sein, sonst bliebe xorshift bei 0 stehen
+	lifeRng = 0x1234ABCDu ^ ((uint32_t)sharedRand8(1) << 24 | (uint32_t)sharedRand8(2) << 16 | (uint32_t)sharedRand8(3) << 8 | sharedRand8(4));
+	if (lifeRng == 0) lifeRng = 1;
+	lifeGen = 0;
+	lifeSinceSpawn = 0;
+	lifeAlive = 0;
+	lifeSpotHue = lifeRandom(256);
+	memset(lifeAge, 0, sizeof(lifeAge));
+	memset(lifeFade, 0, sizeof(lifeFade));
+	for (uint8_t k = 0; k < spots; k++) lifeSpawn();
+}
+
+// Rechnet eine Generation weiter.
+static void lifeStep() {
+	// Bis zu welcher Tiefe darf noch geboren werden? Normal LIFE_MAX_DEPTH, bei vollem Feld nur LIFE_CROWD_DEPTH.
+	const bool crowded = lifeAlive * 100 >= (uint32_t)LIFE_CELLS * LIFE_CROWD_PERCENT;
+	const uint8_t depthLimit = crowded ? LIFE_CROWD_DEPTH : LIFE_MAX_DEPTH;
+
+	// 1. Für jede Zelle die lebenden Nachbarn zählen und entscheiden, was aus ihr wird (Ergebnis in lifeNext...).
+	for (int y = 0; y < MATRIX_HEIGHT; y++) {
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			uint8_t n = 0;				// Anzahl lebender Nachbarn
+			uint8_t parentHue[3];		// Farben der ersten drei gefundenen (bei genau 3 Nachbarn sind das die Eltern)
+			uint8_t parentDepth = 0;	// größte Tiefe unter den Nachbarn
+			for (int dy = -1; dy <= 1; dy++) {
+				for (int dx = -1; dx <= 1; dx++) {
+					if (dx == 0 && dy == 0) continue;		// das ist die Zelle selbst
+					const int j = lifeIndex(x + dx, y + dy);
+					if (lifeAge[j] == 0) continue;
+					if (n < 3) parentHue[n] = lifeHue[j];
+					if (lifeDepth[j] > parentDepth) parentDepth = lifeDepth[j];
+					n++;
+				}
+			}
+
+			const int i = y * MATRIX_WIDTH + x;
+			lifeNextHue[i] = lifeHue[i];
+			if (lifeAge[i] != 0) {
+				// überlebt mit 2 oder 3 Nachbarn - außer sie hat ihr Höchstalter erreicht
+				lifeNextAge[i] = ((n == 2 || n == 3) && lifeAge[i] < LIFE_MAX_AGE) ? lifeAge[i] + 1 : 0;
+			} else if (n == 3 && parentDepth < depthLimit) {
+				lifeNextAge[i] = 1;
+				lifeNextHue[i] = parentHue[lifeRandom(3)] + lifeRandom(2 * LIFE_HUE_MUTATION + 1) - LIFE_HUE_MUTATION;
+				// Die Tiefe darf gleich an Ort und Stelle eingetragen werden: der Platz war bisher tot, und die Tiefe
+				// toter Zellen liest in diesem Durchgang niemand.
+				lifeDepth[i] = parentDepth + 1;
+			} else {
+				lifeNextAge[i] = 0;
+			}
+		}
+	}
+
+	// 2. Umschalten. Dabei merken, wer gerade gestorben ist (glimmt in diesem Schritt aus), und die Lebenden zählen.
+	uint32_t alive = 0;
+	for (int i = 0; i < LIFE_CELLS; i++) {
+		lifeFade[i] = (lifeAge[i] != 0 && lifeNextAge[i] == 0) ? lifeLevel(lifeAge[i]) : 0;
+		lifeAge[i]  = lifeNextAge[i];
+		lifeHue[i]  = lifeNextHue[i];
+		if (lifeAge[i] != 0) alive++;
+	}
+	lifeAlive = alive;
+
+	// 3. Nachschub: ein neuer Spot, wenn seit dem letzten genug Zeit vergangen UND wenig los ist - oder schon früher,
+	//    wenn das Feld fast leer ist. Nie mehr als einer auf einmal.
+	if (lifeSinceSpawn < 0xFFFF) lifeSinceSpawn++;
+	const bool calm  = alive * 100 < (uint32_t)LIFE_CELLS * LIFE_SPAWN_BELOW_PERCENT;
+	const bool empty = alive * 100 < (uint32_t)LIFE_CELLS * LIFE_MIN_ALIVE_PERCENT;
+	if ((calm && lifeSinceSpawn >= LIFE_SPAWN_EVERY) || (empty && lifeSinceSpawn >= LIFE_SPAWN_MIN_GAP)) {
+		if (lifeSpawn()) lifeSinceSpawn = 0;
+	}
+}
+
+// stepMillis = Dauer einer Generation in ms (Vorgabe 150: gut zu verfolgen; kleiner = hektischer, ab etwa 300 wirkt es wie Einzelbilder),
+// spots = so viele Startfiguren liegen am Anfang im Feld (Vorgabe 2; weitere kommen von selbst, sobald es ruhig wird).
+void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis, uint8_t spots) {
+	if (fxPartStart(durationMillis, nextPart)) lifeSeed(spots);
+
+	if (fxFrameDue(FX_REF_FRAME_MS)) {
+		if (stepMillis == 0) stepMillis = 1;
+		const uint32_t ms  = millisCounterForProgChange;
+		const uint32_t gen = ms / stepMillis;						// diese Generation ist jetzt dran
+		if (gen > lifeGen + LIFE_MAX_CATCHUP) lifeGen = gen - LIFE_MAX_CATCHUP;
+		while (lifeGen < gen) { lifeStep(); lifeGen++; }
+
+		// frac = wie weit der laufende Schritt schon ist (0 = Generation beginnt gerade, 255 = gleich kommt die nächste)
+		const uint8_t frac     = (uint8_t)((ms % stepMillis) * 255 / stepMillis);
+		const uint8_t birthEnd = (uint8_t)(255 * LIFE_BIRTH_PERCENT / 100);
+		const uint8_t drift    = (uint8_t)(((lifeGen * 256 + frac) * LIFE_HUE_DRIFT) >> 8);	// gemeinsames Weiterwandern der Farben, gleitend
+		const bool useScheme   = colorSchemeActive();
+		const CRGBPalette16 pal = schemePalette();					// Verlauf über die Schemafarben (nur mit Schema benutzt)
+
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				int i = y * MATRIX_WIDTH + x;
+				uint8_t level;		// Helligkeit der Zelle in diesem Bild
+				uint8_t white = 0;	// Weiß-Anteil (nur kurz nach der Geburt)
+
+				if (lifeAge[i] == 1) {
+					// gerade geboren: blendet ein, das beigemischte Weiß klingt über den Schritt ab
+					level = (frac >= birthEnd) ? 255 : (uint8_t)((uint16_t)frac * 255 / birthEnd);
+					white = scale8(LIFE_BIRTH_WHITE, 255 - frac);
+				} else if (lifeAge[i] != 0) {
+					// lebt schon länger: gleitet von der Helligkeit des vorigen Alters zu der des jetzigen
+					level = lerp8by8(lifeLevel(lifeAge[i] - 1), lifeLevel(lifeAge[i]), frac);
+				} else if (lifeFade[i] != 0) {
+					// gerade gestorben: glimmt aus. Zweimal scale8 = quadratisch: fällt erst schnell, läuft dann lange aus
+					level = scale8(lifeFade[i], scale8(255 - frac, 255 - frac));
+				} else {
+					level = 0;
+				}
+
+				CRGB col = CRGB::Black;
+				if (level != 0) {
+					uint8_t idx = lifeHue[i] + drift;
+					col = useScheme ? ColorFromPalette(pal, idx) : CRGB(CHSV(idx, 255, 255));
+					if (white != 0) col = blend(col, CRGB::White, white);
+					col.nscale8_video(level);
+				}
+				leds[matrix->XY((uint8_t)x, (uint8_t)y)] = col;
+			}
+		}
+	}
+	fxShow();
 }
 
 //==================================================================

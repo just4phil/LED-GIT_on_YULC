@@ -372,6 +372,21 @@ effekte:
     urteil:
     notiz: "neu am 09.10.2026 nach einer Vorlage des Users. Sein Urteil am selben Tag: \"die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden mit eher pulsierenden effekten auf den anderen geräten\" - deshalb in Songs als SCENE_DNA / SCENE_DNA_FLIP verwenden, nicht als fx für alle Geräte. energie/traegt_takte geschätzt"
 
+  progGameOfLife:
+    wirkung: "Conways Game of Life in Farbe: Zellen leben und sterben nach zwei Nachbar-Regeln, daraus entstehen Muster, die wachsen, wandern, blinken und zerfallen. Das Feld beginnt leer mit wenigen kleinen Startfiguren (Gleiter, Raumschiffe, kleine Keime), jede in eigener Farbe aus dem Schema-Verlauf (ohne Schema Regenbogen); Kinder erben die Farbe eines Elternteils, eine Struktur bleibt so erkennbar. Geburt blendet hell ein, alte Zellen werden ruhiger und sterben nach 40 Generationen, Gestorbene glimmen aus; jeder Spot entwickelt sich höchstens 80 Generationen (12 s) und verlischt dann; wird es ruhig, kommt ein neuer Spot dazu"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: fliessend
+    beat: frei           # festes Tempo (stepMillis, Vorgabe 150 ms je Generation), mit Absicht nicht im Beat
+    farbe: schema        # ohne Schema Regenbogen
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_LIFE"}
+    regler: "stepMillis (ms je Generation, Vorgabe 150; kleiner = hektischer, ab etwa 300 Einzelbilder); spots (Startfiguren am Anfang, Vorgabe 2); LIFE_SPAWN_EVERY / LIFE_SPAWN_BELOW_PERCENT (wie oft und bis zu welcher Fülle Nachschub kommt), LIFE_MAX_AGE, LIFE_MAX_DEPTH (Lebensdauer eines Spots), LIFE_CROWD_PERCENT, LIFE_OLD_LEVEL und die Figurenliste lifePatterns in fxMatrixSim.cpp"
+    demo: "92: Part 48 (ohne Schema), 49 (NEON) als Szene SCENE_LIFE"
+    urteil:
+    notiz: "neu am 12.10.2026 (Frage des Users: \"kann man das game of life als effekt bauen?\", Wunsch: \"hübsch farbig\"). Abnahme offen. Nach seiner Regel vom 09.10.2026 in Songs als SCENE_LIFE verwenden, nicht als fx für alle Geräte. Startbild je Song/Part immer gleich. Die erste Fassung lief im Beat; sein Urteil dazu: \"besser unabhängig vom beat animieren, damit man die entwicklung gut nachvollziehen kann\" - seitdem festes Tempo. Zweites Urteil (dicht gefülltes Zufallsfeld): \"es fällt mir schwer die entwicklung einzelner strukturen zu sehen. vielleicht ist es einfach zu viel? besser ein paar wenige spots die sich dann entwickeln?\" - seitdem leeres Feld mit wenigen Startfiguren. energie/traegt_takte geschätzt"
+
   progEqualizer:
     wirkung: "Springende Pegelbalken (ohne Audio, simuliert)"
     art: raster
@@ -1007,6 +1022,15 @@ szenen:
     genutzt: 0
     urteil:
     notiz: "neu am 09.10.2026 auf Wunsch des Users (beide DNA-Bewegungen kombinieren). Demo 92 Part 43, Abnahme offen"
+  SCENE_LIFE:
+    wirkung: "Matrix: Game of Life in Farbe - wenige Startfiguren, die sich entwickeln, in eigenem festem Tempo (150 ms je Generation, unabhängig vom Beat). Übrige Geräte blitzen auf jeden Beat in ihrer Schemafarbe auf und klingen ab"
+    geraete: {matrix: progGameOfLife, rest: progBeatFlash}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 12.10.2026, Demo 92 Part 48 und 49, Abnahme offen (auch: ob der Beat-Blitz der anderen Geräte dazu passt - Claudes Vorschlag)"
   SCENE_FADEOUT:
     wirkung: "jedes Gerät in seiner Schemafarbe, blendet über die ganze Partdauer weich nach Schwarz aus"
     geraete: {alle: progFadeOut}

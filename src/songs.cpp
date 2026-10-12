@@ -4249,8 +4249,20 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(44);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(48);	break;
+
+	// SCENE_LIFE (neu am 12.10.2026, Frage des Users: "kann man das game of life als effekt bauen?", Wunsch: "hübsch
+	// farbig"): auf der Matrix Conways Game of Life in Farbe (progGameOfLife), eine Generation alle 150 ms - mit Absicht
+	// nicht im Beat (Wunsch des Users nach der ersten Fassung: so kann man die Entwicklung verfolgen). Das Feld
+	// beginnt leer mit zwei kleinen Startfiguren in eigener Farbe, weitere kommen dazu, wenn es ruhig wird (sein
+	// zweiter Wunsch: "besser ein paar wenige spots die sich dann entwickeln"). Neue Zellen blenden hell ein, alte
+	// werden ruhiger, gestorbene glimmen aus; Kinder erben die Farbe eines Elternteils.
+	// Gitarre, Bass und Lampen blitzen auf jeden Beat in ihrer Schemafarbe auf.
+	//   48: ohne Farbschema - jeder Spot in einer anderen Regenbogenfarbe. 24 s = 160 Generationen.
+	//   49: im Farbschema NEON - dieselben Regeln, die Farben kommen aus dem Verlauf über die Schemafarben.
+	case 48:	setColorScheme(SCHEME_RANDOM);	scene(SCENE_LIFE, 24000, DEMO_NR(49), bpm);	break;
+	case 49:	setColorScheme(SCHEME_NEON);	scene(SCENE_LIFE, 24000, DEMO_NR(44), bpm);	break;
 
 	// fxSoft auf dem Stern (neu am 09.10.2026, Wunsch des Users: "eine option einbauen, dass man die farbwechsel auch
 	// faden kann"): progStern und progSternNeu blenden im letzten Anteil ihres Farbschritts weich in das nächste Farbpaar,

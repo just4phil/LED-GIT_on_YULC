@@ -62,6 +62,8 @@ enum SceneID : uint8_t {
 						// dunkel im Moment des Tauschs, danach haben auch die Bühnenhälften ihre Farben getauscht
 	SCENE_DNA_FLIP_SCROLL,	// wie SCENE_DNA_FLIP, zusätzlich schiebt sich die Helix auf der Matrix langsam quer durchs Bild
 						// (eine Windungslänge in 4 Takten); die anderen Geräte pulsieren wie bei SCENE_DNA_FLIP
+	SCENE_LIFE,			// Matrix: Game of Life in Farbe (progGameOfLife), wenige Startfiguren, die sich entwickeln; festes Tempo unabhängig vom Beat.
+						// Die anderen blitzen auf jeden Beat in ihrer Schemafarbe auf und klingen ab (progBeatFlash)
 };
 
 #define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen

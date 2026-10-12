@@ -504,6 +504,25 @@ void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis
 CRGB dnaStrandColor(uint8_t n);		// Farbe von Strang 0 / 1 ohne eigene Angabe (Farbschema oder Cyan / Magenta)
 // Als Szene für alle Geräte: SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL (scenes.h) - Matrix zeigt die Helix, die übrigen pulsieren dazu.
 
+// Game of Life (Conways "Spiel des Lebens") in Farbe: jede LED ist eine Zelle, die nach zwei einfachen Nachbar-Regeln
+// lebt oder stirbt - daraus entstehen Muster, die wachsen, wandern, blinken und zerfallen.
+// Das Feld beginnt leer mit wenigen kleinen Startfiguren ("Spots": Gleiter, Raumschiffe, kleine Keime), jede in
+// eigener Farbe - so kann man zusehen, wie sich eine einzelne Struktur entwickelt. Wird es ruhig, kommt ein neuer
+// Spot dazu. Damit das Feld übersichtlich bleibt, weicht der Effekt an zwei Stellen von den reinen Regeln ab: eine
+// Zelle stirbt nach 40 Generationen an Altersschwäche (liegengebliebene Reste verschwinden von selbst), und aus einem
+// Spot wird nach 80 Generationen nichts mehr geboren (jede Struktur hat ihre Zeit und verlischt dann).
+//   stepMillis  Dauer einer Generation in ms (Vorgabe 150). Ein festes Tempo, mit Absicht NICHT der Beat des Songs:
+//               die Generationen folgen so dicht, dass man die Entwicklung der Muster verfolgen kann.
+//               Wie bei progDNA KEINE Wartezeit je Schritt: die Generationen werden aus der Zeit seit Part-Beginn
+//               gezählt und wechseln deshalb genau im Raster.
+//   spots       so viele Startfiguren liegen am Anfang im Feld (Vorgabe 2).
+// Farben: jeder Spot hat eine eigene Farbe aus dem Verlauf über das Farbschema (ohne Schema: Regenbogen), Kinder erben
+// sie von einem Elternteil - eine Struktur behält ihre Farbe; wo zwei zusammenstoßen, mischen sie sich. Neue Zellen
+// blenden hell ein, alte werden ruhiger, gestorbene glimmen aus.
+// Derselbe Part zeigt bei jedem Durchlauf dasselbe Spiel (fester Startwert). Stellgrößen: LIFE_... in fxMatrixSim.cpp.
+void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int stepMillis = 150, uint8_t spots = 2);
+// Als Szene für alle Geräte: SCENE_LIFE (scenes.h) - Matrix zeigt das Spiel in seinem eigenen Tempo, die übrigen blitzen im Beat.
+
 // Equalizer: Balken von unten, 5px breit + 1px Lücke, grün→gelb→orange→rot, pro Band konfigurierbarer Mittelwert
 // Es wird kein Ton gemessen: die Balken tanzen zufällig. centers = Liste der mittleren Höhen je Balken (Pixel),
 // numCenters = Länge der Liste, deviation = so weit schwankt ein Balken um seine mittlere Höhe.
