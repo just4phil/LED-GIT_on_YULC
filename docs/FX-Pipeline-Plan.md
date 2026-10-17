@@ -11,7 +11,37 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 12.10.2026 (neuer Effekt `progGameOfLife` + `SCENE_LIFE`: abgenommen und gepusht; Einbau in Song 0 auf der Matrix gebaut, Test offen, nicht committet)
+Zuletzt aktualisiert: 17.10.2026 (farbiger Regen `progMatrixRainColor` und tempoabhängige WAVE-Szenen: committet und gepusht, Abnahme auf der Hardware offen)
+
+- **17.10.2026, WAVE-Szenen im Tempo - committet und gepusht, Abnahme offen.** Anlass: Dancing On My Own,
+  chorus 1b (`SCENE_WAVE_LR`): die Matrix blitzte durch feste 100 ms je Bühnenposition 200 ms nach dem Beat, Lampe 2
+  400 ms (Beat bei 122 BPM = 492 ms). Regel des Users: „solche effekte müssen immer auf dem beat sein! -> bitte auf
+  das Tempo den songs anpassen.“ Umsetzung: `WAVE_STEP_MS` (scenes.h) ersetzt durch `WAVE_BEAT_DIVISOR` = 16,
+  `scene()` rechnet `waveStep = beatMs / 16` -> die ganze Welle dauert eine 16tel-Note (bei 122 BPM 30 ms je
+  Position). Das Tempo kommt schon über den bpm-Parameter von `scene()`, nichts Neues zu speichern. Gilt für
+  `SCENE_WAVE_LR/RL/OUT` in allen Songs. Demo 92: Part 57 (122 BPM, NEON) vor 53; Doku-Tabelle +11 s; Simulator in
+  `LED-Effekte-und-Szenen.html` rechnet mit. Nächster Schritt: Abnahme durch den User (Demo 92 Part 57).
+
+- **17.10.2026, farbiger Matrix-Regen `progMatrixRainColor` - committet und gepusht, Abnahme offen.** Anlass: User bei Dancing On My Own,
+  verse 1 ab Takt 12: „mir gefällt die weiße farbe des regens auf der matrix nicht. das wirkt sehr kühl“. Ursache:
+  `SCENE_VERSE` auf der Matrix = `matrixMovieFX(…, 80, deviceColor())`, die Matrix (STAGE_POS 2) bekommt die dritte
+  Schemafarbe (bei ICE Weißblau), und `getMatrixColorTinted()` mischt die vordere Schweifhälfte nach Grau. Vorschlag
+  A + B vom User angenommen: (A) neue Fassung ohne Grau, jede Spur eigene Schemafarbe, Verlauf im Schweif vom Kopf
+  (Schemafarbe) zur nächsten Schemafarbe am Ende, nur das Kopf-Pixel leicht aufgehellt; (B) der Verlauf wandert über
+  die Zeit seit Partstart (`cycleMillis`) durch das Schema. `SCENE_VERSE` (Matrix) wird umgestellt, der alte
+  `matrixMovieFX` bleibt für die alten Songs. Demo 92: neue Parts 53 (ICE) und 55 (ohne Schema) an den Anfang.
+  - Code: `src/fxMatrixRain.cpp` (am Ende), Deklaration in `FXprograms.h`:
+    `progMatrixRainColor(dauer, folgePart, reduceSpeed, cycleMillis = 0)`. Farben aus `schemePalette()` (je Schritt
+    neu gebaut, damit `fade:` wirkt); Spur = zufällige Schemafarbe `k * 256 / n`, Schweif-Verlauf bis zur nächsten
+    Schemafarbe, Helligkeit quadratisch abfallend, Kopf-Pixel mit `RAINC_HEAD_WHITE` = 70 Weiß. `SCENE_VERSE`
+    (Matrix, `scenes.cpp`) = `progMatrixRainColor(…, 80, beatMs * 64)` -> ein Umlauf in 16 Takten. Wirkt sofort in
+    allen Songs mit `SCENE_VERSE` (Dancing On My Own verse 1/1b/2 u. a.), keine Neugenerierung nötig.
+  - Demo 92: Part 53 (ICE, 16 s) und 55 (ohne Schema, 16 s) stehen am Anfang (Nummern 50/51 waren belegt), Part 0
+    zeigt die 53; Doku-Tabelle: offene Zeiten +38 s, Demo ca. 10:35 min. Katalog: neuer Eintrag, Notiz bei
+    `matrixMovieFX` und `SCENE_VERSE`.
+  - Gebaut: alle fünf Envs mit `build_ota.py --backup` (`FW_VERSION=1792268546`, vorheriger Stand in
+    `ota/backup/2026-10-17_3`). Nicht geprüft: Wirkung auf den LEDs.
+  - Nächster Schritt: Abnahme durch den User (Demo 92 Part 53/55, Dancing On My Own ab Takt 12).
 
 - **12.10.2026, neuer Effekt `progGameOfLife` (Conways „Game of Life“, Frage des Users: „kann man das game of life
   als effekt bauen?“, nach dem Vorschlag: „ja top!...aber es sollte hübsch farbig werden“) - gebaut, Abnahme offen,

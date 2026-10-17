@@ -15,7 +15,8 @@
 // fxMatrixRain.cpp - der "Matrix"-Regen
 //=====================================================================
 // Fallende bzw. laufende Leuchtspuren wie im gleichnamigen Film: progMatrixHorizontal, progMatrixVertical (alte
-// Fassungen mit fest ausgeschriebenen Spuren) und matrixMovieFX (neue Fassung). Parameter: FXprograms.h.
+// Fassungen mit fest ausgeschriebenen Spuren), matrixMovieFX (neue Fassung) und progMatrixRainColor (farbige Fassung
+// mit Verlauf im Schweif, für SCENE_VERSE). Parameter: FXprograms.h.
 // Bausteine (fxBegin, fxEvery): fxBase.h. Gemeinsame Zähler (zaehler, progMatrixZaehler ...): fxState.h.
 
 //==================================================================
@@ -1023,4 +1024,80 @@ void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int redu
 
 void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 	matrixMovieFXCore(durationMillis, nextPart, reduceSpeed, CRGB::Black, true, 0);
+}
+
+//==================================================================
+//=========== progMatrixRainColor ==================================
+//==================================================================
+
+// Farbiger Matrix-Regen (17.10.2026, Wunsch des Users: der Regen von matrixMovieFX wirkte ihm zu weiß und zu kühl).
+// Aufbau wie matrixMovieFX - jede Spalte (bzw. Zeile) hat einen eigenen Stream mit Kopf, Schweif und Pause -, aber:
+//   - kein Grau: der Schweif bleibt bis zum Kopf farbig, nur das Kopf-Pixel selbst wird leicht aufgehellt
+//     (RAINC_HEAD_WHITE), damit man die "Spitze" der Spur noch erkennt;
+//   - jede Spur bekommt eine eigene Farbe aus dem Farbschema (ohne Schema: Regenbogen);
+//   - im Schweif liegt ein Verlauf: vorn die Farbe der Spur, zum Ende hin die nächste Schemafarbe;
+//   - mit cycleMillis > 0 wandert der ganze Verlauf langsam weiter durch das Schema, einmal herum in cycleMillis.
+//     Gerechnet wird aus der Zeit seit Partstart (millisCounterForProgChange), nicht aus einem eigenen Zähler.
+// Die Farben kommen aus schemePalette() (colorSchemes.cpp): ein Verlauf über alle Schemafarben, einmal rundherum.
+// Darin hat eine Farbe eine Nummer 0..255 ("Platz im Verlauf"); bei n Schemafarben liegt Farbe k bei k * 256 / n.
+#define RAINC_TRAIL		14		// Länge des Schweifs in Pixeln (wie bei matrixMovieFX)
+#define RAINC_HEAD_WHITE	70		// so viel Weiß wird dem Kopf-Pixel beigemischt (0..255; 70 = gut ein Viertel)
+
+void progMatrixRainColor(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, unsigned long cycleMillis) {
+
+#define RAINC_BUF (MATRIX_WIDTH > MATRIX_HEIGHT ? MATRIX_WIDTH : MATRIX_HEIGHT)
+	static int16_t sHead[RAINC_BUF];	// Position des Kopfes jedes Streams (negativ = noch vor dem Rand)
+	static uint8_t sHue[RAINC_BUF];		// Farbe des Streams als Platz im Schema-Verlauf (0..255)
+	static uint8_t sGap[RAINC_BUF];		// so viele Schritte wartet der Stream noch, bevor er (wieder) losläuft
+
+	const bool vertical   = (MATRIX_WIDTH > MATRIX_HEIGHT);			// breite Fläche: Regen fällt senkrecht in den Spalten
+	const int  numStreams = vertical ? MATRIX_WIDTH : MATRIX_HEIGHT;	// Anzahl der Streams
+	const int  streamLen  = vertical ? MATRIX_HEIGHT : MATRIX_WIDTH;	// Strecke, die ein Stream durchläuft
+
+	uint8_t n = schemeSize();			// Anzahl der Schemafarben (ohne Schema: 5 = Regenbogen)
+	uint8_t step = 256 / n;				// Abstand zweier Schemafarben im Verlauf
+
+	if (fxBegin(durationMillis, nextPart)) {
+		millisCounterTimer = 100;		// erster Schritt sofort
+		for (int s = 0; s < numStreams; s++) {
+			sHue[s]  = random(0, n) * step;	// eine der Schemafarben
+			// Köpfe gleichmäßig über die Strecke verteilen, damit nicht alle Spuren gleichzeitig oben anfangen
+			sHead[s] = (int16_t)((long)random(0, streamLen + RAINC_TRAIL) - RAINC_TRAIL);
+			sGap[s]  = 0;
+		}
+	}
+
+	if (fxEvery(millisCounterTimer, reduceSpeed)) {
+		clearAll();
+
+		// Palette bei jedem Schritt neu bauen: ein "fade:" im Song verändert die Schemafarben im Lauf des Parts
+		CRGBPalette16 pal = schemePalette();
+		// B: Wanderung des Verlaufs - Bruchteil eines Umlaufs seit Partstart, auf 0..255 umgerechnet
+		uint8_t drift = cycleMillis ? (uint8_t)((unsigned long long)millisCounterForProgChange * 256 / cycleMillis) : 0;
+
+		for (int s = 0; s < numStreams; s++) {
+			if (sGap[s] > 0) { sGap[s]--; continue; }
+
+			for (int j = 0; j < RAINC_TRAIL; j++) {		// j = 0 ist der Kopf, j = RAINC_TRAIL - 1 das Schweifende
+				int i = sHead[s] - j;
+				if (i < 0 || i >= streamLen) continue;
+				// Farbe: vom Platz der Spur (Kopf) bis zur nächsten Schemafarbe (Schweifende), dazu die Wanderung
+				uint8_t hue = sHue[s] + drift + j * step / RAINC_TRAIL;
+				// Helligkeit: vorn voll, nach hinten quadratisch weniger (wirkt weicher als ein gerader Abfall)
+				uint8_t lin = 255 - j * 255 / RAINC_TRAIL;
+				CRGB c = ColorFromPalette(pal, hue, scale8(lin, lin), LINEARBLEND);
+				if (j == 0) c = blend(c, CRGB::White, RAINC_HEAD_WHITE);
+				if (vertical) matrix->drawPixel(s, i, c);
+				else          matrix->drawPixel(i, s, c);
+			}
+
+			sHead[s]++;		// einen Schritt weiter
+			if (sHead[s] - RAINC_TRAIL >= streamLen) {	// auch das Schweifende ist aus dem Bild: Stream beginnt neu
+				sHead[s] = (int16_t)(-random(1, RAINC_TRAIL));
+				sHue[s]  = random(0, n) * step;			// neue Spur, neue Schemafarbe
+				sGap[s]  = (uint8_t)random(0, 25);		// unregelmäßige Pause wie im Film
+			}
+		}
+	}
+	fxShow();
 }

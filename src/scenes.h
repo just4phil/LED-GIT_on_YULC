@@ -66,7 +66,12 @@ enum SceneID : uint8_t {
 						// Die anderen blitzen auf jeden Beat in ihrer Schemafarbe auf und klingen ab (progBeatFlash)
 };
 
-#define WAVE_STEP_MS	100		// Verzögerung pro Bühnenposition bei den WAVE-Szenen
+// Verzögerung pro Bühnenposition bei den WAVE-Szenen, als Bruchteil eines Beats: 16 = eine 64stel-Note (Beat / 16).
+// Die ganze Welle (4 Schritte über 5 Positionen) dauert damit genau eine 16tel-Note und sitzt bei jedem Tempo auf dem
+// Beat (Regel des Users, 17.10.2026: "solche effekte müssen immer auf dem beat sein!"). Bei 122 BPM sind das 30 ms je
+// Position, 123 ms für die ganze Welle. Früher fest 100 ms je Position - bei schnellen Songs zog sich die Welle über
+// fast einen ganzen Beat, und die Geräte wirkten wie aus dem Takt.
+#define WAVE_BEAT_DIVISOR	16
 
 void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t bpm);
 

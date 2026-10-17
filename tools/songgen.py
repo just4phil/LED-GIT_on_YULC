@@ -24,7 +24,8 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
                            Text für den User (--vorschlag schreibt ihn in die Tabelle), keine Wirkung auf den Code.
     generated.cpp          erzeugter Code dieses Songs
     <Song>.mid             MIDI-Datei fürs DAW, bei jeder Generierung neu: Kanal 10, CC 22 = Song-ID am StartBit und
-                           CC 23 = Part-Nummer auf jedem Part-Anfang (siehe midi_bytes(); nur schreiben: --midi)
+                           CC 23 = Part-Nummer auf jedem Part-Anfang (siehe midi_bytes(); nur schreiben: --midi -
+                           geht auch bei eingefrorenem Code ohne show.yaml, dann aus generated.cpp: frozen_timeline())
     versionen/<Zeit>/      Kopie von struktur.xlsx + show.yaml + generated.cpp bei jeder Generierung (+ info.yaml)
 Die Struktur steht nur in der Tabelle, die Show ordnet per Partname zu. Die Gestaltung steht nur in show.yaml.
 
@@ -2551,13 +2552,51 @@ def write_midi(song_dir, song, timeline):
 			f"{count} x CC {MIDI_CC_PART} = Part-Nummer auf den Part-Anfängen)" + "".join(f"\n   {n}" for n in notes))
 
 
+def frozen_timeline(song_dir, song):
+	"""Zeitplan für die MIDI-Datei eines Songs, dessen Code "eingefroren" ist (generated.cpp ohne show.yaml, z. B.
+	Dancing On My Own). Ohne Show lässt sich der Zeitplan nicht aus der Tabelle berechnen - hier wird er deshalb aus
+	den Kommentaren der case-Zeilen gelesen, die der Generator damals geschrieben hat ("// verse 1  8 T  15738ms
+	@0:21.393"). So passen die Part-Nummern in der MIDI-Datei genau zu dem Code, der in der Firmware läuft.
+	Rückgabe: Liste im Format von build_timeline(), soweit midi_bytes() es braucht (sec mit name und _von, bpm,
+	start, case). Ausgelassen werden Tails und der Schluss-Black: sie sind keine eigene Zeile der Tabelle und werden
+	beim Generieren auch nicht in die MIDI-Datei geschrieben."""
+	bpb = int(song.get("beats_per_bar", 4))
+	bpm = float(song["bpm"])
+	bar_ms = bpb * 60000.0 / bpm			# Länge eines Takts in ms
+	first_von = song["sections"][0]["_von"]
+	offset = midi_offset_ms(song)			# so weit hinter Takt "first_von" kommt das Start-MIDI (= Zeit 0 des Codes)
+	timeline = []
+	for line in (song_dir / GEN_FILE).read_text(encoding="utf-8").splitlines():
+		# Lauftext der Matrix ("case 1:	// Lauftext bis 0:21.393, ..."): bis dahin keine Part-Sprünge (wie beim Generieren)
+		m = re.match(r"^	case \d+:	// Lauftext bis (\d+):(\d+\.\d+)", line)
+		if m:
+			join = int(m.group(1)) * 60000 + round(float(m.group(2)) * 1000)
+			song["_scroll_plans"] = {"SCROLLMATRIX": {"join": {"start": join}}}
+			continue
+		m = FROZEN_CASE_RE.match(line)
+		if not m or "(tail)" in m.group(2) or m.group(2).startswith("BLACK (Ende)"):
+			continue
+		start = int(m.group(4)) * 60000 + round(float(m.group(5)) * 1000)	# ms seit dem Start-MIDI
+		# Zeit -> Taktnummer der Tabelle (Bruchteile erlaubt; midi_bytes rechnet daraus die Ticks)
+		von = first_von + (offset + start) / bar_ms
+		timeline.append({"sec": {"name": m.group(2).strip(), "_von": von}, "bpm": bpm, "start": start,
+						 "dur": int(m.group(3)), "case": int(m.group(1))})
+	if not timeline:
+		raise SongError(f"{GEN_FILE}: keine Parts gefunden")
+	return timeline
+
+
 # <Song> --midi: nur die MIDI-Datei schreiben (kein neuer Code). Ohne <Song>: für alle generierten Songs.
 # Gerechnet wird aus Tabelle + Show, wie sie jetzt sind - passt also nur zum Code, wenn der Song "aktuell" ist.
+# Ein Song ohne show.yaml, aber mit generated.cpp (eingefroren): Zeitplan aus dem Code selbst (frozen_timeline).
 def cmd_midi(song_dirs_):
 	rc = 0
 	for song_dir in song_dirs_:
 		try:
 			song = load_song(song_dir)
+			if not (song_dir / SHOW_FILE).exists() and (song_dir / GEN_FILE).exists():
+				print(write_midi(song_dir, song, frozen_timeline(song_dir, song)))
+				continue
 			timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))
 			if errors:
 				raise SongError("; ".join(errors))

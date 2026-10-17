@@ -212,7 +212,22 @@ effekte:
     alt: {parts: 5, takte: 37, wofuer: "Instrumental, Break"}
     regler: "reduceSpeed, baseColor, maxActive"
     urteil: gern
-    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet). Bis 17.10.2026 Matrix-Teil von SCENE_VERSE, dort mit der Gerätefarbe (bei ICE Weißblau) - Urteil des Users bei Dancing On My Own: \"mir gefällt die weiße farbe des regens auf der matrix nicht. das wirkt sehr kühl\" (der Schweif bleicht zum Kopf hin nach Grau aus). Seitdem dort progMatrixRainColor"
+
+  progMatrixRainColor:
+    wirkung: "Farbiger Matrix-Regen: Spuren fallen in den Spalten, jede in eigener Schemafarbe, im Schweif ein Verlauf vom Kopf zur nächsten Schemafarbe, kein Grau; nur der Kopf leicht aufgehellt. Der ganze Verlauf wandert langsam durch das Schema"
+    art: raster
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: wandernd
+    beat: frei
+    farbe: schema        # ohne Schema Regenbogen
+    traegt_takte: "8-16"
+    alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_VERSE"}
+    regler: "reduceSpeed (ms je Schritt, in SCENE_VERSE 80), cycleMillis (ein Umlauf des Verlaufs, in SCENE_VERSE 16 Takte; 0 = steht); RAINC_TRAIL, RAINC_HEAD_WHITE in fxMatrixRain.cpp"
+    demo: "92: Part 53 (ICE), 55 (ohne Schema) als SCENE_VERSE"
+    urteil:
+    notiz: "neu am 17.10.2026 (Vorschlag A + B nach dem Urteil zum weißen Regen, vom User angenommen: \"ja, A und B umsetzen\"). Abnahme offen. energie/traegt_takte geschätzt"
 
   progMatrixHorizontal:
     wirkung: "Spuren laufen waagerecht durch, verblassen nach Weiß"
@@ -824,14 +839,14 @@ szenen:
     urteil:
     notiz:
   SCENE_VERSE:
-    wirkung: "dezent im Beat: Zonen der Gitarre, Lichtschuss in den Lampen, Matrix-Regen"
-    geraete: {gitarre: progZoneBeat, lampe: progLampPulse, matrix: matrixMovieFX}
+    wirkung: "dezent im Beat: Zonen der Gitarre, Lichtschuss in den Lampen, farbiger Matrix-Regen"
+    geraete: {gitarre: progZoneBeat, lampe: progLampPulse, matrix: progMatrixRainColor}
     rolle: [flaeche]
     energie: [2, 3]
     bewegung: pulsierend
     genutzt: 9
     urteil:
-    notiz:
+    notiz: "Matrix seit 17.10.2026 progMatrixRainColor statt matrixMovieFX (User: Regen \"sehr kühl\", zu weiß)"
   SCENE_BUILDUP:
     wirkung: "alles lädt sich über den ganzen Part auf, Explosion genau auf der Part-Grenze"
     geraete: {gitarre: progChargeBlast, lampe: progLampFill, matrix: progStarfield}
@@ -867,7 +882,7 @@ szenen:
     bewegung: wandernd
     genutzt: 4
     urteil:
-    notiz:
+    notiz: "seit 17.10.2026 tempoabhängig: Verzögerung je Position = Beat / 16, die ganze Welle dauert eine 16tel-Note (vorher fest 100 ms je Position). Regel des Users bei Dancing On My Own (Matrix blitzte 200 ms nach dem Beat): \"solche effekte müssen immer auf dem beat sein!\""
   SCENE_WAVE_RL:
     wirkung: "wie WAVE_LR, von rechts nach links"
     geraete: {alle: progBeatFlash}
@@ -876,7 +891,7 @@ szenen:
     bewegung: wandernd
     genutzt: 1
     urteil:
-    notiz:
+    notiz: "Verzögerung wie WAVE_LR tempoabhängig (Beat / 16 je Position, seit 17.10.2026)"
   SCENE_WAVE_OUT:
     wirkung: "Blitz läuft pro Beat von der Mitte (Drums) nach außen"
     geraete: {alle: progBeatFlash}
@@ -885,7 +900,7 @@ szenen:
     bewegung: wandernd
     genutzt: 3
     urteil:
-    notiz:
+    notiz: "Verzögerung wie WAVE_LR tempoabhängig (Beat / 16 je Position, seit 17.10.2026)"
   SCENE_PINGPONG:
     wirkung: "pro Beat leuchtet genau ein Gerät, springt über die Bühne"
     geraete: {alle: progPingPong}

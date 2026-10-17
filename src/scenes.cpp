@@ -502,18 +502,19 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	if (bpm == 0) bpm = 120;			// Schutz vor Division durch 0
 	unsigned int beatMs = 60000 / bpm;	// Länge eines Beats in ms
 	CRGB me = deviceColor();			// die Farbe dieses Geräts aus dem Farbschema des Parts
+	unsigned int waveStep = beatMs / WAVE_BEAT_DIVISOR;	// WAVE-Szenen: Verzögerung je Bühnenposition, folgt dem Tempo (scenes.h)
 
 	//--- Szenen, die auf allen Geräten gleich funktionieren ---
 	// "return" beendet scene() sofort: für diese Szenen ist damit alles erledigt.
 	switch (sceneID) {
 	case SCENE_WAVE_LR:
-		progBeatFlash(durationMillis, nextPart, bpm, me, STAGE_POS * WAVE_STEP_MS);
+		progBeatFlash(durationMillis, nextPart, bpm, me, STAGE_POS * waveStep);
 		return;
 	case SCENE_WAVE_RL:
-		progBeatFlash(durationMillis, nextPart, bpm, me, (STAGE_POSITIONS - 1 - STAGE_POS) * WAVE_STEP_MS);
+		progBeatFlash(durationMillis, nextPart, bpm, me, (STAGE_POSITIONS - 1 - STAGE_POS) * waveStep);
 		return;
 	case SCENE_WAVE_OUT:
-		progBeatFlash(durationMillis, nextPart, bpm, me, abs(STAGE_POS - (STAGE_POSITIONS - 1) / 2) * WAVE_STEP_MS);
+		progBeatFlash(durationMillis, nextPart, bpm, me, abs(STAGE_POS - (STAGE_POSITIONS - 1) / 2) * waveStep);
 		return;
 	case SCENE_PINGPONG:
 		progPingPong(durationMillis, nextPart, bpm);
@@ -609,7 +610,7 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 #elif DEVICE_CLASS == CLASS_MATRIX
 	switch (sceneID) {
 	case SCENE_CALM:	progWaterRipple(durationMillis, nextPart, 70, me);	break;
-	case SCENE_VERSE:	matrixMovieFX(durationMillis, nextPart, 80, me);	break;
+	case SCENE_VERSE:	progMatrixRainColor(durationMillis, nextPart, 80, beatMs * 64UL);	break;	// farbiger Regen, Verlauf wandert in 16 Takten einmal durchs Schema
 	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;

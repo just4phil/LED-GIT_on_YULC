@@ -449,6 +449,12 @@ void progMatrixVertical(unsigned int durationMillis, byte nextPart);
 void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, CRGB baseColor, byte maxActive = 0);
 void matrixMovieFX(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, byte maxActive = 0);
 
+// Farbiger Matrix-Regen (Matrix-Teil von SCENE_VERSE): wie matrixMovieFX, aber ohne Grau im Schweif. Jede Spur hat eine
+// eigene Schemafarbe (ohne Schema: Regenbogen), im Schweif läuft ein Verlauf vom Kopf zur nächsten Schemafarbe.
+//   reduceSpeed  ms je Schritt (kleiner = schnellerer Regen)
+//   cycleMillis  in dieser Zeit wandert der Verlauf einmal durch alle Schemafarben (0 = Farben bleiben stehen)
+void progMatrixRainColor(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, unsigned long cycleMillis = 0);
+
 //==================================================================
 //=========== Effekte für die LED-Flächen ==========================
 //==================================================================

@@ -185,7 +185,8 @@ time with the beat) while the other devices keep playing the scene.
 `tools/songgen.py <Song>` reads table + show, generates only the named song, saves a version, writes
 `songs/<Song>/<Song>.mid` (for the user's DAW, his wish 10.10.2026: channel 10, CC 22 = song ID at the StartBit, CC 23 =
 part number on every table part's first beat, so he can start playback mid-song and watch one transition; not for parts
-during the matrix title scroll, tails or cases > 127; `--midi` writes only this file) and assembles
+during the matrix title scroll, tails or cases > 127; `--midi` writes only this file, also for a song with frozen
+code and no `show.yaml` - then the part starts are read from its `generated.cpp`, `frozen_timeline()`) and assembles
 `src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
 songs are taken over unchanged). `--neu` creates a new song folder with the table template
 (`songs/struktur-vorlage.xlsx`, already in the quarter-bar grid), `--raster` writes a quarter-bar copy

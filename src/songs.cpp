@@ -4256,8 +4256,24 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(48);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(57);	break;
+
+	// SCENE_WAVE_LR im Tempo (neu am 17.10.2026, Regel des Users bei Dancing On My Own: "solche effekte müssen immer auf
+	// dem beat sein!"): die Verzögerung je Bühnenposition ist jetzt Beat / 16 statt fest 100 ms. Die ganze Welle von
+	// Lampe 1 bis Lampe 2 dauert eine 16tel-Note und sitzt damit bei jedem Tempo auf dem Beat.
+	//   57: 122 BPM wie in Dancing On My Own, chorus 1b (NEON): 30 ms je Position, 123 ms für die ganze Welle.
+	case 57:	setColorScheme(SCHEME_NEON);	scene(SCENE_WAVE_LR, 8000, DEMO_NR(53), 122);	break;
+
+	// SCENE_VERSE mit farbigem Regen (neu am 17.10.2026, Wunsch des Users bei Dancing On My Own, verse 1: "mir gefällt
+	// die weiße farbe des regens auf der matrix nicht. das wirkt sehr kühl"): die Matrix zeigt jetzt progMatrixRainColor
+	// statt matrixMovieFX. Kein Grau mehr im Schweif, jede Spur hat ihre eigene Schemafarbe, im Schweif läuft ein
+	// Verlauf vom Kopf zur nächsten Schemafarbe, und der ganze Verlauf wandert in 16 Takten einmal durchs Schema.
+	// Gitarre, Bass und Lampen wie bisher (progZoneBeat / progLampPulse).
+	//   53: ICE wie in Dancing On My Own - Blau, Eisblau, Weißblau. 16 s = 8 Takte, der Verlauf wandert einen halben Umlauf.
+	//   55: ohne Farbschema - Regenbogen, jede Spur in einer anderen Farbe.
+	case 53:	setColorScheme(SCHEME_ICE);		scene(SCENE_VERSE, 16000, DEMO_NR(55), bpm);	break;
+	case 55:	setColorScheme(SCHEME_RANDOM);	scene(SCENE_VERSE, 16000, DEMO_NR(48), bpm);	break;
 
 	// SCENE_LIFE (neu am 12.10.2026, Frage des Users: "kann man das game of life als effekt bauen?", Wunsch: "hübsch
 	// farbig"): auf der Matrix Conways Game of Life in Farbe (progGameOfLife), eine Generation alle 150 ms - mit Absicht
