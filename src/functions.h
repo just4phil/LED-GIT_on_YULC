@@ -2,7 +2,7 @@
 //=========== HELPER FUNCTIONS ========================================
 //=====================================================================
 // functions.h / functions.cpp - kleine Helfer, die überall gebraucht werden:
-//   - das Bluetooth-Nachrichtenformat BLEmessage (Proxy <-> Clients)
+//   - bindet ledSync.h ein (Bluetooth-Nachrichtenformat BLEmessage, Proxy <-> Clients)
 //   - Zufallsfarben für die Effekte
 //   - switchToSong() / switchToPart(): die EINZIGEN Stellen, an denen Song und Part gewechselt werden
 //
@@ -10,45 +10,13 @@
 // damit andere Dateien sie aufrufen können; der eigentliche Code steht in der gleichnamigen .cpp-Datei.
 
 // Include-Schutz: der Compiler liest diese Datei pro .cpp-Datei nur einmal, auch wenn sie (direkt oder über
-// eine andere .h-Datei) mehrfach eingebunden wird. Ohne ihn gäbe es dann "BLEmessage ist schon definiert".
+// eine andere .h-Datei) mehrfach eingebunden wird. Ohne ihn gäbe es doppelte Definitionen.
 #pragma once
 
-/**
- * @brief Die Nachricht, die per Bluetooth (BLE) zwischen Proxy und Clients ausgetauscht wird
- *
- * Genau 3 Bytes: Nachrichtentyp, Song, Part. Je nach Typ werden nur einzelne Felder ausgewertet.
- *
- * Nachrichtentypen (msgType):
- * - 0: Song und Part setzen (Stand, den ein Client beim Verbinden lesen kann)
- * - 1: Songwechsel (nur songID zählt)
- * - 2: Partwechsel (nur part zählt)
- * - 3: erzwungener Abgleich an alle Clients (songID und part)
- * - 4: Partwechsel nach einem LED-Abgleich
- * - 5: der Server (Proxy) braucht den Stand von einem Client
- * - 6: Antwort des Clients auf Typ 5 (songID und part)
- * - 7: in den OTA-Update-Modus wechseln (wird nur bei songID == 0 angenommen, siehe otaUpdate.h)
- *
- * Wo die Typen gesendet und ausgewertet werden: midiProxyBLEserver_nimBLE.cpp (Proxy) und
- * BLE_client_nimBLE.cpp (Clients). Bei Änderungen docs/OTA-Update.html mitziehen.
- */
-// "pack(push, 1)": der Compiler darf zwischen den Feldern keine Füllbytes einfügen, damit die Struktur auf
-// allen Geräten exakt 3 Bytes groß ist und Byte für Byte gesendet werden kann.
-// "push" merkt sich dabei die bisherige Einstellung, "pack(pop)" direkt hinter der Struktur stellt sie wieder
-// her. Das pop ist wichtig: ohne es gälte "keine Füllbytes" auch für alles, was eine .cpp-Datei NACH
-// functions.h noch einbindet (z.B. Adafruit_GFX, NimBLE, WiFi) - deren Klassen hätten dort dann eine andere
-// Größe als in der Bibliothek selbst, und das führt zu schwer auffindbaren Speicherfehlern.
-#pragma pack(push, 1)   // ab hier: Strukturen ohne Füllbytes
-struct BLEmessage {
-    uint8_t msgType; /**< Nachrichtentyp (0-7), siehe Liste oben */
-    uint8_t songID;  /**< Song-ID */
-    uint8_t part;     /**< Part-Nummer */
-};
-#pragma pack(pop)       // Einstellung von vor dem push wiederherstellen
-
-// "static_assert" ist eine Prüfung, die der Compiler schon beim Übersetzen ausführt (kostet auf dem Gerät
-// nichts): stimmt die Bedingung nicht, bricht der Build mit dem Text dahinter ab. So fällt sofort auf, wenn
-// jemand die Nachricht verändert - alle Geräte müssen dieselben 3 Bytes senden und erwarten.
-static_assert(sizeof(BLEmessage) == 3, "BLEmessage muss genau 3 Bytes gross sein");
+// Das Bluetooth-Nachrichtenformat BLEmessage und die Nachrichtentypen (SYNC_SONG, SYNC_FORCE ...) stehen in
+// ledSync.h, zusammen mit allen Entscheidungen des Abgleich-Protokolls. Eingebunden wird es hier, damit jede
+// Datei, die functions.h benutzt, BLEmessage wie bisher kennt.
+#include "ledSync.h"
 
 /**
  * @brief Zufälliger Wert für EINEN Farbanteil (Rot, Grün oder Blau)

@@ -8,7 +8,8 @@
 //=====================================================================
 // Nur auf Geräten mit IS_BLE_CLIENT. Der Client sucht den Proxy (die Gitarre), verbindet sich und
 // führt dessen Nachrichten aus. Ausführliche Erklärung: BLE_client_nimBLE.cpp, die BLE-Begriffe
-// stehen in midiProxyBLEserver_nimBLE.cpp, das Nachrichtenformat (BLEmessage) in functions.h.
+// stehen in midiProxyBLEserver_nimBLE.cpp, das Nachrichtenformat (BLEmessage) und alle
+// Entscheidungen des Abgleichs im Modul ledSync.h/.cpp.
 //
 // Hier stehen nur die vier Funktionen, die von außen (main.cpp, markerLEDs.cpp) benutzt werden:
 //   BLE_client_initialize()      einmal in setup()
@@ -36,10 +37,10 @@ void BLE_client_initialize();
  *
  * Hintergrund: Mit einem Doppelklick am Drehknopf kann der Proxy den Stand eines Clients übernehmen
  * (z.B. wenn die Gitarre mitten im Song neu gestartet wurde). Ablauf:
- * 1. Proxy sendet Typ 5 ("wie ist dein Stand?")
- * 2. Client schreibt Typ 6 zurück (Song + Part) und merkt sich, dass der Proxy wartet
+ * 1. Proxy sendet SYNC_ASK ("wie ist dein Stand?")
+ * 2. Client schreibt SYNC_REPLY zurück (Song + Part) und merkt sich, dass der Proxy wartet
  * 3. beim nächsten Part-Wechsel des Clients ruft loop() diese Funktion auf: der Client schreibt
- *    Typ 4 ("jetzt beginnt Part n") - der Proxy springt in denselben Part und läuft ab da zeitgleich
+ *    SYNC_ENTRY ("jetzt beginnt Part n") - der Proxy springt in denselben Part und läuft ab da zeitgleich
  *
  * @param nextPart der Part, in den der Client gerade wechselt
  */
@@ -49,9 +50,9 @@ void informServerOnNextChange(byte nextPart);
  * @brief Die laufende Arbeit des Clients (bei jedem loop()-Durchlauf)
  *
  * - Wurde der Proxy gefunden: verbinden; schlägt das fehl, neu suchen
- * - Liegt eine Nachricht des Proxys vor: ausführen (MidiDatenVomProxyAuswerten() in der .cpp-Datei)
- * - Kurzer Klick am Drehknopf (needLEDsync): Song + Part aktiv vom Proxy lesen und dorthin springen;
- *   der zeitgenaue Einstieg folgt mit dem nächsten Part-Wechsel des Proxys (Typ 4)
+ * - Liegt eine Nachricht des Proxys vor: vom Abgleich-Modul auswerten lassen (ledSyncClientReceived) und ausführen
+ * - Kurzer Klick am Drehknopf (ledSyncClientRequestRead): Song + Part aktiv vom Proxy lesen und dorthin springen;
+ *   der zeitgenaue Einstieg folgt mit dem nächsten Part-Wechsel des Proxys (SYNC_ENTRY)
  */
 void BLE_client_Loop();
 

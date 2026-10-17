@@ -20,7 +20,8 @@ pio run -e esp32-s3-devkitc-1 --target upload
 pio device monitor -e esp32-s3-devkitc-1
 ```
 
-There are no unit tests in this project.
+Unit tests: only for the LED-sync protocol, on the PC: `pio test -e native` (`test/test_ledSync/`, env `native` builds
+only `src/ledSync.cpp`; needs `g++` in PATH). There are no other tests.
 
 ## Comments (binding)
 
@@ -126,7 +127,7 @@ up over a song; hand-written songs keep the old behaviour because their part len
 ### Song / part state machine
 `switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The main loop `switch(songID)` dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.
 
-MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these as BLE notifications using the `BLEmessage` struct (msgTypes 0–7, defined in `functions.h`; 7 = enter OTA update mode). Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/BLE.
+MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these as BLE notifications using the `BLEmessage` struct (msgTypes 0–7 = `enum LedSyncMsg`, `SYNC_STATE` … `SYNC_OTA`, defined in `ledSync.h`; 7 = enter OTA update mode). All sync decisions (MIDI broadcast, force 3→4, ask 5→6→4, knob read→4, OTA only in song 0) live in `ledSync.cpp`: events in, `LedSyncAction` out, the two BLE files are thin adapters that only move bytes and execute it (`applyAction()`). Keep the wire format byte-identical (old firmware must still sync). Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/BLE.
 
 ### Key source files
 | File | Purpose |
@@ -142,7 +143,8 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `markerLEDs.cpp/.h` | Fret-position marker LED overlay |
 | `matrixFunctions.cpp/.h` | Matrix drawing helpers (lines, circles, etc.) |
 | `TimerFunctions.cpp/.h` | 2 ms hardware timer, all timing flags |
-| `midi_in.cpp/.h` | MIDI CC parsing, BLE broadcast in proxy mode |
+| `midi_in.cpp/.h` | MIDI CC parsing; on the proxy hands the change to `ledSyncProxyMidiSong/Part()` |
+| `ledSync.cpp/.h` | LED-sync protocol: `BLEmessage`, msgType names, all sync state + decisions for proxy and client (no Arduino, unit-tested natively) |
 | `midiProxyBLEserver_nimBLE.cpp/.h` | NimBLE BLE server (proxy only) |
 | `BLE_client_nimBLE.cpp/.h` | NimBLE BLE client (non-proxy devices) |
 | `rotaryEncoder.cpp/.h` | Knob: turn = brightness (fully down = LEDs off, markers stay; 32 perceptually even steps, `ROTARY_BRIGHTNESS_STEPS` in `definitions.h`, no acceleration), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0) |

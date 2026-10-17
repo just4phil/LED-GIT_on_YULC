@@ -3,6 +3,7 @@
 #include "definitions.h"
 #include "AiEsp32RotaryEncoder.h"
 #include <FastLED.h>
+#include "ledSync.h"	// Abgleich-Wünsche des Knopfs: ledSyncProxyRequestForce/Ask, ledSyncClientRequestRead
 //---------------------------------
 
 //extern const boolean DEBUG;
@@ -11,9 +12,6 @@ extern volatile boolean LEDsTurnedOff;
 extern volatile boolean encoderButtonLongPress;	// for rotary encoder button push
 extern volatile boolean encoderButtonNotAvailable;	// close long press after a long press for a second
 extern volatile boolean ignoreLIPOsafer;	// when true -> leds will not be turned off when lipo voltage is low
-extern boolean needLEDsync;
-extern boolean forceLEDsync;
-extern volatile bool syncProgWithNextChange;
 //---------------------------------
 //=====================================================================
 // rotaryEncoder.cpp - Drehknopf mit Taster (Bedienung: siehe rotaryEncoder.h)
@@ -81,12 +79,12 @@ void on_button_short_click() {
 		Serial.println("on_button_short_click");
 	#endif
 	#if defined(IS_MIDI_PROXY)
-		forceLEDsync = true;			// short click beim proxy -> force led sync der clients
+		ledSyncProxyRequestForce();		// short click beim proxy -> force led sync der clients (SYNC_FORCE, ledSync.h)
 		#if defined(debug_ble_proxy)
 			Serial.println("midi proxy wants to force LED sync on clients");
 		#endif
 	#elif defined (IS_BLE_CLIENT)
-		needLEDsync = true;			// short click bei clients -> request led sync from proxy
+		ledSyncClientRequestRead();		// short click bei clients -> Stand beim Proxy lesen (ledSync.h)
 		#if defined(debug_ble_client)
 			Serial.println("midi client needs LED sync from proxy");
 		#endif
@@ -98,7 +96,7 @@ void on_button_double_click() {
 		Serial.println("on_button_double_click");
 	#endif
 	#if defined(IS_MIDI_PROXY)
-		needLEDsync = true;			// double click beim proxy -> request led sync from client
+		ledSyncProxyRequestAsk();		// double click beim proxy -> Stand eines Clients abfragen (SYNC_ASK, ledSync.h)
 		#if defined(debug_ble_proxy)
 			Serial.println("midi proxy needs LED sync from clients");
 		#endif

@@ -70,7 +70,9 @@
   <div class="wrap">
     <h1>LED-Sync-Modul (<code>ledSync</code>)</h1>
     <p class="sub">Plan: das Bluetooth-Abgleichprotokoll zwischen Proxy und Clients in ein einziges, testbares Modul
-      ziehen. Ergebnis der Architektur-Durchsicht vom 18.10.2026. Noch nicht umgesetzt.</p>
+      ziehen. Ergebnis der Architektur-Durchsicht vom 18.10.2026. <b>Umgesetzt am 18.10.2026 auf Branch
+      <code>ledsync-module</code></b>: 13 native Tests grün, alle 5 Envs bauen. Offen ist die Probe auf der Hardware
+      (Abschnitt 9); erst danach Merge nach <code>MAIN</code>.</p>
     <nav class="toc">
       <a href="#warum"><b>1</b>Warum</a>
       <a href="#entscheidungen"><b>2</b>Entscheidungen</a>
@@ -258,7 +260,15 @@ LedSyncAction ledSyncClientPartChange(uint8_t songID, uint8_t nextPart);
 
 void ledSyncReset();   <span class="c">// nur für Tests</span></code></pre>
 <p>Der Zustand (wartet auf Einstieg, Einstieg melden beim nächsten Wechsel, Ausgang für MIDI, Knopf-Anfragen) liegt
-dateilokal im Modul. Was NimBLE-Callbacks berühren, bleibt wie heute <code>volatile</code>.</p>
+dateilokal im Modul, <b>getrennt nach Proxy- und Client-Seite</b>. Ein Gerät nutzt zwar nur eine Seite, aber der
+Test am PC spielt beide gleichzeitig. Mit einem gemeinsamen Satz Merker würden sich die Seiten gegenseitig
+beeinflussen. Was NimBLE-Callbacks berühren (<code>onRead</code> → Einstieg melden), bleibt wie heute
+<code>volatile</code>.</p>
+<p>Umgesetzt weicht die Schnittstelle in Kleinigkeiten von der Skizze ab:</p>
+<ul>
+  <li>Ein Ergebnis enthält eine Liste von bis zu 3 Nachrichten (<code>sends[]</code>, jeweils „senden“ oder „nur hinterlegen“). Beim Part-Wechsel hinterlegt der Proxy erst den Stand und sendet dann den Einstieg.</li>
+  <li>Den Stand „Song 0, Part 0“ hinterlegt der Proxy jetzt schon in <code>midiProxy_initialize_BLE()</code> statt später in <code>setup()</code>.</li>
+</ul>
 
 <h2 id="aenderungen">7. Änderungen je Datei</h2>
 <div class="tablewrap"><table>

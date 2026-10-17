@@ -14,8 +14,7 @@
 //
 // Alles andere wird ignoriert.
 //
-// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. Hilfsfunktionen, die nur
-// midi_in.cpp selbst braucht (setBroadcastValues), sind dort beschrieben. midi_in.cpp bindet diese
+// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. midi_in.cpp bindet diese
 // Datei selbst ein, damit der Compiler Ankündigung (hier) und Code (dort) miteinander vergleicht.
 
 /**
@@ -27,7 +26,7 @@
  * - CC 23: switchToPart(value)
  *
  * Auf dem Proxy (IS_MIDI_PROXY) wird der Wechsel zusätzlich zum Weitersenden per Bluetooth
- * vorgemerkt (setBroadcastValues() in midi_in.cpp).
+ * vorgemerkt (ledSyncProxyMidiSong() / ledSyncProxyMidiPart() in ledSync.cpp).
  *
  * @param channel MIDI-Kanal (1-16)
  * @param number  CC-Nummer (0-127)

@@ -234,15 +234,15 @@ python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur
     <ul>
       <li>wartet, bis <code>subscribedClients</code> ≥ Anzahl erlaubter Clients (4), max. 20 s (<code>OTA_CLIENT_WAIT_MS</code>). Gezählt wird im <code>onSubscribe</code>-Callback: Erst wer Notifications abonniert hat, empfängt den Befehl sicher.</li>
       <li>bricht das Warten früher ab, wenn mindestens ein Client da ist und sich 5 s lang (<code>OTA_CLIENT_QUIET_MS</code>) kein weiterer angemeldet hat: Die fehlenden Geräte sind dann wohl aus. Solange noch gar kein Client da ist, läuft die volle Zeit.</li>
-      <li>sendet msgType 1 / Song 0 (alle auf SONGPAUSE), 500 ms Pause.</li>
-      <li>sendet 3× msgType 7 im Abstand von 500 ms (falls eine Notification verloren geht).</li>
+      <li>sendet msgType 1 (<code>SYNC_SONG</code>) / Song 0 (alle auf SONGPAUSE), 500 ms Pause.</li>
+      <li>sendet 3× msgType 7 (<code>SYNC_OTA</code>) im Abstand von 500 ms (falls eine Notification verloren geht).</li>
       <li>1 s warten, dann <code>otaRequestAndRestart()</code>.</li>
     </ul>
   </li>
 </ol>
 
 <h3>Client beim Empfang von msgType 7</h3>
-<p><code>MidiDatenVomProxyAuswerten()</code> in <code>BLE_client_nimBLE.cpp</code>, <code>case 7</code>: Nur wenn <code>songID == 0</code> → <code>otaRequestAndRestart()</code>. Während eines Songs wird der Befehl ignoriert. Das ist der Schutz gegen ein Update mitten im Gig.</p>
+<p><code>ledSyncClientReceived()</code> in <code>ledSync.cpp</code>, <code>case SYNC_OTA</code>: Nur wenn <code>songID == 0</code> verlangt es OTA, und <code>applyAction()</code> in <code>BLE_client_nimBLE.cpp</code> ruft <code>otaRequestAndRestart()</code>. Während eines Songs wird der Befehl ignoriert. Das ist der Schutz gegen ein Update mitten im Gig.</p>
 
 <h3>Update-Modus (alle Geräte)</h3>
 <ol>
@@ -326,17 +326,17 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 </ul>
 
 <h2 id="ble">9 · BLE-Protokoll</h2>
-<p>Struktur <code>BLEmessage</code> (<code>functions.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Eine Characteristic mit READ/WRITE/NOTIFY.</p>
+<p>Struktur <code>BLEmessage</code> (<code>ledSync.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Eine Characteristic mit READ/WRITE/NOTIFY. Die Nachrichtentypen haben Namen (<code>enum LedSyncMsg</code>); was auf welche Nachricht folgt, entscheidet allein das Abgleich-Modul <code>src/ledSync.cpp</code>. Die beiden Bluetooth-Dateien führen nur aus. Getestet wird es am PC mit <code>pio test -e native</code> (<code>test/test_ledSync/</code>).</p>
 <div class="tablewrap"><table>
-<tr><th>msgType</th><th>Richtung</th><th>Bedeutung</th></tr>
-<tr><td>0</td><td>Proxy</td><td>Song + Part setzen (Wert zum Lesen für Sync)</td></tr>
-<tr><td>1</td><td>Proxy → Clients</td><td>Song wechseln (<code>songID</code>)</td></tr>
-<tr><td>2</td><td>Proxy → Clients</td><td>Part wechseln (<code>part</code>)</td></tr>
-<tr><td>3</td><td>Proxy → Clients</td><td>Sync erzwingen (Song + Part)</td></tr>
-<tr><td>4</td><td>beide</td><td>Part wechseln nach LED-Sync</td></tr>
-<tr><td>5</td><td>Proxy → Clients</td><td>Proxy braucht LED-Sync von einem Client</td></tr>
-<tr><td>6</td><td>Client → Proxy</td><td>Client meldet Song/Part nach Sync-Anfrage</td></tr>
-<tr><td><b>7</b></td><td>Proxy → Clients</td><td><b>In den OTA-Update-Modus</b> (nur angenommen bei <code>songID == 0</code>)</td></tr>
+<tr><th>msgType</th><th>Name</th><th>Richtung</th><th>Bedeutung</th></tr>
+<tr><td>0</td><td><code>SYNC_STATE</code></td><td>Proxy</td><td>Song + Part hinterlegen (Wert zum Lesen für Sync, wird nie aktiv gesendet)</td></tr>
+<tr><td>1</td><td><code>SYNC_SONG</code></td><td>Proxy → Clients</td><td>Song wechseln (<code>songID</code>)</td></tr>
+<tr><td>2</td><td><code>SYNC_PART</code></td><td>Proxy → Clients</td><td>Part wechseln (<code>part</code>)</td></tr>
+<tr><td>3</td><td><code>SYNC_FORCE</code></td><td>Proxy → Clients</td><td>Sync erzwingen (Song + Part); Clients schalten dunkel und warten auf 4</td></tr>
+<tr><td>4</td><td><code>SYNC_ENTRY</code></td><td>beide</td><td>„jetzt beginnt Part n“: zeitgenauer Einstieg nach einem LED-Sync</td></tr>
+<tr><td>5</td><td><code>SYNC_ASK</code></td><td>Proxy → Clients</td><td>Proxy braucht LED-Sync von einem Client</td></tr>
+<tr><td>6</td><td><code>SYNC_REPLY</code></td><td>Client → Proxy</td><td>Client meldet Song/Part nach Sync-Anfrage</td></tr>
+<tr><td><b>7</b></td><td><code>SYNC_OTA</code></td><td>Proxy → Clients</td><td><b>In den OTA-Update-Modus</b> (nur angenommen bei <code>songID == 0</code>)</td></tr>
 </table></div>
 <p>Welche Clients der Proxy überhaupt akzeptiert, steht in <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>. Deren Anzahl ist auch die Zahl, auf die <code>midiProxy_broadcastOTA()</code> wartet.</p>
 
@@ -361,8 +361,8 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td><code>src/secrets.h.example</code></td><td>Vorlage für <code>secrets.h</code> (im Repo)</td></tr>
 <tr><td><code>src/main.cpp</code></td><td>In <code>setup()</code> nach der LED-/Paletten-Initialisierung: Versions-Ausgabe, <code>otaIsRequested()</code> → <code>otaRun()</code>, beim Proxy <code>otaBootButtonHeld()</code>. Nach <code>midiProxy_initialize_BLE()</code>: <code>midiProxy_broadcastOTA()</code></td></tr>
 <tr><td><code>src/midiProxyBLEserver_nimBLE.cpp/.h</code></td><td><code>midiProxy_broadcastOTA()</code>, Zähler <code>subscribedClients</code> im <code>onSubscribe</code>-Callback</td></tr>
-<tr><td><code>src/BLE_client_nimBLE.cpp</code></td><td><code>case 7</code> in <code>MidiDatenVomProxyAuswerten()</code></td></tr>
-<tr><td><code>src/functions.h</code></td><td><code>BLEmessage</code>, Doku der msgTypes 0–7</td></tr>
+<tr><td><code>src/BLE_client_nimBLE.cpp</code></td><td><code>applyAction()</code> führt <code>ota</code> aus (Entscheidung in <code>ledSync.cpp</code>)</td></tr>
+<tr><td><code>src/ledSync.h/.cpp</code></td><td><code>BLEmessage</code>, Namen und Doku der msgTypes 0–7, alle Entscheidungen des Abgleichs (inkl. „OTA nur in Song 0“); Tests in <code>test/test_ledSync/</code></td></tr>
 <tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code></td></tr>
 <tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
 <tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>

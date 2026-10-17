@@ -45,10 +45,11 @@ void rotary_initialize();
 /**
  * @brief Reaktion auf einen kurzen Klick: Abgleich anstoßen
  *
- * - Proxy:  setzt forceLEDsync -> alle Clients springen auf Song + Part des Proxys
- * - Client: setzt needLEDsync  -> der Client holt Song + Part vom Proxy
+ * - Proxy:  ledSyncProxyRequestForce() -> alle Clients springen auf Song + Part des Proxys
+ * - Client: ledSyncClientRequestRead() -> der Client holt Song + Part vom Proxy
  *
- * Ausgeführt wird der Abgleich in den Bluetooth-Dateien; hier wird nur der Merker gesetzt.
+ * Hier wird der Wunsch nur beim Abgleich-Modul (ledSync.h) vorgemerkt; ausgeführt wird er beim nächsten
+ * loop()-Durchlauf von den Bluetooth-Dateien.
  */
 void on_button_short_click();
 

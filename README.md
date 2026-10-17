@@ -73,15 +73,17 @@ LED-GIT_on_YULC/
 │   ├── guitarShapeFX.h/cpp       # effects that follow the outline of the guitar
 │   ├── matrixFunctions.h/cpp     # matrix drawing helpers
 │   ├── markerLEDs.h/cpp          # fret marker LEDs
-│   ├── functions.h/cpp           # song/part switching, BLE message format, helpers
+│   ├── functions.h/cpp           # song/part switching, helpers
 │   ├── TimerFunctions.h/cpp      # 2 ms hardware timer
 │   ├── midi_in.h/cpp             # MIDI input
-│   ├── midiProxyBLEserver_nimBLE.h/cpp  # BLE server (guitar)
-│   ├── BLE_client_nimBLE.h/cpp   # BLE client (all other devices)
+│   ├── ledSync.h/cpp             # LED sync protocol: BLE message format and all sync decisions (tested on the PC)
+│   ├── midiProxyBLEserver_nimBLE.h/cpp  # BLE server (guitar), executes what ledSync decides
+│   ├── BLE_client_nimBLE.h/cpp   # BLE client (all other devices), executes what ledSync decides
 │   ├── rotaryEncoder.h/cpp       # knob: brightness, sync, emergency stop
 │   ├── lipoVoltageCheck.h/cpp    # battery monitoring
 │   ├── otaUpdate.h/cpp           # firmware update over WiFi
 │   └── AiEsp32RotaryEncoder*     # third-party encoder library
+├── test/test_ledSync/            # unit tests for the sync protocol (pio test -e native)
 ├── songs/<Song>_v1/              # per song: quelle/struktur.xlsx, show.yaml, generated.cpp, versionen/
 ├── tools/
 │   ├── songgen.py                # generates song code from table + show.yaml
@@ -120,7 +122,14 @@ Each device define switches its features on automatically (`HAS_MIDI_IN`, `IS_MI
 
 **FastLED is pinned to 3.5.0.** Newer versions (3.9.x) do not build for the ESP32-S3 in this project.
 
-There are no unit tests.
+Unit tests for the LED sync protocol (`src/ledSync.cpp`) run on the PC, no device needed:
+
+```bash
+pio test -e native
+```
+
+The `native` environment needs a C++ compiler (`g++`) in the PATH and is only for tests (`pio run -e native` does
+not produce a program).
 
 ## Usage
 

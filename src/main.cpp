@@ -123,11 +123,8 @@ byte songID = 0;				// aktueller Song (0 = SONGPAUSE), siehe switch(songID) in l
 byte songIDbefore = 0;			// der Song davor (setzt switchToSong)
 volatile byte nextSongPart = 0;	// der Part, in den beim nächsten Wechsel gesprungen wird (setzt der Song selbst)
 volatile byte prog = 0;			// aktueller Part des Songs
-// Abgleich Proxy <-> Clients von Hand (z.B. wenn ein Gerät mitten im Song eingeschaltet wurde). Ausgelöst über
-// den Drehknopf (rotaryEncoder.cpp), abgearbeitet in BLE_client_nimBLE.cpp bzw. midiProxyBLEserver_nimBLE.cpp:
-boolean needLEDsync = false;	// "ich brauche den Stand der Gegenseite": Client liest Song/Part vom Proxy; der Proxy fragt einen Client (msgType 5)
-boolean forceLEDsync = false;	// nur Proxy: eigenen Song + Part sofort an alle Clients senden (msgType 3), z.B. nach Not-Aus
-boolean waitForLEDsync = false;	// Song/Part sind schon übernommen, der zeitgenaue Einstieg folgt mit dem nächsten Part-Wechsel (msgType 4)
+// Der Abgleich Proxy <-> Clients (z.B. wenn ein Gerät mitten im Song eingeschaltet wurde) hat seine Merker
+// nicht mehr hier, sondern im Abgleich-Modul ledSync.cpp (Überblick: ledSync.h).
 
 //--- marker LEDs --- dienen zum markieren der buende, die fuer den jeweiligen song relevant sind
 // Inhalt ist die LED-Nummer im Streifen (0 = kein Marker). Gesetzt in setMarkerLEDs() (markerLEDs.cpp),
@@ -157,7 +154,6 @@ volatile boolean nextChangeMillisAlreadyCalculated = false;	// der Song hat Län
 volatile boolean HalfSecondHasPast = false;
 volatile boolean OneSecondHasPast = false;
 volatile boolean warnLEDsLipoLow = false;	// Blinkzustand der roten Akku-Warn-LEDs (an/aus im Wechsel)
-volatile bool syncProgWithNextChange = false;	// Proxy: beim nächsten Part-Wechsel den neuen Part per Bluetooth melden (msgType 4), damit wartende Clients zeitgleich einsteigen
 byte secondsForVoltage = 0; // for lipo safer: zählt Sekunden bis zur nächsten Akku-Messung
 //--------------------
 volatile boolean encoderButtonLongPress = false;	// for rotary encoder button push -> könnte raus ...aber so erstmal einfacher
@@ -307,14 +303,7 @@ void setup() {
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 
 	//switchToPart(0); // only 4 testing!!!
-	
-	#ifdef IS_MIDI_PROXY
-		// Den Stand "Song 0, Part 0" in der Bluetooth-Kennung hinterlegen, damit ein Client,
-		// der sich verbindet und nachfragt, sofort den richtigen Stand lesen kann.
-		//--- proxy: set Value for clients who wants to sync ..
-		//setSongAndPartIDforLEDsync(0, 0);
-		setBLEmessageForLEDsync(0, 0, 0);
-	#endif
+	// (Den Stand "Song 0, Part 0" für lesende Clients hinterlegt der Proxy schon in midiProxy_initialize_BLE().)
 
 	Serial.println("ENDE SETUP");
 }
@@ -375,21 +364,11 @@ void loop() {
 	// Normalfall nur der Song-Start übertragen; danach laufen alle Geräte allein durch dieselben Part-Längen.
 	if (flag_switchToNextSongPart) {
 		#ifdef IS_MIDI_PROXY
-			// Der Proxy hinterlegt seinen neuen Stand zum Abholen (ohne ihn aktiv zu senden) ...
-			//--- proxy: set Value for clients who wants to sync ..
-			//setSongAndPartIDforLEDsync(songID, nextSongPart);
-			setBLEmessageForLEDsync(0, songID, nextSongPart);
-
-			// ... und sendet ihn nur dann aktiv (msgType 4), wenn ein Client auf den zeitgenauen Einstieg wartet.
-			if (syncProgWithNextChange) {
-				#if defined(debug_ble_proxy)
-					Serial.println("proxy: switch to next part -> syncProgWithNextChange to client: " + String(nextSongPart));
-				#endif
-				sendBLEmessageForLEDsync(4, 0, nextSongPart);
-				syncProgWithNextChange = false;
-			}
+			// Der Proxy hinterlegt seinen neuen Stand zum Abholen (ohne ihn aktiv zu senden) und sendet SYNC_ENTRY
+			// nur dann, wenn ein Client auf den zeitgenauen Einstieg wartet (Entscheidung in ledSync.cpp).
+			midiProxy_onPartChange(songID, nextSongPart);
 		#elif defined (IS_BLE_CLIENT)
-			informServerOnNextChange(nextSongPart);	// BT BLE Client: sync LEDs to server on request (nur wenn der Proxy vorher per msgType 5 danach gefragt hat)
+			informServerOnNextChange(nextSongPart);	// BT BLE Client: dem Proxy den Wechsel melden (nur wenn er vorher per SYNC_ASK gefragt hat)
 		#endif
 
 		// Der Wechsel wird hier erst einige ms nach der Part-Grenze bemerkt (ein Loop-Durchlauf mit FastLED.show()).
@@ -416,8 +395,8 @@ void loop() {
 		if (encoderButtonLongPress) {
 			// not-aus: proxy + alle clients zurück auf songPause!
 			switchToSong(0);			// every type switch to song 0
-			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync!
-				forceLEDsync = true;
+			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync! (gesendet beim nächsten midiProxy_midiLoop())
+				ledSyncProxyRequestForce();
 			#endif
 			encoderButtonLongPress = false;
 		}
