@@ -17,8 +17,28 @@ neuer fx:
 - song #90 hat coole FX!
 ------------
 
-17.10.2026
 
+TODOs
+=======
+SAS
+    EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
+shivers
+    - yoou burn ... Strobo ist mist und nicht in sync, dauer Strobo tooo much
+    - ende > 3x blinder
+titanium
+    - triolen ende unsync
+no roots
+    - blinder auf den synth fx
+GJWHF 
+    - 1. when the working day -> matrix blinken nicht in sync zu lampen?!
+tom: 
+    pause zu dunkel
+dstm: 
+    -> bass solo
+
+DONE
+=====
+17.10.2026
 - kids neu auto-generiert -> eigentlich ganz cool
 - abcdefu ist erstmal fertig, 17.10.2026
 - dancing müsste auch fertig sein
