@@ -8,7 +8,8 @@ typischer Schreibmuster (Umleitung, mv, rm, sed -i ...). Neu angelegt wird sie n
 zurückgeholt nur von `songgen.py <Song> --restore`. Auf Wunsch des Users (06.10.2026) füllt `songgen.py` beim
 Generieren außerdem die Spalte "Effekt (füllt KI)" (struktur.write_effects, mit Kontrolle, dass sonst nichts
 anders ist) - das läuft über das Werkzeug und ist kein Schreibversuch von Claude. Auf demselben Weg schreibt
-`songgen.py <Song> --vorschlag` die Spalte "Neuer Vorschlag (KI)" (sein Wunsch vom 10.10.2026, struktur.write_proposals). Genauso geschützt bleiben die alten song.yaml, solange der
+`songgen.py <Song> --vorschlag` die Spalte "Neuer Vorschlag (KI)" (sein Wunsch vom 10.10.2026, struktur.write_proposals), und `songgen.py <Song> --part-loeschen / --part-name` ändert
+die Parts (sein Wunsch vom 17.10.2026, struktur.edit_parts - mit Kontrolle, dass alle übrigen Zeilen gleich bleiben). Genauso geschützt bleiben die alten song.yaml, solange der
 User sie nicht selbst gelöscht hat. Lesen bleibt erlaubt. Exit 2 = blockieren, die Meldung auf stderr geht an Claude.
 """
 import json

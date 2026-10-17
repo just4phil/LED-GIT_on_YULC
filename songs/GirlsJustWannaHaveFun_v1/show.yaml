@@ -87,20 +87,26 @@ sections:
     scheme: SCHEME_NEON
     why: "Finale Runde 1, energy 4: eine Stufe unter dem Chorus - die Hook springt von Gerät zu Gerät, Platz für die Steigerung"
 
-  they just wanna … (2):
-    scene: SCENE_DROP
+  Girls just wanna have fun:
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    cues:
+      83: "Feuer läuft hier weiter (Takt 83 ist kein eigener Part mehr)"
+    why: "Feuer auf allen Geräten ab dem Einsatz der Hook - läuft durch bis Takt 85"
+
+  they just wanna 2:
+    scene: SCENE_PINGPONG
     scheme: SCHEME_NEON
-    why: "Finale Runde 2, energy 5: wieder alle Geräte voll im Beat, in den Neonfarben des Chorus"
+    why: "wie Takt 77: die Hook springt in Neonfarben von Gerät zu Gerät, eine Stufe unter dem Feuer"
 
-  they just wanna … (3):
-    scene: SCENE_DROP
-    scheme: SCHEME_SUNSET
-    why: "Finale Runde 3, energy 5: gleiche Wucht, Farbe kippt ins Warme - Vorstufe zum Feuer"
-
-  they just wanna … (4):
+  Girls just wanna have fun (2):
     scene: SCENE_FIRE
     scheme: SCHEME_FIRE
     tail:
       beats: 4
       fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
-    why: "Finale Runde 4, energy 5: letzte Stufe - Feuer auf allen Geräten, letzter Takt weißer Strobo als Schlusspunkt, danach 10 s schwarz"
+    why: "Finale: wieder Feuer auf allen Geräten, letzter Takt weißer Strobo als Schlusspunkt"
+
+  outro:
+    fx: "progFadeOut(${dur}, ${next}, CRGB::DarkOrange)"
+    why: "Neues Ende: alle Geräte orange, blenden über einen Takt weich nach Schwarz aus, danach 10 s schwarz"

@@ -223,6 +223,7 @@ python tools/songgen.py <Song>              # generate this song and rebuild src
 python tools/songgen.py --neu <Song>        # create a new song folder with the table template
 python tools/songgen.py --raster <Song>     # write a copy of the table with one row per quarter bar
 python tools/songgen.py <Song> --takt-ab 1  # renumber the table's bars to start at 1 (as the DAW counts); song unchanged
+python tools/songgen.py <Song> --part-loeschen 95 --part-name 93=outro  # delete a part (rows below move up) / name a row as a new part
 python tools/songgen.py <Song> --midi       # only (re)write songs/<Song>/<Song>.mid: channel 10, CC 22 = song at the StartBit, CC 23 = part number on every part start - import into the DAW to jump straight into a transition (also written on every generation)
 python tools/songgen.py <Song> --vorschlag  # write songs/<Song>/vorschlag.yaml (redesign ideas per part) into the table column "Neuer Vorschlag (KI)"
 python tools/songgen.py --versions <Song>   # list saved versions

@@ -13,6 +13,7 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py --tabelle              # ... in den Tabellen ALLER Songs (kein neuer Code)
     tools/.venv/Scripts/python tools/songgen.py <Song> --vorschlag     # vorschlag.yaml in die Spalte "Neuer Vorschlag (KI)" schreiben
     tools/.venv/Scripts/python tools/songgen.py --vorschlag            # ... für alle Songs, die eine vorschlag.yaml haben
+    tools/.venv/Scripts/python tools/songgen.py <Song> --part-loeschen 95 --part-name 93=outro   # Parts der Tabelle ändern
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
     quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
@@ -32,6 +33,7 @@ Schreibt:
     songs/<Song>/quelle/struktur.xlsx         (nur die Spalte "Effekt", siehe effect_texts() und struktur.write_effects())
     songs/<Song>/quelle/struktur-raster.xlsx  (nur mit --raster: gerasterte Kopie der Tabelle, eine Zeile je Vierteltakt)
     songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --takt-ab N: Taktnummern verschoben, siehe cmd_shift())
+    songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --part-loeschen / --part-name: Parts gelöscht/benannt, cmd_parts())
     songs/<Song>/quelle/struktur.xlsx         (nur mit --vorschlag: die Spalte "Neuer Vorschlag (KI)", siehe cmd_proposal())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
@@ -2738,6 +2740,8 @@ def cmd_raster(song_dir):
 
 
 # Taktnummern in einer show.yaml um delta verschieben - als Text, damit Kommentare und Schreibweise bleiben.
+# delta ist eine Zahl (alle Taktnummern um denselben Betrag, --takt-ab) oder eine Funktion "alte Taktnummer -> neue"
+# (--part-loeschen: nur was hinter dem gelöschten Part liegt, rückt nach vorn).
 # Betroffen sind nur die zwei Stellen, an denen die Show eine Taktnummer der Tabelle nennt:
 #   bar: 31.5            (Position eines Blinders = 'von takt' der Zwischenzeile)
 #   cues: {31.5: "..."}  (Antwort auf den Wunsch in dieser Zwischenzeile; als Block oder in einer Zeile mit {})
@@ -2749,8 +2753,11 @@ BAR_KEY_RE = re.compile(r"(\bbar:\s*)(\d+(?:\.\d+)?)")			# "bar: 31.5"
 CUE_KEY_RE = re.compile(r"^(\s*)(\d+(?:\.\d+)?)(\s*:)")			# Zeile im cues-Block: "      31.5: ..."
 CUE_FLOW_RE = re.compile(r"([{,]\s*)(\d+(?:\.\d+)?)(\s*:)")		# in einer Zeile: "{31.5: ..., 32: ...}"
 def shift_show_bars(text, delta):
+	# "callable" = lässt sich aufrufen wie eine Funktion. Eine Zahl wird hier in die passende Funktion verpackt.
+	new_bar = delta if callable(delta) else (lambda von: st.neat(von + delta))
+
 	def moved(num):
-		return st.fmt(st.neat(float(num) + delta))
+		return st.fmt(new_bar(float(num)))
 	out, cue_indent = [], None		# cue_indent: Einrückung der Zeile "cues:", solange wir in ihrem Block sind
 	for line in text.split("\n"):
 		comment = line.lstrip().startswith("#")
@@ -2778,9 +2785,9 @@ def shift_show_bars(text, delta):
 			res = {}
 			for k, v in node.items():
 				if k == "cues" and isinstance(v, dict):
-					res[k] = {st.neat(float(von) + delta): t for von, t in v.items()}
+					res[k] = {new_bar(float(von)): t for von, t in v.items()}
 				elif k == "bar" and isinstance(v, (int, float)) and not isinstance(v, bool):
-					res[k] = st.neat(v + delta)
+					res[k] = new_bar(v)
 				else:
 					res[k] = expect(v)
 			return res
@@ -2834,6 +2841,57 @@ def cmd_shift(song_dir, start):
 	return 0
 
 
+# <Song> --part-loeschen VON / --part-name VON=NAME: die Part-Gliederung der Tabelle ändern (Wunsch des Users,
+# 17.10.2026: steht in seinem Änderungswunsch "löschen" oder ein neuer Part, passt Claude die Parts selbst an - über
+# dieses Werkzeug, die Tabelle selbst darf Claude nicht schreiben). Die Arbeit macht struktur.edit_parts(), mit Kontrolle.
+# Rücken durch ein Löschen Parts nach vorn, wandern bar: und cues: der Show dahinter mit (shift_show_bars). Steht eine
+# davon IM gelöschten Part, bricht das Kommando vorher ab - die Antwort gehört dann aus der Show entfernt.
+# Partnamen in der Show (sections:) passt das Kommando nicht an: das macht Claude danach in show.yaml, songgen.py meldet
+# beim Generieren, welcher Abschnitt keinen Part mehr hat.
+#   deletes  Liste 'von takt' der zu löschenden Parts; names  Liste "VON=NAME" ("VON=" = kein eigener Part mehr)
+def cmd_parts(song_dir, deletes, names):
+	table, show_path = table_path(song_dir), song_dir / SHOW_FILE
+	if not table.exists():
+		raise SongError(f"{song_dir.name}: keine {TABLE_FILE}")
+	named = {}
+	for item in names:
+		von, sep, name = item.partition("=")
+		try:
+			named[st.neat(float(von.replace(",", ".")))] = name
+		except ValueError:
+			sep = ""
+		if not sep:
+			raise SongError(f"--part-name {item!r}: Form VON=NAME, z. B. --part-name 93=outro")
+	deletes = [st.neat(float(str(v).replace(",", "."))) for v in deletes]
+	try:
+		tbl = st.read_table(table)["_table"]
+		bounds = tbl["von"] + [tbl["end_von"]]
+		cut = [(v, next(b for b in bounds if b > v)) for v in deletes if v in tbl["von"]]	# (Beginn, Ende) je gelöschtem Part
+
+		def new_bar(von):		# Taktnummer der Show vorher -> nachher
+			inside = [c for c in cut if c[0] <= von < c[1]]
+			if inside:
+				raise SongError(f"{SHOW_FILE}: Takt {st.fmt(von)} (bar: oder cues:) liegt im gelöschten Part ab Takt "
+								f"{st.fmt(inside[0][0])} - erst dort aus der Show entfernen")
+			return st.neat(von - sum(e - b for b, e in cut if von >= e))
+		new_show = None
+		if show_path.exists() and cut:
+			raw = show_path.read_bytes().decode("utf-8")
+			crlf = "\r\n" in raw		# Zeilenenden der Datei beibehalten (Windows: \r\n)
+			new_show = shift_show_bars(raw.replace("\r\n", "\n"), new_bar)
+			if new_show == raw.replace("\r\n", "\n"):
+				new_show = None
+		report = st.edit_parts(table, deletes, named)
+	except st.TableError as e:
+		raise SongError(f"{song_dir.name}: {e}")
+	if new_show is not None:
+		show_path.write_bytes((new_show.replace("\n", "\r\n") if crlf else new_show).encode("utf-8"))
+		report.append(f"bar: und cues: in {SHOW_FILE} hinter dem gelöschten Part mitgezogen")
+	print(f"{song_dir.name}: Tabelle geändert (Inhalt der übrigen Zeilen geprüft: unverändert)\n   " + "\n   ".join(report) +
+		  f"\nJetzt {SHOW_FILE} an die Parts anpassen und neu generieren (songgen.py {song_dir.name}).")
+	return 0
+
+
 # Hauptprogramm: Befehlszeile auswerten und das passende Kommando ausführen
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -2849,6 +2907,8 @@ def main():
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
 	ap.add_argument("--takt-ab", type=float, metavar="N", help="Taktnummern der Tabelle verschieben, so dass ihre erste Zeile Takt N ist (1 = wie im DAW); bar:/cues: der Show wandern mit, der Song bleibt derselbe")
+	ap.add_argument("--part-loeschen", action="append", default=[], metavar="VON", help="Part ab Takt VON samt Zwischenzeilen aus der Tabelle löschen, alles dahinter rückt nach vorn (mehrfach möglich)")
+	ap.add_argument("--part-name", action="append", default=[], metavar="VON=NAME", help="der Zeile mit Takt VON den Songpart NAME geben: Zwischenzeile -> neuer Part, Part -> umbenannt; VON= (leer) macht den Part zur Zwischenzeile (mehrfach möglich)")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
 		stream.reconfigure(encoding="utf-8")
@@ -2876,6 +2936,8 @@ def main():
 			return cmd_raster(song_dir)
 		if args.takt_ab is not None:
 			return cmd_shift(song_dir, args.takt_ab)
+		if args.part_loeschen or args.part_name:
+			return cmd_parts(song_dir, args.part_loeschen, args.part_name)
 		if args.vorschlag:
 			return cmd_proposal([song_dir])
 		if args.midi:

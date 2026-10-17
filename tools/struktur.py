@@ -24,7 +24,9 @@ Wer schreibt was (seit 06.10.2026, Wunsch des Users):
                      10.10.2026): Vorschläge von Claude, wie der Part umgestaltet werden könnte. Nur zum Lesen für den
                      User - kein Werkzeug liest die Spalte, sie ändert nichts am Code. Was er davon haben will, trägt
                      er selbst in "Änderungswunsch" ein. Die Spalte darf er jederzeit löschen.
-    alle anderen     gehören dem User (Takte, Partnamen, Energie, BPM ...), das Skript rührt sie nicht an.
+    alle anderen     gehören dem User (Takte, Partnamen, Energie, BPM ...), das Skript rührt sie nicht an - außer
+                     edit_parts() unten (songgen.py <Song> --part-loeschen / --part-name, seit 17.10.2026): Claude
+                     setzt damit seine Wünsche "Part löschen" / "neuer Part" um.
 Altes Format (Tabellen vor dem 06.10.2026): eine Spalte "Effektidee" mit den Wünschen des Users, keine Spalte "Effekt".
 Es wird weiter gelesen; write_effects() stellt eine solche Tabelle beim ersten Schreiben um (die Wünsche wandern in die
 neue Spalte "Änderungswunsch" rechts daneben).
@@ -882,3 +884,144 @@ def shift_bars(path, start):
 		if tmp.exists():
 			tmp.unlink()
 	return delta
+
+
+#==================================================================
+#=========== Parts löschen und benennen ===========================
+#==================================================================
+
+# Ändert die Part-Gliederung der Tabelle (songgen.py <Song> --part-loeschen / --part-name). Wunsch des Users
+# (17.10.2026): „wenn ich neue Parts als Wünsche eintrage oder in den Änderungswünschen Parts als zu löschen markiere,
+# will ich, dass du selbst die Parts anpasst“. Claude liest seinen Wunsch („löschen“, „Neues Ende: 1 Takt ...“) und
+# ruft damit dieses Werkzeug auf - die Tabelle selbst schreibt nur das Werkzeug, mit Kontrolle (wie write_effects).
+#   delete  'von takt' von Part-Zeilen, die samt ihren Zwischenzeilen verschwinden. Alles darunter rückt nach oben, und
+#           sein 'von takt' wird um die Länge des gelöschten Parts kleiner - wie beim Herausschneiden im DAW: der Song
+#           wird um genau diese Takte kürzer, die Parts danach behalten ihre Länge.
+#   names   {von takt: Name}: diese Zeile bekommt den Songpart-Namen. Eine Zwischenzeile wird so zum neuen Part
+#           (im Viertel-Raster gibt es für jede Viertel schon eine Zeile), ein Part wird umbenannt. Ein leerer Name
+#           macht aus einem Part eine Zwischenzeile des Parts darüber ("das ist kein eigener Part"): seine Takte gehören
+#           dann zum Part davor, sein Änderungswunsch wird ein Wunsch an dieser Stelle (der Rest der Zeile bleibt stehen).
+# Alle Taktnummern meinen die Tabelle, wie sie VOR dem Aufruf ist.
+# Sicherung: erst eine Kopie schreiben und zurücklesen. Jede Zeile, die bleibt, muss in jeder Spalte genau ihren alten
+# Inhalt haben (bis auf das verschobene 'von takt' und den neuen Namen), und die Tabelle muss lesbar sein - erst dann
+# wird sie ersetzt. Abgelehnt wird eine Tabelle mit Formeln (außer schlichten Verweisen auf den Kopf wie =$C$3) oder
+# verbundenen Zellen unterhalb der gelöschten Zeilen (openpyxl zieht sie beim Löschen nicht mit, Excel würde es tun).
+# In Excel geöffnet -> nichts geschrieben.
+# Die Zeile "Ende" selbst lässt sich auch löschen (Song wird am Schluss gekürzt), wenn eine andere Zeile per names
+# "Ende" heißt; danach muss die letzte Zeile mit Songpart wieder "Ende" sein, sonst wird nichts geschrieben.
+# Rückgabe: Liste mit einer Zeile Text je Änderung (für die Ausgabe von songgen.py).
+def edit_parts(path, delete=(), names=None):
+	if (path.parent / ("~$" + path.name)).exists():
+		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
+	names = {neat(float(v)): str(n).strip() for v, n in (names or {}).items()}
+	delete = sorted({neat(float(v)) for v in delete})
+	if not delete and not names:
+		return []
+	tbl = read_table(path)["_table"]
+	# alle Zeilen mit 'von takt': (von, Zeilennummer, ist Part?) von oben nach unten
+	part_rows = dict(zip(tbl["von"] + [tbl["end_von"]], tbl["rows"] + [tbl["end_row"]]))
+	lines = sorted([(v, r, True) for v, r in part_rows.items()] +
+				   [(v, r, False) for part in tbl["subs"] for v, r in part.items()])
+	row_of = {v: r for v, r, _p in lines}
+	report, gone, shifts = [], set(), []		# shifts: (ab Zeile, um so viele Takte kleiner)
+	for v in delete:
+		if v not in part_rows:
+			raise TableError(f"von takt {fmt(v).replace('.', ',')}: dort beginnt kein Part, der sich löschen lässt")
+		if v == tbl["end_von"]:
+			# die Zeile "Ende" selbst (mit ihren leeren Rasterzeilen): geht nur, wenn eine andere Zeile neu "Ende" heißt -
+			# das prüft am Schluss read_table() auf der Kopie (die letzte Zeile mit Songpart muss "Ende" heißen)
+			rows = [r for w, r, _p in lines if w >= v]
+			gone.update(rows)
+			report.append(f"alte Ende-Zeile (Takt {fmt(v).replace('.', ',')}) gelöscht")
+			continue
+		nxt = next((w for w, _r, p in lines if p and w > v), None)
+		rows = [r for w, r, _p in lines if v <= w < nxt]
+		gone.update(rows)
+		shifts.append((max(rows) + 1, nxt - v))
+		report.append(f"Part ab Takt {fmt(v).replace('.', ',')} gelöscht ({len(rows)} Zeilen, {fmt(nxt - v).replace('.', ',')} Takte)")
+	for v, n in names.items():
+		if v not in row_of:
+			raise TableError(f"von takt {fmt(v).replace('.', ',')}: keine Zeile mit dieser Taktnummer")
+		if row_of[v] in gone:
+			raise TableError(f"von takt {fmt(v).replace('.', ',')}: die Zeile liegt in einem Part, der gelöscht wird")
+		if not n and (v not in part_rows or v in (tbl["von"][0], tbl["end_von"])):
+			raise TableError(f"von takt {fmt(v).replace('.', ',')}: ein leerer Name geht nur für einen Part zwischen der "
+							 f"ersten Zeile und 'Ende' (er wird zur Zwischenzeile)")
+
+	try:
+		wb = openpyxl.load_workbook(path)		# ohne data_only: Formeln bleiben Formeln
+	except PermissionError:
+		raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	ws, header_row, cols = find_sheet(wb)
+	first_gone = min(gone) if gone else ws.max_row + 1
+	for row in ws.iter_rows(min_row=first_gone):
+		for c in row:
+			m = SIMPLE_REF_RE.fullmatch(c.value.strip()) if isinstance(c.value, str) else None
+			if m and int(m.group(2)) <= header_row:
+				continue		# erlaubt: schlichter Verweis auf den Kopf (=$C$3, BPM pro Part = BPM im Kopf), bleibt beim Löschen richtig
+			if isinstance(c.value, str) and c.value.startswith("="):
+				raise TableError(f"Formel in {c.coordinate} unterhalb der gelöschten Zeilen - den Part bitte in Excel selbst löschen")
+	if any(rng.max_row >= first_gone for rng in ws.merged_cells.ranges):
+		raise TableError("verbundene Zellen unterhalb der gelöschten Zeilen - den Part bitte in Excel selbst löschen")
+
+	# So muss jede bleibende Zeile danach aussehen: (alte Zeilennummer, Inhalt aller Spalten)
+	width = ws.max_column
+	expected = []
+	for r in range(header_row + 1, ws.max_row + 1):
+		if r in gone:
+			continue
+		vals = [ws.cell(r, c).value for c in range(1, width + 1)]
+		von = vals[cols["von"] - 1]
+		if isinstance(von, (int, float)) and not isinstance(von, bool):
+			vals[cols["von"] - 1] = neat(von - sum(d for at, d in shifts if r >= at))
+		if isinstance(von, (int, float)) and neat(von) in names:
+			vals[cols["name"] - 1] = names[neat(von)] or None
+		expected.append(vals)
+
+	# Ändern: erst die Namen, dann die Taktnummern, zuletzt von unten nach oben löschen (so bleiben die Zeilennummern
+	# weiter oben gültig). Zeilenhöhen und Gliederung (Ebenen des Rasters) wandern von Hand mit, das macht openpyxl nicht.
+	for v, n in names.items():
+		ws.cell(row_of[v], cols["name"]).value = n or None
+		report.append(f"Takt {fmt(v).replace('.', ',')}: " + (f"Songpart '{n}'" if n else "kein eigener Part mehr (Zwischenzeile)"))
+	for r in range(header_row + 1, ws.max_row + 1):
+		cell = ws.cell(r, cols["von"])
+		d = sum(dd for at, dd in shifts if r >= at)
+		if d and r not in gone and isinstance(cell.value, (int, float)) and not isinstance(cell.value, bool):
+			cell.value = neat(cell.value - d)
+	dims = {r: (d.height, d.outlineLevel, d.hidden, d.collapsed) for r, d in ws.row_dimensions.items()}
+	for r in sorted(gone, reverse=True):
+		ws.delete_rows(r, 1)
+
+	def moved(r):		# wo eine Zeile von vorher jetzt steht
+		return r - sum(1 for g in gone if g < r)
+	for r in list(ws.row_dimensions):
+		del ws.row_dimensions[r]
+	for r, (h, lvl, hid, col) in dims.items():
+		if r in gone:
+			continue
+		d = ws.row_dimensions[moved(r)]
+		d.height, d.outlineLevel, d.hidden, d.collapsed = h, lvl, hid, col
+	for v, n in names.items():		# Gliederung: ein Part ist oberste Ebene; eine Zwischenzeile Ebene 2 (Takt) bzw. 3 (Viertel)
+		d = ws.row_dimensions[moved(row_of[v])]
+		d.outlineLevel = 0 if n else (1 if _whole_bar(v) else 2)
+		d.hidden = False		# sichtbar lassen: in der Zeile steht ja etwas
+
+	tmp = path.with_name(TMP_FILE)
+	try:
+		wb.save(tmp)
+		read_table(tmp)		# muss lesbar sein (z. B. 'Ende' als letzte Zeile)
+		wb2 = openpyxl.load_workbook(tmp)
+		ws2 = find_sheet(wb2)[0]
+		got = [[ws2.cell(r, c).value for c in range(1, width + 1)] for r in range(header_row + 1, header_row + 1 + len(expected))]
+		rest = [r for r in range(header_row + 1 + len(expected), ws2.max_row + 1)
+				if any(not empty(ws2.cell(r, c).value) for c in range(1, width + 1))]
+		if got != expected or rest:
+			raise TableError("Kontrolle nach dem Schreiben: die übrigen Zeilen wären nicht mehr dieselben - nichts geändert")
+		try:
+			os.replace(tmp, path)
+		except OSError:
+			raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	finally:
+		if tmp.exists():
+			tmp.unlink()
+	return report

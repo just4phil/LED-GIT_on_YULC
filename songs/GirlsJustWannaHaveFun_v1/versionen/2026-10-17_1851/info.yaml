@@ -1,0 +1,9 @@
+zeit: '2026-10-17 18:51:25'
+notiz: 'Finale neu gegliedert: Feuer ab Takt 81, PingPong ab 85, Feuer-Finale ab 89;
+  Takt 83 kein eigener Part'
+werkzeug_git: bdb5beb + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 06eb890211fefddb9e6340911ddf697b64fabc6ce48806b031f4293fe9da17d1
+  show.yaml: fd1e7806c4ab5276a8962942b94ebcf2e62dd96b6eee3b0f571a983c805077a0
+  generated.cpp: eb27355f4ce7f2f4aa670431158e5344a593739d0c316ca950c4b27ad0b0e875

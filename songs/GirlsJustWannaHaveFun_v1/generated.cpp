@@ -2,8 +2,8 @@
 //@id 33
 //@function gen_GirlsJustWannaHaveFun
 //@name Girls just wanna have fun
-//@struktur_sha 2e56b308fb8ae4281b8ab3e0e8685d0af3b2ce44eef4b4d8fad57f8f4949e451
-//@show_sha 83782300f641f7d546341c5cea40e4080e643f1be736eae2f5f94b52dda17826
+//@struktur_sha 06eb890211fefddb9e6340911ddf697b64fabc6ce48806b031f4293fe9da17d1
+//@show_sha fd1e7806c4ab5276a8962942b94ebcf2e62dd96b6eee3b0f571a983c805077a0
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_PAUSE 0
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_INTRO 5
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_VERSE_1 10
@@ -20,10 +20,11 @@
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_WHEN_THE_WORKING_DAY_IS_DONE_2_TAIL 65
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_FUN_GIRLS_THEY_WANNA_HAVE_2 70
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA 75
-//@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_2 80
-//@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_3 85
-//@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_4 90
-//@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_4_TAIL 95
+//@part GEN_GIRLSJUSTWANNAHAVEFUN_GIRLS_JUST_WANNA_HAVE_FUN 80
+//@part GEN_GIRLSJUSTWANNAHAVEFUN_THEY_JUST_WANNA_2 85
+//@part GEN_GIRLSJUSTWANNAHAVEFUN_GIRLS_JUST_WANNA_HAVE_FUN_2 90
+//@part GEN_GIRLSJUSTWANNAHAVEFUN_GIRLS_JUST_WANNA_HAVE_FUN_2_TAIL 95
+//@part GEN_GIRLSJUSTWANNAHAVEFUN_OUTRO 100
 //@code
 //#33 Girls just wanna have fun - Cyndi Lauper  126 BPM  midi_offset 3/8 = 714 ms  (generiert aus songs/GirlsJustWannaHaveFun_v1: struktur.xlsx + show.yaml)
 void gen_GirlsJustWannaHaveFun() {
@@ -131,36 +132,40 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_DROP, 7619, 75, 126);
 		break;
 
-	case 75:	// they just wanna …  6 T  11428ms  @2:24.048  -- Finale Runde 1, energy 4: eine Stufe unter dem Chorus - die Hook springt von Gerät zu Gerät, Platz für die Steigerung
+	case 75:	// they just wanna …  4 T  7619ms  @2:24.048  -- Finale Runde 1, energy 4: eine Stufe unter dem Chorus - die Hook springt von Gerät zu Gerät, Platz für die Steigerung
 		setColorScheme(SCHEME_NEON);
-		scene(SCENE_PINGPONG, 11428, 80, 126);
+		scene(SCENE_PINGPONG, 7619, 80, 126);
 		break;
 
-	case 80:	// they just wanna … (2)  6 T  11429ms  @2:35.476  -- Finale Runde 2, energy 5: wieder alle Geräte voll im Beat, in den Neonfarben des Chorus
-		setColorScheme(SCHEME_NEON);
-		scene(SCENE_DROP, 11429, 85, 126);
-		break;
-
-	case 85:	// they just wanna … (3)  6 T  11428ms  @2:46.905  -- Finale Runde 3, energy 5: gleiche Wucht, Farbe kippt ins Warme - Vorstufe zum Feuer
-		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_DROP, 11428, 90, 126);
-		break;
-
-	case 90:	// they just wanna … (4)  6 T  9524ms  @2:58.333  -- Finale Runde 4, energy 5: letzte Stufe - Feuer auf allen Geräten, letzter Takt weißer Strobo als Schlusspunkt, danach 10 s schwarz
+	case 80:	// Girls just wanna have fun  4 T  7619ms  @2:31.667  -- Feuer auf allen Geräten ab dem Einsatz der Hook - läuft durch bis Takt 85
 		setColorScheme(SCHEME_FIRE);
-		scene(SCENE_FIRE, 9524, 95, 126);
+		scene(SCENE_FIRE, 7619, 85, 126);
 		break;
 
-	case 95:	// they just wanna … (4) (tail)  4 B  1905ms  @3:07.857
+	case 85:	// they just wanna 2  4 T  7619ms  @2:39.286  -- wie Takt 77: die Hook springt in Neonfarben von Gerät zu Gerät, eine Stufe unter dem Feuer
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_PINGPONG, 7619, 90, 126);
+		break;
+
+	case 90:	// Girls just wanna have fun (2)  4 T  5714ms  @2:46.905  -- Finale: wieder Feuer auf allen Geräten, letzter Takt weißer Strobo als Schlusspunkt
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_FIRE, 5714, 95, 126);
+		break;
+
+	case 95:	// Girls just wanna have fun (2) (tail)  4 B  1905ms  @2:52.619
 		setColorScheme(SCHEME_FIRE);
 		progStrobo(1905, 100, 75, CRGB::White);
 		break;
 
-	case 100:	// BLACK (Ende)    10000ms  @3:09.762  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 105);
+	case 100:	// outro  1 T  1905ms  @2:54.524  -- Neues Ende: alle Geräte orange, blenden über einen Takt weich nach Schwarz aus, danach 10 s schwarz
+		progFadeOut(1905, 105, CRGB::DarkOrange);
 		break;
 
-	case 105:
+	case 105:	// BLACK (Ende)    10000ms  @2:56.429  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 110);
+		break;
+
+	case 110:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;

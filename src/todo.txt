@@ -10,8 +10,8 @@ wir müssen die zonen auf andresgit noch testen
 
 neuer fx:
 - ausblend-fx alle geräte stehen voll in einer farbe und dann fährt wird auf der matrix zeilenweise nach unten gefahren bis alles schwarze ist (inkl fading damit es smooth wirkt)
-    genauso bei den Lampen (von oben nach unten) -> uind die gits?
-- einblend ef wäre dann reverse
+    genauso bei den Lampen (von oben nach unten) -> und die gits?
+- einblend fx wäre dann reverse
 - horiontale sound bar balken mit ausschlag links und rechts symmetrisch
     Multi-Band Spectrum Analyzer (Audio Equalizer)
 - song #90 hat coole FX!

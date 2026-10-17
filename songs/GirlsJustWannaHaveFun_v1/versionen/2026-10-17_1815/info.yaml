@@ -1,0 +1,9 @@
+zeit: '2026-10-17 18:15:17'
+notiz: 'um 8 Takte gekürzt: Part ''they just wanna (4)'' entfällt, (3) übernimmt das
+  Feuer-Finale, neuer Part ''outro'' (1 Takt orange Fade-out)'
+werkzeug_git: bdb5beb + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: fc2f4c46adb24b0395450652fdf8f6722d356d09e679044c3888f0eee44a860a
+  show.yaml: 949aca7b9c2f6662da8361a85b6cf3173814d5bac8be87e2d1140172f7e7aeb4
+  generated.cpp: 1e77168f2179a1c2fcf9a37dca8a665883cc2cda7f91f40b035c3d2b0c14591e

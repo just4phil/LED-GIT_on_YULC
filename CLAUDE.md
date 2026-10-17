@@ -193,7 +193,11 @@ songs are taken over unchanged). `--neu` creates a new song folder with the tabl
 himself - never rename or copy it for him), `--takt-ab 1` renumbers `von takt` of all rows so the table starts at
 bar 1 like the user's DAW (Cakewalk counts from 1; his wish 08.10.2026 - the second place where a tool writes the
 table: `struktur.shift_bars()` with the same write-copy-and-verify safety, `bar:`/`cues:` in `show.yaml` move along,
-the generated code must stay identical; only on his request, per song), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+the generated code must stay identical; only on his request, per song), `--part-loeschen <von>` / `--part-name
+<von>=<name>` (empty name = no longer a part of its own) change the table's parts (his wish 17.10.2026: when he marks a part "löschen" or wishes a new part in
+`Änderungswunsch`, Claude adapts the parts himself instead of asking him - through this tool, `struktur.edit_parts()`,
+same write-copy-and-verify safety; deleting moves the rows below up and earlier, `bar:`/`cues:` behind it move along;
+the `Ende` row can be deleted when another row is named `Ende`; then adapt `show.yaml` and generate), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
 A trailer (backing-track intro before a song, e.g. `ILoveItIntro_v1` = song 80) is a song folder of its own: its
 `show.yaml` has `next_song: <target folder>` + `scroll_text: false`, and with "0 sek." in the table's `Ende` row
 there is no closing blackout - the end case does `songID = N; switchToPart(GEN_<SONG>_TRAILER)`. The target song's

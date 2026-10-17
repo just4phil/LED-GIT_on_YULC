@@ -130,6 +130,18 @@ Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `
   passt weiter. Kurz prüfen, ob eine geänderte Energie eine andere Szene verlangt.
 - Änderungswunsch eingetragen: die betroffenen Parts in `show.yaml` neu gestalten, das `why` beschreibt danach den
   neuen Stand (es landet in der Spalte „Effekt“). Mit der letzten Version vergleichen, welche Wünsche neu sind.
+- **Part als Wunsch** (Regel des Users, 17.10.2026: „wenn ich neue Parts als Wünsche eintrage oder in den
+  Änderungswünschen Parts als zu löschen markiere o.ä. dann will ich dass du selbst die parts anpasst!“): steht in
+  `Änderungswunsch` „löschen“ oder ein neuer Part („Neues Ende: 1 Takt fade-out orange“), die Tabelle NICHT dem User
+  zurückgeben, sondern selbst anpassen - nur über das Werkzeug:
+  `songgen.py <Song> --part-loeschen <von takt>` (Part samt Zwischenzeilen weg, alles darunter rückt nach oben und um
+  seine Länge früher, `bar:`/`cues:` dahinter wandern mit; auch die Zeile „Ende“, wenn eine andere neu „Ende“ heißt)
+  und `--part-name <von takt>=<Name>` (Zwischenzeile wird neuer Part, Part wird umbenannt; `--part-name 83=` mit
+  leerem Namen: „ist kein eigener Part“ - die Zeile wird Zwischenzeile des Parts darüber), mehrfach in einem Aufruf.
+  Alle Taktnummern meinen die Tabelle vor dem Aufruf. Danach `show.yaml` anpassen (neue Parts gestalten, Einträge
+  gelöschter Parts entfernen; hat der User die Gestaltung eines gelöschten Parts in einen anderen kopiert, sie dort
+  übernehmen) und generieren. Beispiel Girls Just Wanna Have Fun (17.10.2026, 8 Takte gekürzt):
+  `--part-loeschen 95 --part-loeschen 101 --part-name 93=outro --part-name 94=Ende`.
 - Part eingefügt, gelöscht oder umbenannt: `songgen.py` bricht mit einer Gegenüberstellung ab (Show-Einträge
   ohne Part, Parts ohne Gestaltung, vermuteter neuer Name). Achtung bei gleichen Namen: fügt der User vorn ein
   weiteres `chorus 1` ein, rücken alle folgenden Nummern `(2)`, `(3)` um eins weiter - die Einträge der Show
