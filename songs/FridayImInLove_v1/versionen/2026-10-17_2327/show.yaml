@@ -1,0 +1,90 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus FridayImInLove() (Spalte "bisher (alter Code)")
+# als fx:. Der alte Code bleibt in src/songs.cpp. Kein Farbschema: die alten Effekte laufen mit freien Zufallsfarben.
+# Zeiten in den Effekten, die im alten Code von Hand gerundete Beats waren (430 ms = 1 Beat, 860 ms = 2 Beats bei
+# 140 BPM), stehen als ${beat} / ${half} (429 / 857 ms). NICHT im Beat-Raster und deshalb unverändert übernommen:
+# 1015 ms (Stern in intro 2) und 460 ms (Linien in "Saturday went") - ob das Absicht ist, entscheidet der User.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# intro 2: die Matrix zeigte im alten Code eine eigene Fassung des Sterns (fest in der Mitte, 4 Arm-Paare) - übernommen.
+# Bund-Marker: FridayImInLove() setzt keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 25) und gelten unverändert. Kein Trailer springt in diesen Song.
+# Titel-Lauftext wörtlich wie im alten Code.
+
+function: gen_FridayImInLove
+scroll_title: "Friday im in Love by The Cure"
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  intro:
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  intro 2:
+    fx: "progSternNeu(${dur}, 1015, ${next}, 5, 26, 5, true, 3)"
+    devices:
+      matrix: "progSternNeu(${dur}, 1015, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel etwa alle 1 s (1015 ms, nicht im Beat-Raster). Auf der Matrix steht der Stern fest in der Mitte."
+
+  verse 1:
+    fx: "progPalette(${dur}, 3, ${next})"
+    why: "Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte."
+
+  verse 1b:
+    fx: "progPalette(${dur}, 6, ${next})"
+    why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
+
+  Saturday went:
+    fx: "progRandomLines(${dur}, ${next}, 460, true)"
+    why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
+
+  verse 2:
+    fx: "progPalette(${dur}, 7, ${next})"
+    why: "Alter Effekt: Wolken-Farben (blau, hellblau, weiß), ruhig."
+
+  SOLO:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  verse 3:
+    fx: "progPalette(${dur}, 2, ${next})"
+    why: "Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet."
+
+  Saturday went (2):
+    fx: "progRandomLines(${dur}, ${next}, 460, true)"
+    why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
+
+  dressed up:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  dressed up 2:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  strobo:
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: 1 Takt weißes Flimmern (65 ms)."
+
+  verse 4a:
+    fx: "progPalette(${dur}, 2, ${next})"
+    why: "Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet (sehr farbig)."
+
+  verse 4b:
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  outro chorus 1:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats."
+
+  outro chorus 2:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  git fade out:
+    fx: "progBlingBlingColoring(${dur}, ${next}, 6000)"
+    why: "Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe (ruhiger Ausklang)."

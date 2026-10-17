@@ -1,0 +1,8 @@
+zeit: '2026-10-17 23:27:54'
+notiz: case-Nummern fortlaufend statt in 5er-Schritten (Wunsch des Users), sonst unverändert
+werkzeug_git: 42326d4 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
+  show.yaml: 4c3145793465a2621f62cf4adfca48909754c6fa4c1d5fa798d1e1b495f29686
+  generated.cpp: 3dfac1da6bafcbb6055c4df0119f1d0e59d89788a27c387b2a3a61de8ef4c88f

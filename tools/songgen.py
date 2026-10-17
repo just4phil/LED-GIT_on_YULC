@@ -325,12 +325,25 @@ def build_timeline(song):
 
 	ms = [round(b) for b in bounds]
 	n = len(secs)
-	# case-Nummern in 5er-Schritten (0, 5, 10 ...). prog ist in der Firmware ein Byte (höchstens 255): bei sehr
-	# vielen Parts wird der Schritt auf 4 oder 3 verkleinert.
-	step = 5
-	while step > 3 and (n + 1) * step > 255:	# >= 3, damit case 1/2 für den Lauftext frei sind
-		step -= 1
-	if (n + 1) * step > 255:
+	# case-Nummern fortlaufend (0, 3, 4, 5 ...), Wunsch des Users vom 17.10.2026: früher in 5er-Schritten (0, 5, 10 ...),
+	# damit man im handgeschriebenen Code Parts dazwischen einfügen konnte - das braucht der Generator nicht, er
+	# nummeriert bei jeder Generierung neu. Fortlaufend bleiben auch lange Songs unter 127, dem größten Wert, den die
+	# MIDI-Datei als Part-Nummer senden kann (CC 23). Frei gehalten werden nur die Nummern für Zusatz-cases:
+	#   - case 1 und 2 hinter dem ersten Part: Lauftext der Scroll-Geräte am Songanfang (scroll_code)
+	#   - zwei Nummern hinter dem Part aus trailer_entry: Lauftext nach dem Einstieg aus dem Vorspann (plan_trailer_entry)
+	# prog ist in der Firmware ein Byte, mehr als 255 geht nicht.
+	entry = song.get("trailer_entry")
+	cases, c, entry_done = [], 0, False
+	for i, sec in enumerate(secs):
+		cases.append(c)
+		c += 1
+		if i == 0:
+			c += 2		# case 1/2 für den Lauftext
+		if entry and not entry_done and sec.get("name") == entry and "_parent" not in sec:
+			c += 2		# case + 1 / + 2 für den Lauftext nach dem Vorspann
+			entry_done = True
+	cases.append(c)		# hinter dem letzten Part: clearAll() + switchToSong(0) bzw. der Sprung in den nächsten Song
+	if c > 255:
 		raise SongError(f"zu viele Parts ({n}) für prog (byte)")
 
 	timeline = []
@@ -339,7 +352,7 @@ def build_timeline(song):
 		if dur <= 0:
 			raise SongError(f"Part '{sec.get('name')}' hat Dauer {dur} ms")
 		timeline.append({
-			"case": i * step, "next": (i + 1) * step, "start": ms[i], "dur": dur, "sec": sec,
+			"case": cases[i], "next": cases[i + 1], "start": ms[i], "dur": dur, "sec": sec,
 			"bpm": section_bpm(sec, song),
 			"full_dur": dur,	# bleibt die ganze Länge, auch wenn eine Kopie des Parts gekürzt wird (Rest-Part der Matrix)
 		})
@@ -351,7 +364,7 @@ def build_timeline(song):
 	# Zeitangaben im ersten Part (blinder at / bar, ${bar:...}) zählen wie in der Tabelle ab dem Anfang der ersten Zeile.
 	# Der Part selbst beginnt aber erst mit dem Start-MIDI: "lead" ist das Stück, das abgezogen werden muss.
 	timeline[0]["lead"] = lead
-	return timeline, n * step
+	return timeline, cases[n]
 
 
 #==================================================================
@@ -1539,7 +1552,7 @@ def part_constants(song, timeline):
 # Der Vorspann (eigener Song-Ordner mit next_song:) zeigt keinen Titel mehr; stattdessen läuft der Titel-Lauftext auf
 # den Matrix-Geräten ab dem Einstieg, während alle anderen Geräte den Part normal spielen (Wunsch des Users zu
 # "I Love It", 09.10.2026). Dafür bekommen NUR die Scroll-Geräte zwei zusätzliche cases direkt hinter dem Part
-# (case + 1 und case + 2, frei, weil die Parts mindestens 3 auseinander liegen) - geplant wie der Lauftext am
+# (case + 1 und case + 2, build_timeline hält sie frei) - geplant wie der Lauftext am
 # Songanfang (plan_scroll): Text, danach der Rest des laufenden Parts, Wiedereinstieg an der nächsten Part-Grenze.
 # Der normale Ablauf des Songs (Start ohne Vorspann) benutzt diese cases nie und bleibt unverändert.
 # Wohin der Vorspann springt, sagt die Konstante GEN_<SONG>_TRAILER (songs_generated.h): auf den Scroll-Geräten
