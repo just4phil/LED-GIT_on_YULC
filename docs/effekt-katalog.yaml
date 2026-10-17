@@ -226,8 +226,8 @@ effekte:
     alt: {parts: 0, takte: 0, wofuer: "Matrix-Teil von SCENE_VERSE"}
     regler: "reduceSpeed (ms je Schritt, in SCENE_VERSE 80), cycleMillis (ein Umlauf des Verlaufs, in SCENE_VERSE 16 Takte; 0 = steht); RAINC_TRAIL, RAINC_HEAD_WHITE in fxMatrixRain.cpp"
     demo: "92: Part 53 (ICE), 55 (ohne Schema) als SCENE_VERSE"
-    urteil:
-    notiz: "neu am 17.10.2026 (Vorschlag A + B nach dem Urteil zum weißen Regen, vom User angenommen: \"ja, A und B umsetzen\"). Abnahme offen. energie/traegt_takte geschätzt"
+    urteil: ok
+    notiz: "neu am 17.10.2026 (Vorschlag A + B nach dem Urteil zum weißen Regen, vom User angenommen: \"ja, A und B umsetzen\"). Erstes Urteil auf der Hardware (17.10.2026, ICE in Dancing On My Own): \"der regen sieht ganz ok aus. ist jetzt immer noch kühl (blautöne) aber zumindest farbig\" - das Kühle kommt vom Schema ICE, nicht vom Effekt. energie/traegt_takte geschätzt"
 
   progMatrixHorizontal:
     wirkung: "Spuren laufen waagerecht durch, verblassen nach Weiß"
