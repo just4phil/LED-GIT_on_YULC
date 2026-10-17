@@ -11,7 +11,22 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 17.10.2026 (farbiger Regen `progMatrixRainColor` und tempoabhängige WAVE-Szenen: committet und gepusht, Abnahme auf der Hardware offen)
+Zuletzt aktualisiert: 18.10.2026 (mehrere Zeitfenster je Ebene für Abcdefu: committet und gepusht; Abcdefu vom User abgenommen, Demo 92 Part 59 offen)
+
+- **17.10.2026, mehrere Zeitfenster je Ebene (`fxLayerWindow` / `fxTextWindow` mit Platz) - committet und gepusht,
+  Abcdefu vom User abgenommen („abcdefu ist erstmal fertig“, 18.10.2026).** Anlass: Wünsche des Users in Abcdefu (Zwischenzeilen): FUCK YOU auf jedes „F-U“ im Chorus und schon
+  eine Viertel vor Chorus 2/3, jedes Mal ausgestanzt, 1,5 Takte voll, 0,5 Takte ausblenden - bis zu drei Einblendungen
+  je Part, teils über die Part-Grenze. Umsetzung: `LayerMod` hat `FX_LAYER_WINDOWS` (= 4, definitions.h) Fenster,
+  `fxLayerWindow(von, bis, slot = 0, fades = true)` schreibt in einen festen Platz (Anmeldung läuft jeden Durchlauf),
+  `layerEnvelope()` = hellstes Fenster; `fades = false` = Fenster ohne Ein-/Ausblenden (Bitmaske `hardWindows`);
+  `bis` hinter dem Part-Ende erlaubt. Ohne Platz-Angabe alles wie bisher. songgen.py: `windows:` in `overlay` und
+  `text` (mit over), Eintrag `[von, bis]`, `[von]` oder `{from, to, hard: true}`. Abcdefu neu generiert (case-Nummern
+  jetzt fortlaufend, MIDI-Datei neu). Zwei Texte in einem Part (A B C D E weiß + FUCK YOU ausgestanzt) laufen über
+  `text:` (Text-Ebene, progText) + `overlay` mit `progShowText` (eigener Effekt, kein geteilter Zustand mit progText).
+  Demo 92: Part 59 am Anfang, Doku-Tabelle offene Zeiten +11 s. Gebaut: alle fünf Envs (`build_ota.py --backup`).
+  Nachtrag 18.10.2026: auf x,25 FUCK OFF statt FUCK YOU (Tabelle); ab 80,75 (Chorus 3, Triolen) weiß mit `outline`
+  statt ausgestanzt - über `progFastBlingBling` war ausgestanzter Text unsichtbar.
+  Nächster Schritt: Urteil des Users zu Demo 92 Part 59.
 
 - **17.10.2026, WAVE-Szenen im Tempo - committet und gepusht, Abnahme offen.** Anlass: Dancing On My Own,
   chorus 1b (`SCENE_WAVE_LR`): die Matrix blitzte durch feste 100 ms je Bühnenposition 200 ms nach dem Beat, Lampe 2

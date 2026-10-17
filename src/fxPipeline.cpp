@@ -76,8 +76,13 @@ enum { LAYER_FX = 0, LAYER_TEXT, LAYER_COUNT };
 
 // steuert nur die Stärke einer Ebene (fxLayer… / fxText…)
 struct LayerMod {
-	unsigned int fromMs, toMs;					// Zeitfenster im Part (toMs 0 = bis zum Part-Ende)
-	unsigned int fadeInMs, fadeOutMs;			// Ein-/Ausblenden am Rand des Zeitfensters
+	// Zeitfenster im Part, bis zu FX_LAYER_WINDOWS Stück (Platz 0 ist immer belegt: ohne Anmeldung 0..0 = ganzer Part).
+	// toMs 0 = bis zum Part-Ende. toMs darf hinter dem Part-Ende liegen: dann steht die Ebene bis zum Ende voll und
+	// das Ausblenden passiert erst im nächsten Part (der dort sein eigenes Fenster ab 0 anmeldet).
+	unsigned int fromMs[FX_LAYER_WINDOWS], toMs[FX_LAYER_WINDOWS];
+	uint8_t windows;							// so viele Plätze sind belegt (0 = nur Platz 0 mit 0..0)
+	uint8_t hardWindows;						// Bit w gesetzt = Fenster w springt hart an und aus (ohne fadeInMs / fadeOutMs)
+	unsigned int fadeInMs, fadeOutMs;			// Ein-/Ausblenden am Rand jedes Zeitfensters
 	uint8_t pulseBpm, pulseDepth, pulseBeats;	// Pumpen im Beat (pulseBpm 0 = aus)
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// Strobo-Tor (gateBpm 0 = aus)
 	uint8_t under;								// Helligkeit des Bildes darunter, solange die Ebene da ist (255 = unverändert)
@@ -197,7 +202,18 @@ static void setLayerGate(LayerMod& lm, uint8_t bpm, uint8_t perBeat, uint8_t dut
 	lm.gateDuty = min((uint8_t)100, dutyPercent);
 }
 
-void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layer[LAYER_FX].fromMs = fromMillis; mod.layer[LAYER_FX].toMs = toMillis; }
+// Zeitfenster in Platz slot eintragen. Die Anmeldung läuft bei jedem Durchlauf neu: deshalb ein fester Platz statt
+// "hinten anhängen" (sonst wäre die Liste nach ein paar Durchläufen voll). windows merkt sich den höchsten belegten Platz.
+static void setLayerWindow(LayerMod& lm, unsigned int fromMillis, unsigned int toMillis, uint8_t slot, bool fades) {
+	slot = min(slot, (uint8_t)(FX_LAYER_WINDOWS - 1));
+	lm.fromMs[slot] = fromMillis;
+	lm.toMs[slot] = toMillis;
+	if (fades) lm.hardWindows &= ~(1 << slot);	// "~" kehrt die Bits um: nur Bit slot wird gelöscht
+	else lm.hardWindows |= (1 << slot);			// nur Bit slot wird gesetzt
+	lm.windows = max(lm.windows, (uint8_t)(slot + 1));
+}
+
+void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis, uint8_t slot, bool fades)	{ setLayerWindow(mod.layer[LAYER_FX], fromMillis, toMillis, slot, fades); }
 void fxLayerFadeIn(unsigned int millis)		{ mod.layer[LAYER_FX].fadeInMs = millis; }
 void fxLayerFadeOut(unsigned int millis)	{ mod.layer[LAYER_FX].fadeOutMs = millis; }
 void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_FX], bpm, depth, beats); }
@@ -205,7 +221,7 @@ void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGa
 void fxLayerUnder(uint8_t brightness)		{ mod.layer[LAYER_FX].under = brightness; }
 void fxLayerOutline()						{ mod.layer[LAYER_FX].outline = true; }
 
-void fxTextWindow(unsigned int fromMillis, unsigned int toMillis)	{ mod.layer[LAYER_TEXT].fromMs = fromMillis; mod.layer[LAYER_TEXT].toMs = toMillis; }
+void fxTextWindow(unsigned int fromMillis, unsigned int toMillis, uint8_t slot, bool fades)	{ setLayerWindow(mod.layer[LAYER_TEXT], fromMillis, toMillis, slot, fades); }
 void fxTextFadeIn(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeInMs = millis; }
 void fxTextFadeOut(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeOutMs = millis; }
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_TEXT], bpm, depth, beats); }
@@ -559,13 +575,14 @@ static uint8_t modBrightness(uint32_t ms) {
 	return v;
 }
 
-// Hüllkurve einer Ebene aus Zeitfenster und Ein-/Ausblenden: 0 = Ebene weg, 255 = voll da
-static uint8_t layerEnvelope(const LayerMod& lm, uint32_t beatMs) {
-	uint32_t end = lm.toMs ? lm.toMs : (uint32_t)nextChangeMillis + mod.offsetMs;
-	if (beatMs < lm.fromMs) return 0;
-	if (lm.toMs && beatMs >= end) return 0;
+// Hüllkurve EINES Zeitfensters (Platz w) aus Fenster und Ein-/Ausblenden: 0 = Ebene weg, 255 = voll da
+static uint8_t windowEnvelope(const LayerMod& lm, uint8_t w, uint32_t beatMs) {
+	uint32_t end = lm.toMs[w] ? lm.toMs[w] : (uint32_t)nextChangeMillis + mod.offsetMs;
+	if (beatMs < lm.fromMs[w]) return 0;
+	if (lm.toMs[w] && beatMs >= end) return 0;
 	uint8_t v = 255;
-	uint32_t since = beatMs - lm.fromMs;
+	if (lm.hardWindows & (1 << w)) return v;	// dieses Fenster springt hart an und aus
+	uint32_t since = beatMs - lm.fromMs[w];
 	if (lm.fadeInMs && since < lm.fadeInMs) {
 		uint8_t lin = since * 255 / lm.fadeInMs;
 		v = scale8(lin, lin);	// quadratisch wie fxFadeIn
@@ -577,6 +594,14 @@ static uint8_t layerEnvelope(const LayerMod& lm, uint32_t beatMs) {
 			v = scale8(v, scale8(lin, lin));
 		}
 	}
+	return v;
+}
+
+// Hüllkurve einer Ebene: das hellste ihrer Zeitfenster (meist gibt es nur eins, Platz 0)
+static uint8_t layerEnvelope(const LayerMod& lm, uint32_t beatMs) {
+	uint8_t v = 0;
+	uint8_t n = max(lm.windows, (uint8_t)1);	// Platz 0 gilt immer, auch ohne Anmeldung (dann 0..0 = ganzer Part)
+	for (uint8_t w = 0; w < n; w++) v = max(v, windowEnvelope(lm, w, beatMs));
 	return v;
 }
 

@@ -323,6 +323,12 @@ eigener Part, z. B. Strobo-Absprung), `text`, `why`, dazu Übergang und Modifika
 
 Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jeden Part beschriften.
 
+**Überlagernde Texte kürzen** (Regel des Users, 18.10.2026: „wenn texte sich überlagern würden dann sollten sie
+generell immer so gekürzt werden dass die nächste texteinblendung pünktlich erfolgen kann!“): reicht eine Einblendung
+(Stehen + Ausblenden, auch über die Part-Grenze in den nächsten Part) bis über den Beginn der nächsten, endet die
+frühere genau dort (`to` bzw. das Fenster in `windows:` kürzen, das Ausblenden früher legen oder verkürzen). Die
+nächste Einblendung wird nie verschoben. Im `cues:`- bzw. `why:`-Text sagen, dass gekürzt wurde.
+
 **Ebene: zweiter Effekt über dem Effekt des Parts** (`overlay`, `fxLayerBegin/End` in `src/fxPipeline.h`):
 - `overlay: SCENE_SPARKLE` oder `{scene: ... | fx: "...", mode: add|max|over|mask|cut, amount: 40, span: [50, 100],
   devices: {matrix: SCENE_RAIN}}`. `add` (Standard) addiert auf, Schwarz ist durchsichtig; `max` = hellerer Pixel;
@@ -331,7 +337,10 @@ Sparsam einsetzen: Hook-Wörter im Chorus, ein Wort auf einen Akzent - nicht jed
 - Nur die Ebene steuern, der Effekt darunter bleibt (Schlüssel im `overlay`, Längen in Beats, Stärken in Prozent):
   `pulse: 80 | {depth, per}` und `gate: 2 | {per_beat, duty}` (nur die Ebene pumpt/blitzt), `fade_in` / `fade_out`
   (Ebene baut sich auf / klingt ab), `from` / `to` (Ebene nur in diesem Zeitfenster des Parts, Fades beziehen sich
-  darauf), `under: 40` (Effekt darunter gedimmt, solange die Ebene da ist). `pulse`/`gate`/`dim` auf Abschnittsebene
+  darauf), `windows: [[von, bis], [von, bis], [von]]` statt `from`/`to` (bis zu 4 Zeitfenster in einem Part, Fades
+  gelten für jedes; ein Fenster als `{from: 0, to: 12, hard: true}` springt hart an und aus; `bis` darf hinter dem
+  Part-Ende liegen - dann steht die Ebene bis zum Ende voll und der Part danach blendet mit einem Fenster ab 0 aus.
+  Abcdefu, 17.10.2026: FUCK YOU dreimal je Chorus, `windows: [[0, 7], [15, 23], [29, 37]], fade_out: 2`), `under: 40` (Effekt darunter gedimmt, solange die Ebene da ist). `pulse`/`gate`/`dim` auf Abschnittsebene
   wirken dagegen auf das ganze Bild.
 - Damit statt `tail:` möglich: Akzent im letzten Takt als Ebene mit `from`, ohne eigenen Part und ohne Bildsprung.
 - Oben und unten müssen verschiedene Effekte sein (Generator prüft Szenen-/Funktionsnamen; zwei verschiedene Szenen,

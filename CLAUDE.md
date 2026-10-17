@@ -110,7 +110,8 @@ computed from the time since part start, so all devices stay in sync regardless 
 come from the YAML keys `transition`, `fade_in`, `fade_out`, `pulse`, `gate`, `dim`, `tint`, `only`, `span`, `soft`, `smooth`, `blinder` (lengths in
 beats, strengths in percent) and `overlay` (the layer; `text: {..., over: true}` uses it for text over the scene, or the text layer if the
 section also has an `overlay`;
-inside `overlay` the keys `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `under` steer only the layer).
+inside `overlay` the keys `pulse`, `gate`, `fade_in`, `fade_out`, `from`, `to`, `windows`, `under` steer only the layer;
+`windows` = up to `FX_LAYER_WINDOWS` time windows per part, `fxLayerWindow(from, to, slot, fades)`).
 
 Plan and working state of this refactoring: `docs/FX-Pipeline-Plan.md` (section "Arbeitsstand"). **Read it before
 continuing the work and keep it up to date at every step** - mark a step "in Arbeit" before starting, record result,

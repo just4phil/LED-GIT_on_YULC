@@ -1,0 +1,10 @@
+zeit: '2026-10-17 23:57:38'
+notiz: FUCK YOU zusätzlich auf 40,75/44,25 usw., ab Chorus 2 eine Viertel früher,
+  ausgestanzt 1,5 Takte + 0,5 Takte ausblenden (windows:); Blinder 48,75; Stopp-Blinder
+  auf 51,875
+werkzeug_git: 3ced774 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: cfe8adb9c20461e751c9ce4cfd132102bc36adbf039c7b785d33b9fb5e703e74
+  show.yaml: 13bf9f07c8a58af3a3d9c5e494900bc96204611c5489c87c232a549738e6e105
+  generated.cpp: 716ce6243aef2f64e26509c4de66ad7a1e5443f03978a857e9741368348d7592

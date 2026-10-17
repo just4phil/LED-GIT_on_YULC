@@ -155,7 +155,8 @@ TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
 			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
 LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK", "cut": "FX_CUT"}	# overlay: mode
-LAYER_MOD_KEYS = ("from", "to", "fade_in", "fade_out", "pulse", "gate", "under", "outline")	# steuern nur die Ebene (fxLayer...)
+LAYER_MOD_KEYS = ("from", "to", "windows", "fade_in", "fade_out", "pulse", "gate", "under", "outline")	# steuern nur die Ebene (fxLayer...)
+LAYER_WINDOWS = 4		# so viele Zeitfenster kann eine Ebene in einem Part haben (FX_LAYER_WINDOWS in definitions.h)
 OVERLAY_KEYS = ("scene", "fx", "mode", "amount", "span", "devices") + LAYER_MOD_KEYS
 DEVICE_MASKS = {	# only: Schlüssel wie bei devices -> Bühnen-Maske (DEV_... in definitions.h)
 	"LAMPE1": "DEV_LAMPE1", "LAMPE2": "DEV_LAMPE2", "RINASBASS": "DEV_BASS", "ANDRESGIT": "DEV_GIT",
@@ -859,7 +860,40 @@ def layer_mod_calls(spec, part, sec, song, name, errors, prefix="fxLayer", label
 		return v
 
 	start, end = 0, part["dur"]
-	if "from" in spec or "to" in spec:
+	windows = []	# (von, bis) in ms je Zeitfenster - für die Prüfung von fade_in + fade_out unten
+	if "windows" in spec:
+		# windows: [[von, bis], [von, bis], [von]] - mehrere Zeitfenster in einem Part (Beats ab Part-Beginn, ohne bis =
+		# bis zum Part-Ende). fade_in / fade_out gelten für jedes, außer für ein Fenster als {from, to, hard: true}
+		# (springt hart an und aus). "bis" darf hinter dem Part-Ende liegen: dann steht die
+		# Ebene bis zum Ende voll und blendet erst im nächsten Part aus (dort ein Fenster ab 0 eintragen).
+		ws = spec["windows"]
+		if "from" in spec or "to" in spec:
+			errors.append(f"{name}: {label} windows und from/to zugleich - bitte nur eins")
+		elif not isinstance(ws, list) or not 1 <= len(ws) <= LAYER_WINDOWS:
+			errors.append(f"{name}: {label} windows ist eine Liste von 1 bis {LAYER_WINDOWS} Zeitfenstern [von, bis] in Beats, nicht '{ws}'")
+		else:
+			for slot, w in enumerate(ws):
+				hard = False
+				if isinstance(w, dict):
+					bad = [k for k in w if k not in ("from", "to", "hard")]
+					hard = w.get("hard") is True
+					w = [w.get("from")] + ([w["to"]] if "to" in w else []) if not bad else None
+				w = w if isinstance(w, list) else [w]
+				ok = 1 <= len(w) <= 2 and all(isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 0 for v in w)
+				if not ok or (len(w) == 2 and w[1] <= w[0]):
+					errors.append(f"{name}: {label} windows - Fenster '{w}' ist [von, bis] in Beats (bis hinter von) oder [von]")
+					continue
+				a = round(w[0] * 60000.0 / part["bpm"])
+				b = round(w[1] * 60000.0 / part["bpm"]) if len(w) == 2 else 0
+				if a >= part["dur"]:
+					errors.append(f"{name}: {label} windows - Fenster ab {w[0]} Beats beginnt hinter dem Part-Ende ({part['dur']} ms)")
+					continue
+				if not hard:
+					windows.append((a, b or part["dur"]))
+				calls.append(f"{prefix}Window({a}" + (f", {b}" if b or slot or hard else "") + (f", {slot}" if slot or hard else "") + (", false" if hard else "") + ");")
+				infos.append(f"Fenster {slot + 1}: ab {a} ms" + (f" bis {b} ms" + (" (blendet im nächsten Part aus)" if b > part["dur"] else "") if b else "")
+							 + (", hart an und aus" if hard else ""))
+	elif "from" in spec or "to" in spec:
 		a = beats_ms("from", allow_zero=True) if "from" in spec else 0
 		b = beats_ms("to") if "to" in spec else 0
 		if a is not None and b is not None:
@@ -878,8 +912,8 @@ def layer_mod_calls(spec, part, sec, song, name, errors, prefix="fxLayer", label
 				fades += ms
 				calls.append(f"{fn}({ms});")
 				infos.append(text.format(ms))
-	if fades > end - start:
-		errors.append(f"{name}: {label} fade_in + fade_out ({fades} ms) sind länger als das Zeitfenster der Ebene ({end - start} ms)")
+	if fades > min([b - a for a, b in windows] or [end - start]):
+		errors.append(f"{name}: {label} fade_in + fade_out ({fades} ms) sind länger als das (kürzeste) Zeitfenster der Ebene ({min([b - a for a, b in windows] or [end - start])} ms)")
 
 	if "pulse" in spec:
 		p = sub("pulse", "depth", ("depth", "per"))
@@ -929,7 +963,8 @@ def overlay_code(part, song):
 	overlay: SCENE_SPARKLE | "progStrobo(${dur}, ${next}, ${beat}, CRGB::White)"
 	overlay: {scene: ... | fx: "...", mode: add|max|over|mask|cut, amount: <Prozent>, span: [von, bis],
 	          devices: {guitar: SCENE_... | "...", ...}}     ohne scene/fx läuft die Ebene nur auf den Geräten aus devices
-	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster), fade_in / fade_out: <Beats>,
+	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster) oder windows: [[von, bis], ...]
+	(bis zu 4 Zeitfenster, eins auch als {from, to, hard: true}; bis darf hinter dem Part-Ende liegen), fade_in / fade_out: <Beats>,
 	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler),
 	outline: true (schwarzer Rand um alles, was die Ebene zeichnet - nur auf der Matrix, für lesbaren Text)"""
 	sec = part["sec"]

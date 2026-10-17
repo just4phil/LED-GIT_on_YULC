@@ -15,6 +15,11 @@ neuer fx:
 - horiontale sound bar balken mit ausschlag links und rechts symmetrisch
     Multi-Band Spectrum Analyzer (Audio Equalizer)
 - song #90 hat coole FX!
+------------
+
+
+- abcdefu ist erstmal fertig, 17.10.2026
+
 
 
 ---------

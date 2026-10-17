@@ -1100,7 +1100,7 @@ ausgabestufe:
     fxLayerPulse:     {wirkung: "nur die Ebene pumpt im Beat (pumpendes Glitzern über ruhiger Fläche)", yaml: "overlay: {..., pulse: <Prozent> | {depth: , per: }}", demo: 82, genutzt: 0, urteil: , notiz: }
     fxLayerFadeIn_fxLayerFadeOut: {wirkung: "die Ebene baut sich auf bzw. klingt ab, der Effekt darunter bleibt gleich hell", yaml: "overlay: {..., fade_in: <Beats>, fade_out: <Beats>}", demo: 84, genutzt: 0, urteil: , notiz: }
     fxLayerUnder:     {wirkung: "der Effekt darunter ist gedimmt, solange die Ebene da ist (Szene dunkel, Text voll hell)", yaml: "overlay: {..., under: <Prozent>} | text: {..., over: true, under: <Prozent>}", demo: 86, genutzt: 0, urteil: , notiz: }
-    fxLayerWindow:    {wirkung: "die Ebene ist nur in einem Zeitfenster des Parts zu sehen (Akzent im letzten Takt ohne eigenen Part)", yaml: "overlay: {..., from: <Beats>, to: <Beats>}", demo: 88, genutzt: 0, urteil: , notiz: }
+    fxLayerWindow:    {wirkung: "die Ebene ist nur in einem Zeitfenster des Parts zu sehen (Akzent im letzten Takt ohne eigenen Part)", yaml: "overlay: {..., from: <Beats>, to: <Beats>} oder windows: [[von, bis], ...] (bis zu 4 Fenster, {from, to, hard: true} ohne Fades; auch im text: mit over)", demo: "88; mehrere Fenster 59", genutzt: 0, urteil: , notiz: "17.10.2026: mehrere Fenster neu für Abcdefu (FUCK YOU dreimal je Chorus, 1,5 Takte voll + 0,5 Takte ausblenden), Abnahme offen" }
     fxLayerGate:      {wirkung: "nur die Ebene blitzt im Raster", yaml: "overlay: {..., gate: <pro Beat> | {per_beat: 2, duty: 30}}", demo: 88, genutzt: 0, urteil: , notiz: }
 
   text_ebene:         # eigene Ebene nur für Text, liegt über Szene und Ebene (nur Matrix)

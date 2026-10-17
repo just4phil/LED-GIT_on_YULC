@@ -1,0 +1,9 @@
+zeit: '2026-10-18 00:22:31'
+notiz: Ab 80,75 (Chorus 3, Triolen) Text weiß mit schwarzem Rand statt ausgestanzt
+  - über progFastBlingBling unsichtbar
+werkzeug_git: 3ced774 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 323f3b77009c796563753d1cad5a779358089431c741b55cdd8fccc2deb16d78
+  show.yaml: 42acaf7f5c1e3edbcc8aafca4c6e95e0d050dd03d391e4de2eec194560041c13
+  generated.cpp: ec53222f9b9f2dfac38fe8dbbfc92753616993064ef8ac1a0f41c6dfc51b67fe

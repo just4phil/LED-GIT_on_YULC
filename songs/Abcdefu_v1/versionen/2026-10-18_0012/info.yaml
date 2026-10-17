@@ -1,0 +1,8 @@
+zeit: '2026-10-18 00:12:07'
+notiz: FUCK OFF statt FUCK YOU auf 44,25 / 72,25 / 88,25 und im Part danach (Tabelle)
+werkzeug_git: 3ced774 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 323f3b77009c796563753d1cad5a779358089431c741b55cdd8fccc2deb16d78
+  show.yaml: a331a137e8129ffc93fc79d14ca8cc3383c85fc1a798b9d8f5982798d3f5de1a
+  generated.cpp: a2a582c12f72a71f0e0d578e0b0587a461ac3d81d7dec5b3a6379775fa29c10c

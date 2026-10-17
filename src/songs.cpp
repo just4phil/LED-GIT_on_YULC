@@ -4256,8 +4256,30 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(57);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(59);	break;
+
+	// Mehrere Zeitfenster für eine Ebene (neu am 17.10.2026, Wünsche des Users in Abcdefu: "FUCK YOU" mehrmals im Chorus,
+	// jedes Mal 1,5 Takte voll und 0,5 Takte ausblenden): fxLayerWindow(von, bis, Platz, fades) - Platz 0, 1, 2 = drei
+	// Fenster im selben Part, fxLayerFadeOut gilt für jedes, außer für das mit fades = false (springt hart an und aus).
+	//   59: FUCK YOU schwarz ausgestanzt aus dem Farbband (nur Matrix). 0-2 s hart an und aus, 3-5,5 s und 6-8 s je
+	//       1 s ausblendend. Die übrigen Geräte zeigen nur das Farbband.
+	case 59:
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 2000, 0, false);
+		fxLayerWindow(3000, 5500, 1);
+		fxLayerWindow(6000, 8000, 2);
+		fxLayerFadeOut(1000);
+		fxLayerBegin();
+		progText("FUCK_YOU", 8000, DEMO_NR(57), 8000, CRGB::White);
+		fxLayerEnd(FX_CUT);
+#endif
+		scene(SCENE_PALETTE, 8000, DEMO_NR(57), bpm);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
 
 	// SCENE_WAVE_LR im Tempo (neu am 17.10.2026, Regel des Users bei Dancing On My Own: "solche effekte müssen immer auf
 	// dem beat sein!"): die Verzögerung je Bühnenposition ist jetzt Beat / 16 statt fest 100 ms. Die ganze Welle von

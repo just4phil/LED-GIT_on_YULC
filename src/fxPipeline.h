@@ -64,7 +64,11 @@ void fxLayerFlush();	// nach dem unteren Effekt (gilt für beide Ebenen): gibt a
 
 //--- Ebene gezielt steuern: wirken nur auf die Stärke der Ebene, der Effekt darunter bleibt ruhig. Anmeldung wie die
 //    Modifikatoren oben im case (bei jedem Durchlauf); alles aus der Zeit seit Part-Beginn -> auf allen Geräten gleich ---
-void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis = 0);	// Ebene nur in diesem Zeitfenster des Parts (toMillis 0 = bis zum Part-Ende)
+void fxLayerWindow(unsigned int fromMillis, unsigned int toMillis = 0, uint8_t slot = 0, bool fades = true);	// Ebene nur in diesem
+						// Zeitfenster des Parts (toMillis 0 = bis zum Part-Ende). Mehrere Fenster in einem Part: je eins in Platz 0, 1, ...
+						// (bis FX_LAYER_WINDOWS - 1, definitions.h); Ein-/Ausblenden gilt für jedes, außer mit fades = false (dieses Fenster
+						// springt hart an und aus). toMillis darf hinter dem Part-Ende liegen: dann blendet die Ebene erst im nächsten Part aus
+						// (Beispiel Abcdefu: ein Wort setzt eine Viertel vor dem Chorus ein und blendet im Chorus aus)
 void fxLayerFadeIn(unsigned int millis);		// Ebene baut sich ab dem Beginn ihres Zeitfensters auf
 void fxLayerFadeOut(unsigned int millis);		// Ebene klingt zum Ende ihres Zeitfensters ab
 void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Ebene pumpt im Beat (wie fxPulse)
@@ -93,7 +97,7 @@ void fxTextBegin();		// ab hier zeichnet der folgende Effekt (progText, progText
 void fxTextEnd(uint8_t amount = 255, uint8_t mode = FX_OVER);	// amount = Deckkraft des Texts; mode FX_CUT = ausgestanzter Text:
 						// die Buchstaben (weiß gezeichnet) sind dunkel, die Szene leuchtet drumherum
 // wie fxLayer…, steuern aber die Text-Ebene; fxTextUnder dimmt alles unter dem Text (Effekt des Parts + Ebene)
-void fxTextWindow(unsigned int fromMillis, unsigned int toMillis = 0);
+void fxTextWindow(unsigned int fromMillis, unsigned int toMillis = 0, uint8_t slot = 0, bool fades = true);
 void fxTextFadeIn(unsigned int millis);
 void fxTextFadeOut(unsigned int millis);
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);
