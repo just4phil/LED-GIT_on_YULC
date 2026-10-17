@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LED-Sync-Modul</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#10261d,#11202e 55%,#0f1216);border-bottom:1px solid var(--border);padding:34px 0 28px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.2px}
+  h2{font-size:23px;margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+  h3{font-size:18px;margin:26px 0 6px;color:var(--accent2)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  a{color:var(--accent)}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff;overflow-wrap:anywhere}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13px;line-height:1.5;margin:10px 0}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .c{color:#7d8b99}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .tablewrap{overflow-x:auto;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent);white-space:nowrap}
+  td code{font-size:12.5px}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;margin-top:18px}
+  .toc a{color:var(--ink);text-decoration:none;opacity:.85}
+  .toc a:hover{opacity:1;color:var(--accent)}
+  .toc b{color:var(--accent);margin-right:6px}
+  .steps{counter-reset:st;list-style:none;padding:0}
+  .steps>li{counter-increment:st;position:relative;padding:14px 16px 14px 58px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;margin:10px 0}
+  .steps>li::before{content:counter(st);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#06121f;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .badge{display:inline-block;font-size:12px;border-radius:20px;padding:0 9px;margin-left:6px;border:1px solid var(--border)}
+  .b-strong{color:var(--accent2);border-color:#2b4a33}
+  .b-explore{color:var(--accent);border-color:#23405f}
+  .b-spec{color:var(--warn);border-color:#5a4526}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .cols>div{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .cols h4{margin:0 0 8px;font-size:15px}
+  .before h4{color:var(--danger)} .after h4{color:var(--accent2)}
+  .box{border:1px solid var(--border);border-radius:6px;padding:6px 10px;margin:6px 0;background:var(--panel2);font-size:14px}
+  .box.core{border-color:var(--accent2);background:#14211a}
+  .box.thin{opacity:.8;font-size:13px}
+  .arrow{color:var(--muted);font-size:13px;text-align:center}
+  .perf td:nth-child(2){white-space:nowrap}
+  @media (max-width:700px){ h1{font-size:24px} h2{font-size:20px} .cols{grid-template-columns:1fr} .steps>li{padding-left:50px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>LED-Sync-Modul (<code>ledSync</code>)</h1>
+    <p class="sub">Plan: das Bluetooth-Abgleichprotokoll zwischen Proxy und Clients in ein einziges, testbares Modul
+      ziehen. Ergebnis der Architektur-Durchsicht vom 18.10.2026. Noch nicht umgesetzt.</p>
+    <nav class="toc">
+      <a href="#warum"><b>1</b>Warum</a>
+      <a href="#entscheidungen"><b>2</b>Entscheidungen</a>
+      <a href="#vorher-nachher"><b>3</b>Vorher / Nachher</a>
+      <a href="#vorteile"><b>4</b>Vorteile</a>
+      <a href="#performance"><b>5</b>Performance &amp; Timing</a>
+      <a href="#modul"><b>6</b>Das neue Modul</a>
+      <a href="#aenderungen"><b>7</b>Änderungen je Datei</a>
+      <a href="#ablauf"><b>8</b>Reihenfolge</a>
+      <a href="#pruefen"><b>9</b>Prüfen</a>
+      <a href="#andere"><b>10</b>Andere Kandidaten</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<h2 id="warum">1. Warum</h2>
+<p>Das Protokoll, mit dem die Gitarre (Proxy) und die übrigen Geräte (Clients) Song und Part abgleichen, gehört heute
+keiner Datei. Die Nachrichtentypen 0–7 stehen nur als Kommentar in <code>functions.h</code>. Als nackte Zahlen
+tauchen sie in fünf Dateien auf:</p>
+<ul>
+  <li><code>BLE_client_nimBLE.cpp</code>: <code>switch(msgType)</code>, <code>msgType = 6</code>, <code>msgType = 4</code>, memcpy-Dekodierung</li>
+  <li><code>midiProxyBLEserver_nimBLE.cpp</code>: <code>sendBLEmessageForLEDsync(1|2|3|5|7, …)</code>, memcpy-Dekodierung in <code>onWrite</code></li>
+  <li><code>main.cpp</code>: Typ 0 im Setup und beim Part-Wechsel, Typ 4 an wartende Clients</li>
+  <li><code>midi_in.cpp</code>: <code>typeID</code> 1/2 benutzt zufällig dieselben Zahlen</li>
+  <li><code>rotaryEncoder.cpp</code>: setzt über <code>extern</code> die Merker für Abgleich und Abfrage</li>
+</ul>
+<p>Die Abläufe werden über verstreute globale Merker gesteuert:</p>
+<ul>
+  <li>Abgleich erzwingen: 3 → 4</li>
+  <li>Stand abfragen: 5 → 6 → 4</li>
+  <li>Knopf am Client: Lesen → 4</li>
+  <li>MIDI-Weitergabe: 1 / 2</li>
+  <li>OTA: 7</li>
+</ul>
+<p>Die Merker dazu sind <code>needLEDsync</code>, <code>forceLEDsync</code>, <code>waitForLEDsync</code>,
+<code>syncProgWithNextChange</code>, <code>informServerOnNextProgChange</code> sowie
+<code>newMidiValuesToBroadcast</code> / <code>typeID</code> / <code>midiInCC</code> / <code>midiInValue</code>.</p>
+<p>Wer einen Ablauf verstehen will, liest drei bis vier Dateien nebeneinander. Prüfen lässt sich das bisher nur auf der Bühne mit allen Geräten.</p>
+
+<h2 id="entscheidungen">2. Entscheidungen (mit dem User, 18.10.2026)</h2>
+<div class="tablewrap"><table>
+  <tr><th>Frage</th><th>Entscheidung</th></tr>
+  <tr><td>Format der Nachricht</td><td><b>Byte-gleich.</b> Es bleiben dieselben 3 Bytes und dieselben Nummern 0–7. Alte und neue Firmware lassen sich mischen, zum Beispiel wenn ein Gerät ein OTA verpasst hat.</td></tr>
+  <tr><td>Verhalten</td><td><b>Identisch.</b> Es wird nur umgebaut. Eigenheiten bekommen einen Namen und einen Kommentar, werden aber noch nicht behoben. Beispiele: Der Proxy behandelt Typ 4 und 6 gleich, und Typ 0 wird nur hinterlegt, nie gesendet. Korrekturen kommen später als eigener Schritt.</td></tr>
+  <tr><td>Form des Moduls</td><td><b>Das Modul entscheidet, der Aufrufer führt aus.</b> Ein Ereignis geht hinein, ein kleines Ergebnis kommt heraus („sende diese Nachricht“, „springe zu Song/Part und schalte dunkel“, „starte OTA“). Jeder Bluetooth-Adapter hat eine Funktion, die das ausführt.</td></tr>
+  <tr><td>Rollen</td><td><b>Ein Modul für beide Rollen.</b> Proxy-Seite und Client-Seite stehen in einer Datei und werden immer übersetzt, ohne <code>#ifdef</code>.</td></tr>
+  <tr><td>MIDI-Weitergabe</td><td><b>Gehört dazu, aber nur die Entscheidung.</b> <code>midi_in.cpp</code> wertet weiter aus und schaltet selbst um. Danach meldet es dem Modul den neuen Song oder Part. Das Modul legt die Nachricht in einen Ausgang, den die Proxy-Schleife zum selben Zeitpunkt wie heute sendet.</td></tr>
+  <tr><td>Tests</td><td><b>Neue Test-Umgebung <code>[env:native]</code></b> mit Unity-Tests, die am PC laufen. Der bisherige <code>test_midi_controller.cpp</code> entfällt: er testet eine eigene Kopie der Funktion statt des echten Codes.</td></tr>
+</table></div>
+
+<h2 id="vorher-nachher">3. Vorher / Nachher</h2>
+<div class="cols">
+  <div class="before">
+    <h4>Vorher: Wissen verstreut</h4>
+    <div class="box"><code>functions.h</code>: Struktur, Typen nur als Kommentar</div>
+    <div class="box"><code>main.cpp</code>: 4 Merker, Typ 0 und 4 beim Part-Wechsel</div>
+    <div class="box"><code>rotaryEncoder.cpp</code>: setzt Merker per <code>extern</code></div>
+    <div class="box"><code>midi_in.cpp</code>: Briefkasten mit <code>typeID</code> 1/2</div>
+    <div class="box"><code>midiProxyBLEserver_nimBLE.cpp</code>: sendet 1/2/3/5/7, wertet Schreiben aus</div>
+    <div class="box"><code>BLE_client_nimBLE.cpp</code>: <code>switch</code> 1–7, schreibt 4/6, liest beim Proxy</div>
+    <p class="c" style="margin:8px 0 0">Zum Verständnis von „5 → 6 → 4“ braucht man 3 Dateien. Testbar ist es nur auf der Hardware.</p>
+  </div>
+  <div class="after">
+    <h4>Nachher: ein tiefes Modul</h4>
+    <div class="box thin">Drehknopf, Not-Aus, MIDI → rufen <code>ledSync…Request…()</code> / <code>…Midi…()</code></div>
+    <div class="arrow">▼</div>
+    <div class="box core"><b><code>ledSync.cpp/.h</code></b>: Typen als Namen, Kodieren/Dekodieren, der Zustand aller
+      Abläufe und alle Entscheidungen beider Rollen. Reines C++, am PC testbar.</div>
+    <div class="arrow">▼ Ergebnis (<code>LedSyncAction</code>)</div>
+    <div class="box thin">Proxy-Adapter / Client-Adapter: nur noch Bytes über NimBLE bewegen und das Ergebnis ausführen</div>
+    <p class="c" style="margin:8px 0 0">Ein Ablauf steht in einer Datei und wird in einem Test geprüft, in dem Proxy und Client im Speicher miteinander reden.</p>
+  </div>
+</div>
+
+<h2 id="vorteile">4. Vorteile</h2>
+<h3>Lokalität: ein Ort für den Abgleich</h3>
+<ul>
+  <li>Alle Abläufe des Abgleichs stehen in <b>einer</b> Datei, von Anfang bis Ende lesbar. Ein Fehler beim Abgleich wird dort gesucht und dort behoben.</li>
+  <li>Aus den Zahlen werden Namen (<code>SYNC_FORCE</code>, <code>SYNC_ENTRY</code>, …). Ein Tippfehler wie <code>sendBLEmessageForLEDsync(5…)</code> statt <code>(3…)</code> fällt beim Lesen auf.</li>
+  <li>Etwa neun globale Variablen fallen weg. Drehknopf, <code>main.cpp</code> und <code>midi_in.cpp</code> rufen Funktionen mit sprechenden Namen auf und setzen keine fremden Merker mehr.</li>
+  <li>Die Längenprüfung (genau 3 Bytes) und das Kopieren der Bytes gibt es dann einmal statt dreimal.</li>
+</ul>
+<h3>Hebel: neue Abläufe kosten weniger</h3>
+<ul>
+  <li>Ein neuer Nachrichtentyp, etwa eine spätere Zeitkorrektur oder „Helligkeit an alle“, braucht ein neues Ereignis und eine neue Entscheidung im Modul. Die Adapter bleiben unverändert.</li>
+  <li>Die Doku zum BLE-Protokoll (<code>docs/OTA-Update.html</code>) kann auf genau eine Datei verweisen.</li>
+</ul>
+<h3>Testbarkeit: Abgleich ohne Bühne prüfen</h3>
+<ul>
+  <li><code>pio test -e native</code> läuft am PC in Sekunden und prüft unter anderem:
+    <ul>
+      <li>MIDI-Song und -Part</li>
+      <li>Abgleich erzwingen mit zeitgenauem Einstieg</li>
+      <li>Stand abfragen (5 → 6 → 4)</li>
+      <li>Lesen per Knopf mit Einstieg</li>
+      <li>OTA nur in Song 0</li>
+      <li>falsche Länge wird abgelehnt</li>
+    </ul>
+  </li>
+  <li>Die Bühnenprobe bleibt. Sie muss aber keine Logikfehler mehr finden, nur noch Funk und Hardware prüfen.</li>
+  <li>Es ist der erste echte Test im Projekt. Die Test-Umgebung lässt sich später für weitere reine Module nutzen, etwa den Zeitplan der Parts.</li>
+</ul>
+
+<h2 id="performance">5. Performance &amp; Timing</h2>
+<div class="warn"><b>Ehrlich vorweg:</b> Die Bildrate wird durch diesen Umbau weder schneller noch langsamer. Der
+Abgleich läuft nur bei Ereignissen (MIDI, Knopf, Part-Wechsel, Bluetooth-Nachricht), nicht pro Bild. Die Zeit
+eines Bildes steckt fast ganz in <code>FastLED.show()</code> (rund 5 ms). Der Gewinn liegt bei der
+<b>Synchronität</b> zwischen den Geräten: Der Umbau macht sie messbar und ist der Ort für die
+Verbesserungen unten.</div>
+
+<h3>Direkte Wirkung des Umbaus (Schritt 1)</h3>
+<div class="tablewrap"><table class="perf">
+  <tr><th>Bereich</th><th>Wirkung</th><th>Begründung</th></tr>
+  <tr><td>Bildzeit / FPS</td><td>neutral</td><td>Pro <code>loop()</code>-Durchlauf werden weiter nur ein paar Merker abgefragt, jetzt im Modul statt in <code>main.cpp</code>. Ein zusätzlicher Funktionsaufruf und eine Ergebnis-Struktur von wenigen Bytes kosten nur Nanosekunden.</td></tr>
+  <tr><td>Bluetooth-Verkehr</td><td>neutral</td><td>Es gehen dieselben Nachrichten zu denselben Zeitpunkten raus. So ist es entschieden („Verhalten identisch“).</td></tr>
+  <tr><td>RAM / Flash</td><td>≈ neutral</td><td>Etwa neun globale Variablen wandern als dateilokale Variablen ins Modul. Der Code wird um wenige hundert Bytes kleiner oder größer, bei 1,17 MB Firmware unerheblich.</td></tr>
+  <tr><td>Timing-Risiko</td><td>gering</td><td>Das Verhalten bleibt gleich, und die Tests sichern das ab, bevor es auf die Bühne geht.</td></tr>
+</table></div>
+
+<h3>Wofür der Umbau die Tür öffnet (spätere eigene Schritte)</h3>
+<p>Beim Lesen des Codes sind drei Stellen aufgefallen, an denen Geräte heute ungenau einsteigen können. Jede ist
+nach dem Umbau eine kleine Änderung an <b>einer</b> Stelle und lässt sich vorher am PC testen:</p>
+<ol>
+  <li><b>Umschalten aus dem Bluetooth-Task.</b> <code>onWrite()</code> des Proxys ruft
+    <code>switchToSongAndPart()</code> direkt im Task der NimBLE-Bibliothek auf. Das läuft parallel zu
+    <code>loop()</code>, also möglicherweise mitten in einem Bild. Zähler und Effekt-Zustand werden dann
+    zurückgesetzt, während ein Effekt zeichnet. Mit dem Modul ist das ein Ergebnis, das der Adapter auch in
+    <code>loop()</code> ausführen kann. Dann läuft der Wechsel immer an derselben Stelle, wie bei jedem anderen
+    Part-Wechsel.</li>
+  <li><b>Funkverzögerung beim Einstieg (Typ 4).</b> Ein Client, der auf den Einstieg wartet, beginnt den Part erst,
+    wenn die Nachricht ankommt und <code>loop()</code> sie abholt. Das ist ein Verbindungsintervall plus bis zu ein
+    Bild später (grob 10–40 ms). Für generierte Songs gleicht <code>loop()</code> die Verspätung am Part-Wechsel
+    schon aus (<code>late</code>), für den Funk-Einstieg gibt es das nicht. Das Modul ist der Ort, an dem eine
+    feste oder gemessene Vorlaufzeit dazukommt. Der Client würde den Part dann als „schon x ms gelaufen“
+    beginnen.</li>
+  <li><b>Verlorene Nachrichten.</b> Notifications haben keine Bestätigung. Nur OTA wird dreimal gesendet. Ob ein
+    Abgleich erzwingen ebenfalls wiederholt werden soll, oder ob der Proxy bei jedem Part-Wechsel kurz Typ 4
+    mitsendet, entscheidet künftig das Modul, und ein Test prüft es.</li>
+</ol>
+<div class="note">Diese drei Punkte sind <b>nicht</b> Teil des Umbaus. Jeder ändert das Verhalten und braucht eine
+eigene Abnahme auf der Hardware. Der Umbau sorgt dafür, dass sie klein bleiben und sich nicht über fünf Dateien
+verteilen.</div>
+
+<h2 id="modul">6. Das neue Modul</h2>
+<p><code>src/ledSync.h/.cpp</code>: reines C++ ohne Arduino, NimBLE oder FastLED, nur <code>&lt;stdint.h&gt;</code> /
+<code>&lt;string.h&gt;</code>, damit es auch am PC übersetzt. Die Kommentare sind deutsch und hobbytauglich wie im
+übrigen Projekt.</p>
+<pre><code><span class="c">// Nachrichtentypen - die Nummern bleiben genau wie bisher</span>
+enum LedSyncMsg : uint8_t {
+  SYNC_STATE = 0,  <span class="c">// Proxy hinterlegt seinen Stand zum Lesen (wird nie aktiv gesendet)</span>
+  SYNC_SONG  = 1,  <span class="c">// Songwechsel (MIDI CC 22)</span>
+  SYNC_PART  = 2,  <span class="c">// Partwechsel (MIDI CC 23)</span>
+  SYNC_FORCE = 3,  <span class="c">// Proxy zwingt alle auf seinen Stand, dunkel, Einstieg folgt</span>
+  SYNC_ENTRY = 4,  <span class="c">// "jetzt beginnt Part n" - zeitgenauer Einstieg</span>
+  SYNC_ASK   = 5,  <span class="c">// Proxy fragt einen Client nach seinem Stand</span>
+  SYNC_REPLY = 6,  <span class="c">// Antwort des Clients auf SYNC_ASK</span>
+  SYNC_OTA   = 7   <span class="c">// alle in den OTA-Update-Modus (nur in Song 0)</span>
+};
+<span class="c">// BLEmessage (3 Bytes, static_assert) zieht aus functions.h hierher um</span>
+
+bool ledSyncDecode(const uint8_t* buf, size_t len, BLEmessage&amp; out);
+void ledSyncEncode(const BLEmessage&amp; msg, uint8_t* buf);
+
+struct LedSyncAction { <span class="c">// was der Aufrufer jetzt tun soll</span>
+  bool notify, store;  BLEmessage msg;          <span class="c">// senden bzw. nur hinterlegen</span>
+  bool jumpSongPart, goDark;  uint8_t song, part;
+  bool switchSong, switchPart, readProxy, ota;
+};
+
+<span class="c">// Proxy-Seite</span>
+void ledSyncProxyMidiSong(uint8_t song);   void ledSyncProxyMidiPart(uint8_t part);
+void ledSyncProxyRequestForce();           void ledSyncProxyRequestAsk();
+LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog);
+void ledSyncProxyClientRead();
+LedSyncAction ledSyncProxyClientWrote(const uint8_t* buf, size_t len);
+LedSyncAction ledSyncProxyPartChange(uint8_t songID, uint8_t nextPart);
+
+<span class="c">// Client-Seite</span>
+LedSyncAction ledSyncClientReceived(const BLEmessage&amp; msg, uint8_t songID, uint8_t prog);
+void ledSyncClientRequestRead();           LedSyncAction ledSyncClientLoop();
+LedSyncAction ledSyncClientReadResult(const uint8_t* buf, size_t len);
+LedSyncAction ledSyncClientPartChange(uint8_t songID, uint8_t nextPart);
+
+void ledSyncReset();   <span class="c">// nur für Tests</span></code></pre>
+<p>Der Zustand (wartet auf Einstieg, Einstieg melden beim nächsten Wechsel, Ausgang für MIDI, Knopf-Anfragen) liegt
+dateilokal im Modul. Was NimBLE-Callbacks berühren, bleibt wie heute <code>volatile</code>.</p>
+
+<h2 id="aenderungen">7. Änderungen je Datei</h2>
+<div class="tablewrap"><table>
+  <tr><th>Datei</th><th>Änderung</th></tr>
+  <tr><td><code>midiProxyBLEserver_nimBLE.cpp/.h</code></td><td>
+    <ul>
+      <li>Eine <code>applyAction()</code>: <code>setValue</code>/<code>notify</code>, <code>switchToSongAndPart</code>.</li>
+      <li><code>onRead</code>, <code>onWrite</code> und <code>midiProxy_midiLoop</code> fragen das Modul.</li>
+      <li><code>midiProxy_broadcastOTA</code> nutzt <code>SYNC_SONG</code>/<code>SYNC_OTA</code>. Seine Warte-Logik bleibt.</li>
+      <li>Neu: <code>midiProxy_onPartChange()</code> für den Block in <code>main.cpp</code>.</li>
+    </ul></td></tr>
+  <tr><td><code>BLE_client_nimBLE.cpp/.h</code></td><td>
+    <ul>
+      <li><code>MidiDatenVomProxyAuswerten</code> wird zu dekodieren, Modul fragen, ausführen. Ebenso das Lesen beim Proxy und <code>informServerOnNextChange</code>.</li>
+      <li>Der Briefkasten vom Callback zu <code>loop()</code> bleibt.</li>
+    </ul></td></tr>
+  <tr><td><code>main.cpp</code></td><td>
+    <ul>
+      <li>Die Merker <code>needLEDsync</code>, <code>forceLEDsync</code>, <code>waitForLEDsync</code> und <code>syncProgWithNextChange</code> entfallen.</li>
+      <li>Der Part-Wechsel-Block ruft <code>midiProxy_onPartChange()</code> bzw. <code>informServerOnNextChange()</code>.</li>
+      <li>Der Not-Aus ruft <code>ledSyncProxyRequestForce()</code>.</li>
+    </ul></td></tr>
+  <tr><td><code>rotaryEncoder.cpp</code></td><td>
+    <ul>
+      <li>Die <code>extern</code>-Merker entfallen.</li>
+      <li>Klick und Doppelklick rufen <code>ledSyncProxyRequestForce/Ask()</code> bzw. <code>ledSyncClientRequestRead()</code>.</li>
+    </ul></td></tr>
+  <tr><td><code>midi_in.cpp</code></td><td><code>setBroadcastValues</code> und die vier Briefkasten-Variablen entfallen. Stattdessen werden <code>ledSyncProxyMidiSong/Part()</code> aufgerufen.</td></tr>
+  <tr><td><code>functions.h</code></td><td>Die Struktur und die Typenliste ziehen nach <code>ledSync.h</code>; <code>functions.h</code> bindet es ein, damit bestehende Includes weiter funktionieren.</td></tr>
+  <tr><td><code>platformio.ini</code></td><td><code>[env:native]</code> mit <code>platform = native</code>, <code>test_build_src = yes</code>, <code>build_src_filter = -&lt;*&gt; +&lt;ledSync.cpp&gt;</code>, nur für <code>pio test -e native</code>. <code>build_ota.py</code> hat eine feste Geräteliste und ist nicht betroffen.</td></tr>
+  <tr><td><code>test/test_ledSync/</code></td><td>Neue Unity-Tests. <code>test/test_midi_controller.cpp</code> entfällt.</td></tr>
+  <tr><td>Doku</td><td>
+    <ul>
+      <li><code>docs/OTA-Update.html</code>: Abschnitt BLE-Protokoll mit den neuen Namen.</li>
+      <li><code>README.md</code>: Dateiliste und Testbefehl.</li>
+      <li><code>CLAUDE.md</code>: Dateitabelle, „keine Tests“ → native Tests.</li>
+      <li>Neu <code>CONTEXT.md</code> mit den Begriffen LED-Sync, Proxy, Client, Einstieg, Abgleich erzwingen, Stand abfragen.</li>
+    </ul></td></tr>
+</table></div>
+
+<h2 id="ablauf">8. Reihenfolge</h2>
+<ol class="steps">
+  <li><code>ledSync.h/.cpp</code> und die nativen Tests schreiben, bis <code>pio test -e native</code> grün ist. Der restliche Code bleibt noch unberührt.</li>
+  <li>Proxy anschließen: Adapter, <code>main.cpp</code>, <code>midi_in.cpp</code>, <code>rotaryEncoder.cpp</code>.</li>
+  <li>Client anschließen.</li>
+  <li><code>test_midi_controller.cpp</code> löschen und die Doku nachziehen.</li>
+  <li>Alle 5 Envs bauen. Commit auf einem eigenen Branch (z. B. <code>ledsync-module</code>), Merge nach <code>MAIN</code> erst nach der Bühnenprobe.</li>
+</ol>
+
+<h2 id="pruefen">9. Prüfen</h2>
+<ul>
+  <li><code>pio test -e native</code>: alle Abgleich-Tests grün.</li>
+  <li><code>pio run -e andresgit -e rinasbass -e lampe1 -e lampe2 -e scrollmatrix</code>: alle Envs bauen.</li>
+  <li>Suche nach <code>msgType = [0-9]</code> und <code>sendBLEmessageForLEDsync([0-9]</code> in <code>src/</code>: keine Treffer mehr.</li>
+  <li>Auf der Hardware:
+    <ul>
+      <li>MIDI-Songstart auf allen Geräten</li>
+      <li>Kurzklick am Proxy (Abgleich erzwingen) mit zeitgenauem Einstieg</li>
+      <li>Kurzklick an einem Client (Lesen)</li>
+      <li>Doppelklick am Proxy (Stand abfragen)</li>
+      <li>Not-Aus</li>
+      <li>OTA-Auslöser</li>
+      <li>ein Client mit alter Firmware am neuen Proxy (Byte-Gleichheit)</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="andere">10. Die anderen Kandidaten der Durchsicht</h2>
+<p>Zur Einordnung die übrigen Kandidaten, vor allem mit Blick auf die Performance:</p>
+<div class="tablewrap"><table>
+  <tr><th>Kandidat</th><th>Einschätzung</th><th>Performance</th></tr>
+  <tr><td><b>Generator-Tests</b> (<code>songgen.py</code>): Prüfen und Erzeugen trennen, pytest mit echten <code>show.yaml</code></td><td><span class="badge b-strong">Strong</span></td><td>Keine Wirkung auf die Firmware. Schützt aber das Timing: Fehler in der Timeline (BPM, Takte, Tails) würden vor dem Flashen auffallen.</td></tr>
+  <tr><td><b>Effekt-Gedächtnis / Part-Reset</b>: rund 50 globale Variablen, <code>switchToPart</code> kennt Effekt-Interna</td><td><span class="badge b-explore">Worth exploring</span></td><td>Kaum. Der Kontextwechsel der Ebene (<code>FxContext</code>) kopiert schon heute nur rund 10 Werte pro Bild. Der Gewinn wäre Lokalität, nicht Geschwindigkeit.</td></tr>
+  <tr><td><b>Geräte-Profil</b>: Fähigkeiten statt Gerätenamen in den <code>#if</code>s</td><td><span class="badge b-explore">Worth exploring</span></td><td>Keine; <code>#if</code> wirkt nur beim Übersetzen.</td></tr>
+  <tr><td><b>Part-Zeit aus den Effekten lösen</b>: 62 Effekte tragen <code>(durationMillis, nextPart)</code></td><td><span class="badge b-spec">Speculative</span></td><td>Keine nennenswerte. Würde außerdem die handgeschriebenen Songs anfassen, die laut Plan unangetastet bleiben.</td></tr>
+</table></div>
+
+</main>
+</body>
+</html>
