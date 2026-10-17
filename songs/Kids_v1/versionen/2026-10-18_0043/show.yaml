@@ -1,0 +1,146 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs Kids() (Song-ID 20). Der alte Code bleibt in src/songs.cpp
+# stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "stell kids auf einen
+# generierten song um. aber den alten song nur auskommentieren").
+# Anlass: im handgeschriebenen Song kamen ab dem synth intro (Takt 4,875) alle Geräte etwas zu spät - dort gibt es
+# keinen Ausgleich der Part-Wechsel und das alte Strobo lief mit 465 ms statt 468,75 ms pro Beat gegen den Takt.
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: bunt und
+# verspielt (NEON, TOXIC = grün/gelb). Das Synth-Riff bekommt ein festes Motiv (Frage/Antwort der Bühnenhälften) in
+# "synth intro" und "chorus 1"; die Pausen vor den Einsätzen werden zu Aufladen + Blinder. Kein progStrobo mehr
+# (läuft nicht beat-genau, Regel aus Take On Me).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in Kids() keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 20) und gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_Kids
+scheme: SCHEME_NEON
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "synth intro":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_NEON
+    why: "Frage/Antwort: die Bühnenhälften blitzen abwechselnd im Beat in Pink, Cyan und Violett - das Synth-Riff als Motiv, kommt in chorus 1 wieder."
+
+  "chorus intro":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    transition: flash
+    why: "Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher)."
+
+  "verse 1":
+    scene: SCENE_VERSE
+    scheme: SCHEME_TOXIC
+    why: "Dezenter Puls im Beat in Grün und Gelb."
+
+  "verse 1b":
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, true)"
+    tail:
+      beats: 4
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_NEON
+    why: "Zufällige bunte Linien, pro Beat neue (wie bisher); im letzten Takt lädt sich alles in den Chorus-Farben auf, Explosion genau auf chorus 1."
+
+  "chorus 1":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Motiv vom Intro: die Bühnenhälften blitzen abwechselnd im Beat in Pink, Cyan und Violett; warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "chorus 1b":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    soft: 40
+    why: "Drehender Stern in Pink, Cyan und Violett, die Farben blenden weich ineinander."
+
+  "verse 2":
+    scene: SCENE_GLOW
+    scheme: SCHEME_TOXIC
+    fade: {to: complement, per: 8}
+    transition: {type: fade, beats: 2}
+    why: "Weich eingeblendet: die Geräte füllen sich in Grün/Gelb, die Farben wandern alle 2 Takte zur Gegenfarbe Lila und zurück."
+
+  "verse 2b":
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_TOXIC
+    soft: 60
+    tail:
+      beats: 4
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_NEON
+    why: "Farbwelle im Beat über die Bühne in Grün und Gelb, weich überblendet; im letzten Takt Aufladen in den Chorus-Farben, Explosion auf chorus 2."
+
+  "chorus 2":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Drehender Stern in Pink, Cyan und Violett; warmweißer Blinder auf den Einsatz, die Lampen blitzen zusätzlich weiß auf 2 und 4."
+
+  "chorus 2b":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    blinder:
+      - {bar: 84.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 84.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    why: "Schnelle bunte Einzelblitze (wie bisher); am Ende drei kurze Blinder auf drei Vierteln (Takt 84,5 / 84,75, der dritte auf die 1 vom SOLO)."
+
+  "SOLO":
+    scene: SCENE_DNA
+    scheme: SCHEME_NEON
+    blinder: {bar: 85, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    why: "Schwebend zum Synth-Teil: eine DNA-Helix dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben. Auf der 1 der dritte kurze Blinder aus chorus 2b."
+
+  "SAMPLE":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 4, amount: 100}
+    why: "Schwarz; ein warmweißer Blinder springt auf die 1 und klingt über den ganzen Takt aus."
+
+  "snarewirbel":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Lädt sich einen Takt lang in den warmen Farben von chorus 3 auf, Explosion genau auf den Chorus."
+
+  "chorus 3":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Drehender Stern, eine Stufe wärmer in Orange, Pink und Gelb; warmweißer Blinder auf den Einsatz."
+
+  "chorus 3b":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_SUNSET
+    blinder: {bar: 110.75, len: 1, hold: 0.5, amount: 100}
+    why: "Dichtes Glitzern in Orange, Pink und Gelb; starker Blinder auf der letzten Viertel (Takt 110,75), danach Schwarz."
+
+  "pause (2)":
+    fx: "progBlack(${dur}, ${next})"
+    overlay:
+      devices: {guitar: SCENE_CALM}
+      amount: 20
+      from: 8
+      fade_in: 4
+    why: "Stille vor dem letzten Einsatz; ab Takt 113 atmet nur die Gitarre ganz dunkel."
+
+  "snareauftakt":
+    fx: "progBlack(${dur}, ${next})"
+    # Voll ab der 3 (at: 2 = nach 2 Beats), eingeblendet in den 2 Beats davor; hold 1.9 = steht bis kurz vor dem
+    # Part-Ende (der Generator verlangt attack + hold < len und len <= Part-Länge; die letzten 0,1 Beat = 47 ms
+    # klingen schon ab - auf der Bühne nicht zu sehen).
+    blinder: {at: 2, len: 4, attack: 2, hold: 1.9, amount: 100}
+    why: "Starker Blinder statt Strobo: blendet über die erste Takthälfte warmweiß ein und steht ab der 3 voll bis zum Einsatz von chorus 4."
+
+  "chorus 4":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    blinder: {bar: 120, len: 2, amount: 100}
+    why: "Höhepunkt: Feuer auf allen Geräten in Rot, Orange und Gelb; warmweißer Blinder auf die 1 von Takt 120."
+
+  "outro F":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_WHITE
+    why: "Weiß, blendet über 2 Takte weich nach Schwarz."

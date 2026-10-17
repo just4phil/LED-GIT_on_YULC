@@ -178,7 +178,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | ID | Song | | ID | Song |
 |---|---|---|---|---|
 | 0 | Pause between songs | | 17 | Apt. * |
-| 1 | Physical (trailer) | | 20 | Kids |
+| 1 | Physical (trailer) | | 20 | Kids * |
 | 2 | Physical | | 21 | Tell It To My Heart * |
 | 3 | Take On Me * | | 24 | Enjoy The Silence (intro) |
 | 4 | Don't Stop The Music | | 25 | Friday I'm In Love * |

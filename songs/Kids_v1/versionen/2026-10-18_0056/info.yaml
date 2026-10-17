@@ -1,0 +1,9 @@
+zeit: '2026-10-18 00:56:45'
+notiz: Blinder bei Takt 52,75 und 60,75 (Wunsch des Users), klingen je einen Takt
+  in den nächsten Part aus
+werkzeug_git: bd8f04a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 74dc8547f76a1583ac85a427631230f33d724e4cbc1b0078ed5e884d76e6a95e
+  show.yaml: 2f2437c2f95cc5336b11292083d9b1f0bf30bcce949a22760af0643242c69548
+  generated.cpp: 480718f6c760d157056b551066d182c4879a5677b47859bd9cce1dd287e1e98d

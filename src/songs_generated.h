@@ -11,6 +11,7 @@ void gen_DancingOnMyOwn();	// #8 Dancing On My Own
 void gen_ILoveIt();	// #9 I Love It
 void gen_Abcdefu();	// #15 abcdefu
 void gen_APT();	// #17 APT.
+void gen_Kids();	// #20 Kids
 void gen_TellItToMyHeart();	// #21 Tell It To My Heart
 void gen_FridayImInLove();	// #25 Friday I'm In Love
 void gen_BeMine();	// #26 Be Mine
@@ -124,6 +125,28 @@ void gen_AllTheThingsSheSaidIntro();	// #82 All The Things She Said Intro
 #define GEN_APT_STROBO 17
 #define GEN_APT_CHORUS_5 18
 #define GEN_APT_APT_APT_APT_3 19
+#define GEN_KIDS_PAUSE 0
+#define GEN_KIDS_SYNTH_INTRO 3
+#define GEN_KIDS_CHORUS_INTRO 4
+#define GEN_KIDS_VERSE_1 5
+#define GEN_KIDS_VERSE_1B 6
+#define GEN_KIDS_VERSE_1B_TAIL 7
+#define GEN_KIDS_CHORUS_1 8
+#define GEN_KIDS_CHORUS_1B 9
+#define GEN_KIDS_VERSE_2 10
+#define GEN_KIDS_VERSE_2B 11
+#define GEN_KIDS_VERSE_2B_TAIL 12
+#define GEN_KIDS_CHORUS_2 13
+#define GEN_KIDS_CHORUS_2B 14
+#define GEN_KIDS_SOLO 15
+#define GEN_KIDS_SAMPLE 16
+#define GEN_KIDS_SNAREWIRBEL 17
+#define GEN_KIDS_CHORUS_3 18
+#define GEN_KIDS_CHORUS_3B 19
+#define GEN_KIDS_PAUSE_2 20
+#define GEN_KIDS_SNAREAUFTAKT 21
+#define GEN_KIDS_CHORUS_4 22
+#define GEN_KIDS_OUTRO_F 23
 #define GEN_TELLITTOMYHEART_PAUSE 0
 #define GEN_TELLITTOMYHEART_INTRO_CHORUS 3
 #define GEN_TELLITTOMYHEART_VERSE 4

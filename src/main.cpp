@@ -509,7 +509,8 @@ void loop() {
 			Hotncold();
 			break;
 		case 20:
-			Kids();
+			//Kids();
+			gen_Kids(); // <<< GENERATED SONGS <<<
 			break;
 		case 21:
 			//Tellittomyheart();

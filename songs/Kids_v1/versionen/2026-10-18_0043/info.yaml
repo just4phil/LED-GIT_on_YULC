@@ -1,0 +1,9 @@
+zeit: '2026-10-18 00:43:59'
+notiz: Erste generierte Fassung von Kids (Vorschläge aus vorschlag.yaml umgesetzt),
+  alter Code nur auskommentiert
+werkzeug_git: bd8f04a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 7b5847e1175b4b6278eee8c17d1ca75a3165f40dd36a75060990e941c46c27b0
+  show.yaml: edde250fbf3e641eb74723c4ab3de3e32944850bf10a943295fd1706373d7daa
+  generated.cpp: cab0e1653f2f92a1ce3a717835537a00d8e9c1ef30a333ce9dfe8ca7cfdda7a8
