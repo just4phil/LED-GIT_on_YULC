@@ -71,8 +71,8 @@
     <h1>LED-Sync-Modul (<code>ledSync</code>)</h1>
     <p class="sub">Plan: das Bluetooth-Abgleichprotokoll zwischen Proxy und Clients in ein einziges, testbares Modul
       ziehen. Ergebnis der Architektur-Durchsicht vom 18.10.2026. <b>Umgesetzt am 18.10.2026 auf Branch
-      <code>ledsync-module</code></b>: 13 native Tests grün, alle 5 Envs bauen. Offen ist die Probe auf der Hardware
-      (Abschnitt 9); erst danach Merge nach <code>MAIN</code>.</p>
+      <code>ledsync-module</code></b>: 13 native Tests grün, alle 5 Envs bauen. Hardware-Probe am 18.10.2026 bestanden (Abschnitt 9),
+      danach nach <code>MAIN</code> übernommen.</p>
     <nav class="toc">
       <a href="#warum"><b>1</b>Warum</a>
       <a href="#entscheidungen"><b>2</b>Entscheidungen</a>
@@ -335,6 +335,10 @@ beeinflussen. Was NimBLE-Callbacks berühren (<code>onRead</code> → Einstieg m
     </ul>
   </li>
 </ul>
+<p><b>Ergebnis der Hardware-Probe vom 18.10.2026 (Firmware <code>996503f</code>, per OTA verteilt):</b> bestanden.
+  Geprüft: Abgleich aller Clients durch den Proxy, Abgleich des Proxys durch die Clients, alle aus durch den Proxy,
+  gemeinsamer Start aller Geräte, OTA-Update. Nicht eigens geprüft: ein Client mit alter Firmware am neuen Proxy
+  (das Datenformat ist unverändert und durch die nativen Tests abgedeckt).</p>
 
 <h2 id="andere">10. Die anderen Kandidaten der Durchsicht</h2>
 <p>Zur Einordnung die übrigen Kandidaten, vor allem mit Blick auf die Performance:</p>
