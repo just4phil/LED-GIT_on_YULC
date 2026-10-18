@@ -222,6 +222,10 @@ verteilen.</div>
 <p><code>src/ledSync.h/.cpp</code>: reines C++ ohne Arduino, NimBLE oder FastLED, nur <code>&lt;stdint.h&gt;</code> /
 <code>&lt;string.h&gt;</code>, damit es auch am PC übersetzt. Die Kommentare sind deutsch und hobbytauglich wie im
 übrigen Projekt.</p>
+<p><b>Entscheidung des Users (18.10.2026):</b> Keiner dieser Punkte wird umgesetzt, und auch die Eigenheit 2 aus
+  <code>ledSync.cpp</code> bleibt. Einstieg und Doppelklick laufen in der Praxis ohne merkliche Verzögerung, und
+  beim nächsten Part-Wechsel sind alle Geräte wieder genau gleich. Geht ein Abgleich verloren, drückt er den
+  Knopf noch einmal. Die Eigenheit 2 tritt kaum auf.</p>
 <pre><code><span class="c">// Nachrichtentypen - die Nummern bleiben genau wie bisher</span>
 enum LedSyncMsg : uint8_t {
   SYNC_STATE = 0,  <span class="c">// Proxy hinterlegt seinen Stand zum Lesen (wird nie aktiv gesendet)</span>
