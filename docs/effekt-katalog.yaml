@@ -839,14 +839,14 @@ szenen:
     urteil:
     notiz:
   SCENE_VERSE:
-    wirkung: "dezent im Beat: Zonen der Gitarre, Lichtschuss in den Lampen, farbiger Matrix-Regen"
-    geraete: {gitarre: progZoneBeat, lampe: progLampPulse, matrix: progMatrixRainColor}
+    wirkung: "dezent im Beat: Zonen der Gitarre, Lichtschuss in den Lampen; Matrix je Song ein Look (farbiger Regen, Plasma, Wasserringe oder Sinuswellen)"
+    geraete: {gitarre: progZoneBeat, lampe: progLampPulse, matrix: "je Song: progMatrixRainColor / progPlasmaBeat / progWaterRipple / progSineCosBeat"}
     rolle: [flaeche]
     energie: [2, 3]
     bewegung: pulsierend
     genutzt: 9
     urteil:
-    notiz: "Matrix seit 17.10.2026 progMatrixRainColor statt matrixMovieFX (User: Regen \"sehr kühl\", zu weiß)"
+    notiz: "Matrix seit 17.10.2026 progMatrixRainColor statt matrixMovieFX (User: Regen \"sehr kühl\", zu weiß). Seit 18.10.2026: die Matrix wählt je Song einen Look (songID % 4: Regen, Plasma, Wasserringe, Sinuswellen), alle Strophen eines Songs gleich - Wunsch des Users nach mehr Abwechslung."
   SCENE_BUILDUP:
     wirkung: "alles lädt sich über den ganzen Part auf, Explosion genau auf der Part-Grenze"
     geraete: {gitarre: progChargeBlast, lampe: progLampFill, matrix: progStarfield}
@@ -883,6 +883,51 @@ szenen:
     genutzt: 4
     urteil:
     notiz: "seit 17.10.2026 tempoabhängig: Verzögerung je Position = Beat / 16, die ganze Welle dauert eine 16tel-Note (vorher fest 100 ms je Position). Regel des Users bei Dancing On My Own (Matrix blitzte 200 ms nach dem Beat): \"solche effekte müssen immer auf dem beat sein!\""
+  SCENE_WAVE_LR_BAR:
+    wirkung: "deutlich sichtbare Welle von links nach rechts: einmal pro Takt, jedes Gerät eine Achtel nach seinem linken Nachbarn (Lampe 1 auf 1, Bass 1+, Matrix 2, Gitarre 2+, Lampe 2 auf 3, Beat 4 dunkel)"
+    geraete: {alle: progBeatFlash}
+    rolle: [flaeche, uebergang]
+    energie: [3, 5]
+    bewegung: wandernd
+    genutzt: 1
+    urteil:
+    notiz: "neu am 18.10.2026 für Girls Just Wanna Have Fun, 'when the working day': die 16tel-Welle von SCENE_WAVE_LR wirkte dort nur wie 'Matrix und Lampen nicht in sync'. Wunsch des Users: \"es muss dann auch deutlich sein ... eher eine achtel pro gerät\". Nur einmal pro Takt, weil bei einem Blitz je Beat die Matrix (1 Beat später) wieder mit Lampe 1 zusammenfiele. Demo 92 Part 51, Abnahme offen"
+  SCENE_VERSE_PLASMA:
+    wirkung: "Strophe, dezent im Beat: Matrix Plasma-Wolken in Schemafarben, Gitarre/Bass Schemaverlauf dreht sich um den Korpus, Lampen Verlauf steigt nach oben; alle schwellen auf jedem Beat leicht an"
+    geraete: {gitarre: progSpatialPalette, lampe: progLampFlow, matrix: progPlasmaBeat}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: fliessend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 18.10.2026 (User: \"in den strophen fast immer diesen regen auf der matrix ... zu wenig abwechslungsreich\"). Demo 92 Part 61, Abnahme offen"
+  SCENE_VERSE_WAVES:
+    wirkung: "Strophe im Takt: Matrix Sinus- und Kosinuslinie (je Takt eine Wellenlänge weiter), Gitarre/Bass Lichtebene je Takt einmal den Hals entlang in der nächsten Schemafarbe, Lampen Lichtschuss pro Beat"
+    geraete: {gitarre: "progPlaneWipe (Schemafarben)", lampe: progLampPulse, matrix: progSineCosBeat}
+    rolle: [flaeche]
+    energie: [2, 3]
+    bewegung: wandernd
+    genutzt: 0
+    urteil:
+    notiz: "neu am 18.10.2026, Demo 92 Part 63, Abnahme offen"
+  SCENE_VERSE_HEART:
+    wirkung: "Strophe als Herzschlag: alle Geräte schlagen auf jedem Beat lub-dub; Matrix Lissajous-Schleife im Schemaverlauf, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz"
+    geraete: {gitarre: progHeartbeat, lampe: progLampHeartbeat, matrix: progLissajousBeat}
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 18.10.2026, Demo 92 Part 65, Abnahme offen. Gut für ruhige, getragene Strophen"
+  SCENE_VERSE_STARS:
+    wirkung: "Strophe als Sternenhimmel: auf jedem Beat leuchten auf allen Geräten ein paar einzelne LEDs in Schemafarben auf und verglimmen in etwa 2 Beats"
+    geraete: {alle: progTwinkleBeat}
+    rolle: [flaeche]
+    energie: [1, 2]
+    bewegung: funkelnd
+    genutzt: 0
+    urteil:
+    notiz: "neu am 18.10.2026, Demo 92 Part 66, Abnahme offen. Sehr ruhig - für leise Strophen und Intros"
   SCENE_WAVE_RL:
     wirkung: "wie WAVE_LR, von rechts nach links"
     geraete: {alle: progBeatFlash}

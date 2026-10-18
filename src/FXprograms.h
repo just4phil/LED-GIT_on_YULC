@@ -490,6 +490,16 @@ void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduce
 void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 40);
 void progSineCos(unsigned int durationMillis, byte nextPart);
 
+//--- Strophen-Fassungen im Beat (neu am 18.10.2026, für SCENE_VERSE_... und SCENE_VERSE) ---
+// Anders als die Fassungen darüber: Farben aus dem Farbschema (ohne Schema wie bisher bunt), alles wird aus der Zeit
+// seit Part-Beginn gerechnet (läuft nicht davon), und die Helligkeit schwillt auf jedem Beat leicht an.
+// Plasma-Wolken in den Schemafarben, ruhiger als progPlasma
+void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+// Sinus- und Kosinuslinie in den ersten beiden Schemafarben, wandern je Takt eine Wellenlänge weiter
+void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+// Lissajous-Schleife im Schemaverlauf, dreht sich in 8 Takten einmal; die Helligkeit schlägt wie ein Herz (lub-dub)
+void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+
 // DNA-Doppelhelix: zwei Stränge winden sich quer über die Fläche umeinander, dazwischen zweifarbige Sprossen; die
 // Helix dreht sich um ihre Längsachse (der Strang vorn ist hell, der hinten dunkel).
 //   turnMillis        Dauer einer vollen Umdrehung in ms (Vorgabe 2000; im Song z.B. die Länge von 1 oder 2 Takten).

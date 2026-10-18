@@ -95,7 +95,9 @@ void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBe
 void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBetweenWaves);	// Zufallsfarben
 
 // 5: Lichtebene fährt unter angleDeg hin und her über die Gitarre
-void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg);
+//    schemeColors = true: jede Fahrt in der nächsten Farbe des Farbschemas (ohne Schema wie bisher ein neuer Farbton);
+//    Vorgabe false = das bisherige Aussehen (alte Songs)
+void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg, bool schemeColors = false);
 
 // 6: Blitze mit Nachglühen, chance = Wahrscheinlichkeit pro 10-ms-Frame in 1/1024 (Default 6 ≈ ein Blitz alle 1,7 s)
 void progLightning(unsigned int durationMillis, byte nextPart, uint8_t chance);
@@ -109,12 +111,19 @@ void progOutlineFire(unsigned int durationMillis, byte nextPart);
 void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 
 // 9: Korpus pulsiert als Herzschlag, Puls wandert danach den Hals hoch
+#define HEART_DUB_MS	220		// Abstand "lub" -> "dub" in ms
+// Helligkeit eines Herzschlags ("lub-dub"), t = ms seit dem Beat: 255 auf dem Schlag, nach HEART_DUB_MS ein zweiter,
+// schwächerer Schlag, dazwischen und danach dunkel. Auch für die Lampen und die Matrix (SCENE_VERSE_HEART).
+uint8_t heartEnvelope(unsigned int t);
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 
 // 10: Regenbogen im Raum: rotating = true dreht um den Korpus, sonst läuft er von unten nach oben
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating, unsigned int msPerStep);
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating);
+// 10b: wie progSpatialRainbow (rotating), aber in den Farben des Farbschemas (ohne Schema Regenbogen): der Verlauf
+//      dreht sich in cycleMillis einmal um den Korpus und schwillt auf jedem Beat leicht an (SCENE_VERSE_PLASMA)
+void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis);
 
 // 11: Funke läuft den Gurt runter und entzündet die Gitarre
 void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMillis);

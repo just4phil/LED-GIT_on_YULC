@@ -11,7 +11,34 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 18.10.2026 (mehrere Zeitfenster je Ebene für Abcdefu: committet und gepusht; Abcdefu vom User abgenommen, Demo 92 Part 59 offen)
+Zuletzt aktualisiert: 18.10.2026 (neue Strophen-Szenen + SCENE_VERSE mit Look je Song: committet und gepusht; Verteilungs-Vorschlag beim User)
+
+- **18.10.2026, mehr Abwechslung in den Strophen - alle fünf Envs bauen, committet und gepusht.** Anlass: User: „in den neuen songs in den strophen
+  fast immer diesen regen auf der matrix (SCENE_VERSE) ... zu wenig abwechslungsreich“. Entscheidung des Users: „A und
+  B“. (A) neue Strophen-Szenen über alle Geräte (SCENE_VERSE_PLASMA / _WAVES / _HEART / _STARS), (B) SCENE_VERSE wählt
+  auf der Matrix je Song einen Look aus einem Pool (fest aus der songID, alle Strophen eines Songs gleich). Danach:
+  Vorschlag, wie die generierten Songs angepasst werden, damit sich die Effekte ähnlich verteilen.
+  Umsetzung: scenes.h/.cpp (4 Szenen am Ende der Aufzählung, `VERSE_MATRIX_LOOKS` = 4, `beatSwell()`, `progLampFlow`,
+  `progLampHeartbeat`, `progTwinkleBeat`), fxMatrixSim.cpp (`progPlasmaBeat`, `progSineCosBeat`, `progLissajousBeat`,
+  Schemafarben, aus der Zeit seit Part-Beginn), guitarShapeFX (`heartEnvelope()` aus progHeartbeat herausgezogen -
+  gleiche Kurve, `progSpatialPalette`, `progPlaneWipe(…, schemeColors = false)`). SCENE_VERSE Matrix: songID % 4 =
+  Regen / Plasma / Wasserringe / Sinuswellen - wirkt sofort in allen Songs, ohne neu zu generieren (auch in den
+  abgenommenen: Take On Me 3 = Sinus, Abcdefu 15 = Sinus, Shivers 14 = Wasserringe). Demo 92: Parts 61, 63, 65, 66
+  vorn (Doku-Tabelle +76 s). Doku: LED-Effekte-und-Szenen.html (Szenen, Bausteine, Simulator), effekt-katalog.yaml,
+  Song-Workflow.html, SKILL.md (Regel: Strophen eines Songs nicht alle gleich, nicht immer SCENE_VERSE).
+  Nächster Schritt: Urteil des Users zum Verteilungs-Vorschlag (Chat 18.10.2026), dann show.yaml der Songs anpassen
+  und je Song generieren; Abnahme Demo 92 Parts 61-66.
+
+- **18.10.2026, `SCENE_WAVE_LR_BAR` - committet und gepusht, Test durch den User offen.** Anlass: Girls Just Wanna Have Fun,
+  „when the working day“ (Case 8 und 14, `SCENE_WAVE_LR`): Matrix und Lampen wirkten nicht in sync. Ursache: die
+  16tel-Welle (Beat / 16 je Position, 29 ms bei 126 BPM) - Lampe 1 bei 0, Matrix bei 58, Lampe 2 bei 116 ms. Zu kurz
+  für eine sichtbare Welle, zu lang für einen gemeinsamen Blitz. Wunsch des Users: „es muss dann auch deutlich sein …
+  eher eine achtel pro gerät“. Eine Achtel je Position bei einem Blitz pro Beat ginge nicht (Matrix = 1 Beat später =
+  wieder mit Lampe 1 zusammen), deshalb einmal pro Takt. Umsetzung: `progBeatFlash(…, beatsPerFlash = 1)` (neuer
+  Parameter, Phase exakt über bpm wie `fxBeatPhase`), Szene `SCENE_WAVE_LR_BAR` am Ende der Aufzählung,
+  `WAVE_BAR_BEAT_DIVISOR` = 2 und `WAVE_BAR_BEATS` = 4 (scenes.h). `SCENE_WAVE_LR` bleibt unverändert (Dancing On My
+  Own). GJWHF: beide „when the working day“-Parts auf die neue Szene, neu generiert. Demo 92: Part 51 am Anfang,
+  Doku-Tabelle offene Zeiten +18 s, Simulator kann die Szene. Nächster Schritt: Test im Song / Demo 92 Part 51.
 
 - **17.10.2026, mehrere Zeitfenster je Ebene (`fxLayerWindow` / `fxTextWindow` mit Platz) - committet und gepusht,
   Abcdefu vom User abgenommen („abcdefu ist erstmal fertig“, 18.10.2026).** Anlass: Wünsche des Users in Abcdefu (Zwischenzeilen): FUCK YOU auf jedes „F-U“ im Chorus und schon

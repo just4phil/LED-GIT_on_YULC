@@ -41,12 +41,12 @@ sections:
     why: "Pre-Chorus, energy 3: lädt sich über 4 Takte auf, Explosion genau auf 'when the working day is done'; Farbe kippt ins Warme"
 
   when the working day is done:
-    scene: SCENE_WAVE_LR
+    scene: SCENE_WAVE_LR_BAR
     scheme: SCHEME_SUNSET
     tail:
       beats: 4
       fx: "progStrobo(${dur}, ${next}, 75, CRGB::White)"
-    why: "Pre-Chorus, energy 4: Bewegung quer über die Bühne treibt auf den Chorus zu; der 5. Takt ist der Absprung - ein Takt weißer Strobo"
+    why: "Pre-Chorus, energy 4: einmal pro Takt läuft ein Blitz deutlich von links nach rechts über die Bühne, jedes Gerät eine Achtel nach dem vorigen (Lampe 1 auf 1, Matrix auf 2, Lampe 2 auf 3) - treibt auf den Chorus zu; der 5. Takt ist der Absprung - ein Takt weißer Strobo"
 
   fun girls they wanna have:
     scene: SCENE_DROP
@@ -70,7 +70,7 @@ sections:
     why: "wie der erste Pre-Chorus"
 
   when the working day is done (2):
-    scene: SCENE_WAVE_LR
+    scene: SCENE_WAVE_LR_BAR
     scheme: SCHEME_SUNSET
     tail:
       beats: 4

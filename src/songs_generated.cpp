@@ -3005,9 +3005,9 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_BUILDUP, 7619, 8, 126);
 		break;
 
-	case 8:	// when the working day is done  5 T  7619ms  @1:09.762  -- Pre-Chorus, energy 4: Bewegung quer über die Bühne treibt auf den Chorus zu; der 5. Takt ist der Absprung - ein Takt weißer Strobo
+	case 8:	// when the working day is done  5 T  7619ms  @1:09.762  -- Pre-Chorus, energy 4: einmal pro Takt läuft ein Blitz deutlich von links nach rechts über die Bühne, jedes Gerät eine Achtel nach dem vorigen (Lampe 1 auf 1, Matrix auf 2, Lampe 2 auf 3) - treibt auf den Chorus zu; der 5. Takt ist der Absprung - ein Takt weißer Strobo
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_WAVE_LR, 7619, 9, 126);
+		scene(SCENE_WAVE_LR_BAR, 7619, 9, 126);
 		break;
 
 	case 9:	// when the working day is done (tail)  4 B  1905ms  @1:17.381
@@ -3038,7 +3038,7 @@ void gen_GirlsJustWannaHaveFun() {
 
 	case 14:	// when the working day is done (2)  5 T  7619ms  @2:06.905  -- wie beim ersten Mal, Strobo-Absprung als wiederkehrendes Motiv vor dem Chorus
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_WAVE_LR, 7619, 15, 126);
+		scene(SCENE_WAVE_LR_BAR, 7619, 15, 126);
 		break;
 
 	case 15:	// when the working day is done (2) (tail)  4 B  1905ms  @2:14.524

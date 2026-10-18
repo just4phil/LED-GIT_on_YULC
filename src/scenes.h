@@ -64,6 +64,20 @@ enum SceneID : uint8_t {
 						// (eine Windungslänge in 4 Takten); die anderen Geräte pulsieren wie bei SCENE_DNA_FLIP
 	SCENE_LIFE,			// Matrix: Game of Life in Farbe (progGameOfLife), wenige Startfiguren, die sich entwickeln; festes Tempo unabhängig vom Beat.
 						// Die anderen blitzen auf jeden Beat in ihrer Schemafarbe auf und klingen ab (progBeatFlash)
+
+	//--- über die Bühne, deutlich sichtbar (neu am 18.10.2026) ---
+	SCENE_WAVE_LR_BAR,	// Welle von links nach rechts, die man als Welle sieht: einmal pro Takt, jedes Gerät eine Achtel nach
+						// seinem linken Nachbarn (Lampe 1 auf 1, Bass auf 1+, Matrix auf 2, Gitarre auf 2+, Lampe 2 auf 3, Beat 4 Pause)
+
+	//--- Strophen: dezent im Beat, Energie 2-3 - Abwechslung zu SCENE_VERSE (neu am 18.10.2026) ---
+	SCENE_VERSE_PLASMA,	// Matrix: Plasma-Wolken in Schemafarben; Gitarre/Bass: Schemaverlauf dreht sich um den Korpus;
+						// Lampen: Schemaverlauf wandert nach oben - alle schwellen auf jedem Beat leicht an
+	SCENE_VERSE_WAVES,	// Matrix: Sinus- und Kosinuslinie laufen im Takt; Gitarre/Bass: Lichtebene fährt je Takt einmal
+						// über die Gitarre (jede Fahrt die nächste Schemafarbe); Lampen: Lichtschuss nach oben pro Beat
+	SCENE_VERSE_HEART,	// Herzschlag (lub-dub) auf jedem Beat: Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den
+						// Hals hinauf, Lampen ganz - alle im selben Schlag
+	SCENE_VERSE_STARS,	// Sternenhimmel auf allen Geräten: auf jedem Beat leuchten ein paar Sterne in Schemafarben auf und
+						// verglimmen in etwa 2 Beats (auf der Eins einer weißlich)
 };
 
 // Verzögerung pro Bühnenposition bei den WAVE-Szenen, als Bruchteil eines Beats: 16 = eine 64stel-Note (Beat / 16).
@@ -73,6 +87,19 @@ enum SceneID : uint8_t {
 // fast einen ganzen Beat, und die Geräte wirkten wie aus dem Takt.
 #define WAVE_BEAT_DIVISOR	16
 
+// Verzögerung pro Bühnenposition bei SCENE_WAVE_LR_BAR, ebenfalls als Bruchteil eines Beats: 2 = eine Achtel.
+// Die Welle braucht damit 2 Beats von Lampe 1 bis Lampe 2 und läuft deshalb nur einmal pro Takt (WAVE_BAR_BEATS) -
+// bei einem Blitz auf jedem Beat käme die Matrix (2 Achtel = 1 Beat später) wieder genau mit Lampe 1 zusammen.
+// Anlass: Girls Just Wanna Have Fun, User 18.10.2026: "es muss dann auch deutlich sein ... eher eine achtel pro gerät".
+#define WAVE_BAR_BEAT_DIVISOR	2
+#define WAVE_BAR_BEATS			4		// alle 4 Beats (= 1 Takt) eine Welle
+
+// SCENE_VERSE auf der Matrix: so viele Looks wechseln sich ab, je Song einer (songID % VERSE_MATRIX_LOOKS):
+// 0 = farbiger Regen, 1 = Plasma-Wolken, 2 = Wasserringe, 3 = Sinuswellen. Alle Strophen eines Songs sehen gleich
+// aus, aber nicht mehr jeder Song gleich (Wunsch des Users, 18.10.2026). Wer in einem Song einen bestimmten Look
+// will: devices: {matrix: "progMatrixRainColor(...)"} usw. in der show.yaml.
+#define VERSE_MATRIX_LOOKS		4
+
 void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t bpm);
 
 // "Zufall", der auf allen Geräten gleich ist (Hash aus songID, Part und salt, ohne Zustand)
@@ -81,7 +108,10 @@ uint8_t sharedRand8(uint32_t salt);
 //--- Primitive für alle Geräte (schreiben in leds[0..anz_LEDs)) ---
 void progBreathe(unsigned int durationMillis, byte nextPart, CRGB col, unsigned int periodMillis, uint8_t maxVal);
 void progFadeOut(unsigned int durationMillis, byte nextPart, CRGB col);		// einfarbig, blendet über die Partdauer weich aus
-void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis);
+void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis,
+				   uint8_t beatsPerFlash = 1);	// beatsPerFlash: nur jeden n-ten Beat blitzen (4 = einmal pro Takt)
+uint8_t beatSwell(unsigned int ms, uint8_t bpm, uint8_t floorVal);	// Helligkeit, die auf jedem Beat leicht anschwillt:
+															// ms = seit Part-Beginn, floorVal zwischen den Beats, 255 auf dem Beat
 uint8_t flashEnvelope(unsigned int t, unsigned int period);	// Helligkeit des Beat-Blitzes: t = ms seit dem Schlag, period = ms pro Beat;
 															// 255 auf dem Schlag, klingt in 70 % des Beats (höchstens 450 ms) auf 0 ab
 void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
@@ -107,3 +137,7 @@ void progLampFireBursts(unsigned int durationMillis, byte nextPart, unsigned int
                         unsigned int t5 = LAMP_BURST_NONE, unsigned int t6 = LAMP_BURST_NONE, unsigned int t7 = LAMP_BURST_NONE, unsigned int t8 = LAMP_BURST_NONE);
 void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm);				// drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat
 void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col);	// Leuchtspuren fallen von oben
+void progLampFlow(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis);	// Schemaverlauf wandert nach oben, schwillt im Beat an
+void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);	// ganze Lampe schlägt wie ein Herz (lub-dub)
+// für alle Geräte: Sternenhimmel - pro Beat leuchten perBeat Sterne (einzelne LEDs) in Schemafarben auf und verglimmen
+void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat);

@@ -455,9 +455,9 @@ mehr. Der Änderungswunsch geht immer vor der Tabelle unten:
 |---|---|
 | Energie 0 / Stopp | Black; bei kurzen Stopps innerhalb eines Parts `tail` mit progBlack |
 | Energie 1, wenig Rhythmus | SCENE_CALM |
-| Energie 2-3, Puls im Beat | SCENE_VERSE |
+| Energie 2-3, Puls im Beat (Strophe) | SCENE_VERSE, SCENE_VERSE_PLASMA (fließend), SCENE_VERSE_WAVES (im Takt laufend), SCENE_VERSE_HEART (getragen, Herzschlag), SCENE_VERSE_STARS (sehr ruhig, Energie 1-2). Regel des Users (18.10.2026, „zu wenig abwechslungsreich“): die Strophen eines Songs nicht alle mit derselben Szene, und über die Songs verteilt nicht immer SCENE_VERSE - verse 1 und verse 2 dürfen gleich sein (Wiedererkennung), verse 3 oder ein b-Teil nimmt eine andere. SCENE_VERSE zeigt auf der Matrix je Song einen anderen Look (songID % 4: Regen, Plasma, Wasserringe, Sinuswellen) - SCENE_RAIN ist ebenfalls Regen, also nicht SCENE_VERSE mit Regen-Look und SCENE_RAIN im selben Song |
 | Part steigert sich ("build up") oder Pre-Chorus | SCENE_BUILDUP (Explosion fällt exakt auf die Part-Grenze) |
-| Energie 4-5, treibend | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* |
+| Energie 4-5, treibend | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* (SCENE_WAVE_LR/RL/OUT: Welle in einer 16tel, wirkt fast gleichzeitig; SCENE_WAVE_LR_BAR: deutlich sichtbare Welle, einmal pro Takt, eine Achtel je Gerät - neu am 18.10.2026, Abnahme offen) |
 | „Geräte abwechselnd“, Energie 3-4 | SCENE_CALL_RESPONSE (Frage/Antwort: Bühnenhälften blitzen abwechselnd, fester Puls je Gerät). SCENE_PINGPONG springt zufällig von Gerät zu Gerät und wirkte auf den User in APT. „nicht im Takt“ (06.10.2026) |
 | Energie 5, Bass/Drop, Höhepunkt | SCENE_FIRE |
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |

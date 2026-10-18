@@ -72,6 +72,15 @@ uint8_t flashEnvelope(unsigned int t, unsigned int period) {
 	return scale8(v, v);
 }
 
+// Leichtes Anschwellen im Beat für die Strophen-Effekte: auf dem Schlag voll (255), dann fällt die Helligkeit mit der
+// Kurve von flashEnvelope() auf floorVal zurück und bleibt dort bis zum nächsten Beat. ms = Zeit seit Part-Beginn;
+// fxBeatPhase() rechnet daraus exakt über bpm, wie weit der Beat schon her ist - auf allen Geräten gleich.
+uint8_t beatSwell(unsigned int ms, uint8_t bpm, uint8_t floorVal) {
+	if (bpm == 0) bpm = 1;
+	uint8_t env = flashEnvelope(fxBeatPhase(ms, bpm), 60000 / bpm);
+	return floorVal + scale8(env, 255 - floorVal);
+}
+
 //==================================================================
 //=========== Primitive für alle Geräte ============================
 //==================================================================
@@ -108,13 +117,26 @@ void progFadeOut(unsigned int durationMillis, byte nextPart, CRGB col) {
 
 // Blitz auf jedem Beat. delayMillis verschiebt den Blitz dieses Geräts nach hinten: geben die Geräte von links nach
 // rechts steigende Werte an, läuft der Blitz als Welle über die Bühne (SCENE_WAVE_...).
-void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis) {
+// beatsPerFlash (Vorgabe 1): nur auf jedem n-ten Beat blitzen, z.B. 4 = einmal pro Takt (SCENE_WAVE_LR_BAR). Der Blitz
+// selbst klingt dabei genauso schnell ab wie beim Blitz auf jedem Beat, dazwischen bleibt das Gerät dunkel.
+void progBeatFlash(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, unsigned int delayMillis,
+				   uint8_t beatsPerFlash) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
-		unsigned int period = 60000 / max((uint8_t)1, bpm);
+		if (bpm == 0) bpm = 1;
+		if (beatsPerFlash == 0) beatsPerFlash = 1;
+		unsigned int period = 60000 / bpm;
 		unsigned int ms = millisCounterForProgChange;
-		uint8_t env = (ms >= delayMillis) ? flashEnvelope(fxBeatPhase(ms - delayMillis, bpm), period) : 0;
+		uint8_t env = 0;
+		if (ms >= delayMillis) {
+			// ms seit dem letzten Blitz-Beat, exakt über bpm gerechnet wie in fxBeatPhase(): erst mit bpm malnehmen,
+			// den Rest zu (60000 * Beats je Blitz) nehmen, erst zum Schluss teilen - so läuft nichts aus dem Takt.
+			// uint64_t: ms * bpm passt nach gut 9 Minuten nicht mehr in 32 Bit.
+			uint32_t cycle = 60000UL * beatsPerFlash;
+			unsigned int t = (unsigned int)(((uint64_t)(ms - delayMillis) * bpm % cycle) / bpm);
+			env = flashEnvelope(t, period);
+		}
 		CRGB c = col;
 		fill_solid(leds, anz_LEDs, c.nscale8(env));
 	}
@@ -326,6 +348,67 @@ void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 	fxShow();
 }
 
+// Farbverlauf des Schemas (ohne Schema Regenbogen) liegt über die halbe Lampenhöhe und wandert in cycleMillis einmal
+// ganz nach oben durch; dazu schwillt die ganze Lampe auf jedem Beat leicht an (beatSwell). Aus der Zeit seit
+// Part-Beginn gerechnet - Lampe 1 und Lampe 2 zeigen trotz unterschiedlicher LED-Zahl denselben Stand.
+void progLampFlow(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		if (cycleMillis == 0) cycleMillis = 1;
+		unsigned int ms = millisCounterForProgChange;
+		uint8_t offset = (uint32_t)(ms % cycleMillis) * 256 / cycleMillis;
+		CRGBPalette16 pal = colorSchemeActive() ? schemePalette() : CRGBPalette16(RainbowColors_p);
+		uint8_t val = beatSwell(ms, bpm, 140);
+		for (int h = 0; h < anz_LEDs; h++) {
+			// h * 128 / anz_LEDs: von unten bis oben ein halber Verlauf; "- offset" lässt die Farben nach oben steigen
+			uint8_t idx = (uint8_t)(h * 128 / anz_LEDs - offset);
+			leds[lampLed(h)] = ColorFromPalette(pal, idx, val);
+		}
+	}
+	fxShow();
+}
+
+// Die ganze Lampe schlägt auf jedem Beat wie ein Herz: erst voll ("lub"), kurz danach etwas schwächer ("dub"),
+// dazwischen glimmt sie ganz schwach (8). Dieselbe Kurve wie progHeartbeat auf Gitarre und Bass (heartEnvelope).
+void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(10)) {
+		uint8_t env = heartEnvelope(fxBeatPhase(millisCounterForProgChange, bpm));
+		CRGB c = col;
+		fill_solid(leds, anz_LEDs, c.nscale8(max((uint8_t)8, env)));
+	}
+	fxShow();
+}
+
+static uint32_t twinkleBeat = 0;	// letzter Beat, auf dem schon Sterne gesetzt wurden
+
+// Sternenhimmel für jedes Gerät (arbeitet nur mit der LED-Nummer, die Form des Geräts spielt keine Rolle):
+// auf jedem Beat leuchten perBeat zufällige LEDs in einer Schemafarbe auf, auf der Eins ist einer davon weißlich.
+// Bei jedem Bild (alle 20 ms) wird alles um 10/256 dunkler (fadeToBlackBy) - ein Stern verglimmt so in etwa einer
+// Sekunde, bei mittlerem Tempo rund 2 Beats. Welche LEDs es trifft, ist auf jedem Gerät anders (random16) - das ist
+// gewollt; der Zeitpunkt (der Beat) ist überall derselbe.
+void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat) {
+	if (fxPartStart(durationMillis, nextPart)) {
+		twinkleBeat = 0xFFFFFFFF;	// "noch kein Beat": der erste Beat (0) setzt sofort Sterne
+	}
+
+	if (fxFrameDue(20)) {
+		fadeToBlackBy(leds, anz_LEDs, 10);
+		uint32_t beat = fxBeats(bpm);
+		if (beat != twinkleBeat) {
+			twinkleBeat = beat;
+			for (uint8_t k = 0; k < perBeat; k++) {
+				CRGB c = colorSchemeActive() ? schemeColor(random8()) : CRGB(CHSV(random8(), 200, 255));
+				if (k == 0 && beat % 4 == 0) c = blend(c, CRGB::White, 140);	// auf der Eins ein hellerer Stern
+				leds[random16(anz_LEDs)] = c;
+			}
+		}
+	}
+	fxShow();
+}
+
 static uint8_t lampHeat[anz_LEDs];	// "Temperatur" jeder LED für das Feuer (0 = kalt/dunkel, 255 = weißglühend)
 
 // Feuer an der Lampe: fire2012Step() (guitarShapeFX) rechnet je Bild einen Schritt der Feuer-Simulation
@@ -516,6 +599,16 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_WAVE_OUT:
 		progBeatFlash(durationMillis, nextPart, bpm, me, abs(STAGE_POS - (STAGE_POSITIONS - 1) / 2) * waveStep);
 		return;
+	case SCENE_VERSE_STARS:
+		// auf jedem Gerät derselbe Sternenhimmel, Dichte nach LED-Zahl: Matrix 13, Gitarre/Bass 4, Lampen 2 je Beat
+		progTwinkleBeat(durationMillis, nextPart, bpm, max(2, anz_LEDs / 40));
+		return;
+	case SCENE_WAVE_LR_BAR:
+		// Achtel je Bühnenposition, exakt über bpm gerechnet (60000 / bpm / 2 ohne zweimal zu runden):
+		// bei 126 BPM 238 ms je Gerät, Lampe 2 kommt 2 Beats nach Lampe 1. Ein Blitz pro Takt.
+		progBeatFlash(durationMillis, nextPart, bpm, me, STAGE_POS * 60000UL / ((unsigned long)bpm * WAVE_BAR_BEAT_DIVISOR),
+					  WAVE_BAR_BEATS);
+		return;
 	case SCENE_PINGPONG:
 		progPingPong(durationMillis, nextPart, bpm);
 		return;
@@ -592,6 +685,9 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_FIRE:	progOutlineFire(durationMillis, nextPart, 20, isColdScheme());	break;
 	case SCENE_STAR:	progSternNeu(durationMillis, beatMs, nextPart, 5, 26, 5, true, 3);	break;	// Werte der alten Refrains
 	case SCENE_RAIN:	progMatrixHorizontal(durationMillis, nextPart, 70, true);	break;
+	case SCENE_VERSE_PLASMA:	progSpatialPalette(durationMillis, nextPart, bpm, beatMs * 32UL);	break;	// eine Umdrehung in 8 Takten
+	case SCENE_VERSE_WAVES:	progPlaneWipe(durationMillis, nextPart, 240000UL / bpm, WIPE_ANGLE_NECK, true);	break;	// eine Fahrt je Takt
+	case SCENE_VERSE_HEART:	progHeartbeat(durationMillis, nextPart, bpm, me);	break;
 	default:			progCometLoop(durationMillis, nextPart, 8, hueOf(me), true);	break;	// Solo
 	}
 
@@ -604,13 +700,27 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_FIRE:	progLampFire(durationMillis, nextPart, isColdScheme());	break;
 	case SCENE_STAR:	progLampSpin(durationMillis, nextPart, bpm);	break;
 	case SCENE_RAIN:	progLampRain(durationMillis, nextPart, 35, me);	break;
+	case SCENE_VERSE_PLASMA:	progLampFlow(durationMillis, nextPart, bpm, beatMs * 16UL);	break;	// einmal durch in 4 Takten
+	case SCENE_VERSE_WAVES:	progLampPulse(durationMillis, nextPart, bpm, me);	break;
+	case SCENE_VERSE_HEART:	progLampHeartbeat(durationMillis, nextPart, bpm, me);	break;
 	default:			progLampPulse(durationMillis, nextPart, bpm, me);	break;
 	}
 
 #elif DEVICE_CLASS == CLASS_MATRIX
 	switch (sceneID) {
 	case SCENE_CALM:	progWaterRipple(durationMillis, nextPart, 70, me);	break;
-	case SCENE_VERSE:	progMatrixRainColor(durationMillis, nextPart, 80, beatMs * 64UL);	break;	// farbiger Regen, Verlauf wandert in 16 Takten einmal durchs Schema
+	case SCENE_VERSE:
+		// je Song ein anderer Look (VERSE_MATRIX_LOOKS in scenes.h), alle Strophen eines Songs gleich
+		switch (songID % VERSE_MATRIX_LOOKS) {
+		case 0:		progMatrixRainColor(durationMillis, nextPart, 80, beatMs * 64UL);	break;	// farbiger Regen, Verlauf wandert in 16 Takten einmal durchs Schema
+		case 1:		progPlasmaBeat(durationMillis, nextPart, bpm);	break;
+		case 2:		progWaterRipple(durationMillis, nextPart, 60);	break;	// Wasserringe, jede Welle eine Schemafarbe
+		default:	progSineCosBeat(durationMillis, nextPart, bpm);	break;
+		}
+		break;
+	case SCENE_VERSE_PLASMA:	progPlasmaBeat(durationMillis, nextPart, bpm);	break;
+	case SCENE_VERSE_WAVES:	progSineCosBeat(durationMillis, nextPart, bpm);	break;
+	case SCENE_VERSE_HEART:	progLissajousBeat(durationMillis, nextPart, bpm);	break;
 	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;

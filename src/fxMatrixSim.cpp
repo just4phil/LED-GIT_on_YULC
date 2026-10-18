@@ -5,7 +5,8 @@
 #include "colorSchemes.h"
 #include "fxBase.h"
 #include "FXprograms.h"
-#include "scenes.h"		// sharedRand8(): fester Startwert für den Zufall von progGameOfLife
+#include "scenes.h"		// sharedRand8(): fester Startwert für den Zufall von progGameOfLife; beatSwell()
+#include "guitarShapeFX.h"	// heartEnvelope(): Herzschlag-Kurve für progLissajousBeat
 //---------------------------------------------------------------------
 
 //=====================================================================
@@ -403,6 +404,116 @@ void progSineCos(unsigned int durationMillis, byte nextPart, unsigned int reduce
 
 void progSineCos(unsigned int durationMillis, byte nextPart) {
 	progSineCos(durationMillis, nextPart, 40);
+}
+
+//==================================================================
+//=========== Strophen-Fassungen im Beat ===========================
+//==================================================================
+// Neu am 18.10.2026 (Wunsch des Users: "in den strophen fast immer diesen regen auf der matrix ... zu wenig
+// abwechslungsreich"). Drei bekannte Bilder, umgebaut für Strophen: in den Farben des Farbschemas, aus der Zeit seit
+// Part-Beginn gerechnet (millisCounterForProgChange) statt Schritt für Schritt hochgezählt, und dezent im Beat.
+// Die Palette wird bei jedem Bild neu geholt, damit "fade:" (wandernde Schemafarben) auch hier wirkt.
+
+// Palette für die drei Effekte: Verlauf über alle Schemafarben, ohne Schema ein Regenbogen
+static CRGBPalette16 versePalette() {
+	return colorSchemeActive() ? schemePalette() : CRGBPalette16(RainbowColors_p);
+}
+
+// Plasma-Wolken: drei Sinuswellen (waagerecht, senkrecht, schräg) werden addiert, die Summe ist die Stelle im
+// Farbverlauf. Die Wellen sind flacher als bei progPlasma (x * 20 statt 40): größere, ruhigere Wolken. t wächst mit
+// der Zeit (1 je 16 ms) und schiebt die Wellen weiter. Helligkeit: 150 zwischen den Beats, voll auf dem Beat.
+void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		unsigned int ms = millisCounterForProgChange;
+		uint16_t t = ms / 16;
+		CRGBPalette16 pal = versePalette();
+		uint8_t val = beatSwell(ms, bpm, 150);
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				uint8_t idx = sin8(x * 20 + t)
+				            + sin8(y * 32 + t)
+				            + sin8((x + y) * 12 + t / 2);
+				leds[matrix->XY(x, y)] = ColorFromPalette(pal, idx, val);
+			}
+		}
+	}
+	fxShow();
+}
+
+// Sinus- und Kosinuslinie (90 Grad gegeneinander versetzt) in Schemafarbe 1 und 2, 1,5 Wellenberge auf der Breite.
+// Die Verschiebung ("Phase") ergibt sich aus der Stelle im Takt: in einem Takt wandern die Wellen genau eine
+// Wellenlänge weiter - sie laufen also im Songtempo. Senkrechte Lücken zwischen zwei Spalten werden zugemalt, damit
+// die Linie geschlossen bleibt. Helligkeit: 110 zwischen den Beats, voll auf dem Beat.
+void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		if (bpm == 0) bpm = 1;
+		unsigned int ms = millisCounterForProgChange;
+		uint32_t barMs = 240000UL / bpm;							// ein Takt = 4 Beats
+		float phase = 2.0f * (float)M_PI * (float)(ms % barMs) / (float)barMs;
+		uint8_t val = beatSwell(ms, bpm, 110);
+		CRGB c1 = colorSchemeActive() ? schemeColor(0) : CRGB(0, 200, 255);	// ohne Schema die Farben von progSineCos
+		CRGB c2 = colorSchemeActive() ? schemeColor(1) : CRGB(255, 50, 200);
+		c1.nscale8(val);
+		c2.nscale8(val);
+
+		clearAll();
+		float amp  = (MATRIX_HEIGHT - 1) / 2.0f;
+		float cy   = (MATRIX_HEIGHT - 1) / 2.0f;
+		float freq = 1.5f * 2.0f * (float)M_PI / (float)MATRIX_WIDTH;
+
+		// Höhe einer der beiden Linien in Spalte x (cosine = true: die Kosinuslinie)
+		auto lineY = [&](int x, bool cosine) {
+			float t = x * freq - phase;		// "- phase": die Wellen laufen nach rechts
+			int y = (int)(cy - amp * (cosine ? cosf(t) : sinf(t)) + 0.5f);
+			return constrain(y, 0, MATRIX_HEIGHT - 1);
+		};
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			for (int k = 0; k < 2; k++) {
+				int y  = lineY(x, k == 1);
+				int y0 = (x > 0) ? lineY(x - 1, k == 1) : y;	// Höhe in der Spalte davor
+				for (int yy = min(y, y0); yy <= max(y, y0); yy++) {
+					leds[matrix->XY(x, yy)] += (k == 0) ? c1 : c2;	// "+=": wo sich die Linien kreuzen, mischen sie sich
+				}
+			}
+		}
+	}
+	fxShow();
+}
+
+// Lissajous-Schleife (Schwingung 2 : 3 wie progLissajous), 220 Punkte im Farbverlauf des Schemas. Die Figur dreht
+// sich in 8 Takten einmal ganz herum, der Verlauf wandert langsam mit. Das alte Bild wird nur abgedunkelt
+// (nscale8(200) je Bild) - so zieht die Figur eine Leuchtspur. Die Helligkeit schlägt auf jedem Beat wie ein Herz
+// (heartEnvelope: lub-dub), passend zu Gitarre und Lampen in SCENE_VERSE_HEART; dazwischen bleibt sie bei 70.
+void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		if (bpm == 0) bpm = 1;
+		unsigned int ms = millisCounterForProgChange;
+		uint32_t turnMs = 8UL * 240000UL / bpm;						// 8 Takte für eine Umdrehung
+		float delta = 2.0f * (float)M_PI * (float)(ms % turnMs) / (float)turnMs;
+		uint8_t val = 70 + scale8(heartEnvelope(fxBeatPhase(ms, bpm)), 185);
+		uint8_t hueOffset = ms / 40;
+		CRGBPalette16 pal = versePalette();
+
+		for (int i = 0; i < MATRIX_SIZE; i++) leds[i].nscale8(200);
+
+		const float A = MATRIX_WIDTH  / 2.0f - 1.0f;
+		const float B = MATRIX_HEIGHT / 2.0f - 1.0f;
+		for (int p = 0; p < 220; p++) {
+			float t  = p * 2.0f * PI / 220.0f;
+			int   px = (int)(MATRIX_WIDTH  / 2 + A * sinf(2.0f * t + delta));
+			int   py = (int)(MATRIX_HEIGHT / 2 + B * sinf(3.0f * t));
+			if (px >= 0 && px < MATRIX_WIDTH && py >= 0 && py < MATRIX_HEIGHT) {
+				leds[matrix->XY(px, py)] = ColorFromPalette(pal, (uint8_t)(hueOffset + p), val);
+			}
+		}
+	}
+	fxShow();
 }
 
 //==================================================================

@@ -20,14 +20,16 @@ neuer fx:
 
 TODOs
 =======
+blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander) aber dann faden alles gleichzeitig lange aus
+=> könnte man als blinder aber auch mit anderen farben machen
+=> könnte man gut am ende von songs benutzen. 
+
 SAS
     EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
 titanium
     - triolen ende unsync
 no roots
     - blinder auf den synth fx
-GJWHF 
-    - 1. when the working day -> matrix blinken nicht in sync zu lampen?!
 dstm: 
     -> bass solo
 

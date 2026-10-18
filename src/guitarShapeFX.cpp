@@ -5,6 +5,7 @@
 #include "FXprograms.h"
 #include "guitarShapeFX.h"
 #include "colorSchemes.h"
+#include "scenes.h"		// beatSwell(): leichtes Anschwellen im Beat (progSpatialPalette)
 //---------------------------------------------------------------------
 
 extern CRGB leds[NUMMATRIX];
@@ -377,7 +378,7 @@ void progShockwave(unsigned int durationMillis, byte nextPart, unsigned int msBe
 static uint8_t wipeProj[anz_LEDs];	// Position jeder LED entlang der Wisch-Richtung (0..255)
 
 // sweepMillis = Dauer einer Fahrt, angleDeg = Richtung in Grad (Vorgaben WIPE_ANGLE_... in guitarShapeFX.h)
-void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg) {
+void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int sweepMillis, int angleDeg, bool schemeColors) {
 	if (fxPartStart(durationMillis, nextPart)) {
 		// Einmal zu Part-Beginn: für jede LED ausrechnen, wie weit sie in Wisch-Richtung liegt ("Projektion":
 		// x * cos + y * sin), und das Ergebnis auf 0..255 bringen. Danach genügt ein Vergleich pro LED.
@@ -403,12 +404,20 @@ void progPlaneWipe(unsigned int durationMillis, byte nextPart, unsigned int swee
 		int pos = (long)phase * (255 + 2 * WIPE_WIDTH) / sweepMillis - WIPE_WIDTH;
 		if (sweep & 1) pos = 255 - pos;	// jede zweite Fahrt (ungerade Nummer) läuft rückwärts
 		uint8_t hue = sweep * 48;		// jede Fahrt in einem neuen Farbton
+		bool useScheme = schemeColors && colorSchemeActive();
+		CRGB schemeCol = schemeColor(sweep);	// nur mit useScheme: jede Fahrt die nächste Schemafarbe
 
 		fadeToBlackBy(leds, anz_LEDs, 45);
 		for (int i = 0; i < anz_LEDs; i++) {
 			int delta = abs((int)wipeProj[i] - pos);
 			if (delta >= WIPE_WIDTH) continue;
-			leds[i] |= CRGB(CHSV(hue, 230, 255 - delta * 255 / WIPE_WIDTH));
+			uint8_t val = 255 - delta * 255 / WIPE_WIDTH;	// in der Mitte der Ebene am hellsten
+			if (useScheme) {
+				CRGB c = schemeCol;
+				leds[i] |= c.nscale8(val);
+			} else {
+				leds[i] |= CRGB(CHSV(hue, 230, val));
+			}
 		}
 	}
 	fxShow();
@@ -571,7 +580,17 @@ void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 //=========== 9: Heartbeat =========================================
 //==================================================================
 
-#define HEART_DUB_MS	220		// Abstand "lub" -> "dub"
+// HEART_DUB_MS (Abstand "lub" -> "dub") steht in guitarShapeFX.h, weil auch Lampen und Matrix den Herzschlag nutzen.
+
+// Helligkeitskurve eines Herzschlags: der erste Schlag ("lub") fällt in 150 ms von 255 auf 0, der zweite ("dub")
+// kommt HEART_DUB_MS nach dem Beat mit 200 und fällt in 180 ms auf 0. Zum Schluss quadriert (scale8(v, v)) - so
+// klingt es weicher aus. Gilt für den Beat, in dem t liegt (t = ms seit dem Beat, z.B. aus fxBeatPhase()).
+uint8_t heartEnvelope(unsigned int t) {
+	int lub = 255 - (int)t * 255 / 150;
+	int dub = (t >= HEART_DUB_MS) ? 200 - (int)(t - HEART_DUB_MS) * 200 / 180 : 0;
+	int v = max(0, max(lub, dub));
+	return scale8((uint8_t)v, (uint8_t)v);
+}
 
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
 	fxPartStart(durationMillis, nextPart);
@@ -581,10 +600,7 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB
 		unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 
 		// Ein Herzschlag sind zwei Schläge kurz hintereinander ("lub-dub"): der erste voll, der zweite etwas schwächer
-		int lub = 255 - (int)t * 255 / 150;
-		int dub = (t >= HEART_DUB_MS) ? 200 - (int)(t - HEART_DUB_MS) * 200 / 180 : 0;
-		uint8_t env = max(8, max(lub, dub));
-		env = scale8(env, env);	// weicher ausklingen
+		uint8_t env = heartEnvelope(t);
 
 		fill_solid(leds, anz_LEDs, CRGB::Black);
 		CRGB body = col;
@@ -640,6 +656,26 @@ void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotatin
 
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating) {
 	progSpatialRainbow(durationMillis, nextPart, rotating, 15);
+}
+
+// Farbverlauf des Farbschemas liegt rund um den Korpus (ledAngle = Winkel jeder LED um den Korpus, 0..255) und dreht
+// sich in cycleMillis einmal herum. Gerechnet aus der Zeit seit Part-Beginn, nicht Schritt für Schritt: so steht der
+// Verlauf auf Gitarre und Bass immer an derselben Stelle, egal wie schnell das Gerät Bilder schafft.
+// ColorFromPalette(Palette, Index 0..255, Helligkeit) holt die Farbe an einer Stelle des Verlaufs.
+void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		if (cycleMillis == 0) cycleMillis = 1;
+		unsigned int ms = millisCounterForProgChange;
+		uint8_t offset = (uint32_t)(ms % cycleMillis) * 256 / cycleMillis;	// wie weit der Verlauf schon gedreht ist
+		CRGBPalette16 pal = colorSchemeActive() ? schemePalette() : CRGBPalette16(RainbowColors_p);
+		uint8_t val = beatSwell(ms, bpm, 140);		// 140 zwischen den Beats, 255 auf dem Beat
+		for (int i = 0; i < anz_LEDs; i++) {
+			leds[i] = ColorFromPalette(pal, (uint8_t)(ledAngle[i] + offset), val);
+		}
+	}
+	fxShow();
 }
 
 //==================================================================

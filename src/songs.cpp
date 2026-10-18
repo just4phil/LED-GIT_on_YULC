@@ -4256,8 +4256,28 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(59);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(61);	break;
+
+	// Strophen-Szenen (neu am 18.10.2026, Wunsch des Users: "in den strophen fast immer diesen regen auf der matrix ...
+	// zu wenig abwechslungsreich"): vier neue Szenen für Energie 2-3, alle dezent im Beat, je 8 Takte.
+	//   61: SCENE_VERSE_PLASMA, SUNSET - Matrix Plasma-Wolken, Gitarre/Bass Verlauf dreht sich um den Korpus,
+	//       Lampen Verlauf steigt nach oben; alle schwellen auf jedem Beat leicht an.
+	//   63: SCENE_VERSE_WAVES, NEON - Matrix Sinus/Kosinus im Takt, Gitarre/Bass Lichtebene je Takt einmal über die
+	//       Gitarre (jede Fahrt die nächste Schemafarbe), Lampen Lichtschuss pro Beat.
+	//   65: SCENE_VERSE_HEART, ROYAL - Herzschlag (lub-dub) auf jedem Beat auf allen Geräten, Matrix Lissajous-Schleife.
+	//   66: SCENE_VERSE_STARS, ICE - Sternenhimmel: pro Beat ein paar Sterne in Schemafarben, verglimmen in 2 Beats.
+	case 61:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_VERSE_PLASMA, 16000, DEMO_NR(63), bpm);	break;
+	case 63:	setColorScheme(SCHEME_NEON);	scene(SCENE_VERSE_WAVES,  16000, DEMO_NR(65), bpm);	break;
+	case 65:	setColorScheme(SCHEME_ROYAL);	scene(SCENE_VERSE_HEART,  16000, DEMO_NR(66), bpm);	break;
+	case 66:	setColorScheme(SCHEME_ICE);		scene(SCENE_VERSE_STARS,  16000, DEMO_NR(51), bpm);	break;
+
+	// SCENE_WAVE_LR_BAR (neu am 18.10.2026, Girls Just Wanna Have Fun, "when the working day": die 16tel-Welle von
+	// SCENE_WAVE_LR wirkte nur wie "nicht in sync". Wunsch des Users: "es muss dann auch deutlich sein ... eher eine
+	// achtel pro gerät"): einmal pro Takt ein Blitz, jedes Gerät eine Achtel nach seinem linken Nachbarn.
+	//   51: 126 BPM wie im Song, SUNSET: Lampe 1 auf 1, Bass auf 1+, Matrix auf 2, Gitarre auf 2+, Lampe 2 auf 3,
+	//       Beat 4 dunkel. 8 Takte.
+	case 51:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_WAVE_LR_BAR, 15238, DEMO_NR(59), 126);	break;
 
 	// Mehrere Zeitfenster für eine Ebene (neu am 17.10.2026, Wünsche des Users in Abcdefu: "FUCK YOU" mehrmals im Chorus,
 	// jedes Mal 1,5 Takte voll und 0,5 Takte ausblenden): fxLayerWindow(von, bis, Platz, fades) - Platz 0, 1, 2 = drei
