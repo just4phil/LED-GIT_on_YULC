@@ -1,0 +1,8 @@
+zeit: '2026-10-18 18:01:12'
+notiz: Text-Overlays all i ever wanted / words are very, Strobo-Auftakt 17,75
+werkzeug_git: 3717608 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f652921ceca001455990356f99f2e123d161df7f4635ca858f7a8f3e53a2f3af
+  show.yaml: a4d309f03b7d58c2cb11601e476941f5ca54966bcbf98b91ec956fc9dec029bc
+  generated.cpp: b2de3a75731a3a91c7985c02e46d5d111ef7bf84eba914f933dc63677eba498c

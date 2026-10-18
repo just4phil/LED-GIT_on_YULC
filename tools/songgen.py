@@ -14,6 +14,7 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py <Song> --vorschlag     # vorschlag.yaml in die Spalte "Neuer Vorschlag (KI)" schreiben
     tools/.venv/Scripts/python tools/songgen.py --vorschlag            # ... für alle Songs, die eine vorschlag.yaml haben
     tools/.venv/Scripts/python tools/songgen.py <Song> --part-loeschen 95 --part-name 93=outro   # Parts der Tabelle ändern
+    tools/.venv/Scripts/python tools/songgen.py <Song> --anfang-ab 1   # Song vorn verlängern: Zeilen ab Takt 1 davor einfügen
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
     quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
@@ -35,6 +36,7 @@ Schreibt:
     songs/<Song>/quelle/struktur-raster.xlsx  (nur mit --raster: gerasterte Kopie der Tabelle, eine Zeile je Vierteltakt)
     songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --takt-ab N: Taktnummern verschoben, siehe cmd_shift())
     songs/<Song>/quelle/struktur.xlsx + show.yaml  (nur mit --part-loeschen / --part-name: Parts gelöscht/benannt, cmd_parts())
+    songs/<Song>/quelle/struktur.xlsx         (nur mit --anfang-ab N: Zeilen vor der ersten eingefügt, cmd_extend())
     songs/<Song>/quelle/struktur.xlsx         (nur mit --vorschlag: die Spalte "Neuer Vorschlag (KI)", siehe cmd_proposal())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
     src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
@@ -2928,6 +2930,23 @@ def cmd_shift(song_dir, start):
 	return 0
 
 
+# <Song> --anfang-ab N: den Song vorn verlängern - vor die erste Zeile der Tabelle kommen Rasterzeilen ab Takt N
+# (struktur.extend_start, mit Kontrolle; Wunsch des Users 18.10.2026 zu Enjoy The Silence). Der erste Part wird länger,
+# alle Parts danach behalten Taktnummer und Länge - bar: und cues: der Show bleiben also richtig. Danach kann
+# --part-name aus einer der neuen Zeilen einen eigenen Part machen.
+def cmd_extend(song_dir, start):
+	table = table_path(song_dir)
+	if not table.exists():
+		raise SongError(f"{song_dir.name}: keine {TABLE_FILE}")
+	try:
+		n = st.extend_start(table, start)
+	except st.TableError as e:
+		raise SongError(f"{song_dir.name}: {e}")
+	print(f"{song_dir.name}: {n} Zeilen ab Takt {st.fmt(start)} vor die erste Zeile eingefügt (Inhalt der alten Zeilen geprüft: unverändert).\n"
+		  f"Der erste Part beginnt jetzt bei Takt {st.fmt(start)}. Jetzt neu generieren (songgen.py {song_dir.name}).")
+	return 0
+
+
 # <Song> --part-loeschen VON / --part-name VON=NAME: die Part-Gliederung der Tabelle ändern (Wunsch des Users,
 # 17.10.2026: steht in seinem Änderungswunsch "löschen" oder ein neuer Part, passt Claude die Parts selbst an - über
 # dieses Werkzeug, die Tabelle selbst darf Claude nicht schreiben). Die Arbeit macht struktur.edit_parts(), mit Kontrolle.
@@ -2994,6 +3013,7 @@ def main():
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
 	ap.add_argument("--raster", action="store_true", help=f"gerasterte Kopie der Tabelle anlegen (quelle/{st.RASTER_FILE}, eine Zeile je Vierteltakt); die Tabelle selbst bleibt unberührt")
 	ap.add_argument("--takt-ab", type=float, metavar="N", help="Taktnummern der Tabelle verschieben, so dass ihre erste Zeile Takt N ist (1 = wie im DAW); bar:/cues: der Show wandern mit, der Song bleibt derselbe")
+	ap.add_argument("--anfang-ab", type=float, metavar="N", help="den Song vorn verlängern: Rasterzeilen ab Takt N vor die erste Zeile der Tabelle einfügen (der erste Part wird länger, alles danach bleibt)")
 	ap.add_argument("--part-loeschen", action="append", default=[], metavar="VON", help="Part ab Takt VON samt Zwischenzeilen aus der Tabelle löschen, alles dahinter rückt nach vorn (mehrfach möglich)")
 	ap.add_argument("--part-name", action="append", default=[], metavar="VON=NAME", help="der Zeile mit Takt VON den Songpart NAME geben: Zwischenzeile -> neuer Part, Part -> umbenannt; VON= (leer) macht den Part zur Zwischenzeile (mehrfach möglich)")
 	args = ap.parse_args()
@@ -3023,6 +3043,8 @@ def main():
 			return cmd_raster(song_dir)
 		if args.takt_ab is not None:
 			return cmd_shift(song_dir, args.takt_ab)
+		if args.anfang_ab is not None:
+			return cmd_extend(song_dir, args.anfang_ab)
 		if args.part_loeschen or args.part_name:
 			return cmd_parts(song_dir, args.part_loeschen, args.part_name)
 		if args.vorschlag:

@@ -26,7 +26,8 @@ Wer schreibt was (seit 06.10.2026, Wunsch des Users):
                      er selbst in "Änderungswunsch" ein. Die Spalte darf er jederzeit löschen.
     alle anderen     gehören dem User (Takte, Partnamen, Energie, BPM ...), das Skript rührt sie nicht an - außer
                      edit_parts() unten (songgen.py <Song> --part-loeschen / --part-name, seit 17.10.2026): Claude
-                     setzt damit seine Wünsche "Part löschen" / "neuer Part" um.
+                     setzt damit seine Wünsche "Part löschen" / "neuer Part" um - und extend_start()
+                     (songgen.py <Song> --anfang-ab N, seit 18.10.2026): Zeilen vor der ersten einfügen.
 Altes Format (Tabellen vor dem 06.10.2026): eine Spalte "Effektidee" mit den Wünschen des Users, keine Spalte "Effekt".
 Es wird weiter gelesen; write_effects() stellt eine solche Tabelle beim ersten Schreiben um (die Wünsche wandern in die
 neue Spalte "Änderungswunsch" rechts daneben).
@@ -884,6 +885,114 @@ def shift_bars(path, start):
 		if tmp.exists():
 			tmp.unlink()
 	return delta
+
+
+#==================================================================
+#=========== Anfang verlängern ====================================
+#==================================================================
+
+# Verlängert den Song am Anfang (songgen.py <Song> --anfang-ab N). Wunsch des Users (18.10.2026, Enjoy The Silence:
+# der Song wurde im DAW vorn um 13 Takte verlängert, „bitte füge die fehlenden Takte von 0 bis 13,75 ein“).
+# Vor die erste Zeile kommen Rasterzeilen (eine je Vierteltakt) ab Takt `start` bis vor die bisherige erste Zeile.
+# Die neue erste Zeile bekommt den Songpart-Namen der bisherigen ersten Zeile (die Pause am Anfang wird also länger);
+# die bisherige erste Zeile wird zur Zwischenzeile dieses Parts - ihr übriger Inhalt bleibt stehen (ein Änderungswunsch
+# dort ist danach ein Wunsch genau an dieser Stelle). Alle Parts danach behalten Taktnummer und Länge.
+# Ein schlichter Verweis auf den Kopf in der bisherigen ersten Zeile (z. B. BPM pro Part =$C$3) wandert mit in die
+# neue erste Zeile. Gliederung wie beim Raster: neue Takt-Zeilen Ebene 2, Viertel Ebene 3, alles sichtbar.
+# Abgelehnt wird eine Tabelle mit anderen Formeln oder verbundenen Zellen unter der Kopfzeile (openpyxl zieht sie
+# beim Einfügen nicht mit, Excel würde es tun).
+# Sicherung wie bei edit_parts(): erst eine Kopie schreiben und zurücklesen. Jede alte Zeile muss in jeder Spalte genau
+# ihren alten Inhalt haben (bis auf Name und Kopf-Verweis der bisherigen ersten Zeile), und die Tabelle muss lesbar sein.
+# In Excel geöffnet -> nichts geschrieben.
+#   start   'von takt' der neuen ersten Zeile, z. B. 1
+# Rückgabe: Zahl der eingefügten Zeilen.
+def extend_start(path, start):
+	if (path.parent / ("~$" + path.name)).exists():
+		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
+	start = neat(float(start))
+	tbl = read_table(path)["_table"]
+	first_von, first_row = tbl["von"][0], tbl["rows"][0]
+	if start >= first_von:
+		raise TableError(f"Takt {fmt(start).replace('.', ',')} liegt nicht vor der ersten Zeile (Takt {fmt(first_von).replace('.', ',')})")
+	grid = []			# die neuen Taktnummern: start, start + 0,25 ... bis vor die bisherige erste Zeile
+	k = 0
+	while start + k * RASTER_STEP < first_von - 1e-6:
+		grid.append(neat(start + k * RASTER_STEP))
+		k += 1
+	try:
+		wb = openpyxl.load_workbook(path)		# ohne data_only: Formeln bleiben Formeln
+	except PermissionError:
+		raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	ws, header_row, cols = find_sheet(wb)
+	head_refs = {}		# Spalte -> Formel: schlichte Kopf-Verweise der bisherigen ersten Zeile (wandern mit nach oben)
+	for row in ws.iter_rows(min_row=header_row + 1):
+		for c in row:
+			if not (isinstance(c.value, str) and c.value.startswith("=")):
+				continue
+			m = SIMPLE_REF_RE.fullmatch(c.value.strip())
+			if not m or int(m.group(2)) > header_row:
+				raise TableError(f"Formel in {c.coordinate} - die Zeilen bitte in Excel selbst einfügen")
+			if c.row == first_row:
+				head_refs[c.column] = c.value
+	if any(rng.max_row > header_row for rng in ws.merged_cells.ranges):
+		raise TableError("verbundene Zellen unter der Kopfzeile - die Zeilen bitte in Excel selbst einfügen")
+
+	# So muss jede alte Zeile danach aussehen: (Inhalt aller Spalten), nur um len(grid) Zeilen tiefer
+	width = ws.max_column
+	expected = []
+	for r in range(header_row + 1, ws.max_row + 1):
+		vals = [ws.cell(r, c).value for c in range(1, width + 1)]
+		if r == first_row:
+			vals[cols["name"] - 1] = None
+			for col in head_refs:
+				vals[col - 1] = None
+		expected.append(vals)
+
+	# Einfügen: openpyxl verschiebt nur die Zellen - Zeilenhöhen und Gliederung wandern hier von Hand mit
+	dims = {r: (d.height, d.outlineLevel, d.hidden, d.collapsed) for r, d in ws.row_dimensions.items()}
+	n = len(grid)
+	name = ws.cell(first_row, cols["name"]).value
+	ws.insert_rows(first_row, n)
+	old = first_row + n		# hier steht die bisherige erste Zeile jetzt
+	for i, von in enumerate(grid):
+		r = first_row + i
+		for col in range(1, width + 1):
+			ws.cell(r, col)._style = copy.copy(ws.cell(old if i == 0 else old + 1, col)._style)	# Part-Zeile wie die alte erste, Rest wie eine Zwischenzeile
+		ws.cell(r, cols["von"], von)
+	ws.cell(first_row, cols["name"], name)
+	for col, formula in head_refs.items():
+		ws.cell(first_row, col, formula)
+		ws.cell(old, col).value = None
+	ws.cell(old, cols["name"]).value = None
+	for r in list(ws.row_dimensions):
+		del ws.row_dimensions[r]
+	for r, (h, lvl, hid, col) in dims.items():
+		d = ws.row_dimensions[r + n if r >= first_row else r]
+		d.height, d.outlineLevel, d.hidden, d.collapsed = h, lvl, hid, col
+	ws.sheet_properties.outlinePr.summaryBelow = False		# das Plus steht an der Part-Zeile ÜBER ihren Zwischenzeilen
+	for r in range(first_row + 1, old + 1):		# neue Zwischenzeilen und die bisherige erste Zeile: Takt = Ebene 2, Viertel = Ebene 3
+		d = ws.row_dimensions[r]
+		d.outlineLevel = 1 if _whole_bar(ws.cell(r, cols["von"]).value) else 2
+		d.hidden, d.collapsed = False, False
+	ws.row_dimensions[first_row].outlineLevel = 0
+	ws.row_dimensions[first_row].collapsed = False
+
+	tmp = path.with_name(TMP_FILE)
+	try:
+		wb.save(tmp)
+		read_table(tmp)		# muss lesbar sein
+		ws2 = find_sheet(openpyxl.load_workbook(tmp))[0]
+		got = [[ws2.cell(r, c).value for c in range(1, width + 1)] for r in range(header_row + 1 + n, header_row + 1 + n + len(expected))]
+		if got != expected:
+			raise TableError("Kontrolle nach dem Schreiben: die alten Zeilen wären nicht mehr dieselben - nichts geändert")
+		try:
+			os.replace(tmp, path)
+		except OSError:
+			raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	finally:
+		if tmp.exists():
+			tmp.unlink()
+	return n
 
 
 #==================================================================

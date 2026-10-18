@@ -1,0 +1,8 @@
+zeit: '2026-10-18 17:30:52'
+notiz: neu aus den KI-Vorschlägen (vorschlag.yaml), ersetzt enjoyTheSilence()
+werkzeug_git: 3717608 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 408b1f9787523ad78d25b77014e4a27cab0037a35c506b29ea77ec6682e83aaf
+  show.yaml: 3788ce3bdcf03e7b203ca7d15aa1738776d6dede5938b68cee1dce92e3786ae5
+  generated.cpp: 59e07cfa3f8223d23313e353591e8d98a2a5ce15993331c6276bf28d1e5c4148

@@ -1,0 +1,8 @@
+zeit: '2026-10-18 18:34:27'
+notiz: Texte nach Viertel-Wünschen verschoben
+werkzeug_git: 3717608 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 70d42a08f4f1a6ea352e048c1c44c5531332ffa9698f5506c3b8de57d9311a84
+  show.yaml: c017266da6163e2413e6118c035d45a577e7ae52e896e8986008d0fb33c3a827
+  generated.cpp: 7b39c5a8f6768403aea67e3d412283cddcd4629d0662f8022841659a76461d88

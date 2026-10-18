@@ -1,0 +1,8 @@
+zeit: '2026-10-18 18:16:11'
+notiz: 'ID 24: ganzer Song mit verlängertem Anfang, intro dezent rot (WaterRipple)'
+werkzeug_git: 3717608 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f396c56e729c8fea461ca6c4480f896a1437fefaaa4dbc75e9464c88cc480ddf
+  show.yaml: 6c3ca39f05bfc5699f8b3b035f53a1fe29f31d57b1cbff8d8eb939e0fefa8783
+  generated.cpp: 489ecaad79517b3262381a269ab7feb8f72d8b107e3f31634bece812bc497ba3

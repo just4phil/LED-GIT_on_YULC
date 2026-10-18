@@ -1,0 +1,200 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Song-ID 24: der ganze Song mit dem im DAW um 13 Takte verlängerten Anfang (Entscheidung des Users 18.10.2026 - die
+# Tabelle gilt für den ganzen Song; ID 16 und der alte Vorspann enjoyTheSilenceINTRO() werden nicht mehr genutzt).
+# Grundlage: die Vorschläge aus vorschlag.yaml (10.10.2026) und die Änderungswünsche des Users in der Tabelle
+# (dezent rot ab Takt 2, Strobo im Auftakt, Text-Overlays der Gesangszeilen).
+# Leitidee: kühl und getragen (ICE/ROYAL), "all i ever wanted" warm (SUNSET) als Gegenpol, "enjoy the silence" in NEON,
+# das Finale in FIRE. Die langen Strobo-Parts "words are very" werden zu Blitzen, die im Beat von der Mitte nach außen
+# laufen. Die Einzelblitze in "enjoy the silence" bleiben und werden wie im alten Code von Mal zu Mal dichter.
+# Titel-Lauftext am Songanfang auf der Matrix (wie im alten Vorspann), darunter blendet das Rot ab Takt 2 ein.
+# Bund-Marker: der alte enjoyTheSilence() setzt im "bass slap part" auf dem Bass markerLED5 = ESaite_F_hoch (Rinas
+# Solo) und in "all i ever wanted (3)" wieder 0 - 1:1 übernommen. Die Grund-Marker stehen in markerLEDs.cpp (case 24).
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+
+function: gen_EnjoyTheSilence
+scheme: SCHEME_ROYAL
+end_blinder: 5  # der Blinder auf der letzten Viertel klingt 5 Sekunden ins Schluss-Schwarz aus
+
+markers:
+  parts:
+    bass slap part: {bass: {5: ESaite_F_hoch}}
+    all i ever wanted (3): {bass: {5: 0}}
+
+sections:
+  text:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Ein Takt schwarz, die Matrix beginnt mit dem Titel-Lauftext."
+
+  intro:
+    fx: "progWaterRipple(${dur}, ${next}, 50, CRGB::Red)"
+    dim: 30
+    fade_in: 16
+    cues: {14: "umgesetzt ab Takt 2 (eigener Part intro): Wasserwellen in Rot, ganz dezent, blenden über 4 Takte ein"}
+    why: "Ab Takt 2 blenden ganz dezent rote Wasserwellen ein (4 Takte lang, dann 30 % Helligkeit); auf der Matrix läuft zuerst der Titel."
+
+  words are very:
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: 4
+    why: "Weißer Strobo im Takt (4 Blitze) über den ganzen Auftakt von Takt 17,75 bis 18."
+
+  synth:
+    scene: SCENE_STAR
+    scheme: SCHEME_ROYAL
+    soft: 60
+    why: "Drehender Stern in Blau, Lila, Weiß; die Farben blenden weich ineinander - passt zum getragenen Riff."
+
+  synth (2):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    why: "Schnelle Einzelblitze in Pink, Cyan, Violett."
+
+  verse 1a:
+    scene: SCENE_RAIN
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    why: "Ruhig fallende Leuchtspuren in Eisblau; alle 2 Takte wandern die Farben nach Pink/Orange und zurück."
+
+  all i ever wanted:
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    text: {words: "_*6 ALL*2 I*2 EVER*2 WANTED*12 _*6 ALL*2 I*2 EVER*2 NEEDED*9 IS*3 HERE*6 _*6 IN*6 MY*6 ARMS*24", per: 0.16667, color: weiss, over: true, outline: true, under: 40}
+    cues: {34.25: "ALL, I, EVER je ein Drittel dieser Viertel", 34.5: "WANTED", 34.75: "WANTED bleibt stehen", 35.25: "ALL, I, EVER je ein Drittel dieser Viertel", 35.5: "NEEDED", 35.75: "NEEDED bis zur Achtel, dann IS", 36: "HERE", 36.5: "IN", 36.75: "MY", 37: "ARMS", 37.25: "ARMS", 37.5: "ARMS", 37.75: "ARMS"}
+    why: "Die ganze Bühne leuchtet in einer Sunset-Farbe (Orange, Pink, Lila, Gelb) und fließt im Beat weich in die nächste."
+
+  words are very (2):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    text: {words: "WORDS ARE VERY*2 UN- NECESSARY*3 THEY*2 CAN_ONLY DO HARM*3", per: beat, color: rot, over: true, outline: true, under: 40}
+    cues: {38.25: "ARE", 38.5: "VERY", 38.75: "VERY", 39: "UN-", 39.25: "NECESSARY", 39.5: "NECESSARY", 39.75: "NECESSARY", 40: "THEY", 40.25: "THEY", 40.5: "CAN ONLY als ein Bild", 40.75: "DO", 41: "HARM", 41.25: "HARM", 41.5: "HARM"}
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    why: "1 Beat Schwarz."
+
+  drumloop:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_ROYAL
+    why: "Lädt sich in Blau/Lila auf, die Explosion fällt auf den Snarewirbel."
+
+  snarewirbel:
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: 4
+    why: "Weißer Strobo im Takt (4 Blitze im Beat)."
+
+  synth (3):
+    scene: SCENE_STAR
+    scheme: SCHEME_ROYAL
+    soft: 60
+    blinder: {at: 0, len: 2}
+    why: "Drehender Stern wie am Anfang (Blau, Lila, Weiß, weiche Farbwechsel). Auf den Einsatz springt ein starker Blinder auf und klingt über 2 Beats ab."
+
+  verse 1a (2):
+    scene: SCENE_DNA_FLIP
+    scheme: SCHEME_ROYAL
+    why: "Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila."
+
+  verse 1b:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ICE
+    why: "Dezenter Puls im Beat in Eisblau - kleine Steigerung zum Part davor."
+
+  all i ever wanted (2):
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    text: {words: "_*6 ALL*2 I*2 EVER*2 WANTED*12 _*6 ALL*2 I*2 EVER*2 NEEDED*9 IS*3 HERE*6 _*6 IN*6 MY*6 ARMS*24", per: 0.16667, color: weiss, over: true, outline: true, under: 40}
+    cues: {59.25: "ALL, I, EVER je ein Drittel dieser Viertel", 59.5: "WANTED", 59.75: "WANTED bleibt stehen", 60.25: "ALL, I, EVER je ein Drittel dieser Viertel", 60.5: "NEEDED", 60.75: "NEEDED bis zur Achtel, dann IS", 61: "HERE", 61.5: "IN", 61.75: "MY", 62: "ARMS", 62.25: "ARMS", 62.5: "ARMS", 62.75: "ARMS"}
+    why: "Wie beim ersten Mal: die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe."
+
+  words are very (3):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    text: {words: "WORDS ARE VERY*2 UN- NECESSARY*3 THEY*2 CAN_ONLY DO HARM*3 _", per: beat, color: rot, over: true, outline: true, under: 40}
+    cues: {63.25: "ARE", 63.5: "VERY", 63.75: "VERY", 64: "UN-", 64.25: "NECESSARY", 64.5: "NECESSARY", 64.75: "NECESSARY", 65: "THEY", 65.25: "THEY", 65.5: "CAN ONLY als ein Bild", 65.75: "DO", 66: "HARM", 66.25: "HARM", 66.5: "HARM"}
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  2 3 4:
+    fx: "progBlack(${dur}, ${next})"
+    text: {words: "1 2 3 4", per: beat, color: weiss, flash: true}
+    blinder: {every: beat, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Auf der Matrix blitzt pro Beat eine Zahl (1 2 3 4), die Lampen geben auf jeden Beat einen kurzen weißen Blinder, Gitarre und Bass sind dunkel."
+
+  enjoy the silence:
+    fx: "progFastBlingBling(${dur}, 2, ${next})"
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Einzelblitze in Pink, Cyan, Violett. Auf den Einsatz springt ein Blinder auf und klingt über 2 Beats ab."
+
+  enjoy the silence (2):
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, doppelt so dicht."
+
+  bass slap part:
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_ROYAL
+    why: "Bass-Solo: zwei Kometen laufen um den Bass, alle anderen atmen dunkel in Blau/Lila."
+
+  all i ever wanted (3):
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    text: {words: "_*6 ALL*2 I*2 EVER*2 WANTED*12 _*6 ALL*2 I*2 EVER*2 NEEDED*9 IS*3 HERE*6 _*6 IN*6 MY*6 ARMS*24", per: 0.16667, color: weiss, over: true, outline: true, under: 40}
+    cues: {84.25: "ALL, I, EVER je ein Drittel dieser Viertel", 84.5: "WANTED", 84.75: "WANTED bleibt stehen", 85.25: "ALL, I, EVER je ein Drittel dieser Viertel", 85.5: "NEEDED", 85.75: "NEEDED bis zur Achtel, dann IS", 86: "HERE", 86.5: "IN", 86.75: "MY", 87: "ARMS", 87.25: "ARMS", 87.5: "ARMS", 87.75: "ARMS"}
+    why: "Wie vorher: die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe."
+
+  words are very (4):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    text: {words: "WORDS ARE VERY*2 UN- NECESSARY*3 THEY*2 CAN_ONLY DO HARM*3 _", per: beat, color: rot, over: true, outline: true, under: 40}
+    cues: {88.25: "ARE", 88.5: "VERY", 88.75: "VERY", 89: "UN-", 89.25: "NECESSARY", 89.5: "NECESSARY", 89.75: "NECESSARY", 90: "THEY", 90.25: "THEY", 90.5: "CAN ONLY als ein Bild", 90.75: "DO", 91: "HARM", 91.25: "HARM", 91.5: "HARM"}
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  all i ever wanted (4):
+    scene: SCENE_COLORS
+    scheme: SCHEME_FIRE
+    soft: 100
+    text: {words: "_*6 ALL*2 I*2 EVER*2 WANTED*12 _*6 ALL*2 I*2 EVER*2 NEEDED*9 IS*3 HERE*6 _*6 IN*6 MY*6 ARMS*24", per: 0.16667, color: weiss, over: true, outline: true, under: 40}
+    cues: {92.25: "ALL, I, EVER je ein Drittel dieser Viertel", 92.5: "WANTED", 92.75: "WANTED bleibt stehen", 93.25: "ALL, I, EVER je ein Drittel dieser Viertel", 93.5: "NEEDED", 93.75: "NEEDED bis zur Achtel, dann IS", 94: "HERE", 94.5: "IN", 94.75: "MY", 95: "ARMS", 95.25: "ARMS", 95.5: "ARMS", 95.75: "ARMS"}
+    why: "Jetzt eine Stufe wärmer: die ganze Bühne fließt im Beat durch Rot, Orange, Gelb."
+
+  words are very (5):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    overlay: {scene: SCENE_SPARKLE, amount: 40}
+    text: {words: "WORDS ARE VERY*2 UN- NECESSARY*3 THEY*2 CAN_ONLY DO HARM*3 _", per: beat, color: rot, over: true, outline: true, under: 40}
+    cues: {96.25: "ARE", 96.5: "VERY", 96.75: "VERY", 97: "UN-", 97.25: "NECESSARY", 97.5: "NECESSARY", 97.75: "NECESSARY", 98: "THEY", 98.25: "THEY", 98.5: "CAN ONLY als ein Bild", 98.75: "DO", 99: "HARM", 99.25: "HARM", 99.5: "HARM"}
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen, darüber glitzert es."
+
+  2 3 4 (2):
+    fx: "progBlack(${dur}, ${next})"
+    text: {words: "1 2 3 4", per: beat, color: weiss, flash: true}
+    blinder: {every: beat, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Wie beim ersten Mal: pro Beat eine Zahl auf der Matrix, kurzer weißer Blinder auf den Lampen."
+
+  enjoy the silence (3):
+    fx: "progFastBlingBling(${dur}, 2, ${next})"
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Einzelblitze in Neon-Farben. Auf den Einsatz springt ein Blinder auf und klingt über 2 Beats ab."
+
+  enjoy the silence (4):
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, dichter."
+
+  enjoy the silence (5):
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, noch dichter."
+
+  enjoy the silence (6):
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    scheme: SCHEME_FIRE
+    blinder: {bar: 116.75, len: 2, hold: 1}  # steht bis zum Part-Ende voll, end_blinder führt ihn weiter
+    why: "Die dichtesten Einzelblitze, jetzt in Rot, Orange, Gelb. Auf der letzten Viertel springt ein starker Blinder auf, steht bis zum Ende und klingt 5 Sekunden ins Schluss-Schwarz aus."

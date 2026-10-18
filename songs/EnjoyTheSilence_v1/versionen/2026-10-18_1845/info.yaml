@@ -1,0 +1,8 @@
+zeit: '2026-10-18 18:45:49'
+notiz: HERE länger, Bass-Solo neu (Call/Response + DNA, Bass voll mit Kometen + Blinder)
+werkzeug_git: 3717608 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: be1bec4aa43ba9c2faa931e03dd2ea4000401ad167718d582a3ee5cb48975ea9
+  show.yaml: e1b6215d086016770709f3095c1adc082fffa419e3a1804463961661fb2f2893
+  generated.cpp: 17a3be6716af684991ea5406fbaf9d80aa4348fc9df1223be5814b345806ceb2

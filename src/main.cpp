@@ -497,7 +497,8 @@ void loop() {
 			gen_TellItToMyHeart(); // <<< GENERATED SONGS <<<
 			break;
 		case 24:
-			enjoyTheSilenceINTRO();
+			//enjoyTheSilenceINTRO();
+			gen_EnjoyTheSilence(); // <<< GENERATED SONGS <<<
 			break;
 		case 25:
 			//FridayImInLove();

@@ -201,7 +201,10 @@ the generated code must stay identical; only on his request, per song), `--part-
 <von>=<name>` (empty name = no longer a part of its own) change the table's parts (his wish 17.10.2026: when he marks a part "löschen" or wishes a new part in
 `Änderungswunsch`, Claude adapts the parts himself instead of asking him - through this tool, `struktur.edit_parts()`,
 same write-copy-and-verify safety; deleting moves the rows below up and earlier, `bar:`/`cues:` behind it move along;
-the `Ende` row can be deleted when another row is named `Ende`; then adapt `show.yaml` and generate), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
+the `Ende` row can be deleted when another row is named `Ende`; then adapt `show.yaml` and generate), `--anfang-ab <N>`
+inserts quarter-bar rows from bar N in front of the first row (the song was lengthened at the start in the DAW; his wish
+18.10.2026, Enjoy The Silence: `struktur.extend_start()`, same safety; the first part gets longer and starts at N, the
+old first row becomes a sub-row, every later row keeps its bar number), `--versions` / `--restore <version>` bring back an older table + show + code 1:1.
 A trailer (backing-track intro before a song, e.g. `ILoveItIntro_v1` = song 80) is a song folder of its own: its
 `show.yaml` has `next_song: <target folder>` + `scroll_text: false`, and with "0 sek." in the table's `Ende` row
 there is no closing blackout - the end case does `songID = N; switchToPart(GEN_<SONG>_TRAILER)`. The target song's

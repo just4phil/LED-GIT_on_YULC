@@ -142,6 +142,10 @@ Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `
   gelöschter Parts entfernen; hat der User die Gestaltung eines gelöschten Parts in einen anderen kopiert, sie dort
   übernehmen) und generieren. Beispiel Girls Just Wanna Have Fun (17.10.2026, 8 Takte gekürzt):
   `--part-loeschen 95 --part-loeschen 101 --part-name 93=outro --part-name 94=Ende`.
+- **Song vorn verlängert** (Enjoy The Silence, 18.10.2026: „bitte füge die fehlenden Takte ein“): `songgen.py <Song>
+  --anfang-ab 1` setzt Viertel-Rasterzeilen ab Takt 1 vor die bisherige erste Zeile (`struktur.extend_start()`); der
+  erste Part wird länger, die alte erste Zeile wird Zwischenzeile, alles danach behält seine Taktnummer. Soll im neuen
+  Anfang etwas leuchten, danach mit `--part-name <von>=<Name>` einen eigenen Part abtrennen (der erste Part bleibt schwarz).
 - Part eingefügt, gelöscht oder umbenannt: `songgen.py` bricht mit einer Gegenüberstellung ab (Show-Einträge
   ohne Part, Parts ohne Gestaltung, vermuteter neuer Name). Achtung bei gleichen Namen: fügt der User vorn ein
   weiteres `chorus 1` ein, rücken alle folgenden Nummern `(2)`, `(3)` um eins weiter - die Einträge der Show

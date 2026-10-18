@@ -1,0 +1,179 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Grundlage: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)") - der User hat am
+# 18.10.2026 gesagt "bitte enjoy neu generieren", die Tabelle selbst enthält keine Änderungswünsche und keine Energie.
+# Leitidee: kühl und getragen (ICE/ROYAL), "all i ever wanted" warm (SUNSET) als Gegenpol, "enjoy the silence" in NEON,
+# das Finale in FIRE. Die langen Strobo-Parts "words are very" werden zu Blitzen, die im Beat von der Mitte nach außen
+# laufen. Die Einzelblitze in "enjoy the silence" bleiben und werden wie im alten Code von Mal zu Mal dichter.
+# Parts ohne Vorschlag: "text" und "STOP" (Schwarz), "words are very" (1 Beat, derselbe Look wie die übrigen
+# "words are very"), "synth (2)" (Einzelblitze wie bisher, jetzt in NEON), "enjoy the silence (2)/(4)/(5)" (Einzelblitze
+# wie bisher, Dichte wie im alten Code).
+# Kein Titel-Lauftext: den zeigt der Vorspann enjoyTheSilenceINTRO() (Song 24), der alte Song hatte ebenfalls keinen.
+# Der Vorspann springt in "words are very" (wie bisher case 2) - in songs.cpp über GEN_ENJOYTHESILENCE_WORDS_ARE_VERY.
+# Bund-Marker: der alte enjoyTheSilence() setzt im "bass slap part" auf dem Bass markerLED5 = ESaite_F_hoch (Rinas
+# Solo) und in "all i ever wanted (3)" wieder 0 - 1:1 übernommen. Die Grund-Marker stehen in markerLEDs.cpp (case 16).
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+
+function: gen_EnjoyTheSilence
+scheme: SCHEME_ROYAL
+scroll_text: false
+end_blinder: 5  # der Blinder auf der letzten Viertel klingt 5 Sekunden ins Schluss-Schwarz aus
+
+markers:
+  parts:
+    bass slap part: {bass: {5: ESaite_F_hoch}}
+    all i ever wanted (3): {bass: {5: 0}}
+
+sections:
+  text:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum ersten \"words are very\"."
+
+  words are very:
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    why: "Ein weißer Blitz läuft von der Mitte nach außen - derselbe Look wie in allen \"words are very\"."
+
+  synth:
+    scene: SCENE_STAR
+    scheme: SCHEME_ROYAL
+    soft: 60
+    why: "Drehender Stern in Blau, Lila, Weiß; die Farben blenden weich ineinander - passt zum getragenen Riff."
+
+  synth (2):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    why: "Schnelle Einzelblitze in Pink, Cyan, Violett."
+
+  verse 1a:
+    scene: SCENE_RAIN
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    why: "Ruhig fallende Leuchtspuren in Eisblau; alle 2 Takte wandern die Farben nach Pink/Orange und zurück."
+
+  all i ever wanted:
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    why: "Die ganze Bühne leuchtet in einer Sunset-Farbe (Orange, Pink, Lila, Gelb) und fließt im Beat weich in die nächste."
+
+  words are very (2):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    why: "1 Beat Schwarz."
+
+  drumloop:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_ROYAL
+    why: "Lädt sich in Blau/Lila auf, die Explosion fällt auf den Snarewirbel."
+
+  snarewirbel:
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: 4
+    why: "Weißer Strobo im Takt (4 Blitze im Beat)."
+
+  synth (3):
+    scene: SCENE_STAR
+    scheme: SCHEME_ROYAL
+    soft: 60
+    blinder: {at: 0, len: 2}
+    why: "Drehender Stern wie am Anfang (Blau, Lila, Weiß, weiche Farbwechsel). Auf den Einsatz springt ein starker Blinder auf und klingt über 2 Beats ab."
+
+  verse 1a (2):
+    scene: SCENE_DNA_FLIP
+    scheme: SCHEME_ROYAL
+    why: "Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila."
+
+  verse 1b:
+    scene: SCENE_VERSE
+    scheme: SCHEME_ICE
+    why: "Dezenter Puls im Beat in Eisblau - kleine Steigerung zum Part davor."
+
+  all i ever wanted (2):
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    why: "Wie beim ersten Mal: die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe."
+
+  words are very (3):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  2 3 4:
+    fx: "progBlack(${dur}, ${next})"
+    text: {words: "1 2 3 4", per: beat, color: weiss, flash: true}
+    blinder: {every: beat, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Auf der Matrix blitzt pro Beat eine Zahl (1 2 3 4), die Lampen geben auf jeden Beat einen kurzen weißen Blinder, Gitarre und Bass sind dunkel."
+
+  enjoy the silence:
+    fx: "progFastBlingBling(${dur}, 2, ${next})"
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Einzelblitze in Pink, Cyan, Violett. Auf den Einsatz springt ein Blinder auf und klingt über 2 Beats ab."
+
+  enjoy the silence (2):
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, doppelt so dicht."
+
+  bass slap part:
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_ROYAL
+    why: "Bass-Solo: zwei Kometen laufen um den Bass, alle anderen atmen dunkel in Blau/Lila."
+
+  all i ever wanted (3):
+    scene: SCENE_COLORS
+    scheme: SCHEME_SUNSET
+    soft: 100
+    why: "Wie vorher: die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe."
+
+  words are very (4):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen."
+
+  all i ever wanted (4):
+    scene: SCENE_COLORS
+    scheme: SCHEME_FIRE
+    soft: 100
+    why: "Jetzt eine Stufe wärmer: die ganze Bühne fließt im Beat durch Rot, Orange, Gelb."
+
+  words are very (5):
+    scene: SCENE_WAVE_OUT
+    scheme: SCHEME_WHITE
+    overlay: {scene: SCENE_SPARKLE, amount: 40}
+    why: "Pro Beat läuft ein weißer Blitz von der Mitte nach außen, darüber glitzert es."
+
+  2 3 4 (2):
+    fx: "progBlack(${dur}, ${next})"
+    text: {words: "1 2 3 4", per: beat, color: weiss, flash: true}
+    blinder: {every: beat, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Wie beim ersten Mal: pro Beat eine Zahl auf der Matrix, kurzer weißer Blinder auf den Lampen."
+
+  enjoy the silence (3):
+    fx: "progFastBlingBling(${dur}, 2, ${next})"
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Einzelblitze in Neon-Farben. Auf den Einsatz springt ein Blinder auf und klingt über 2 Beats ab."
+
+  enjoy the silence (4):
+    fx: "progFastBlingBling(${dur}, 4, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, dichter."
+
+  enjoy the silence (5):
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    scheme: SCHEME_NEON
+    why: "Einzelblitze in Neon-Farben, noch dichter."
+
+  enjoy the silence (6):
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    scheme: SCHEME_FIRE
+    blinder: {bar: 103.75, len: 2, hold: 1}  # steht bis zum Part-Ende voll, end_blinder führt ihn weiter
+    why: "Die dichtesten Einzelblitze, jetzt in Rot, Orange, Gelb. Auf der letzten Viertel springt ein starker Blinder auf, steht bis zum Ende und klingt 5 Sekunden ins Schluss-Schwarz aus."
