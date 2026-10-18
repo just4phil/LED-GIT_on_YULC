@@ -446,25 +446,34 @@ static bool connectToServer() {
 }
 
 /**
- * @brief Das Ergebnis des Abgleich-Moduls ausführen (LedSyncAction, siehe ledSync.h)
+ * @brief Den Auftragszettel des Abgleich-Moduls ausführen (LedSyncAction, siehe ledSync.h)
  *
  * Reihenfolge wie in ledSync.h beschrieben: erst Nachrichten an den Proxy schreiben, dann springen /
  * dunkel schalten / Song oder Part wechseln, dann (falls verlangt) den Stand beim Proxy lesen, zuletzt OTA.
+ *
+ * Diese Zeile ist nur eine Ankündigung (Prototyp), der Code steht weiter unten. Sie ist nötig, weil
+ * readStateFromProxy() direkt darunter applyAction() schon aufruft - und applyAction() seinerseits
+ * readStateFromProxy() aufruft. Ohne die Ankündigung kennt der Compiler an dieser Stelle applyAction() noch nicht.
  */
 static void applyAction(const LedSyncAction& a);
 
 // Den Stand beim Proxy lesen (Kurzklick am Drehknopf) und das Ergebnis vom Modul auswerten lassen.
 // Der Proxy bemerkt das Lesen und meldet seinen nächsten Part-Wechsel (SYNC_ENTRY) - damit stimmt danach
 // auch die Zeit.
+// Ablauf: applyAction() sieht readProxy = true auf dem Zettel aus ledSyncClientLoop() und ruft diese Funktion
+// auf; sie liest die 3 Bytes beim Proxy, gibt sie an ledSyncClientReadResult() und führt dessen neuen Zettel
+// (springe zu Song + Part, auf Einstieg warten) wieder mit applyAction() aus.
 static void readStateFromProxy() {
     //--- here the client pulls data from server via READ ---
-    if (pChr == NULL) return;
-    if (!pChr->canRead()) {
+    if (pChr == NULL) return;	// noch nie mit dem Proxy verbunden gewesen: nichts zu lesen
+    if (!pChr->canRead()) {		// der Datenwert erlaubt kein Lesen (sollte nie vorkommen)
         #if defined(debug_ble_client)
             Serial.println("LED sync read FAILED! - could not read value from server!");
         #endif
         return;
     }
+    // readValue() fragt den Proxy über Funk und wartet auf die Antwort (dauert ein paar Millisekunden).
+    // Die Bytes kommen als std::string; data() = Zeiger auf das erste Byte, length() = Anzahl.
     std::string value = pChr->readValue();   // Auslesen der Daten
     LedSyncAction a = ledSyncClientReadResult((const uint8_t*)value.data(), value.length());
     #if defined(debug_ble_client)
@@ -477,32 +486,39 @@ static void readStateFromProxy() {
     applyAction(a);
 }
 
+// Der Code zur Ankündigung oben. Jeder Eintrag des Zettels ist ein einfaches "wenn gesetzt, dann tun";
+// was nicht gesetzt ist (false / sendCount 0), wird übersprungen. Ein leerer Zettel kostet also fast nichts.
 static void applyAction(const LedSyncAction& a) {
-    // Nachrichten an den Proxy (Antwort auf SYNC_ASK, Einstieg nach SYNC_ASK)
+    // Nachrichten an den Proxy (SYNC_REPLY als Antwort auf SYNC_ASK, SYNC_ENTRY beim nächsten Part-Wechsel).
+    // Ein Client schreibt immer direkt an den Proxy (writeValue); dort kommt es in onWrite() an.
     for (uint8_t i = 0; i < a.sendCount; i++) {
         #if defined(debug_ble_client)
             Serial.printf("ble client: write msgType %d, song %d, part %d\n",
                           a.sends[i].msg.msgType, a.sends[i].msg.songID, a.sends[i].msg.part);
         #endif
-        BLEmessage bleMessage = a.sends[i].msg;
-        if (pChr != NULL) {
+        BLEmessage bleMessage = a.sends[i].msg;	// lokale Kopie, deren Adresse writeValue() bekommt
+        if (pChr != NULL) {			// nur, wenn es einen Datenwert beim Proxy gibt
+            // "(uint8_t*)&bleMessage": Adresse der Struktur als Zeiger auf ihre 3 Bytes
             pChr->writeValue((uint8_t*)&bleMessage, sizeof(bleMessage));
         }
     }
+    // Song UND Part auf einmal wechseln (SYNC_FORCE oder Ergebnis des Lesens beim Proxy)
     if (a.jump) {
         #if defined(debug_ble_client)
             Serial.printf("client: switch to song %d, part %d\n", a.song, a.part);
         #endif
         switchToSongAndPart(a.song, a.part);
     }
-    if (a.goDark) {     // erzwungener Abgleich: sofort dunkel, bis der Einstieg (SYNC_ENTRY) kommt
+    // Erzwungener Abgleich (SYNC_FORCE): das gerade angezeigte Bild sofort löschen. Der Effekt des neuen
+    // Parts zeichnet bei seinem nächsten Schritt weiter; SYNC_ENTRY startet den Part dann zeitgenau neu.
+    if (a.goDark) {
         clearAll();
         FastLED.show();
     }
-    if (a.switchSong) switchToSong(a.song);
-    if (a.switchPart) switchToPart(a.part);
-    if (a.readProxy) readStateFromProxy();
-    if (a.ota) otaRequestAndRestart();     // kehrt nicht zurück
+    if (a.switchSong) switchToSong(a.song);	// SYNC_SONG (MIDI-Songwechsel)
+    if (a.switchPart) switchToPart(a.part);	// SYNC_PART (MIDI-Partwechsel) oder SYNC_ENTRY (Einstieg)
+    if (a.readProxy) readStateFromProxy();	// Kurzklick am Drehknopf dieses Clients
+    if (a.ota) otaRequestAndRestart();     // SYNC_OTA in Song 0: Neustart in den Update-Modus, kehrt nicht zurück
 }
 
 // Für die Warn-LEDs in markerLEDs.cpp: steht die Verbindung zum Proxy? (true erst nach dem Abonnieren
@@ -513,7 +529,8 @@ bool BLE_client_isConnected() {
 
 // Wird von loop() bei JEDEM automatischen Part-Wechsel aufgerufen, tut aber nur etwas, wenn der Proxy
 // vorher per SYNC_ASK nach unserem Stand gefragt hat: dann schreibt der Client "jetzt beginnt Part n"
-// (SYNC_ENTRY) an den Proxy, damit dieser zeitgleich einsteigt. Entschieden wird in ledSyncClientPartChange().
+// (SYNC_ENTRY) an den Proxy, damit dieser zeitgleich einsteigt. Entschieden wird in ledSyncClientPartChange();
+// im Normalfall (keine Frage offen) ist dessen Zettel leer und es passiert nichts.
 void informServerOnNextChange(byte nextPart) {
     applyAction(ledSyncClientPartChange(songID, nextPart));
 }
@@ -553,15 +570,20 @@ void BLE_client_Loop() {
                 // Serial.print(" - value: ");
                 // Serial.println(newMidiValueFromProxy);
             #endif
-            // Nachricht vom Modul auswerten lassen und das Ergebnis ausführen
+            // Nachricht vom Modul auswerten lassen und das Ergebnis ausführen.
+            // Die drei Bytes aus dem "Briefkasten" (von notifyCallback() abgelegt) wieder zu einer Nachricht
+            // zusammensetzen. "(LedSyncMsg)" wandelt das Typ-Byte in den Nachrichtentyp um - auch ein
+            // unbekannter Wert ist erlaubt, das Modul ignoriert ihn dann.
             BLEmessage msg = ledSyncMessage((LedSyncMsg)newMsgTypeIDfromProxy, newMidiCCfromProxy, newMidiValueFromProxy);
-            newMidiValuesReceivedFromProxy = false;
+            newMidiValuesReceivedFromProxy = false;	// Briefkasten leeren, bevor ausgeführt wird
+            // songID / prog = eigener Stand (für die Antwort auf SYNC_ASK und die OTA-Prüfung)
             applyAction(ledSyncClientReceived(msg, songID, prog));
         }
     } 
 
     // Kurzer Klick am Drehknopf dieses Clients: Song + Part aktiv beim Proxy abholen (READ) und
-    // dorthin springen (readStateFromProxy). Gefragt wird das Modul, ob ein Lesen gewünscht war.
+    // dorthin springen (readStateFromProxy). Gefragt wird das Modul, ob ein Lesen gewünscht war: dann steht
+    // readProxy = true auf dem Zettel (genau einmal je Klick), sonst ist er leer.
     applyAction(ledSyncClientLoop());
 }
 //-------------------

@@ -82,7 +82,10 @@ static NimBLEAdvertising *pAdvertising;		// das "ich bin da"-Senden
 static BLEmessage bleMessage;	// die zuletzt gesetzte/gesendete Nachricht
 
 // Nachricht nur HINTERLEGEN: sie steht danach im Datenwert und kann von Clients gelesen werden,
-// wird aber nicht aktiv verschickt.
+// wird aber nicht aktiv verschickt (es geht dabei nichts über Funk).
+// "(uint8_t*)&bleMessage" heißt: die Adresse der Struktur (&), behandelt als Zeiger auf einzelne Bytes -
+// setValue() bekommt so die 3 Bytes der Nachricht, wie sie im Speicher liegen. Die Kopie in bleMessage
+// (statt direkt msg) sorgt dafür, dass die Bytes auch nach dem Ende dieser Funktion gültig bleiben.
 static void storeMessage(const BLEmessage& msg) {
     bleMessage = msg;
     pCharacteristic->setValue((uint8_t*)&bleMessage, sizeof(bleMessage));
@@ -90,14 +93,26 @@ static void storeMessage(const BLEmessage& msg) {
 
 // Nachricht hinterlegen UND per Notify sofort an alle angemeldeten Clients schicken.
 // Es gibt keine Empfangsbestätigung: ein Client außer Reichweite verpasst die Nachricht.
+// (Im Fehlerfall drückt man den Knopf einfach noch einmal - Entscheidung des Users 18.10.2026.)
 static void sendMessage(const BLEmessage& msg) {
     storeMessage(msg);
     pCharacteristic->notify();
 }
 
-// Das Ergebnis des Abgleich-Moduls ausführen. Beim Proxy kommen nur Nachrichten (hinterlegen / senden)
-// und "springe zu Song + Part" (nach dem Schreiben eines Clients) vor; die übrigen Felder betreffen nur Clients.
+/**
+ * @brief Den Auftragszettel des Abgleich-Moduls ausführen (LedSyncAction, siehe ledSync.h)
+ *
+ * Jede Stelle dieser Datei, die das Modul fragt, gibt dessen Antwort hierher weiter. Beim Proxy kommen nur
+ * zwei Arten von Aufträgen vor:
+ * - Nachrichten: der Reihe nach entweder sofort an alle senden (notify = true) oder nur hinterlegen
+ * - jump: in Song + Part springen (nachdem ein Client seinen Stand geschrieben hat, Doppelklick am Proxy)
+ * Die übrigen Felder (goDark, switchSong, switchPart, readProxy, ota) betreffen nur Clients und sind beim
+ * Proxy immer false.
+ *
+ * "const LedSyncAction& a": der Zettel wird nicht kopiert, sondern nur gelesen (const = nicht verändern).
+ */
 static void applyAction(const LedSyncAction& a) {
+    // alle Nachrichten in der Reihenfolge, in der das Modul sie eingetragen hat
     for (uint8_t i = 0; i < a.sendCount; i++) {
         #if defined(debug_ble_proxy)
             Serial.printf("proxy: %s msgType %d, song %d, part %d\n", a.sends[i].notify ? "sende" : "hinterlege",
@@ -217,9 +232,14 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     // Ein Client hat den Wert BESCHRIEBEN, d.h. er schickt dem Proxy seinen Stand: als Antwort auf
     // SYNC_ASK (dann SYNC_REPLY) und noch einmal bei seinem nächsten Part-Wechsel (SYNC_ENTRY).
     // Der Proxy übernimmt Song + Part des Clients, ohne den Typ zu unterscheiden (Eigenheit 1 in ledSync.cpp).
-    // Das läuft wie bisher direkt hier im Bluetooth-Teil des Systems, nicht in loop().
+    // Das läuft wie bisher direkt hier im Bluetooth-Teil des Systems, nicht in loop() (bewusst so gelassen,
+    // Entscheidung des Users 18.10.2026: in der Praxis ohne merkliche Verzögerung oder Störung).
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
+        // NimBLE liefert die Bytes als std::string (eine Zeichenkette, die auch beliebige Bytes fassen kann).
+        // value.data() ist der Zeiger auf das erste Byte, value.length() die Anzahl. "(const uint8_t*)" macht
+        // aus dem Zeichen-Zeiger einen Byte-Zeiger, so wie ledSyncDecode() ihn erwartet.
         std::string value = pCharacteristic->getValue();   // die geschriebenen Bytes
+        // Das Modul prüft die Länge und schreibt "springe zu Song + Part des Clients" auf den Zettel
         LedSyncAction a = ledSyncProxyClientWrote((const uint8_t*)value.data(), value.length());
         #if defined(debug_ble_proxy)
             // falsche Länge (nicht genau 3 Bytes): das Modul verlangt nichts
@@ -273,7 +293,8 @@ void midiProxy_initialize_BLE() {
     pService->start();
 
     // Den Stand "Song 0, Part 0" hinterlegen, damit ein Client, der sich verbindet und nachfragt, sofort
-    // einen gültigen Stand lesen kann (bis zum ersten Part-Wechsel)
+    // einen gültigen Stand lesen kann (bis zum ersten Part-Wechsel). Früher geschah das erst am Ende von
+    // setup(); hier steht es direkt hinter dem Anlegen des Datenwerts, also ist pCharacteristic sicher gültig.
     storeMessage(ledSyncMessage(SYNC_STATE, 0, 0));
 
     // Advertising: der Proxy macht sich mit seiner Service-Kennnummer auffindbar. Die Clients
@@ -290,7 +311,9 @@ void midiProxy_initialize_BLE() {
 }
 
 // Bei jedem automatischen Part-Wechsel (aus loop()): neuen Stand hinterlegen und - falls ein Client auf den
-// zeitgenauen Einstieg wartet - SYNC_ENTRY an alle senden. Entschieden wird in ledSyncProxyPartChange().
+// zeitgenauen Einstieg wartet - SYNC_ENTRY an alle senden. Entschieden wird in ledSyncProxyPartChange();
+// hier wird nur dessen Zettel ausgeführt. Im Normalfall (kein Client wartet) geht dabei nichts über Funk,
+// es wird nur der lesbare Wert aktualisiert - das kostet so gut wie keine Zeit.
 void midiProxy_onPartChange(uint8_t songID, uint8_t nextPart) {
     applyAction(ledSyncProxyPartChange(songID, nextPart));
 }
@@ -360,6 +383,8 @@ void midiProxy_midiLoop() {
     // - Doppelklick am Drehknopf: der Proxy holt sich den Stand von einem Client -> SYNC_ASK, Antwort in onWrite()
     // - Kurzklick oder Not-Aus: alle Clients auf Song + Part des Proxys zwingen -> SYNC_FORCE; der zeitgenaue
     //   Einstieg folgt mit dem nächsten Part-Wechsel (midiProxy_onPartChange -> SYNC_ENTRY)
+    // Das Modul bekommt den aktuellen Stand der Gitarre (songID, prog) mit, weil SYNC_FORCE genau diesen
+    // verschickt. Liegt nichts vor, ist der Zettel leer und applyAction() tut nichts.
     applyAction(ledSyncProxyLoop(songID, prog));
 
     //wird aktuell nicht genutzt!?

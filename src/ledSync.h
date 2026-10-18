@@ -3,19 +3,31 @@
 //=====================================================================
 // ledSync.h - LED-Sync: das Abgleich-Protokoll zwischen Proxy und Clients
 //=====================================================================
+// WORUM ES GEHT
 // Die Gitarre (Proxy, ANDRESGIT) und die übrigen Geräte (Clients: Bass, Lampen, Matrix) tauschen per
-// Bluetooth (BLE) eine 3-Byte-Nachricht aus: Nachrichtentyp, Song, Part. Dieses Modul ist der EINE Ort,
-// an dem steht, was jede Nachricht bedeutet und was ein Gerät darauf tut. Die beiden Bluetooth-Dateien
-// (midiProxyBLEserver_nimBLE.cpp, BLE_client_nimBLE.cpp) sind nur noch "Adapter": sie bewegen die Bytes
-// über die NimBLE-Bibliothek und führen aus, was dieses Modul entschieden hat.
+// Bluetooth (BLE) eine 3-Byte-Nachricht aus: Nachrichtentyp, Song, Part. Im Normalfall kommt so nur der
+// Song-Start (und ein von Hand gewählter Part) vom MIDI-Gerät über die Gitarre zu allen anderen; danach
+// läuft jedes Gerät mit seiner eigenen Uhr durch dieselben Part-Längen. Der "Abgleich" ist für den
+// Fehlerfall da: ein Gerät wurde mitten im Song eingeschaltet, hat eine Nachricht verpasst oder die Gitarre
+// wurde neu gestartet. Dann bringt ein Klick am Drehknopf alle wieder auf denselben Stand.
 //
-// So arbeitet das Modul ("entscheidet, der Aufrufer führt aus"):
-//   Ereignis hinein  (Nachricht empfangen, Part-Wechsel, Drehknopf, MIDI)
-//   Ergebnis heraus  (LedSyncAction: "sende diese Nachricht", "springe zu Song/Part", "starte OTA" ...)
+// WARUM EIN EIGENES MODUL
+// Früher war das Protokoll über fünf Dateien verteilt (main.cpp, midi_in.cpp, rotaryEncoder.cpp und die
+// beiden Bluetooth-Dateien), verbunden über globale Merker wie needLEDsync oder syncProgWithNextChange.
+// Jetzt ist dieses Modul der EINE Ort, an dem steht, was jede Nachricht bedeutet und was ein Gerät darauf
+// tut. Die beiden Bluetooth-Dateien (midiProxyBLEserver_nimBLE.cpp, BLE_client_nimBLE.cpp) sind nur noch
+// "Adapter": sie bewegen die Bytes über die NimBLE-Bibliothek und führen aus, was dieses Modul entschieden hat.
+//
+// SO ARBEITET DAS MODUL ("es entscheidet, der Aufrufer führt aus")
+//   Ereignis hinein  Der Adapter ruft eine Funktion auf, z.B. "Nachricht empfangen", "Part-Wechsel",
+//                    "Knopf gedrückt", "MIDI-Wechsel".
+//   Ergebnis heraus  Die Funktion gibt eine LedSyncAction zurück, eine Art Auftragszettel: "sende diese
+//                    Nachricht", "springe zu Song/Part", "schalte dunkel", "starte OTA" ...
+//   Ausführen        Der Adapter arbeitet den Zettel in seiner Funktion applyAction() ab.
 // Das Modul selbst ruft weder switchToSong() noch Bluetooth noch FastLED auf. Deshalb braucht es kein
-// Arduino und lässt sich am PC testen: pio test -e native (test/test_ledSync/).
+// Arduino und lässt sich am PC testen: pio test -e native (Tests in test/test_ledSync/).
 //
-// Die Abläufe (Einzelheiten bei den Funktionen in ledSync.cpp):
+// DIE ABLÄUFE (Einzelheiten bei den Funktionen in ledSync.cpp)
 //   MIDI-Wechsel       Proxy bekommt CC 22/23 -> SYNC_SONG / SYNC_PART an alle
 //   Abgleich erzwingen Kurzklick am Proxy oder Not-Aus -> SYNC_FORCE an alle; die Clients springen,
 //                      schalten dunkel und warten; beim nächsten Part-Wechsel des Proxys kommt SYNC_ENTRY
@@ -26,9 +38,19 @@
 //                      und meldet zusätzlich seinen nächsten Part-Wechsel (SYNC_ENTRY) an den Proxy
 //   OTA                SYNC_OTA: alle Geräte in den Firmware-Update-Modus (nur in Song 0, siehe otaUpdate.h)
 //
+// Warum der Einstieg immer erst beim NÄCHSTEN Part-Wechsel kommt: Song und Part lassen sich sofort übertragen,
+// aber nicht, wie viele Millisekunden der Part beim anderen Gerät schon läuft. Der Beginn eines Parts ist
+// dagegen ein Zeitpunkt, den beide Seiten genau kennen - ab dort laufen sie wieder im Gleichschritt.
+//
+// "Senden" und "Hinterlegen" (wichtig zum Verständnis): Der Proxy hat EINEN Datenwert (die "Characteristic"),
+// den alle Clients sehen. "Hinterlegen" schreibt nur hinein - ein Client bekommt es erst, wenn er selbst liest.
+// "Senden" (Notify) schreibt hinein UND schickt es sofort an alle angemeldeten Clients.
+// Ein Client schreibt dagegen immer direkt an den Proxy (writeValue); dort kommt es in onWrite() an.
+//
 // Bei Änderungen am Protokoll docs/OTA-Update.html (Abschnitt BLE-Protokoll) mitziehen.
 
-// Feste Ganzzahl-Typen (uint8_t = 1 Byte ohne Vorzeichen) und size_t, ohne Arduino.h
+// Feste Ganzzahl-Typen (uint8_t = 1 Byte ohne Vorzeichen, Werte 0-255) und size_t (Typ für Längen und
+// Anzahlen). Bewusst ohne Arduino.h, damit die Datei auch am PC (Tests) übersetzt werden kann.
 #include <stdint.h>
 #include <stddef.h>
 
@@ -36,7 +58,13 @@
  * @brief Die Nachrichtentypen (Byte 1 der Nachricht)
  *
  * Die Nummern sind festgelegt und dürfen sich nicht ändern: Geräte mit älterer Firmware senden und
- * erwarten genau diese Zahlen. "enum ... : uint8_t" heißt: jeder Name ist eine Zahl, die in 1 Byte passt.
+ * erwarten genau diese Zahlen. "enum ... : uint8_t" heißt: jeder Name steht für eine Zahl, die in 1 Byte
+ * passt. Im Code schreibt man SYNC_FORCE statt 3 - das liest sich besser, und der Compiler setzt die 3 ein.
+ *
+ * Wer sendet was an wen:
+ *   Proxy -> alle Clients:  SYNC_SONG, SYNC_PART, SYNC_FORCE, SYNC_ENTRY, SYNC_ASK, SYNC_OTA
+ *   Proxy, nur hinterlegt:  SYNC_STATE
+ *   Client -> Proxy:        SYNC_REPLY, SYNC_ENTRY
  */
 enum LedSyncMsg : uint8_t {
     SYNC_STATE = 0,  // Proxy hinterlegt seinen Stand (Song + Part) zum Lesen; wird nie aktiv gesendet
@@ -52,7 +80,9 @@ enum LedSyncMsg : uint8_t {
 /**
  * @brief Die Nachricht, die per Bluetooth (BLE) zwischen Proxy und Clients ausgetauscht wird
  *
- * Genau 3 Bytes: Nachrichtentyp (LedSyncMsg), Song, Part. Je nach Typ werden nur einzelne Felder ausgewertet.
+ * Genau 3 Bytes: Nachrichtentyp (LedSyncMsg), Song, Part. Je nach Typ werden nur einzelne Felder ausgewertet,
+ * die anderen stehen dann auf 0 (z.B. SYNC_SONG: nur songID, SYNC_PART: nur part).
+ * Beispiel: "Abgleich erzwingen, Song 15, Part 3" sind die Bytes 3, 15, 3.
  */
 // "pack(push, 1)": der Compiler darf zwischen den Feldern keine Füllbytes einfügen, damit die Struktur auf
 // allen Geräten exakt 3 Bytes groß ist und Byte für Byte gesendet werden kann.
@@ -73,11 +103,23 @@ struct BLEmessage {
 // jemand die Nachricht verändert - alle Geräte müssen dieselben 3 Bytes senden und erwarten.
 static_assert(sizeof(BLEmessage) == 3, "BLEmessage muss genau 3 Bytes gross sein");
 
-// Eine Nachricht zusammenbauen, z.B. ledSyncMessage(SYNC_FORCE, songID, prog)
+/**
+ * @brief Eine Nachricht zusammenbauen
+ *
+ * Beispiel: ledSyncMessage(SYNC_FORCE, songID, prog) ergibt die Nachricht "zwinge alle auf meinen Song + Part".
+ * Die Funktion gibt die fertige Struktur zurück (3 Bytes, wird einfach kopiert).
+ */
 BLEmessage ledSyncMessage(LedSyncMsg type, uint8_t songID, uint8_t part);
 
 /**
  * @brief Empfangene Bytes in eine Nachricht verwandeln
+ *
+ * Die einzige Stelle, an der empfangene Bytes geprüft werden. Bluetooth liefert nur "so und so viele Bytes";
+ * erst hier wird daraus eine BLEmessage - aber nur, wenn es genau 3 Bytes sind.
+ *
+ * "const uint8_t* buf" ist ein Zeiger auf das erste empfangene Byte (const = die Funktion verändert die Bytes
+ * nicht). "BLEmessage& out" ist eine Referenz: die Funktion schreibt direkt in die Variable des Aufrufers,
+ * statt eine Kopie zurückzugeben - so kann sie zusätzlich true/false melden.
  *
  * @param buf die empfangenen Bytes
  * @param len wie viele Bytes ankamen
@@ -86,10 +128,11 @@ BLEmessage ledSyncMessage(LedSyncMsg type, uint8_t songID, uint8_t part);
  */
 bool ledSyncDecode(const uint8_t* buf, size_t len, BLEmessage& out);
 
-// Höchstens so viele Nachrichten kann ein einzelnes Ergebnis verlangen (Proxy-Schleife: MIDI + Abfrage + Abgleich)
+// Höchstens so viele Nachrichten kann ein einzelnes Ergebnis verlangen. Der größte Fall ist ledSyncProxyLoop(),
+// wenn im selben Durchlauf MIDI-Wechsel, Abfrage (Doppelklick) und Abgleich (Kurzklick) zusammenkommen.
 #define LEDSYNC_MAX_SENDS 3
 
-// Eine Nachricht, die der Adapter verschicken soll
+// Eine Nachricht, die der Adapter verschicken soll (ein Eintrag auf dem Auftragszettel)
 struct LedSyncSend {
     BLEmessage msg;  // die Nachricht
     bool notify;     // nur Proxy: true = sofort an alle senden (notify); false = nur hinterlegen (zum Lesen)
@@ -97,18 +140,23 @@ struct LedSyncSend {
 };
 
 /**
- * @brief Was der Aufrufer (der Bluetooth-Adapter) jetzt tun soll
+ * @brief Der "Auftragszettel": was der Aufrufer (der Bluetooth-Adapter) jetzt tun soll
  *
- * Alle Felder sind zu Beginn 0/false = "nichts tun". Der Adapter arbeitet sie in dieser Reihenfolge ab:
- * sends (der Reihe nach), jump, goDark, switchSong, switchPart, readProxy, ota.
+ * Jede Funktion des Moduls gibt so einen Zettel zurück. Alle Felder sind zu Beginn 0/false = "nichts tun";
+ * die Funktion setzt nur das, was nötig ist. Der Adapter arbeitet den Zettel in seiner applyAction() in dieser
+ * Reihenfolge ab: sends (der Reihe nach), jump, goDark, switchSong, switchPart, readProxy, ota.
+ *
+ * Beispiel: Ein Client empfängt SYNC_FORCE für Song 15, Part 3. Der Zettel lautet dann
+ * jump = true, goDark = true, song = 15, part = 3 -> der Adapter ruft switchToSongAndPart(15, 3) auf und
+ * schaltet danach alle LEDs aus.
  */
 struct LedSyncAction {
-    uint8_t sendCount;                     // so viele Einträge in sends[] gelten
-    LedSyncSend sends[LEDSYNC_MAX_SENDS];  // zu verschickende Nachrichten
-    bool jump;        // switchToSongAndPart(song, part)
+    uint8_t sendCount;                     // so viele Einträge in sends[] gelten (0 = nichts senden)
+    LedSyncSend sends[LEDSYNC_MAX_SENDS];  // zu verschickende Nachrichten (Platz für höchstens 3)
+    bool jump;        // switchToSongAndPart(song, part): Song UND Part auf einmal wechseln
     bool goDark;      // danach sofort dunkel schalten (clearAll() + FastLED.show())
-    bool switchSong;  // switchToSong(song)
-    bool switchPart;  // switchToPart(part)
+    bool switchSong;  // switchToSong(song): nur den Song wechseln (beginnt bei Part 0)
+    bool switchPart;  // switchToPart(part): im laufenden Song in einen anderen Part springen
     bool readProxy;   // nur Client: den Stand beim Proxy lesen, Ergebnis an ledSyncClientReadResult()
     bool ota;         // otaRequestAndRestart(): in den Update-Modus neu starten
     uint8_t song;     // Song für jump / switchSong
@@ -118,51 +166,63 @@ struct LedSyncAction {
 //--------------------------------------------------------------------
 // Proxy-Seite (nur die Gitarre benutzt diese Funktionen)
 //--------------------------------------------------------------------
+// Die Wünsche (MIDI, Knopf) werden nur vorgemerkt und erst in ledSyncProxyLoop() in Nachrichten verwandelt.
+// Grund: der Knopf und der MIDI-Empfang melden sich zu beliebigen Zeiten; gesendet wird aber immer an
+// derselben, ruhigen Stelle in loop().
 
 // MIDI-Wechsel (aus midi_in.cpp) zum Weitersenden vormerken. Gesendet wird in ledSyncProxyLoop().
 // Kommen vor dem nächsten Durchlauf zwei Wechsel an, gilt der letzte (wie bisher).
 void ledSyncProxyMidiSong(uint8_t song);
 void ledSyncProxyMidiPart(uint8_t part);
 
-// Drehknopf / Not-Aus: Abgleich erzwingen (Kurzklick, Not-Aus) bzw. Stand eines Clients abfragen (Doppelklick).
-// Ausgeführt wird beim nächsten ledSyncProxyLoop().
+// Drehknopf / Not-Aus (aus rotaryEncoder.cpp und main.cpp): Abgleich erzwingen (Kurzklick, Not-Aus) bzw.
+// Stand eines Clients abfragen (Doppelklick). Ausgeführt wird beim nächsten ledSyncProxyLoop().
 void ledSyncProxyRequestForce();
 void ledSyncProxyRequestAsk();
 
-// Bei jedem loop()-Durchlauf: vorgemerkte MIDI-Wechsel und Knopf-Wünsche in Nachrichten verwandeln.
-// songID / prog = aktueller Stand des Proxys (für den erzwungenen Abgleich).
+// Bei jedem loop()-Durchlauf (über midiProxy_midiLoop()): vorgemerkte MIDI-Wechsel und Knopf-Wünsche in
+// Nachrichten verwandeln. songID / prog = aktueller Stand des Proxys (für den erzwungenen Abgleich).
+// Liegt nichts vor, ist der Zettel leer - das kostet praktisch keine Zeit.
 LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog);
 
-// Ein Client hat den Stand GELESEN (onRead): den nächsten Part-Wechsel aktiv melden (SYNC_ENTRY)
+// Ein Client hat den Stand GELESEN (Bluetooth-Callback onRead): den nächsten Part-Wechsel aktiv melden
+// (SYNC_ENTRY). Gibt nichts zurück - es wird nur ein Merker gesetzt, der in ledSyncProxyPartChange() wirkt.
 void ledSyncProxyClientRead();
 
-// Ein Client hat etwas GESCHRIEBEN (onWrite): seinen Song + Part übernehmen
+// Ein Client hat etwas GESCHRIEBEN (Bluetooth-Callback onWrite): seinen Song + Part übernehmen.
+// buf/len = die geschriebenen Bytes; falsche Länge -> leerer Zettel.
 LedSyncAction ledSyncProxyClientWrote(const uint8_t* buf, size_t len);
 
-// Beim automatischen Part-Wechsel des Proxys (loop()): neuen Stand hinterlegen, wartende Clients einsteigen lassen
+// Beim automatischen Part-Wechsel des Proxys (aus loop() über midiProxy_onPartChange()): neuen Stand
+// hinterlegen und, falls ein Client darauf wartet, SYNC_ENTRY an alle senden.
 LedSyncAction ledSyncProxyPartChange(uint8_t songID, uint8_t nextPart);
 
 //--------------------------------------------------------------------
 // Client-Seite (Bass, Lampen, Matrix)
 //--------------------------------------------------------------------
 
-// Eine Nachricht des Proxys ausführen. songID / prog = aktueller Stand des Clients (für die Antwort auf SYNC_ASK
-// und die OTA-Prüfung).
+// Eine Nachricht des Proxys auswerten (aus BLE_client_Loop()). songID / prog = aktueller Stand des Clients
+// (für die Antwort auf SYNC_ASK und die OTA-Prüfung "nur in Song 0").
 LedSyncAction ledSyncClientReceived(const BLEmessage& msg, uint8_t songID, uint8_t prog);
 
-// Drehknopf (Kurzklick): den Stand beim Proxy lesen. Ausgeführt beim nächsten ledSyncClientLoop().
+// Drehknopf (Kurzklick, aus rotaryEncoder.cpp): den Stand beim Proxy lesen. Ausgeführt beim nächsten
+// ledSyncClientLoop().
 void ledSyncClientRequestRead();
 
-// Bei jedem loop()-Durchlauf: liefert einmal readProxy = true, wenn ein Lesen gewünscht war
+// Bei jedem loop()-Durchlauf (aus BLE_client_Loop()): liefert genau einmal readProxy = true, wenn ein Lesen
+// gewünscht war; sonst einen leeren Zettel.
 LedSyncAction ledSyncClientLoop();
 
-// Ergebnis des Lesens beim Proxy (die gelesenen Bytes): dorthin springen, Einstieg folgt mit SYNC_ENTRY
+// Ergebnis des Lesens beim Proxy (die gelesenen Bytes): dorthin springen, Einstieg folgt mit SYNC_ENTRY.
+// Falsche Länge -> leerer Zettel.
 LedSyncAction ledSyncClientReadResult(const uint8_t* buf, size_t len);
 
-// Beim automatischen Part-Wechsel des Clients (loop()): dem Proxy den Wechsel melden, falls er gefragt hatte
+// Beim automatischen Part-Wechsel des Clients (aus loop() über informServerOnNextChange()): dem Proxy den
+// Wechsel melden, aber nur, wenn er vorher per SYNC_ASK gefragt hatte.
 LedSyncAction ledSyncClientPartChange(uint8_t songID, uint8_t nextPart);
 
 //--------------------------------------------------------------------
 
-// Alle Merker beider Seiten löschen (Zustand wie nach dem Einschalten). Nur für die Tests.
+// Alle Merker beider Seiten löschen (Zustand wie nach dem Einschalten). Nur für die Tests: jeder Test soll
+// mit denselben Startbedingungen beginnen. Auf den Geräten wird es nicht aufgerufen.
 void ledSyncReset();
