@@ -22,26 +22,59 @@ TODOs
 =======
 SAS
     EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
-shivers
-    - yoou burn ... Strobo ist mist und nicht in sync, dauer Strobo tooo much
-    - ende > 3x blinder
 titanium
     - triolen ende unsync
 no roots
     - blinder auf den synth fx
 GJWHF 
     - 1. when the working day -> matrix blinken nicht in sync zu lampen?!
-tom: 
-    pause zu dunkel
 dstm: 
     -> bass solo
 
 DONE
 =====
-17.10.2026
+
+- shivers
+- TOM ok
 - kids neu auto-generiert -> eigentlich ganz cool
 - abcdefu ist erstmal fertig, 17.10.2026
 - dancing müsste auch fertig sein
+
+
+
+Noch handgeschrieben (alter Code) sind diese Songs, nach Song-ID sortiert:
+
+┌─────┬─────────────────────────┬──────────────────────────────────────────────────────────────┐
+│ ID  │          Song           │                       Ordner in songs/                       │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 1   │ Physical Trailer        │ PhysicalIntro_v1 (nur die Tabelle)                           │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 2   │ Physical                │ Physical_v1: show.yaml angefangen, aber noch nicht generiert │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 4   │ Don't Stop The Music    │ DontStopTheMusic_v1 (nur die Tabelle)                        │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 5   │ Use Somebody            │ kein Ordner                                                  │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 6   │ No Roots                │ NoRoots_v1 (nur die Tabelle)                                 │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 7   │ Firework                │ Firework_v1 (nur die Tabelle)                                │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 10  │ Bloody Mary             │ BloodyMary_v1 (nur die Tabelle)                              │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 11  │ Titanium                │ Titanium_v1 (nur die Tabelle)                                │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 12  │ Such A Shame            │ SuchAShame_v1 (nur die Tabelle)                              │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 13  │ In The Dark             │ InTheDark_v1 (nur die Tabelle)                               │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 16  │ Enjoy The Silence       │ EnjoyTheSilence_v1 (nur die Tabelle)                         │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤                                          │
+│ 24  │ Enjoy The Silence Intro │ kein eigener Ordner                                          │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 30  │ Maniac T-1 (Intro)      │ kein eigener Ordner                                          │
+├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ 81  │ Dancing On My Own Intro │ DancingOnMyOwnIntro_v1 (nur die Tabelle)                     │
+└─────┴─────────────────────────┴──────────────────────────────────────────────────────────────┘
 
 
 
