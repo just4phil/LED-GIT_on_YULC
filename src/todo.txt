@@ -34,6 +34,7 @@ dstm:
 DONE
 =====
 
+- enjoy
 - shivers
 - TOM ok
 - kids neu auto-generiert -> eigentlich ganz cool
@@ -66,10 +67,6 @@ Noch handgeschrieben (alter Code) sind diese Songs, nach Song-ID sortiert:
 │ 12  │ Such A Shame            │ SuchAShame_v1 (nur die Tabelle)                              │
 ├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
 │ 13  │ In The Dark             │ InTheDark_v1 (nur die Tabelle)                               │
-├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ 16  │ Enjoy The Silence       │ EnjoyTheSilence_v1 (nur die Tabelle)                         │
-├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤                                          │
-│ 24  │ Enjoy The Silence Intro │ kein eigener Ordner                                          │
 ├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
 │ 30  │ Maniac T-1 (Intro)      │ kein eigener Ordner                                          │
 ├─────┼─────────────────────────┼──────────────────────────────────────────────────────────────┤
