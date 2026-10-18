@@ -405,10 +405,23 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Ein Blinder endet mit seinem Part - außer mit `carry: true` (seit 09.10.2026, nur einmalige Blinder): dann klingt
   er im Part danach zu Ende (`fxBlinderCarry`, kostet dort einen der 8 Plätze; `--dry-run`: „Blinder von '<Part>'
   klingt noch … ms aus“). Nötig, wenn ein gewünschtes langes Ausklingen über die Part-Grenze reicht („Blinder über
-  1,5 Takte ausfaden“, der Part endet früher). Ohne `carry` bleibt alles wie bisher. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
+  1,5 Takte ausfaden“, der Part endet früher). Mit `carry` darf `len` auch länger sein als der Part selbst, solange
+  der Blinder bis zum Ende des Parts danach ausgeklungen ist - auch ins Schluss-Black (Maniac, 18.10.2026: Kaskade voll
+  bei 160,125, klingt 2 Takte aus, der letzte Part ist nur 1 Takt lang). Ohne `carry` bleibt alles wie bisher. Soll er am Songende über den letzten Part hinaus ausklingen (Wunsch des
   Users zu APT., 06.10.2026: „erst auf der letzten Viertel, dann 5 Sekunden ausfaden“): im letzten Part
   `blinder: {at: <letzter Beat>, len: 2, hold: 1}` (springt dort auf und steht bis zum Part-Ende voll) und auf Song-Ebene `end_blinder: 5`
   (Sekunden; ausführlich `{seconds, amount, color, devices}`) - der Blinder läuft im Schluss-Black weiter und klingt aus.
+- **Blinder-Kaskade** (Idee des Users, 18.10.2026: „blinder der sich von gerät zu gerät aufbaut (also schnell
+  nacheinander) aber dann faden alles gleichzeitig lange aus … könnte man gut am ende von songs benutzen“):
+  `cascade: lr|rl|out|in` im `blinder` (eine Achtel je Gerät - eine 16tel war dem User „zu schnell“) oder `cascade: {dir: out, step: half}` /
+  `cascade: {order: [lamp, matrix, [ANDRESGIT, RINASBASS]], step: 0.5}` (eigene Reihenfolge, Wunsch des Users; ein
+  Eintrag = eine Stufe, Klassen und Listen gehen gemeinsam an, fehlende Geräte erst mit dem Vollpunkt). `at`/`bar`
+  bleibt der Moment, in dem ALLE voll sind; davor gehen die Geräte je Stufe einen `step` früher an, das Ausklingen
+  beginnt für alle gleichzeitig (`fxBlinderCascade`). Ein Aufbau vor dem Part-Beginn wird im Part davor angemeldet.
+  `color: scheme` = jedes Gerät in seiner Schemafarbe (`fxBlinderSchemeColor`). Gedacht fürs Songende:
+  `{bar: <letzte Viertel>, len: 2, hold: 1, cascade: lr}` + `end_blinder: 5` (bei `color: scheme` dort auch
+  `end_blinder: {seconds: 5, color: scheme}`). Neu, Abnahme durch den User offen (Demo 92, Parts 67-69) - erst nach
+  seinem Urteil in Songs einsetzen.
 - **Text liegt immer über allem** (Regel des Users, 10.10.2026: „der Text muss IMMER ÜBER allem anderen liegen, damit
   es gut sichtbar ist“). Hat ein Part einen Text mit `over: true` und läuft in ihm ein Blinder (eigener, Einblenden für
   den Part danach, Ausklingen aus dem Part davor), legt `songgen.py` die Blinder auf der Matrix von selbst UNTER den
@@ -458,7 +471,7 @@ mehr. Der Änderungswunsch geht immer vor der Tabelle unten:
 | Energie 2-3, Puls im Beat (Strophe) | SCENE_VERSE, SCENE_VERSE_PLASMA (fließend), SCENE_VERSE_WAVES (im Takt laufend), SCENE_VERSE_HEART (getragen, Herzschlag), SCENE_VERSE_STARS (sehr ruhig, Energie 1-2). Regel des Users (18.10.2026, „zu wenig abwechslungsreich“): die Strophen eines Songs nicht alle mit derselben Szene, und über die Songs verteilt nicht immer SCENE_VERSE - verse 1 und verse 2 dürfen gleich sein (Wiedererkennung), verse 3 oder ein b-Teil nimmt eine andere. SCENE_VERSE zeigt auf der Matrix je Song einen anderen Look (songID % 4: Regen, Plasma, Wasserringe, Sinuswellen) - SCENE_RAIN ist ebenfalls Regen, also nicht SCENE_VERSE mit Regen-Look und SCENE_RAIN im selben Song |
 | Part steigert sich ("build up") oder Pre-Chorus | SCENE_BUILDUP (Explosion fällt exakt auf die Part-Grenze) |
 | Energie 4-5, treibend | SCENE_DROP, SCENE_PINGPONG, SCENE_WAVE_* (SCENE_WAVE_LR/RL/OUT: Welle in einer 16tel, wirkt fast gleichzeitig; SCENE_WAVE_LR_BAR: deutlich sichtbare Welle, einmal pro Takt, eine Achtel je Gerät - neu am 18.10.2026, Abnahme offen) |
-| „Geräte abwechselnd“, Energie 3-4 | SCENE_CALL_RESPONSE (Frage/Antwort: Bühnenhälften blitzen abwechselnd, fester Puls je Gerät). SCENE_PINGPONG springt zufällig von Gerät zu Gerät und wirkte auf den User in APT. „nicht im Takt“ (06.10.2026) |
+| „Geräte abwechselnd“, Energie 3-4 | SCENE_CALL_RESPONSE (Frage/Antwort: Bühnenhälften blitzen abwechselnd, fester Puls je Gerät); SCENE_CALL_RESPONSE_OFFBEAT nur auf 2 und 4 (links auf 2, rechts auf 4, 1 und 3 schwarz - Maniac, 18.10.2026, Abnahme offen). SCENE_PINGPONG springt zufällig von Gerät zu Gerät und wirkte auf den User in APT. „nicht im Takt“ (06.10.2026) |
 | Energie 5, Bass/Drop, Höhepunkt | SCENE_FIRE |
 | Instrumentalsolo | SCENE_SOLO_GIT / _BASS / _DRUMS |
 | energy 1-2, ruhige Strophe, langsames Intro/Outro | SCENE_GLOW (füllt sich, wechselt gemeinsam die Farbe), SCENE_RAIN, SCENE_PALETTE |

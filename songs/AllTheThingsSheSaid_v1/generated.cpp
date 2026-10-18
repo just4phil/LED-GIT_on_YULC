@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
-//@show_sha 2ebf5e9b09de0904108657936a3413ed23c8ed0246f110956d335441eabed482
+//@show_sha 8301dbf24d80049650028419d76af4b60e24b5854c8badc724b6cb96ff2385b5
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
@@ -122,11 +122,11 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_GLOW, 11162, 10, 86);
 		break;
 
-	case 10:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück
+	case 10:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fließende Farbwolken bringen Bewegung, alles schwillt im Beat leicht an; Blau/Lila wandern nach Pink/Orange und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 5581);
 		fxTransition(TRANS_FADE, 1395);
-		scene(SCENE_RAIN, 11163, 11, 86);
+		scene(SCENE_VERSE_PLASMA, 11163, 11, 86);
 		break;
 
 	case 11:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag

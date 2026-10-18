@@ -578,7 +578,11 @@ void PhysicalTrailer() {
 		// und bei Part 0 beginnen.
 		//--- start song ----// we go there directly
 		songID = 2;			// this is PHYSICAL
-		switchToPart(40);	// but we have to jump over the Intro directly to part 30! (Einsprung ist heute Part 40: das Strobo vor dem ersten Refrain)
+		// Einsprung: der weiße Strobo auf dem Synth-Auftakt vor dem ersten Refrain (im alten Physical() war das Part 40,
+		// 820 ms = 2 Beats). Physical ist seit 18.10.2026 generiert: die Part-Nummer kommt als Konstante aus
+		// songs_generated.h (Tail des Parts "sample") - so bleibt der Einstieg richtig, auch wenn sich die Nummern beim
+		// Generieren verschieben.
+		switchToPart(GEN_PHYSICAL_SAMPLE_TAIL);
 		break;
 	}
 }
@@ -4256,8 +4260,42 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(61);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(67);	break;
+
+	// Blinder-Kaskade (neu am 18.10.2026, Idee des Users: "blinder der sich von gerät zu gerät aufbaut (also schnell
+	// nacheinander) aber dann faden alles gleichzeitig lange aus ... könnte man gut am ende von songs benutzen", dazu
+	// "die reihenfolge der geräte konfigurierbar"): fxBlinderCascade(Abstand, FX_CASCADE(...)) - jedes Gerät geht um
+	// seine Stufen früher an, bei 4 s sind alle voll, ab da klingen alle gemeinsam 5,5 s lang aus (wie am Songende).
+	// fxBlinderShape(0, 0) = ohne Einblenden, ohne zusätzliches Stehen. Darunter atmet SCENE_CALM dunkel. Je Part 10 s.
+	//   67: warmweiß, links -> rechts, eine Achtel (250 ms) je Gerät: Lampe 1, Bass, Matrix, Gitarre, Lampe 2
+	//       (zuerst eine 16tel - dem User zu schnell: "16tel scheinen mir für den blinder zu schnell zu sein").
+	//   68: jedes Gerät in seiner Schemafarbe (NEON, fxBlinderSchemeColor), von der Mitte nach außen, eine Achtel
+	//       (250 ms) je Stufe: Matrix, dann Bass + Gitarre, dann beide Lampen.
+	//   69: eigene Reihenfolge, ein Beat (500 ms) je Stufe: beide Lampen, dann Matrix, dann Gitarre + Bass; jedes Gerät
+	//       blendet 250 ms vor seinem Einsatz ein (fxBlinderShape(250, 0)). Warmweiß über SUNSET.
+	case 67:
+		setColorScheme(SCHEME_ROYAL);
+		fxBlinder(4000, 5500, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		fxBlinderCascade(250, FX_CASCADE(4, 3, 2, 1, 0, 2));
+		scene(SCENE_CALM, 10000, DEMO_NR(68), bpm);
+		break;
+	case 68:
+		setColorScheme(SCHEME_NEON);
+		fxBlinder(4000, 5500, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		fxBlinderCascade(250, FX_CASCADE(0, 1, 2, 1, 0, 2));
+		fxBlinderSchemeColor();
+		scene(SCENE_CALM, 10000, DEMO_NR(69), bpm);
+		break;
+	case 69:
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(4000, 5750, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(250, 0);
+		fxBlinderCascade(500, FX_CASCADE(2, 0, 1, 0, 2, 1));
+		scene(SCENE_CALM, 10000, DEMO_NR(61), bpm);
+		break;
 
 	// Strophen-Szenen (neu am 18.10.2026, Wunsch des Users: "in den strophen fast immer diesen regen auf der matrix ...
 	// zu wenig abwechslungsreich"): vier neue Szenen für Energie 2-3, alle dezent im Beat, je 8 Takte.

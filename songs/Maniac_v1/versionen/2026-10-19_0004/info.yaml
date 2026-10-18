@@ -1,0 +1,9 @@
+zeit: '2026-10-19 00:04:39'
+notiz: Blinder 156 nur 1 Takt Ausklingen, Kaskade entfernt, Schluss-Blinder voll auf
+  160, 2 Takte Ausklingen
+werkzeug_git: 4faa111 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 877216ab951364d44d3d88c818f2cf023e555328f01acca8fc75d574858f89de
+  show.yaml: 5f14a34e5563929720194b3b6b926a0b7717eae447dfd9d91851c0d13cf3c541
+  generated.cpp: 3850369c2546302add75f53222072874da80b00a0bd4502a6e03e9e4ba185216

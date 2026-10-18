@@ -56,11 +56,11 @@ sections:
     why: "Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück. Übergang: das Rot der Hook blendet über einen Takt weich aus statt hart abzureißen"
 
   verse 1b:
-    scene: SCENE_RAIN
+    scene: SCENE_VERSE_PLASMA
     scheme: SCHEME_ROYAL
     transition: {type: fade, beats: 2}
     fade: {to: triad, per: 8}
-    why: "Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück"
+    why: "Idee 'etwas gesteigert', energy 2: fließende Farbwolken bringen Bewegung, alles schwillt im Beat leicht an; Blau/Lila wandern nach Pink/Orange und zurück"
 
   "wiederholung: nobody else":
     scene: SCENE_BUILDUP

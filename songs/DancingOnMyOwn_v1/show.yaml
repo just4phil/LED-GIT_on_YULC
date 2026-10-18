@@ -25,9 +25,9 @@ sections:
     why: "nur Synth-Bass: alle Geräte atmen langsam in Blau, dunkel und kühl"
 
   somebody:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_HEART
     scheme: SCHEME_ICE
-    why: "Gesang setzt ein: Gitarre und Bass leuchten Zone für Zone im Beat, Lampen mit Lichtschuss pro Beat, auf der Matrix farbiger Regen in Blautönen"
+    why: "Gesang setzt ein, noch zurückhaltend: alle Geräte schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Matrix zeigt eine Lissajous-Schleife"
 
   git steigt ein:
     scene: SCENE_VERSE
@@ -63,9 +63,9 @@ sections:
     why: "Stopp: alles dunkel"
 
   verse 2b:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ROYAL
-    why: "zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett), auf der Matrix farbiger Regen"
+    why: "zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen"
 
   bridge:
     scene: SCENE_BUILDUP

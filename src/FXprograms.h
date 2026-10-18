@@ -245,8 +245,13 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
  * Anfang (oberer Rand) und Ende (unterer Rand) werden jedes Mal neu ausgewürfelt.
  *
  * @param clearEach wie bei progCircles
+ * @param fadeMillis 0 = alte Linien bleiben stehen (wie bisher, die Fläche füllt sich). Größer 0 (nur sinnvoll mit
+ *                   clearEach = false): ältere Linien verblassen und sind nach etwa fadeMillis ms fast dunkel, so dass
+ *                   immer nur die letzten paar Linien zu sehen sind (Wunsch des Users zu Maniac, 18.10.2026). Neue
+ *                   Linien sind dann nie schwarz. In generierten Songs z. B. ${beats:4} = nach 4 Beats verblasst.
  */
-void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach);
+void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach,
+					 unsigned int fadeMillis = 0);
 void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange);
 
 /**

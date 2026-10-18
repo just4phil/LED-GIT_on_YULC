@@ -11,6 +11,8 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py <Song> --neu           # neuen Song-Ordner mit leerer Tabelle anlegen
     tools/.venv/Scripts/python tools/songgen.py <Song> --tabelle       # nur die Spalte "Effekt" der Tabelle nachtragen
     tools/.venv/Scripts/python tools/songgen.py --tabelle              # ... in den Tabellen ALLER Songs (kein neuer Code)
+    tools/.venv/Scripts/python tools/songgen.py <Song> --markieren     # generieren; geänderte Effekte in der Tabelle gelb, alter Text daneben
+    tools/.venv/Scripts/python tools/songgen.py <Song> --markierung-weg  # Gelb und Spalte "Alter Effekt (temporär)" wieder entfernen
     tools/.venv/Scripts/python tools/songgen.py <Song> --vorschlag     # vorschlag.yaml in die Spalte "Neuer Vorschlag (KI)" schreiben
     tools/.venv/Scripts/python tools/songgen.py --vorschlag            # ... für alle Songs, die eine vorschlag.yaml haben
     tools/.venv/Scripts/python tools/songgen.py <Song> --part-loeschen 95 --part-name 93=outro   # Parts der Tabelle ändern
@@ -478,11 +480,86 @@ def blinder_slots():
 	return int(m.group(1))
 
 
+# Blinder-Kaskade (Idee des Users, 18.10.2026: "blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander)
+# aber dann faden alles gleichzeitig lange aus" - und: "die reihenfolge der geräte konfigurierbar"):
+#   cascade: lr                                      -> links nach rechts, eine Achtel je Gerät (Standard-step 0.5 Beats;
+#                                                       eine 16tel war dem User zu schnell, 18.10.2026)
+#   cascade: {dir: out, step: 0.5}                   -> lr | rl | out (Mitte zuerst) | in (außen zuerst); step in Beats
+#   cascade: {order: [lamp, matrix, [ANDRESGIT, RINASBASS]], step: half}
+#                                                    -> eigene Reihenfolge; ein Eintrag = eine Stufe, Klassen (lamp,
+#                                                       guitar, matrix) und Listen gehen dort gemeinsam an
+# at / bar des Blinders bleibt der Moment, in dem ALLE voll sind (Regel des Users, 09.10.2026); die Geräte davor gehen
+# je Stufe einen step früher an. Für die Firmware (fxBlinderCascade in fxPipeline.h) zählt je Gerät nur, wie viele
+# Stufen es VOR diesem Moment angeht. Geräte, die in order fehlen, gehen erst mit dem Vollpunkt an (Stufe 0).
+# Bühnenplatz je Gerät (STAGE_POS in definitions.h) in der Reihenfolge der DEV_...-Bits / Argumente von FX_CASCADE:
+CASCADE_DEVICES = ("LAMPE1", "RINASBASS", "SCROLLMATRIX", "ANDRESGIT", "LAMPE2", "GITBOARD")
+CASCADE_STAGE_POS = (0, 1, 2, 3, 4, 2)
+CASCADE_DIRS = {	# Bühnenplatz (0 = ganz links .. 4 = ganz rechts) -> Stufen vor dem Vollpunkt
+	"lr": lambda p: 4 - p, "rl": lambda p: p, "out": lambda p: 2 - abs(p - 2), "in": lambda p: abs(p - 2),
+}
+CASCADE_CLASSES = {"guitar": ("ANDRESGIT", "RINASBASS"), "lamp": ("LAMPE1", "LAMPE2"), "matrix": ("SCROLLMATRIX", "GITBOARD")}
+
+
+def cascade_spec(value, part, sec, song, what, errors):
+	"""cascade: eines Blinders -> {step_ms, steps (je Gerät aus CASCADE_DEVICES), lead_ms, text} oder None (Fehler in errors)."""
+	name = sec.get("name", "?")
+	spec = value if isinstance(value, dict) else {"dir": value}
+	unknown = [k for k in spec if k not in ("dir", "order", "step")]
+	if unknown:
+		errors.append(f"{name}: {what} cascade kennt nur dir, order, step - unbekannt: {', '.join(map(str, unknown))}")
+		return None
+	step = per_beats(spec.get("step", 0.5), sec, song)
+	if step is None:
+		errors.append(f"{name}: {what} cascade step ist der Abstand von Gerät zu Gerät in Beats (Zahl > 0, beat, half oder bar), nicht '{spec.get('step')}'")
+		return None
+	if ("dir" in spec) == ("order" in spec):
+		errors.append(f"{name}: {what} cascade braucht genau eins von dir ({' | '.join(CASCADE_DIRS)}) oder order (Liste der Geräte)")
+		return None
+	if "dir" in spec:
+		d = str(spec["dir"]).strip().lower()
+		if d not in CASCADE_DIRS:
+			errors.append(f"{name}: {what} cascade dir '{spec['dir']}' unbekannt - {', '.join(CASCADE_DIRS)}")
+			return None
+		steps = [CASCADE_DIRS[d](p) for p in CASCADE_STAGE_POS]
+		text = {"lr": "von links nach rechts", "rl": "von rechts nach links", "out": "von der Mitte nach außen", "in": "von außen zur Mitte"}[d]
+	else:
+		order = spec["order"]
+		if not isinstance(order, list) or not order or len(order) > 16:
+			errors.append(f"{name}: {what} cascade order ist eine Liste von 1 bis 16 Stufen (Geräte, Klassen oder Listen davon)")
+			return None
+		steps, seen, groups = [0] * len(CASCADE_DEVICES), set(), []
+		for k, entry in enumerate(order):
+			keys = entry if isinstance(entry, list) else [entry]
+			devs = []
+			for key in keys:
+				if key in CASCADE_CLASSES:
+					devs += CASCADE_CLASSES[key]
+				elif key in CASCADE_DEVICES:
+					devs.append(key)
+				else:
+					errors.append(f"{name}: {what} cascade order kennt nur {', '.join(list(CASCADE_DEVICES) + list(CASCADE_CLASSES))} - unbekannt: {key}")
+					return None
+			twice = [d for d in devs if d in seen]
+			if twice:
+				errors.append(f"{name}: {what} cascade order nennt {', '.join(twice)} mehrmals")
+				return None
+			seen.update(devs)
+			for d in devs:
+				steps[CASCADE_DEVICES.index(d)] = len(order) - 1 - k	# erste Stufe = am weitesten vor dem Vollpunkt
+			groups.append("+".join(map(str, keys)))
+		text = "Reihenfolge " + " > ".join(groups)
+	step_ms = round(step * 60000.0 / part["bpm"])
+	return {"step_ms": step_ms, "steps": steps, "lead_ms": max(steps) * step_ms,
+			"text": f"Kaskade {text}, {step_ms} ms je Stufe"}
+
+
 # Die Blinder eines Parts (Schlüssel blinder: in show.yaml), geprüft und in Millisekunden umgerechnet.
 # Rückgabe: (Liste, Fehler). Jeder Eintrag der Liste ist ein Blinder als Dictionary:
 #   every     Raster in Beats (0 = einmalig)        at_ms    Moment der VOLLEN Helligkeit, ms ab Part-Beginn
 #   len_ms    ganze Länge inkl. Einblenden          shape    None oder [attack_ms, hold_ms]
 #   amount / col / mask / devs                      bar_text "Takt 32,5 = " für die Beschreibung, wenn bar: benutzt ist
+#   scheme_col  True bei color: scheme (jedes Gerät in seiner Schemafarbe)
+#   casc        None oder die Kaskade aus cascade_spec() (Geräte gehen nacheinander an, gemeinsamer Vollpunkt at_ms)
 # at / bar nennt immer den Moment, in dem der Blinder voll hell ist (Wunsch des Users, 09.10.2026: "an dieser Stelle
 # die volle Leuchtkraft"). Ohne attack springt er dort auf. Mit attack beginnt er attack Beats FRÜHER - die Firmware
 # rechnet das selbst (blinderLevelOf in fxPipeline.cpp), hier bleibt at_ms der Moment der vollen Helligkeit.
@@ -494,12 +571,14 @@ def blinder_specs(part, song, offset=0):
 	if "blinder" not in sec:
 		return out, errors
 
-	def beats_ms(key, beats):
+	# long = True (Blinder mit carry: true): darf länger sein als der Part - was übersteht, klingt im Part danach aus;
+	# ob es dort hineinpasst, prüft blinder_specs() weiter unten
+	def beats_ms(key, beats, long=False):
 		if isinstance(beats, bool) or not isinstance(beats, (int, float)) or beats <= 0:
 			errors.append(f"{name}: {key} ist eine Länge in Beats (Zahl > 0), nicht '{beats}'")
 			return None
 		ms = round(beats * 60000.0 / part["bpm"])
-		if not offset and ms > part["dur"]:
+		if not offset and not long and ms > part["dur"]:
 			errors.append(f"{name}: {key} ({ms} ms) ist länger als der Part ({part['dur']} ms)")
 			return None
 		return ms
@@ -519,7 +598,7 @@ def blinder_specs(part, song, offset=0):
 		errors.append(f"{name}: {len(specs)} Blinder in einem Part - möglich sind {slots} (FX_BLINDER_SLOTS in definitions.h); "
 					  f"den Part in der Tabelle teilen oder ein Raster nehmen (every)")
 		specs = specs[:slots]
-	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold", "carry")
+	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold", "carry", "cascade")
 	for slot, one in enumerate(specs):
 		what = "blinder" if len(specs) == 1 else f"blinder {slot + 1}"		# Name in Fehlermeldungen: bei mehreren mit Nummer
 		spec = dict(one) if isinstance(one, dict) else {"every": one}
@@ -555,12 +634,18 @@ def blinder_specs(part, song, offset=0):
 			else:
 				at = round((b - von) * song.get("beats_per_bar", 4), 4)
 				bar_text = f"Takt {st.fmt(b).replace('.', ',')} = "
-		len_ms = beats_ms(f"{what} len", spec.get("len", 1))
+		len_ms = beats_ms(f"{what} len", spec.get("len", 1), long=spec.get("carry") is True and "every" not in spec)
 		amount = pct(f"{what} amount", spec.get("amount", 100))
 		color = str(spec.get("color", "warm")).strip()
-		col = "FX_BLINDER_WARM" if color.lower() == "warm" else crgb(color)
+		# color: scheme = jedes Gerät in seiner Schemafarbe (fxBlinderSchemeColor); col bleibt dann nur als Platzhalter warm
+		scheme_col = color.lower() == "scheme"
+		col = "FX_BLINDER_WARM" if color.lower() in ("warm", "scheme") else crgb(color)
 		if col is None:
-			errors.append(f"{name}: {what}-Farbe '{color}' unbekannt - warm, {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+			errors.append(f"{name}: {what}-Farbe '{color}' unbekannt - warm, scheme, {', '.join(sorted(TEXT_COLORS))} oder ein CRGB-Ausdruck")
+		casc = None
+		if "cascade" in spec:
+			casc = cascade_spec(spec["cascade"], part, sec, song, what, errors)
+			ok = ok and casc is not None
 		devs = spec.get("devices")
 		devs = [devs] if isinstance(devs, str) else list(devs or [])
 		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
@@ -582,15 +667,40 @@ def blinder_specs(part, song, offset=0):
 		if ok and at_ms < 0:
 			errors.append(f"{name}: {what} liegt vor dem Start-MIDI (StartBit der Tabelle) - dort läuft der Song noch nicht")
 			ok = False
+		# carry mit einem len länger als der Part (Maniac, 18.10.2026: Blinder klingt 2 Takte aus, der letzte Part ist 1 Takt
+		# lang - der Rest läuft im Schluss-Black weiter): das Ausklingen darf höchstens bis zum Ende des Parts danach reichen
+		if ok and len_ms and not offset and spec.get("carry") is True and not every:
+			end_ms = at_ms - (shape[0] if shape else 0) + len_ms
+			nxt = part.get("_next")
+			room = part["full_dur"] + (nxt["dur"] if nxt else 0)
+			if end_ms > room:
+				errors.append(f"{name}: {what} klingt bis {end_ms} ms nach Part-Beginn - mit carry darf er höchstens bis zum Ende "
+							  f"des Parts danach reichen ({room} ms)")
+				ok = False
 		if ok and len_ms and amount and col and not bad:
 			out.append({
 				"every": int(every), "at_ms": at_ms, "len_ms": len_ms, "amount": amount, "col": col,
 				"mask": " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL", "devs": devs, "shape": shape, "bar_text": bar_text,
-				"carry": spec.get("carry") is True,
+				"carry": spec.get("carry") is True, "scheme_col": scheme_col, "casc": casc,
 			})
 		if not isinstance(spec.get("carry", False), bool) or (spec.get("carry") and "every" in spec):
 			errors.append(f"{name}: {what} carry ist true oder false und gilt nur für einen einmaligen Blinder (ohne every)")
 	return out, errors
+
+
+def blinder_lead(b):
+	"""So viele ms vor seinem Vollpunkt (at_ms) beginnt ein Blinder: Einblenden (attack) + Vorsprung der Kaskade."""
+	return (b["shape"][0] if b["shape"] else 0) + (b["casc"]["lead_ms"] if b["casc"] else 0)
+
+
+def blinder_extra_calls(b):
+	"""Anmeldungen, die nach fxBlinder / fxBlinderShape zum selben Platz gehören: Kaskade und Schemafarbe."""
+	calls = []
+	if b["casc"]:
+		calls.append(f"fxBlinderCascade({b['casc']['step_ms']}, FX_CASCADE({', '.join(map(str, b['casc']['steps']))}));")
+	if b["scheme_col"]:
+		calls.append("fxBlinderSchemeColor();")
+	return calls
 
 
 def pipeline_calls(part, song, offset=0):
@@ -599,7 +709,8 @@ def pipeline_calls(part, song, offset=0):
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30} | {per: <Beats>, duty: 50}
 	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
 	soft: <Prozent> (weiche Farbwechsel, nur SCENE_COLORS / SCENE_COLORS_WAVE / SCENE_STAR / progStern / progSternNeu)     smooth: <Beats> (Nachleuchten)
-	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss, devices: [...]} (ohne every: einmal bei at)
+	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss|scheme, devices: [...],
+	                cascade: lr|rl|out|in | {dir|order: [...], step: <Beats>}} (ohne every: einmal bei at)
 		at / bar = der Moment der VOLLEN Helligkeit. attack: <Beats> (blendet ein statt aufzuspringen - in den Beats VOR at / bar,
 		notfalls schon im Part davor), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab
 		statt at auch bar: <Taktnummer der Tabelle> (z. B. 63.75 - das 'von takt' der Zwischenzeile mit dem Wunsch)
@@ -742,7 +853,7 @@ def pipeline_calls(part, song, offset=0):
 	own, errs = blinder_specs(part, song, offset)
 	errors += errs
 	nxt = part.get("_next")
-	carry = [b for b in blinder_specs(nxt, song)[0] if b["shape"] and b["shape"][0] > b["at_ms"]] if nxt else []
+	carry = [b for b in blinder_specs(nxt, song)[0] if blinder_lead(b) > b["at_ms"]] if nxt else []
 	slots = blinder_slots() if own or carry else 0
 	if own and len(own) + len(carry) > slots:
 		errors.append(f"{name}: {len(own)} eigene Blinder + {len(carry)} Einblenden für den Part danach - möglich sind {slots} "
@@ -780,15 +891,21 @@ def pipeline_calls(part, song, offset=0):
 			# at / bar ist der Moment der vollen Helligkeit: ein Einblenden läuft DAVOR, hold und Ausklingen danach
 			infos.append((f"Blinder blendet in den {attack} ms davor ein" if attack else f"Blinder blendet {attack} ms ein")
 						 + f", {hold} ms voll, {b['len_ms'] - attack - hold} ms aus")
+		calls += blinder_extra_calls(b)
+		if b["casc"]:
+			infos.append(f"{b['casc']['text']} (das erste Gerät {b['casc']['lead_ms']} ms vor dem Vollpunkt)")
+		if b["scheme_col"]:
+			infos.append("Blinder in der Schemafarbe jedes Geräts")
 		timed = True
 	for slot, b in enumerate(carry, len(own)):
-		attack, hold = b["shape"]
 		if many:
 			calls.append(f"fxBlinderSlot({slot});")
 		# full_dur = Länge des ganzen Parts (auch im Rest-Part der Matrix, dessen Zeit per fxTimeOffset ab Part-Beginn zählt)
 		calls.append(f"fxBlinder({part.get('full_dur', part['dur']) + b['at_ms']}, {b['len_ms']}, {b['amount']}, {b['col']}, {b['mask']});")
-		calls.append(f"fxBlinderShape({attack}, {hold});")
-		infos.append(f"Blinder von '{nxt['sec'].get('name', '?')}' blendet in den letzten {attack - b['at_ms']} ms ein"
+		if b["shape"]:
+			calls.append(f"fxBlinderShape({b['shape'][0]}, {b['shape'][1]});")
+		calls += blinder_extra_calls(b)		# eine Kaskade beginnt schon hier: die ersten Geräte gehen noch in diesem Part an
+		infos.append(f"Blinder von '{nxt['sec'].get('name', '?')}' {'baut sich' if b['casc'] else 'blendet'} in den letzten {blinder_lead(b) - b['at_ms']} ms {'auf' if b['casc'] else 'ein'}"
 					 + (f", nur {', '.join(b['devs'])}" if b["devs"] else ""))
 		timed = True
 
@@ -800,6 +917,8 @@ def pipeline_calls(part, song, offset=0):
 		calls.append(f"fxBlinder(0, {b['len_ms']}, {b['amount']}, {b['col']}, {b['mask']});")
 		calls.append(f"fxBlinderShape({attack}, {hold});")
 		calls.append(f"fxBlinderCarry({gone});")
+		if b["scheme_col"]:
+			calls.append("fxBlinderSchemeColor();")	# eine Kaskade braucht es hier nicht mehr: nach dem Vollpunkt klingen alle gleich aus
 		infos.append(f"Blinder von '{prev['sec'].get('name', '?')}' klingt noch {b['at_ms'] - attack + b['len_ms'] - prev['full_dur']} ms aus"
 					 + (f", nur {', '.join(b['devs'])}" if b["devs"] else ""))
 		timed = True
@@ -2361,9 +2480,16 @@ def update_table(song_dir, song, timeline):
 	return write_table_texts(song_dir, effect_texts(song, timeline), song)
 
 
+# MARK_CHANGES: mit --markieren auf True (main()). Dann färbt write_effects() jede Effekt-Zelle gelb, deren Text sich
+# ändert, und hebt den bisherigen Text in der Spalte "Alter Effekt (temporär)" auf (Wunsch des Users, 18.10.2026).
+# Gilt für das Generieren und für --tabelle gleichermaßen, deshalb als Schalter für das ganze Skript.
+MARK_CHANGES = False
+
+
 def write_table_texts(song_dir, texts, song):
 	try:
-		return st.write_effects(table_path(song_dir), texts, int(song.get("end_black_ms", 10000)), cue_texts(song))
+		return st.write_effects(table_path(song_dir), texts, int(song.get("end_black_ms", 10000)), cue_texts(song),
+								mark=MARK_CHANGES)
 	except st.TableError as e:
 		return (f"ACHTUNG: Spalte 'Effekt' der Tabelle NICHT geschrieben - {e}\n"
 				f"   Nachholen, sobald die Tabelle frei ist: songgen.py {song_dir.name} --tabelle")
@@ -2672,6 +2798,22 @@ def cmd_table(song_dirs_):
 		except SongError as e:
 			note = f"ACHTUNG: nicht geschrieben - {e}"
 		failed += note.startswith("ACHTUNG")
+		print(f"{song_dir.name}: {note}")
+	return 1 if failed else 0
+
+
+# <Song> --markierung-weg: das Gelb von --markieren und die Spalte "Alter Effekt (temporär)" wieder aus der Tabelle
+# entfernen (struktur.clear_marks). Ohne <Song>: alle Tabellen. Code, Show und Versionen bleiben, wie sie sind.
+def cmd_unmark(song_dirs_):
+	failed = 0
+	for song_dir in song_dirs_:
+		if not table_path(song_dir).exists():
+			continue
+		try:
+			note = st.clear_marks(table_path(song_dir))
+		except st.TableError as e:
+			note = f"ACHTUNG: nicht geändert - {e}"
+			failed += 1
 		print(f"{song_dir.name}: {note}")
 	return 1 if failed else 0
 
@@ -3008,6 +3150,8 @@ def main():
 	ap.add_argument("--restore", metavar="VERSION", help="Version wieder aktiv machen (Tabelle + show.yaml + Code)")
 	ap.add_argument("--assemble", action="store_true", help="nur src/ aus den generated.cpp aller Songs neu zusammensetzen")
 	ap.add_argument("--tabelle", action="store_true", help=f"nur die Spalte '{st.EFFECT_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Tabellen")
+	ap.add_argument("--markieren", action="store_true", help=f"beim Schreiben der Spalte '{st.EFFECT_TITLE}' jede geänderte Zelle gelb färben und den alten Text in die Spalte '{st.OLD_EFFECT_TITLE}' schreiben (mit Generieren oder --tabelle)")
+	ap.add_argument("--markierung-weg", action="store_true", help=f"Gelb und Spalte '{st.OLD_EFFECT_TITLE}' wieder aus der Tabelle entfernen; ohne <Song>: alle Tabellen")
 	ap.add_argument("--vorschlag", action="store_true", help=f"{PROPOSAL_FILE} des Songs in die Spalte '{st.PROPOSAL_TITLE}' der Tabelle schreiben (kein neuer Code); ohne <Song>: alle Songs mit {PROPOSAL_FILE}")
 	ap.add_argument("--midi", action="store_true", help="nur die MIDI-Datei mit den Part-Sprüngen schreiben (songs/<Song>/<Song>.mid, Kanal 10: CC 22 Song, CC 23 Parts; kein neuer Code); ohne <Song>: alle generierten Songs")
 	ap.add_argument("--neu", action="store_true", help=f"songs/<Song>/quelle/{TABLE_FILE} aus der Vorlage anlegen (Name genau wie angegeben)")
@@ -3019,6 +3163,8 @@ def main():
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
 		stream.reconfigure(encoding="utf-8")
+	global MARK_CHANGES
+	MARK_CHANGES = args.markieren
 
 	try:
 		if args.assemble:
@@ -3026,6 +3172,8 @@ def main():
 			return 0
 		if args.tabelle and not args.song:
 			return cmd_table(song_dirs())
+		if args.markierung_weg and not args.song:
+			return cmd_unmark(song_dirs())
 		if args.vorschlag and not args.song:
 			return cmd_proposal([d for d in song_dirs() if (d / PROPOSAL_FILE).exists()])
 		if args.midi and not args.song:
@@ -3053,6 +3201,8 @@ def main():
 			return cmd_midi([song_dir])
 		if args.tabelle:
 			return cmd_table([song_dir])
+		if args.markierung_weg:
+			return cmd_unmark([song_dir])
 		return cmd_generate(song_dir, args.dry_run, args.note)
 	except SongError as e:
 		print(f"FEHLER: {e}", file=sys.stderr)

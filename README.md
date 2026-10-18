@@ -17,7 +17,7 @@ Bluetooth LE, and from then on every device runs through the parts of the song o
 - **Scenes across all devices**: one scene name (calm, verse, build-up, drop, fire, star, rain ...) gives each
   device type its matching effect, in a shared colour scheme
 - **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
-  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness
+  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness (also as a cascade that builds up from device to device and fades out on all at once)
 - **MIDI start, BLE sync**: only the song start and manual part jumps are transmitted; everything else runs
   locally, so the devices stay in sync regardless of their LED count
 - **Fret markers**: red/blue marker LEDs on the fretboard of guitar and bass, always at the same brightness
@@ -186,25 +186,27 @@ firmware. Details: `docs/OTA-Update.html`.
 
 | ID | Song | | ID | Song |
 |---|---|---|---|---|
-| 0 | Pause between songs | | 17 | Apt. * |
-| 1 | Physical (trailer) | | 20 | Kids * |
-| 2 | Physical | | 21 | Tell It To My Heart * |
-| 3 | Take On Me * | | 24 | Enjoy The Silence (intro) |
-| 4 | Don't Stop The Music | | 25 | Friday I'm In Love * |
-| 6 | No Roots | | 26 | Be Mine * |
-| 7 | Firework | | 27 | I Wanna Dance With Somebody * |
-| 8 | Dancing On My Own * | | 28 | Billie Jean * |
-| 9 | I Love It * | | 29 | Maniac |
-| 10 | Bloody Mary | | 31 | All The Things She Said * |
-| 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
-| 12 | Such A Shame | | 80 | I Love It (trailer) * |
-| 13 | In The Dark | | 81 | Dancing On My Own (intro) |
-| 14 | Shivers * | | 82 | All The Things She Said (trailer) * |
-| 15 | abcdefu * | | 90-92 | Demo songs for effects, scenes and the output stage |
-| 16 | Enjoy The Silence | | 99 | Startup animation |
+| 0 | Pause between songs | | 16 | Enjoy The Silence |
+| 1 | Physical (trailer) | | 17 | Apt. * |
+| 2 | Physical * | | 20 | Kids * |
+| 3 | Take On Me * | | 21 | Tell It To My Heart * |
+| 4 | Don't Stop The Music * | | 24 | Enjoy The Silence (full length) * |
+| 6 | No Roots * | | 25 | Friday I'm In Love * |
+| 7 | Firework * | | 26 | Be Mine * |
+| 8 | Dancing On My Own * | | 27 | I Wanna Dance With Somebody * |
+| 9 | I Love It * | | 28 | Billie Jean * |
+| 10 | Bloody Mary * | | 29 | Maniac |
+| 11 | Titanium * | | 30 | Maniac (one semitone lower) * |
+| 12 | Such A Shame * | | 31 | All The Things She Said * |
+| 13 | In The Dark * | | 33 | Girls Just Wanna Have Fun * |
+| 14 | Shivers * | | 80 | I Love It (trailer) * |
+| 15 | abcdefu * | | 81 | Dancing On My Own (intro) |
+| | | | 82 | All The Things She Said (trailer) * |
+| | | | 90-92 | Demo songs for effects, scenes and the output stage |
+| | | | 99 | Startup animation |
 
-\* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp` and are being
-replaced one by one.
+\* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp`; when a song is
+generated, its old function stays there and only its call in `main.cpp` is commented out.
 
 A trailer (the backing-track intro before a song) is a song folder of its own. Its `show.yaml` names the song it
 leads into (`next_song: ILoveIt_v1`): there is no closing blackout, the last part jumps straight into that song. The

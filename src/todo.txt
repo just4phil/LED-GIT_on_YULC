@@ -20,9 +20,36 @@ neuer fx:
 
 TODOs
 =======
-blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander) aber dann faden alles gleichzeitig lange aus
-=> könnte man als blinder aber auch mit anderen farben machen
-=> könnte man gut am ende von songs benutzen. 
+wie würde man BLE machen wenn man noch mehr lampen aufstellen wollen würde?
+angenommen ich würde noch mehr lampen auf die bühne stellen wollen, wie sollte man dann die verteilung der signale per
+  BLE machen? ich kann maximal 4 oder 5 geräte mit andresgit koppeln. was könnte man das machen?
+
+Kurz gesagt: Eine Verbindung pro Lampe skaliert nicht. Für mehr Lampen würde ich auf Broadcast ohne Verbindung umsteigen, am besten mit ESP-NOW.
+
+Warum das gut zu deinem System passt: Der Proxy schickt nur wenig: den Songstart und manuelle Part-Sprünge. Die automatischen Part-Wechsel rechnet jedes Gerät selbst über seinen Timer. Es reicht also, dieselbe kleine Nachricht gleichzeitig an alle zu schicken. Eine Antwort braucht es dafür nur beim Sync-Knopf.
+
+Die Möglichkeiten, vom kleinsten zum größten Umbau:
+
+1. NimBLE-Verbindungslimit hochsetzen. Das Limit kommt aus der NimBLE-Konfiguration (CONFIG_BT_NIMBLE_MAX_CONNECTIONS), nicht aus BLE selbst. Auf dem ESP32-S3 sind meist bis etwa 9 Verbindungen machbar. Wie es bei dir gerade eingestellt ist, kann ich von hier aus nicht nachsehen. Das ist der schnellste Weg zu 2–4 Geräten mehr. Je mehr Verbindungen, desto länger dauert aber eine Benachrichtigung an alle, und die Verbindungen werden wackliger.
+2. Weiterleiten (Baum): Eine Lampe ist Client von ANDRESGIT und gleichzeitig Server für ein paar weitere Lampen. Das bringt beliebig viele Geräte, kostet aber pro Stufe etwas Verzögerung (etwa ein Verbindungsintervall, also 7,5–30 ms). Außerdem fällt ein ganzer Ast aus, wenn die weiterleitende Lampe ausfällt. Für den Gleichlauf ist das eher ungünstig.
+3. BLE-Advertising als Broadcast: Der Proxy schreibt Song und Part in seine Advertising-Pakete, und beliebig viele Clients lesen nur mit, ohne Verbindung. Die Verzögerung hängt am Advertising-Intervall (20–100 ms), und die Clients müssen dauernd scannen.
+4. ESP-NOW (meine Empfehlung): Das ist Funk von Espressif über das WLAN-Radio, ohne Router und ohne Verbindungsaufbau.
+   - Eine Broadcast-Nachricht erreicht beliebig viele Empfänger, typisch in 1–2 ms. Das ist besser für den Gleichlauf als BLE.
+   - Gegen verlorene Pakete jede Nachricht 2–3-mal senden und eine Sequenznummer mitgeben, damit Empfänger Doppelte verwerfen.
+   - Der Sync-Knopf („Client fragt den Proxy“) geht als gezielte Nachricht an ein einzelnes Gerät.
+   - Mit WLAN für OTA verträgt es sich, weil OTA in einem eigenen Boot-Modus läuft.
+
+Warum das ohne großen Umbau ginge: Alle Sync-Entscheidungen stecken schon getrennt vom Funk in ledSync.cpp: Ereignisse gehen hinein, eine LedSyncAction kommt heraus. Die beiden BLE-Dateien schieben nur Bytes hin und her. Ein dritter, ebenso dünner Adapter (espNowSync.cpp) könnte genau dieselbe BLEmessage als Inhalt verschicken. Das Protokoll und die Unit-Tests bleiben gleich.
+
+Übergang: BLE für die bestehenden Geräte erst einmal laufen lassen und neue Lampen per ESP-NOW anbinden. ANDRESGIT sendet beides, so bleibt alte Firmware kompatibel. Wenn alles stabil läuft, kann BLE ganz wegfallen.
+
+Wenn du das angehen willst, sag es im Hauptgespräch. Dann kann ich die NimBLE-Einstellungen und ledSync.cpp konkret ansehen und einen Plan machen.
+--------------
+
+
+
+- billie jean noch mal checken
+    - war da niocht im intro ein effekt auf dem synth???
 
 SAS
     EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
@@ -36,11 +63,13 @@ dstm:
 DONE
 =====
 
+- abcdefu auch mit neuen verses cool -> FUCK YOU etc wäre evtl. cooler in rot und drumherum schwarz ausgestanzt
+- TOM auch mit neuen verses cool
+- GJWHF auch mit neuen verses cool
 - enjoy
 - shivers
-- TOM ok
 - kids neu auto-generiert -> eigentlich ganz cool
-- abcdefu ist erstmal fertig, 17.10.2026
+
 - dancing müsste auch fertig sein
 
 

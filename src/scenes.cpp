@@ -148,10 +148,15 @@ static uint8_t pingPongPos = 0;		// Bühnenposition, die im aktuellen Beat leuch
 
 // Pro Beat leuchtet genau EIN Gerät. Jedes Gerät rechnet für sich aus, wer dran ist - weil alle mit
 // sharedRand8() dieselbe "Zufalls"-Folge berechnen, kommen alle zum selben Ergebnis, ganz ohne Funk.
-void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+// firstPos / positions: nur diese Bühnenplätze spielen mit (Vorgabe: alle). Maniac, drums intro: 1, 3 = Bass, Matrix
+// und Gitarre, die Lampen bleiben dunkel und bekommen eigene Blinder. pingPongPos zählt dann 0 .. positions-1 und
+// meint den Platz firstPos + pingPongPos.
+void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t firstPos, uint8_t positions) {
+	if (positions == 0) positions = STAGE_POSITIONS;		// 0 = Vorgabe: alle Bühnenplätze
+	positions = constrain(positions, 2, STAGE_POSITIONS);	// mindestens 2, sonst gäbe es nichts zum Hin- und Herspringen
 	if (fxPartStart(durationMillis, nextPart)) {
 		pingPongBeat = 0;
-		pingPongPos = sharedRand8(0) % STAGE_POSITIONS;
+		pingPongPos = sharedRand8(0) % positions;
 	}
 
 	if (fxFrameDue(10)) {
@@ -159,12 +164,12 @@ void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		uint32_t beat = fxBeats(bpm);
 		while (pingPongBeat < beat) {
 			pingPongBeat++;
-			// um 1 bis 4 Plätze weiterspringen (nie um 0): dadurch ist nie zweimal hintereinander dasselbe Gerät dran
-			pingPongPos = (pingPongPos + 1 + sharedRand8(pingPongBeat) % (STAGE_POSITIONS - 1)) % STAGE_POSITIONS;
+			// um 1 bis positions-1 Plätze weiterspringen (nie um 0): dadurch ist nie zweimal hintereinander dasselbe Gerät dran
+			pingPongPos = (pingPongPos + 1 + sharedRand8(pingPongBeat) % (positions - 1)) % positions;
 		}
 
 		CRGB c = CRGB::Black;
-		if (pingPongPos == STAGE_POS) {	// bin ich dran? (STAGE_POS = mein Platz auf der Bühne)
+		if (firstPos + pingPongPos == STAGE_POS) {	// bin ich dran? (STAGE_POS = mein Platz auf der Bühne)
 			unsigned int period = 60000 / max((uint8_t)1, bpm);
 			unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
 			c = deviceColor();
@@ -185,7 +190,9 @@ void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 // Der Blitz klingt wie der Beat-Blitz der Lampen ab (flashEnvelope) und ist vor dem nächsten Schlag ganz dunkel.
 // Farbe: beide Seiten haben je eine Farbe aus der gemeinsamen Farbfolge (sharedColor); alle 8 Beats (2 Takte)
 // rückt das Farbpaar eins weiter. Es wird nichts gemerkt: alles wird aus der Zeit seit Part-Beginn gerechnet.
-void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+// offbeat = true (SCENE_CALL_RESPONSE_OFFBEAT, Maniac 18.10.2026): nur die Beats 2 und 4 blitzen - auf 2 die linke,
+// auf 4 die rechte Hälfte -, auf 1 und 3 ist die ganze Bühne schwarz. Jedes Gerät blitzt dann einmal pro Takt.
+void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm, bool offbeat) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
@@ -194,8 +201,10 @@ void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		unsigned int period = 60000 / bpm;				// Länge eines Beats in ms (nur für die Abklingzeit des Blitzes)
 		uint32_t beat = (uint32_t)((uint64_t)ms * bpm / 60000);	// Beats seit Part-Beginn, exakt gerechnet (wie fxBeats)
 		bool leftTurn = (beat & 1) == 0;				// "& 1" = letztes Bit: 0 bei geraden Beats -> links ist dran
-		CRGB c = sharedColor((beat & 1) + beat / 8);	// Farbe der Seite, die dran ist
+		if (offbeat) leftTurn = (beat & 3) == 1;		// "& 3" = Beat im Takt 0..3: 1 (= Schlag 2) links, 3 (= Schlag 4) rechts
+		CRGB c = sharedColor((leftTurn ? 0 : 1) + beat / 8);	// Farbe der Seite, die dran ist
 		c.nscale8(flashEnvelope(fxBeatPhase(ms, bpm), period));	// hell auf dem Schlag, dann abklingen
+		if (offbeat && (beat & 1) == 0) c = CRGB::Black;	// Schlag 1 und 3 (gerade Beats): niemand blitzt
 
 #if DEVICE_CLASS == CLASS_MATRIX
 		// Matrix: die Spalten links der Mitte gehören zur "Frage", die rechts davon zur "Antwort"
@@ -614,6 +623,9 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		return;
 	case SCENE_CALL_RESPONSE:
 		progCallResponse(durationMillis, nextPart, bpm);
+		return;
+	case SCENE_CALL_RESPONSE_OFFBEAT:
+		progCallResponse(durationMillis, nextPart, bpm, true);
 		return;
 	case SCENE_SOLO_GIT:
 	case SCENE_SOLO_BASS:

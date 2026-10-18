@@ -1,0 +1,9 @@
+zeit: '2026-10-18 23:02:13'
+notiz: 'erste generierte Fassung: Vorschläge der KI (vorschlag.yaml) übernommen, alter
+  Code nur auskommentiert'
+werkzeug_git: 4faa111 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 5561ed391909d8d75eb4af4ea3930b827e05ecd5a0a7f89d67c27204f098ed38
+  show.yaml: 53d3bd06f8aedce4a468d89d4685d3baf54b1dedcbcc3d4bb6edbee7c0a0f41e
+  generated.cpp: 51f9656cace02c849146caca4218f591905b431e4817f27f412b2e7fe804e209

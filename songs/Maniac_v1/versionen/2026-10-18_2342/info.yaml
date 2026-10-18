@@ -1,0 +1,11 @@
+zeit: '2026-10-18 23:42:46'
+notiz: 'Änderungswünsche 18.10.2026: Lampen-Blinder im Drum-Intro, Linien faden aus,
+  MANIAC-Text zusätzlich bei 52/94/150, Strobos verschoben (61,5 / bis 73), verse
+  2b Drop rot, heat + knife 2 Frage/Antwort auf 2 und 4, solo a mit Action, Blinder-Kaskade
+  am Schluss'
+werkzeug_git: 4faa111 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 5d44c0a66543eaf1d6ff37fea3e83f150e55550cee3e9cac2559afec5fa2d5da
+  show.yaml: 1deadcf8782c12f0225675adaa73282ca2165ecb79795795d9665b3880a70c8e
+  generated.cpp: 36bc144f43e3990245846057a4efa4fc3258580e2d1d98d3b9ff67d7da3f5573

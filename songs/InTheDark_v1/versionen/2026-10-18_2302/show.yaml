@@ -1,0 +1,119 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs InTheDark() (Song-ID 13). Der alte Code bleibt in src/songs.cpp
+# stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "für alle noch nicht
+# generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal nur
+# auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: "In the dark" -
+# dunkle, gedimmte Strophen (ROYAL/BLUE), aus denen der Chorus in NEON herausspringt. Der Vorschlag "bei Takt 13 eine
+# eigene Zeile verse 1" ist umgesetzt (songgen.py --part-name 13="verse 1"). Strobo nach der Regel des Users nicht mit
+# progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_InTheDark
+scheme: SCHEME_ROYAL
+
+# Bund-Marker 1:1 aus InTheDark() in src/songs.cpp (alles unter #ifdef BASS, für Rina):
+#   case 18 (chorus 2):          markerLED5 = ESaite_Cis, markerLED6 = 0   ("bereits ab hier für am i going under")
+#   case 20 (am i going under):  markerLED5 = ESaite_Cis, markerLED6 = ESaite_Dis
+#   case 22 (bass solo):         markerLED5 = 0,          markerLED6 = ESaite_Dis
+#   case 24 (chrous 3):          markerLED5 = 0,          markerLED6 = 0   (danach bleiben beide aus)
+# Die Grund-Marker im case 13 von src/markerLEDs.cpp gelten unverändert.
+markers:
+  parts:
+    "chorus 2":         {bass: {5: ESaite_Cis, 6: 0}}
+    "am i going under": {bass: {5: ESaite_Cis, 6: ESaite_Dis}}
+    "bass solo":        {bass: {5: 0, 6: ESaite_Dis}}
+    "chrous 3":         {bass: {5: 0, 6: 0}}
+
+sections:
+  "BLACK":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro+verse 1":
+    scene: SCENE_GLOW
+    scheme: SCHEME_ROYAL
+    fade: {to: triad, per: 8}
+    dim: 60
+    why: "'in the dark': die Geräte füllen sich langsam in Blau und Lila, gedimmt auf 60 %; die Farben wandern alle 2 Takte nach Pink/Orange und zurück."
+
+  "verse 1":
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Plasma-Wolken."
+
+  "bridge 1":
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_SUNSET
+    soft: 60
+    tail:
+      beats: 4
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    why: "Die Farbe wandert pro Beat weich von Gerät zu Gerät, in Orange, Pink, Lila und Gelb; im letzten Takt weißer Strobo im Takt (4 Blitze pro Beat)."
+
+  "chorus 1":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Der Chorus springt aus dem Dunkel: drehender Stern in Pink, Cyan und Violett, warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "verse 2":
+    scene: SCENE_DNA_FLIP_SCROLL
+    scheme: SCHEME_ROYAL
+    transition: {type: fade, beats: 2}
+    why: "Weich eingeblendet: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt."
+
+  "bridge 2":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_SUNSET
+    tail:
+      beats: 4
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    why: "Die Bühnenhälften blitzen abwechselnd im Beat in warmen Farben; im letzten Takt weißer Strobo im Takt."
+
+  "chorus 2":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Stern in Pink, Cyan und Violett wie in chorus 1 mit Blinder auf den Einsatz; dazu blitzen die Lampen weiß auf 2 und 4."
+
+  "am i going under":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    scheme: SCHEME_BLUE
+    fade: {to: SCHEME_ICE, per: 8}
+    transition: {type: fade, beats: 4}
+    why: "'am i going under': Wasserringe in Blau, weich über einen Takt eingeblendet, die Farbe wandert alle 2 Takte nach Eisblau und zurück."
+
+  "bass solo":
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_NEON
+    why: "Bass-Solo: zwei Kometen in Pink und Cyan kreisen um den Bass, alle anderen atmen dunkel; in den letzten 2 Takten blendet der Blinder für chrous 3 ein."
+
+  "chrous 3":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    blinder: {bar: 77, len: 10, attack: 8, amount: 100}
+    why: "Eine Stufe wärmer: Stern in Orange, Pink, Lila und Gelb. Der Blinder blendet über die letzten 2 Takte des Bass-Solos ein, steht voll auf dem Einsatz (Takt 77) und klingt in 2 Beats ab."
+
+  "chorus 4":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    blinder:
+      - {bar: 88.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 88.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 89, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 92.75, len: 4, hold: 0.5, amount: 100, carry: true}
+    why: "Dichtes Glitzern in Rot, Orange und Gelb; drei kurze Blinder am Ende des 4. Takts (Takt 88,5 / 88,75 / 89) und ein starker Blinder auf der letzten Viertel (Takt 92,75), der ins Fade-out ausklingt."
+
+  "fade out":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_ROYAL
+    why: "Blau und Lila, blendet über die 3 Takte weich nach Schwarz."

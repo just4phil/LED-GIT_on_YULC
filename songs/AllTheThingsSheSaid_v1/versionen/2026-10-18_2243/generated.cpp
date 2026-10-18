@@ -1,0 +1,309 @@
+// AUTOMATISCH GENERIERT von tools/songgen.py - nicht von Hand ändern (Quelle: struktur.xlsx + show.yaml)
+//@id 31
+//@function gen_AllTheThingsSheSaid
+//@name All The Things She Said
+//@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
+//@show_sha 8301dbf24d80049650028419d76af4b60e24b5854c8badc724b6cb96ff2385b5
+//@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
+//@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
+//@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
+//@part GEN_ALLTHETHINGSSHESAID_INTRO_ALL_THET 5
+//@part GEN_ALLTHETHINGSSHESAID_INTRO_THIS_IS_NOT_ENOUGH 8
+//@part GEN_ALLTHETHINGSSHESAID_VERSE_1A 9
+//@part GEN_ALLTHETHINGSSHESAID_VERSE_1B 10
+//@part GEN_ALLTHETHINGSSHESAID_WIEDERHOLUNG_NOBODY_ELSE 11
+//@part GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS 12
+//@part GEN_ALLTHETHINGSSHESAID_CHORUS_1 13
+//@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH 14
+//@part GEN_ALLTHETHINGSSHESAID_SYNTH_SOLO_A 15
+//@part GEN_ALLTHETHINGSSHESAID_SYNTH_SOLO_B 16
+//@part GEN_ALLTHETHINGSSHESAID_VERSE_2_A 17
+//@part GEN_ALLTHETHINGSSHESAID_VERSE_2_B 18
+//@part GEN_ALLTHETHINGSSHESAID_VERSE_2_B_BUILD_UP 19
+//@part GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS_2 20
+//@part GEN_ALLTHETHINGSSHESAID_CHORUS_1_2 21
+//@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH_2 22
+//@part GEN_ALLTHETHINGSSHESAID_MOTHER_LOOKING_AT_ME 23
+//@part GEN_ALLTHETHINGSSHESAID_DADDY_LOOKING_AT_ME 24
+//@part GEN_ALLTHETHINGSSHESAID_BUILD_UP 25
+//@part GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS_3 26
+//@part GEN_ALLTHETHINGSSHESAID_CHORUS_1_3 27
+//@part GEN_ALLTHETHINGSSHESAID_STOP 28
+//@part GEN_ALLTHETHINGSSHESAID_CHORUS_1_WEITER 29
+//@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH_3 30
+//@part GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS_4 31
+//@part GEN_ALLTHETHINGSSHESAID_CHRORUS_2 32
+//@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH_4 33
+//@part GEN_ALLTHETHINGSSHESAID_FADE_OUT 34
+//@entry GEN_ALLTHETHINGSSHESAID_TRAILER 6 5
+//@code
+//#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
+void gen_AllTheThingsSheSaid() {
+
+	setColorScheme(SCHEME_ICE);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// pause  1 T  1744ms  @0:00.000  -- Start-MIDI: alle Geräte schwarz
+#if defined(SCROLLMATRIX)
+		progBlack(490, 1);	// Lauftext verzögern, damit er genau an case 8 endet
+#elif defined(GITBOARD)
+		progBlack(3370, 1);	// Lauftext verzögern, damit er genau an case 8 endet
+#else
+		progBlack(1744, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:24.070, Einstieg case 8
+		progScrollText("All The Things She Said by t.A.T.u.", 23580, 90, getRandomColor(), 8);	// 1 Durchlauf = 23580 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:24.070, Einstieg case 8
+		progScrollText("All The Things She Said by t.A.T.u.", 20700, 90, getRandomColor(), 8);	// 1 Durchlauf = 20700 ms
+		break;
+#endif
+
+	case 3:	// synth intro  4 T  10465ms  @0:01.744  -- Idee 'ruhig nur synths', energy 1: alles atmet in Eisblau; Wunsch des Users: der letzte Beat ist weißer Strobo als Übergang in den Band-Einsatz
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_CALM, 10465, 4, 86);
+		break;
+
+	case 4:	// synth intro (tail)  1 B  698ms  @0:12.209
+		setColorScheme(SCHEME_ICE);
+		progStrobo(698, 5, 60, CRGB::White);
+		break;
+
+	case 5:	// intro: all thet ….  4 T  11163ms  @0:12.907  -- Idee 'action', energy 4: größter Pegelsprung des Songs, die Band setzt ein - es ist die Chorus-Melodie, also der Chorus-Look: Stern in Pink/Cyan/Violett
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_STAR, 11163, 8, 86);
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 6:	// Einstieg aus dem Vorspann (GEN_ALLTHETHINGSSHESAID_TRAILER): Titel-Lauftext, die anderen Geräte spielen ab case 5
+		progScrollText("All The Things She Said by t.A.T.u.", 23721, 90, getRandomColor(), 7);	// 1 Durchlauf = 23580 ms
+		break;
+	case 7:	// Rest von 'verse 1a' ab 0:36.628, Einstieg case 10
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 5581, false, 1395);
+		scene(SCENE_GLOW, 9767, 10, 86);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 6:	// Einstieg aus dem Vorspann (GEN_ALLTHETHINGSSHESAID_TRAILER): Titel-Lauftext, die anderen Geräte spielen ab case 5
+		progBlack(1626, 7);	// Lauftext verzögern, damit er genau an case 9 endet
+		break;
+	case 7:	// Lauftext bis 0:35.233, Einstieg case 9
+		progScrollText("All The Things She Said by t.A.T.u.", 20700, 90, getRandomColor(), 9);	// 1 Durchlauf = 20700 ms
+		break;
+#endif
+
+	case 8:	// intro: this is not enough  4 T  11163ms  @0:24.070  -- Idee 'action stark auf viertel', energy 5: Schockwellen und Blitze auf jeden Beat, Farbe bricht auf Rot um - das Motiv der Hook für den ganzen Song. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 11163, 9, 698, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 11163, 9, 86);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 9:	// verse 1a  4 T  11162ms  @0:35.233  -- Idee 'sehr ruhig', energy 1: nach dem roten Ausbruch füllt sich alles langsam mit Eisblau; über 2 Takte wandert die Farbe nach Pink und in den nächsten 2 zurück. Übergang: das Rot der Hook blendet über einen Takt weich aus statt hart abzureißen
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_FADE, 2791);
+		scene(SCENE_GLOW, 11162, 10, 86);
+		break;
+
+	case 10:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fließende Farbwolken bringen Bewegung, alles schwillt im Beat leicht an; Blau/Lila wandern nach Pink/Orange und zurück
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_FADE, 1395);
+		scene(SCENE_VERSE_PLASMA, 11163, 11, 86);
+		break;
+
+	case 11:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_BUILDUP, 2093, 12, 86);
+		break;
+
+	case 12:	// übergang zum chorus  1 B  698ms  @0:59.651  -- Idee 'strobo': 1 Beat weißes Flimmern als Absprung in den Chorus
+		progStrobo(698, 13, 60, CRGB::White);
+		break;
+
+	case 13:	// chorus 1  4 T  11163ms  @1:00.349  -- Idee 'action', energy 4: der Stern in Pink/Cyan/Violett, Farbwechsel pro Beat - der Refrain-Look
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_STAR, 11163, 14, 86);
+		break;
+
+	case 14:	// this is not enough  4 T  11162ms  @1:11.512  -- Hook wie im Intro: Schläge auf die Viertel in Rot, eine Stufe über dem Chorus (energy 5). Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 11162, 15, 698, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 11162, 15, 86);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 15:	// synth solo a  4 T  11163ms  @1:22.674  -- Idee 'viele farben und im takt': die ganze Bühne einfarbig, pro Beat eine neue freie Zufallsfarbe - der bunteste Part
+		setColorScheme(SCHEME_RANDOM);
+		fxTransition(TRANS_STAGE_OUT, 1395);
+		scene(SCENE_COLORS, 11163, 16, 86);
+		break;
+
+	case 16:	// synth solo b  4 T  11163ms  @1:33.837  -- Idee 'etwas gesteigert auf den takt': gleiche Farben, jetzt wandert die Farbe pro Beat von Gerät zu Gerät über die Bühne
+		setColorScheme(SCHEME_RANDOM);
+		scene(SCENE_COLORS_WAVE, 11163, 17, 86);
+		break;
+
+	case 17:	// verse 2 a  4 T  11163ms  @1:45.000  -- Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_WIPE, 2791);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 11163, 18, 86);
+		fxLayerEnd(FX_ADD, 89);
+		scene(SCENE_GLOW, 11163, 18, 86);
+		fxLayerFlush();
+		break;
+
+	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 2791);
+		scene(SCENE_VERSE, 5581, 19, 86);
+		break;
+
+	case 19:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_BUILDUP, 4186, 20, 86);
+		break;
+
+	case 20:	// übergang zum chorus (2)  2 B  1396ms  @2:05.930  -- Strobo-Absprung wie beim ersten Mal, hier 2 Beats
+		progStrobo(1396, 21, 60, CRGB::White);
+		break;
+
+	case 21:	// chorus 1 (2)  4 T  11162ms  @2:07.326  -- Chorus erkennbar gleich wie beim ersten Mal
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_STAR, 11162, 22, 86);
+		break;
+
+	case 22:	// this is not enough (2)  4 T  11163ms  @2:18.488  -- Hook-Motiv: Viertel in Rot. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 11163, 23, 698, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 11163, 23, 86);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 23:	// Mother looking at me  4 T  11163ms  @2:29.651  -- Idee 'sehr ruhig', energy 1: tiefster Punkt des Songs - alles atmet, auf der Matrix langsame Wasserringe; das Blau wandert über Violett nach Pink und zurück, die Spannung steigt mit
+		setColorScheme(SCHEME_BLUE);
+		setColorFade(FADE_TRIAD, 5581);
+		fxTransition(TRANS_DISSOLVE, 2791);
+		scene(SCENE_CALM, 11163, 24, 86);
+		break;
+
+	case 24:	// daddy looking at me  2 T  5581ms  @2:40.814  -- Idee 'etwas gesteigert', energy 2: Leuchtspuren setzen ein, Lila und Weiß kommen dazu, die Farben wandern jetzt taktweise
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 2791);
+		fxTransition(TRANS_FADE, 1395);
+		fxPulse(86, 102);
+		scene(SCENE_RAIN, 5581, 25, 86);
+		break;
+
+	case 25:	// build up  1 T+2 B  4186ms  @2:46.395  -- Idee 'build up': Aufladen wie vor Chorus 2, schon in den warmen Farben des letzten Chorus
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_BUILDUP, 4186, 26, 86);
+		break;
+
+	case 26:	// übergang zum chorus (3)  2 B  1396ms  @2:50.581  -- Strobo-Absprung, 2 Beats
+		progStrobo(1396, 27, 60, CRGB::White);
+		break;
+
+	case 27:	// chorus 1 (3)  2 B  1395ms  @2:51.977  -- der Chorus setzt für 2 Beats an - schon in den warmen Farben des Finales
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_STAR, 1395, 28, 86);
+		break;
+
+	case 28:	// stop  2 B  1395ms  @2:53.372  -- Idee 'BLACK': 2 Beats Dunkel machen den Wiedereinsatz stärker
+		progBlack(1395, 29);
+		break;
+
+	case 29:	// chorus 1 weiter  3 T  8373ms  @2:54.767  -- letzter Chorus eine Stufe wärmer: Stern in Orange/Pink/Lila/Gelb
+		setColorScheme(SCHEME_SUNSET);
+		fxTransition(TRANS_FLASH, 698);
+		scene(SCENE_STAR, 8373, 30, 86);
+		break;
+
+	case 30:	// this is not enough (3)  3 T+2 B  9767ms  @3:03.140  -- Hook-Motiv gesteigert: Viertel jetzt in Rot/Orange/Gelb. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+		setColorScheme(SCHEME_FIRE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("THIS IS NOT ENOUGH*5", 9767, 31, 698, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_DROP, 9767, 31, 86);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 31:	// übergang zum chorus (4)  2 B  1395ms  @3:12.907  -- Idee 'strobe': letzter Absprung
+		progStrobo(1395, 32, 60, CRGB::White);
+		break;
+
+	case 32:	// chrorus 2  2 T  5582ms  @3:14.302  -- Höhepunkt am Songende: 2 Takte schnelle Einzelblitze auf allen Geräten in Feuerfarben, statt ein viertes Mal der Stern
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_SPARKLE, 5582, 33, 86);
+		break;
+
+	case 33:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+		setColorScheme(SCHEME_FIRE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextUnder(38);
+		fxTextBegin();
+		progText("THIS IS NOT ENOUGH*5", 5581, 34, 698, CRGB::White);
+		fxTextEnd();
+#endif
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 5581, 34, 86);
+		fxLayerEnd(FX_ADD, 153);
+		scene(SCENE_DROP, 5581, 34, 86);
+		fxLayerFlush();
+		break;
+
+	case 34:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz
+		setColorScheme(SCHEME_RED);
+		fxTransition(TRANS_FADE, 1395);
+		scene(SCENE_FADEOUT, 2791, 35, 86);
+		break;
+
+	case 35:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 36);
+		break;
+
+	case 36:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+//@markers

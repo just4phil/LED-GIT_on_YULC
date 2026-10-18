@@ -38,9 +38,9 @@ sections:
     why: "die Synth-Akkorde kommen dazu: die ganze Bühne füllt sich Pixel für Pixel, von der Mitte aus; Blau/Lila wandern über 2 Takte nach Pink/Orange und zurück"
 
   verse 1:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_STARS
     scheme: SCHEME_ROYAL
-    why: "Gesang setzt ein: dezenter Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix)"
+    why: "Gesang setzt ein, gespannt und sparsam: Sternenhimmel - auf jedem Beat leuchten auf allen Geräten ein paar Sterne in Blau/Lila/Weiß auf und verglimmen"
 
   i am the one:
     scene: SCENE_PINGPONG
@@ -48,10 +48,10 @@ sections:
     why: "Motiv Leuchtplatten: pro Beat leuchtet genau ein Gerät in Rot, Weiß oder Blau, der Rest ist dunkel (alt: progRandomLines im Beat)"
 
   verse 2:
-    scene: SCENE_RAIN
+    scene: SCENE_VERSE_HEART
     scheme: SCHEME_NEON
     transition: {type: fade, beats: 2}
-    why: "zweite Strophe mit anderem Look: fallende Leuchtspuren in Pink/Cyan/Violett statt Blau"
+    why: "zweite Strophe mit anderem Look: alle Geräte schlagen auf jedem Beat wie ein Herz (zum pochenden Bass), Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
 
   i am the one (2):
     scene: SCENE_PINGPONG
@@ -97,10 +97,10 @@ sections:
     why: "Motiv Zwischenspiel: schnelle Einzelblitze, schon in den Farben der nächsten Strophe"
 
   verse 2 a:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_STARS
     scheme: SCHEME_ROYAL
     fade: {to: triad, per: 8}
-    why: "Strophe wie verse 1, dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück"
+    why: "Strophe wie verse 1 (Sternenhimmel), dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück"
 
   i am the one (5):
     scene: SCENE_PINGPONG
@@ -113,10 +113,10 @@ sections:
     why: "Ruf: Schläge auf die Viertel in Rot (alt: progFastBlingBling)"
 
   verse 2 b:
-    scene: SCENE_RAIN
+    scene: SCENE_VERSE_HEART
     scheme: SCHEME_NEON
     transition: {type: fade, beats: 2}
-    why: "Strophe wie verse 2: Leuchtspuren in Pink/Cyan/Violett, das Rot blendet weich aus"
+    why: "Strophe wie verse 2: Herzschlag auf allen Geräten in Pink/Cyan/Violett, das Rot blendet weich aus"
 
   i ma the one:
     scene: SCENE_PINGPONG

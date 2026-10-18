@@ -26,12 +26,14 @@ sections:
     why: "Alter Effekt: jedes Gerät füllt sich LED für LED mit einer Farbe, alle 2 Beats kommt die nächste."
 
   verse 1a:
-    fx: "progPalette(${dur}, 1, ${next})"
-    why: "Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte."
+    scene: SCENE_VERSE_STARS
+    scheme: SCHEME_ICE
+    why: "Strophe neu (18.10.2026, statt der alten Palette): ruhiger Einstieg als Sternenhimmel - auf jedem Beat leuchten ein paar Sterne in Blau/Weiß auf und verglimmen"
 
   verse 1b:
-    fx: "progPalette(${dur}, 4, ${next})"
-    why: "Alter Effekt: bunte, unterschiedlich helle Farbflecken laufen weich über die Geräte."
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
 
   you got me so high:
     fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"
@@ -51,8 +53,9 @@ sections:
     why: "Alter Effekt: 1 Takt schwarz."
 
   verse 2:
-    fx: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
-    why: "Alter Effekt: Leuchtspuren laufen durch und hellen nach Weiß auf."
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_ROYAL
+    why: "Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß"
 
   im going crazy:
     fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"

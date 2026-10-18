@@ -78,6 +78,10 @@ enum SceneID : uint8_t {
 						// Hals hinauf, Lampen ganz - alle im selben Schlag
 	SCENE_VERSE_STARS,	// Sternenhimmel auf allen Geräten: auf jedem Beat leuchten ein paar Sterne in Schemafarben auf und
 						// verglimmen in etwa 2 Beats (auf der Eins einer weißlich)
+
+	//--- Frage/Antwort auf dem Backbeat (neu am 18.10.2026, Wunsch des Users zu Maniac) ---
+	SCENE_CALL_RESPONSE_OFFBEAT,	// wie SCENE_CALL_RESPONSE, aber nur auf 2 und 4: auf 2 die linke Hälfte, auf 4 die rechte,
+									// auf 1 und 3 ist alles schwarz (Tabelle: aufblinken auf x,25 und x,75)
 };
 
 // Verzögerung pro Bühnenposition bei den WAVE-Szenen, als Bruchteil eines Beats: 16 = eine 64stel-Note (Beat / 16).
@@ -114,8 +118,12 @@ uint8_t beatSwell(unsigned int ms, uint8_t bpm, uint8_t floorVal);	// Helligkeit
 															// ms = seit Part-Beginn, floorVal zwischen den Beats, 255 auf dem Beat
 uint8_t flashEnvelope(unsigned int t, unsigned int period);	// Helligkeit des Beat-Blitzes: t = ms seit dem Schlag, period = ms pro Beat;
 															// 255 auf dem Schlag, klingt in 70 % des Beats (höchstens 450 ms) auf 0 ab
-void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm);
-void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm);	// Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat
+void progPingPong(unsigned int durationMillis, byte nextPart, uint8_t bpm,
+				  uint8_t firstPos = 0, uint8_t positions = 0);	// nur die Bühnenplätze firstPos .. firstPos+positions-1 (0 = alle)
+															// spielen mit, alle anderen bleiben dunkel (Maniac: 1, 3 = ohne die Lampen)
+void progCallResponse(unsigned int durationMillis, byte nextPart, uint8_t bpm,
+					  bool offbeat = false);	// Frage/Antwort: linke und rechte Bühnenhälfte blitzen abwechselnd im Beat;
+												// offbeat = true: nur auf 2 und 4 (links auf 2, rechts auf 4), 1 und 3 bleiben schwarz
 void progDnaPulse(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode);	// Begleitung zur DNA-Helix der Matrix:
 															// einfarbiges Pulsieren in den Strangfarben, im Gleichlauf mit progDNA (mode = DNA_ROTATE / DNA_FLIP / DNA_FLIP_SCROLL)
 CRGB sharedColor(uint32_t k);		// k-te Farbe einer Folge, die auf allen Geräten gleich ist (Nachbarn unterscheiden sich)

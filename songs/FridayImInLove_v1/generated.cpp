@@ -3,7 +3,7 @@
 //@function gen_FridayImInLove
 //@name Friday I'm In Love
 //@struktur_sha aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
-//@show_sha a76d9b1b15a941523e41c8658c3be900771c70d38535746d3c86f875bf7a8d20
+//@show_sha 126662d927aabe7a577ab158a9215492a9ca7f06084eb2b63263bf434c3c25e9
 //@part GEN_FRIDAYIMINLOVE_PAUSE 0
 //@part GEN_FRIDAYIMINLOVE_INTRO 3
 //@part GEN_FRIDAYIMINLOVE_INTRO_2 4
@@ -62,28 +62,32 @@ void gen_FridayImInLove() {
 #endif
 		break;
 
-	case 5:	// verse 1  8 T  13714ms  @0:31.929  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
-		progPalette(13714, 3, 6);
+	case 5:	// verse 1  8 T  13714ms  @0:31.929  -- Strophe neu (18.10.2026, statt der alten Palette): warme Farbwolken auf der Matrix, der Verlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_PLASMA, 13714, 6, 140);
 		break;
 
-	case 6:	// verse 1b  8 T  13714ms  @0:45.643  -- Alter Effekt: weiße Wellen, weich an- und abschwellend.
-		progPalette(13714, 6, 7);
+	case 6:	// verse 1b  8 T  13714ms  @0:45.643  -- wie verse 1: warme Farbwolken, die im Beat leicht anschwellen
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_PLASMA, 13714, 7, 140);
 		break;
 
 	case 7:	// Saturday went  6 T  10286ms  @0:59.357  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
 		progRandomLines(10286, 8, 460, true);
 		break;
 
-	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Alter Effekt: Wolken-Farben (blau, hellblau, weiß), ruhig.
-		progPalette(13714, 7, 9);
+	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Strophe neu (18.10.2026): Sinuswellen in Blau/Eisblau laufen im Takt über die Matrix ('Monday you can hold your head'), eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_WAVES, 13714, 9, 140);
 		break;
 
 	case 9:	// SOLO  8 T  13714ms  @1:23.357  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
 		progFastBlingBling(13714, 2, 10, 1, 16, 2000);
 		break;
 
-	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet.
-		progPalette(13715, 2, 11);
+	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_WAVES, 13715, 11, 140);
 		break;
 
 	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
@@ -102,8 +106,9 @@ void gen_FridayImInLove() {
 		progStrobo(1714, 15, 65, 255, 255, 255);
 		break;
 
-	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet (sehr farbig).
-		progPalette(13714, 2, 16);
+	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART, 13714, 16, 140);
 		break;
 
 	case 16:	// verse 4b  8 T  13715ms  @2:42.214  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.

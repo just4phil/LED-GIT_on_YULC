@@ -3,7 +3,7 @@
 //@function gen_TellItToMyHeart
 //@name Tell It To My Heart
 //@struktur_sha 515e7b96b53dd232e6ad26cc263c4efdd93961668bc2ef4bb5ccbd8fdd2732d6
-//@show_sha 50cf8df9a0a54a724f5fc004fba9952c635fc1f05e2fff7578d85415ed294495
+//@show_sha 0fba52fc393902c97a4d66f604679acf2571fa45ffcad823fb4d4f2c1cc1b983
 //@part GEN_TELLITTOMYHEART_PAUSE 0
 //@part GEN_TELLITTOMYHEART_INTRO_CHORUS 3
 //@part GEN_TELLITTOMYHEART_VERSE 4
@@ -57,8 +57,9 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16271, 1017, 4, 5, 26, 5, false, 4);
 		break;
 
-	case 4:	// verse  8 T  16271ms  @0:23.644  -- Alter Effekt: alles in einer Farbe, pro Beat eine neue Zufallsfarbe.
-		progFullColors(16271, 5, 508);
+	case 4:	// verse  8 T  16271ms  @0:23.644  -- Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_VERSE_HEART, 16271, 5, 118);
 		break;
 
 	case 5:	// bridge  7 T  14238ms  @0:39.915  -- Ruhiges Atmen in Rot auf allen Geräten.

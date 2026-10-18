@@ -1,0 +1,94 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus ILoveIt() (Spalte "bisher (alter Code)") als fx:.
+# Der alte Code bleibt in src/songs.cpp. Kein Farbschema: die alten Effekte laufen wie bisher mit freien Zufallsfarben.
+# Die Zeiten in den Effekten (500 ms = 1 Beat, 1000 ms = 2 Beats bei 120 BPM) stehen als ${beat} / ${half}.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: ILoveIt() setzt keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 9) und gelten unverändert.
+# Trailer: INTROiLoveIt (Song 80, src/songs.cpp) springt direkt in "chorus 1" - dort steht jetzt die Konstante
+# GEN_ILOVEIT_CHORUS_1 statt der festen Part-Nummer 15 (derselbe Einstiegspunkt wie bisher).
+# Titel-Lauftext wörtlich wie im alten Code.
+# Änderungswünsche des Users (Tabelle, 06.10.2026) - drei Blinder über den unveränderten alten Effekten:
+#   youre on a different road = "am ende auf der letzten viertel starker BLINDER (auf snarewirbel)"; die erste Fassung
+#                               (Beat 31, springt auf, 1 Beat) fand der User am 07.10.2026 "zu wenig sichtbares
+#                               Reinblenden und zu kurz". Jetzt über den ganzen letzten Takt: blendet ab Beat 28 zwei
+#                               Beats lang sichtbar ein und steht die letzten zwei Beats bis zum Part-Ende voll
+#                               (len reicht über das Part-Ende hinaus, damit er nicht vorher abklingt)
+#   STOP                      = "kurzer blinder vor der BLACK phase": Blinder auf die Eins, klingt in 1 Beat ins Schwarz ab
+#   chorus 4                  = "blinder am anfang": Blinder auf den Einsatz, klingt über 2 Beats ab
+#   chorus 5                  = "Starker blinder am ende" (07.10.2026): wie der Schluss von APT. (vom User dort gelobt) -
+#                               auf dem letzten Viertel voll, end_blinder lässt ihn 5 s ins Schluss-Schwarz ausklingen
+
+function: gen_ILoveIt
+scroll_title: "I love it by Icona Pop"
+# Der Vorspann (songs/ILoveItIntro_v1, Song 80) springt in "chorus 1". Wunsch des Users (09.10.2026): der Titel-Lauftext
+# läuft nicht mehr im Vorspann, sondern auf der Matrix ab diesem Einstieg (eigene Zusatz-cases 16/17 nur auf den
+# Matrix-Geräten, Konstante GEN_ILOVEIT_TRAILER). Der Ablauf ohne Vorspann bleibt, wie er ist.
+trailer_entry: "chorus 1"
+end_blinder: 5    # der Blinder vom letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus (wie in APT.)
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  synth intro:
+    fx: "progPalette(${dur}, 6, ${next})"
+    why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
+
+  chorus 1:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein."
+
+  verse 2:
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_SUNSET
+    why: "Strophe neu (18.10.2026, statt des alten Scanners): alle Geräte schlagen auf jedem Beat wie ein Herz in Orange/Pink/Lila, die Matrix zeigt eine Lissajous-Schleife"
+
+  chorus 2:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats."
+
+  youre on a different road:
+    fx: "progPalette(${dur}, 11, ${next})"
+    # at = Moment der vollen Helligkeit (Beat 30): das Einblenden (attack) läuft in den 2 Beats davor, also ab Beat 28
+    blinder: {at: 30, len: 5, attack: 2, hold: 2}
+    why: "Alter Effekt: grüner Verlauf, der zu Weiß aufhellt. Im letzten Takt (Snarewirbel) blendet ein starker Blinder zwei Beats lang ein und steht dann zwei Beats bis zum Part-Ende voll."
+
+  i love it:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  verse 3:
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "wie verse 1: Zonen im Beat, Lichtschuss, Plasma-Wolken auf der Matrix"
+
+  chorus 3:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat."
+
+  youre on a different road (2):
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 1}
+    why: "Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz."
+
+  chorus 4:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    blinder: {at: 0, len: 2}
+    why: "Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  chorus 5:
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    blinder: {at: 15, len: 2, hold: 1}
+    why: "Alter Effekt: schnelle Einzelblitze zum Schluss. Auf der letzten Viertel ein starker Blinder, der voll stehen bleibt und danach 5 Sekunden lang ins Schluss-Schwarz ausklingt."

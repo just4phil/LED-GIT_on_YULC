@@ -98,7 +98,9 @@ number of the table). A blinder's position is always the moment of FULL brightne
 (`fxBlinderShape` / YAML `attack`) runs before it, and if that starts before the part does, `songgen.py` registers the
 blinder in the previous part as well. `fxBlinderUnderText()` (set by `songgen.py` on its own whenever a part has a text with `over: true` and a blinder - user rule 10.10.2026: text always lies on top of everything; YAML `blinder_under_text: true` still asks for it explicitly) puts the part's blinders below the topmost layer (the text) instead of
 on top of everything, as a bright background the text stays readable on. A blinder ends with its part unless it has `carry: true`: then `songgen.py`
-registers its remaining fade in the next part (`fxBlinderCarry`). A second
+registers its remaining fade in the next part (`fxBlinderCarry`). `cascade` (YAML, `fxBlinderCascade` + `FX_CASCADE(...)`) makes the
+devices come on one after another (`lr`/`rl`/`out`/`in` or an own `order`, `step` in beats) with one common full moment
+and one common fade; `color: scheme` (`fxBlinderSchemeColor`) uses each device's scheme colour. A second
 effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode, amount)` it draws into its own
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the

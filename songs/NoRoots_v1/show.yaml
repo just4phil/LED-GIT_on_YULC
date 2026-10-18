@@ -1,0 +1,168 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs NoRoots() (Song-ID 6). Der alte Code bleibt in src/songs.cpp
+# stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "für alle noch nicht
+# generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal nur
+# auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: das ROOTS-Motiv
+# (Strobo + "ROOTS" auf der Matrix) ist das Herz des Songs und bleibt. Neu: feste Farben (RETRO = rot/weiß/blau für den
+# Chorus, erdig-warm SUNSET für die Strophen) und Blinder auf die ROOTS-Schläge. Parts ohne Vorschlag behalten ihren
+# alten Effekt (verse 1a: das alte Farbband als Szene, damit es auf allen Geräten gleich schnell läuft).
+# ROOTS: der Strobo läuft als Ebene nur auf Gitarre, Bass und Lampen (ein gate auf Abschnittsebene würde auch den
+# Text auf der Matrix zerhacken); die Matrix zeigt ROOTS ruhig mit Farbverlauf - wie im alten Code (progShowROOTS).
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in NoRoots() keine Marker in einzelnen Parts; die Grund-Marker im case von
+# src/markerLEDs.cpp gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_NoRoots
+scheme: SCHEME_SUNSET
+end_blinder: 5    # der Blinder auf der letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus (wie in APT.)
+
+# Wiederkehrende Bausteine (YAML-Anker: &name legt fest, *name / <<: *name setzt ein)
+git: &git
+  scene: SCENE_COLORS
+  scheme: SCHEME_WHITE
+  gate: 4
+  only: {devices: [guitar], others: 0}
+  why: "Der Gitarren-Einwurf: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, der Rest dunkel."
+roots: &roots
+  fx: "progBlack(${dur}, ${next})"
+  scheme: SCHEME_WHITE
+  overlay: {devices: {guitar: SCENE_COLORS, lamp: SCENE_COLORS}, gate: 4, mode: over}
+  text: {words: "ROOTS", per: 4, gradient: {palette: party, dir: letters}}
+  why: "Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben."
+roots_hit: &roots_hit
+  <<: *roots
+  blinder: {at: 0, len: 2.5, attack: 2, hold: 0.25, amount: 100}
+  why: "Motiv ROOTS: der Blinder blendet in den 2 Beats davor ein und ist genau auf dem ersten ROOTS voll; weißer Strobo im Takt auf Gitarre, Bass und Lampen, auf der Matrix ROOTS mit buntem Farbverlauf."
+chorus_a: &chorus_a
+  scene: SCENE_COLORS
+  scheme: SCHEME_RETRO
+  soft: 30
+  why: "Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende."
+rooooots: &rooooots
+  scene: SCENE_SPARKLE
+  scheme: SCHEME_RETRO
+  why: "Schnelle Einzelblitze in Rot, Weiß und Blau."
+
+sections:
+  "klick":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "git": *git
+
+  "intro1":
+    scene: SCENE_CALM
+    scheme: SCHEME_SUNSET
+    fade_in: 2
+    why: "Ruhiges Atmen in Orange, Pink und Gelb, weich eingeblendet."
+
+  "git (2)": *git
+
+  "verse 1a":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_SUNSET
+    why: "Ein Farbband in warmen Farben läuft über die ganze Bühne (wie bisher, jetzt auf allen Geräten gleich schnell)."
+
+  "verse 1b":
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    why: "Strophe: dezenter Puls im Beat in warmen Farben, auf der Matrix Wasserringe."
+
+  "verse 1b (2)":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_SUNSET
+    why: "Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Orange, Pink und Gelb."
+
+  "bridge":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"
+    why: "Wasserringe (wie bisher); in den letzten 2 Beats blendet der Blinder für das erste ROOTS ein."
+
+  "ROOTS 1": *roots_hit
+  "chorus a": *chorus_a
+  "ROOTS 2": *roots
+  "chorus a (2)": *chorus_a
+  "chorus rooooots": *rooooots
+  "ROOTS 1 (2)": *roots
+  "chorus a (3)": *chorus_a
+  "ROOTS 2 (2)": *roots
+  "chorus a (4)": *chorus_a
+
+  "chorus rooooots (2)":
+    <<: *rooooots
+    blinder: {bar: 46.75, len: 1, hold: 0.5, amount: 100}
+    why: "Schnelle Einzelblitze in Rot, Weiß und Blau; starker Blinder auf der letzten Viertel (Takt 46,75)."
+
+  "verse 2a":
+    scene: SCENE_RAIN
+    scheme: SCHEME_SUNSET
+    fade: {to: triad, per: 8}
+    transition: {type: fade, beats: 4}
+    why: "Weich in die Strophe: fallende Leuchtspuren in warmen Farben, die Farben wandern alle 2 Takte weiter."
+
+  "verse 2b":
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    devices: {matrix: "progCircles(${dur}, ${next}, ${beat})"}
+    why: "Dezenter Puls im Beat in warmen Farben; auf der Matrix Kreise im Beat (wie bisher)."
+
+  "bridge (2)":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_SUNSET
+    why: "Ein Farbband in warmen Farben läuft über die ganze Bühne; in den letzten 2 Beats blendet der Blinder für ROOTS ein."
+
+  "ROOTS 1 (3)": *roots_hit
+  "chorus a (5)": *chorus_a
+  "ROOTS 2 (3)": *roots
+  "chorus a (6)": *chorus_a
+  "chorus rooooots (3)": *rooooots
+  "ROOTS 1 (4)": *roots
+  "chorus a (7)": *chorus_a
+  "ROOTS 2 (4)": *roots
+  "chorus a (8)": *chorus_a
+
+  "chorus rooooots (4)":
+    <<: *rooooots
+    blinder:
+      - {bar: 82.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 82.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    why: "Schnelle Einzelblitze in Rot, Weiß und Blau; am Ende drei kurze Blinder (Takt 82,5 / 82,75, der dritte auf die 1 vom Zwischenspiel)."
+
+  "zwischenspiel":
+    scene: SCENE_DNA_FLIP_SCROLL
+    scheme: SCHEME_ROYAL
+    blinder: {bar: 83, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    why: "Kühler Kontrast: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder."
+
+  "solo":
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_NEON
+    tail:
+      beats: 4
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_RETRO
+    why: "Solo: zwei Kometen in Pink und Cyan kreisen um die Gitarre, alle anderen atmen dunkel; im letzten Takt lädt sich alles in Rot, Weiß, Blau auf, Explosion auf den Chorus."
+
+  "chorus":
+    scene: SCENE_STAR
+    scheme: SCHEME_RETRO
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Drehender Stern in Rot, Weiß und Blau, warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "chorus (2)":
+    fx: "progFastBlingBling(${dur}, 7, ${next})"
+    why: "Schnelle bunte Einzelblitze (wie bisher)."
+
+  "chorus (3)":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    why: "Der letzte Chorus sackt nicht ab: Feuer auf allen Geräten in Rot, Orange und Gelb."
+
+  "chorus (4)":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    blinder: {bar: 115.75, len: 2, hold: 1, amount: 100}
+    why: "Dichtes Glitzern in Rot, Orange und Gelb; auf der letzten Viertel (Takt 115,75) springt ein starker Blinder auf und klingt 5 Sekunden ins Schluss-Schwarz aus."

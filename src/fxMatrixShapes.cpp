@@ -439,7 +439,10 @@ void progCircles(unsigned int durationMillis, byte nextPart, unsigned int msForC
 //--- Zufallslinien -----------------------------------------------------------
 // Alle msForChange ms ein neuer, 3 Pixel breiter Balken von einer zufälligen Stelle am oberen Rand zu einer
 // zufälligen Stelle am unteren Rand. clearEach wie bei progCircles.
-void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach) {
+// fadeMillis > 0: alle 20 ms wird das ganze Bild ein Stück dunkler, so dass eine Linie nach fadeMillis ms nur noch
+// etwa 10 % ihrer Helligkeit hat - alte Linien verblassen, statt die Fläche ganz zu füllen.
+void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int msForChange, boolean clearEach,
+					 unsigned int fadeMillis) {
 
 	if (fxBegin(durationMillis, nextPart)) {
 		clearAll();
@@ -457,6 +460,9 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 			clearAll();
 			col1 = getRandomColor();
 		}
+		else if (fadeMillis > 0) {
+			col1 = getRandomColor();	// beim Verblassen sorgt das Ausfaden für die dunklen Stellen - keine schwarzen Linien
+		}
 		else {
 			col1 = getRandomColorIncludingBlack();	// if not cleared -> black ist also an option :)
 		}
@@ -464,6 +470,13 @@ void progRandomLines(unsigned int durationMillis, byte nextPart, unsigned int ms
 		matrix->drawLine(x1 - 1, 0, x2 - 1, MATRIX_HEIGHT-1, col1);
 		matrix->drawLine(x1, 0, x2, MATRIX_HEIGHT-1, col1);
 		matrix->drawLine(x1 + 1, 0, x2 + 1, MATRIX_HEIGHT-1, col1);
+	}
+
+	// Ausfaden: fxFrameDue(20) = höchstens alle 20 ms ein Schritt. Faktor je Schritt so gewählt, dass nach
+	// fadeMillis / 20 Schritten noch 10 % übrig sind: 0,1 hoch (20 / fadeMillis). nscale8 rechnet in 1/256.
+	if (fadeMillis > 0 && fxFrameDue(20)) {
+		uint8_t keep = (uint8_t)constrain((int)(256.0f * powf(0.1f, 20.0f / fadeMillis)), 1, 255);
+		nscale8(leds, anz_LEDs, keep);
 	}
 	fxShow();
 }

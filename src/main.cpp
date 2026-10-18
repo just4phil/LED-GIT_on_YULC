@@ -429,23 +429,27 @@ void loop() {
 			PhysicalTrailer();
 			break;
 		case 2:
-			Physical();
+			//Physical();
+			gen_Physical(); // <<< GENERATED SONGS <<<
 			break;
 		case 3:
 			//TakeOnMe();
 			gen_TakeOnMe(); // <<< GENERATED SONGS <<<
 			break;
 		case 4:
-			DontStopTheMusic();
+			//DontStopTheMusic();
+			gen_DontStopTheMusic(); // <<< GENERATED SONGS <<<
 			break;
 		case 5:
 			UseSomebody();
 			break;
 		case 6:
-			NoRoots();
+			//NoRoots();
+			gen_NoRoots(); // <<< GENERATED SONGS <<<
 			break;
 		case 7:
-			Firework();
+			//Firework();
+			gen_Firework(); // <<< GENERATED SONGS <<<
 			break;
 		case 8:
 			//DancingOnMyOwn();
@@ -456,16 +460,20 @@ void loop() {
 			gen_ILoveIt(); // <<< GENERATED SONGS <<<
 			break;
 		case 10:
-			BloodyMary();
+			//BloodyMary();
+			gen_BloodyMary(); // <<< GENERATED SONGS <<<
 			break;
 		case 11:
-			Titanium();
+			//Titanium();
+			gen_Titanium(); // <<< GENERATED SONGS <<<
 			break;
 		case 12:
-			SuchAshame();
+			//SuchAshame();
+			gen_SuchAShame(); // <<< GENERATED SONGS <<<
 			break;
 		case 13:
-			InTheDark();
+			//InTheDark();
+			gen_InTheDark(); // <<< GENERATED SONGS <<<
 			break;
 		case 14:
 			//Shivers();
@@ -523,7 +531,8 @@ void loop() {
 			break;	
 
 		case 30:
-			Maniac_Tminus1();
+			//Maniac_Tminus1();
+			gen_Maniac(); // <<< GENERATED SONGS <<<
 			break;	
 
 		// case 32:

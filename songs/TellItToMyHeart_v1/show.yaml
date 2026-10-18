@@ -33,8 +33,9 @@ sections:
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
 
   "verse":
-    fx: "progFullColors(${dur}, ${next}, ${beat})"
-    why: "Alter Effekt: alles in einer Farbe, pro Beat eine neue Zufallsfarbe."
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_FIRE
+    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife"
 
   "bridge":
     scene: SCENE_CALM

@@ -187,6 +187,21 @@ void fxBlinderCarry(unsigned int elapsedMillis);	// der Blinder dieses Platzes h
 												// elapsedMillis = so lange vor dem Part-Beginn war sein Moment der vollen Helligkeit. Anmelden wie im
 												// Part davor (gleiche Länge, gleicher Verlauf), aber mit atMillis 0 - dann läuft die Kurve nahtlos weiter.
 												// So kann ein langes Ausklingen über eine Part-Grenze reichen (songgen.py meldet das von selbst an)
+// Blinder-Kaskade (Idee des Users, 18.10.2026: "blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander)
+// aber dann faden alles gleichzeitig lange aus"): die Geräte gehen nacheinander an, der Moment der vollen Helligkeit
+// (atMillis) und das Ausklingen danach sind für alle gleich. Gilt für den Blinder des gewählten Platzes (fxBlinderSlot),
+// wird nach fxBlinder / fxBlinderShape angemeldet. stepMillis = Abstand von Gerät zu Gerät; stepsCode sagt je Gerät,
+// wie viele Schritte VOR atMillis es voll angeht (0 = erst bei atMillis, also als letztes). Gebaut mit FX_CASCADE(...).
+// Ein Einblenden (fxBlinderShape attack) läuft auf jedem Gerät vor seinem eigenen Einschaltmoment.
+void fxBlinderCascade(unsigned int stepMillis, uint32_t stepsCode);
+// stepsCode lesbar bauen: je Gerät die Zahl der Schritte vor dem gemeinsamen Vollpunkt (0..15), 4 Bit je Gerät in der
+// Reihenfolge der DEV_...-Bits. Beispiel links -> rechts mit 5 Geräten: FX_CASCADE(4, 3, 2, 1, 0, 2) - Lampe 1 zuerst,
+// Lampe 2 zuletzt (GITBOARD steht wie die Matrix in der Mitte).
+#define FX_CASCADE(lampe1, bass, drums, git, lampe2, gitboard) \
+	((uint32_t)(lampe1) | ((uint32_t)(bass) << 4) | ((uint32_t)(drums) << 8) | ((uint32_t)(git) << 12) | \
+	 ((uint32_t)(lampe2) << 16) | ((uint32_t)(gitboard) << 20))
+void fxBlinderSchemeColor();	// der Blinder des gewählten Platzes leuchtet auf jedem Gerät in dessen Schemafarbe (deviceColor())
+								// statt in einer gemeinsamen Farbe - so wird es am Ende ein mehrfarbiges Bild
 void fxTimeOffset(unsigned int millis);			// der Part läuft auf den anderen Geräten schon millis länger (Matrix nach dem Lauftext):
 												// FadeIn, Pulse und Gate rechnen ab dort und bleiben so im Beat
 

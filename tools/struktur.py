@@ -87,6 +87,13 @@ EFFECT_WIDTH, WISH_WIDTH = 70, 40		# Spaltenbreiten, die write_effects() beim Um
 # werden könnte. Schreibt nur write_proposals(); erkannt wird jede Überschrift, die so beginnt (klein geschrieben).
 PROPOSAL_TITLE, PROPOSAL_WIDTH = "Neuer Vorschlag (KI)", 60
 PROPOSAL_LABELS = ("neuer vorschlag", "vorschlag")
+# Spalte "Alter Effekt (temporär)" (seit 18.10.2026, Wunsch des Users): mit songgen.py --markieren bekommt jede
+# Effekt-Zelle, deren Text sich ändert, einen gelben Hintergrund, und der bisherige Text kommt in diese Spalte - so sieht
+# er beim Durchgehen, was neu ist und was vorher dort lief. songgen.py --markierung-weg räumt beides wieder ab.
+# Erkannt wird jede Überschrift, die so beginnt (klein geschrieben); gelesen wird die Spalte von keinem Werkzeug.
+OLD_EFFECT_TITLE, OLD_EFFECT_WIDTH = "Alter Effekt (temporär)", 50
+OLD_EFFECT_LABEL = "alter effekt"
+MARK_FILL = PatternFill(fill_type="solid", start_color="FFFFFF00", end_color="FFFFFF00")	# Gelb (ARGB: FF = deckend, FFFF00 = gelb)
 TMP_FILE = "struktur.tmp.xlsx"			# write_effects() schreibt erst hierhin, prüft und ersetzt dann die Tabelle
 RASTER_FILE = "struktur-raster.xlsx"	# die gerasterte Kopie von write_raster() - der User tauscht sie selbst gegen seine Tabelle
 RASTER_STEP = 0.25						# Abstand der Rasterzeilen in Takten (0,25 = ein Vierteltakt = ein Schlag im 4/4-Takt)
@@ -191,6 +198,8 @@ def col_key(v):
 		return COL_LABELS[lab]
 	if lab.startswith(PROPOSAL_LABELS):		# "Neuer Vorschlag (KI)": schreibt das Skript (write_proposals), gelesen wird sie nicht
 		return "proposal"
+	if lab.startswith(OLD_EFFECT_LABEL):	# "Alter Effekt (temporär)": schreibt write_effects(mark=True), gelesen wird sie nicht
+		return "old_effect"
 	return "effect" if lab.startswith("effekt") else None
 
 
@@ -682,8 +691,12 @@ def ensure_effect_column(ws, header_row, cols, part_rows):
 #   end_black_ms  Länge des Schluss-Blacks: kommt in die Ende-Zeile, wenn dort in "Effekt" noch nichts steht
 #   cue_texts     {von takt: Text} für die Zwischenzeilen (Viertel-Raster): was an dieser Stelle umgesetzt ist.
 #                 Zwischenzeilen, die hier nicht genannt sind, werden in "Effekt" geleert - die Spalte gehört dem Skript.
+#   mark          True (songgen.py --markieren): jede Part-Zelle, deren Text sich ändert, wird gelb, und ihr bisheriger
+#                 Text kommt in die Spalte "Alter Effekt (temporär)" (entsteht rechts neben "Effekt"). Steht dort schon
+#                 ein alter Text (frühere Markierung, noch nicht abgeräumt), bleibt er - er ist der Stand VOR allen
+#                 markierten Änderungen. Zwischenzeilen werden nicht markiert.
 # Rückgabe: Text, was geschehen ist (für die Ausgabe von songgen.py). Fehler: TableError, die Tabelle ist dann unverändert.
-def write_effects(path, texts, end_black_ms, cue_texts=None):
+def write_effects(path, texts, end_black_ms, cue_texts=None, mark=False):
 	if (path.parent / ("~$" + path.name)).exists():
 		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
 	before = read_table(path)
@@ -709,11 +722,24 @@ def write_effects(path, texts, end_black_ms, cue_texts=None):
 	if wish and (ws.column_dimensions[get_column_letter(wish)].width or 0) < 14:	# 13 = Excels Standardbreite, wenn nichts gesetzt ist
 		ws.column_dimensions[get_column_letter(wish)].width = WISH_WIDTH
 	wrap = Alignment(wrap_text=True, vertical="top")
+	marked, old_col, created = 0, None, ""
+	if mark:
+		# erst ermitteln, welche Parts sich ändern - nur dann wird die Spalte für die alten Texte gebraucht
+		changing = [r for r, t in zip(rows, texts) if multiline(ws.cell(r, col).value) != multiline(t) and not empty(ws.cell(r, col).value)]
+		if changing:
+			old_col, created = ensure_old_effect_column(ws, header_row, find_sheet(wb)[2], col)
 	changed = 0
 	for r, t in zip(rows, texts):
 		cell = ws.cell(r, col)
 		if multiline(cell.value) != multiline(t):
 			changed += 1
+			if old_col and not empty(cell.value):
+				old = ws.cell(r, old_col)
+				if empty(old.value):		# ein schon vorhandener alter Text ist der ältere Stand - der bleibt
+					old.value = cell.value
+				old.alignment = wrap
+				cell.fill = copy.copy(MARK_FILL)
+				marked += 1
 		cell.value = t or None
 		cell.alignment = wrap
 		if wish:
@@ -735,11 +761,21 @@ def write_effects(path, texts, end_black_ms, cue_texts=None):
 	if not changed and not migrated:
 		return f"Spalte '{EFFECT_TITLE}' der Tabelle ist schon aktuell"
 
+	save_checked(path, wb, before)
+	return ((migrated + "\n   " if migrated else "") + (created + "\n   " if created else "")
+			+ f"Spalte '{EFFECT_TITLE}' der Tabelle geschrieben ({changed} Zeile(n) neu"
+			+ (f", {marked} gelb markiert" if mark else "") + ")")
+
+
+# Speichert die geänderte Tabelle mit der Sicherung von write_effects(): erst in eine zweite Datei, die wird wieder
+# gelesen und muss denselben Fingerabdruck haben wie vorher (before), und jede Zeile muss stehen, wo sie stand -
+# erst dann ersetzt sie die Tabelle in einem Schritt. Sonst TableError, die Tabelle bleibt unverändert.
+def save_checked(path, wb, before):
 	tmp = path.with_name(TMP_FILE)
 	try:
 		wb.save(tmp)
 		after = read_table(tmp)
-		if content_sha(after) != content_sha(before):
+		if content_sha(after) != content_sha(before) or after["_table"] != before["_table"]:
 			raise TableError("Kontrolle nach dem Schreiben: der Inhalt der Tabelle wäre nicht mehr derselbe (Formeln?) - nichts geändert")
 		try:
 			os.replace(tmp, path)
@@ -748,7 +784,78 @@ def write_effects(path, texts, end_black_ms, cue_texts=None):
 	finally:
 		if tmp.exists():
 			tmp.unlink()
-	return (migrated + "\n   " if migrated else "") + f"Spalte '{EFFECT_TITLE}' der Tabelle geschrieben ({changed} Zeile(n) neu)"
+
+
+# Sorgt dafür, dass es die Spalte "Alter Effekt (temporär)" gibt, und liefert ihre Nummer. Sie entsteht direkt rechts
+# neben "Effekt" (alter und neuer Text nebeneinander); lässt sich dort keine Spalte einfügen (eigene Formeln im Blatt,
+# siehe insert_column), kommt sie in die erste freie Spalte ganz rechts.
+# Rückgabe: (Spaltennummer, Text was angelegt wurde oder "")
+def ensure_old_effect_column(ws, header_row, cols, effect_col):
+	if "old_effect" in cols:
+		return cols["old_effect"], ""
+	try:
+		insert_column(ws, effect_col + 1, OLD_EFFECT_WIDTH)
+		c = effect_col + 1
+	except TableError:
+		c = ws.max_column + 1
+		ws.column_dimensions[get_column_letter(c)].width = OLD_EFFECT_WIDTH
+	ws.cell(header_row, c)._style = copy.copy(ws.cell(header_row, effect_col)._style)	# Überschrift wie "Effekt"
+	ws.cell(header_row, c, OLD_EFFECT_TITLE)
+	for row in ws.iter_rows(min_row=header_row + 1, min_col=c, max_col=c):	# kein Gelb vom linken Nachbarn erben
+		for cell in row:
+			cell.fill = PatternFill(fill_type=None)
+	return c, f"Spalte '{OLD_EFFECT_TITLE}' angelegt (Spalte {get_column_letter(c)})"
+
+
+# Räumt die Markierung von write_effects(mark=True) wieder ab (songgen.py --markierung-weg): das Gelb in der Spalte
+# "Effekt" verschwindet, die Spalte "Alter Effekt (temporär)" wird gelöscht. Hat das Blatt eigene Formeln, wird die
+# Spalte nur geleert (openpyxl zöge die Formeln beim Löschen nicht mit, siehe insert_column) - der User kann die leere
+# Spalte dann in Excel selbst löschen. Gesichert wie write_effects(). In Excel geöffnet -> nichts geschrieben.
+# Rückgabe: Text, was geschehen ist. Fehler: TableError, die Tabelle ist dann unverändert.
+def clear_marks(path):
+	if (path.parent / ("~$" + path.name)).exists():
+		raise TableError(f"{path.name} ist in Excel geöffnet - bitte schließen")
+	before = read_table(path)
+	try:
+		wb = openpyxl.load_workbook(path)
+	except PermissionError:
+		raise TableError(f"{path.name} ist gesperrt (in Excel geöffnet?) - bitte schließen")
+	ws, header_row, cols = find_sheet(wb)
+	unmarked = 0
+	if "effect" in cols:
+		for row in ws.iter_rows(min_row=header_row + 1, min_col=cols["effect"], max_col=cols["effect"]):
+			for cell in row:
+				if cell.fill is not None and cell.fill.fill_type == "solid" and (cell.fill.start_color.rgb or "").upper() == MARK_FILL.start_color.rgb:
+					cell.fill = PatternFill(fill_type=None)
+					unmarked += 1
+	if "old_effect" not in cols and not unmarked:
+		return "keine Markierung - nichts geändert"
+	note = ""
+	if "old_effect" in cols:
+		c = cols["old_effect"]
+		# Löschen nur, wenn keine Formel davon betroffen ist - dieselbe Regel wie beim Einfügen: erlaubt sind schlichte
+		# Verweise auf Zellen links der Spalte (=$C$3), und kein anderes Blatt rechnet mit diesem
+		def risky(cell, other):
+			if not (isinstance(cell.value, str) and cell.value.startswith("=")):
+				return False
+			if other is not ws:
+				return ws.title.lower() in cell.value.lower()
+			m = SIMPLE_REF_RE.fullmatch(cell.value.strip())
+			return not m or column_index_from_string(m.group(1)) >= c
+		if any(risky(cell, other) for other in wb.worksheets for row in other.iter_rows() for cell in row):
+			for row in ws.iter_rows(min_row=header_row, min_col=c, max_col=c):
+				for cell in row:
+					cell.value = None
+			note = f", Spalte '{OLD_EFFECT_TITLE}' geleert (eigene Formeln im Blatt - die leere Spalte {get_column_letter(c)} bitte in Excel löschen)"
+		else:
+			widths = {column_index_from_string(l): d.width for l, d in ws.column_dimensions.items() if d.width}
+			ws.delete_cols(c)
+			for col in sorted(widths):		# Spaltenbreiten rechts davon rücken eine Spalte nach links (wie bei insert_column)
+				if col > c:
+					ws.column_dimensions[get_column_letter(col - 1)].width = widths[col]
+			note = f", Spalte '{OLD_EFFECT_TITLE}' gelöscht"
+	save_checked(path, wb, before)
+	return f"Markierung abgeräumt ({unmarked} Zelle(n) wieder ohne Gelb{note})"
 
 
 #==================================================================

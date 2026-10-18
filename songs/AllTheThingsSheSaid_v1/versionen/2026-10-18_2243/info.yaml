@@ -1,0 +1,8 @@
+zeit: '2026-10-18 22:43:00'
+notiz: Strophen-Szenen verteilt
+werkzeug_git: 4faa111 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
+  show.yaml: 8301dbf24d80049650028419d76af4b60e24b5854c8badc724b6cb96ff2385b5
+  generated.cpp: c5d0cc6fcfd02281552aa2959a3df71b9537cf80f7f1921a6718ddda2638b7ee

@@ -17,6 +17,175 @@ extern volatile byte prog;
 extern byte songID;	// für einen Vorspann (next_song), der am Ende in seinen Song springt
 extern byte markerLED1, markerLED2, markerLED3, markerLED4, markerLED5, markerLED6, markerLED7;
 
+//#2 Physical - Dua Lipa  147 BPM  midi_offset 1/8 = 204 ms  (generiert aus songs/Physical_v1: struktur.xlsx + show.yaml)
+void gen_Physical() {
+
+	// Marker einzelner Parts (markers.parts in show.yaml), läuft nach setMarkerLEDs()
+#ifdef BASS
+	if (prog == 16) markerLED5 = ASaite_E;	// chorus 2 hit
+	else if (prog == 17) markerLED5 = ASaite_E;	// bridge 1
+	else markerLED5 = 0;
+#endif
+
+	setColorScheme(SCHEME_NEON);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// pause  1 T  1429ms  @0:00.000  -- Start-MIDI: alle Geräte schwarz
+#if defined(SCROLLMATRIX)
+		progScrollText("Physical by Dua Lipa", 15714, 90, getRandomColor(), 2);	// 1 Durchlauf = 15480 ms
+#elif defined(GITBOARD)
+		progBlack(1073, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#else
+		progBlack(1429, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'intro band' ab 0:15.714, Einstieg case 6
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_WAVE_OUT, 11837, 6, 147);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:13.673, Einstieg case 4
+		progScrollText("Physical by Dua Lipa", 12600, 90, getRandomColor(), 4);	// 1 Durchlauf = 12600 ms
+		break;
+#endif
+
+	case 3:	// synth intro  8 T  12244ms  @0:01.429  -- nur Synth, sehr leise (-21 dB): ruhiges Atmen; der Auftakt im letzten halben Takt lädt auf und explodiert auf den Band-Einsatz
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_CALM, 12244, 4, 147);
+		break;
+
+	case 4:	// synth intro (tail)  2 B  817ms  @0:13.673
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 817, 5, 147);
+		break;
+
+	case 5:	// intro band  8 T  13061ms  @0:14.490  -- größter Pegelsprung im Song (+14 dB): Blitze laufen pro Beat von den Drums nach außen
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_WAVE_OUT, 13061, 6, 147);
+		break;
+
+	case 6:	// verse 1  16 T  26122ms  @0:27.551  -- rhythmischer Puls im Beat, dunkler als das Intro, damit der Chorus aufgehen kann
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE, 26122, 7, 147);
+		break;
+
+	case 7:	// sample  2 T  2449ms  @0:53.673  -- Schwarz auf dem Sprach-Sample, im letzten halben Takt weißer Strobo im Takt (4 Blitze pro Beat) auf dem Synth-Auftakt - hier steigt auch der Trailer ein.
+		progBlack(2449, 8);
+		break;
+
+	case 8:	// sample (tail)  2 B  817ms  @0:56.122
+		setColorScheme(SCHEME_WHITE);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 817, 9, 147);
+		break;
+
+	case 9:	// chorus 1  15 T  24490ms  @0:56.939  -- lautester Formteil: volle Energie im Beat, Neon
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_DROP, 24490, 10, 147);
+		break;
+
+	case 10:	// chorus 1 hit  1 T  1632ms  @1:21.429  -- Motiv 'Let's get physical': 1 Takt weißer Strobo im Takt (4 Blitze pro Beat), beim ersten Mal weiß
+		setColorScheme(SCHEME_WHITE);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1632, 11, 147);
+		break;
+
+	case 11:	// drum fill  1 T  1633ms  @1:23.061  -- nur Drums: Spotlight auf die Mitte, der Rest tritt zurück
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_SOLO_DRUMS, 1633, 12, 147);
+		break;
+
+	case 12:	// snare roll  1 T  1633ms  @1:24.694  -- Snare-Wirbel steigert sich (build 1.0): lädt einen Takt auf, Explosion auf Verse 2
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 1633, 13, 147);
+		break;
+
+	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste (18.10.2026): alle Geräte schlagen auf jedem Beat wie ein Herz, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE_HEART, 24489, 14, 147);
+		break;
+
+	case 14:	// pre-chorus 2  1 T  1633ms  @1:50.816  -- die Band spielt hier durch (kein Stopp wie beim ersten Mal): aufladen statt Black, Explosion auf Chorus 2
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 1633, 15, 147);
+		break;
+
+	case 15:	// chorus 2  15 T  24490ms  @1:52.449  -- erkennbar gleich wie Chorus 1
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_DROP, 24490, 16, 147);
+		break;
+
+	case 16:	// chorus 2 hit  1 T  1632ms  @2:16.939  -- Motiv 'Let's get physical': 1 Takt Strobo im Takt (4 Blitze pro Beat), die ganze Bühne in einer Neon-Farbe pro Beat
+		setColorScheme(SCHEME_NEON);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1632, 17, 147);
+		break;
+
+	case 17:	// bridge 1  8 T  13062ms  @2:18.571  -- 'Hold on': neue Farbe, das Licht springt pro Beat von Gerät zu Gerät
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_PINGPONG, 13062, 18, 147);
+		break;
+
+	case 18:	// bridge 2  7 T  11428ms  @2:31.633  -- zweite Hälfte der Bridge: Bewegung wird gerichtet, von der Mitte nach außen
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_WAVE_OUT, 11428, 19, 147);
+		break;
+
+	case 19:	// bridge hit  1 T  1633ms  @2:43.061  -- Motiv 'Let's get physical': 1 Takt Strobo im Takt in einer Neon-Farbe pro Beat; danach fällt alles in den Breakdown
+		setColorScheme(SCHEME_NEON);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1633, 20, 147);
+		break;
+
+	case 20:	// chorus 3 solo voc  7 T  11428ms  @2:44.694  -- Breakdown, Gesang fast allein (-12 dB): alles zieht sich zurück
+		setColorScheme(SCHEME_BLUE);
+		scene(SCENE_CALM, 11428, 21, 147);
+		break;
+
+	case 21:	// chorus 3 solo voc hit  1 T  1633ms  @2:56.122  -- Motiv 'Let's get physical': 1 Takt Strobo im Takt in einer Neon-Farbe pro Beat; die Band kommt zurück
+		setColorScheme(SCHEME_NEON);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1633, 22, 147);
+		break;
+
+	case 22:	// chorus 3  7 T  11429ms  @2:57.755  -- Chorus wieder voll, erkennbar gleich
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_DROP, 11429, 23, 147);
+		break;
+
+	case 23:	// chorus 3 hit  1 T  1632ms  @3:09.184  -- Motiv 'Let's get physical': 1 Takt Strobo im Takt (4 Blitze pro Beat), die ganze Bühne in einer Neon-Farbe pro Beat
+		setColorScheme(SCHEME_NEON);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1632, 24, 147);
+		break;
+
+	case 24:	// outro  7 T  11429ms  @3:10.816  -- Finale eine Stufe über dem Chorus: Feuer auf allen Geräten
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_FIRE, 11429, 25, 147);
+		break;
+
+	case 25:	// outro hit  1 T  1633ms  @3:22.245  -- Letztes 'Physical': weißer Strobo im Takt wie beim ersten Mal, danach schwarz
+		setColorScheme(SCHEME_WHITE);
+		fxGate(147, 4);
+		scene(SCENE_COLORS, 1633, 26, 147);
+		break;
+
+	case 26:	// BLACK (Ende)    6530ms  @3:23.878  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(6530, 27);
+		break;
+
+	case 27:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
 //#3 Take On Me - a-ha  154 BPM  midi_offset 3/8 = 584 ms  (generiert aus songs/TakeOnMe_v1: struktur.xlsx + show.yaml)
 void gen_TakeOnMe() {
 
@@ -476,6 +645,840 @@ void gen_TakeOnMe() {
 	}
 }
 
+//#4 Don't Stop The Music - Rihanna  118 BPM  midi_offset 3/8 = 763 ms  (generiert aus songs/DontStopTheMusic_v1: struktur.xlsx + show.yaml)
+void gen_DontStopTheMusic() {
+
+	setColorScheme(SCHEME_NEON);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// pause  4 T  7373ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progBlack(2224, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#elif defined(GITBOARD)
+		progScrollText("Don't Stop The Music by Rihanna", 18559, 90, getRandomColor(), 2);	// 1 Durchlauf = 18540 ms
+#else
+		progBlack(7373, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:23.644, Einstieg case 4
+		progScrollText("Don't Stop The Music by Rihanna", 21420, 90, getRandomColor(), 4);	// 1 Durchlauf = 21420 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'intro' ab 0:18.559, Einstieg case 4
+		setColorScheme(SCHEME_NEON);
+		fxPulse(118, 102);
+		fxTimeOffset(11186);
+		scene(SCENE_PALETTE, 5085, 4, 118);
+		break;
+#endif
+
+	case 3:	// intro  8 T  16271ms  @0:07.373  -- Ein Farbband in Pink, Cyan und Violett läuft über die ganze Bühne und pumpt im Beat mit der Kick.
+		setColorScheme(SCHEME_NEON);
+		fxPulse(118, 102);
+		scene(SCENE_PALETTE, 16271, 4, 118);
+		break;
+
+	case 4:	// ist gettin late  8 T  16271ms  @0:23.644  -- Strophe kühl in Blau und Lila: auf der Matrix laufen Sinus- und Kosinuslinie im Takt, auf Gitarre und Bass fährt je Takt eine Lichtebene durch.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE_WAVES, 16271, 5, 118);
+		break;
+
+	case 5:	// who knew …  8 T  16271ms  @0:39.915  -- Eine Stufe mehr: die Bühnenhälften blitzen abwechselnd im Beat, die Farben wandern alle 2 Takte von Blau/Lila nach Pink/Cyan und zurück.
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(SCHEME_NEON, 4068);
+		scene(SCENE_CALL_RESPONSE, 16271, 6, 118);
+		break;
+
+	case 6:	// do u know what u started  8 T  15255ms  @0:56.186  -- Ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich ein Glitzern auf. Der letzte halbe Takt ist weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(15254);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 15255, 7, 118);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 15255, 7, 118);
+		fxLayerFlush();
+		break;
+
+	case 7:	// do u know what u started (tail)  2 B  1017ms  @1:11.441
+		setColorScheme(SCHEME_WHITE);
+		fxGate(118, 4);
+		scene(SCENE_COLORS, 1017, 8, 118);
+		break;
+
+	case 8:	// chorus 1a: i wanna take it away  4 T  8135ms  @1:12.458  -- 'take it away': drehender Stern in Pink, Cyan und Violett, warmweißer Blinder auf den Einsatz (2 Beats).
+		setColorScheme(SCHEME_NEON);
+		fxBlinder(0, 1017, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_STAR, 8135, 9, 118);
+		break;
+
+	case 9:	// chorus 1a: i just cant refuse it  4 T  8136ms  @1:20.593  -- 'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_SPARKLE, 8136, 10, 118);
+		break;
+
+	case 10:	// chorus 1b  4 T  8135ms  @1:28.729  -- Die ganze Bühne in einer Farbe, pro Beat die nächste, mit kurzer Blende statt hartem Sprung.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(30);
+		scene(SCENE_COLORS, 8135, 11, 118);
+		break;
+
+	case 11:	// chorus: i just cant refuse it  4 T  8136ms  @1:36.864  -- 'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_SPARKLE, 8136, 12, 118);
+		break;
+
+	case 12:	// verse 2  8 T  16271ms  @1:45.000  -- Ruhe nach dem Chorus: Wasserringe (wie bisher), weich über einen Takt eingeblendet.
+		fxTransition(TRANS_FADE, 2034);
+		progWaterRipple(16271, 13, 50, true, true);
+		break;
+
+	case 13:	// do u know what u started (2)  8 T  16271ms  @2:01.271  -- Ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf - Spannung bis zum Chorus.
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(16271);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 16271, 14, 118);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 16271, 14, 118);
+		fxLayerFlush();
+		break;
+
+	case 14:	// bridge: bass solo  7 T+2 B  15255ms  @2:17.542  -- Bass-Solo: der Übergang läuft über die Bühne zum Bass hin, zwei Kometen kreisen um den Bass, alle anderen atmen dunkel.
+		setColorScheme(SCHEME_SUNSET);
+		fxTransition(TRANS_STAGE_RL, 508);
+		scene(SCENE_SOLO_BASS, 15255, 15, 118);
+		break;
+
+	case 15:	// STROBO  2 B  1017ms  @2:32.797  -- Weißer Strobo im Takt (4 Blitze pro Beat) als harter Absprung in den Chorus.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(118, 4);
+		scene(SCENE_COLORS, 1017, 16, 118);
+		break;
+
+	case 16:	// chorus 2a: i wanna take it away  4 T  8135ms  @2:33.814  -- 'take it away': Stern in Pink, Cyan und Violett, Blinder auf den Einsatz; eine Stufe mehr als Chorus 1: die Lampen blitzen weiß auf 2 und 4.
+		setColorScheme(SCHEME_NEON);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1017, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(118, 2, 254, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 508);
+		scene(SCENE_STAR, 8135, 17, 118);
+		break;
+
+	case 17:	// chorus 2a: i just cant refuse it  4 T  8136ms  @2:41.949  -- 'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene.
+		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("DONT STOP THE MUSIC", 8136, 18, 508);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_SPARKLE, 8136, 18, 118);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 18:	// chorus 2a: i wanna take it away (2)  4 T  8135ms  @2:50.085  -- 'take it away': ab hier kippt die Farbe ins Warme - Stern in Orange, Pink, Lila und Gelb.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_STAR, 8135, 19, 118);
+		break;
+
+	case 19:	// chorus 2a: i just cant refuse it (2)  4 T  8136ms  @2:58.220  -- 'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene.
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("DONT STOP THE MUSIC", 8136, 20, 508);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_SPARKLE, 8136, 20, 118);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 20:	// chorus 4a: i wanna take it away  4 T  8136ms  @3:06.356  -- Höhepunkt: Feuer auf allen Geräten in Rot, Orange und Gelb, warmweißer Blinder auf den Einsatz.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(0, 1017, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_FIRE, 8136, 21, 118);
+		break;
+
+	case 21:	// chorus 4a: i just cant refuse it  4 T  8135ms  @3:14.492  -- Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 100,75), der in 'Bass Ende' ausklingt.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(7627, 2034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 254);
+		scene(SCENE_SPARKLE, 8135, 22, 118);
+		break;
+
+	case 22:	// Bass Ende  4 T  8136ms  @3:22.627  -- Nur noch der Bass: zwei rote Kometen kreisen um den Bass, alle anderen atmen dunkel; über die letzten 2 Takte blendet alles nach Schwarz aus.
+		setColorScheme(SCHEME_RED);
+		fxFadeOut(4068);
+		fxBlinder(0, 2034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 254);
+		fxBlinderCarry(508);
+		scene(SCENE_SOLO_BASS, 8136, 23, 118);
+		break;
+
+	case 23:	// BLACK (Ende)    10000ms  @3:30.763  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 24);
+		break;
+
+	case 24:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#6 No Roots - Alice Merton  116 BPM  midi_offset 1/4 = 517 ms  (generiert aus songs/NoRoots_v1: struktur.xlsx + show.yaml)
+void gen_NoRoots() {
+
+	setColorScheme(SCHEME_SUNSET);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// klick  3 T+2.5 B  6983ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progBlack(2532, 1);	// Lauftext verzögern, damit er genau an case 7 endet
+#elif defined(GITBOARD)
+		progBlack(499, 1);	// Lauftext verzögern, damit er genau an case 5 endet
+#else
+		progBlack(6983, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:20.172, Einstieg case 7
+		progScrollText("No Roots by Alice Merton", 17640, 90, getRandomColor(), 7);	// 1 Durchlauf = 17640 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:15.259, Einstieg case 5
+		progScrollText("No Roots by Alice Merton", 14760, 90, getRandomColor(), 5);	// 1 Durchlauf = 14760 ms
+		break;
+#endif
+
+	case 3:	// git  1.5 B  776ms  @0:06.983  -- Der Gitarren-Einwurf: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, der Rest dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(116, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 776, 4, 116);
+		break;
+
+	case 4:	// intro1  3 T+2.5 B  7500ms  @0:07.759  -- Ruhiges Atmen in Orange, Pink und Gelb, weich eingeblendet.
+		setColorScheme(SCHEME_SUNSET);
+		fxFadeIn(1034);
+		scene(SCENE_CALM, 7500, 5, 116);
+		break;
+
+	case 5:	// git (2)  1.5 B  775ms  @0:15.259  -- Der Gitarren-Einwurf: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, der Rest dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(116, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 775, 6, 116);
+		break;
+
+	case 6:	// verse 1a  2 T  4138ms  @0:16.034  -- Ein Farbband in warmen Farben läuft über die ganze Bühne (wie bisher, jetzt auf allen Geräten gleich schnell).
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_PALETTE, 4138, 7, 116);
+		break;
+
+	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe: dezenter Puls im Beat in warmen Farben, auf der Matrix Wasserringe.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE, 16552, 8, 116);
+		break;
+
+	case 8:	// verse 1b (2)  8 T  16552ms  @0:36.724  -- Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Orange, Pink und Gelb.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_CALL_RESPONSE, 16552, 9, 116);
+		break;
+
+	case 9:	// bridge  3 T+3.3 B  7914ms  @0:53.276  -- Wasserringe (wie bisher); in den letzten 2 Beats blendet der Blinder für das erste ROOTS ein.
+		fxBlinder(7914, 1293, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1034, 129);
+		progWaterRipple(7914, 10, 50, true, true);
+		break;
+
+	case 10:	// ROOTS 1  2.7 B  1396ms  @1:01.190  -- Motiv ROOTS: der Blinder blendet in den 2 Beats davor ein und ist genau auf dem ersten ROOTS voll; weißer Strobo im Takt auf Gitarre, Bass und Lampen, auf der Matrix ROOTS mit buntem Farbverlauf.
+		setColorScheme(SCHEME_WHITE);
+		fxBlinder(0, 1293, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1034, 129);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1396, 11, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1396, 11, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1396, 11, 2069);
+#else
+		progBlack(1396, 11);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 11:	// chorus a  1 T+1.3 B  2742ms  @1:02.586  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 2742, 12, 116);
+		break;
+
+	case 12:	// ROOTS 2  2.7 B  1396ms  @1:05.328  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1396, 13, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1396, 13, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1396, 13, 2069);
+#else
+		progBlack(1396, 13);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 13:	// chorus a (2)  1 T+2 B  3104ms  @1:06.724  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 3104, 14, 116);
+		break;
+
+	case 14:	// chorus rooooots  3 T+3 B  7758ms  @1:09.828  -- Schnelle Einzelblitze in Rot, Weiß und Blau.
+		setColorScheme(SCHEME_RETRO);
+		scene(SCENE_SPARKLE, 7758, 15, 116);
+		break;
+
+	case 15:	// ROOTS 1 (2)  3 B  1552ms  @1:17.586  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 16, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 16, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 16, 2069);
+#else
+		progBlack(1552, 16);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 16:	// chorus a (3)  1 T+1 B  2586ms  @1:19.138  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 2586, 17, 116);
+		break;
+
+	case 17:	// ROOTS 2 (2)  3 B  1552ms  @1:21.724  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 18, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 18, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 18, 2069);
+#else
+		progBlack(1552, 18);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 18:	// chorus a (4)  1 T+2 B  3103ms  @1:23.276  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 3103, 19, 116);
+		break;
+
+	case 19:	// chorus rooooots (2)  4 T  8276ms  @1:26.379  -- Schnelle Einzelblitze in Rot, Weiß und Blau; starker Blinder auf der letzten Viertel (Takt 46,75).
+		setColorScheme(SCHEME_RETRO);
+		fxBlinder(7759, 517, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 259);
+		scene(SCENE_SPARKLE, 8276, 20, 116);
+		break;
+
+	case 20:	// verse 2a  8 T  16552ms  @1:34.655  -- Weich in die Strophe: fallende Leuchtspuren in warmen Farben, die Farben wandern alle 2 Takte weiter.
+		setColorScheme(SCHEME_SUNSET);
+		setColorFade(FADE_TRIAD, 4138);
+		fxTransition(TRANS_FADE, 2069);
+		scene(SCENE_RAIN, 16552, 21, 116);
+		break;
+
+	case 21:	// verse 2b  8 T  16552ms  @1:51.207  -- Dezenter Puls im Beat in warmen Farben; auf der Matrix Kreise im Beat (wie bisher).
+		setColorScheme(SCHEME_SUNSET);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progCircles(16552, 22, 517);
+#else
+		scene(SCENE_VERSE, 16552, 22, 116);
+#endif
+		break;
+
+	case 22:	// bridge (2)  3 T+3 B  7758ms  @2:07.759  -- Ein Farbband in warmen Farben läuft über die ganze Bühne; in den letzten 2 Beats blendet der Blinder für ROOTS ein.
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(7758, 1293, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1034, 129);
+		scene(SCENE_PALETTE, 7758, 23, 116);
+		break;
+
+	case 23:	// ROOTS 1 (3)  3 B  1552ms  @2:15.517  -- Motiv ROOTS: der Blinder blendet in den 2 Beats davor ein und ist genau auf dem ersten ROOTS voll; weißer Strobo im Takt auf Gitarre, Bass und Lampen, auf der Matrix ROOTS mit buntem Farbverlauf.
+		setColorScheme(SCHEME_WHITE);
+		fxBlinder(0, 1293, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1034, 129);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 24, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 24, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 24, 2069);
+#else
+		progBlack(1552, 24);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 24:	// chorus a (5)  1 T+1 B  2586ms  @2:17.069  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 2586, 25, 116);
+		break;
+
+	case 25:	// ROOTS 2 (3)  3 B  1552ms  @2:19.655  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 26, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 26, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 26, 2069);
+#else
+		progBlack(1552, 26);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 26:	// chorus a (6)  1 T+2 B  3103ms  @2:21.207  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 3103, 27, 116);
+		break;
+
+	case 27:	// chorus rooooots (3)  3 T+3 B  7759ms  @2:24.310  -- Schnelle Einzelblitze in Rot, Weiß und Blau.
+		setColorScheme(SCHEME_RETRO);
+		scene(SCENE_SPARKLE, 7759, 28, 116);
+		break;
+
+	case 28:	// ROOTS 1 (4)  3 B  1552ms  @2:32.069  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 29, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 29, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 29, 2069);
+#else
+		progBlack(1552, 29);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 29:	// chorus a (7)  1 T+1 B  2586ms  @2:33.621  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 2586, 30, 116);
+		break;
+
+	case 30:	// ROOTS 2 (4)  3 B  1552ms  @2:36.207  -- Motiv ROOTS: weißer Strobo im Takt auf Gitarre, Bass und Lampen; auf der Matrix steht ROOTS mit buntem Farbverlauf in den Buchstaben.
+		setColorScheme(SCHEME_WHITE);
+		fxTextGradient(8, TEXT_GRAD_LETTERS);
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerGate(116, 4);
+		fxLayerBegin();
+#if DEVICE_CLASS == CLASS_GUITAR
+		scene(SCENE_COLORS, 1552, 31, 116);
+#elif DEVICE_CLASS == CLASS_LAMP
+		scene(SCENE_COLORS, 1552, 31, 116);
+#endif
+		fxLayerEnd(FX_OVER);
+#endif
+#if DEVICE_CLASS == CLASS_MATRIX
+		progText("ROOTS", 1552, 31, 2069);
+#else
+		progBlack(1552, 31);
+#endif
+#if (DEVICE_CLASS == CLASS_GUITAR) || (DEVICE_CLASS == CLASS_LAMP)
+		fxLayerFlush();
+#endif
+		break;
+
+	case 31:	// chorus a (8)  1 T+2 B  3103ms  @2:37.759  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Rot, Weiß, Blau), mit kurzer Blende.
+		setColorScheme(SCHEME_RETRO);
+		fxSoft(30);
+		scene(SCENE_COLORS, 3103, 32, 116);
+		break;
+
+	case 32:	// chorus rooooots (4)  4 T  8276ms  @2:40.862  -- Schnelle Einzelblitze in Rot, Weiß und Blau; am Ende drei kurze Blinder (Takt 82,5 / 82,75, der dritte auf die 1 vom Zwischenspiel).
+		setColorScheme(SCHEME_RETRO);
+		fxBlinderSlot(0);
+		fxBlinder(7241, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		fxBlinderSlot(1);
+		fxBlinder(7759, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		fxBlinderSlot(2);
+		fxBlinder(8276, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		scene(SCENE_SPARKLE, 8276, 33, 116);
+		break;
+
+	case 33:	// zwischenspiel  9 T  18621ms  @2:49.138  -- Kühler Kontrast: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder.
+		setColorScheme(SCHEME_ROYAL);
+		fxBlinder(0, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		scene(SCENE_DNA_FLIP_SCROLL, 18621, 34, 116);
+		break;
+
+	case 34:	// solo  8 T  14482ms  @3:07.759  -- Solo: zwei Kometen in Pink und Cyan kreisen um die Gitarre, alle anderen atmen dunkel; im letzten Takt lädt sich alles in Rot, Weiß, Blau auf, Explosion auf den Chorus.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_SOLO_GIT, 14482, 35, 116);
+		break;
+
+	case 35:	// solo (tail)  4 B  2069ms  @3:22.241
+		setColorScheme(SCHEME_RETRO);
+		scene(SCENE_BUILDUP, 2069, 36, 116);
+		break;
+
+	case 36:	// chorus  4 T  8276ms  @3:24.310  -- Drehender Stern in Rot, Weiß und Blau, warmweißer Blinder auf den Einsatz (2 Beats).
+		setColorScheme(SCHEME_RETRO);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_STAR, 8276, 37, 116);
+		break;
+
+	case 37:	// chorus (2)  4 T  8276ms  @3:32.586  -- Schnelle bunte Einzelblitze (wie bisher).
+		progFastBlingBling(8276, 7, 38);
+		break;
+
+	case 38:	// chorus (3)  4 T  8276ms  @3:40.862  -- Der letzte Chorus sackt nicht ab: Feuer auf allen Geräten in Rot, Orange und Gelb.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_FIRE, 8276, 39, 116);
+		break;
+
+	case 39:	// chorus (4)  4 T  8276ms  @3:49.138  -- Dichtes Glitzern in Rot, Orange und Gelb; auf der letzten Viertel (Takt 115,75) springt ein starker Blinder auf und klingt 5 Sekunden ins Schluss-Schwarz aus.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(7759, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 517);
+		scene(SCENE_SPARKLE, 8276, 40, 116);
+		break;
+
+	case 40:	// BLACK (Ende)    10000ms  @3:57.414  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progBlack(10000, 41);
+		break;
+
+	case 41:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#7 Firework - Katy Perry  124 BPM  midi_offset 1/4 = 484 ms  (generiert aus songs/Firework_v1: struktur.xlsx + show.yaml)
+void gen_Firework() {
+
+	setColorScheme(SCHEME_ROYAL);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// text  3 T+2 B  6290ms  @0:00.000  -- Alles schwarz bis zum Einsatz.
+#if defined(SCROLLMATRIX)
+		progScrollText("Firework by Katy Perry", 16935, 90, getRandomColor(), 2);	// 1 Durchlauf = 16560 ms
+#elif defined(GITBOARD)
+		progScrollText("Firework by Katy Perry", 14032, 90, getRandomColor(), 2);	// 1 Durchlauf = 13680 ms
+#else
+		progBlack(6290, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'intro1' ab 0:16.935, Einstieg case 5
+		setColorScheme(SCHEME_ROYAL);
+		fxSoft(60);
+		scene(SCENE_STAR, 5807, 5, 124);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'intro1' ab 0:14.032, Einstieg case 5
+		setColorScheme(SCHEME_ROYAL);
+		fxSoft(60);
+		scene(SCENE_STAR, 8710, 5, 124);
+		break;
+#endif
+
+	case 3:	// snarewirbel  2 B  968ms  @0:06.290  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 968, 4, 124);
+		break;
+
+	case 4:	// intro1  8 T  15484ms  @0:07.258  -- Ruhiger Anfang: drehender Stern in Blau, Lila und Weiß, die Farben fließen weich ineinander.
+		setColorScheme(SCHEME_ROYAL);
+		fxSoft(60);
+		scene(SCENE_STAR, 15484, 5, 124);
+		break;
+
+	case 5:	// verse 1a  8 T  15484ms  @0:22.742  -- Die Geräte füllen sich langsam in Blau und Lila, die Farben wandern alle 2 Takte nach Pink/Orange und zurück.
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 3871);
+		scene(SCENE_GLOW, 15484, 6, 124);
+		break;
+
+	case 6:	// verse 1b  8 T  15484ms  @0:38.226  -- Kleine Steigerung: fallende Leuchtspuren in Blau und Lila, die Farbe wandert alle 2 Takte leicht weiter.
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_ANALOG, 3871);
+		scene(SCENE_RAIN, 15484, 7, 124);
+		break;
+
+	case 7:	// bridge  7 T  13548ms  @0:53.710  -- 'ignite the light': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(13548);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 13548, 8, 124);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 13548, 8, 124);
+		fxLayerFlush();
+		break;
+
+	case 8:	// übergang  1 T  1936ms  @1:07.258  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 1936, 9, 124);
+		break;
+
+	case 9:	// chorus 1  7 T+2 B  14516ms  @1:09.194  -- Drehender Stern in Orange, Pink, Lila und Gelb, warmweißer Blinder auf den Einsatz; auf der Matrix FIREWORK über dem Stern, blendet nach 2 Takten aus.
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(0, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3871);
+		fxLayerFadeOut(968);
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("FIREWORK", 14516, 10, 14516);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_STAR, 14516, 10, 124);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 10:	// übergang (2)  2 B  967ms  @1:23.710  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 967, 11, 124);
+		break;
+
+	case 11:	// verse 2a  8 T  15484ms  @1:24.677  -- Die ganze Bühne in einer Farbe, pro Beat die nächste (Pink, Cyan, Violett), mit kurzer Blende.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(30);
+		scene(SCENE_COLORS, 15484, 12, 124);
+		break;
+
+	case 12:	// verse 2b  8 T  15484ms  @1:40.161  -- Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_CALL_RESPONSE, 15484, 13, 124);
+		break;
+
+	case 13:	// bridge (2)  7 T  13549ms  @1:55.645  -- 'ignite the light': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(13548);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 13549, 14, 124);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 13549, 14, 124);
+		fxLayerFlush();
+		break;
+
+	case 14:	// übergang (3)  1 T  1935ms  @2:09.194  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 1935, 15, 124);
+		break;
+
+	case 15:	// chorus 2a  7 T+2 B  14516ms  @2:11.129  -- Feuer auf allen Geräten in Rot, Orange und Gelb, warmweißer Blinder auf den Einsatz; auf der Matrix FIREWORK, blendet nach 2 Takten aus.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(0, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3871);
+		fxLayerFadeOut(968);
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("FIREWORK", 14516, 16, 14516);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_FIRE, 14516, 16, 124);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 16:	// übergang (4)  2 B  968ms  @2:25.645  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 968, 17, 124);
+		break;
+
+	case 17:	// BOOM 1  8 T  15484ms  @2:26.613  -- 'boom boom boom': Schläge auf die Viertel in warmen Farben, dazu ein warmweißer Blinder auf jede 1 (jeder Takt, 2 Beats).
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinderBeat(124, 4, 968, 255, FX_BLINDER_WARM, DEV_ALL, 0);
+		scene(SCENE_DROP, 15484, 18, 124);
+		break;
+
+	case 18:	// nur vocals  8 T  15484ms  @2:42.097  -- Die Bühne tritt zurück, nur die Stimme: ruhiges Atmen in Blau, halb hell, weich eingeblendet.
+		setColorScheme(SCHEME_BLUE);
+		fxTransition(TRANS_FADE, 1935);
+		fxDim(128);
+		scene(SCENE_CALM, 15484, 19, 124);
+		break;
+
+	case 19:	// BOOM 3  8 T  15484ms  @2:57.581  -- Der Blitz läuft pro Beat von der Mitte nach außen, in warmen Farben; warmweißer Blinder auf die 1 (Takt 93).
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(0, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_WAVE_OUT, 15484, 20, 124);
+		break;
+
+	case 20:	// BOOM 4  7 T  13548ms  @3:13.065  -- Wasserringe (wie bisher), darüber baut sich ein Glitzern auf - Anlauf zum Finale.
+		fxLayerFadeIn(13548);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 13548, 21, 124);
+		fxLayerEnd(FX_ADD, 102);
+		progWaterRipple(13548, 21, 50, true, false);
+		fxLayerFlush();
+		break;
+
+	case 21:	// strobo snarewirbel  1 T  1935ms  @3:26.613  -- Lädt sich einen Takt lang in Rot, Orange und Gelb auf, Explosion genau auf den Chorus.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_BUILDUP, 1935, 22, 124);
+		break;
+
+	case 22:	// chorus 2a (2)  7 T+2 B  14517ms  @3:28.548  -- Drehender Stern in Rot, Orange und Gelb, Blinder auf den Einsatz; die Lampen blitzen weiß auf 2 und 4.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinderSlot(0);
+		fxBlinder(0, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(124, 2, 242, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 484);
+		scene(SCENE_STAR, 14517, 23, 124);
+		break;
+
+	case 23:	// übergang (5)  2 B  967ms  @3:43.065  -- Weißer Strobo im Takt (4 Blitze pro Beat) als Absprung.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(124, 4);
+		scene(SCENE_COLORS, 967, 24, 124);
+		break;
+
+	case 24:	// chorus 2  7 T+2 B  14516ms  @3:44.032  -- Höhepunkt: dichtes Glitzern in Rot, Orange und Gelb; am Ende kurze Blinder auf den Vierteln (Takt 124 / 124,25, der dritte auf 124,5 im Snarewirbel).
+		setColorScheme(SCHEME_FIRE);
+		fxBlinderSlot(0);
+		fxBlinder(13548, 387, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(97, 97);
+		fxBlinderSlot(1);
+		fxBlinder(14032, 387, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(97, 97);
+		fxBlinderSlot(2);
+		fxBlinder(14516, 387, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(97, 97);
+		scene(SCENE_SPARKLE, 14516, 25, 124);
+		break;
+
+	case 25:	// strobo snarewirbel (2)  2 B  968ms  @3:58.548  -- Schwarz mit dem dritten kurzen Blinder (Takt 124,5); auf der letzten Viertel (Takt 124,75) springt ein starker Blinder auf und klingt 5 Sekunden ins Schluss-Schwarz aus.
+		fxBlinderSlot(0);
+		fxBlinder(0, 387, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(97, 97);
+		fxBlinderSlot(1);
+		fxBlinder(484, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 484);
+		progBlack(968, 26);
+		break;
+
+	case 26:	// BLACK (Ende)    10000ms  @3:59.516  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progBlack(10000, 27);
+		break;
+
+	case 27:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
 //#8 Dancing On My Own - Robyn  122 BPM  midi_offset 1/8 = 246 ms  (generiert aus songs/DancingOnMyOwn_v1: struktur.xlsx + show.yaml)
 void gen_DancingOnMyOwn() {
 
@@ -511,9 +1514,9 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_CALM, 15737, 4, 122);
 		break;
 
-	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein: Gitarre und Bass leuchten Zone für Zone im Beat, Lampen mit Lichtschuss pro Beat, auf der Matrix farbiger Regen in Blautönen
+	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: alle Geräte schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 15738, 5, 122);
+		scene(SCENE_VERSE_HEART, 15738, 5, 122);
 		break;
 
 	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU, der Rest bleibt im Verse-Puls, Farben Blau/Violett
@@ -552,9 +1555,9 @@ void gen_DancingOnMyOwn() {
 		progBlack(3935, 12);
 		break;
 
-	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett), auf der Matrix farbiger Regen
+	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 11803, 13, 122);
+		scene(SCENE_VERSE_WAVES, 11803, 13, 122);
 		break;
 
 	case 13:	// bridge  4 T  7869ms  @1:47.951  -- wie der erste Pre-Chorus: lädt sich über 4 Takte in warmen Farben auf und entlädt sich genau auf den Chorus
@@ -672,13 +1675,15 @@ void gen_ILoveIt() {
 
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:16.750, Einstieg case 5
-		progFullColors(12500, 5, 1000);
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 12500, 5, 120);
 		break;
 #endif
 
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:13.750, Einstieg case 5
-		progFullColors(15500, 5, 1000);
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 15500, 5, 120);
 		break;
 #endif
 
@@ -686,8 +1691,9 @@ void gen_ILoveIt() {
 		progPalette(8000, 6, 4);
 		break;
 
-	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Alter Effekt: alle LEDs einfarbig, alle 2 Beats eine neue Farbe.
-		progFullColors(16000, 5, 1000);
+	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe neu (18.10.2026, statt der alten Vollfarben): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 16000, 5, 120);
 		break;
 
 	case 5:	// chorus 1  4 T  8000ms  @0:29.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein.
@@ -699,7 +1705,8 @@ void gen_ILoveIt() {
 		progScrollText("I love it by Icona Pop", 17000, 90, getRandomColor(), 7);	// 1 Durchlauf = 16560 ms
 		break;
 	case 7:	// Rest von 'verse 2' ab 0:46.250, Einstieg case 9
-		progMatrixScanner(7000, 9);
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_HEART, 7000, 9, 120);
 		break;
 #endif
 
@@ -708,12 +1715,14 @@ void gen_ILoveIt() {
 		progScrollText("I love it by Icona Pop", 14000, 90, getRandomColor(), 7);	// 1 Durchlauf = 13680 ms
 		break;
 	case 7:	// Rest von 'verse 2' ab 0:43.250, Einstieg case 9
-		progMatrixScanner(10000, 9);
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_HEART, 10000, 9, 120);
 		break;
 #endif
 
-	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alter Effekt: Scanner, eine Leuchtlinie fährt hin und her.
-		progMatrixScanner(16000, 9);
+	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Strophe neu (18.10.2026, statt des alten Scanners): alle Geräte schlagen auf jedem Beat wie ein Herz in Orange/Pink/Lila, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_HEART, 16000, 9, 120);
 		break;
 
 	case 9:	// chorus 2  4 T  8000ms  @0:53.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats.
@@ -730,8 +1739,9 @@ void gen_ILoveIt() {
 		progSternNeu(16000, 500, 12, 5, 26, 5, false, 4);
 		break;
 
-	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe.
-		progFullColors(16000, 13, 500);
+	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- wie verse 1: Zonen im Beat, Lichtschuss, Plasma-Wolken auf der Matrix
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 16000, 13, 120);
 		break;
 
 	case 13:	// chorus 3  8 T  16000ms  @1:49.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.
@@ -765,6 +1775,813 @@ void gen_ILoveIt() {
 		break;
 
 	case 19:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#10 Bloody Mary - Lady Gaga  114 BPM  midi_offset 1/8 = 263 ms  (generiert aus songs/BloodyMary_v1: struktur.xlsx + show.yaml)
+void gen_BloodyMary() {
+
+	setColorScheme(SCHEME_ROYAL);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// BLACK  1 T  1842ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progBlack(1044, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#elif defined(GITBOARD)
+		progBlack(3924, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#else
+		progBlack(1842, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:18.684, Einstieg case 4
+		progScrollText("Bloody Mary by Lady Gaga", 17640, 90, getRandomColor(), 4);	// 1 Durchlauf = 17640 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:18.684, Einstieg case 4
+		progScrollText("Bloody Mary by Lady Gaga", 14760, 90, getRandomColor(), 4);	// 1 Durchlauf = 14760 ms
+		break;
+#endif
+
+	case 3:	// synth intro  8 T  16842ms  @0:01.842  -- Dunkler Einstieg: die Geräte füllen sich langsam in Blau und Lila, die Farben wandern alle 2 Takte nach Pink und zurück.
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 4211);
+		scene(SCENE_GLOW, 16842, 4, 114);
+		break;
+
+	case 4:	// verse 1  8 T  16842ms  @0:18.684  -- Blutrote fallende Leuchtspuren, weich eingeblendet.
+		setColorScheme(SCHEME_RED);
+		fxTransition(TRANS_FADE, 1053);
+		scene(SCENE_RAIN, 16842, 5, 114);
+		break;
+
+	case 5:	// dance dance  8 T  16842ms  @0:35.526  -- Motiv 'dance dance': die Bühnenhälften blitzen abwechselnd im Beat in Rot, Weiß und Blau; auf der Matrix pulsiert DANCE im Beat über der Szene.
+		setColorScheme(SCHEME_RETRO);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("DANCE", 16842, 6, 526);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_CALL_RESPONSE, 16842, 6, 114);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 6:	// chorus 1  8 T  16843ms  @0:52.368  -- Drehender Stern in Pink, Cyan und Violett, die Farben blenden weich ineinander; warmweißer Blinder auf den Einsatz (2 Beats).
+		setColorScheme(SCHEME_NEON);
+		fxSoft(40);
+		fxBlinder(0, 1053, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_STAR, 16843, 7, 114);
+		break;
+
+	case 7:	// chorus instrumental  4 T  8421ms  @1:09.211  -- Schnelle bunte Einzelblitze (wie bisher).
+		progFastBlingBling(8421, 3, 8);
+		break;
+
+	case 8:	// FX  1 T  2105ms  @1:17.632  -- Atempause vor verse 2: Schwarz, ein warmweißer Blinder springt auf die 1 (Takt 38) und klingt über den ganzen Takt aus.
+		fxBlinder(0, 2105, 255, FX_BLINDER_WARM, DEV_ALL);
+		progBlack(2105, 9);
+		break;
+
+	case 9:	// verse 2  8 T  16842ms  @1:19.737  -- DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_DNA_FLIP_SCROLL, 16842, 10, 114);
+		break;
+
+	case 10:	// dance dance (2)  8 T  16842ms  @1:36.579  -- Motiv 'dance dance': die Bühnenhälften blitzen abwechselnd im Beat in Rot, Weiß und Blau; auf der Matrix pulsiert DANCE im Beat über der Szene.
+		setColorScheme(SCHEME_RETRO);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("DANCE", 16842, 11, 526);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_CALL_RESPONSE, 16842, 11, 114);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 11:	// chorus 1 (2)  8 T  16842ms  @1:53.421  -- Stern wie in chorus 1 mit Blinder auf den Einsatz, eine Stufe mehr: die Lampen blitzen zusätzlich weiß auf 2 und 4.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(40);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1053, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(114, 2, 263, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 526);
+		scene(SCENE_STAR, 16842, 12, 114);
+		break;
+
+	case 12:	// synth break  4 T  8421ms  @2:10.263  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät über die Bühne, Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(60);
+		scene(SCENE_COLORS_WAVE, 8421, 13, 114);
+		break;
+
+	case 13:	// git vs synth (git)  2 B  1053ms  @2:18.684  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1053, 14, 114);
+		break;
+
+	case 14:	// git vs synth (synth)  2 B  1052ms  @2:19.737  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1052, 15, 114);
+		break;
+
+	case 15:	// git vs synth (git) (2)  2 B  1053ms  @2:20.789  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1053, 16, 114);
+		break;
+
+	case 16:	// git vs synth (synth) (2)  2 B  1053ms  @2:21.842  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1053, 17, 114);
+		break;
+
+	case 17:	// git vs synth (git) (3)  2 B  1052ms  @2:22.895  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1052, 18, 114);
+		break;
+
+	case 18:	// git vs synth (synth) (3)  2 B  1053ms  @2:23.947  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1053, 19, 114);
+		break;
+
+	case 19:	// git vs synth (git) (4)  2 B  1053ms  @2:25.000  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1053, 20, 114);
+		break;
+
+	case 20:	// git vs synth (synth) (4)  2 B  1052ms  @2:26.053  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1052, 21, 114);
+		break;
+
+	case 21:	// git vs synth (git) (5)  2 B  1053ms  @2:27.105  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1053, 22, 114);
+		break;
+
+	case 22:	// git vs synth (synth) (5)  2 B  1053ms  @2:28.158  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1053, 23, 114);
+		break;
+
+	case 23:	// git vs synth (git) (6)  2 B  1052ms  @2:29.211  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1052, 24, 114);
+		break;
+
+	case 24:	// git vs synth (synth) (6)  2 B  1053ms  @2:30.263  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1053, 25, 114);
+		break;
+
+	case 25:	// git vs synth (git) (7)  2 B  1052ms  @2:31.316  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1052, 26, 114);
+		break;
+
+	case 26:	// git vs synth (synth) (7)  2 B  1053ms  @2:32.368  -- Der Synth antwortet: schnelle Einzelblitze in Pink, Cyan und Violett nur auf Lampen und Matrix, Gitarre und Bass dunkel.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		scene(SCENE_SPARKLE, 1053, 27, 114);
+		break;
+
+	case 27:	// git vs synth (git) (8)  2 B  1053ms  @2:33.421  -- Die Gitarre antwortet: weißer Strobo im Takt (4 Blitze pro Beat) nur auf Gitarre und Bass, Lampen und Matrix dunkel.
+		setColorScheme(SCHEME_WHITE);
+		fxGate(114, 4);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		scene(SCENE_COLORS, 1053, 28, 114);
+		break;
+
+	case 28:	// git vs synth (synth) (8)  2 B  1052ms  @2:34.474  -- Der Synth antwortet ein letztes Mal (Einzelblitze nur auf Lampen und Matrix); starker Blinder auf die letzte Viertel (Takt 74,75) als Absprung ins Instrumental.
+		setColorScheme(SCHEME_NEON);
+		fxMaskStage(DEV_LAMPE1 | DEV_LAMPE2 | DEV_DRUMS | DEV_GITBOARD);
+		fxBlinder(526, 526, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 263);
+		scene(SCENE_SPARKLE, 1052, 29, 114);
+		break;
+
+	case 29:	// instrumental  8 T  16842ms  @2:35.526  -- Wasserringe (wie bisher), weich eingeblendet.
+		fxTransition(TRANS_FADE, 1053);
+		progWaterRipple(16842, 30, 50, true, true);
+		break;
+
+	case 30:	// dance dance (3)  8 T  16843ms  @2:52.368  -- Motiv 'dance dance' (Bühnenhälften abwechselnd in Rot, Weiß, Blau, DANCE auf der Matrix); darüber baut sich über den ganzen Part ein Glitzern auf - Anlauf zum letzten Chorus.
+		setColorScheme(SCHEME_RETRO);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxTextUnder(38);
+		fxTextBegin();
+		progText("DANCE", 16843, 31, 526);
+		fxTextEnd();
+#endif
+		fxLayerFadeIn(16842);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 16843, 31, 114);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_CALL_RESPONSE, 16843, 31, 114);
+		fxLayerFlush();
+		break;
+
+	case 31:	// chorus a  8 T  16842ms  @3:09.211  -- Drehender Stern, eine Stufe wärmer in Rot, Orange und Gelb; Blinder auf den Einsatz, am Ende des 4. Takts drei kurze Blinder auf drei Vierteln (Takt 94,5 / 94,75 / 95).
+		setColorScheme(SCHEME_FIRE);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1053, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinder(7368, 421, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(105, 105);
+		fxBlinderSlot(2);
+		fxBlinder(7895, 421, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(105, 105);
+		fxBlinderSlot(3);
+		fxBlinder(8421, 421, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(105, 105);
+		scene(SCENE_STAR, 16842, 32, 114);
+		break;
+
+	case 32:	// chorus b  8 T  16842ms  @3:26.053  -- Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 106,75), der ins Outro ausklingt.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(16316, 2105, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 263);
+		scene(SCENE_SPARKLE, 16842, 33, 114);
+		break;
+
+	case 33:	// outro  2 T  4210ms  @3:42.895  -- Rot, blendet über die 2 Takte weich nach Schwarz.
+		setColorScheme(SCHEME_RED);
+		fxBlinder(0, 2105, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 263);
+		fxBlinderCarry(526);
+		scene(SCENE_FADEOUT, 4210, 34, 114);
+		break;
+
+	case 34:	// BLACK (Ende)    10000ms  @3:47.105  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 35);
+		break;
+
+	case 35:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#11 Titanium - David Guetta  126 BPM  midi_offset 0 = 0 ms  (generiert aus songs/Titanium_v1: struktur.xlsx + show.yaml)
+void gen_Titanium() {
+
+	setColorScheme(SCHEME_ICE);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// text  6 T+1 B  11905ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progBlack(3312, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#elif defined(GITBOARD)
+		progScrollText("Titanium by David Guetta", 14762, 90, getRandomColor(), 2);	// 1 Durchlauf = 14760 ms
+#else
+		progBlack(11905, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:20.952, Einstieg case 4
+		progScrollText("Titanium by David Guetta", 17640, 90, getRandomColor(), 4);	// 1 Durchlauf = 17640 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'intro' ab 0:14.762, Einstieg case 4
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_GLOW, 6190, 4, 126);
+		break;
+#endif
+
+	case 3:	// intro  4 T+3 B  9047ms  @0:11.905  -- Weich eingeblendet: die Geräte füllen sich langsam in Eisblau.
+		setColorScheme(SCHEME_ICE);
+		fxFadeIn(1905);
+		scene(SCENE_GLOW, 9047, 4, 126);
+		break;
+
+	case 4:	// v1: u shout it out  8 T  15238ms  @0:20.952  -- Nur Gitarre und Stimme: ruhiges Atmen in Eisblau, die Farben wandern alle 2 Takte nach Pink/Gelb und zurück.
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 3810);
+		scene(SCENE_CALM, 15238, 5, 126);
+		break;
+
+	case 5:	// v1: im criticised  8 T  15239ms  @0:36.190  -- Kleine Steigerung: fallende Leuchtspuren in Blau und Lila, weich eingeblendet.
+		setColorScheme(SCHEME_ROYAL);
+		fxTransition(TRANS_FADE, 952);
+		scene(SCENE_RAIN, 15239, 6, 126);
+		break;
+
+	case 6:	// im bulletproof  8 T  13333ms  @0:51.429  -- Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
+		setColorScheme(SCHEME_ICE);
+		fxLayerFadeIn(13333);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 13333, 7, 126);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_VERSE, 13333, 7, 126);
+		fxLayerFlush();
+		break;
+
+	case 7:	// im bulletproof (tail)  4 B  1905ms  @1:04.762
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 1905, 8, 126);
+		break;
+
+	case 8:	// chorus 1  8 T  15238ms  @1:06.667  -- Die ganze Bühne in einer Farbe pro Beat, von Weiß alle 2 Takte nach Eisblau und zurück, mit kurzer Blende; warmweißer Blinder auf den Einsatz, auf der Matrix TITANIUM, blendet nach 2 Takten aus.
+		setColorScheme(SCHEME_WHITE);
+		setColorFade(SCHEME_ICE, 3810);
+		fxSoft(30);
+		fxBlinder(0, 952, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3810);
+		fxLayerFadeOut(952);
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("TITANIUM", 15238, 9, 16190);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_COLORS, 15238, 9, 126);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 9:	// bridge  4 T  7619ms  @1:21.905  -- Der Drop: weißer Blitz auf den Einsatz, danach Schockwellen und Blitze auf jeden Beat in Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		fxTransition(TRANS_FLASH, 476);
+		scene(SCENE_DROP, 7619, 10, 126);
+		break;
+
+	case 10:	// half time  4 T  7619ms  @1:29.524  -- Halftime sichtbar: ein warmweißer Blinder auf jede Halbe (alle 2 Beats, 1,5 Beats lang) über dunklem Atmen in Pink und Cyan.
+		setColorScheme(SCHEME_NEON);
+		fxBlinderBeat(126, 2, 714, 255, FX_BLINDER_WARM, DEV_ALL, 0);
+		scene(SCENE_CALM, 7619, 11, 126);
+		break;
+
+	case 11:	// v2: cut me down  8 T  15238ms  @1:37.143  -- Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_DNA_FLIP, 15238, 12, 126);
+		break;
+
+	case 12:	// v2: race your voice  8 T  15238ms  @1:52.381  -- Wasserringe (wie bisher), die Farben wandern alle 2 Takte weiter.
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 3810);
+		progWaterRipple(15238, 13, 50, true, false);
+		break;
+
+	case 13:	// im bulletproof (2)  8 T  13333ms  @2:07.619  -- Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
+		setColorScheme(SCHEME_ICE);
+		fxLayerFadeIn(13333);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 13333, 14, 126);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_VERSE, 13333, 14, 126);
+		fxLayerFlush();
+		break;
+
+	case 14:	// im bulletproof (2) (tail)  4 B  1905ms  @2:20.952
+		setColorScheme(SCHEME_WHITE);
+		scene(SCENE_BUILDUP, 1905, 15, 126);
+		break;
+
+	case 15:	// chorus 2  8 T  15238ms  @2:22.857  -- Wie chorus 1 (eine Farbe pro Beat, Weiß nach Eisblau, Blinder auf den Einsatz, TITANIUM auf der Matrix); dazu blitzen die Lampen weiß auf 2 und 4.
+		setColorScheme(SCHEME_WHITE);
+		setColorFade(SCHEME_ICE, 3810);
+		fxSoft(30);
+		fxBlinderSlot(0);
+		fxBlinder(0, 952, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(126, 2, 238, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 476);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3810);
+		fxLayerFadeOut(952);
+		fxLayerUnder(38);
+		fxLayerBegin();
+		progText("TITANIUM", 15238, 16, 16190);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_COLORS, 15238, 16, 126);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 16:	// bridge (2)  7 T+3 B  14762ms  @2:38.095  -- Der Drop wie beim ersten Mal: weißer Blitz auf den Einsatz, Schockwellen und Blitze in Pink, Cyan und Violett; starker Blinder auf der letzten Viertel (Takt 91,5), danach Schwarz.
+		setColorScheme(SCHEME_NEON);
+		fxTransition(TRANS_FLASH, 476);
+		fxBlinder(14286, 476, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 119);
+		scene(SCENE_DROP, 14762, 17, 126);
+		break;
+
+	case 17:	// Pause: STONE HEART ..  8 T+1 B  15714ms  @2:52.857  -- 'Stone heart': nur Gitarre und Bass schlagen wie ein Herz auf jedem Beat in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein.
+		setColorScheme(SCHEME_RED);
+		fxMaskStage(DEV_GIT | DEV_BASS);
+		fxBlinder(15714, 4762, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(3810, 0);
+		scene(SCENE_VERSE_HEART, 15714, 18, 126);
+		break;
+
+	case 18:	// chorus 3  8 T  15239ms  @3:08.571  -- Glitzern in Eisblau; der Blinder aus der Pause steht voll auf dem Einsatz (Takt 100) und klingt in 2 Beats ab.
+		setColorScheme(SCHEME_ICE);
+		fxBlinder(0, 4762, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(3810, 0);
+		scene(SCENE_SPARKLE, 15239, 19, 126);
+		break;
+
+	case 19:	// chorus 3b  8 T  15238ms  @3:23.810  -- Zweite Hälfte: das Glitzern wird heiß - Rot, Orange und Gelb.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_SPARKLE, 15238, 20, 126);
+		break;
+
+	case 20:	// bridge triolisch  7 T  13333ms  @3:39.048  -- Weißer Strobo im Takt, triolisch (3 Blitze pro Beat); drei kurze Blinder auf den letzten drei Vierteln (Takt 122,25 / 122,5 / 122,75).
+		setColorScheme(SCHEME_WHITE);
+		fxGate(126, 3);
+		fxBlinderSlot(0);
+		fxBlinder(11905, 381, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(95, 95);
+		fxBlinderSlot(1);
+		fxBlinder(12381, 381, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(95, 95);
+		fxBlinderSlot(2);
+		fxBlinder(12857, 381, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(95, 95);
+		scene(SCENE_COLORS, 13333, 21, 126);
+		break;
+
+	case 21:	// matrix  4 T  7619ms  @3:52.381  -- Eisblau, blendet über die 4 Takte weich nach Schwarz.
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_FADEOUT, 7619, 22, 126);
+		break;
+
+	case 22:	// BLACK (Ende)    10000ms  @4:00.000  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 23);
+		break;
+
+	case 23:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#12 Such A Shame - Talk Talk  116 BPM  midi_offset 3/8 = 776 ms  (generiert aus songs/SuchAShame_v1: struktur.xlsx + show.yaml)
+void gen_SuchAShame() {
+
+	setColorScheme(SCHEME_ROYAL);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// black  6 T  11638ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("Such A Shame by Talk Talk", 18362, 90, getRandomColor(), 2);	// 1 Durchlauf = 18180 ms
+#elif defined(GITBOARD)
+		progScrollText("Such A Shame by Talk Talk", 15776, 90, getRandomColor(), 2);	// 1 Durchlauf = 15300 ms
+#else
+		progBlack(11638, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'intro + verse 1' ab 0:18.362, Einstieg case 4
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 4138, false, 6724);
+		scene(SCENE_GLOW, 16035, 4, 116);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 2:	// Rest von 'intro + verse 1' ab 0:15.776, Einstieg case 4
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 4138, false, 4138);
+		scene(SCENE_GLOW, 18621, 4, 116);
+		break;
+#endif
+
+	case 3:	// intro + verse 1  11 T  22759ms  @0:11.638  -- Kühler Einstieg: die Geräte füllen sich langsam in Eisblau, die Farben wandern alle 2 Takte nach Pink/Gelb und zurück.
+		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_TRIAD, 4138);
+		scene(SCENE_GLOW, 22759, 4, 116);
+		break;
+
+	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Dezenter Puls im Beat in Blau und Lila, auf der Matrix farbiger Regen; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE, 10344, 5, 116);
+		break;
+
+	case 5:	// bridge 1 (tail)  4 B  2069ms  @0:44.741
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_BUILDUP, 2069, 6, 116);
+		break;
+
+	case 6:	// chorus 1  12 T  24828ms  @0:46.810  -- Drehender Stern in Blau, Lila und Weiß, die Farben blenden weich ineinander; warmweißer Blinder auf den Einsatz (2 Beats).
+		setColorScheme(SCHEME_ROYAL);
+		fxSoft(40);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_STAR, 24828, 7, 116);
+		break;
+
+	case 7:	// übergang  4 T  8276ms  @1:11.638  -- Schnelle bunte Einzelblitze (wie bisher), über die letzten 2 Takte blenden sie in die Pause aus.
+		fxFadeOut(4138);
+		progFastBlingBling(8276, 8, 8);
+		break;
+
+	case 8:	// pause  2 T+2 B  5172ms  @1:19.914  -- Schwarz; ein kurzer warmweißer Blinder auf die 1 (Takt 40), klingt in 2 Beats ab.
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		progBlack(5172, 9);
+		break;
+
+	case 9:	// verse 2  8 T  16552ms  @1:25.086  -- Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_DNA_FLIP, 16552, 10, 116);
+		break;
+
+	case 10:	// bridge 2  5 T  10345ms  @1:41.638  -- Ein Farbband in Blau, Lila und Weiß läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.
+		setColorScheme(SCHEME_ROYAL);
+		fxLayerFadeIn(10345);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 10345, 11, 116);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 10345, 11, 116);
+		fxLayerFlush();
+		break;
+
+	case 11:	// pause (2)  1 T  2069ms  @1:51.983  -- Lädt sich einen Takt lang in Pink, Cyan und Violett auf, Explosion genau auf den Chorus.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_BUILDUP, 2069, 12, 116);
+		break;
+
+	case 12:	// chorus 2  12 T  24827ms  @1:54.052  -- Drehender Stern in Pink, Cyan und Violett, Blinder auf den Einsatz; die Lampen blitzen weiß auf 2 und 4.
+		setColorScheme(SCHEME_NEON);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(116, 2, 259, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 517);
+		scene(SCENE_STAR, 24827, 13, 116);
+		break;
+
+	case 13:	// übergang (2)  4 T  8276ms  @2:18.879  -- Schnelle bunte Einzelblitze (wie bisher).
+		progFastBlingBling(8276, 8, 14);
+		break;
+
+	case 14:	// pause (3)  2 T  4138ms  @2:27.155  -- Schwarz; ein kurzer warmweißer Blinder auf Takt 72,5, klingt in 2 Beats ab.
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		progBlack(4138, 15);
+		break;
+
+	case 15:	// strobo  2 B  1035ms  @2:31.293  -- Starker Blinder statt Strobo: steht die 2 Beats voll bis zum Einsatz des Solos.
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 983);
+		progBlack(1035, 16);
+		break;
+
+	case 16:	// solopart 1  8 T  16551ms  @2:32.328  -- Solo: zwei Kometen in Orange, Pink und Gelb kreisen um die Gitarre, alle anderen atmen dunkel.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_SOLO_GIT, 16551, 17, 116);
+		break;
+
+	case 17:	// solopart 2  7 T  14483ms  @2:48.879  -- Wasserringe (wie bisher), weich eingeblendet; die Farben wandern alle 2 Takte weiter.
+		setColorScheme(SCHEME_SUNSET);
+		setColorFade(FADE_TRIAD, 4138);
+		fxTransition(TRANS_FADE, 1034);
+		progWaterRipple(14483, 18, 50, true, true);
+		break;
+
+	case 18:	// bridge 3  5 T  10345ms  @3:03.362  -- Die Bühnenhälften blitzen abwechselnd im Beat in Blau, Lila und Weiß.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_CALL_RESPONSE, 10345, 19, 116);
+		break;
+
+	case 19:	// pause (4)  1 T  2069ms  @3:13.707  -- Lädt sich einen Takt lang in Orange, Pink und Gelb auf, Explosion genau auf den letzten Chorus.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_BUILDUP, 2069, 20, 116);
+		break;
+
+	case 20:	// chorus 2 (2)  8 T  16552ms  @3:15.776  -- Drehender Stern in Orange, Pink, Lila und Gelb, Blinder auf den Einsatz; die Lampen blitzen weiß auf 2 und 4.
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(116, 2, 259, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 517);
+		scene(SCENE_STAR, 16552, 21, 116);
+		break;
+
+	case 21:	// chorus 2b  8 T  16551ms  @3:32.328  -- Zweite Hälfte des letzten Chorus: Feuer auf allen Geräten in Rot, Orange und Gelb, Blinder auf den Wechsel (Takt 104).
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_FIRE, 16551, 22, 116);
+		break;
+
+	case 22:	// übergang (3)  4 T  8276ms  @3:48.879  -- Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 115,75), der ins Fade-out ausklingt.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinder(7759, 2069, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 259);
+		scene(SCENE_SPARKLE, 8276, 23, 116);
+		break;
+
+	case 23:	// fade out  3 T  6207ms  @3:57.155  -- Rot, blendet über die 3 Takte weich nach Schwarz.
+		setColorScheme(SCHEME_RED);
+		fxBlinder(0, 2069, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 259);
+		fxBlinderCarry(517);
+		scene(SCENE_FADEOUT, 6207, 24, 116);
+		break;
+
+	case 24:	// BLACK (Ende)    10000ms  @4:03.362  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 25);
+		break;
+
+	case 25:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
+//#13 In The Dark - Purple Disco Machine  116 BPM  midi_offset 3/8 = 776 ms  (generiert aus songs/InTheDark_v1: struktur.xlsx + show.yaml)
+void gen_InTheDark() {
+
+	// Marker einzelner Parts (markers.parts in show.yaml), läuft nach setMarkerLEDs()
+#ifdef BASS
+	if (prog == 11) markerLED5 = ESaite_Cis;	// chorus 2
+	else if (prog == 12) markerLED5 = ESaite_Cis;	// am i going under
+	else if (prog == 13) markerLED5 = 0;	// bass solo
+	else if (prog == 14) markerLED5 = 0;	// chrous 3
+	else markerLED5 = 0;
+	if (prog == 11) markerLED6 = 0;	// chorus 2
+	else if (prog == 12) markerLED6 = ESaite_Dis;	// am i going under
+	else if (prog == 13) markerLED6 = ESaite_Dis;	// bass solo
+	else if (prog == 14) markerLED6 = 0;	// chrous 3
+	else markerLED6 = 0;
+#endif
+
+	setColorScheme(SCHEME_ROYAL);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// BLACK  4 T  7500ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progBlack(472, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#elif defined(GITBOARD)
+		progBlack(3352, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#else
+		progBlack(7500, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 1:	// Lauftext bis 0:24.052, Einstieg case 4
+		progScrollText("In The Dark by Purple Disco Machine", 23580, 90, getRandomColor(), 4);	// 1 Durchlauf = 23580 ms
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:24.052, Einstieg case 4
+		progScrollText("In The Dark by Purple Disco Machine", 20700, 90, getRandomColor(), 4);	// 1 Durchlauf = 20700 ms
+		break;
+#endif
+
+	case 3:	// intro+verse 1  8 T  16552ms  @0:07.500  -- 'in the dark': die Geräte füllen sich langsam in Blau und Lila, gedimmt auf 60 %; die Farben wandern alle 2 Takte nach Pink/Orange und zurück.
+		setColorScheme(SCHEME_ROYAL);
+		setColorFade(FADE_TRIAD, 4138);
+		fxDim(153);
+		scene(SCENE_GLOW, 16552, 4, 116);
+		break;
+
+	case 4:	// verse 1  8 T  16551ms  @0:24.052  -- Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Plasma-Wolken.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE, 16551, 5, 116);
+		break;
+
+	case 5:	// bridge 1  8 T  14483ms  @0:40.603  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät, in Orange, Pink, Lila und Gelb; im letzten Takt weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_SUNSET);
+		fxSoft(60);
+		scene(SCENE_COLORS_WAVE, 14483, 6, 116);
+		break;
+
+	case 6:	// bridge 1 (tail)  4 B  2069ms  @0:55.086
+		setColorScheme(SCHEME_WHITE);
+		fxGate(116, 4);
+		scene(SCENE_COLORS, 2069, 7, 116);
+		break;
+
+	case 7:	// chorus 1  8 T  16552ms  @0:57.155  -- Der Chorus springt aus dem Dunkel: drehender Stern in Pink, Cyan und Violett, warmweißer Blinder auf den Einsatz (2 Beats).
+		setColorScheme(SCHEME_NEON);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		scene(SCENE_STAR, 16552, 8, 116);
+		break;
+
+	case 8:	// verse 2  8 T  16552ms  @1:13.707  -- Weich eingeblendet: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+		setColorScheme(SCHEME_ROYAL);
+		fxTransition(TRANS_FADE, 1034);
+		scene(SCENE_DNA_FLIP_SCROLL, 16552, 9, 116);
+		break;
+
+	case 9:	// bridge 2  8 T  14482ms  @1:30.259  -- Die Bühnenhälften blitzen abwechselnd im Beat in warmen Farben; im letzten Takt weißer Strobo im Takt.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_CALL_RESPONSE, 14482, 10, 116);
+		break;
+
+	case 10:	// bridge 2 (tail)  4 B  2069ms  @1:44.741
+		setColorScheme(SCHEME_WHITE);
+		fxGate(116, 4);
+		scene(SCENE_COLORS, 2069, 11, 116);
+		break;
+
+	case 11:	// chorus 2  8 T  16552ms  @1:46.810  -- Stern in Pink, Cyan und Violett wie in chorus 1 mit Blinder auf den Einsatz; dazu blitzen die Lampen weiß auf 2 und 4.
+		setColorScheme(SCHEME_NEON);
+		fxBlinderSlot(0);
+		fxBlinder(0, 1034, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(116, 2, 259, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 517);
+		scene(SCENE_STAR, 16552, 12, 116);
+		break;
+
+	case 12:	// am i going under  8 T  16552ms  @2:03.362  -- 'am i going under': Wasserringe in Blau, weich über einen Takt eingeblendet, die Farbe wandert alle 2 Takte nach Eisblau und zurück.
+		setColorScheme(SCHEME_BLUE);
+		setColorFade(SCHEME_ICE, 4138);
+		fxTransition(TRANS_FADE, 2069);
+		progWaterRipple(16552, 13, 50, true, false);
+		break;
+
+	case 13:	// bass solo  8 T  16552ms  @2:19.914  -- Bass-Solo: zwei Kometen in Pink und Cyan kreisen um den Bass, alle anderen atmen dunkel; in den letzten 2 Takten blendet der Blinder für chrous 3 ein.
+		setColorScheme(SCHEME_NEON);
+		fxBlinder(16552, 5172, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(4138, 0);
+		scene(SCENE_SOLO_BASS, 16552, 14, 116);
+		break;
+
+	case 14:	// chrous 3  8 T  16551ms  @2:36.466  -- Eine Stufe wärmer: Stern in Orange, Pink, Lila und Gelb. Der Blinder blendet über die letzten 2 Takte des Bass-Solos ein, steht voll auf dem Einsatz (Takt 77) und klingt in 2 Beats ab.
+		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(0, 5172, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(4138, 0);
+		scene(SCENE_STAR, 16551, 15, 116);
+		break;
+
+	case 15:	// chorus 4  8 T  16552ms  @2:53.017  -- Dichtes Glitzern in Rot, Orange und Gelb; drei kurze Blinder am Ende des 4. Takts (Takt 88,5 / 88,75 / 89) und ein starker Blinder auf der letzten Viertel (Takt 92,75), der ins Fade-out ausklingt.
+		setColorScheme(SCHEME_FIRE);
+		fxBlinderSlot(0);
+		fxBlinder(7241, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		fxBlinderSlot(1);
+		fxBlinder(7759, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		fxBlinderSlot(2);
+		fxBlinder(8276, 414, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(103, 103);
+		fxBlinderSlot(3);
+		fxBlinder(16034, 2069, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 259);
+		scene(SCENE_SPARKLE, 16552, 16, 116);
+		break;
+
+	case 16:	// fade out  3 T  6207ms  @3:09.569  -- Blau und Lila, blendet über die 3 Takte weich nach Schwarz.
+		setColorScheme(SCHEME_ROYAL);
+		fxBlinder(0, 2069, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 259);
+		fxBlinderCarry(518);
+		scene(SCENE_FADEOUT, 6207, 17, 116);
+		break;
+
+	case 17:	// BLACK (Ende)    10000ms  @3:15.776  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 18);
+		break;
+
+	case 18:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;
@@ -1286,8 +3103,9 @@ void gen_APT() {
 		progStrobo(3221, 9, 200, 255, 255, 255);
 		break;
 
-	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
-		progPalette(9664, 3, 10);
+	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 9664, 10, 149);
 		break;
 
 	case 10:	// chorus 2  7 T  11276ms  @1:10.268  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats.
@@ -1572,8 +3390,9 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16271, 1017, 4, 5, 26, 5, false, 4);
 		break;
 
-	case 4:	// verse  8 T  16271ms  @0:23.644  -- Alter Effekt: alles in einer Farbe, pro Beat eine neue Zufallsfarbe.
-		progFullColors(16271, 5, 508);
+	case 4:	// verse  8 T  16271ms  @0:23.644  -- Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_VERSE_HEART, 16271, 5, 118);
 		break;
 
 	case 5:	// bridge  7 T  14238ms  @0:39.915  -- Ruhiges Atmen in Rot auf allen Geräten.
@@ -1844,9 +3663,9 @@ void gen_EnjoyTheSilence() {
 		scene(SCENE_DNA_FLIP, 8496, 15, 113);
 		break;
 
-	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- Dezenter Puls im Beat in Eisblau - kleine Steigerung zum Part davor.
+	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- kleine Steigerung zum Part davor, ohne zweiten Regen: ruhige Farbwolken in Eisblau auf der Matrix, der Farbverlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 8495, 16, 113);
+		scene(SCENE_VERSE_PLASMA, 8495, 16, 113);
 		break;
 
 	case 16:	// all i ever wanted (2)  4 T  8496ms  @2:02.389  -- Die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe; darüber auf der Matrix weiß mit schwarzem Rand die Gesangszeile im Rhythmus des Gesangs: ALL I EVER (je ein Drittel Viertel) WANTED, ALL I EVER NEEDED, IS HERE, IN MY ARMS.
@@ -2061,28 +3880,32 @@ void gen_FridayImInLove() {
 #endif
 		break;
 
-	case 5:	// verse 1  8 T  13714ms  @0:31.929  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
-		progPalette(13714, 3, 6);
+	case 5:	// verse 1  8 T  13714ms  @0:31.929  -- Strophe neu (18.10.2026, statt der alten Palette): warme Farbwolken auf der Matrix, der Verlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_PLASMA, 13714, 6, 140);
 		break;
 
-	case 6:	// verse 1b  8 T  13714ms  @0:45.643  -- Alter Effekt: weiße Wellen, weich an- und abschwellend.
-		progPalette(13714, 6, 7);
+	case 6:	// verse 1b  8 T  13714ms  @0:45.643  -- wie verse 1: warme Farbwolken, die im Beat leicht anschwellen
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE_PLASMA, 13714, 7, 140);
 		break;
 
 	case 7:	// Saturday went  6 T  10286ms  @0:59.357  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
 		progRandomLines(10286, 8, 460, true);
 		break;
 
-	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Alter Effekt: Wolken-Farben (blau, hellblau, weiß), ruhig.
-		progPalette(13714, 7, 9);
+	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Strophe neu (18.10.2026): Sinuswellen in Blau/Eisblau laufen im Takt über die Matrix ('Monday you can hold your head'), eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_WAVES, 13714, 9, 140);
 		break;
 
 	case 9:	// SOLO  8 T  13714ms  @1:23.357  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
 		progFastBlingBling(13714, 2, 10, 1, 16, 2000);
 		break;
 
-	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet.
-		progPalette(13715, 2, 11);
+	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_WAVES, 13715, 11, 140);
 		break;
 
 	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
@@ -2101,8 +3924,9 @@ void gen_FridayImInLove() {
 		progStrobo(1714, 15, 65, 255, 255, 255);
 		break;
 
-	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet (sehr farbig).
-		progPalette(13714, 2, 16);
+	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART, 13714, 16, 140);
 		break;
 
 	case 16:	// verse 4b  8 T  13715ms  @2:42.214  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.
@@ -2163,12 +3987,14 @@ void gen_BeMine() {
 		progBlingBlingColoring(15238, 4, 952);
 		break;
 
-	case 4:	// verse 1a  8 T  15238ms  @0:20.238  -- Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte.
-		progPalette(15238, 1, 5);
+	case 4:	// verse 1a  8 T  15238ms  @0:20.238  -- Strophe neu (18.10.2026, statt der alten Palette): ruhiger Einstieg als Sternenhimmel - auf jedem Beat leuchten ein paar Sterne in Blau/Weiß auf und verglimmen
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_STARS, 15238, 5, 126);
 		break;
 
-	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Alter Effekt: bunte, unterschiedlich helle Farbflecken laufen weich über die Geräte.
-		progPalette(15238, 4, 6);
+	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART, 15238, 6, 126);
 		break;
 
 	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
@@ -2189,8 +4015,9 @@ void gen_BeMine() {
 		progBlack(1905, 10);
 		break;
 
-	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Alter Effekt: Leuchtspuren laufen durch und hellen nach Weiß auf.
-		progMatrixHorizontal(15238, 11, 70, true);
+	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE_WAVES, 15238, 11, 126);
 		break;
 
 	case 11:	// im going crazy  8 T  15238ms  @1:38.333  -- Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf.
@@ -2249,7 +4076,8 @@ void gen_IWannaDanceWithSomebody() {
 
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:26.370, Einstieg case 7
-		progRandomLines(13549, 7, 484, true);
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE, 13549, 7, 124);
 		break;
 #endif
 
@@ -2271,8 +4099,9 @@ void gen_IWannaDanceWithSomebody() {
 		progStrobo(1935, 6, 100, getRandomCRGB());
 		break;
 
-	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Alter Effekt: pro Beat eine neue zufällige Linie in Zufallsfarbe.
-		progRandomLines(15484, 7, 484, true);
+	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe neu (18.10.2026, statt der alten Zufallslinien): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Sinuswellen im Takt auf der Matrix, warme Farben
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_VERSE, 15484, 7, 124);
 		break;
 
 	case 7:	// ive done alright  6 T  11613ms  @0:39.919  -- Alter Effekt: ruhiger Scanner, eine Leuchtlinie fährt hin und her.
@@ -2307,8 +4136,9 @@ void gen_IWannaDanceWithSomebody() {
 		progMatrixHorizontal(1935, 15, 70, true);
 		break;
 
-	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.
-		progWaterRipple(15484, 16, 50, true, false);
+	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- Strophe neu (18.10.2026, statt der alten Wasserringe): 'somebody who loves me' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART, 15484, 16, 124);
 		break;
 
 	case 16:	// ive done alright (2)  6 T  11613ms  @1:43.790  -- Alter Effekt: rot-weiß-blaue Blöcke mit Lücken, harte Kanten.
@@ -2459,9 +4289,9 @@ void gen_BillieJean() {
 		scene(SCENE_GLOW, 7500, 6, 128);
 		break;
 
-	case 6:	// verse 1  4 T  7500ms  @0:27.422  -- Gesang setzt ein: dezenter Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix)
+	case 6:	// verse 1  4 T  7500ms  @0:27.422  -- Gesang setzt ein, gespannt und sparsam: Sternenhimmel - auf jedem Beat leuchten auf allen Geräten ein paar Sterne in Blau/Lila/Weiß auf und verglimmen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 7500, 7, 128);
+		scene(SCENE_VERSE_STARS, 7500, 7, 128);
 		break;
 
 	case 7:	// i am the one  8 T  15000ms  @0:34.922  -- Motiv Leuchtplatten: pro Beat leuchtet genau ein Gerät in Rot, Weiß oder Blau, der Rest ist dunkel (alt: progRandomLines im Beat)
@@ -2469,10 +4299,10 @@ void gen_BillieJean() {
 		scene(SCENE_PINGPONG, 15000, 8, 128);
 		break;
 
-	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: fallende Leuchtspuren in Pink/Cyan/Violett statt Blau
+	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen auf jedem Beat wie ein Herz (zum pochenden Bass), Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
-		scene(SCENE_RAIN, 7500, 9, 128);
+		scene(SCENE_VERSE_HEART, 7500, 9, 128);
 		break;
 
 	case 9:	// i am the one (2)  4 T  7500ms  @0:57.422  -- Motiv Leuchtplatten wie beim ersten Mal
@@ -2522,10 +4352,10 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 17, 128);
 		break;
 
-	case 17:	// verse 2 a  4 T  7500ms  @1:42.422  -- Strophe wie verse 1, dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück
+	case 17:	// verse 2 a  4 T  7500ms  @1:42.422  -- Strophe wie verse 1 (Sternenhimmel), dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3750);
-		scene(SCENE_VERSE, 7500, 18, 128);
+		scene(SCENE_VERSE_STARS, 7500, 18, 128);
 		break;
 
 	case 18:	// i am the one (5)  6 T+2 B  12187ms  @1:49.922  -- Motiv Leuchtplatten
@@ -2538,10 +4368,10 @@ void gen_BillieJean() {
 		scene(SCENE_DROP, 2813, 20, 128);
 		break;
 
-	case 20:	// verse 2 b  4 T  7500ms  @2:04.922  -- Strophe wie verse 2: Leuchtspuren in Pink/Cyan/Violett, das Rot blendet weich aus
+	case 20:	// verse 2 b  4 T  7500ms  @2:04.922  -- Strophe wie verse 2: Herzschlag auf allen Geräten in Pink/Cyan/Violett, das Rot blendet weich aus
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
-		scene(SCENE_RAIN, 7500, 21, 128);
+		scene(SCENE_VERSE_HEART, 7500, 21, 128);
 		break;
 
 	case 21:	// i ma the one  2 T+2 B  4687ms  @2:12.422  -- Motiv Leuchtplatten
@@ -2675,6 +4505,309 @@ void gen_BillieJean() {
 	}
 }
 
+//#30 Maniac - Michael Sembello  157 BPM  midi_offset 3/8 = 573 ms  (generiert aus songs/Maniac_v1: struktur.xlsx + show.yaml)
+void gen_Maniac() {
+
+	// Marker einzelner Parts (markers.parts in show.yaml), läuft nach setMarkerLEDs()
+#ifdef GIT
+	if (prog == 20) markerLED3 = 0;	// instrumental a
+	else if (prog == 21) markerLED3 = 0;	// instrumental b
+#endif
+
+	setColorScheme(SCHEME_NEON);	// Default für alle Parts
+
+	switch (prog) {
+
+	case 0:	// pause  3 T  4013ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
+#if defined(SCROLLMATRIX)
+		progScrollText("Maniac by Michael Sembello", 18917, 90, getRandomColor(), 2);	// 1 Durchlauf = 18720 ms
+#elif defined(GITBOARD)
+		progBlack(402, 1);	// Lauftext verzögern, damit er genau an case 4 endet
+#else
+		progBlack(4013, 3);
+#endif
+		break;
+
+#if defined(SCROLLMATRIX)
+	case 2:	// Rest von 'rock intro' ab 0:18.917, Einstieg case 5
+		progFastBlingBling(9554, 6, 5);
+		break;
+#endif
+
+#if defined(GITBOARD)
+	case 1:	// Lauftext bis 0:16.242, Einstieg case 4
+		progScrollText("Maniac by Michael Sembello", 15840, 90, getRandomColor(), 4);	// 1 Durchlauf = 15840 ms
+		break;
+#endif
+
+	case 3:	// drums intro  8 T  12229ms  @0:04.013  -- Nur das Schlagzeug spielt: pro Beat leuchtet genau eines von Bass, Matrix und Gitarre weiß auf. Die Lampen sind dunkel und blitzen alle 2 Takte kurz nacheinander auf (Lampe 1, eine Viertel später Lampe 2), jeweils eine Achtel nach der Zeile.
+		setColorScheme(SCHEME_WHITE);
+		fxBlinderSlot(0);
+		fxBlinder(2102, 764, 255, FX_BLINDER_WARM, DEV_LAMPE1);
+		fxBlinderSlot(1);
+		fxBlinder(2484, 764, 255, FX_BLINDER_WARM, DEV_LAMPE2);
+		fxBlinderSlot(2);
+		fxBlinder(5159, 764, 255, FX_BLINDER_WARM, DEV_LAMPE1);
+		fxBlinderSlot(3);
+		fxBlinder(5541, 764, 255, FX_BLINDER_WARM, DEV_LAMPE2);
+		fxBlinderSlot(4);
+		fxBlinder(8217, 764, 255, FX_BLINDER_WARM, DEV_LAMPE1);
+		fxBlinderSlot(5);
+		fxBlinder(8599, 764, 255, FX_BLINDER_WARM, DEV_LAMPE2);
+		fxBlinderSlot(6);
+		fxBlinder(11274, 764, 255, FX_BLINDER_WARM, DEV_LAMPE1);
+		fxBlinderSlot(7);
+		fxBlinder(11656, 764, 255, FX_BLINDER_WARM, DEV_LAMPE2);
+		progPingPong(12229, 4, 157, 1, 3);
+		break;
+
+	case 4:	// rock intro  8 T  12229ms  @0:16.242  -- Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher).
+		fxTransition(TRANS_FLASH, 382);
+		progFastBlingBling(12229, 6, 5);
+		break;
+
+	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Wasserringe.
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE, 12230, 6, 157);
+		break;
+
+	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.
+		setColorScheme(SCHEME_NEON);
+		progRandomLines(12229, 7, 382, false, 1529);
+		break;
+
+	case 7:	// it could cut you like a knife  7 T  10701ms  @0:52.930  -- 'cut you like a knife': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerFadeIn(10318);
+		fxLayerBegin();
+		scene(SCENE_SPARKLE, 10701, 8, 157);
+		fxLayerEnd(FX_ADD, 102);
+		scene(SCENE_PALETTE, 10701, 8, 157);
+		fxLayerFlush();
+		break;
+
+	case 8:	// uebergang  1 T  1528ms  @1:03.631  -- Lädt sich einen Takt lang in Pink, Cyan und Violett auf, Explosion genau auf den Chorus.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_BUILDUP, 1528, 9, 157);
+		break;
+
+	case 9:	// chorus 1  7 T  10701ms  @1:05.159  -- Drehender Stern in Pink, Cyan und Violett, weiche Farbwechsel, warmweißer Blinder auf den Einsatz; auf der Matrix MANIAC über dem Stern, blendet nach 2 Takten aus.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(30);
+		fxBlinder(0, 764, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3057);
+		fxLayerFadeOut(764);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("MANIAC", 10701, 10, 22930);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_STAR, 10701, 10, 157);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 10:	// chorus 1b  7 T  10701ms  @1:15.860  -- Zweite Hälfte des Chorus: der Stern läuft weiter, dazu blitzen die Lampen weiß auf 2 und 4; ab Takt 52 noch einmal MANIAC auf der Matrix, blendet nach 2 Takten aus.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(30);
+		fxBlinderBeat(157, 2, 191, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 382);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(1529, 4586);
+		fxLayerFadeOut(764);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("MANIAC", 10701, 11, 22930);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_STAR, 10701, 11, 157);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 11:	// stehender chord  3 T+2 B  5350ms  @1:26.561  -- Der stehende Akkord: ein warmweißer Blinder blendet schnell ein und klingt über die ganzen 3,5 Takte aus, darunter atmet die Bühne dunkel in Blau und Lila.
+		setColorScheme(SCHEME_ROYAL);
+		fxDim(128);
+		fxBlinder(96, 5312, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(96, 0);
+		scene(SCENE_CALM, 5350, 12, 157);
+		break;
+
+	case 12:	// strobe  2 B  764ms  @1:31.911  -- Weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_WHITE);
+		fxGate(157, 4);
+		scene(SCENE_COLORS, 764, 13, 157);
+		break;
+
+	case 13:	// verse 2a  10 T+2 B  16051ms  @1:32.675  -- Anderer Look als verse 1: fallende Leuchtspuren in Pink, Cyan und Violett, die Farben wandern alle 2 Takte weiter.
+		setColorScheme(SCHEME_NEON);
+		setColorFade(FADE_TRIAD, 3057);
+		scene(SCENE_RAIN, 16051, 14, 157);
+		break;
+
+	case 14:	// strobe (2)  2 B  764ms  @1:48.726  -- Weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_WHITE);
+		fxGate(157, 4);
+		scene(SCENE_COLORS, 764, 15, 157);
+		break;
+
+	case 15:	// verse 2b  5 T  7644ms  @1:49.490  -- Schläge auf die Viertel in Rot auf allen Geräten, ab Takt 73 direkt nach dem kurzen Strobo.
+		setColorScheme(SCHEME_RED);
+		scene(SCENE_DROP, 7644, 16, 157);
+		break;
+
+	case 16:	// ist a cold cinetic heat  7 T  10700ms  @1:57.134  -- Frage/Antwort auf dem Backbeat in Pink, Cyan und Violett: auf 2 blitzt die linke Bühnenhälfte, auf 4 die rechte, auf 1 und 3 ist alles schwarz.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_CALL_RESPONSE_OFFBEAT, 10700, 17, 157);
+		break;
+
+	case 17:	// strobe (3)  1 T  1529ms  @2:07.834  -- Weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_WHITE);
+		fxGate(157, 4);
+		scene(SCENE_COLORS, 1529, 18, 157);
+		break;
+
+	case 18:	// chorus 2  14 T  21401ms  @2:09.363  -- Stern wie in chorus 1 mit Blinder auf den Einsatz, die Lampen blitzen von Anfang an weiß auf 2 und 4; MANIAC auf der Matrix zu Beginn und noch einmal ab Takt 94, jeweils 2 Takte.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(30);
+		fxBlinderSlot(0);
+		fxBlinder(0, 764, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(157, 2, 191, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 382);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3057);
+		fxLayerWindow(12229, 15287, 1);
+		fxLayerFadeOut(764);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("MANIAC", 21401, 19, 22930);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_STAR, 21401, 19, 157);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 19:	// uebergang zum instrumental  2 T  3058ms  @2:30.764  -- Der Blitz läuft pro Beat von links nach rechts über die Bühne.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_WAVE_LR, 3058, 20, 157);
+		break;
+
+	case 20:	// instrumental a  8 T  12229ms  @2:33.822  -- Eine DNA-Helix in Pink und Cyan dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_DNA, 12229, 21, 157);
+		break;
+
+	case 21:	// instrumental b  7 T+2 B  11465ms  @2:46.051  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät über die Bühne.
+		setColorScheme(SCHEME_NEON);
+		fxSoft(60);
+		scene(SCENE_COLORS_WAVE, 11465, 22, 157);
+		break;
+
+	case 22:	// strobe (4)  2 B  764ms  @2:57.516  -- Weißer Strobo im Takt (4 Blitze pro Beat).
+		setColorScheme(SCHEME_WHITE);
+		fxGate(157, 4);
+		scene(SCENE_COLORS, 764, 23, 157);
+		break;
+
+	case 23:	// solo a  4 T  6115ms  @2:58.280  -- Gitarrensolo mit Action: der Übergang läuft über die Bühne, auf der Gitarre kreisen zwei Kometen in Pink und Cyan, Bass, Lampen und Matrix schlagen dazu jeden Beat in Pink, Cyan und Violett.
+		setColorScheme(SCHEME_NEON);
+		fxTransition(TRANS_STAGE_LR, 382);
+#if defined(ANDRESGIT)
+		scene(SCENE_SOLO_GIT, 6115, 24, 157);
+#else
+		scene(SCENE_DROP, 6115, 24, 157);
+#endif
+		break;
+
+	case 24:	// solo b  4 T  6115ms  @3:04.395  -- Das Solo weiter, die Kometen jetzt in Orange, Pink und Gelb.
+		setColorScheme(SCHEME_SUNSET);
+		scene(SCENE_SOLO_GIT, 6115, 25, 157);
+		break;
+
+	case 25:	// solo c  4 T  6114ms  @3:10.510  -- Das Solo dreht auf: schnelle bunte Einzelblitze (wie bisher).
+		progFastBlingBling(6114, 8, 26);
+		break;
+
+	case 26:	// solo d  4 T  6115ms  @3:16.624  -- Alles lädt sich über 4 Takte in Rot, Orange und Gelb auf, Explosion auf 'cut you like a knife'.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_BUILDUP, 6115, 27, 157);
+		break;
+
+	case 27:	// it could cut you like a knife (2)  7 T  10700ms  @3:22.739  -- Frage/Antwort auf dem Backbeat in Pink, Cyan und Violett: auf 2 blitzt die linke Bühnenhälfte, auf 4 die rechte, auf 1 und 3 ist alles schwarz.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_CALL_RESPONSE_OFFBEAT, 10700, 28, 157);
+		break;
+
+	case 28:	// uebergang (2)  1 T  1529ms  @3:33.439  -- Lädt sich einen Takt lang in Rot, Orange und Gelb auf, Explosion genau auf den letzten Chorus.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_BUILDUP, 1529, 29, 157);
+		break;
+
+	case 29:	// chorus 3  14 T  21401ms  @3:34.968  -- Eine Stufe wärmer: Stern in Rot, Orange und Gelb, Blinder auf den Einsatz, die Lampen blitzen weiß auf 2 und 4; MANIAC auf der Matrix zu Beginn und noch einmal ab Takt 150, jeweils 2 Takte.
+		setColorScheme(SCHEME_FIRE);
+		fxSoft(30);
+		fxBlinderSlot(0);
+		fxBlinder(0, 764, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinderBeat(157, 2, 191, 255, CRGB::White, DEV_LAMPE1 | DEV_LAMPE2, 382);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 3057);
+		fxLayerWindow(12229, 15287, 1);
+		fxLayerFadeOut(764);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("MANIAC", 21401, 30, 22930);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_STAR, 21401, 30, 157);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 30:	// stehender chord (2)  2 T  3058ms  @3:56.369  -- Wenige bunte Einzelblitze (wie bisher); ein warmweißer Blinder springt auf die 1 (Takt 156) und klingt über 1 Takt aus.
+		fxBlinder(0, 1529, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progFastBlingBling(3058, 2, 31);
+		break;
+
+	case 31:	// abschluss  2 T  3057ms  @3:59.427  -- Dichtes Glitzern in Rot, Orange und Gelb.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_SPARKLE, 3057, 32, 157);
+		break;
+
+	case 32:	// strobe (5)  1 T  1529ms  @4:02.484  -- Schwarz; auf Takt 160 springt ein starker warmweißer Blinder voll auf und klingt 2 Takte lang aus, bis ins Schluss-Schwarz.
+		fxBlinder(0, 3057, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		progBlack(1529, 33);
+		break;
+
+	case 33:	// BLACK (Ende)    10000ms  @4:04.013  -- alle Geräte schwarz, dann Pausen-Loop
+		fxBlinder(0, 3057, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
+		fxBlinderCarry(1529);
+		progBlack(10000, 34);
+		break;
+
+	case 34:
+		clearAll();
+		switchToSong(0);	// SongID 0 == DEFAULT loop
+		break;
+	}
+}
+
 //#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
 void gen_AllTheThingsSheSaid() {
 
@@ -2760,11 +4893,11 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_GLOW, 11162, 10, 86);
 		break;
 
-	case 10:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fallende Leuchtspuren bringen Bewegung (Regen passt zum Song); Blau/Lila wandern nach Pink/Orange und zurück
+	case 10:	// verse 1b  4 T  11163ms  @0:46.395  -- Idee 'etwas gesteigert', energy 2: fließende Farbwolken bringen Bewegung, alles schwillt im Beat leicht an; Blau/Lila wandern nach Pink/Orange und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 5581);
 		fxTransition(TRANS_FADE, 1395);
-		scene(SCENE_RAIN, 11163, 11, 86);
+		scene(SCENE_VERSE_PLASMA, 11163, 11, 86);
 		break;
 
 	case 11:	// wiederholung: nobody else  3 B  2093ms  @0:57.558  -- Idee 'build up': lädt sich über die 3 Beats in den Chorus-Farben auf, Explosion genau auf den Strobo-Schlag
@@ -2966,7 +5099,7 @@ void gen_GirlsJustWannaHaveFun() {
 	case 2:	// Rest von 'verse 1' ab 0:26.905, Einstieg case 5
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810, false, 6667);
-		scene(SCENE_VERSE, 10476, 5, 126);
+		scene(SCENE_VERSE_STARS, 10476, 5, 126);
 		break;
 #endif
 
@@ -2974,7 +5107,7 @@ void gen_GirlsJustWannaHaveFun() {
 	case 2:	// Rest von 'verse 1' ab 0:24.048, Einstieg case 5
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810, false, 3810);
-		scene(SCENE_VERSE, 13333, 5, 126);
+		scene(SCENE_VERSE_STARS, 13333, 5, 126);
 		break;
 #endif
 
@@ -2983,10 +5116,10 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_WAVE_OUT, 15238, 4, 126);
 		break;
 
-	case 4:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls; startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück
+	case 4:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, Abwechslung in den Strophen (18.10.2026): Sternenhimmel - auf jedem Beat leuchten ein paar Sterne auf und verglimmen, startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810);
-		scene(SCENE_VERSE, 17143, 5, 126);
+		scene(SCENE_VERSE_STARS, 17143, 5, 126);
 		break;
 
 	case 5:	// instrumental break  4 T  7619ms  @0:37.381  -- das Riff vom Intro kehrt zurück (energy 4, brightness 0.95) - erkennbar gleich gestaltet
@@ -3025,10 +5158,10 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_PINGPONG, 15238, 12, 126);
 		break;
 
-	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo, mit derselben Farbwanderung
+	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3810);
-		scene(SCENE_VERSE, 17143, 13, 126);
+		scene(SCENE_VERSE_WAVES, 17143, 13, 126);
 		break;
 
 	case 13:	// thats all they really want (2)  4 T  7619ms  @1:59.286  -- wie der erste Pre-Chorus
@@ -3392,7 +5525,7 @@ void setGeneratedMarkerLEDs(byte songID, byte partID) {
 //==================================================================
 bool isGeneratedSong(byte songID) {
 	switch (songID) {
-	case 3: case 8: case 9: case 14: case 15: case 17: case 20: case 21: case 24: case 25: case 26: case 27: case 28: case 31: case 33: case 80: case 82:
+	case 2: case 3: case 4: case 6: case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15: case 17: case 20: case 21: case 24: case 25: case 26: case 27: case 28: case 30: case 31: case 33: case 80: case 82:
 		return true;
 	}
 	return false;

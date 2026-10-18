@@ -3,7 +3,7 @@
 //@function gen_DancingOnMyOwn
 //@name Dancing On My Own
 //@struktur_sha 2061556df1ef6813b9d9fbaff321605c89acdf561d2bca5f42df9bf3bc9f0c66
-//@show_sha bb4e00548984fce2fbc9dd9fc283c257f596b293698b8dc5f6d2219b9359f3f5
+//@show_sha 8b3f0caefaa11528051bdc08ed0fde6f2a3a660a126ff4b4b1c23cad491dccdc
 //@part GEN_DANCINGONMYOWN_BLACK 0
 //@part GEN_DANCINGONMYOWN_BASS 3
 //@part GEN_DANCINGONMYOWN_SOMEBODY 4
@@ -68,9 +68,9 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_CALM, 15737, 4, 122);
 		break;
 
-	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein: Gitarre und Bass leuchten Zone für Zone im Beat, Lampen mit Lichtschuss pro Beat, auf der Matrix farbiger Regen in Blautönen
+	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: alle Geräte schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 15738, 5, 122);
+		scene(SCENE_VERSE_HEART, 15738, 5, 122);
 		break;
 
 	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU, der Rest bleibt im Verse-Puls, Farben Blau/Violett
@@ -109,9 +109,9 @@ void gen_DancingOnMyOwn() {
 		progBlack(3935, 12);
 		break;
 
-	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett), auf der Matrix farbiger Regen
+	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 11803, 13, 122);
+		scene(SCENE_VERSE_WAVES, 11803, 13, 122);
 		break;
 
 	case 13:	// bridge  4 T  7869ms  @1:47.951  -- wie der erste Pre-Chorus: lädt sich über 4 Takte in warmen Farben auf und entlädt sich genau auf den Chorus

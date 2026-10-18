@@ -1,0 +1,167 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 08.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs Tellittomyheart() (Song-ID 21). Der alte Code bleibt in
+# src/songs.cpp stehen. Parts OHNE Änderungswunsch behalten ihren alten Effekt 1:1 als fx: (freie Zufallsfarben wie
+# bisher); von Hand gerundete Zeiten des alten Codes stehen als ${beat} / ${half} (510 ms = 1 Beat, 1015 ms = 2 Beats
+# bei 118 BPM). Umgesetzte Änderungswünsche aus der Tabelle (08.10.2026):
+#   bridge            = "Szene Calm, RED" (2. Wunsch, 08.10.2026; davor "Szene Palette Royal"): SCENE_CALM in SCHEME_RED,
+#                       der Build-up danach (pause (2)) deshalb ebenfalls in Rot
+#   pause (2)/(3)/(4) = "Build up": SCENE_BUILDUP statt Schwarz (2 Beats, Explosion auf den Snare-Auftakt)
+#   verse 2           = "Szene verse, sunset": SCENE_VERSE in SCHEME_SUNSET
+#   bridge (2)        = "grün lila": SCENE_PALETTE in SCHEME_TOXIC (grün), wandert pro Takt zur Gegenfarbe Lila und zurück
+#   snareauftakt (2)  = "starker Blinder": voller Blinder über Schwarz statt Strobo
+#   SOLO              = "Szene Solo Gitarre": SCENE_SOLO_GIT
+#   chorus 3          = "Szene Fire": SCENE_FIRE in SCHEME_FIRE
+#   chorus 4          = "Szene Sparkle": SCENE_SPARKLE
+# "outro A" gab es im alten Code nicht (dort schon Schwarz, in der Tabelle mit "!" markiert): hier klingt der
+# Schlussakkord mit SCENE_FADEOUT in Weiß aus - Vorschlag von Claude, noch nicht vom User bestätigt.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in Tellittomyheart() keine Marker in einzelnen Parts; die Grund-Marker stehen von
+# Hand in src/markerLEDs.cpp (case 21) und gelten unverändert - deshalb hier kein markers:-Block.
+# Taktnummern (bar:, cues:) zählen wie die Tabelle ab 1 = Taktnummer im DAW Cakewalk (umgestellt am 08.10.2026 mit
+# songgen.py --takt-ab 1; davor begann die Tabelle bei 0).
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_TellItToMyHeart
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro chorus":
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
+
+  "verse":
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_FIRE
+    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife"
+
+  "bridge":
+    scene: SCENE_CALM
+    scheme: SCHEME_RED
+    why: "Ruhiges Atmen in Rot auf allen Geräten."
+
+  "pause (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_RED
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Rot auf (Farbe der Bridge davor), Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (65 ms) auf den Snare-Auftakt."
+
+  "chorus 1":
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 20, 26, 5, true, 3)"
+    # Wunsch des Users (08.10.2026, Zwischenzeilen Takt 32,5 / 32,75 / 33 - Taktzählung ab 1 wie im DAW): drei kurze,
+    # sehr helle Blinder auf drei Vierteln hintereinander, jeder als eigener Akzent sichtbar. Deshalb je nur 0,8 Beat
+    # lang - zwischen zwei Blindern bleiben 0,2 Beat (ca. 100 ms) ohne Blinder.
+    # Wunsch des Users (09.10.2026): die volle Helligkeit gehört genau AUF die Viertel. bar: nennt deshalb den Moment
+    # der vollen Helligkeit; der Blinder blendet in den 0,2 Beat (ca. 100 ms) davor ein (attack), steht 0,2 Beat voll
+    # (hold) und klingt in 0,4 Beat ab. Der Blinder auf Takt 86 (die 1 von chorus 4) blendet schon am Ende von chorus 3 ein.
+    blinder:
+      - {bar: 32.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 32.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 33, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    cues:
+      32.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten: blendet ca. 100 ms VOR der Viertel ein, ist genau auf der Viertel voll hell (ca. 100 ms), klingt in 200 ms ab, dann 100 ms Lücke"
+      32.75: "2. Blinder, eine Viertel später, gleiche Form"
+      33: "3. Blinder auf die 1 des nächsten Takts, gleiche Form"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats. Ende des vierten Takts drei kurze Blinder auf drei Vierteln hintereinander."
+
+  "verse 2":
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    why: "Dezenter Puls im Beat in Orange, Pink, Lila und Gelb."
+
+  "bridge (2)":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_TOXIC
+    fade: {to: complement, per: bar}
+    why: "Farbband läuft über die Bühne; die Farben wandern jeden Takt von Grün nach Lila und wieder zurück."
+
+  "pause (3)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_TOXIC
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Grün auf, Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt (2)":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 2, hold: 1.5, amount: 100}
+    why: "Starker Blinder statt Strobo: alle Geräte blenden 2 Beats lang voll warmweiß auf, bis der Chorus einsetzt."
+
+  "chorus 2":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    # Wunsch des Users (08.10.2026, Zwischenzeilen): drei kurze Blinder auf drei Vierteln wie in chorus 1.
+    blinder:
+      - {bar: 56.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 56.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 57, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    cues:
+      56.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten: blendet ca. 100 ms VOR der Viertel ein, ist genau auf der Viertel voll hell (ca. 100 ms), klingt in 200 ms ab, dann 100 ms Lücke"
+      56.75: "2. Blinder, eine Viertel später, gleiche Form"
+      57: "3. Blinder auf die 1 des nächsten Takts, gleiche Form"
+    why: "Alter Effekt: schnelle Einzelblitze. Ende des vierten Takts drei kurze Blinder auf drei Vierteln hintereinander."
+
+  "SOLO":
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_NEON
+    why: "Gitarrensolo: die Gitarre zeigt schnelle Leuchtspuren in Pink, Cyan und Violett, alle anderen Geräte atmen gedimmt im Hintergrund."
+
+  "love on the run":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  "pause (4)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_FIRE
+    why: "Build-up statt Schwarz: lädt sich 2 Beats lang in Rot/Orange auf, Explosion genau auf den Snare-Auftakt."
+
+  "snareauftakt (3)":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (65 ms) auf den Snare-Auftakt."
+
+  "chorus 3":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    # Wunsch des Users (08.10.2026, Zwischenzeilen): drei kurze Blinder auf drei Vierteln wie in chorus 1.
+    blinder:
+      - {bar: 81.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 81.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 82, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 85.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 85.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    cues:
+      81.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten: blendet ca. 100 ms VOR der Viertel ein, ist genau auf der Viertel voll hell (ca. 100 ms), klingt in 200 ms ab, dann 100 ms Lücke"
+      81.75: "2. Blinder, eine Viertel später, gleiche Form"
+      82: "3. Blinder auf die 1 des nächsten Takts, gleiche Form"
+      85.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten: blendet ca. 100 ms VOR der Viertel ein, ist genau auf der Viertel voll hell (ca. 100 ms), klingt in 200 ms ab, dann 100 ms Lücke"
+      85.75: "2. Blinder, eine Viertel später, gleiche Form"
+    why: "Feuer auf allen Geräten in Rot, Orange und Gelb. Ende des vierten Takts drei kurze Blinder auf drei Vierteln; auf den letzten zwei Vierteln noch zwei, der dritte fällt auf die 1 von chorus 4."
+
+  "chorus 4":
+    scene: SCENE_SPARKLE
+    # Wunsch des Users (08.10.2026, Zwischenzeilen): drei kurze Blinder auf drei Vierteln wie in chorus 1.
+    blinder:
+      - {bar: 86, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}    # 3. Blinder der Gruppe aus chorus 3 (Wunsch in der Part-Zeile von chorus 4)
+      - {bar: 89.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 89.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 90, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    cues:
+      89.5: "1. von drei kurzen, vollen warmweißen Blindern auf allen Geräten: blendet ca. 100 ms VOR der Viertel ein, ist genau auf der Viertel voll hell (ca. 100 ms), klingt in 200 ms ab, dann 100 ms Lücke"
+      89.75: "2. Blinder, eine Viertel später, gleiche Form"
+      90: "3. Blinder auf die 1 des nächsten Takts, gleiche Form"
+    why: "Schnelle Einzelblitze auf allen Geräten. Auf die 1 der dritte Blinder der Gruppe aus chorus 3; Ende des vierten Takts noch einmal drei kurze Blinder auf drei Vierteln."
+
+  "outro F":
+    fx: "progStrobo(${dur}, ${next}, 95, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo (95 ms)."
+
+  "outro G":
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: schnellerer weißer Strobo (65 ms)."
+
+  "outro A":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_WHITE
+    why: "Schlussakkord: alle Geräte weiß, blenden über 2 Takte weich nach Schwarz aus (im alten Code war hier schon Schwarz)."

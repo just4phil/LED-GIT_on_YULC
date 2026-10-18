@@ -55,8 +55,9 @@ sections:
     why: "Alter Effekt: weißer Strobo, 200 ms an / 200 ms aus."
 
   verse 2:
-    fx: "progPalette(${dur}, 3, ${next})"
-    why: "Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte."
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
 
   chorus 2:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"

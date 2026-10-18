@@ -11,7 +11,22 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 18.10.2026 (neue Strophen-Szenen + SCENE_VERSE mit Look je Song: committet und gepusht; Verteilungs-Vorschlag beim User)
+Zuletzt aktualisiert: 18.10.2026 (Blinder-Kaskade gebaut, Demo 92 Parts 67-69, Abnahme offen)
+
+- **18.10.2026, Blinder-Kaskade - alle fünf Envs bauen, noch nicht committet, Abnahme offen.** Idee des Users:
+  „blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander) aber dann faden alles gleichzeitig lange
+  aus … könnte man gut am ende von songs benutzen“, auch in anderen Farben; dazu „die reihenfolge der geräte
+  konfigurierbar“. Umsetzung: `fxBlinderCascade(stepMs, FX_CASCADE(lampe1, bass, drums, git, lampe2, gitboard))` je
+  Platz - jedes Gerät liest seine Stufenzahl (4 Bit je DEV-Bit) und ist `cascMs` = Stufen × step VOR `atMs` voll;
+  `blinderLevelOf()` verlängert dafür Beginn, Länge und Ende des Vollen um `cascMs`, das Ausklingen beginnt auf allen
+  gleichzeitig. `fxBlinderSchemeColor()` = `deviceColor()` statt `col`. songgen.py: `cascade: lr|rl|out|in` oder
+  `{dir|order: [...], step}` im `blinder` (`cascade_spec()`), `color: scheme`; Aufbau vor dem Part-Beginn wird wie ein
+  Einblenden im Part davor angemeldet (`blinder_lead()`). Alle generierten Songs erzeugen denselben Code wie vorher.
+  Demo 92: Parts 67-69 vorn (Doku-Tabelle +39 s). Urteil des Users zur 16tel: „zu schnell“ -> Standard-step und
+  Part 67 auf eine Achtel. Doku: LED-Effekte-und-Szenen.html (API + Prüfpunkte),
+  Song-Workflow.html, SKILL.md, effekt-katalog.yaml, CLAUDE.md, README.md.
+  Am selben Tag vorher: 9 alte Songs generiert (Vorschläge der KI übernommen, alter Code nur auskommentiert), ebenfalls
+  noch nicht committet. Nächster Schritt: Urteil des Users zu Demo 92 Parts 67-69, dann auf Zuruf an Songenden.
 
 - **18.10.2026, mehr Abwechslung in den Strophen - alle fünf Envs bauen, committet und gepusht.** Anlass: User: „in den neuen songs in den strophen
   fast immer diesen regen auf der matrix (SCENE_VERSE) ... zu wenig abwechslungsreich“. Entscheidung des Users: „A und
@@ -28,6 +43,15 @@ Zuletzt aktualisiert: 18.10.2026 (neue Strophen-Szenen + SCENE_VERSE mit Look je
   Song-Workflow.html, SKILL.md (Regel: Strophen eines Songs nicht alle gleich, nicht immer SCENE_VERSE).
   Nächster Schritt: Urteil des Users zum Verteilungs-Vorschlag (Chat 18.10.2026), dann show.yaml der Songs anpassen
   und je Song generieren; Abnahme Demo 92 Parts 61-66.
+
+- **18.10.2026, Maniac-Änderungswünsche - generiert, alle 5 Envs gebaut, nicht committet, Test durch den User offen.**
+  Neu: `SCENE_CALL_RESPONSE_OFFBEAT` (`progCallResponse(..., offbeat)`: nur auf 2 und 4, links/rechts im Wechsel),
+  `progPingPong(..., firstPos, positions)` (nur ein Bereich der Bühnenplätze), `progRandomLines(..., fadeMillis)`
+  (ältere Linien verblassen). Tabelle per `--part-name` angepasst (strobe ab 61,5; verse 2b ab 73). Doku: Szenen-HTML
+  (Tabelle + Simulator), Katalog, SKILL.md. Nicht in Demo 92 (wird in Maniac selbst getestet).
+  Nachtrag: Schluss-Blinder neu (Kaskade ab 159,625, voll 160,125, 2 Takte Ausklingen); songgen.py erlaubt dafür mit
+  `carry: true` ein `len` über die Part-Länge hinaus (bis zum Ende des Parts danach, auch ins Schluss-Black).
+  Nächster Schritt: Urteil des Users zu Maniac.
 
 - **18.10.2026, `SCENE_WAVE_LR_BAR` - committet und gepusht, Test durch den User offen.** Anlass: Girls Just Wanna Have Fun,
   „when the working day“ (Case 8 und 14, `SCENE_WAVE_LR`): Matrix und Lampen wirkten nicht in sync. Ursache: die
@@ -1317,6 +1341,10 @@ aufblenden, ähnlich wie Strobo, punktuell auf einen laufenden Effekt gelegt.
   `every` einmalig bei `at`. Standard: `len` 1 Beat, `amount` 100, `color` warm, alle Geräte.
 - Demo: Song 92, Parts 17 (jede 1, 2 Beats, über dem Farbband), 19 (einmal, 3 s, über `SCENE_GLOW`), 22 (jede 1 über
   `SCENE_RAIN`), 21 (nur die Lampen, weiß, alle 2 Beats).
+- Kaskade (18.10.2026, Idee des Users): `fxBlinderCascade(stepMs, FX_CASCADE(...))` - die Geräte gehen nacheinander
+  an, am gemeinsamen Vollpunkt `atMs` sind alle hell, das Ausklingen beginnt für alle gleichzeitig. YAML `cascade:`
+  (Richtung oder eigene Reihenfolge, `step` in Beats); `color: scheme` (`fxBlinderSchemeColor`) = jedes Gerät in
+  seiner Schemafarbe. Demo: Song 92, Parts 67-69.
 - Erfahrung für Songs: auf allen Geräten ab 2 Beats Länge, am stärksten über dunklen oder ruhigen Effekten, schwach
   über vollflächigen Farbwechseln (`SCENE_COLORS`); nur auf den Lampen und kurz für Rhythmisches.
 - Geprüft: alle fünf Envs bauen; YAML-Formen und Fehlermeldungen im Speicher; Song #31 erzeugt denselben Code; vom

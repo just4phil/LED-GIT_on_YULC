@@ -98,9 +98,9 @@ sections:
     why: "Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila."
 
   verse 1b:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_PLASMA
     scheme: SCHEME_ICE
-    why: "Dezenter Puls im Beat in Eisblau - kleine Steigerung zum Part davor."
+    why: "kleine Steigerung zum Part davor, ohne zweiten Regen: ruhige Farbwolken in Eisblau auf der Matrix, der Farbverlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an"
 
   all i ever wanted (2):
     scene: SCENE_COLORS

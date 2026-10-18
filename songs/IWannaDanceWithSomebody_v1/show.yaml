@@ -33,8 +33,9 @@ sections:
     why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
 
   "verse 1":
-    fx: "progRandomLines(${dur}, ${next}, ${beat}, true)"
-    why: "Alter Effekt: pro Beat eine neue zufällige Linie in Zufallsfarbe."
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    why: "Strophe neu (18.10.2026, statt der alten Zufallslinien): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Sinuswellen im Takt auf der Matrix, warme Farben"
 
   "ive done alright":
     fx: "progMatrixScanner(${dur}, ${next}, 30)"
@@ -69,8 +70,9 @@ sections:
     why: "Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen."
 
   "verse 2":
-    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
-    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026, statt der alten Wasserringe): 'somebody who loves me' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
 
   "ive done alright (2)":
     fx: "progPalette(${dur}, 9, ${next})"

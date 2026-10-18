@@ -3,7 +3,7 @@
 //@function gen_EnjoyTheSilence
 //@name Enjoy The Silence
 //@struktur_sha be1bec4aa43ba9c2faa931e03dd2ea4000401ad167718d582a3ee5cb48975ea9
-//@show_sha e1b6215d086016770709f3095c1adc082fffa419e3a1804463961661fb2f2893
+//@show_sha 434614ad2447158eb5465d7a0f4306cfabc8b7205f3f2a01b4cff15aaafbeca3
 //@part GEN_ENJOYTHESILENCE_TEXT 0
 //@part GEN_ENJOYTHESILENCE_INTRO 3
 //@part GEN_ENJOYTHESILENCE_WORDS_ARE_VERY 4
@@ -159,9 +159,9 @@ void gen_EnjoyTheSilence() {
 		scene(SCENE_DNA_FLIP, 8496, 15, 113);
 		break;
 
-	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- Dezenter Puls im Beat in Eisblau - kleine Steigerung zum Part davor.
+	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- kleine Steigerung zum Part davor, ohne zweiten Regen: ruhige Farbwolken in Eisblau auf der Matrix, der Farbverlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
 		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE, 8495, 16, 113);
+		scene(SCENE_VERSE_PLASMA, 8495, 16, 113);
 		break;
 
 	case 16:	// all i ever wanted (2)  4 T  8496ms  @2:02.389  -- Die ganze Bühne fließt im Beat von Sunset-Farbe zu Sunset-Farbe; darüber auf der Matrix weiß mit schwarzem Rand die Gesangszeile im Rhythmus des Gesangs: ALL I EVER (je ein Drittel Viertel) WANTED, ALL I EVER NEEDED, IS HERE, IN MY ARMS.

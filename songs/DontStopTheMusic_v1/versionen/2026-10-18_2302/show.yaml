@@ -1,0 +1,143 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs DontStopTheMusic() (Song-ID 4). Der alte Code bleibt in
+# src/songs.cpp stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "für alle noch
+# nicht generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal
+# nur auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: Club-Song - kühl
+# und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET/FIRE). Die vier Chorus-Zeilen haben
+# ein festes Paar: "take it away" = Stern, "cant refuse it" = Einzelblitze. Der alte Code ging ab "chorus 4a" schon in
+# Schwarz - jetzt läuft der Song bis zum Ende der Tabelle.
+# Abweichung vom Vorschlag: "ist gettin late" nimmt SCENE_VERSE_WAVES statt SCENE_VERSE (Regel des Users vom
+# 18.10.2026: Strophen-Szenen über die Songs verteilen, nicht überall SCENE_VERSE).
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in DontStopTheMusic() keine Marker in einzelnen Parts; die Grund-Marker im case von
+# src/markerLEDs.cpp gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_DontStopTheMusic
+scheme: SCHEME_NEON
+
+# Wiederkehrende Bausteine (YAML-Anker: &name legt fest, *name / <<: *name setzt ein)
+started: &started
+  scene: SCENE_PALETTE
+  scheme: SCHEME_SUNSET
+  overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 32}
+  why: "Ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf - Spannung bis zum Chorus."
+strobe: &strobe
+  scene: SCENE_COLORS
+  scheme: SCHEME_WHITE
+  gate: 4
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_NEON
+    pulse: 40
+    why: "Ein Farbband in Pink, Cyan und Violett läuft über die ganze Bühne und pumpt im Beat mit der Kick."
+
+  "ist gettin late":
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_ROYAL
+    why: "Strophe kühl in Blau und Lila: auf der Matrix laufen Sinus- und Kosinuslinie im Takt, auf Gitarre und Bass fährt je Takt eine Lichtebene durch."
+
+  "who knew …":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_ROYAL
+    fade: {to: SCHEME_NEON, per: 8}
+    why: "Eine Stufe mehr: die Bühnenhälften blitzen abwechselnd im Beat, die Farben wandern alle 2 Takte von Blau/Lila nach Pink/Cyan und zurück."
+
+  "do u know what u started":
+    <<: *started
+    overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 30}    # 30 Beats: der Tail nimmt die letzten 2 Beats
+    tail:
+      beats: 2
+      <<: *strobe
+    why: "Ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich ein Glitzern auf. Der letzte halbe Takt ist weißer Strobo im Takt (4 Blitze pro Beat)."
+
+  "chorus 1a: i wanna take it away":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "'take it away': drehender Stern in Pink, Cyan und Violett, warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "chorus 1a: i just cant refuse it":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    why: "'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett."
+
+  "chorus 1b":
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    soft: 30
+    why: "Die ganze Bühne in einer Farbe, pro Beat die nächste, mit kurzer Blende statt hartem Sprung."
+
+  "chorus: i just cant refuse it":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    why: "'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett."
+
+  "verse 2":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"
+    transition: {type: fade, beats: 4}
+    why: "Ruhe nach dem Chorus: Wasserringe (wie bisher), weich über einen Takt eingeblendet."
+
+  "do u know what u started (2)": *started
+
+  "bridge: bass solo":
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_SUNSET
+    transition: stage_rl
+    why: "Bass-Solo: der Übergang läuft über die Bühne zum Bass hin, zwei Kometen kreisen um den Bass, alle anderen atmen dunkel."
+
+  "STROBO":
+    <<: *strobe
+    why: "Weißer Strobo im Takt (4 Blitze pro Beat) als harter Absprung in den Chorus."
+
+  "chorus 2a: i wanna take it away":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "'take it away': Stern in Pink, Cyan und Violett, Blinder auf den Einsatz; eine Stufe mehr als Chorus 1: die Lampen blitzen weiß auf 2 und 4."
+
+  "chorus 2a: i just cant refuse it":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    text: {words: "DONT STOP THE MUSIC", over: true}
+    why: "'cant refuse it': schnelle Einzelblitze in Pink, Cyan und Violett; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene."
+
+  "chorus 2a: i wanna take it away (2)":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    why: "'take it away': ab hier kippt die Farbe ins Warme - Stern in Orange, Pink, Lila und Gelb."
+
+  "chorus 2a: i just cant refuse it (2)":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_SUNSET
+    text: {words: "DONT STOP THE MUSIC", over: true}
+    why: "'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene."
+
+  "chorus 4a: i wanna take it away":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Höhepunkt: Feuer auf allen Geräten in Rot, Orange und Gelb, warmweißer Blinder auf den Einsatz."
+
+  "chorus 4a: i just cant refuse it":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    blinder: {bar: 100.75, len: 4, hold: 0.5, amount: 100, carry: true}
+    why: "Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 100,75), der in 'Bass Ende' ausklingt."
+
+  "Bass Ende":
+    scene: SCENE_SOLO_BASS
+    scheme: SCHEME_RED
+    fade_out: 8
+    why: "Nur noch der Bass: zwei rote Kometen kreisen um den Bass, alle anderen atmen dunkel; über die letzten 2 Takte blendet alles nach Schwarz aus."

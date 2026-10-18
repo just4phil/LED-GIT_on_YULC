@@ -1,0 +1,142 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs SuchAshame() (Song-ID 12). Der alte Code bleibt in src/songs.cpp
+# stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "für alle noch nicht
+# generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal nur
+# auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: düster und kühl
+# (ICE/ROYAL), der Chorus als Stern. Gegen die Länge der 12- und 16-Takte-Chorusse helfen Blinder, Lampen-Backbeat und
+# ein Farbwechsel in der Mitte; die Pausen vor den Einsätzen bekommen Blinder. Der Vorschlag "bei Takt 104 eine eigene
+# Zeile" ist umgesetzt (songgen.py --part-name 104="chorus 2b"). Nicht umgesetzt: eine eigene Zeile "verse 1" beim
+# Gesangseinsatz - die Taktnummer steht nicht in der Tabelle; "intro + verse 1" bleibt ein Part.
+# Abweichung vom Vorschlag: "pause (4)" lädt sich in SUNSET auf statt FIRE (Build-ups in der Farbe des folgenden Chorus).
+# Strobo nach der Regel des Users nicht mit progStrobo; die Strobo-Stellen sind laut Vorschlag Build-up bzw. Blinder.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in SuchAshame() keine Marker in einzelnen Parts; die Grund-Marker im case von
+# src/markerLEDs.cpp gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_SuchAShame
+scheme: SCHEME_ROYAL
+
+sections:
+  "black":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro + verse 1":
+    scene: SCENE_GLOW
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    why: "Kühler Einstieg: die Geräte füllen sich langsam in Eisblau, die Farben wandern alle 2 Takte nach Pink/Gelb und zurück."
+
+  "bridge 1":
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    tail:
+      beats: 4
+      scene: SCENE_BUILDUP
+      scheme: SCHEME_ROYAL
+    why: "Dezenter Puls im Beat in Blau und Lila, auf der Matrix farbiger Regen; im letzten Takt lädt sich alles auf, Explosion auf den Chorus."
+
+  "chorus 1":
+    scene: SCENE_STAR
+    scheme: SCHEME_ROYAL
+    soft: 40
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Drehender Stern in Blau, Lila und Weiß, die Farben blenden weich ineinander; warmweißer Blinder auf den Einsatz (2 Beats)."
+
+  "übergang":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    fade_out: 8
+    why: "Schnelle bunte Einzelblitze (wie bisher), über die letzten 2 Takte blenden sie in die Pause aus."
+
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {bar: 40, len: 2, amount: 100}
+    why: "Schwarz; ein kurzer warmweißer Blinder auf die 1 (Takt 40), klingt in 2 Beats ab."
+
+  "verse 2":
+    scene: SCENE_DNA_FLIP
+    scheme: SCHEME_ICE
+    why: "Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt."
+
+  "bridge 2":
+    scene: SCENE_PALETTE
+    scheme: SCHEME_ROYAL
+    overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 20}
+    why: "Ein Farbband in Blau, Lila und Weiß läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf."
+
+  "pause (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Lädt sich einen Takt lang in Pink, Cyan und Violett auf, Explosion genau auf den Chorus."
+
+  "chorus 2":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Drehender Stern in Pink, Cyan und Violett, Blinder auf den Einsatz; die Lampen blitzen weiß auf 2 und 4."
+
+  "übergang (2)":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    why: "Schnelle bunte Einzelblitze (wie bisher)."
+
+  "pause (3)":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {bar: 72.5, len: 2, amount: 100}
+    why: "Schwarz; ein kurzer warmweißer Blinder auf Takt 72,5, klingt in 2 Beats ab."
+
+  "strobo":
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 2, hold: 1.9, amount: 100}
+    why: "Starker Blinder statt Strobo: steht die 2 Beats voll bis zum Einsatz des Solos."
+
+  "solopart 1":
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_SUNSET
+    why: "Solo: zwei Kometen in Orange, Pink und Gelb kreisen um die Gitarre, alle anderen atmen dunkel."
+
+  "solopart 2":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"
+    scheme: SCHEME_SUNSET
+    fade: {to: triad, per: 8}
+    transition: {type: fade, beats: 2}
+    why: "Wasserringe (wie bisher), weich eingeblendet; die Farben wandern alle 2 Takte weiter."
+
+  "bridge 3":
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_ROYAL
+    why: "Die Bühnenhälften blitzen abwechselnd im Beat in Blau, Lila und Weiß."
+
+  "pause (4)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Lädt sich einen Takt lang in Orange, Pink und Gelb auf, Explosion genau auf den letzten Chorus."
+
+  "chorus 2 (2)":
+    scene: SCENE_STAR
+    scheme: SCHEME_SUNSET
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Drehender Stern in Orange, Pink, Lila und Gelb, Blinder auf den Einsatz; die Lampen blitzen weiß auf 2 und 4."
+
+  "chorus 2b":
+    scene: SCENE_FIRE
+    scheme: SCHEME_FIRE
+    blinder: {at: 0, len: 2, amount: 100}
+    why: "Zweite Hälfte des letzten Chorus: Feuer auf allen Geräten in Rot, Orange und Gelb, Blinder auf den Wechsel (Takt 104)."
+
+  "übergang (3)":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    blinder: {bar: 115.75, len: 4, hold: 0.5, amount: 100, carry: true}
+    why: "Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 115,75), der ins Fade-out ausklingt."
+
+  "fade out":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_RED
+    why: "Rot, blendet über die 3 Takte weich nach Schwarz."

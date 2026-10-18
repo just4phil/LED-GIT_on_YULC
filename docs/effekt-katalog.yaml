@@ -96,7 +96,7 @@ effekte:
     notiz: "sehr schöne Farbverläufe; die Paletten einzeln anschauen (Farben, Tempo, mit/ohne Fades)"
 
   progRandomLines:
-    wirkung: "Zufällige Linien in Zufallsfarbe; clearEach=true: je Schritt eine neue Linie, false: Linien stapeln sich"
+    wirkung: "Zufällige Linien in Zufallsfarbe; clearEach=true: je Schritt eine neue Linie, false: Linien stapeln sich; mit fadeMillis (5. Parameter, seit 18.10.2026, Maniac verse 1b) verblassen ältere Linien in dieser Zeit, statt die Fläche zu füllen"
     art: raster
     rolle: [flaeche]
     energie: [2, 4]
@@ -591,7 +591,7 @@ effekte:
     notiz:
 
   progPingPong:
-    wirkung: "Pro Beat leuchtet genau ein Gerät der Bühne, der Rest ist dunkel"
+    wirkung: "Pro Beat leuchtet genau ein Gerät der Bühne, der Rest ist dunkel; optional nur ein Bereich der Bühnenplätze (firstPos, positions - Maniac drums intro: 1, 3 = ohne die Lampen)"
     art: strip
     rolle: [flaeche]
     energie: [3, 4]
@@ -964,6 +964,15 @@ szenen:
     genutzt: 2          # APT. verse 1, apt apt apt (06.10.2026)
     urteil:
     notiz: "neu am 06.10.2026, weil SCENE_PINGPONG in APT. nicht im Takt wirkte (ein Gerät pro Beat in Zufallsfolge, kein dunkler Moment). Demo 92 Part 37, Abnahme offen"
+  SCENE_CALL_RESPONSE_OFFBEAT:
+    wirkung: "Frage/Antwort auf dem Backbeat: auf 2 blitzt die linke Bühnenhälfte (Lampe 1, Bass, linke Matrixhälfte), auf 4 die rechte (Gitarre, Lampe 2, rechte Matrixhälfte), auf 1 und 3 ist alles schwarz. Jedes Gerät blitzt einmal pro Takt"
+    geraete: {alle: "progCallResponse(..., true)"}
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    genutzt: 2          # Maniac: ist a cold cinetic heat, it could cut you like a knife (2) (18.10.2026)
+    urteil:
+    notiz: "neu am 18.10.2026 auf Wunsch des Users (Maniac: 'aufblinken immer nur auf x,25 und x,75, BLACK bei 0 und 0,5'), Abnahme offen"
   SCENE_SOLO_GIT:
     wirkung: "Gitarre: zwei Kometen; alle anderen atmen dunkel"
     geraete: {gitarre: progCometLoop, rest: "progBreathe dunkel"}
@@ -1134,6 +1143,7 @@ ausgabestufe:
     fxSmooth:         {wirkung: "Nachleuchten für jeden Effekt: harte Wechsel werden zu Blenden, ohne den Effekt anzufassen (z. B. progFullColors, progSternNeu)", yaml: "smooth: <Beats>", demo: "4 (250 ms), 11 (1000 ms), 12 (Ping-Pong); zum Vergleich 18 ohne", genutzt: 0, urteil: , notiz: }
     fxBlinder:        {wirkung: "Blinder: helles, warmweißes Aufblenden über dem laufenden Effekt (heller als der Effekt), einmalig oder im Raster, auf allen oder einzelnen Geräten", yaml: "blinder: bar | {every: , at: , len: , amount: , color: , devices: }", demo: "17 (jede 1), 19 (einmal, lang), 22 (über dunklem Effekt), 21 (nur Lampen)", genutzt: 0, urteil: , notiz: }
     fxBlinderShape:   {wirkung: "Blinder mit eigenem Verlauf: blendet schnell ein und klingt sehr lang aus (statt aufzuspringen und halb so lang zu stehen)", yaml: "blinder: {at: , len: , attack: <Beats>, hold: <Beats>} - at/bar = Moment der vollen Helligkeit, attack läuft davor", demo: "28", genutzt: 3, urteil: , notiz: }
+    fxBlinderCascade: {wirkung: "Blinder-Kaskade: die Geräte gehen nacheinander an (Reihenfolge links/rechts/Mitte/außen oder frei), am Vollpunkt sind alle hell, dann klingen alle gleichzeitig lange aus - gedacht fürs Songende; mit color: scheme jedes Gerät in seiner Schemafarbe", yaml: "blinder: {bar: , len: , hold: , cascade: lr|rl|out|in | {dir|order: [...], step: <Beats>}, color: warm|scheme}", demo: "67 (warm, lr, Achtel; 16tel war dem User zu schnell), 68 (Schemafarben, out, Achtel), 69 (eigene Reihenfolge, je Beat, mit Einblenden)", genutzt: 0, urteil: , notiz: }
 
   ebene:
     FX_ADD:           {wirkung: "zweiter Effekt wird aufaddiert, Schwarz ist durchsichtig (Glitzern, Blitze über einer Fläche)", yaml: "overlay: {scene: ..., mode: add}", demo: "70, 78 (nur halbes Gerät), 80 (mit Übergang + Puls)", genutzt: 2, urteil: , notiz: }

@@ -3,7 +3,7 @@
 //@function gen_APT
 //@name APT.
 //@struktur_sha f91efb35e3083ec1282dc2091a45fa25f11e76afdec78cdd3f2fc73099c2aeff
-//@show_sha be992e1e8a90473f7e9479dd0181aa264dc5ba06abaf6317af30e4abc8b45dca
+//@show_sha 95a8aa59232667f15fb5cb5ec2031e417f22106a44cd25a283b9a0eceed7435b
 //@part GEN_APT_PAUSE 0
 //@part GEN_APT_BASSDRUM_INTRO 3
 //@part GEN_APT_VERSE_1 4
@@ -88,8 +88,9 @@ void gen_APT() {
 		progStrobo(3221, 9, 200, 255, 255, 255);
 		break;
 
-	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte.
-		progPalette(9664, 3, 10);
+	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE, 9664, 10, 149);
 		break;
 
 	case 10:	// chorus 2  7 T  11276ms  @1:10.268  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats.

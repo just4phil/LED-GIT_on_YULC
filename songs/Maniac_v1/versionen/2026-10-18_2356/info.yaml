@@ -1,0 +1,9 @@
+zeit: '2026-10-18 23:56:50'
+notiz: 'Schluss-Blinder: Kaskade ab 159,625, alle voll 160,125, klingt 2 Takte aus
+  (carry ins Schluss-Schwarz)'
+werkzeug_git: 4faa111 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9b202e85f3516d893ef50947f7d5751f778f38a2ca8c8874386d654c124ed8e7
+  show.yaml: b828c18d295f8221573be8ffc5f4921f01a5b5e257a33217443233f126d788e1
+  generated.cpp: cf8dd66eefbe22045c43c7f65bb8c12f41ea12a2f6fe32b37441cdf9feea9415

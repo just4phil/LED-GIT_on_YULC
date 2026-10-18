@@ -3,7 +3,7 @@
 //@function gen_BillieJean
 //@name Billie Jean
 //@struktur_sha 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
-//@show_sha 3d36e1f59d6dafe4394aba0ce4fffbb2741a60406cf31dc745d0beaf6bc54661
+//@show_sha aef8fe0851cc97d680a810610724bd318f815890b0d8d2d2944df88b020502f6
 //@part GEN_BILLIEJEAN_PAUSE 0
 //@part GEN_BILLIEJEAN_DRUMS_INTRO 3
 //@part GEN_BILLIEJEAN_BASS_INTRO 4
@@ -93,9 +93,9 @@ void gen_BillieJean() {
 		scene(SCENE_GLOW, 7500, 6, 128);
 		break;
 
-	case 6:	// verse 1  4 T  7500ms  @0:27.422  -- Gesang setzt ein: dezenter Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix)
+	case 6:	// verse 1  4 T  7500ms  @0:27.422  -- Gesang setzt ein, gespannt und sparsam: Sternenhimmel - auf jedem Beat leuchten auf allen Geräten ein paar Sterne in Blau/Lila/Weiß auf und verglimmen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 7500, 7, 128);
+		scene(SCENE_VERSE_STARS, 7500, 7, 128);
 		break;
 
 	case 7:	// i am the one  8 T  15000ms  @0:34.922  -- Motiv Leuchtplatten: pro Beat leuchtet genau ein Gerät in Rot, Weiß oder Blau, der Rest ist dunkel (alt: progRandomLines im Beat)
@@ -103,10 +103,10 @@ void gen_BillieJean() {
 		scene(SCENE_PINGPONG, 15000, 8, 128);
 		break;
 
-	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: fallende Leuchtspuren in Pink/Cyan/Violett statt Blau
+	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen auf jedem Beat wie ein Herz (zum pochenden Bass), Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
-		scene(SCENE_RAIN, 7500, 9, 128);
+		scene(SCENE_VERSE_HEART, 7500, 9, 128);
 		break;
 
 	case 9:	// i am the one (2)  4 T  7500ms  @0:57.422  -- Motiv Leuchtplatten wie beim ersten Mal
@@ -156,10 +156,10 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 17, 128);
 		break;
 
-	case 17:	// verse 2 a  4 T  7500ms  @1:42.422  -- Strophe wie verse 1, dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück
+	case 17:	// verse 2 a  4 T  7500ms  @1:42.422  -- Strophe wie verse 1 (Sternenhimmel), dazu wandern die Farben über 2 Takte nach Pink/Orange und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3750);
-		scene(SCENE_VERSE, 7500, 18, 128);
+		scene(SCENE_VERSE_STARS, 7500, 18, 128);
 		break;
 
 	case 18:	// i am the one (5)  6 T+2 B  12187ms  @1:49.922  -- Motiv Leuchtplatten
@@ -172,10 +172,10 @@ void gen_BillieJean() {
 		scene(SCENE_DROP, 2813, 20, 128);
 		break;
 
-	case 20:	// verse 2 b  4 T  7500ms  @2:04.922  -- Strophe wie verse 2: Leuchtspuren in Pink/Cyan/Violett, das Rot blendet weich aus
+	case 20:	// verse 2 b  4 T  7500ms  @2:04.922  -- Strophe wie verse 2: Herzschlag auf allen Geräten in Pink/Cyan/Violett, das Rot blendet weich aus
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
-		scene(SCENE_RAIN, 7500, 21, 128);
+		scene(SCENE_VERSE_HEART, 7500, 21, 128);
 		break;
 
 	case 21:	// i ma the one  2 T+2 B  4687ms  @2:12.422  -- Motiv Leuchtplatten

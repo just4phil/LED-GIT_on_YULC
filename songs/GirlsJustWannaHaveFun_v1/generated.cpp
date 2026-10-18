@@ -3,7 +3,7 @@
 //@function gen_GirlsJustWannaHaveFun
 //@name Girls just wanna have fun
 //@struktur_sha 06eb890211fefddb9e6340911ddf697b64fabc6ce48806b031f4293fe9da17d1
-//@show_sha 0e1a9f5b80044fd208d1cfaee0f45829698bbcf7f1bc3f6ebd93be67f2824f85
+//@show_sha 46c5d26a7e28f6afe5102aa7aa3497062824a767058d3b49e1f7eb2d9dab110c
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_PAUSE 0
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_INTRO 3
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_VERSE_1 4
@@ -47,7 +47,7 @@ void gen_GirlsJustWannaHaveFun() {
 	case 2:	// Rest von 'verse 1' ab 0:26.905, Einstieg case 5
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810, false, 6667);
-		scene(SCENE_VERSE, 10476, 5, 126);
+		scene(SCENE_VERSE_STARS, 10476, 5, 126);
 		break;
 #endif
 
@@ -55,7 +55,7 @@ void gen_GirlsJustWannaHaveFun() {
 	case 2:	// Rest von 'verse 1' ab 0:24.048, Einstieg case 5
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810, false, 3810);
-		scene(SCENE_VERSE, 13333, 5, 126);
+		scene(SCENE_VERSE_STARS, 13333, 5, 126);
 		break;
 #endif
 
@@ -64,10 +64,10 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_WAVE_OUT, 15238, 4, 126);
 		break;
 
-	case 4:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls; startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück
+	case 4:	// verse 1  9 T  17143ms  @0:20.238  -- energy 1, Abwechslung in den Strophen (18.10.2026): Sternenhimmel - auf jedem Beat leuchten ein paar Sterne auf und verglimmen, startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück
 		setColorScheme(SCHEME_BLUE);
 		setColorFade(FADE_COMPLEMENT, 3810);
-		scene(SCENE_VERSE, 17143, 5, 126);
+		scene(SCENE_VERSE_STARS, 17143, 5, 126);
 		break;
 
 	case 5:	// instrumental break  4 T  7619ms  @0:37.381  -- das Riff vom Intro kehrt zurück (energy 4, brightness 0.95) - erkennbar gleich gestaltet
@@ -106,10 +106,10 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_PINGPONG, 15238, 12, 126);
 		break;
 
-	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo, mit derselben Farbwanderung
+	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3810);
-		scene(SCENE_VERSE, 17143, 13, 126);
+		scene(SCENE_VERSE_WAVES, 17143, 13, 126);
 		break;
 
 	case 13:	// thats all they really want (2)  4 T  7619ms  @1:59.286  -- wie der erste Pre-Chorus

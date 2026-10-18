@@ -30,28 +30,32 @@ sections:
     why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel etwa alle 1 s (1015 ms, nicht im Beat-Raster). Auf der Matrix steht der Stern fest in der Mitte."
 
   verse 1:
-    fx: "progPalette(${dur}, 3, ${next})"
-    why: "Alter Effekt: lila und grüne Balken mit dunklen Lücken laufen über die Geräte."
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_SUNSET
+    why: "Strophe neu (18.10.2026, statt der alten Palette): warme Farbwolken auf der Matrix, der Verlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an"
 
   verse 1b:
-    fx: "progPalette(${dur}, 6, ${next})"
-    why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_SUNSET
+    why: "wie verse 1: warme Farbwolken, die im Beat leicht anschwellen"
 
   Saturday went:
     fx: "progRandomLines(${dur}, ${next}, 460, true)"
     why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
 
   verse 2:
-    fx: "progPalette(${dur}, 7, ${next})"
-    why: "Alter Effekt: Wolken-Farben (blau, hellblau, weiß), ruhig."
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_ICE
+    why: "Strophe neu (18.10.2026): Sinuswellen in Blau/Eisblau laufen im Takt über die Matrix ('Monday you can hold your head'), eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen"
 
   SOLO:
     fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
     why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
 
   verse 3:
-    fx: "progPalette(${dur}, 2, ${next})"
-    why: "Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet."
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_ICE
+    why: "wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau"
 
   Saturday went (2):
     fx: "progRandomLines(${dur}, ${next}, 460, true)"
@@ -70,8 +74,9 @@ sections:
     why: "Alter Effekt: 1 Takt weißes Flimmern (65 ms)."
 
   verse 4a:
-    fx: "progPalette(${dur}, 2, ${next})"
-    why: "Alter Effekt: Regenbogen-Streifen mit Lücken, weich überblendet (sehr farbig)."
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
 
   verse 4b:
     fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"

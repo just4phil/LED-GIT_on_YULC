@@ -38,16 +38,18 @@ sections:
     why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
 
   verse 1:
-    fx: "progFullColors(${dur}, ${next}, ${half})"
-    why: "Alter Effekt: alle LEDs einfarbig, alle 2 Beats eine neue Farbe."
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
 
   chorus 1:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein."
 
   verse 2:
-    fx: "progMatrixScanner(${dur}, ${next})"
-    why: "Alter Effekt: Scanner, eine Leuchtlinie fährt hin und her."
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_SUNSET
+    why: "Strophe neu (18.10.2026, statt des alten Scanners): alle Geräte schlagen auf jedem Beat wie ein Herz in Orange/Pink/Lila, die Matrix zeigt eine Lissajous-Schleife"
 
   chorus 2:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
@@ -64,8 +66,9 @@ sections:
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
 
   verse 3:
-    fx: "progFullColors(${dur}, ${next}, ${beat})"
-    why: "Alter Effekt: alle LEDs einfarbig, pro Beat eine neue Farbe."
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "wie verse 1: Zonen im Beat, Lichtschuss, Plasma-Wolken auf der Matrix"
 
   chorus 3:
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"

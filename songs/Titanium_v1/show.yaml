@@ -1,0 +1,138 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs Titanium() (Song-ID 11). Der alte Code bleibt in src/songs.cpp
+# stehen, in main.cpp ist nur sein Aufruf auskommentiert (Wunsch des Users, 18.10.2026: "für alle noch nicht
+# generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal nur
+# auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: Titan = kalt und
+# metallisch (ICE, WHITE) in Strophe und Chorus; der Drop ("bridge") explodiert in NEON. "im bulletproof" ist der Aufbau
+# zum Chorus, "STONE HEART" ein Herzschlag im Dunkeln. Der Vorschlag "bei Takt 108 eine eigene Zeile" ist umgesetzt
+# (songgen.py --part-name 108="chorus 3b").
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Bund-Marker: der alte Code setzt in Titanium() keine Marker in einzelnen Parts; die Grund-Marker im case von
+# src/markerLEDs.cpp gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_Titanium
+scheme: SCHEME_ICE
+
+# Wiederkehrende Bausteine (YAML-Anker: &name legt fest, *name / <<: *name setzt ein)
+bulletproof: &bulletproof
+  scene: SCENE_VERSE
+  scheme: SCHEME_ICE
+  overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 28}
+  tail:
+    beats: 4
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_WHITE
+  why: "Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'."
+titanium_text: &ttext {words: "TITANIUM", per: 34, over: true, to: 8, fade_out: 2}
+drop: &drop
+  scene: SCENE_DROP
+  scheme: SCHEME_NEON
+  transition: flash
+  why: "Der Drop: weißer Blitz auf den Einsatz, danach Schockwellen und Blitze auf jeden Beat in Pink, Cyan und Violett."
+
+sections:
+  "text":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "intro":
+    scene: SCENE_GLOW
+    scheme: SCHEME_ICE
+    fade_in: 4
+    why: "Weich eingeblendet: die Geräte füllen sich langsam in Eisblau."
+
+  "v1: u shout it out":
+    scene: SCENE_CALM
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    why: "Nur Gitarre und Stimme: ruhiges Atmen in Eisblau, die Farben wandern alle 2 Takte nach Pink/Gelb und zurück."
+
+  "v1: im criticised":
+    scene: SCENE_RAIN
+    scheme: SCHEME_ROYAL
+    transition: {type: fade, beats: 2}
+    why: "Kleine Steigerung: fallende Leuchtspuren in Blau und Lila, weich eingeblendet."
+
+  "im bulletproof": *bulletproof
+
+  "chorus 1":
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    fade: {to: SCHEME_ICE, per: 8}
+    soft: 30
+    blinder: {at: 0, len: 2, amount: 100}
+    text: *ttext
+    why: "Die ganze Bühne in einer Farbe pro Beat, von Weiß alle 2 Takte nach Eisblau und zurück, mit kurzer Blende; warmweißer Blinder auf den Einsatz, auf der Matrix TITANIUM, blendet nach 2 Takten aus."
+
+  "bridge": *drop
+
+  "half time":
+    scene: SCENE_CALM
+    scheme: SCHEME_NEON
+    blinder: {every: 2, len: 1.5, amount: 100}
+    why: "Halftime sichtbar: ein warmweißer Blinder auf jede Halbe (alle 2 Beats, 1,5 Beats lang) über dunklem Atmen in Pink und Cyan."
+
+  "v2: cut me down":
+    scene: SCENE_DNA_FLIP
+    scheme: SCHEME_ICE
+    why: "Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt."
+
+  "v2: race your voice":
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    scheme: SCHEME_ICE
+    fade: {to: triad, per: 8}
+    why: "Wasserringe (wie bisher), die Farben wandern alle 2 Takte weiter."
+
+  "im bulletproof (2)": *bulletproof
+
+  "chorus 2":
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    fade: {to: SCHEME_ICE, per: 8}
+    soft: 30
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    text: *ttext
+    why: "Wie chorus 1 (eine Farbe pro Beat, Weiß nach Eisblau, Blinder auf den Einsatz, TITANIUM auf der Matrix); dazu blitzen die Lampen weiß auf 2 und 4."
+
+  "bridge (2)":
+    <<: *drop
+    blinder: {bar: 91.5, len: 1, hold: 0.25, amount: 100}
+    why: "Der Drop wie beim ersten Mal: weißer Blitz auf den Einsatz, Schockwellen und Blitze in Pink, Cyan und Violett; starker Blinder auf der letzten Viertel (Takt 91,5), danach Schwarz."
+
+  "Pause: STONE HEART ..":
+    scene: SCENE_VERSE_HEART
+    scheme: SCHEME_RED
+    only: {devices: [guitar], others: 0}
+    why: "'Stone heart': nur Gitarre und Bass schlagen wie ein Herz auf jedem Beat in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein."
+
+  "chorus 3":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_ICE
+    blinder: {bar: 100, len: 10, attack: 8, amount: 100}
+    why: "Glitzern in Eisblau; der Blinder aus der Pause steht voll auf dem Einsatz (Takt 100) und klingt in 2 Beats ab."
+
+  "chorus 3b":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    why: "Zweite Hälfte: das Glitzern wird heiß - Rot, Orange und Gelb."
+
+  "bridge triolisch":
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: {per_beat: 3}
+    blinder:
+      - {bar: 122.25, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 122.5, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+      - {bar: 122.75, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
+    why: "Weißer Strobo im Takt, triolisch (3 Blitze pro Beat); drei kurze Blinder auf den letzten drei Vierteln (Takt 122,25 / 122,5 / 122,75)."
+
+  "matrix":
+    scene: SCENE_FADEOUT
+    scheme: SCHEME_ICE
+    why: "Eisblau, blendet über die 4 Takte weich nach Schwarz."

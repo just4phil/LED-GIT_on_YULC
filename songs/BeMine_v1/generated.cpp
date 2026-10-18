@@ -3,7 +3,7 @@
 //@function gen_BeMine
 //@name Be Mine
 //@struktur_sha c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
-//@show_sha 26cec8e21063a26086d0f6a5e364e705e43c097d58cb9cfd8c1a176583ad9578
+//@show_sha 2317e7fc12fdf08c6e43e53b908d085716c25af70947bd6747a2cadd54b2561a
 //@part GEN_BEMINE_PAUSE 0
 //@part GEN_BEMINE_INTRO 3
 //@part GEN_BEMINE_VERSE_1A 4
@@ -51,12 +51,14 @@ void gen_BeMine() {
 		progBlingBlingColoring(15238, 4, 952);
 		break;
 
-	case 4:	// verse 1a  8 T  15238ms  @0:20.238  -- Alter Effekt: Regenbogen-Streifen mit harten Kanten laufen über die Geräte.
-		progPalette(15238, 1, 5);
+	case 4:	// verse 1a  8 T  15238ms  @0:20.238  -- Strophe neu (18.10.2026, statt der alten Palette): ruhiger Einstieg als Sternenhimmel - auf jedem Beat leuchten ein paar Sterne in Blau/Weiß auf und verglimmen
+		setColorScheme(SCHEME_ICE);
+		scene(SCENE_VERSE_STARS, 15238, 5, 126);
 		break;
 
-	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Alter Effekt: bunte, unterschiedlich helle Farbflecken laufen weich über die Geräte.
-		progPalette(15238, 4, 6);
+	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART, 15238, 6, 126);
 		break;
 
 	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
@@ -77,8 +79,9 @@ void gen_BeMine() {
 		progBlack(1905, 10);
 		break;
 
-	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Alter Effekt: Leuchtspuren laufen durch und hellen nach Weiß auf.
-		progMatrixHorizontal(15238, 11, 70, true);
+	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
+		setColorScheme(SCHEME_ROYAL);
+		scene(SCENE_VERSE_WAVES, 15238, 11, 126);
 		break;
 
 	case 11:	// im going crazy  8 T  15238ms  @1:38.333  -- Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf.

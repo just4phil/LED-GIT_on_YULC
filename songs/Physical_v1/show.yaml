@@ -4,6 +4,11 @@
 # Mal weiß, dazwischen farbig) und Black + Strobo-Auftakt auf dem Sprach-Sample vor Chorus 1.
 # Neu gegenüber dem alten Code: sichtbarer Wechsel beim Band-Einsatz (+14 dB), alle Chorusse erkennbar gleich,
 # Bewegung über die Bühne in der Bridge.
+# 18.10.2026 (erste Generierung, Wunsch des Users: "für alle noch nicht generierten songs jetzt den song neu generieren
+# ... den alten code erstmal nur auskommentieren!"): die Strobo-Stellen laufen nicht mehr über progStrobo (eigener
+# Zähler, nicht beat-genau, Zufallsfarbe je Gerät - Regel aus Take On Me), sondern als SCENE_COLORS + gate: weiß bzw.
+# eine gemeinsame Neon-Farbe pro Beat, 4 Blitze pro Beat im Takt. Der Trailer PhysicalTrailer() springt über die
+# Konstante GEN_PHYSICAL_SAMPLE_TAIL in den Strobo-Auftakt vor Chorus 1 (früher feste Part-Nummer 40).
 
 scheme: SCHEME_NEON
 # Schluss-Black 6,53 s (4 Takte, wie im alten Code): steht in der Tabelle in der Zeile "Ende".
@@ -43,8 +48,10 @@ sections:
     fx: "progBlack(${dur}, ${next})"
     tail:
       beats: 2
-      fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
-    why: "wie im alten Code: Black auf dem Sprach-Sample, weißer Strobo auf dem Synth-Auftakt (hier steigt auch der Trailer ein)"
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    why: "Schwarz auf dem Sprach-Sample, im letzten halben Takt weißer Strobo im Takt (4 Blitze pro Beat) auf dem Synth-Auftakt - hier steigt auch der Trailer ein."
 
   chorus 1:
     scene: SCENE_DROP
@@ -52,8 +59,10 @@ sections:
     why: "lautester Formteil: volle Energie im Beat, Neon"
 
   chorus 1 hit:
-    fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
-    why: "Motiv 'Let's get physical': 1 Takt Strobo, beim ersten Mal weiß"
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: 4
+    why: "Motiv 'Let's get physical': 1 Takt weißer Strobo im Takt (4 Blitze pro Beat), beim ersten Mal weiß"
 
   drum fill:
     scene: SCENE_SOLO_DRUMS
@@ -66,9 +75,9 @@ sections:
     why: "Snare-Wirbel steigert sich (build 1.0): lädt einen Takt auf, Explosion auf Verse 2"
 
   verse 2:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_HEART
     scheme: SCHEME_ROYAL
-    why: "wie Verse 1, damit die Form erkennbar bleibt"
+    why: "zweite Strophe anders als die erste (18.10.2026): alle Geräte schlagen auf jedem Beat wie ein Herz, die Matrix zeigt eine Lissajous-Schleife"
 
   pre-chorus 2:
     scene: SCENE_BUILDUP
@@ -81,8 +90,10 @@ sections:
     why: "erkennbar gleich wie Chorus 1"
 
   chorus 2 hit:
-    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
-    why: "Motiv 'Let's get physical', farbig"
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    gate: 4
+    why: "Motiv 'Let's get physical': 1 Takt Strobo im Takt (4 Blitze pro Beat), die ganze Bühne in einer Neon-Farbe pro Beat"
 
   bridge 1:
     scene: SCENE_PINGPONG
@@ -95,8 +106,10 @@ sections:
     why: "zweite Hälfte der Bridge: Bewegung wird gerichtet, von der Mitte nach außen"
 
   bridge hit:
-    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
-    why: "Motiv 'Let's get physical', farbig; danach fällt alles in den Breakdown"
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    gate: 4
+    why: "Motiv 'Let's get physical': 1 Takt Strobo im Takt in einer Neon-Farbe pro Beat; danach fällt alles in den Breakdown"
 
   chorus 3 solo voc:
     scene: SCENE_CALM
@@ -104,8 +117,10 @@ sections:
     why: "Breakdown, Gesang fast allein (-12 dB): alles zieht sich zurück"
 
   chorus 3 solo voc hit:
-    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
-    why: "Motiv 'Let's get physical', farbig; die Band kommt zurück"
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    gate: 4
+    why: "Motiv 'Let's get physical': 1 Takt Strobo im Takt in einer Neon-Farbe pro Beat; die Band kommt zurück"
 
   chorus 3:
     scene: SCENE_DROP
@@ -113,8 +128,10 @@ sections:
     why: "Chorus wieder voll, erkennbar gleich"
 
   chorus 3 hit:
-    fx: "progStrobo(${dur}, ${next}, 75, getRandomCRGB())"
-    why: "Motiv 'Let's get physical', farbig"
+    scene: SCENE_COLORS
+    scheme: SCHEME_NEON
+    gate: 4
+    why: "Motiv 'Let's get physical': 1 Takt Strobo im Takt (4 Blitze pro Beat), die ganze Bühne in einer Neon-Farbe pro Beat"
 
   outro:
     scene: SCENE_FIRE
@@ -122,5 +139,7 @@ sections:
     why: "Finale eine Stufe über dem Chorus: Feuer auf allen Geräten"
 
   outro hit:
-    fx: "progStrobo(${dur}, ${next}, 75, 255, 255, 255)"
-    why: "letztes 'Physical': weißer Strobo wie beim ersten Mal, danach schwarz"
+    scene: SCENE_COLORS
+    scheme: SCHEME_WHITE
+    gate: 4
+    why: "Letztes 'Physical': weißer Strobo im Takt wie beim ersten Mal, danach schwarz"

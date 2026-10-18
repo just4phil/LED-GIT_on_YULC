@@ -19,10 +19,10 @@ sections:
     why: "krachiger Einstieg der vollen Band aus der Stille (energy 4): Blitze laufen pro Beat von den Drums nach außen, Neonfarben setzen das Erkennungsbild des Songs"
 
   verse 1:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_STARS
     scheme: SCHEME_BLUE
     fade: {to: complement, per: 8}
-    why: "energy 1, aber 'schön rhythmisch' (drive 0.86): statt Atmen der dezente Beat-Puls; startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück"
+    why: "energy 1, Abwechslung in den Strophen (18.10.2026): Sternenhimmel - auf jedem Beat leuchten ein paar Sterne auf und verglimmen, startet in Blau (größter Kontrast zum bunten Intro) und wandert alle 2 Takte über Violett und Rot zur Gegenfarbe Orange und zurück"
 
   instrumental break:
     scene: SCENE_WAVE_OUT
@@ -59,10 +59,10 @@ sections:
     why: "'farbig und abwechslungsreich', energy 4: pro Beat springt das Licht auf ein anderes Gerät, freie Zufallsfarben - der bunteste Part des Songs"
 
   verse 3:
-    scene: SCENE_VERSE
+    scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ROYAL
     fade: {to: triad, per: 8}
-    why: "energy 2 wie Verse 2 - Ruhepol nach dem bunten Solo, mit derselben Farbwanderung"
+    why: "energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück"
 
   thats all they really want (2):
     scene: SCENE_BUILDUP

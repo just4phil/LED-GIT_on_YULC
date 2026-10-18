@@ -5,6 +5,7 @@
 #include "markerLEDs.h"
 #include "guitarShapeFX.h"
 #include "fxPipeline.h"
+#include "colorSchemes.h"	// deviceColor(): Schemafarbe dieses Geräts für fxBlinderSchemeColor
 //---------------------------------------------------------------------
 
 extern CRGB leds[NUMMATRIX];
@@ -36,7 +37,7 @@ extern boolean progStroboIsBlack;
 //     -> Ebenen darüberlegen (applyLayers): zweiter Effekt, dann Text
 //     -> Modifikatoren (applyMods): Helligkeit, Färbung, Ausschnitt
 //     -> Übergang vom alten Part (applyTransition)
-//     -> Blinder (applyBlinder)
+//     -> Blinder (applyBlinder; mit Kaskade geht jedes Gerät um seinen eigenen Versatz früher an)
 //     -> Marker + Kopie auf die beiden Ausgänge (gitBlindingLEDs_OFF_MarkerLEDs_ON)
 //     -> FastLED.show()                  (nur wenn sich das Bild geändert hat)
 //
@@ -99,6 +100,8 @@ struct BlinderMod {
 	bool shaped;				// eigener Verlauf (fxBlinderShape), sonst: erste Hälfte voll, dann abklingend
 	unsigned int attackMs, holdMs;
 	unsigned int preMs;			// fxBlinderCarry: so viele ms lief der Blinder schon, als der Part begann (0 = beginnt in diesem Part)
+	unsigned int cascMs;		// fxBlinderCascade: so viele ms VOR atMs ist dieses Gerät schon voll (0 = gleichzeitig mit allen)
+	bool schemeCol;				// fxBlinderSchemeColor: Farbe dieses Geräts aus dem Schema statt col
 };
 
 //--- Modifikatoren ---
@@ -183,6 +186,15 @@ void fxBlinderShape(unsigned int attackMillis, unsigned int holdMillis) {
 	b.holdMs = holdMillis;
 }
 void fxBlinderCarry(unsigned int elapsedMillis)	{ mod.blinder[mod.blinderSlot].preMs = elapsedMillis; }
+// Kaskade: aus stepsCode (4 Bit je Gerät, FX_CASCADE in fxPipeline.h) die eigene Schrittzahl herauslesen.
+// __builtin_ctz(DEV_ME) = Nummer des gesetzten Bits von DEV_ME (DEV_LAMPE1 = 0x01 -> 0, DEV_BASS = 0x02 -> 1 ...),
+// ">> (4 * nr)" schiebt die 4 Bit dieses Geräts nach unten, "& 0x0F" schneidet sie aus. Jedes Gerät rechnet nur seinen
+// eigenen Versatz - der gemeinsame Vollpunkt atMs und das Ausklingen danach bleiben auf allen Geräten gleich.
+void fxBlinderCascade(unsigned int stepMillis, uint32_t stepsCode) {
+	uint8_t steps = (stepsCode >> (4 * __builtin_ctz(DEV_ME))) & 0x0F;
+	mod.blinder[mod.blinderSlot].cascMs = steps * stepMillis;
+}
+void fxBlinderSchemeColor()	{ mod.blinder[mod.blinderSlot].schemeCol = true; }
 void fxBlinderUnderText()	{ mod.blinderUnderText = true; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
@@ -497,24 +509,29 @@ uint8_t fxSoftBlendAt(uint32_t pos, uint32_t span) {
 // volle Leuchtkraft"). Ohne Einblenden springt er dort auf; mit Einblenden beginnt er deshalb attackMs FRÜHER
 // ("lead"), damit das Einblenden genau bei atMs oben ankommt. Liegt dieser Beginn vor dem Part-Beginn, fehlt hier
 // der Anfang des Einblendens - songgen.py meldet ihn dann zusätzlich im Part davor an.
+// Kaskade (fxBlinderCascade): dieses Gerät ist schon cascMs VOR atMs voll. Es beginnt also um cascMs früher, steht um
+// cascMs länger voll, und sein Ausklingen beginnt im selben Moment wie auf allen anderen Geräten. Dafür werden Beginn
+// (lead), ganze Länge (len) und Ende des Vollen (hold) um cascMs verlängert; ohne Kaskade ist cascMs 0 und alles wie bisher.
 static uint8_t blinderLevelOf(const BlinderMod& b, uint32_t beatMs) {
-	// so viele ms vor atMs beginnt der Blinder: sein Einblenden (attack) und - bei einem Blinder, der aus dem Part davor
-	// herüberklingt (fxBlinderCarry) - die Zeit, die er dort schon gelaufen ist
-	uint32_t lead = (b.shaped ? b.attackMs : 0) + b.preMs;
+	// so viele ms vor atMs beginnt der Blinder: sein Einblenden (attack), der Vorsprung dieses Geräts in einer Kaskade
+	// (cascMs) und - bei einem Blinder, der aus dem Part davor herüberklingt (fxBlinderCarry) - die Zeit, die er dort
+	// schon gelaufen ist
+	uint32_t lead = (b.shaped ? b.attackMs : 0) + b.preMs + b.cascMs;
 	if (!b.lenMs || !b.here || beatMs + lead < b.atMs) return 0;	// kein Blinder angemeldet / nicht auf diesem Gerät / noch nicht dran
 	uint32_t t = beatMs + lead - b.atMs;	// Zeit seit dem (ersten) Beginn des Blinders (= Beginn des Einblendens)
+	uint32_t len = (uint32_t)b.lenMs + b.cascMs;	// ganze Länge auf diesem Gerät
 	if (b.every) {	// im Raster wiederholen, Phase exakt über bpm (wie fxBeatPhase)
 		t = (((uint64_t)t * b.bpm) % (60000UL * b.every)) / b.bpm;
 	}
-	else if (t >= b.lenMs) return 0;
-	if (t >= b.lenMs) return 0;
-	uint32_t hold = b.lenMs / 2;	// bis hierhin voll hell (Standard: die erste Hälfte)
+	else if (t >= len) return 0;
+	if (t >= len) return 0;
+	uint32_t hold = b.lenMs / 2 + b.cascMs;	// bis hierhin voll hell (Standard: die erste Hälfte, dazu der Kaskaden-Vorsprung)
 	if (b.shaped) {
 		if (t < b.attackMs) return scale8(b.amount, t * 255 / b.attackMs);
-		hold = (uint32_t)b.attackMs + b.holdMs;
+		hold = (uint32_t)b.attackMs + b.holdMs + b.cascMs;
 	}
-	if (t < hold || hold >= b.lenMs) return b.amount;
-	uint8_t lin = 255 - (t - hold) * 255 / (b.lenMs - hold);	// fällt gleichmäßig von 255 auf 0
+	if (t < hold || hold >= len) return b.amount;
+	uint8_t lin = 255 - (t - hold) * 255 / (len - hold);	// fällt gleichmäßig von 255 auf 0
 	return scale8(b.amount, scale8(lin, lin));					// lin * lin: fällt erst schnell, läuft dann lange aus
 }
 
@@ -538,7 +555,8 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 // egal wie hell das Gerät sonst eingestellt ist. Das Bild des Effekts wird im selben Maß heruntergerechnet und bleibt
 // so gleich hell - nur der Blinder selbst strahlt.
 static void applyBlinder(CRGB* buf, uint8_t level) {
-	const CRGB col = mod.blinder[blinderTop].col;	// Farbe des gerade stärksten Blinders (blinderLevel)
+	// Farbe des gerade stärksten Blinders (blinderLevel); mit fxBlinderSchemeColor die Schemafarbe dieses Geräts
+	const CRGB col = mod.blinder[blinderTop].schemeCol ? deviceColor() : mod.blinder[blinderTop].col;
 	const uint8_t base = FastLED.getBrightness();	// die normale Gesamthelligkeit
 	uint8_t bright = base + (uint16_t)(255 - base) * level / 255;	// je stärker der Blinder gerade ist, desto näher an 255
 	if (bright != base) {
