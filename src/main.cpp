@@ -468,7 +468,8 @@ void loop() {
 			InTheDark();
 			break;
 		case 14:
-			Shivers();
+			//Shivers();
+			gen_Shivers(); // <<< GENERATED SONGS <<<
 			break;
 		case 15:
 			//Abcdefu();

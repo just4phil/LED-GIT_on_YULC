@@ -1,0 +1,9 @@
+zeit: '2026-10-18 16:47:26'
+notiz: 'neu aus der Tabelle: Änderungswünsche (übernommene Vorschläge vom 10.10.)
+  umgesetzt, ersetzt Shivers()'
+werkzeug_git: 91bbf0a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: c075ea1d2c6b04b4259a7f4831da7aaca5fd03fcb48f631f820114332657ed60
+  show.yaml: f1f1dae46170704f82f50548d66a54c0491def4311e7b97c144e3fbd6c2a9c43
+  generated.cpp: d8f1ecbf746c8add762826435df726e7c40bc556840bc1bbcb501a2c03ad0053

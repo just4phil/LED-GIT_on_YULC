@@ -1,0 +1,162 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Grundlage: die Änderungswünsche des Users - er hat die Vorschläge aus vorschlag.yaml (10.10.2026) in die Spalte
+# "Änderungswunsch" übernommen. Leitidee: warmer Pop-Song (SUNSET) in den Strophen, Chorus als Stern in NEON, der
+# lange dunkle Mittelteil ("you burn") glimmt rot und wächst zu Feuer, das Finale in FIRE.
+# Parts ohne Wunsch: "pause" (immer Schwarz) und "Chorus 1b (2)" - dort derselbe Look wie in Chorus 1b (Einzelblitze in
+# NEON; der alte Code hatte an beiden Stellen denselben Effekt progFastBlingBling).
+# Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# Bund-Marker: der alte Shivers() setzt keine Marker in einzelnen Parts -> kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+
+function: gen_Shivers
+scheme: SCHEME_SUNSET
+end_blinder: 3.6  # der letzte Triolen-Blinder (Takt 124,66) klingt über 2 Takte (3,6 s) ins Schluss-Schwarz aus
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  intro:
+    scene: SCENE_GLOW
+    scheme: SCHEME_SUNSET
+    fade: {to: analog, per: 8}
+    why: "Die Geräte füllen sich langsam mit warmen Sunset-Farben (Orange, Pink, Lila, Gelb) und wechseln gemeinsam die Farbe; alle 2 Takte wandert der Farbton leicht zu den Nachbarfarben und zurück."
+
+  verse 1:
+    scene: SCENE_VERSE
+    scheme: SCHEME_SUNSET
+    why: "Dezenter Puls im Beat in Sunset-Farben - sichtbarer Wechsel beim Gesangseinsatz."
+
+  verse 1b:
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_SUNSET
+    why: "Frage/Antwort im Takt: auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2, die Matrix wechselt die Hälften. Sunset-Farben."
+
+  i wanna be that guy:
+    scene: SCENE_PALETTE
+    scheme: SCHEME_NEON
+    overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 30}
+    tail:
+      beats: 2
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    why: "Ein Farbband in Pink, Cyan, Violett läuft über die ganze Bühne, darüber baut sich bis zum Strobo ein Glitzern auf. Der letzte halbe Takt ist weißer Strobo im Takt (4 Blitze pro Beat)."
+
+  Chorus 1:
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 2}
+    why: "Drehender Stern in Neon-Farben, Farbwechsel im Beat. Auf den Einsatz springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats ab."
+
+  mini pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "2 Beats Schwarz; darin blendet der starke Blinder für den Wiedereinsatz (Takt 45,25) ein."
+
+  Chorus 1b:
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    blinder: {at: 0, len: 3, attack: 1}
+    why: "Schnelle Einzelblitze in Pink, Cyan, Violett. Ein starker Blinder blendet im letzten Beat der Pause ein, ist auf dem Wiedereinsatz voll hell und klingt über 2 Beats ab."
+
+  verse 2:
+    fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
+    scheme: SCHEME_SUNSET
+    soft: 100
+    why: "Die ganze Bühne leuchtet in einer Sunset-Farbe und fließt alle 2 Beats weich in die nächste."
+
+  verse 2b:
+    scene: SCENE_RAIN
+    scheme: SCHEME_SUNSET
+    fade: {to: triad, per: 8}
+    why: "Ruhig fallende Leuchtspuren in Sunset-Farben; alle 2 Takte wandern die Farben zu den Dreiklang-Farben (Richtung Grün/Blau) und zurück."
+
+  i wanna be that guy (2):
+    scene: SCENE_PALETTE
+    scheme: SCHEME_NEON
+    overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 30}
+    tail:
+      beats: 2
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    why: "Wie beim ersten Mal: Farbband in Pink, Cyan, Violett, darüber baut sich bis zum Strobo ein Glitzern auf; der letzte halbe Takt ist weißer Strobo im Takt."
+
+  Chorus 1 (2):
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    blinder:
+      - {at: 0, len: 2}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    why: "Drehender Stern in Neon-Farben wie im ersten Chorus, Blinder auf den Einsatz (warmweiß, 2 Beats). Dazu blitzen die Lampen weiß auf Schlag 2 und 4."
+
+  mini pause (2):
+    fx: "progBlack(${dur}, ${next})"
+    tail:
+      beats: 2
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 4
+    cues:
+      84.5: "erst hier der weiße Strobo (4 Blitze pro Beat), davor 2 Beats Schwarz"
+    why: "2 Beats Schwarz, ab Takt 84,5 weißer Strobo im Takt (4 Blitze pro Beat) auf allen Geräten."
+
+  Chorus 1b (2):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_NEON
+    blinder: {bar: 85.25, len: 3, attack: 1}
+    cues:
+      85.25: "Höhepunkt des Blinders erst hier: blendet ab Takt 85 über 1 Beat ein, klingt danach über 2 Beats ab"
+    why: "Schnelle Einzelblitze in Pink, Cyan, Violett wie in Chorus 1b. Ein Blinder blendet ab dem Einsatz (Takt 85) über einen Beat ein, ist auf Takt 85,25 voll hell und klingt über 2 Beats ab."
+
+  "you burn ….":
+    scene: SCENE_CALM
+    scheme: SCHEME_RED
+    dim: 30
+    why: "Ruhiges Atmen in Rot, auf 30 % gedimmt - die Bühne glimmt nur."
+
+  "you burn …. 2":
+    scene: SCENE_FIRE
+    scheme: SCHEME_RED
+    fade_in: 8
+    why: "Aus dem Glimmen wird Feuer: rote Flammen auf allen Geräten, die sich über die ersten 2 Takte aufbauen."
+
+  SOLO VOC:
+    scene: SCENE_FIRE
+    scheme: SCHEME_RED
+    transition: {type: fade, beats: 1}
+    fade_out: 4
+    tail:
+      beats: 4
+      fx: "progBlack(${dur}, ${next})"
+    why: "Das rote Feuer aus 'you burn' blendet ganz langsam über einen Takt nach Schwarz aus, danach Stille; in den letzten 2 Beats blendet ein Blinder ein, voll hell auf dem Chorus-Einsatz (Takt 111)."
+
+  Chorus 1 (3):
+    scene: SCENE_STAR
+    scheme: SCHEME_FIRE
+    blinder: {at: 0, len: 4, attack: 2}
+    why: "Drehender Stern wie in den anderen Chorussen, jetzt eine Stufe wärmer in Rot, Orange, Gelb. Der Blinder aus der Stille ist auf dem Einsatz voll hell und klingt über 2 Beats ab."
+
+  mini pause (3):
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 3, hold: 2.9}
+    cues:
+      117: "Chorus 1b (3) beginnt jetzt erst auf Takt 117,25 (Part in der Tabelle verschoben); der Blinder steht bis dahin voll"
+    why: "Starker Blinder (warmweiß, alle Geräte) steht die ganzen 3 Beats voll bis zum Einsatz auf Takt 117,25."
+
+  Chorus 1b (3):
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    blinder:
+      - {bar: 120.5, len: 0.8, attack: 0.2, hold: 0.2}
+      - {bar: 120.75, len: 0.8, attack: 0.2, hold: 0.2}
+      - {bar: 121, len: 0.8, attack: 0.2, hold: 0.2}
+      - {bar: 124, len: 0.8, attack: 0.2, hold: 0.2}
+      - {bar: 124.3333, len: 0.8, attack: 0.2, hold: 0.2}
+      - {bar: 124.6667, len: 1.34, hold: 1.33}
+    cues:
+      120.5: "drei kurze Blinder auf 120,5 / 120,75 / 121 (bleiben wie sie sind)"
+      124: "drei Blinder triolisch auf 124 / 124,33 / 124,66; der letzte steht bis zum Songende voll und klingt dann über 2 Takte (3,6 s) ins Schluss-Schwarz aus"
+    why: "Schnelle Einzelblitze in Rot, Orange, Gelb, Einsatz auf Takt 117,25. Drei kurze Blinder auf den Vierteln 120,5 / 120,75 / 121. Am Schluss drei Blinder triolisch (124 / 124,33 / 124,66); der letzte bleibt voll hell und klingt über 2 Takte ins Schluss-Schwarz aus."

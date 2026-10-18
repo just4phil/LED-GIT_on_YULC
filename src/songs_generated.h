@@ -9,6 +9,7 @@ bool isGeneratedSong(byte songID);	// exakte Timeline -> main.cpp gleicht die Ve
 void gen_TakeOnMe();	// #3 Take On Me
 void gen_DancingOnMyOwn();	// #8 Dancing On My Own
 void gen_ILoveIt();	// #9 I Love It
+void gen_Shivers();	// #14 Shivers
 void gen_Abcdefu();	// #15 abcdefu
 void gen_APT();	// #17 APT.
 void gen_Kids();	// #20 Kids
@@ -91,6 +92,30 @@ void gen_AllTheThingsSheSaidIntro();	// #82 All The Things She Said Intro
 #define GEN_ILOVEIT_STOP 15
 #define GEN_ILOVEIT_CHORUS_4 16
 #define GEN_ILOVEIT_CHORUS_5 17
+#define GEN_SHIVERS_PAUSE 0
+#define GEN_SHIVERS_INTRO 3
+#define GEN_SHIVERS_VERSE_1 4
+#define GEN_SHIVERS_VERSE_1B 5
+#define GEN_SHIVERS_I_WANNA_BE_THAT_GUY 6
+#define GEN_SHIVERS_I_WANNA_BE_THAT_GUY_TAIL 7
+#define GEN_SHIVERS_CHORUS_1 8
+#define GEN_SHIVERS_MINI_PAUSE 9
+#define GEN_SHIVERS_CHORUS_1B 10
+#define GEN_SHIVERS_VERSE_2 11
+#define GEN_SHIVERS_VERSE_2B 12
+#define GEN_SHIVERS_I_WANNA_BE_THAT_GUY_2 13
+#define GEN_SHIVERS_I_WANNA_BE_THAT_GUY_2_TAIL 14
+#define GEN_SHIVERS_CHORUS_1_2 15
+#define GEN_SHIVERS_MINI_PAUSE_2 16
+#define GEN_SHIVERS_MINI_PAUSE_2_TAIL 17
+#define GEN_SHIVERS_CHORUS_1B_2 18
+#define GEN_SHIVERS_YOU_BURN 19
+#define GEN_SHIVERS_YOU_BURN_2 20
+#define GEN_SHIVERS_SOLO_VOC 21
+#define GEN_SHIVERS_SOLO_VOC_TAIL 22
+#define GEN_SHIVERS_CHORUS_1_3 23
+#define GEN_SHIVERS_MINI_PAUSE_3 24
+#define GEN_SHIVERS_CHORUS_1B_3 25
 #define GEN_ABCDEFU_PAUSE 0
 #define GEN_ABCDEFU_INTRO 3
 #define GEN_ABCDEFU_STROBE 4

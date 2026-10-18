@@ -199,7 +199,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | 11 | Titanium | | 33 | Girls Just Wanna Have Fun * |
 | 12 | Such A Shame | | 80 | I Love It (trailer) * |
 | 13 | In The Dark | | 81 | Dancing On My Own (intro) |
-| 14 | Shivers | | 82 | All The Things She Said (trailer) * |
+| 14 | Shivers * | | 82 | All The Things She Said (trailer) * |
 | 15 | abcdefu * | | 90-92 | Demo songs for effects, scenes and the output stage |
 | 16 | Enjoy The Silence | | 99 | Startup animation |
 

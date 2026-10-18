@@ -1,0 +1,9 @@
+zeit: '2026-10-18 17:06:10'
+notiz: 'Wünsche 18.10.: Strobo ab 84,5, Blinder-Höhepunkt 85,25, Feuer fadet in SOLO
+  VOC aus, Chorus 1b (3) ab 117,25, Triolen-Blinder am Schluss'
+werkzeug_git: 91bbf0a + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: bb3091456c187a56521a307827f809f61759b300552b909f69a79573a467f59f
+  show.yaml: dcc63443d1365b461083c4a3c784fd1d72ecc1f68fbf25b3f5c41f6023120158
+  generated.cpp: 40ff07ba8deef4d72e5634937e57b011efcdc7eed8b6bbef1fb58849334f4685
