@@ -49,17 +49,22 @@ sections:
     scene: SCENE_STAR
     scheme: SCHEME_NEON
     blinder: {at: 0, len: 2}
-    why: "Drehender Stern in Neon-Farben, Farbwechsel im Beat. Auf den Einsatz springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats ab."
+    tail:
+      beats: 1
+      fx: "progBlack(${dur}, ${next})"
+    cues:
+      44.5: "ab hier schon Schwarz (1 Beat vor der mini pause)"
+    why: "Drehender Stern in Neon-Farben, Farbwechsel im Beat. Auf den Einsatz springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats ab. Ab Takt 44,5 ist es schon schwarz."
 
   mini pause:
     fx: "progBlack(${dur}, ${next})"
-    why: "2 Beats Schwarz; darin blendet der starke Blinder für den Wiedereinsatz (Takt 45,25) ein."
+    why: "2 Beats Schwarz bis zum Wiedereinsatz auf Takt 45,25."
 
   Chorus 1b:
     scene: SCENE_SPARKLE
     scheme: SCHEME_NEON
-    blinder: {at: 0, len: 3, attack: 1}
-    why: "Schnelle Einzelblitze in Pink, Cyan, Violett. Ein starker Blinder blendet im letzten Beat der Pause ein, ist auf dem Wiedereinsatz voll hell und klingt über 2 Beats ab."
+    blinder: {at: 0, len: 3.1, attack: 0.1}
+    why: "Schnelle Einzelblitze in Pink, Cyan, Violett. Ein starker Blinder blendet ganz kurz vor dem Wiedereinsatz ein, ist auf Takt 45,25 voll hell und klingt bis Takt 46 (3 Beats) aus."
 
   verse 2:
     fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"
