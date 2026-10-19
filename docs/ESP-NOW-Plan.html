@@ -544,7 +544,7 @@ Aufgabe steht jeweils im Issue):</p>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/10">#10</a></td><td>Alle Geräte auf ESP-NOW: Broadcast-Weg, Paket-Modul + Tests, OTA-Befehl, Umstellung</td><td>2</td><td>#9</td><td>umgesetzt (cff1b40), Umstellung + Probe offen</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/11">#11</a></td><td>Rückweg: Stand lesen / holen</td><td>3</td><td>#10</td><td>erledigt, auf Hardware bestätigt</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/12">#12</a></td><td>Lebenszeichen + Warn-LEDs</td><td>4</td><td>#10</td><td>erledigt, auf Hardware bestätigt</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle: Zählung der Clients</td><td>5</td><td>#12</td><td>umgesetzt, Probe offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle: Zählung der Clients</td><td>5</td><td>#12</td><td>erledigt, auf Hardware bestätigt</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/16">#16</a></td><td>Probe mit allen Geräten vor dem ersten Auftritt</td><td>6</td><td>#11, #12, #13</td><td>teilweise (s. Phase 6)</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/17">#17</a></td><td>BLE-Code entfernen (nach erfolgreichen Auftritten)</td><td>7</td><td>#16</td><td>offen</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/14">#14</a></td><td>Neue Lampen lampe3/lampe4 als Klone</td><td>später</td><td>#10</td><td>offen</td></tr>
@@ -595,13 +595,13 @@ Aufgabe steht jeweils im Issue):</p>
     <p>READ_REQ/READ_RESP für den Kurzklick am Client, WRITE für den Doppelklick am Proxy.</p></li>
   <li><b>Lebenszeichen + Warn-LEDs (#12)</b> <span class="badge b-done">erledigt 19.10.2026</span>
     <p><code>HELLO</code>/<code>HELLO_ACK</code>, Peer-Tabelle, <code>syncLinkMissing()</code> für ESP-NOW.</p></li>
-  <li><b>OTA für alle: Zählung (#13)</b> <span class="badge b-work">umgesetzt, Probe offen</span>
+  <li><b>OTA für alle: Zählung (#13)</b> <span class="badge b-done">erledigt 19.10.2026</span>
     <p>Der Proxy wartet, bis alle erwarteten Clients ein <code>HELLO_ACK</code> geschickt haben, mit lila Balken wie heute.</p></li>
   <li><b>Probe vor dem ersten Auftritt (#16)</b> <span class="badge b-work">teilweise</span>
     <p>Checkliste aus Abschnitt 11 mit allen Geräten.</p>
     <div class="note">19.10.2026 bestanden: Kurzklick an Lampe/Bass, Doppelklick an der Gitarre, Not-Aus, Gitarre mitten im
-      Betrieb neu starten, Gerät mitten im Song einschalten. Offen: Songstart per MIDI (mehrere Songs bis zum Ende),
-      Part-Sprung CC 23, OTA für alle per ESP-NOW mit allen 5 Geräten, Probeabend mit Akkustand.</div></li>
+      Betrieb neu starten, Gerät mitten im Song einschalten, OTA für alle per ESP-NOW (erst 3 Geräte, dann der Bass
+      separat). Offen: Songstart per MIDI (mehrere Songs bis zum Ende), Part-Sprung CC 23, Probeabend mit Akkustand.</div></li>
   <li><b>BLE-Code entfernen (#17)</b> <span class="badge b-open">offen</span>
     <p>Nach ein paar erfolgreichen Auftritten: BLE-Dateien, NimBLE-Bibliothek, <code>CONFIG_BT_NIMBLE_…</code>-Flags,
       BLE-Adressen/UUIDs und das Flag <code>SYNC_VIA_BLE</code> entfernen.</p></li>
