@@ -388,8 +388,8 @@ einer anderen Adresse wird verworfen. Die Adresse setzt die Funk-Hardware des Ab
 Paketinhalt. Zusätzlich: Magic, Version, Länge, Geräte-Bit und Paketart müssen passen. Gegen jemanden, der gezielt
 die MAC der Gitarre fälscht, schützt das nicht (dafür bräuchte es eine Signatur je Paket, z.B. HMAC mit gemeinsamem
 Schlüssel); gegen jedes andere ESP-NOW-Gerät in der Halle schon.</p>
-<div class="warn">Die MAC der Gitarre (<code>48:CA:43:80:8B:94</code>) ist aus ihrer Bluetooth-Adresse abgeleitet (− 1, wie
-bei Lampe 1 gemessen). Beim ersten Start der ESP-NOW-Firmware gibt die Gitarre ihre echte MAC auf Serial aus
+<div class="ok">Die MAC der Gitarre (<code>48:CA:43:80:8B:94</code>) ist aus ihrer Bluetooth-Adresse abgeleitet (− 1, wie
+bei Lampe 1 gemessen) und am 19.10.2026 bestätigt: alle Clients folgen der Gitarre. Bei einem Board-Tausch gilt: Beim ersten Start der ESP-NOW-Firmware gibt die Gitarre ihre echte MAC auf Serial aus
 (<code>ESP-NOW: aktiv auf Kanal 1, MAC …</code>) - stimmt sie nicht, hören die Clients nichts (rote Warn-LEDs). Dann den
 Wert in <code>definitions.h</code> korrigieren.</div>
 
@@ -582,7 +582,10 @@ Aufgabe steht jeweils im Issue):</p>
       <code>espNowFrame</code> (10 neue native Tests, 23 grün), <code>espNowSync</code>, ESP-NOW als Standard, BLE per
       <code>-D SYNC_VIA_BLE</code>. Firmware ~165 KB kleiner. Danach: Absenderprüfung über <code>ESPNOW_PROXY_MAC</code>.
       <b>Nächster Schritt:</b> ESP-NOW-Firmware per „OTA für alle“ der alten Firmware verteilen (Abschnitt 6a), MAC der
-      Gitarre auf Serial prüfen, dann Probe (#16).</div>
+      Gitarre auf Serial prüfen, dann Probe (#16).<br>
+      <b>Stand 19.10.2026 abends:</b> Umstellung per „OTA für alle“ erledigt. Der Bass war dabei aus und wurde per USB
+      nachgeflasht (wie in 6a vorgesehen). Alle 5 Geräte folgen per ESP-NOW, Warn-LEDs aus, Knopf getestet; damit ist
+      auch <code>ESPNOW_PROXY_MAC</code> bestätigt. Offen: vollständige Probe (#16).</div>
     <p>Paket-Modul + native Tests, ESP-NOW-Adapter für Proxy und Client, Broadcast mit 3 Kopien, ESP-NOW als Standard,
       BLE nur noch per Flag. OTA-Befehl per ESP-NOW (vorerst mit fester Wartezeit). Umstellung aller Geräte wie in
       Abschnitt 6a.</p>

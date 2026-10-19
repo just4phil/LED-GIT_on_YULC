@@ -148,7 +148,8 @@
 // Andere Absender gibt es nicht (Vorgabe des Users 19.10.2026); alles andere wird verworfen. Die MAC setzt die
 // Funk-Hardware selbst in jedes Paket, sie steht nicht im Paketinhalt. Abgeleitet aus der Bluetooth-Adresse der
 // Gitarre (48:ca:43:80:8b:95) minus 1, so wie bei Lampe 1 gemessen (WLAN 98:74, Bluetooth 98:75). Die Gitarre
-// gibt ihre echte MAC beim Start auf Serial aus ("ESP-NOW: aktiv ... MAC ...") - bei Board-Tausch hier eintragen.
+// gibt ihre echte MAC beim Start auf Serial aus ("ESP-NOW: aktiv ... MAC ..."); bestätigt 19.10.2026 (alle Clients
+// folgen). Bei einem Board-Tausch hier die neue MAC eintragen.
 #define ESPNOW_PROXY_MAC		{0x48, 0xCA, 0x43, 0x80, 0x8B, 0x94}
 //---------------------------------------------------------------------------------------
 
