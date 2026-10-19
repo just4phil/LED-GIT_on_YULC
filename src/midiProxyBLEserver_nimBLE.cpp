@@ -7,6 +7,7 @@
 #include "otaUpdate.h"
 #include <FastLED.h>
 #include "midiProxyBLEserver_nimBLE.h"	// die eigene .h-Datei: so vergleicht der Compiler die Ankündigungen dort mit dem Code hier
+#include "espnowSpike.h"	// Mess-Einbau Issue #8 (nur mit Build-Flag ESPNOW_SPIKE, sonst leer)
 //---------------------------
 
 extern byte songID;
@@ -97,6 +98,11 @@ static void storeMessage(const BLEmessage& msg) {
 static void sendMessage(const BLEmessage& msg) {
     storeMessage(msg);
     pCharacteristic->notify();
+    #ifdef ESPNOW_SPIKE
+        // Mess-Einbau Issue #8: dieselbe Nachricht direkt hinter dem Notify auch per ESP-NOW senden, damit die
+        // Clients vergleichen können, auf welchem Weg sie früher ankommt (espnowSpike.cpp)
+        espnowSpike_mirror(msg.msgType, msg.songID, msg.part);
+    #endif
 }
 
 /**

@@ -7,6 +7,7 @@
 #include "FXprograms.h"
 #include "otaUpdate.h"
 #include "BLE_client_nimBLE.h"	// die eigene .h-Datei: so vergleicht der Compiler die Ankündigungen dort mit dem Code hier
+#include "espnowSpike.h"	// Mess-Einbau Issue #8 (nur mit Build-Flag ESPNOW_SPIKE, sonst leer)
 
 //----------------------------
 
@@ -236,6 +237,10 @@ static void notifyCallback(NimBLERemoteCharacteristic* pBLERemoteCharacteristic,
     newMidiCCfromProxy = pData[1];
     newMidiValueFromProxy = pData[2];
     newMidiValuesReceivedFromProxy = true;
+    #ifdef ESPNOW_SPIKE
+        // Mess-Einbau Issue #8: Ankunftszeit merken, um sie mit der ESP-NOW-Kopie derselben Nachricht zu vergleichen
+        if (length >= 3) espnowSpike_bleArrived(pData[0], pData[1], pData[2]);
+    #endif
 }
 
 /**

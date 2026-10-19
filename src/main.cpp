@@ -41,6 +41,7 @@
 #include "songs.h"
 #include "songs_generated.h"		// generierte Songs (gen_...): aus songs/<Song>/quelle/struktur.xlsx + show.yaml, siehe tools/songgen.py
 #include "TimerFunctions.h"		// includes setup variables and callback for timer ---
+#include "espnowSpike.h"		// Mess-Einbau Issue #8 (nur mit Build-Flag ESPNOW_SPIKE, sonst leer)
 //=============================
 
 // Akku-Überwachung nur auf Geräten, die den Spannungsteiler am LIPO_PIN haben
@@ -276,6 +277,11 @@ void setup() {
 		BLE_client_initialize();
 	#endif
 
+	// Mess-Einbau für Issue #8 (nur Envs *-spike im Branch espnow-spike): WLAN-Radio + ESP-NOW zusätzlich zu BLE
+	#ifdef ESPNOW_SPIKE
+		espnowSpike_init();
+	#endif
+
 	//--- voltage lipo safer ----------
 	#ifdef HAS_LIPOVOLTAGE_CHECK	
 		lipoVoltageCheck_initialize();
@@ -355,6 +361,10 @@ void loop() {
 
 	#elif defined (IS_BLE_CLIENT)
 		BLE_client_Loop();				// Verbindung zum Proxy halten, empfangene Wechsel ausführen
+	#endif
+
+	#ifdef ESPNOW_SPIKE
+		espnowSpike_loop();				// Mess-Einbau Issue #8: Lebenszeichen, Vergleich BLE/ESP-NOW, Bericht alle 10 s
 	#endif
 
 	//--- Automatischer Part-Wechsel ---------------------------------------------------
