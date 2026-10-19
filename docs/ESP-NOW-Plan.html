@@ -371,7 +371,9 @@ Der Sende-Callback meldet Erfolg oder Fehler; bei Fehler einmal neu senden.</p>
 <ul>
   <li><code>WiFi.mode(WIFI_STA)</code>, <code>WiFi.disconnect()</code>, fester Kanal
     <code>esp_wifi_set_channel(ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE)</code>. Alle Geräte müssen denselben Kanal haben.</li>
-  <li>Stromsparen aus: <code>esp_wifi_set_ps(WIFI_PS_NONE)</code>, sonst verpasst der Empfänger Pakete.</li>
+  <li>Stromsparen: Laufen WLAN und Bluetooth gleichzeitig (Proxy in der Übergangszeit, Testgeräte), ist
+    <code>esp_wifi_set_ps(WIFI_PS_MIN_MODEM)</code> <b>Pflicht</b>, sonst bricht das ESP-IDF ab und das Gerät startet
+    endlos neu (gemessen 19.10.2026). Ohne Bluetooth (reines ESP-NOW) <code>WIFI_PS_NONE</code>.</li>
   <li>Volle Sendeleistung (<code>WiFi.setTxPower(WIFI_POWER_19_5dBm)</code>), wie heute bei BLE <code>ESP_PWR_LVL_P9</code>.</li>
   <li>Optional: Espressif-Langstreckenmodus (<code>WIFI_PROTOCOL_LR</code>), falls die Reichweite knapp ist. Muss
     dann auf allen Geräten gleich sein.</li>
@@ -537,7 +539,23 @@ Ergebnis und Commit - so kann eine neue Sitzung nach einem Absturz weitermachen.
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/18">#18</a></td><td>Geräte mit eigener Identität (später)</td><td>–</td><td>#14</td></tr>
 </table></div>
 <ol class="steps">
-  <li><b>Spike mit zwei Boards</b> <span class="badge b-open">offen</span>
+  <li><b>Spike mit zwei Boards</b> <span class="badge b-done">erledigt 19.10.2026</span>
+    <div class="ok"><b>Ergebnis (#8, Werkzeuge im Branch <code>espnow-spike</code>), Entscheidung: weiter.</b>
+      <ul>
+        <li><b>Zeitvorteil:</b> BLE kam im Mittel 6,6 ms, höchstens 14,5 ms später als ESP-NOW (38 Nachrichten, Messung
+          im Empfangs-Callback desselben Geräts). In der Übergangszeit kam ESP-NOW in 4 von 38 Fällen bis 4,8 ms später
+          als BLE, weil sich beide das Radio teilen.</li>
+        <li><b>Latenz:</b> eine Richtung ~3 ms inkl. Loop-Wartezeit, reine Funkzeit geschätzt ~2 ms.</li>
+        <li><b>Verlust durch eine Wand:</b> ohne Wiederholung ~5 % je Richtung, mit 3 Wiederholungen 0,1–0,6 % Hin+Rück.
+          Die Wiederholungen sind nötig.</li>
+        <li><b>Flackern:</b> keins, weder im Messprogramm noch mit echter Firmware und Show (All The Things She Said).</li>
+        <li><b>BLE + WLAN gleichzeitig:</b> keine BLE-Abrisse, keine Sendefehler. <b>Pflicht: Modem Sleep</b>
+          (<code>WIFI_PS_MIN_MODEM</code>), mit <code>WIFI_PS_NONE</code> startet das Gerät endlos neu.</li>
+        <li><b>Strom (Gitarre):</b> BLE + ESP-NOW wie nur BLE (148/149 mA). Reines ESP-NOW-Radio 35 mA, BLE + Marker
+          ~42 mA. Phase 7 bringt also keinen spürbaren Mehrverbrauch.</li>
+        <li><b>Ausgleich der Wiederholungs-Verspätung (#15):</b> nicht nötig (Empfehlung: schließen).</li>
+      </ul>
+      Alle Messwerte: <a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">Issue #8</a>.</div>
     <p>Kleines Testprogramm (nicht in <code>src/</code>, z.B. eigener Ordner <code>tools/espnow-spike/</code>): ein
       Sender, ein Empfänger, GPIO-Toggle bzw. <code>micros()</code>-Log je Paket.</p>
     <ul>
