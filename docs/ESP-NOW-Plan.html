@@ -67,9 +67,10 @@
 <header>
   <div class="wrap">
     <h1>LED-Sync per ESP-NOW</h1>
-    <p class="sub">Plan: mehr Lampen auf die Bühne, ohne an die Grenze von 4–5 BLE-Verbindungen zu stoßen. Der Proxy
-      (ANDRESGIT) verteilt Song und Part zusätzlich per ESP-NOW-Broadcast. Das Abgleich-Protokoll
-      (<code>ledSync.cpp</code>) bleibt dabei unverändert. Stand 19.10.2026: <b>nur geplant, nichts umgesetzt</b>.</p>
+    <p class="sub">Plan: Alle Geräte stellen den LED-Sync von BLE auf ESP-NOW um, BLE wird abgeschaltet. Ziel ist ein
+      genauerer gemeinsamer Start und Platz für beliebig viele Lampen. Das Abgleich-Protokoll (<code>ledSync.cpp</code>)
+      bleibt unverändert. Stand 19.10.2026: Messung (Phase 0) erledigt, Entscheidung des Users nach der Messung:
+      <b>komplett umstellen, ohne dauerhafte Übergangszeit</b>. Noch kein Code umgesetzt.</p>
     <nav class="toc">
       <a href="#ziel"><b>1</b>Ziel &amp; Kurzfassung</a>
       <a href="#ist"><b>2</b>Ist-Zustand</a>
@@ -78,10 +79,11 @@
       <a href="#rahmen"><b>4</b>Der ESP-NOW-Rahmen</a>
       <a href="#timing"><b>5</b>Zuverlässigkeit &amp; Timing</a>
       <a href="#ablaeufe"><b>6</b>Abläufe</a>
+      <a href="#umstellung"><b>6a</b>Die Umstellung</a>
       <a href="#dateien"><b>7</b>Dateien</a>
       <a href="#phasen"><b>8</b>Phasen &amp; Arbeitsstand</a>
       <a href="#risiken"><b>9</b>Risiken</a>
-      <a href="#entscheidungen"><b>10</b>Offene Entscheidungen</a>
+      <a href="#entscheidungen"><b>10</b>Entscheidungen</a>
       <a href="#pruefen"><b>11</b>Test &amp; Abnahme</a>
       <a href="#doku"><b>12</b>Doku-Pflichten</a>
     </nav>
@@ -94,8 +96,10 @@
 <h2 id="ziel">1. Ziel &amp; Kurzfassung</h2>
 <p>Heute hält jeder Client (Bass, Lampen, Matrix) eine eigene BLE-Verbindung zum Proxy. Die Grenze kommt aus der
 NimBLE-Konfiguration (<code>CONFIG_BT_NIMBLE_MAX_CONNECTIONS=5</code> in <code>platformio.ini</code>) und aus der
-festen Adressliste <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>. Jede weitere
-Verbindung macht die Benachrichtigung an alle langsamer und die Verbindungen wackliger.</p>
+festen Adressliste <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>. Außerdem wartet ein
+BLE-Notify auf das nächste Verbindungsereignis. Gemessen kommt eine Nachricht über BLE dadurch im Mittel 6,6 ms und
+bis zu 14,5 ms später an als über ESP-NOW (Phase 0, Abschnitt 8). Jedes Gerät hat dabei seinen eigenen Takt, so
+können die Geräte beim Songstart bis zu ~15 ms auseinander liegen.</p>
 <p>Über Funk geht nur wenig: der Songstart (MIDI CC 22), ein von Hand gewählter Part (CC 23), der Abgleich per
 Drehknopf und der OTA-Befehl. Die automatischen Part-Wechsel rechnet jedes Gerät selbst über seinen Timer. Es reicht
 also, <b>dieselbe kleine Nachricht gleichzeitig an alle</b> zu schicken. Genau das kann ESP-NOW: ein Funkpaket von
@@ -106,17 +110,18 @@ Espressif über das WLAN-Radio, ohne Router und ohne Verbindungsaufbau, als Broa
     <li>Das Protokoll: <code>BLEmessage</code> (3 Bytes), die Nachrichtentypen 0–7, alle Entscheidungen in
       <code>ledSync.cpp</code>. Die 14 Tests in <code>test/test_ledSync/</code> laufen unverändert.</li>
     <li>Die Bedienung: Kurzklick = Abgleich, Doppelklick am Proxy = Stand holen, langer Druck = Not-Aus,
-      Knopf beim Einschalten = OTA für alle.</li>
-    <li>Die bestehenden Geräte: sie bleiben bei BLE, bis alles stabil läuft. Alte Firmware synchronisiert weiter.</li>
+      Knopf beim Einschalten = OTA für alle. Die roten Warn-LEDs in Song 0, wenn der Funk fehlt.</li>
   </ul>
 </div>
-<div class="note"><b>Was neu ist</b>
+<div class="note"><b>Was sich ändert</b>
   <ul>
-    <li>Ein dritter, dünner Adapter <code>espNowSync.cpp</code> neben den beiden BLE-Dateien. Er schickt dieselbe
+    <li>Ein ESP-NOW-Adapter <code>espNowSync.cpp</code> <b>ersetzt</b> die beiden BLE-Adapter. Er schickt dieselbe
       <code>BLEmessage</code> in einem kleinen ESP-NOW-Rahmen.</li>
-    <li>ANDRESGIT sendet in der Übergangszeit <b>beides</b>: BLE für die alten Geräte, ESP-NOW für die neuen.</li>
-    <li>Neue Lampen bekommen eigene Build-Envs (z.B. <code>lampe3</code>, <code>lampe4</code>) und hören nur ESP-NOW.</li>
-    <li>Später (optional): auch Bass, Lampe 1/2 und Matrix auf ESP-NOW umstellen, BLE ganz entfernen.</li>
+    <li><b>Alle</b> Geräte wechseln gleichzeitig: Gitarre, Bass, Lampe 1, Lampe 2, Matrix. Kein Gerät spricht beide
+      Funkwege; es gibt keine dauerhafte Übergangszeit (Begründung in Abschnitt 3a).</li>
+    <li>Die Umstellung geschieht mit dem „OTA für alle“ der <b>alten</b> Firmware (Abschnitt 6a).</li>
+    <li>BLE bleibt eine Weile per Build-Flag als Rückweg im Code und wird nach den ersten erfolgreichen Auftritten entfernt.</li>
+    <li>Danach können neue Lampen dazukommen, zuerst als Klone von Lampe 1/2, später mit eigener Identität.</li>
   </ul>
 </div>
 
@@ -163,7 +168,7 @@ Espressif über das WLAN-Radio, ohne Router und ohne Verbindungsaufbau, als Broa
   <tr><td>Write (Client → Proxy)</td><td>SYNC_REPLY und SYNC_ENTRY nach einem Doppelklick am Proxy</td>
       <td><code>pChr->writeValue()</code>; Proxy: <code>onWrite()</code> → <code>ledSyncProxyClientWrote()</code></td></tr>
   <tr><td>Verbindungsstatus</td><td>rote Warn-LEDs in Song 0</td>
-      <td><code>bleLinkMissing()</code> in <code>markerLEDs.cpp</code> (um Zeile 489): <code>BLE_client_isConnected()</code> / <code>midiProxy_connectedClients()</code></td></tr>
+      <td><code>bleLinkMissing()</code> in <code>markerLEDs.cpp</code>: <code>BLE_client_isConnected()</code> / <code>midiProxy_connectedClients()</code></td></tr>
   <tr><td>Subscribe-Zähler</td><td>OTA: der Proxy wartet, bis alle Clients angemeldet sind</td>
       <td><code>subscribedClients</code>, <code>midiProxy_broadcastOTA()</code></td></tr>
 </table></div>
@@ -171,92 +176,83 @@ Espressif über das WLAN-Radio, ohne Router und ohne Verbindungsaufbau, als Broa
 <!-- ================================================================== -->
 <h2 id="zielbild">3. Zielbild</h2>
 <figure>
-<svg viewBox="0 0 760 330" role="img" aria-label="Ziel: Proxy sendet BLE an alte Geräte und ESP-NOW-Broadcast an neue Lampen">
+<svg viewBox="0 0 760 290" role="img" aria-label="Ziel: Proxy sendet einen ESP-NOW-Broadcast an alle Geräte">
   <defs>
-    <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ea1ff"/></marker>
     <marker id="g1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffb86b"/></marker>
   </defs>
-  <rect x="20" y="125" width="170" height="80" rx="8" fill="#14211a" stroke="#7ee787"/>
-  <text x="105" y="155" fill="#e6edf3" font-size="15" text-anchor="middle" font-weight="bold">ANDRESGIT</text>
-  <text x="105" y="175" fill="#9aa7b4" font-size="12" text-anchor="middle">BLE-Server</text>
-  <text x="105" y="192" fill="#ffb86b" font-size="12" text-anchor="middle">+ ESP-NOW-Sender</text>
-  <text x="330" y="22" fill="#4ea1ff" font-size="13" text-anchor="middle">BLE (wie heute)</text>
+  <rect x="20" y="105" width="170" height="80" rx="8" fill="#14211a" stroke="#7ee787"/>
+  <text x="105" y="135" fill="#e6edf3" font-size="15" text-anchor="middle" font-weight="bold">ANDRESGIT</text>
+  <text x="105" y="155" fill="#9aa7b4" font-size="12" text-anchor="middle">Proxy</text>
+  <text x="105" y="172" fill="#ffb86b" font-size="12" text-anchor="middle">ESP-NOW-Sender</text>
+  <circle cx="250" cy="145" r="24" fill="none" stroke="#ffb86b" stroke-dasharray="3 4"/>
+  <circle cx="250" cy="145" r="40" fill="none" stroke="#ffb86b" stroke-dasharray="3 4" opacity=".6"/>
+  <circle cx="250" cy="145" r="56" fill="none" stroke="#ffb86b" stroke-dasharray="3 4" opacity=".35"/>
+  <text x="250" y="230" fill="#ffb86b" font-size="12.5" text-anchor="middle">ein Broadcast, 3 Kopien</text>
   <g font-size="13" fill="#e6edf3" text-anchor="middle">
-    <rect x="440" y="10" width="140" height="34" rx="8" fill="#1d242d" stroke="#4ea1ff"/><text x="510" y="32">RINASBASS</text>
-    <rect x="440" y="52" width="140" height="34" rx="8" fill="#1d242d" stroke="#4ea1ff"/><text x="510" y="74">LAMPE1</text>
-    <rect x="440" y="94" width="140" height="34" rx="8" fill="#1d242d" stroke="#4ea1ff"/><text x="510" y="116">LAMPE2</text>
-    <rect x="440" y="136" width="140" height="34" rx="8" fill="#1d242d" stroke="#4ea1ff"/><text x="510" y="158">SCROLLMATRIX</text>
-  </g>
-  <g stroke="#4ea1ff" stroke-width="2">
-    <line x1="190" y1="140" x2="438" y2="27" marker-end="url(#b1)" marker-start="url(#b1)"/>
-    <line x1="190" y1="148" x2="438" y2="69" marker-end="url(#b1)" marker-start="url(#b1)"/>
-    <line x1="190" y1="156" x2="438" y2="111" marker-end="url(#b1)" marker-start="url(#b1)"/>
-    <line x1="190" y1="164" x2="438" y2="153" marker-end="url(#b1)" marker-start="url(#b1)"/>
-  </g>
-  <path d="M190,190 Q300,240 340,262" stroke="#ffb86b" stroke-width="3" fill="none" stroke-dasharray="7 5" marker-end="url(#g1)"/>
-  <circle cx="360" cy="270" r="22" fill="none" stroke="#ffb86b" stroke-dasharray="3 4"/>
-  <circle cx="360" cy="270" r="36" fill="none" stroke="#ffb86b" stroke-dasharray="3 4" opacity=".6"/>
-  <text x="360" y="320" fill="#ffb86b" font-size="13" text-anchor="middle">ESP-NOW-Broadcast (ein Paket für alle)</text>
-  <g font-size="13" fill="#e6edf3" text-anchor="middle">
-    <rect x="440" y="196" width="140" height="34" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="510" y="218">LAMPE3</text>
-    <rect x="440" y="238" width="140" height="34" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="510" y="260">LAMPE4</text>
-    <rect x="440" y="280" width="140" height="34" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="510" y="302">LAMPE …n</text>
+    <rect x="440" y="8" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="515" y="29">RINASBASS</text>
+    <rect x="440" y="48" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="515" y="69">LAMPE1</text>
+    <rect x="440" y="88" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="515" y="109">LAMPE2</text>
+    <rect x="440" y="128" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b"/><text x="515" y="149">SCROLLMATRIX</text>
+    <rect x="440" y="182" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b" stroke-dasharray="5 4"/><text x="515" y="203">LAMPE3 (Klon)</text>
+    <rect x="440" y="222" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b" stroke-dasharray="5 4"/><text x="515" y="243">LAMPE4 (Klon)</text>
+    <rect x="440" y="252" width="150" height="32" rx="8" fill="#241d12" stroke="#ffb86b" stroke-dasharray="5 4"/><text x="515" y="273">… beliebig viele</text>
   </g>
   <g stroke="#ffb86b" stroke-width="1.5" stroke-dasharray="4 4">
-    <line x1="396" y1="262" x2="438" y2="213" marker-end="url(#g1)"/>
-    <line x1="396" y1="268" x2="438" y2="255" marker-end="url(#g1)"/>
-    <line x1="396" y1="276" x2="438" y2="297" marker-end="url(#g1)"/>
+    <line x1="306" y1="135" x2="438" y2="24" marker-end="url(#g1)"/>
+    <line x1="306" y1="139" x2="438" y2="64" marker-end="url(#g1)"/>
+    <line x1="306" y1="143" x2="438" y2="104" marker-end="url(#g1)"/>
+    <line x1="306" y1="147" x2="438" y2="144" marker-end="url(#g1)"/>
+    <line x1="306" y1="151" x2="438" y2="198" marker-end="url(#g1)"/>
+    <line x1="306" y1="155" x2="438" y2="238" marker-end="url(#g1)"/>
   </g>
-  <text x="670" y="250" fill="#9aa7b4" font-size="12" text-anchor="middle">beliebig viele,</text>
-  <text x="670" y="266" fill="#9aa7b4" font-size="12" text-anchor="middle">keine Verbindung</text>
+  <text x="680" y="210" fill="#9aa7b4" font-size="12" text-anchor="middle">später dazu,</text>
+  <text x="680" y="226" fill="#9aa7b4" font-size="12" text-anchor="middle">ohne Grenze</text>
 </svg>
-<figcaption>Übergang: alte Geräte bleiben bei BLE, neue Lampen hören den ESP-NOW-Broadcast. Antworten (Lesen, Doppelklick) gehen als gezielte Pakete an den Proxy.</figcaption>
+<figcaption>Ziel: Ein ESP-NOW-Broadcast erreicht alle Geräte gleichzeitig. Antworten (Lesen, Doppelklick, Lebenszeichen) gehen als gezielte Pakete an den Proxy.</figcaption>
 </figure>
 
 <h3>Schichten</h3>
-<p>Die Trennung „Logik entscheidet, Adapter führt aus“ aus dem LED-Sync-Umbau wird um eine Stufe ergänzt. Heute steckt
-<code>applyAction()</code> in den beiden BLE-Dateien. Weil der Proxy künftig über zwei Wege sendet (und BLE später
-vielleicht ganz wegfällt), wandert <code>applyAction()</code> in transportneutrale Dateien. Die Funk-Dateien schieben
-nur noch Bytes.</p>
+<p>Die Trennung „Logik entscheidet, Adapter führt aus“ aus dem LED-Sync-Umbau bleibt. Heute steckt
+<code>applyAction()</code> in den beiden BLE-Dateien. Damit der Funkweg austauschbar wird, wandert
+<code>applyAction()</code> in zwei transportneutrale Dateien (<code>syncProxy</code>, <code>syncClient</code>). Welcher
+Funkweg gebaut wird, entscheidet <b>ein</b> Build-Flag für alle Geräte gemeinsam: ESP-NOW (Standard) oder BLE (Rückweg,
+bis BLE entfernt wird).</p>
 <figure>
-<svg viewBox="0 0 760 230" role="img" aria-label="Schichten: ledSync, syncProxy/syncClient, Transporte BLE und ESP-NOW">
+<svg viewBox="0 0 760 230" role="img" aria-label="Schichten: ledSync, syncProxy/syncClient, ESP-NOW-Adapter, BLE-Adapter nur als Rückweg">
   <g font-size="13" text-anchor="middle">
     <rect x="230" y="12" width="300" height="46" rx="8" fill="#14211a" stroke="#7ee787"/>
     <text x="380" y="33" fill="#e6edf3" font-weight="bold">ledSync.cpp</text>
     <text x="380" y="50" fill="#9aa7b4" font-size="11.5">Protokoll-Logik, unverändert, native getestet</text>
     <rect x="60" y="92" width="290" height="46" rx="8" fill="#1d242d" stroke="#4ea1ff"/>
     <text x="205" y="113" fill="#e6edf3" font-weight="bold">syncProxy.cpp (neu)</text>
-    <text x="205" y="130" fill="#9aa7b4" font-size="11.5">applyAction(), verteilt auf alle Transporte</text>
+    <text x="205" y="130" fill="#9aa7b4" font-size="11.5">applyAction() des Proxys</text>
     <rect x="410" y="92" width="290" height="46" rx="8" fill="#1d242d" stroke="#4ea1ff"/>
     <text x="555" y="113" fill="#e6edf3" font-weight="bold">syncClient.cpp (neu)</text>
     <text x="555" y="130" fill="#9aa7b4" font-size="11.5">applyAction(): jump, goDark, switch…, OTA</text>
-    <rect x="60" y="172" width="290" height="46" rx="8" fill="#171c23" stroke="#4ea1ff" stroke-dasharray="5 4"/>
-    <text x="205" y="193" fill="#e6edf3">BLE-Adapter (bestehend, verschlankt)</text>
-    <text x="205" y="210" fill="#9aa7b4" font-size="11.5">midiProxyBLEserver / BLE_client_nimBLE</text>
-    <rect x="410" y="172" width="290" height="46" rx="8" fill="#241d12" stroke="#ffb86b"/>
-    <text x="555" y="193" fill="#e6edf3">ESP-NOW-Adapter (neu)</text>
-    <text x="555" y="210" fill="#9aa7b4" font-size="11.5">espNowSync.cpp + espNowFrame.cpp</text>
+    <rect x="60" y="172" width="290" height="46" rx="8" fill="#241d12" stroke="#ffb86b"/>
+    <text x="205" y="193" fill="#e6edf3">ESP-NOW-Adapter (neu, Standard)</text>
+    <text x="205" y="210" fill="#9aa7b4" font-size="11.5">espNowSync.cpp + espNowFrame.cpp</text>
+    <rect x="410" y="172" width="290" height="46" rx="8" fill="#171c23" stroke="#4ea1ff" stroke-dasharray="5 4"/>
+    <text x="555" y="193" fill="#9aa7b4">BLE-Adapter (nur Rückweg per Flag)</text>
+    <text x="555" y="210" fill="#9aa7b4" font-size="11.5">wird nach den ersten Auftritten entfernt</text>
   </g>
   <g stroke="#9aa7b4" stroke-width="1.5">
     <line x1="300" y1="58" x2="230" y2="92"/><line x1="460" y1="58" x2="530" y2="92"/>
-    <line x1="160" y1="138" x2="160" y2="172"/><line x1="300" y1="138" x2="470" y2="172"/>
-    <line x1="460" y1="138" x2="290" y2="172"/><line x1="600" y1="138" x2="600" y2="172"/>
+    <line x1="160" y1="138" x2="160" y2="172"/><line x1="460" y1="138" x2="290" y2="172"/>
+    <line x1="300" y1="138" x2="470" y2="172" stroke-dasharray="4 4"/><line x1="600" y1="138" x2="600" y2="172" stroke-dasharray="4 4"/>
   </g>
 </svg>
-<figcaption>Proxy und Client sprechen nur noch mit „ihrem“ sync-Modul. Welche Transporte ein Gerät hat, legen Defines fest (Abschnitt 7).</figcaption>
+<figcaption>Proxy und Client sprechen nur noch mit „ihrem“ sync-Modul. Darunter liegt genau ein Funkweg für alle Geräte.</figcaption>
 </figure>
 
 <!-- ================================================================== -->
-<h2 id="gewinn">3a. Was bringt es, wenn alle Geräte umgestellt sind?</h2>
-<p>Die folgenden Zahlen sind Schätzungen aus der Konfiguration im Code. Gemessen werden sie in Phase 0.</p>
+<h2 id="gewinn">3a. Was bringt es? (gemessen in Phase 0)</h2>
 <div class="cols">
   <div class="after"><h4>Besser</h4>
     <ul>
-      <li><b>Genauerer gemeinsamer Start</b> (der Hauptgewinn, vom User gewünscht 19.10.2026): Ein BLE-Notify wartet auf
-        das nächste Verbindungsereignis, bei <code>setConnectionParams(12, 12, …)</code> bis zu 15 ms. Jedes Gerät hat
-        seinen eigenen Takt, deshalb können die Geräte beim Songstart heute bis zu ~15 ms auseinander liegen. Ein
-        ESP-NOW-Broadcast erreicht alle praktisch gleichzeitig, vermutlich mit wenigen ms Abstand. Bei 120 BPM sind
-        15 ms etwa 3 % eines Beats. Sichtbar wird das am ehesten bei Blindern und harten Schnitten.</li>
+      <li><b>Genauerer gemeinsamer Start</b> (der Hauptgewinn, vom User gewünscht): BLE kam im Mittel 6,6 ms, höchstens
+        14,5 ms später als ESP-NOW. Ein ESP-NOW-Broadcast erreicht alle praktisch gleichzeitig; die Funkzeit liegt
+        geschätzt bei ~2 ms. Bei 120 BPM sind 15 ms etwa 3 % eines Beats, sichtbar am ehesten bei Blindern und harten Schnitten.</li>
       <li><b>Nach einem Funkabriss</b> hört ein ESP-NOW-Gerät sofort wieder mit. Ein BLE-Client sucht heute in
         10-s-Runden und muss sich dann neu verbinden.</li>
       <li><b>Kurzklick am Client:</b> <code>readValue()</code> blockiert heute <code>loop()</code>, bis der Proxy
@@ -264,31 +260,35 @@ nur noch Bytes.</p>
       <li><b>Beliebig viele Geräte</b>, keine Adressliste mehr.</li>
       <li><b>Weniger Flash:</b> NimBLE fällt weg; WLAN ist wegen OTA schon in der Firmware.</li>
     </ul></div>
-  <div class="before"><h4>Gleich oder schlechter</h4>
+  <div class="before"><h4>Gleich</h4>
     <ul>
       <li><b>Gleichlauf im Song:</b> keine Änderung. Die Part-Wechsel rechnet jedes Gerät nach seinem eigenen Timer, über
         Funk kommt nur der Start.</li>
       <li><b>Bildrate:</b> praktisch gleich, <code>FastLED.show()</code> kostet die meiste Zeit.</li>
-      <li><b>Strom:</b> WLAN-Empfang ohne Stromsparen braucht mehr als eine BLE-Verbindung. Betrifft nur die Akku-Geräte,
-        siehe unten.</li>
-      <li><b>RAM:</b> Der WLAN-Stack braucht zur Laufzeit mehr als NimBLE. Mit dem PSRAM des S3 ist das unkritisch.</li>
-      <li><b>Flacker-Risiko</b> durch WLAN-Interrupts (Abschnitt 9) auf jedem umgestellten Gerät.</li>
+      <li><b>Strom:</b> gemessen an der Gitarre: Das reine ESP-NOW-Radio kostet 35 mA, BLE + Marker-LEDs heute ~42 mA.
+        Kein spürbarer Unterschied.</li>
+      <li><b>Flackern:</b> keins, weder im Messprogramm noch mit echter Firmware und Show.</li>
     </ul></div>
 </div>
+
+<h3>Warum keine dauerhafte Übergangszeit</h3>
+<p>Ursprünglich sollte der Proxy eine Weile beide Funkwege bedienen: BLE für die alten Geräte, ESP-NOW für neue Lampen.
+Die Messung spricht dagegen:</p>
+<ul>
+  <li>Laufen BLE und WLAN gleichzeitig, teilen sie sich das Radio. ESP-NOW kam dann in 4 von 38 Fällen bis 4,8 ms
+    <i>nach</i> BLE an. Erst ohne BLE ist ESP-NOW wirklich pünktlich.</li>
+  <li>Mit beiden Funkwegen verlangt das ESP-IDF WLAN-„Modem Sleep“; ohne Bluetooth darf Stromsparen ganz aus.</li>
+  <li>Beide Wege parallel bedeuten mehr Code: Der Proxy müsste doppelt senden, und jeder Client bräuchte die Wahl des
+    Funkwegs.</li>
+  <li>Eine Übergangs-Firmware ist für die Umstellung nicht nötig (Abschnitt 6a).</li>
+</ul>
 
 <h3>Stromversorgung der Geräte (Angabe des Users, 19.10.2026)</h3>
 <div class="tablewrap"><table>
   <tr><th>Gerät</th><th>Versorgung</th><th>Folge für ESP-NOW</th></tr>
   <tr><td>LAMPE1, LAMPE2 (und neue Lampen)</td><td>Netzstrom</td><td>kein Thema</td></tr>
-  <tr><td>ANDRESGIT (Gitarre)</td><td>LiPo 2200 mAh</td><td>Mehrverbrauch messen</td></tr>
-  <tr><td>RINASBASS (Bass)</td><td>LiPo 2200 mAh</td><td>Mehrverbrauch messen</td></tr>
-  <tr><td>SCROLLMATRIX</td><td>LiPo 2200 mAh</td><td>Mehrverbrauch messen</td></tr>
+  <tr><td>ANDRESGIT, RINASBASS, SCROLLMATRIX</td><td>LiPo 2200 mAh</td><td>gemessen: kein spürbarer Mehrverbrauch (35 mA ESP-NOW-Radio statt ~35–40 mA BLE)</td></tr>
 </table></div>
-<p>Mit BLE war die Akkulaufzeit bisher nie ein Problem. Den größten Teil des Stroms ziehen ohnehin die
-LEDs. Der Funk kommt dazu: bei WLAN-Empfang ohne Stromsparen grob 80–100 mA dauerhaft, bei BLE deutlich weniger.
-Phase 0 misst den Mehrverbrauch und rechnet ihn auf eine Auftrittslänge hoch. Erst wenn das für die drei Akku-Geräte
-passt, wird Phase 7 umgesetzt. Die Gitarre trägt in der Übergangszeit BLE <b>und</b> ESP-NOW und wird dort zuerst
-gemessen.</p>
 
 <!-- ================================================================== -->
 <h2 id="rahmen">4. Der ESP-NOW-Rahmen (Wire-Format)</h2>
@@ -320,9 +320,9 @@ static_assert(sizeof(EspNowFrame) == 13, "EspNowFrame muss genau 13 Bytes gross 
 </table></div>
 
 <div class="note"><b>Warum die Art im Rahmen steht und kein neuer msgType:</b> Die Nachrichtentypen 0–7 sind
-festgeschrieben, alte Firmware erwartet genau sie. Lesen, Schreiben und „ich bin da“ sind bei BLE Teil der Verbindung,
-nicht der Nachricht. Bei ESP-NOW übernimmt das Feld <code>kind</code> diese Rolle. Die BLE-Bytes bleiben so
-byte-gleich, und <code>ledSync.cpp</code> sieht von alldem nichts.</div>
+festgeschrieben. Lesen, Schreiben und „ich bin da“ sind bei BLE Teil der Verbindung, nicht der Nachricht. Bei ESP-NOW
+übernimmt das Feld <code>kind</code> diese Rolle. Die <code>BLEmessage</code> bleibt so byte-gleich (wichtig für den
+BLE-Rückweg), und <code>ledSync.cpp</code> sieht von alldem nichts.</div>
 
 <p>Gezielte Pakete gehen an die MAC-Adresse der Gegenseite. Der Client lernt die Proxy-Adresse aus dem ersten gültigen
 <code>HELLO</code> oder <code>MSG</code> (Absenderadresse im Empfangs-Callback) und trägt sie als ESP-NOW-Peer ein. Der
@@ -344,23 +344,20 @@ braucht nur einen: <code>FF:FF:FF:FF:FF:FF</code>).</p>
 <h2 id="timing">5. Zuverlässigkeit &amp; Timing</h2>
 <h3>Verlorene Pakete</h3>
 <p>Ein Broadcast wird vom Empfänger nicht bestätigt. Deshalb geht jede Proxy-Nachricht <b>3-mal</b> hinaus, im
-Abstand von <code>ESPNOW_REPEAT_MS</code> (Vorschlag: 3 ms), mit derselben Sequenznummer und <code>copy</code> = 0, 1, 2.
-Der Empfänger nimmt die erste Kopie, die ankommt, und verwirft die anderen. Gesendet werden die Wiederholungen ohne
-<code>delay()</code>: der Adapter merkt sich die offenen Kopien und schickt sie in <code>espNowSync_Loop()</code>,
-sobald ihre Zeit da ist.</p>
+Abstand von <code>ESPNOW_REPEAT_MS</code> (3 ms), mit derselben Sequenznummer und <code>copy</code> = 0, 1, 2. Der
+Empfänger nimmt die erste Kopie, die ankommt, und verwirft die anderen. Gesendet werden die Wiederholungen ohne
+<code>delay()</code>: Der Adapter merkt sich die offenen Kopien und schickt sie in <code>espNowSync_Loop()</code>,
+sobald ihre Zeit da ist. Gemessen (durch eine Wand): ohne Wiederholung ~5 % Verlust je Richtung, mit 3 Wiederholungen
+nur noch 0,1–0,6 % für Hin und Rück zusammen.</p>
 <p>Gezielte Pakete (Lesen, Schreiben, HELLO_ACK) bestätigt ESP-NOW selbst auf Funkebene und wiederholt sie bei Bedarf.
 Der Sende-Callback meldet Erfolg oder Fehler; bei Fehler einmal neu senden.</p>
 
 <h3>Zeitgenauigkeit</h3>
 <ul>
-  <li>Ein ESP-NOW-Paket ist in wenigen Millisekunden beim Empfänger (in Phase 0 messen). Bei BLE wartet ein Notify
-    auf das nächste Verbindungsereignis - bei <code>setConnectionParams(12, 12, …)</code> bis zu 15 ms.</li>
-  <li>Kommt nur eine Wiederholung an, ist sie 3 oder 6 ms zu spät. Für <code>SYNC_SONG</code> und
-    <code>SYNC_ENTRY</code> kann der Empfänger das ausgleichen: <code>copy × ESPNOW_REPEAT_MS</code> wird wie die
-    <code>late</code>-Verspätung in <code>main.cpp</code> (um Zeile 377) auf <code>millisCounterForProgChange</code>
-    aufgeschlagen. Das ist ein optionaler Schritt (Phase 3b), zuerst wird gemessen, ob es nötig ist.</li>
-  <li>In der Übergangszeit liegen alte BLE-Geräte bis zu ~15 ms hinter den ESP-NOW-Lampen - genauso viel, wie sich
-    BLE-Geräte heute untereinander unterscheiden können. Nach Phase 7 entfällt das.</li>
+  <li>Ein ESP-NOW-Paket ist in ~2 ms beim Empfänger (gemessen ~3 ms inkl. Loop-Wartezeit). Bei BLE wartet ein Notify
+    auf das nächste Verbindungsereignis, gemessen bis 14,5 ms.</li>
+  <li>Kommt nur eine Wiederholung an, ist sie 3 oder 6 ms zu spät. Laut Messung ist das selten; ein Ausgleich über das
+    Feld <code>copy</code> ist deshalb nicht vorgesehen (#15 geschlossen). Das Feld bleibt im Rahmen, falls es später gebraucht wird.</li>
   <li>Der Empfangs-Callback läuft im WLAN-Task, nicht in <code>loop()</code>. Er legt das Paket nur in einen kleinen
     Ringpuffer (8 Plätze, geschützt mit <code>portMUX</code>/<code>portENTER_CRITICAL</code>). Ein einzelner
     „Briefkasten“ wie heute in <code>BLE_client_nimBLE.cpp</code> reicht nicht, weil z.B. <code>HELLO</code> und eine
@@ -371,15 +368,16 @@ Der Sende-Callback meldet Erfolg oder Fehler; bei Fehler einmal neu senden.</p>
 <ul>
   <li><code>WiFi.mode(WIFI_STA)</code>, <code>WiFi.disconnect()</code>, fester Kanal
     <code>esp_wifi_set_channel(ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE)</code>. Alle Geräte müssen denselben Kanal haben.</li>
-  <li>Stromsparen: Laufen WLAN und Bluetooth gleichzeitig (Proxy in der Übergangszeit, Testgeräte), ist
-    <code>esp_wifi_set_ps(WIFI_PS_MIN_MODEM)</code> <b>Pflicht</b>, sonst bricht das ESP-IDF ab und das Gerät startet
-    endlos neu (gemessen 19.10.2026). Ohne Bluetooth (reines ESP-NOW) <code>WIFI_PS_NONE</code>.</li>
+  <li>Stromsparen aus: <code>esp_wifi_set_ps(WIFI_PS_NONE)</code>, sonst verschläft der Empfänger Pakete. Das geht
+    <b>nur ohne Bluetooth</b>: Läuft BLE gleichzeitig (BLE-Rückweg ist ein eigener Build, also nie), verlangt das
+    ESP-IDF <code>WIFI_PS_MIN_MODEM</code>, sonst startet das Gerät endlos neu (gemessen 19.10.2026).</li>
   <li>Volle Sendeleistung (<code>WiFi.setTxPower(WIFI_POWER_19_5dBm)</code>), wie heute bei BLE <code>ESP_PWR_LVL_P9</code>.</li>
   <li>Optional: Espressif-Langstreckenmodus (<code>WIFI_PROTOCOL_LR</code>), falls die Reichweite knapp ist. Muss
     dann auf allen Geräten gleich sein.</li>
   <li>Grundlage: Arduino-Core 2.0.17 (ESP-IDF 4.4, Plattform espressif32 6.10.0). Dort hat der Empfangs-Callback die
-    Form <code>void cb(const uint8_t* mac, const uint8_t* data, int len)</code>. WLAN ist wegen OTA ohnehin schon in
-    der Firmware, der Flash-Zuwachs ist klein.</li>
+    Form <code>void cb(const uint8_t* mac, const uint8_t* data, int len)</code>. Erprobt im Messprogramm
+    <code>tools/espnow-spike/</code> (Branch <code>espnow-spike</code>).</li>
+  <li>Das Bluetooth der YULC-Boards wird in der ESP-NOW-Firmware gar nicht gestartet.</li>
 </ul>
 
 <h3>Fremde Sender</h3>
@@ -393,30 +391,28 @@ will, trägt die Proxy-MAC fest in <code>definitions.h</code> ein - wie heute di
 <p>Jeder Ablauf endet in denselben <code>ledSync</code>-Funktionen wie heute. Neu ist nur, wie die Bytes reisen.</p>
 
 <h3>MIDI-Wechsel (Songstart, Part-Sprung)</h3>
-<div class="tablewrap"><table>
-  <tr><th>#</th><th>Proxy</th><th>BLE-Clients</th><th>ESP-NOW-Clients</th></tr>
-  <tr><td>1</td><td>CC 22/23 → <code>ledSyncProxyMidiSong/Part()</code></td><td></td><td></td></tr>
-  <tr><td>2</td><td><code>ledSyncProxyLoop()</code> → Zettel mit SYNC_SONG, notify</td><td></td><td></td></tr>
-  <tr><td>3</td><td><code>syncProxy</code>-<code>applyAction()</code>: BLE-Notify <b>und</b> ESP-NOW <code>KIND_MSG</code> ×3</td><td>Notify kommt an</td><td>erste Kopie kommt an, Rest verworfen</td></tr>
-  <tr><td>4</td><td></td><td colspan="2"><code>ledSyncClientReceived()</code> → <code>switchToSong()</code></td></tr>
-</table></div>
+<ol>
+  <li>CC 22/23 → <code>ledSyncProxyMidiSong/Part()</code>.</li>
+  <li><code>ledSyncProxyLoop()</code> → Zettel mit SYNC_SONG bzw. SYNC_PART, notify.</li>
+  <li><code>syncProxy</code>: <code>KIND_MSG</code> als Broadcast, 3 Kopien.</li>
+  <li>Clients: erste Kopie → <code>ledSyncClientReceived()</code> → <code>switchToSong()</code>; weitere Kopien verworfen.</li>
+</ol>
 
 <h3>Abgleich erzwingen (Kurzklick am Proxy, Not-Aus): 3 → 4</h3>
 <ol>
-  <li>Proxy sendet SYNC_FORCE an alle (BLE + ESP-NOW-Broadcast). Clients springen, schalten dunkel, warten.</li>
+  <li>Proxy sendet SYNC_FORCE an alle (Broadcast). Clients springen, schalten dunkel, warten.</li>
   <li>Beim nächsten Part-Wechsel des Proxys: SYNC_ENTRY an alle. Wartende Clients starten den Part zeitgleich.</li>
 </ol>
-<p>Keine Änderung außer dem zweiten Transport.</p>
 
 <h3>Stand lesen (Kurzklick am Client): READ_REQ → READ_RESP → 4</h3>
 <ol>
   <li><code>ledSyncClientLoop()</code> liefert <code>readProxy = true</code>.</li>
-  <li>ESP-NOW-Client sendet <code>KIND_READ_REQ</code> gezielt an den Proxy. Anders als BLE-<code>readValue()</code>
-    wartet er nicht: die Antwort kommt später in <code>espNowSync_Loop()</code> an.</li>
+  <li>Client sendet <code>KIND_READ_REQ</code> gezielt an den Proxy. Anders als BLE-<code>readValue()</code> wartet
+    er nicht: Die Antwort kommt später in <code>espNowSync_Loop()</code> an.</li>
   <li>Proxy: Empfang → <code>ledSyncProxyClientRead()</code> (wie <code>onRead()</code>) und Antwort
-    <code>KIND_READ_RESP</code> mit seinem zuletzt hinterlegten Wert. Den Wert führt der ESP-NOW-Adapter selbst mit:
-    jeder Eintrag auf dem Zettel - ob notify oder nicht - überschreibt ihn, genau wie heute
-    <code>storeMessage()</code>. Damit bleibt auch „Eigenheit 2“ (nach SYNC_ENTRY liest man Song 0) gleich.</li>
+    <code>KIND_READ_RESP</code> mit seinem zuletzt hinterlegten Wert. Den Wert führt der Adapter selbst mit: Jeder
+    Eintrag auf dem Zettel - ob notify oder nicht - überschreibt ihn, genau wie heute <code>storeMessage()</code>.
+    Damit bleibt auch „Eigenheit 2“ (nach SYNC_ENTRY liest man Song 0) gleich.</li>
   <li>Client: <code>ledSyncClientReadResult()</code> → springen, auf SYNC_ENTRY warten.</li>
   <li>Kommt innerhalb von ~200 ms keine Antwort, Anfrage einmal wiederholen; danach aufgeben (wie heute: Knopf noch einmal drücken).</li>
 </ol>
@@ -424,35 +420,53 @@ will, trägt die Proxy-MAC fest in <code>definitions.h</code> ein - wie heute di
 <h3>Stand abfragen (Doppelklick am Proxy): 5 → 6 → 4</h3>
 <ol>
   <li>Proxy sendet SYNC_ASK an alle.</li>
-  <li>Jeder Client antwortet mit SYNC_REPLY (ESP-NOW: <code>KIND_WRITE</code> gezielt an den Proxy) und meldet seinen
-    nächsten Part-Wechsel mit SYNC_ENTRY.</li>
+  <li>Jeder Client antwortet mit SYNC_REPLY (<code>KIND_WRITE</code> gezielt an den Proxy) und meldet seinen nächsten
+    Part-Wechsel mit SYNC_ENTRY.</li>
   <li>Proxy: <code>ledSyncProxyClientWrote()</code> → springen.</li>
 </ol>
 <div class="warn">Wie heute antworten <b>alle</b> Clients; der Proxy springt bei jeder Antwort, die letzte gewinnt. Mit
 vielen Lampen gibt es mehr Antworten, sie stehen aber normalerweise alle auf demselben Stand. Das Verhalten bleibt
 bewusst wie es ist (LED-Sync-Entscheidung vom 18.10.2026). Damit die Antworten nicht genau gleichzeitig senden, wartet
-jeder ESP-NOW-Client vor dem Senden eine kleine, geräteabhängige Zeit (z.B. 2 ms × Geräte-Nummer) - das ist reine
-Transportsache und ändert am Protokoll nichts.</div>
+jeder Client vor dem Senden eine kleine, geräteabhängige Zeit (z.B. 2 ms × Geräte-Nummer) - reine Transportsache.</div>
 
 <h3>Verbindungsanzeige (rote Warn-LEDs in Song 0)</h3>
 <ul>
   <li>Client: „verbunden“ = in den letzten <code>ESPNOW_LINK_TIMEOUT_MS</code> (Vorschlag 3000) ein gültiges Paket vom
-    Proxy gehört. <code>espNowSync_isLinked()</code> ersetzt bei ESP-NOW-Geräten <code>BLE_client_isConnected()</code>.</li>
-  <li>Proxy: „mindestens ein Client da“ = BLE-Verbindungen + ESP-NOW-Clients mit frischem <code>HELLO_ACK</code>
+    Proxy gehört (<code>espNowSync_isLinked()</code>).</li>
+  <li>Proxy: „mindestens ein Client da“ = mindestens ein Client mit frischem <code>HELLO_ACK</code>
     (<code>espNowSync_seenClients()</code>).</li>
-  <li>Die Warnlogik in <code>markerLEDs.cpp</code> fragt künftig eine Funktion <code>syncLinkMissing()</code>, die je
-    nach Transport die richtige Quelle nimmt.</li>
+  <li>Die Warnlogik in <code>markerLEDs.cpp</code> fragt künftig <code>syncLinkMissing()</code>, die je nach gebautem
+    Funkweg die richtige Quelle nimmt.</li>
 </ul>
 
 <h3>OTA für alle (Knopf beim Einschalten)</h3>
 <ol>
-  <li>Proxy startet BLE und ESP-NOW, sendet <code>HELLO</code> im Takt, wartet (wie heute höchstens
-    <code>OTA_CLIENT_WAIT_MS</code>), bis alle erwarteten Clients da sind: BLE-Abonnenten + ESP-NOW-Clients mit
-    <code>HELLO_ACK</code>. Erwartet werden <code>client_address_count + ESPNOW_EXPECTED_CLIENTS</code>.</li>
-  <li>SYNC_SONG 0, dann 3× SYNC_OTA - über beide Wege. Hier ist <code>delay()</code> weiter erlaubt (läuft in <code>setup()</code>).</li>
+  <li>Proxy startet ESP-NOW, sendet <code>HELLO</code> im Takt und wartet (wie heute höchstens
+    <code>OTA_CLIENT_WAIT_MS</code>), bis <code>ESPNOW_EXPECTED_CLIENTS</code> Clients mit <code>HELLO_ACK</code> da sind.
+    Bis die Zählung fertig ist (#13), wartet er einfach eine feste Zeit.</li>
+  <li>SYNC_SONG 0, dann 3× SYNC_OTA per Broadcast. Hier ist <code>delay()</code> weiter erlaubt (läuft in <code>setup()</code>).</li>
   <li>Nach dem Neustart läuft <code>otaRun()</code> in einem eigenen Boot und verbindet sich mit dem Router-WLAN.
-    ESP-NOW ist dann noch nicht gestartet, es gibt keinen Konflikt.</li>
+    ESP-NOW ist in diesem Boot nicht gestartet, es gibt keinen Konflikt mit dem Kanal.</li>
 </ol>
+
+<!-- ================================================================== -->
+<h2 id="umstellung">6a. Die Umstellung aller Geräte</h2>
+<p>Eine Übergangs-Firmware, die beide Funkwege spricht, ist nicht nötig. Den Update-Befehl gibt nämlich noch die
+<b>alte</b> Firmware:</p>
+<ol>
+  <li><b>Vorbereiten:</b> <code>python tools/build_ota.py</code> baut die ESP-NOW-Firmware für alle Geräte (Claude baut;
+    den Server startet der User mit <code>--serve-only</code>). Alle Geräte im Proberaum, Akkus voll.</li>
+  <li><b>OTA für alle mit der alten Firmware:</b> Gitarre mit gedrücktem Knopf einschalten. Sie schickt den Befehl wie
+    gewohnt per BLE an alle, alle Geräte laden die neue Firmware.</li>
+  <li><b>Ab jetzt sprechen alle ESP-NOW.</b> Kontrolle: Warn-LEDs aus, Songstart per MIDI, Kurzklick.</li>
+  <li><b>Hat ein Gerät das Update verpasst,</b> hört es nichts mehr (es spricht noch BLE). Es wird per USB geflasht
+    (<code>pio run -e &lt;gerät&gt; -t upload</code>).</li>
+  <li><b>Weitere Updates</b> laufen über das „OTA für alle“ der neuen Firmware per ESP-NOW.</li>
+</ol>
+<div class="warn"><b>Rückweg:</b> Solange der BLE-Code noch im Repo ist, lässt sich mit dem Build-Flag eine BLE-Firmware
+bauen. Weil OTA nur eine <i>neuere</i> Version lädt, bekommt sie automatisch eine neue Versionsnummer
+(<code>tools/fw_version.py</code>) und lässt sich per „OTA für alle“ (jetzt per ESP-NOW ausgelöst) wieder auf alle Geräte
+bringen. Zur Not per USB.</div>
 
 <!-- ================================================================== -->
 <h2 id="dateien">7. Neue und geänderte Dateien</h2>
@@ -464,191 +478,148 @@ Transportsache und ändert am Protokoll nichts.</div>
       <td>Unity-Tests: Länge/Magic/Version, Dedup inkl. Überlauf und Boot-ID-Wechsel, Alterung der Peer-Tabelle.</td></tr>
   <tr><td><code>src/espNowSync.cpp/.h</code> <span class="badge b-done">neu</span></td>
       <td>Dünner Adapter: <code>espNowSync_initialize()</code>, Empfangs-Callback → Ringpuffer, <code>espNowSync_Loop()</code>
-        (Puffer abarbeiten, Wiederholungen und HELLO senden), <code>espNowSync_send(msg, notify)</code> (Proxy),
-        <code>espNowSync_write(msg)</code> / <code>espNowSync_requestRead()</code> (Client),
+        (Puffer abarbeiten, Wiederholungen und HELLO senden), Senden an alle bzw. gezielt, Lesen beim Proxy,
         <code>espNowSync_isLinked()</code>, <code>espNowSync_seenClients()</code>.</td></tr>
   <tr><td><code>src/syncProxy.cpp/.h</code>, <code>src/syncClient.cpp/.h</code> <span class="badge b-done">neu</span></td>
-      <td>Die beiden <code>applyAction()</code> aus den BLE-Dateien, verteilt auf die Transporte des Geräts. Hier landen
-        auch die Aufrufe aus <code>main.cpp</code> (heute <code>midiProxy_midiLoop()</code>, <code>midiProxy_onPartChange()</code>,
-        <code>BLE_client_Loop()</code>, <code>informServerOnNextChange()</code>).</td></tr>
-  <tr><td><code>src/midiProxyBLEserver_nimBLE.cpp/.h</code></td>
-      <td>Verschlankt auf Transport: senden/hinterlegen, Callbacks melden an <code>syncProxy</code>. Verhalten über BLE unverändert.</td></tr>
-  <tr><td><code>src/BLE_client_nimBLE.cpp/.h</code></td>
-      <td>Verschlankt auf Transport: Scan, Verbindung, Notify → <code>syncClient</code>, Lesen/Schreiben auf Auftrag.</td></tr>
+      <td>Die beiden <code>applyAction()</code> aus den BLE-Dateien, transportneutral. Hier landen auch die Aufrufe aus
+        <code>main.cpp</code> (heute <code>midiProxy_midiLoop()</code>, <code>midiProxy_onPartChange()</code>,
+        <code>BLE_client_Loop()</code>, <code>informServerOnNextChange()</code>) und das OTA-Warten.</td></tr>
+  <tr><td><code>src/midiProxyBLEserver_nimBLE.cpp/.h</code>, <code>src/BLE_client_nimBLE.cpp/.h</code></td>
+      <td>Erst verschlankt auf reinen Transport (Umbau), danach nur noch mit <code>SYNC_VIA_BLE</code> gebaut (Rückweg),
+        zuletzt gelöscht.</td></tr>
   <tr><td><code>src/definitions.h</code></td>
-      <td>Rolle und Transport getrennt: <code>IS_MIDI_PROXY</code> bleibt, <code>IS_BLE_CLIENT</code> wird zu
-        <code>IS_SYNC_CLIENT</code> + <code>SYNC_VIA_BLE</code> / <code>SYNC_VIA_ESPNOW</code>. ANDRESGIT bekommt beide
-        Transporte. Neue Konstanten <code>ESPNOW_CHANNEL</code>, <code>ESPNOW_REPEAT_COUNT</code>,
-        <code>ESPNOW_REPEAT_MS</code>, <code>ESPNOW_HELLO_MS</code>, <code>ESPNOW_LINK_TIMEOUT_MS</code>,
-        <code>ESPNOW_EXPECTED_CLIENTS</code>. Neue Geräteblöcke (Abschnitt 10).</td></tr>
+      <td>Rolle und Funkweg getrennt: <code>IS_MIDI_PROXY</code> bleibt, <code>IS_BLE_CLIENT</code> wird zu
+        <code>IS_SYNC_CLIENT</code>. Der Funkweg ist <b>eine</b> Einstellung für alle Geräte: <code>SYNC_VIA_ESPNOW</code>
+        (Standard) oder <code>SYNC_VIA_BLE</code> (Rückweg, per Build-Flag). Neue Konstanten <code>ESPNOW_CHANNEL</code>,
+        <code>ESPNOW_REPEAT_COUNT</code>, <code>ESPNOW_REPEAT_MS</code>, <code>ESPNOW_HELLO_MS</code>,
+        <code>ESPNOW_LINK_TIMEOUT_MS</code>, <code>ESPNOW_EXPECTED_CLIENTS</code>.</td></tr>
   <tr><td><code>src/main.cpp</code></td><td>Init/Loop/Part-Wechsel rufen die sync-Module statt der BLE-Funktionen.</td></tr>
   <tr><td><code>src/rotaryEncoder.cpp</code>, <code>src/markerLEDs.cpp</code>, <code>src/midi_in.cpp</code>, <code>src/otaUpdate.cpp</code></td>
-      <td><code>#if defined(IS_BLE_CLIENT)</code> → <code>IS_SYNC_CLIENT</code>; Warn-LEDs über <code>syncLinkMissing()</code>;
-        OTA-Wartezählung über beide Transporte.</td></tr>
+      <td><code>IS_BLE_CLIENT</code> → <code>IS_SYNC_CLIENT</code>; Warn-LEDs über <code>syncLinkMissing()</code>;
+        OTA-Warten über die sync-Module.</td></tr>
   <tr><td><code>platformio.ini</code></td>
-      <td>Neue Envs <code>lampe3</code>, <code>lampe4</code> …; <code>env:native</code>:
-        <code>build_src_filter = -&lt;*&gt; +&lt;ledSync.cpp&gt; +&lt;espNowFrame.cpp&gt;</code>. Nach Phase 7 können die
-        <code>CONFIG_BT_NIMBLE_…</code>-Flags und <code>NimBLE-Arduino</code> entfallen.</td></tr>
-  <tr><td><code>tools/build_ota.py</code></td><td>Neue Geräte in <code>DEVICES</code>.</td></tr>
-  <tr><td><code>src/ledSync.cpp/.h</code></td><td><b>Keine Logik-Änderung.</b> Nur die Kommentare („per Bluetooth“ → „per Funk“, Hinweis auf ESP-NOW-Adapter).</td></tr>
+      <td><code>env:native</code>: <code>build_src_filter = -&lt;*&gt; +&lt;ledSync.cpp&gt; +&lt;espNowFrame.cpp&gt;</code>.
+        Am Ende entfallen <code>CONFIG_BT_NIMBLE_…</code>-Flags und <code>NimBLE-Arduino</code>. Später neue Envs
+        <code>lampe3</code>, <code>lampe4</code> …</td></tr>
+  <tr><td><code>tools/build_ota.py</code></td><td>Später neue Geräte in <code>DEVICES</code>.</td></tr>
+  <tr><td><code>src/ledSync.cpp/.h</code></td><td><b>Keine Logik-Änderung.</b> Nur die Kommentare („per Bluetooth“ → „per Funk“).</td></tr>
 </table></div>
 
-<p>Skizze der Geräteblöcke in <code>definitions.h</code>:</p>
-<pre><code>#ifdef ANDRESGIT
+<p>Skizze in <code>definitions.h</code>:</p>
+<pre><code><span class="c">// Funkweg für den LED-Sync - für ALLE Geräte gleich (alle müssen dieselbe Sprache sprechen).</span>
+<span class="c">// Standard ESP-NOW; mit Build-Flag -D SYNC_VIA_BLE die alte BLE-Fassung (Rückweg, wird später entfernt).</span>
+#if !defined(SYNC_VIA_BLE)
+    #define SYNC_VIA_ESPNOW
+#endif
+
+#ifdef ANDRESGIT
     #define HAS_MIDI_IN
     #define IS_MIDI_PROXY
-    #define SYNC_VIA_BLE        <span class="c">// für Bass, Lampe 1/2, Matrix (alte Firmware)</span>
-    #define SYNC_VIA_ESPNOW     <span class="c">// für die neuen Lampen</span>
     ...
 #endif
 
 #ifdef LAMPE1
     #define NOMARKER
     #define IS_SYNC_CLIENT
-    #define SYNC_VIA_BLE        <span class="c">// Phase 7: auf SYNC_VIA_ESPNOW umstellen</span>
-#endif
-
-#ifdef LAMPE3                   <span class="c">// neu, nur ESP-NOW</span>
-    #define NOMARKER
-    #define IS_SYNC_CLIENT
-    #define SYNC_VIA_ESPNOW
-#endif
-
-<span class="c">// Prüfung: ein Client hat genau EINEN Transport</span>
-#if defined(IS_SYNC_CLIENT) &amp;&amp; defined(SYNC_VIA_BLE) &amp;&amp; defined(SYNC_VIA_ESPNOW)
-    #error "Ein Client hört entweder BLE oder ESP-NOW"
 #endif</code></pre>
 
 <!-- ================================================================== -->
 <h2 id="phasen">8. Phasen &amp; Arbeitsstand</h2>
 <p>Jede Phase endet mit einem baubaren Stand. Vor dem Start einer Phase hier „in Arbeit“ eintragen, nach dem Ende
-Ergebnis und Commit - so kann eine neue Sitzung nach einem Absturz weitermachen.</p>
-<p>GitHub-Issues (angelegt 19.10.2026, die ausführliche Aufgabe steht jeweils im Issue):</p>
+Ergebnis und Commit - so kann eine neue Sitzung nach einem Absturz weitermachen. Code-Änderungen jeweils in einem
+eigenen Branch.</p>
+<p>GitHub-Issues (angelegt 19.10.2026, umgestellt am selben Tag auf „alle Geräte auf ESP-NOW“; die ausführliche
+Aufgabe steht jeweils im Issue):</p>
 <div class="tablewrap"><table>
-  <tr><th>Issue</th><th>Inhalt</th><th>Phase</th><th>blockiert durch</th></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">#8</a></td><td>Messung mit zwei Boards</td><td>0</td><td>–</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/9">#9</a></td><td>Umbau: Rolle/Transport trennen, Sync-Module</td><td>2</td><td>–</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/10">#10</a></td><td>Erster Weg: Broadcast, eine Lampe folgt (inkl. Paket-Modul + Tests)</td><td>1 + 3</td><td>#8, #9</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/11">#11</a></td><td>Rückweg: Stand lesen / holen</td><td>3</td><td>#10</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/12">#12</a></td><td>Lebenszeichen + Warn-LEDs</td><td>4</td><td>#10</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle über ESP-NOW</td><td>4</td><td>#12</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/14">#14</a></td><td>Neue Lampen lampe3/lampe4 als Klone</td><td>5</td><td>#10</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/15">#15</a></td><td>optional: Ausgleich der Wiederholungs-Verspätung</td><td>3b</td><td>#10</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/16">#16</a></td><td>Probe mit allen Geräten</td><td>6</td><td>#11, #12, #13, #14</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/17">#17</a></td><td>Alle Geräte auf ESP-NOW, BLE entfernen</td><td>7</td><td>#16, #8</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/18">#18</a></td><td>Geräte mit eigener Identität (später)</td><td>–</td><td>#14</td></tr>
+  <tr><th>Issue</th><th>Inhalt</th><th>Phase</th><th>blockiert durch</th><th>Stand</th></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">#8</a></td><td>Messung mit zwei Boards</td><td>0</td><td>–</td><td>erledigt</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/9">#9</a></td><td>Umbau: Rolle/Funkweg trennen, Sync-Module</td><td>1</td><td>–</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/10">#10</a></td><td>Alle Geräte auf ESP-NOW: Broadcast-Weg, Paket-Modul + Tests, OTA-Befehl, Umstellung</td><td>2</td><td>#9</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/11">#11</a></td><td>Rückweg: Stand lesen / holen</td><td>3</td><td>#10</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/12">#12</a></td><td>Lebenszeichen + Warn-LEDs</td><td>4</td><td>#10</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle: Zählung der Clients</td><td>5</td><td>#12</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/16">#16</a></td><td>Probe mit allen Geräten vor dem ersten Auftritt</td><td>6</td><td>#11, #12, #13</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/17">#17</a></td><td>BLE-Code entfernen (nach erfolgreichen Auftritten)</td><td>7</td><td>#16</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/14">#14</a></td><td>Neue Lampen lampe3/lampe4 als Klone</td><td>später</td><td>#10</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/18">#18</a></td><td>Geräte mit eigener Identität</td><td>später</td><td>#14</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/15">#15</a></td><td>Ausgleich der Wiederholungs-Verspätung</td><td>–</td><td>–</td><td>geschlossen, nicht nötig</td></tr>
 </table></div>
+
 <ol class="steps">
-  <li><b>Spike mit zwei Boards</b> <span class="badge b-done">erledigt 19.10.2026</span>
-    <div class="ok"><b>Ergebnis (#8, Werkzeuge im Branch <code>espnow-spike</code>), Entscheidung: weiter.</b>
+  <li><b>Messung mit zwei Boards</b> <span class="badge b-done">erledigt 19.10.2026</span>
+    <div class="ok"><b>Ergebnis (#8, Werkzeuge im Branch <code>espnow-spike</code>), Entscheidung: weiter, alle Geräte umstellen.</b>
       <ul>
         <li><b>Zeitvorteil:</b> BLE kam im Mittel 6,6 ms, höchstens 14,5 ms später als ESP-NOW (38 Nachrichten, Messung
-          im Empfangs-Callback desselben Geräts). In der Übergangszeit kam ESP-NOW in 4 von 38 Fällen bis 4,8 ms später
-          als BLE, weil sich beide das Radio teilen.</li>
+          im Empfangs-Callback desselben Geräts). Mit BLE und WLAN gleichzeitig kam ESP-NOW in 4 von 38 Fällen bis
+          4,8 ms später als BLE, weil sich beide das Radio teilen.</li>
         <li><b>Latenz:</b> eine Richtung ~3 ms inkl. Loop-Wartezeit, reine Funkzeit geschätzt ~2 ms.</li>
         <li><b>Verlust durch eine Wand:</b> ohne Wiederholung ~5 % je Richtung, mit 3 Wiederholungen 0,1–0,6 % Hin+Rück.
           Die Wiederholungen sind nötig.</li>
         <li><b>Flackern:</b> keins, weder im Messprogramm noch mit echter Firmware und Show (All The Things She Said).</li>
-        <li><b>BLE + WLAN gleichzeitig:</b> keine BLE-Abrisse, keine Sendefehler. <b>Pflicht: Modem Sleep</b>
-          (<code>WIFI_PS_MIN_MODEM</code>), mit <code>WIFI_PS_NONE</code> startet das Gerät endlos neu.</li>
+        <li><b>BLE + WLAN gleichzeitig:</b> keine BLE-Abrisse, keine Sendefehler, aber nur mit Modem Sleep
+          (<code>WIFI_PS_MIN_MODEM</code>); mit <code>WIFI_PS_NONE</code> startet das Gerät endlos neu.</li>
         <li><b>Strom (Gitarre):</b> BLE + ESP-NOW wie nur BLE (148/149 mA). Reines ESP-NOW-Radio 35 mA, BLE + Marker
-          ~42 mA. Phase 7 bringt also keinen spürbaren Mehrverbrauch.</li>
-        <li><b>Ausgleich der Wiederholungs-Verspätung (#15):</b> nicht nötig (Empfehlung: schließen).</li>
+          ~42 mA. Die Umstellung bringt keinen spürbaren Mehrverbrauch.</li>
+        <li><b>Ausgleich der Wiederholungs-Verspätung (#15):</b> nicht nötig, geschlossen.</li>
       </ul>
-      Alle Messwerte: <a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">Issue #8</a>.</div>
-    <p>Kleines Testprogramm (nicht in <code>src/</code>, z.B. eigener Ordner <code>tools/espnow-spike/</code>): ein
-      Sender, ein Empfänger, GPIO-Toggle bzw. <code>micros()</code>-Log je Paket.</p>
-    <ul>
-      <li>Latenz und Verlustrate über Bühnendistanz (10–15 m, mit Körpern dazwischen), mit 1 und 3 Wiederholungen.</li>
-      <li><b>Koexistenz auf dem Proxy:</b> BLE-Server mit 4 verbundenen Clients + ESP-NOW gleichzeitig. Leidet BLE
-        (Abrisse, Notify-Verzögerung)? Leidet ESP-NOW?</li>
-      <li><b>LED-Flackern:</b> FastLED 3.5.0 (RMT) bei aktivem WLAN-Radio, mit echtem Strip und einem schnellen
-        Effekt. Gegenmittel testen, falls nötig (Abschnitt 9).</li>
-      <li>Mehrverbrauch durch WLAN-Empfang (mA, mit und ohne LEDs), hochgerechnet auf einen Auftritt mit einem
-        LiPo 2200 mAh (Gitarre, Bass, Matrix; die Lampen hängen am Netz).</li>
-      <li>Startversatz heute messen: ein BLE-Gerät und ein ESP-NOW-Gerät nebeneinander, Songstart per MIDI.</li>
-    </ul>
-    <p><b>Abnahme:</b> Messwerte hier eintragen; Entscheidung, ob es weitergeht.</p></li>
-  <li><b><code>espNowFrame</code> + native Tests</b> <span class="badge b-open">offen</span>
-    <p>Reines Modul, <code>pio test -e native</code> grün (alte und neue Tests).</p></li>
-  <li><b>Rollen/Transport-Defines und sync-Module, ohne neues Verhalten</b> <span class="badge b-open">offen</span>
-    <p><code>IS_SYNC_CLIENT</code>/<code>SYNC_VIA_BLE</code> einführen, <code>applyAction()</code> nach
-      <code>syncProxy</code>/<code>syncClient</code> ziehen. Nur BLE ist aktiv.</p>
-    <p><b>Abnahme:</b> alle 5 Envs bauen, Hardware-Probe wie beim LED-Sync-Umbau (Songstart, Kurzklick, Doppelklick,
-      Not-Aus, OTA) - alles verhält sich wie vorher.</p></li>
-  <li><b>ESP-NOW-Adapter</b> <span class="badge b-open">offen</span>
-    <p><code>espNowSync.cpp</code> für Proxy und Client, Proxy sendet doppelt. Testweise eine bestehende Lampe per
-      Build-Flag auf ESP-NOW stellen.</p>
-    <p><b>3b (optional):</b> Ausgleich der Wiederholungs-Verspätung über <code>copy</code>, nur wenn Phase 0 es nahelegt.</p>
-    <p><b>Abnahme:</b> Lampe (ESP-NOW) und Bass (BLE) laufen einen generierten Song synchron durch; alle Abläufe aus Abschnitt 6.</p></li>
-  <li><b>Verbindungsanzeige + OTA-Zählung</b> <span class="badge b-open">offen</span>
-    <p><code>HELLO</code>/<code>HELLO_ACK</code>, <code>syncLinkMissing()</code>, <code>midiProxy_broadcastOTA()</code>
-      zählt beide Wege.</p>
-    <p><b>Abnahme:</b> Proxy aus → ESP-NOW-Lampe pulsiert rot in Song 0; OTA für alle erreicht auch die ESP-NOW-Lampe.</p></li>
-  <li><b>Neue Lampen-Envs</b> <span class="badge b-open">offen</span>
-    <p><code>lampe3</code>, <code>lampe4</code> … in <code>platformio.ini</code>, <code>definitions.h</code> und
-      <code>tools/build_ota.py</code>; Identität nach Entscheidung in Abschnitt 10.</p>
-    <p><b>Abnahme:</b> <code>python tools/build_ota.py</code> (ohne <code>--serve</code>) baut alle Geräte.</p></li>
-  <li><b>Probe / Bühnentest</b> <span class="badge b-open">offen</span>
-    <p>Checkliste aus Abschnitt 11 mit allen Geräten im Proberaum.</p></li>
-  <li><b>Optional: BLE ablösen</b> <span class="badge b-open">offen</span>
-    <p>Bass, Lampe 1/2, Matrix per OTA auf <code>SYNC_VIA_ESPNOW</code>; danach BLE-Dateien, NimBLE-Bibliothek und
-      <code>CONFIG_BT_NIMBLE_…</code>-Flags entfernen. Vorteile: kein Koexistenz-Betrieb, gleiche Latenz für alle,
-      weniger Flash und vor allem ein genauerer gemeinsamer Start (Abschnitt 3a). Voraussetzung: die Akkulaufzeit von
-      Gitarre, Bass und Matrix reicht laut Messung aus Phase 0. Wichtig: alle Geräte gleichzeitig umstellen (OTA für
-      alle), sonst hört ein Gerät nichts mehr.</p></li>
+      Alle Messwerte: <a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">Issue #8</a>.</div></li>
+  <li><b>Umbau: Rolle und Funkweg trennen, ohne neues Verhalten (#9)</b> <span class="badge b-open">offen</span>
+    <p><code>IS_SYNC_CLIENT</code> und die Funkweg-Einstellung einführen, <code>applyAction()</code> nach
+      <code>syncProxy</code>/<code>syncClient</code> ziehen, <code>syncLinkMissing()</code>. Es läuft weiter nur BLE.</p>
+    <p><b>Abnahme:</b> alle 5 Envs bauen, Hardware-Probe zeigt dasselbe Verhalten wie vorher.</p></li>
+  <li><b>Alle Geräte auf ESP-NOW (#10)</b> <span class="badge b-open">offen</span>
+    <p>Paket-Modul + native Tests, ESP-NOW-Adapter für Proxy und Client, Broadcast mit 3 Kopien, ESP-NOW als Standard,
+      BLE nur noch per Flag. OTA-Befehl per ESP-NOW (vorerst mit fester Wartezeit). Umstellung aller Geräte wie in
+      Abschnitt 6a.</p>
+    <p><b>Abnahme:</b> alle Geräte folgen Songstart, Part-Sprung, Abgleich erzwingen und Not-Aus per ESP-NOW; OTA für
+      alle per ESP-NOW funktioniert.</p></li>
+  <li><b>Rückweg: Stand lesen und holen (#11)</b> <span class="badge b-open">offen</span>
+    <p>READ_REQ/READ_RESP für den Kurzklick am Client, WRITE für den Doppelklick am Proxy.</p></li>
+  <li><b>Lebenszeichen + Warn-LEDs (#12)</b> <span class="badge b-open">offen</span>
+    <p><code>HELLO</code>/<code>HELLO_ACK</code>, Peer-Tabelle, <code>syncLinkMissing()</code> für ESP-NOW.</p></li>
+  <li><b>OTA für alle: Zählung (#13)</b> <span class="badge b-open">offen</span>
+    <p>Der Proxy wartet, bis alle erwarteten Clients ein <code>HELLO_ACK</code> geschickt haben, mit lila Balken wie heute.</p></li>
+  <li><b>Probe vor dem ersten Auftritt (#16)</b> <span class="badge b-open">offen</span>
+    <p>Checkliste aus Abschnitt 11 mit allen Geräten.</p></li>
+  <li><b>BLE-Code entfernen (#17)</b> <span class="badge b-open">offen</span>
+    <p>Nach ein paar erfolgreichen Auftritten: BLE-Dateien, NimBLE-Bibliothek, <code>CONFIG_BT_NIMBLE_…</code>-Flags,
+      BLE-Adressen/UUIDs und das Flag <code>SYNC_VIA_BLE</code> entfernen.</p></li>
 </ol>
+<p><b>Danach:</b> neue Lampen als Klone (#14) und später Geräte mit eigener Identität (#18).</p>
 
 <!-- ================================================================== -->
 <h2 id="risiken">9. Risiken &amp; Gegenmittel</h2>
 <div class="tablewrap"><table>
   <tr><th>Risiko</th><th>Was passieren kann</th><th>Gegenmittel</th></tr>
-  <tr><td>LED-Flackern durch WLAN</td><td>WLAN-Interrupts stören das RMT-Timing von FastLED 3.5.0 → einzelne falsche Pixel</td>
-      <td>In Phase 0 prüfen. WLAN-Task läuft auf Kern 0, <code>loop()</code>/<code>FastLED.show()</code> auf Kern 1 -
-        das hilft schon. Sonst: RMT-Puffer/Kanäle anpassen (<code>FASTLED_RMT_MAX_CHANNELS</code>), Interrupt-Einstellungen
-        von FastLED. FastLED <b>nicht</b> aktualisieren (3.9.x bricht auf dem S3).</td></tr>
-  <tr><td>BLE + WLAN gleichzeitig (nur Proxy)</td><td>Das Radio wird zeitlich geteilt: BLE-Notify später, mehr Abrisse</td>
-      <td>In Phase 0 messen. ESP-NOW-Pakete sind selten und klein. Langfristig Phase 7.</td></tr>
+  <tr><td>Erster Auftritt mit neuem Funk</td><td>Ein Fehler zeigt sich erst auf der Bühne</td>
+      <td>Probe mit allen Geräten vorher (#16); BLE-Rückweg bleibt bis nach den ersten Auftritten im Code (#17).</td></tr>
+  <tr><td>Gerät verpasst die Umstellung</td><td>Es spricht noch BLE und hört nichts mehr</td>
+      <td>Umstellung im Proberaum, Gerät per USB nachflashen (Abschnitt 6a).</td></tr>
   <tr><td>Paketverlust</td><td>Ein Gerät verpasst Songstart oder SYNC_ENTRY</td>
-      <td>3 Wiederholungen + Dedup; im Ernstfall wie heute Kurzklick = Abgleich.</td></tr>
+      <td>3 Wiederholungen + Dedup (gemessen: ausreichend); im Ernstfall wie heute Kurzklick = Abgleich.</td></tr>
+  <tr><td>LED-Flackern durch WLAN</td><td>WLAN-Interrupts stören FastLED 3.5.0</td>
+      <td>Gemessen: kein Flackern. FastLED <b>nicht</b> aktualisieren (3.9.x bricht auf dem S3).</td></tr>
   <tr><td>Störendes Hallen-WLAN</td><td>Viele Netze auf dem gewählten Kanal</td>
       <td>Kanal 1, 6 oder 11 fest wählen, bei Bedarf per Build umstellen (alle Geräte gleich, OTA für alle).</td></tr>
   <tr><td>Fremde ESP-NOW-Geräte</td><td>Fremde Pakete auf dem Kanal</td>
       <td>Magic/Version, nur die gelernte (oder fest eingetragene) Proxy-MAC annehmen.</td></tr>
   <tr><td>Peer-Grenze (20)</td><td>betrifft nur gezielte Pakete</td>
       <td>Broadcast braucht einen Peer; Proxy trägt Clients nur kurz zum Antworten ein und löscht alte.</td></tr>
-  <tr><td>Akkulaufzeit</td><td>WLAN-Empfang ohne Stromsparen braucht mehr Strom als BLE</td>
-      <td>Lampen hängen am Netz: kein Thema. Gitarre, Bass und Matrix (je LiPo 2200 mAh): in Phase 0 messen und auf
-        eine Auftrittslänge hochrechnen (Abschnitt 3a).</td></tr>
-  <tr><td>Alte Firmware</td><td>Gerät ohne ESP-NOW hört nichts</td>
-      <td>Übergang mit beiden Transporten am Proxy; BLE-Format bleibt byte-gleich.</td></tr>
+  <tr><td>Akkulaufzeit</td><td>mehr Strom</td>
+      <td>Gemessen: kein spürbarer Unterschied zu BLE. Die Lampen hängen ohnehin am Netz.</td></tr>
 </table></div>
 
 <!-- ================================================================== -->
-<h2 id="entscheidungen">10. Offene Entscheidungen</h2>
-<h3>A. Welche Identität bekommen neue Lampen?</h3>
-<div class="cols">
-  <div class="after"><h4>Empfehlung: Klone von Lampe 1 / Lampe 2</h4>
-    <p>Eine neue Lampe hat ein eigenes Env und einen eigenen <code>DEVICE_NAME</code> (für OTA), aber das
-      <code>DEV_</code>-Bit, die <code>STAGE_POS</code> und <code>DEVICE_CLASS</code> von Lampe 1 oder 2. Sie zeigt genau
-      dasselbe wie ihr Vorbild.</p>
-    <p>Kein Song, keine <code>show.yaml</code>, keine Szene muss sich ändern. Gut für „mehr Licht links und rechts“.</p></div>
-  <div class="before"><h4>Später möglich: eigene Identität</h4>
-    <p>Neue Bits <code>DEV_LAMPE3 = 0x40</code>, <code>DEV_LAMPE4 = 0x80</code> (damit sind alle 8 Bits belegt),
-      <code>DEV_ALL</code> und <code>STAGE_POSITIONS</code> anpassen, Szenen und <code>songgen.py</code>
-      (<code>devices</code>, Kaskaden-Reihenfolge) erweitern. Mehr als 8 Geräte bräuchten eine breitere Maske.</p>
-    <p>Lohnt erst, wenn die neuen Lampen eigene Rollen in der Show spielen sollen.</p></div>
-</div>
-<p>Unabhängig davon: hat eine neue Lampe eine andere LED-Zahl oder andere Pins, braucht sie dafür eigene Werte im
-Geräteblock. Effekte rechnen nach Zeit, nicht nach LED-Zahl - der Gleichlauf bleibt.</p>
-
-<h3>B. Funkkanal</h3>
-<p>Vorschlag: Kanal 1 als Startwert in <code>definitions.h</code>. Falls am Auftrittsort viel WLAN ist, auf 6 oder 11
-wechseln (alle Geräte neu flashen).</p>
-
-<h3>C. BLE am Ende ganz weglassen?</h3>
-<p>Nicht nötig, um mehr Lampen anzuschließen, aber erwünscht wegen des genaueren Starts (User 19.10.2026). Entscheidung
-nach der Messung in Phase 0 (Akkulaufzeit, Flackern) und der Probe.</p>
+<h2 id="entscheidungen">10. Entscheidungen</h2>
+<div class="tablewrap"><table>
+  <tr><th>Frage</th><th>Entscheidung</th></tr>
+  <tr><td>Übergangszeit mit BLE + ESP-NOW?</td><td>Nein. Alle Geräte stellen gleichzeitig um, BLE bleibt nur als
+    Rückweg per Build-Flag und wird nach den ersten Auftritten entfernt (User, 19.10.2026, nach der Messung).</td></tr>
+  <tr><td>Identität neuer Lampen</td><td>Zuerst Klone von Lampe 1/2 (gleiches <code>DEV_</code>-Bit, keine
+    Show-Änderung, #14). Perspektivisch eigene Identität (#18) (User, 19.10.2026).</td></tr>
+  <tr><td>Ausgleich der Wiederholungs-Verspätung</td><td>Nicht nötig laut Messung (#15 geschlossen).</td></tr>
+  <tr><td>Funkkanal</td><td>Offen; Vorschlag Kanal 1 als Startwert, bei viel WLAN am Auftrittsort 6 oder 11.</td></tr>
+</table></div>
 
 <!-- ================================================================== -->
 <h2 id="pruefen">11. Test &amp; Abnahme</h2>
@@ -657,30 +628,25 @@ nach der Messung in Phase 0 (Akkulaufzeit, Flackern) und der Probe.</p>
   <li><code>pio test -e native</code>: <code>test_ledSync</code> (unverändert) + <code>test_espNowFrame</code> grün.</li>
   <li>Alle Envs bauen: <code>python tools/build_ota.py</code> (ohne <code>--serve</code>; den Server startet nur der User).</li>
 </ul>
-<h3>Messung (Phase 0 und Phase 3)</h3>
+<h3>Proberaum-Checkliste (#16)</h3>
 <ul>
-  <li>Sender toggelt einen GPIO beim Senden, Empfänger beim Empfang → Zeitdifferenz am Oszilloskop/Logikanalysator;
-    ersatzweise <code>micros()</code>-Zeitstempel auf Serial bei einem gemeinsamen Startpaket.</li>
-  <li>1000 Pakete zählen: wie viele kommen ohne / mit Wiederholung an?</li>
-</ul>
-<h3>Proberaum-Checkliste</h3>
-<ul>
-  <li>Songstart per MIDI: alle Geräte (BLE und ESP-NOW) starten sichtbar gleichzeitig, auch nach 30 Parts kein Versatz.</li>
+  <li>Songstart per MIDI: alle Geräte starten sichtbar gleichzeitig, auch nach 30 Parts kein Versatz.</li>
   <li>Part-Sprung per MIDI (CC 23).</li>
   <li>Kurzklick am Proxy (Abgleich erzwingen) und am Client (Stand lesen), Doppelklick am Proxy (Stand holen).</li>
   <li>Not-Aus (langer Druck) bringt alle auf Song 0.</li>
-  <li>Proxy aus- und wieder einschalten: Lampen merken das (rote Warn-LEDs in Song 0) und hören danach wieder zu.</li>
-  <li>Lampe mitten im Song einschalten → Kurzklick holt sie in den Takt.</li>
-  <li>OTA für alle: alle Geräte inkl. ESP-NOW-Lampen aktualisieren sich.</li>
+  <li>Proxy aus- und wieder einschalten: Clients zeigen in Song 0 die Warn-LEDs und hören danach wieder zu.</li>
+  <li>Gerät mitten im Song einschalten → Kurzklick holt es in den Takt.</li>
+  <li>OTA für alle: alle Geräte aktualisieren sich.</li>
   <li>Kein LED-Flackern auf irgendeinem Gerät, auch bei schnellen Effekten.</li>
+  <li>Ein ganzer Probeabend ohne Funkprobleme; Akkustand von Gitarre, Bass und Matrix danach notiert.</li>
 </ul>
 
 <!-- ================================================================== -->
 <h2 id="doku">12. Doku-Pflichten bei der Umsetzung</h2>
 <ul>
-  <li><code>README.md</code>: Geräte/Envs, Dateiliste in <code>src/</code>, Abschnitt zur MIDI/BLE-Steuerung.</li>
-  <li><code>CLAUDE.md</code>: Dateitabelle, Abschnitt „Hardware topology“ und Song/Part-State-Machine (BLE → Funk), Device Selection.</li>
-  <li><code>docs/OTA-Update.html</code>: Protokoll (ESP-NOW-Rahmen, <code>kind</code>), Geräte, Ablauf „OTA für alle“.</li>
+  <li><code>README.md</code>: Dateiliste in <code>src/</code>, Abschnitt zur MIDI/Funk-Steuerung (BLE → ESP-NOW).</li>
+  <li><code>CLAUDE.md</code>: Dateitabelle, Abschnitt „Hardware topology“ und Song/Part-State-Machine (BLE → ESP-NOW), Device Selection.</li>
+  <li><code>docs/OTA-Update.html</code>: Protokoll (ESP-NOW-Rahmen, <code>kind</code>), Ablauf „OTA für alle“, die Umstellung (Abschnitt 6a).</li>
   <li>Deutsche Inline-Kommentare in allen neuen und geänderten Dateien, Kopfkommentare von <code>ledSync.h</code>
     und <code>definitions.h</code>.</li>
   <li>Dieses Dokument: Arbeitsstand in Abschnitt 8 bei jedem Schritt.</li>
