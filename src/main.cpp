@@ -8,10 +8,10 @@
 // ACHTUNG: ALLE EINSTELLUNGEN NUR IN DEFINITIONS.H ÄNDERN (z.B. #define RINASBASS).
 //
 // Ablauf in Kurzform:
-//   setup()  läuft EINMAL nach dem Einschalten: LEDs, Matrix, Drehknopf, MIDI bzw. Bluetooth
+//   setup()  läuft EINMAL nach dem Einschalten: LEDs, Matrix, Drehknopf, MIDI bzw. Funk
 //            und den 2-ms-Timer starten, dann Song 0 (Pause) wählen.
 //   loop()   läuft danach endlos, so schnell es geht:
-//            1. Eingänge abfragen (Akku, Drehknopf, MIDI oder Bluetooth)
+//            1. Eingänge abfragen (Akku, Drehknopf, MIDI oder Funk)
 //            2. prüfen, ob der nächste Songteil ("Part") fällig ist
 //            3. nur wenn der Timer das Signal gibt: das Bild des aktuellen Songs berechnen
 //               und an die LEDs senden
@@ -19,8 +19,8 @@
 // Wichtige Begriffe:
 //   Song  = ein Lied der Setlist, gewählt über songID (0 = Pause).
 //   Part  = ein Abschnitt des Songs (Intro, Strophe, Refrain ...), gewählt über prog.
-//   Proxy = die Gitarre ANDRESGIT: sie empfängt MIDI und gibt Song/Part per Bluetooth (BLE)
-//           an alle anderen Geräte ("Clients") weiter.
+//   Proxy = die Gitarre ANDRESGIT: sie empfängt MIDI und gibt Song/Part per Funk (ESP-NOW, als
+//           Rückweg Bluetooth) an alle anderen Geräte ("Clients") weiter.
 //========================================================================================
 
 #include <Arduino.h>
@@ -51,8 +51,9 @@
 
 // Je nach Gerät wird genau EINE Art der Steuerung eingebunden:
 //   HAS_MIDI_IN   -> das Gerät bekommt Song/Part direkt per MIDI (Gitarre mit WIDI CORE)
-//   IS_MIDI_PROXY -> zusätzlich gibt es Song/Part per Bluetooth an die anderen weiter
-//   IS_BLE_CLIENT -> das Gerät bekommt Song/Part per Bluetooth vom Proxy
+//   IS_MIDI_PROXY  -> zusätzlich gibt es Song/Part per Funk an die anderen weiter (syncProxy.h)
+//   IS_SYNC_CLIENT -> das Gerät bekommt Song/Part per Funk vom Proxy (syncClient.h)
+// Welcher Funk (ESP-NOW oder Bluetooth) legt SYNC_VIA_... in definitions.h fest; main.cpp merkt davon nichts.
 #ifdef USE_ESP32
 	#include <WiFiType.h>		// to turn WIFI off
 	#include <WiFi.h>			// to turn WIFI off
@@ -62,15 +63,15 @@
 		#include "rotaryEncoder.h"
 	#endif
 
-	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER Sync-Client!
 		#include "midi_in.h"
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			#include "midiProxyBLEserver_nimBLE.h"
+			#include "syncProxy.h"
 		#endif
 
-	#elif defined (IS_BLE_CLIENT)
-		#include "BLE_client_nimBLE.h"
+	#elif defined (IS_SYNC_CLIENT)
+		#include "syncClient.h"
 	#endif
 #endif
 //=============================
@@ -183,8 +184,9 @@ void setup() {
 		// Mehrfaches Lesen + micros() XOR akkumuliert Entropie aus Timing-Jitter und Thermik.
 		{ uint32_t s = 0; for (int _i = 0; _i < 16; _i++) { s ^= esp_random(); s ^= (uint32_t)micros(); } randomSeed(s); }
 
-		// WLAN im normalen Betrieb aus (spart Strom, stört Bluetooth nicht). Nur das OTA-Update
-		// (otaUpdate.cpp) schaltet es vorübergehend ein.
+		// WLAN zunächst aus: einen sauberen Ausgangszustand herstellen. Mit dem Funkweg ESP-NOW schaltet
+		// espNowSync.cpp das WLAN-Radio danach selbst wieder ein (ohne Router); das OTA-Update (otaUpdate.cpp)
+		// verbindet sich in seinem eigenen Start mit dem Router.
 		//-- turn wifi off ---------- TODO: brauche ich das wirklich? -> includes raus!?
 		WiFi.disconnect(true);
 		WiFi.mode(WIFI_OFF);
@@ -261,19 +263,19 @@ void setup() {
 	#endif
 
 	//=== MIDI / PROXY / CLIENT initialisieren =====
-	#ifdef HAS_MIDI_IN					// entweder midi in ODER BLE Client!
+	#ifdef HAS_MIDI_IN					// entweder midi in ODER Sync-Client!
 		Serial.println("MIDI SETUP");
 		
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
 			Serial.println("MIDI PROXY SETUP");	
-			midiProxy_initialize_BLE();
-			if (otaForAllDevices) midiProxy_broadcastOTA();	// kehrt nicht zurück
+			syncProxy_initialize();		// Funk starten (ESP-NOW oder BLE, siehe syncTransport.h)
+			if (otaForAllDevices) syncProxy_broadcastOTA();	// kehrt nicht zurück
 		#endif
 
 		midi_initialize();
 
-	#elif defined (IS_BLE_CLIENT)
-		BLE_client_initialize();
+	#elif defined (IS_SYNC_CLIENT)
+		syncClient_initialize();		// Funk starten und auf den Proxy hören
 	#endif
 
 	//--- voltage lipo safer ----------
@@ -303,7 +305,7 @@ void setup() {
 						// 99 "startup" loop mit ein paar minuten BLACK, damit ich das intro in ruhe starten kann
 
 	//switchToPart(0); // only 4 testing!!!
-	// (Den Stand "Song 0, Part 0" für lesende Clients hinterlegt der Proxy schon in midiProxy_initialize_BLE().)
+	// (Den Stand "Song 0, Part 0" für lesende Clients hinterlegt der Proxy schon in syncProxy_initialize().)
 
 	Serial.println("ENDE SETUP");
 }
@@ -350,25 +352,25 @@ void loop() {
 		midi_loop();					// eingegangene MIDI-Daten auswerten
 
 		#ifdef IS_MIDI_PROXY			// midi in geht aber auch ohne midi proxy!
-			midiProxy_midiLoop();		// Wechsel per Bluetooth an die Clients weitergeben
+			syncProxy_loop();			// Funk bedienen, Wechsel und Abgleich-Wünsche an die Clients senden
 		#endif
 
-	#elif defined (IS_BLE_CLIENT)
-		BLE_client_Loop();				// Verbindung zum Proxy halten, empfangene Wechsel ausführen
+	#elif defined (IS_SYNC_CLIENT)
+		syncClient_loop();				// auf den Proxy hören, empfangene Wechsel ausführen
 	#endif
 
 	//--- Automatischer Part-Wechsel ---------------------------------------------------
 	// Der Timer hat gemeldet: die Länge des aktuellen Parts (nextChangeMillis) ist erreicht.
 	// Welcher Part folgt (nextSongPart), hat der Song zu Beginn des Parts festgelegt.
-	// WICHTIG: Diesen Wechsel macht jedes Gerät selbst nach seiner eigenen Uhr. Per Bluetooth wird im
+	// WICHTIG: Diesen Wechsel macht jedes Gerät selbst nach seiner eigenen Uhr. Per Funk wird im
 	// Normalfall nur der Song-Start übertragen; danach laufen alle Geräte allein durch dieselben Part-Längen.
 	if (flag_switchToNextSongPart) {
 		#ifdef IS_MIDI_PROXY
 			// Der Proxy hinterlegt seinen neuen Stand zum Abholen (ohne ihn aktiv zu senden) und sendet SYNC_ENTRY
 			// nur dann, wenn ein Client auf den zeitgenauen Einstieg wartet (Entscheidung in ledSync.cpp).
-			midiProxy_onPartChange(songID, nextSongPart);
-		#elif defined (IS_BLE_CLIENT)
-			informServerOnNextChange(nextSongPart);	// BT BLE Client: dem Proxy den Wechsel melden (nur wenn er vorher per SYNC_ASK gefragt hat)
+			syncProxy_onPartChange(songID, nextSongPart);
+		#elif defined (IS_SYNC_CLIENT)
+			syncClient_onPartChange(nextSongPart);	// Client: dem Proxy den Wechsel melden (nur wenn er vorher per SYNC_ASK gefragt hat)
 		#endif
 
 		// Der Wechsel wird hier erst einige ms nach der Part-Grenze bemerkt (ein Loop-Durchlauf mit FastLED.show()).
@@ -395,7 +397,7 @@ void loop() {
 		if (encoderButtonLongPress) {
 			// not-aus: proxy + alle clients zurück auf songPause!
 			switchToSong(0);			// every type switch to song 0
-			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync! (gesendet beim nächsten midiProxy_midiLoop())
+			#if defined(IS_MIDI_PROXY)	// if proxy -> force LED Sync! (gesendet beim nächsten syncProxy_loop())
 				ledSyncProxyRequestForce();
 			#endif
 			encoderButtonLongPress = false;

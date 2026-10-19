@@ -37,7 +37,7 @@
  * Features (werden vom Gerät gesetzt, nicht von Hand):
  *   HAS_MIDI_IN            MIDI-Eingang vorhanden (Funk-MIDI-Modul WIDI CORE)
  *   IS_MIDI_PROXY          gibt Song/Part per Bluetooth an die Clients weiter
- *   IS_BLE_CLIENT          bekommt Song/Part per Bluetooth vom Proxy
+ *   IS_SYNC_CLIENT         bekommt Song/Part per Funk vom Proxy (Funkweg: SYNC_VIA_ESPNOW / SYNC_VIA_BLE, siehe unten)
  *   HAS_ROTARY_ENCODER     Drehknopf zur Song-Wahl vorhanden
  *   HAS_LIPOVOLTAGE_CHECK  Akkuspannung wird überwacht
  *   NOMARKER               Gerät hat keine Bund-Marker (Lampen, Matrix)
@@ -62,7 +62,7 @@
 #endif
 //
 //--- FEATURES => in den GERÄTEN UNTEN SETZEN!! -----------
-//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+//#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist IS_SYNC_CLIENT ausgeschlossen!////
 //	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 //#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 //#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
@@ -75,11 +75,11 @@
 
 //------ GERÄTE -------------
 // Je Gerät: welche Features es hat. Diese Blöcke sind der Grund, warum man oben nur das Gerät wählen muss.
-#ifdef RINASBASS	// is BT BLE Client
+#ifdef RINASBASS	// Client
 	#define BASS				// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass	
 	#define BASSMARKER			// definiert die spezifischen LED-indizes für BASS bzw. GIT
 	#define firstYulcPrototype 	// first one has different pins
-	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy (geht nur, wenn HAS_MIDI_IN FALSE)
+	#define IS_SYNC_CLIENT		// bekommt Song/Part per Funk vom Proxy (geht nur, wenn HAS_MIDI_IN FALSE)
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist, SONST LEUCHTEN NUR DIE MARKER!!
 	#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
 #endif
@@ -87,7 +87,7 @@
 #ifdef ANDRESGIT
 	#define GIT					// BASS - GIT -> dient der Umschaltung zwischen den spezifischen LED-Markern für git vs. Bass
 	#define GITMARKER_GIT1 		// definiert die spezifischen LED-indizes für BASS bzw. GIT
-	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist der BLE-Client ausgeschlossen!////
+	#define HAS_MIDI_IN			// akivieren, wenn ein WIDI CORE angeschlossen ist //wenn HAS_MIDI_IN aktiv ist, dann ist IS_SYNC_CLIENT ausgeschlossen!////
 	#define IS_MIDI_PROXY		// IS_MIDI_PROXY funktioniert nur i.V.m. HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // auskommentieren, um lipo check abzuschalten // TODO: sollte aktiv sein!!
@@ -95,17 +95,17 @@
 
 #ifdef LAMPE1
 	#define NOMARKER 
-	#define IS_BLE_CLIENT
+	#define IS_SYNC_CLIENT
 #endif
 
 #ifdef LAMPE2
 	#define NOMARKER 
-	#define IS_BLE_CLIENT
+	#define IS_SYNC_CLIENT
 #endif
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf
 	#define NOMARKER			// no LED markers on gitboard
-	#define IS_BLE_CLIENT		// gets midi data from BT BLE Proxy
+	#define IS_SYNC_CLIENT		// bekommt Song/Part per Funk vom Proxy
 	//#define HAS_MIDI_IN
 	#define HAS_ROTARY_ENCODER	// aktivieren, wenn ein Rotary Encoder angeschlossen ist
 	//#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
@@ -116,6 +116,20 @@
 	#define HAS_MIDI_IN		// with widi master
 	#define HAS_LIPOVOLTAGE_CHECK // ist aber der alte check -> TODO: unterschied teensy vs. ESP32 checken
 	//#define HAS_ROTARY_ENCODER
+#endif
+//---------------------------------------------------------------------------------------
+
+//==== Funkweg für den LED-Sync =========================================================
+// Über welchen Funk Proxy und Clients Song und Part austauschen - für ALLE Geräte gleich, denn alle müssen
+// dieselbe "Sprache" sprechen (Überblick: syncTransport.h, docs/ESP-NOW-Plan.html):
+//   SYNC_VIA_BLE     Bluetooth (BLE), eine Verbindung je Client (midiProxyBLEserver_nimBLE.cpp, BLE_client_nimBLE.cpp)
+//   SYNC_VIA_ESPNOW  ESP-NOW-Broadcast ohne Verbindung (espNowSync.cpp)
+// Gewählt wird hier; per Build-Flag (-D SYNC_VIA_...) lässt sich das für einen Test-Build überschreiben.
+#if !defined(SYNC_VIA_BLE) && !defined(SYNC_VIA_ESPNOW)
+	#define SYNC_VIA_BLE
+#endif
+#if defined(SYNC_VIA_BLE) && defined(SYNC_VIA_ESPNOW)
+	#error "Nur EIN Funkweg: SYNC_VIA_BLE oder SYNC_VIA_ESPNOW"
 #endif
 //---------------------------------------------------------------------------------------
 

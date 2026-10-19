@@ -23,9 +23,9 @@
     MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 #endif
 
-// Weitersenden an die Bluetooth-Clients (nur der Proxy): ein per MIDI empfangener Wechsel wird dem
+// Weitersenden an die Clients (nur der Proxy): ein per MIDI empfangener Wechsel wird dem
 // Abgleich-Modul gemeldet (ledSyncProxyMidiSong / ledSyncProxyMidiPart, ledSync.h). Gesendet wird noch nichts:
-// midiProxy_midiLoop() (midiProxyBLEserver_nimBLE.cpp) holt den Wechsel beim nächsten loop()-Durchlauf ab und
+// syncProxy_loop() (syncProxy.cpp) holt den Wechsel beim nächsten loop()-Durchlauf ab und
 // schickt ihn als SYNC_SONG bzw. SYNC_PART an alle Clients.
 
 // MidiDatenAuswerten is the function that will be called by the Midi Library

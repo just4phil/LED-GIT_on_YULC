@@ -83,7 +83,7 @@ void on_button_short_click() {
 		#if defined(debug_ble_proxy)
 			Serial.println("midi proxy wants to force LED sync on clients");
 		#endif
-	#elif defined (IS_BLE_CLIENT)
+	#elif defined (IS_SYNC_CLIENT)
 		ledSyncClientRequestRead();		// short click bei clients -> Stand beim Proxy lesen (ledSync.h)
 		#if defined(debug_ble_client)
 			Serial.println("midi client needs LED sync from proxy");
@@ -100,7 +100,7 @@ void on_button_double_click() {
 		#if defined(debug_ble_proxy)
 			Serial.println("midi proxy needs LED sync from clients");
 		#endif
-	#elif defined (IS_BLE_CLIENT)
+	#elif defined (IS_SYNC_CLIENT)
 									// double click beim client -> BISHER UNGENUTZT!
 	#endif
 } 

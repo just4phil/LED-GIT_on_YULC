@@ -4,8 +4,8 @@
 // ledSync.cpp - LED-Sync: Entscheidungen des Abgleich-Protokolls (Überblick: ledSync.h)
 //=====================================================================
 // Hier steht nur Logik: welche Nachricht auf welches Ereignis folgt und was ein Gerät dann tun soll.
-// Es gibt kein Arduino, kein Bluetooth und kein FastLED in dieser Datei - die Adapter
-// (midiProxyBLEserver_nimBLE.cpp, BLE_client_nimBLE.cpp) führen die Ergebnisse aus.
+// Es gibt kein Arduino, keinen Funk und kein FastLED in dieser Datei - syncProxy.cpp / syncClient.cpp führen
+// die Ergebnisse aus und schicken die Bytes über den Funkweg (syncTransport.h: ESP-NOW oder BLE).
 //
 // Jede Funktion folgt demselben Muster:
 //   1. leeren Auftragszettel anlegen (noAction())
@@ -29,8 +29,8 @@
 
 // "static" vor einer Variablen = sie gilt nur in dieser Datei, von außen nicht erreichbar. So kann keine
 // andere Datei die Merker heimlich verändern - der einzige Weg führt über die Funktionen unten.
-// "volatile" = der Wert kann sich außerhalb von loop() ändern (hier: im Bluetooth-Callback onRead(), der in
-// einem eigenen Task der NimBLE-Bibliothek läuft); der Compiler muss ihn deshalb jedes Mal frisch aus dem
+// "volatile" = der Wert kann sich außerhalb von loop() ändern (beim BLE-Rückweg: im Bluetooth-Callback onRead(), der
+// in einem eigenen Task der NimBLE-Bibliothek läuft); der Compiler muss ihn deshalb jedes Mal frisch aus dem
 // Speicher lesen und darf ihn nicht in einem Register zwischenspeichern.
 
 //--- Merker der Proxy-Seite ---
@@ -110,9 +110,9 @@ void ledSyncProxyMidiPart(uint8_t part) {
 void ledSyncProxyRequestForce() { proxyForceRequested = true; }		// Kurzklick, Not-Aus
 void ledSyncProxyRequestAsk()   { proxyAskRequested = true; }		// Doppelklick
 
-// Läuft bei jedem loop()-Durchlauf des Proxys (über midiProxy_midiLoop()). Arbeitet alle vorgemerkten Wünsche
+// Läuft bei jedem loop()-Durchlauf des Proxys (über syncProxy_loop()). Arbeitet alle vorgemerkten Wünsche
 // ab und löscht ihre Merker, damit jeder Wunsch genau einmal gesendet wird.
-// Reihenfolge wie früher in midiProxy_midiLoop(): erst der MIDI-Wechsel, dann die Abfrage, dann der Abgleich.
+// Reihenfolge wie von Anfang an: erst der MIDI-Wechsel, dann die Abfrage, dann der Abgleich.
 // Alle drei werden mit notify = true eingetragen, gehen also sofort an alle Clients.
 LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog) {
     LedSyncAction a = noAction();
@@ -125,7 +125,7 @@ LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog) {
     }
 
     // Doppelklick: "wie ist dein Stand?" an alle. Song und Part sind hier egal (0). Die Antwort eines Clients
-    // (SYNC_REPLY) kommt später über onWrite() -> ledSyncProxyClientWrote() zurück.
+    // (SYNC_REPLY) kommt später über syncProxy_clientWrote() -> ledSyncProxyClientWrote() zurück.
     if (proxyAskRequested) {
         proxyAskRequested = false;
         addSend(a, ledSyncMessage(SYNC_ASK, 0, 0), true);
@@ -142,14 +142,14 @@ LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog) {
     return a;
 }
 
-// Aufgerufen aus dem Bluetooth-Callback onRead(), wenn ein Client den hinterlegten Stand gelesen hat
+// Aufgerufen über syncProxy_clientRead(), wenn ein Client den hinterlegten Stand gelesen hat
 // (Kurzklick am Client). Der Client kennt jetzt Song + Part, aber nicht, wie weit der Part schon ist ->
 // beim nächsten Part-Wechsel SYNC_ENTRY an alle senden. Deshalb ist proxyEntryOnNextChange "volatile".
 void ledSyncProxyClientRead() {
     proxyEntryOnNextChange = true;
 }
 
-// Aufgerufen aus dem Bluetooth-Callback onWrite(), wenn ein Client an den Proxy geschrieben hat. Das passiert
+// Aufgerufen über syncProxy_clientWrote(), wenn ein Client dem Proxy etwas geschickt hat. Das passiert
 // nur nach einem Doppelklick am Proxy: erst mit SYNC_REPLY (sein Stand), dann noch einmal mit SYNC_ENTRY
 // (beim nächsten Part-Wechsel des Clients). In beiden Fällen springt der Proxy in Song + Part des Clients;
 // beim zweiten Mal beginnt der Part damit genau zeitgleich mit dem Client.
@@ -164,7 +164,7 @@ LedSyncAction ledSyncProxyClientWrote(const uint8_t* buf, size_t len) {
     return a;
 }
 
-// Aufgerufen bei JEDEM automatischen Part-Wechsel des Proxys (loop() -> midiProxy_onPartChange()).
+// Aufgerufen bei JEDEM automatischen Part-Wechsel des Proxys (loop() -> syncProxy_onPartChange()).
 // Zwei Einträge sind möglich:
 //   1. immer: den neuen Stand nur hinterlegen (notify = false). Ein Client, der später per Kurzklick liest,
 //      bekommt so den aktuellen Song + Part. Es geht dabei nichts über Funk.
@@ -185,7 +185,7 @@ LedSyncAction ledSyncProxyPartChange(uint8_t songID, uint8_t nextPart) {
 // Client-Seite
 //====================================================================
 
-// Aufgerufen aus BLE_client_Loop(), wenn eine Nachricht des Proxys angekommen ist. Je nach Typ entsteht ein
+// Aufgerufen über syncClient_received(), wenn eine Nachricht des Proxys angekommen ist. Je nach Typ entsteht ein
 // anderer Auftragszettel. songID / prog ist der eigene Stand des Clients.
 LedSyncAction ledSyncClientReceived(const BLEmessage& msg, uint8_t songID, uint8_t prog) {
     LedSyncAction a = noAction();
@@ -241,12 +241,12 @@ LedSyncAction ledSyncClientReceived(const BLEmessage& msg, uint8_t songID, uint8
     return a;
 }
 
-// Aufgerufen vom Drehknopf (Kurzklick am Client, rotaryEncoder.cpp). Nur vormerken: das Lesen über Bluetooth
+// Aufgerufen vom Drehknopf (Kurzklick am Client, rotaryEncoder.cpp). Nur vormerken: das Lesen über Funk
 // dauert einen Moment und gehört deshalb in loop(), nicht in die Knopf-Auswertung.
 void ledSyncClientRequestRead() { clientReadRequested = true; }
 
-// Läuft bei jedem loop()-Durchlauf des Clients (aus BLE_client_Loop()). War ein Lesen gewünscht, steht auf
-// dem Zettel readProxy = true; der Adapter liest dann den Stand beim Proxy (readStateFromProxy()).
+// Läuft bei jedem loop()-Durchlauf des Clients (aus syncClient_loop()). War ein Lesen gewünscht, steht auf
+// dem Zettel readProxy = true; syncClient fordert dann den Stand beim Proxy an (clientTransport_requestRead()).
 LedSyncAction ledSyncClientLoop() {
     LedSyncAction a = noAction();
     if (clientReadRequested) {
@@ -257,7 +257,7 @@ LedSyncAction ledSyncClientLoop() {
 }
 
 // Aufgerufen vom Adapter mit den Bytes, die er beim Proxy gelesen hat. Der Client springt in Song + Part des
-// Proxys und wartet auf den Einstieg: der Proxy hat das Lesen bemerkt (onRead -> ledSyncProxyClientRead())
+// Proxys und wartet auf den Einstieg: der Proxy hat das Lesen bemerkt (syncProxy_clientRead() -> ledSyncProxyClientRead())
 // und sendet beim nächsten Part-Wechsel SYNC_ENTRY. Anders als bei SYNC_FORCE wird hier NICHT dunkel
 // geschaltet.
 LedSyncAction ledSyncClientReadResult(const uint8_t* buf, size_t len) {
@@ -272,7 +272,7 @@ LedSyncAction ledSyncClientReadResult(const uint8_t* buf, size_t len) {
     return a;
 }
 
-// Aufgerufen bei JEDEM automatischen Part-Wechsel des Clients (loop() -> informServerOnNextChange()). Tut nur
+// Aufgerufen bei JEDEM automatischen Part-Wechsel des Clients (loop() -> syncClient_onPartChange()). Tut nur
 // etwas, wenn der Proxy vorher per SYNC_ASK gefragt hat: dann "jetzt beginnt Part n" (SYNC_ENTRY) an den Proxy
 // schreiben, damit er genau zeitgleich einsteigt. Das passiert nur einmal je Frage.
 LedSyncAction ledSyncClientPartChange(uint8_t songID, uint8_t nextPart) {

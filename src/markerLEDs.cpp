@@ -3,8 +3,8 @@
 #include "guitarShapeFX.h"
 #include "songs_generated.h"	// setGeneratedMarkerLEDs()
 #include <FastLED_NeoMatrix.h>			// matrix->XY() für die Warn-LEDs der Matrix
-#include "BLE_client_nimBLE.h"			// BLE_client_isConnected()      (Warn-LEDs, Clients)
-#include "midiProxyBLEserver_nimBLE.h"	// midiProxy_connectedClients()  (Warn-LEDs, Proxy)
+#include "syncClient.h"		// syncClient_isLinked()        (Warn-LEDs, Clients)
+#include "syncProxy.h"		// syncProxy_connectedClients() (Warn-LEDs, Proxy)
 //-----------------------
 
 extern byte songID;					// aktueller Song (0 = Songpause)
@@ -481,15 +481,16 @@ static uint8_t markerValue(uint8_t level, uint8_t brightness, uint8_t correction
 	return value > 255 ? 255 : (uint8_t)value;
 }
 
-// Fehlt die Bluetooth-Verbindung? Je nach Rolle des Geräts heißt das etwas anderes:
-//   Client (Bass, Lampen, Matrix): der Proxy (die Gitarre) ist nicht verbunden
-//   Proxy (Gitarre):               es hängt noch kein einziger Client an ihm
-//   Gerät ohne Bluetooth:          nie
-static bool bleLinkMissing() {
-	#if defined(USE_ESP32) && defined(IS_BLE_CLIENT)
-		return !BLE_client_isConnected();
+// Fehlt die Funkverbindung des LED-Syncs? Je nach Rolle des Geräts heißt das etwas anderes:
+//   Client (Bass, Lampen, Matrix): der Proxy (die Gitarre) ist nicht zu hören
+//   Proxy (Gitarre):               es ist noch kein einziger Client da
+//   Gerät ohne Funk:               nie
+// Ob das per ESP-NOW oder Bluetooth läuft, beantworten syncClient/syncProxy (syncTransport.h).
+static bool syncLinkMissing() {
+	#if defined(USE_ESP32) && defined(IS_SYNC_CLIENT)
+		return !syncClient_isLinked();
 	#elif defined(USE_ESP32) && defined(IS_MIDI_PROXY)
-		return midiProxy_connectedClients() == 0;
+		return syncProxy_connectedClients() == 0;
 	#else
 		return false;
 	#endif
@@ -502,7 +503,7 @@ static bool bleLinkMissing() {
 // Die Helligkeit folgt dem Drehknopf wie das übrige Bild (bei "LEDs aus" bleibt auf Gitarre/Bass ein schwacher Rest,
 // weil die Gesamthelligkeit dort für die Marker nie unter MARKER_MIN_BRIGHTNESS fällt).
 static void drawBleWarnLEDs() {
-	if (songID != 0 || !bleLinkMissing()) return;
+	if (songID != 0 || !syncLinkMissing()) return;
 
 	// Dreieck über die Zeit: 0 -> 255 -> 0 in 2 x BLE_WARN_FADE_MS. "%" ist der Rest beim Teilen: phase läuft
 	// immer wieder von 0 bis kurz vor 2 x BLE_WARN_FADE_MS.

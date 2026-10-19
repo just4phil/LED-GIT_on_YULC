@@ -202,7 +202,7 @@ extern volatile byte prog;							// the actual song-part
 // im Code springt nichts von selbst zu Song 99.
 // - Dispatch vorhanden: src/main.cpp:580 hat case 99: STARTUP();, die Funktion steht in src/songs.cpp:203.
 // - Kein interner Aufruf: Nirgends steht switchToSong(99) oder songID = 99. Beim Booten geht es in src/main.cpp:304 zu Song 0 (bzw. 90/91/92 bei den Demo-Defines); die 99 in Zeile 307 ist nur ein alter Kommentar.
-// - Einziger Weg hinein: von außen per MIDI CC 22 mit Wert 99 auf Kanal 10 (src/midi_in.cpp:53), was der Proxy per BLE an die Clients weitergibt (src/BLE_client_nimBLE.cpp:415). Ob dein MIDI-Setup diesen Wert tatsächlich sendet, lässt sich aus dem Repo nicht ablesen.
+// - Einziger Weg hinein: von außen per MIDI CC 22 mit Wert 99 auf Kanal 10 (src/midi_in.cpp:53), was der Proxy per Funk an die Clients weitergibt (syncClient_received() in src/syncClient.cpp). Ob dein MIDI-Setup diesen Wert tatsächlich sendet, lässt sich aus dem Repo nicht ablesen.
 // STARTUP() selbst springt am Ende zu Song 100 (src/songs.cpp:213), und auch defaultLoop() (Song 100) wird nur über diesen Weg oder per MIDI erreicht.
 // Wenn du Song 99 nicht per MIDI startest, ist er also toter Code – dazu passt der Eintrag in src/todo.txt:5 (Test-Aufruf progSternNeu vor dem switch).
 
