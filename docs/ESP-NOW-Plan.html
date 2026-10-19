@@ -619,7 +619,9 @@ Aufgabe steht jeweils im Issue):</p>
       Gitarre auf Serial prüfen, dann Probe (#16).<br>
       <b>Stand 19.10.2026 abends:</b> Umstellung per „OTA für alle“ erledigt. Der Bass war dabei aus und wurde per USB
       nachgeflasht (wie in 6a vorgesehen). Alle 5 Geräte folgen per ESP-NOW, Warn-LEDs aus, Knopf getestet; damit ist
-      auch <code>ESPNOW_PROXY_MAC</code> bestätigt. Offen: vollständige Probe (#16).</div>
+      auch <code>ESPNOW_PROXY_MAC</code> bestätigt. Offen: vollständige Probe (#16).<br>
+      Branch <code>espnow</code> am 19.10.2026 in <code>MAIN</code> gemergt (fast-forward), nachdem beide Funkwege gebaut
+      wurden (ESP-NOW alle 5 Envs + 23 Tests, BLE-Rückweg Gitarre + Bass). BLE bleibt als Rückweg bis #17.</div>
     <p>Paket-Modul + native Tests, ESP-NOW-Adapter für Proxy und Client, Broadcast mit 3 Kopien, ESP-NOW als Standard,
       BLE nur noch per Flag. OTA-Befehl per ESP-NOW (vorerst mit fester Wartezeit). Umstellung aller Geräte wie in
       Abschnitt 6a.</p>
