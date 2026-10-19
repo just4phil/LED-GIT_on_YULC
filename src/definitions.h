@@ -124,13 +124,26 @@
 // dieselbe "Sprache" sprechen (Überblick: syncTransport.h, docs/ESP-NOW-Plan.html):
 //   SYNC_VIA_BLE     Bluetooth (BLE), eine Verbindung je Client (midiProxyBLEserver_nimBLE.cpp, BLE_client_nimBLE.cpp)
 //   SYNC_VIA_ESPNOW  ESP-NOW-Broadcast ohne Verbindung (espNowSync.cpp)
-// Gewählt wird hier; per Build-Flag (-D SYNC_VIA_...) lässt sich das für einen Test-Build überschreiben.
+// Standard ist ESP-NOW (Entscheidung 19.10.2026 nach der Messung in Issue #8: alle Geräte starten genauer
+// gleichzeitig). BLE bleibt als Rückweg: mit dem Build-Flag -D SYNC_VIA_BLE entsteht die alte Bluetooth-Fassung
+// (wird nach den ersten Auftritten mit ESP-NOW entfernt, Issue #17).
 #if !defined(SYNC_VIA_BLE) && !defined(SYNC_VIA_ESPNOW)
-	#define SYNC_VIA_BLE
+	#define SYNC_VIA_ESPNOW
 #endif
 #if defined(SYNC_VIA_BLE) && defined(SYNC_VIA_ESPNOW)
 	#error "Nur EIN Funkweg: SYNC_VIA_BLE oder SYNC_VIA_ESPNOW"
 #endif
+
+// Einstellungen für ESP-NOW (espNowSync.cpp). Kanal und Wiederholungen müssen auf ALLEN Geräten gleich sein.
+#define ESPNOW_CHANNEL			1		// WLAN-Kanal 1..13; bei viel fremdem WLAN am Auftrittsort z.B. 6 oder 11
+#define ESPNOW_REPEAT_COUNT		3		// jede Nachricht an alle geht so oft hinaus (Original + 2 Kopien);
+										// gemessen durch eine Wand: ohne Kopien ~5 % Verlust, mit 3 fast keiner
+#define ESPNOW_REPEAT_MS		3		// Abstand der Kopien in ms
+#define ESPNOW_HELLO_MS			1000	// so oft sendet der Proxy sein Lebenszeichen
+#define ESPNOW_LINK_TIMEOUT_MS	3000	// so lange ohne Paket der Gegenseite gilt die Verbindung als weg (Warn-LEDs)
+#define ESPNOW_EXPECTED_CLIENTS	4		// so viele Clients gibt es (Bass, Lampe 1, Lampe 2, Matrix) - OTA-Warten am Proxy
+#define ESPNOW_REPLY_STAGGER_MS	2		// Antworten an den Proxy je Gerät so viel ms x Nummer des Geräte-Bits versetzt
+#define ESPNOW_READ_TIMEOUT_MS	200		// Leseanfrage (Kurzklick am Client) ohne Antwort: nach so vielen ms einmal wiederholen
 //---------------------------------------------------------------------------------------
 
 //==== Geräte-Identität für Szenen (scenes.cpp) =========================================

@@ -9,7 +9,8 @@
  *
  * Ablauf:
  * - Andres schaltet die Gitarre (Proxy) mit gedrücktem Rotary-Knopf ein
- *   -> otaBootButtonHeld() == true -> Proxy schickt BLE SYNC_OTA (msgType 7, ledSync.h) an alle Clients
+ *   -> otaBootButtonHeld() == true -> syncProxy_broadcastOTA() wartet auf die Clients und schickt
+ *      SYNC_OTA (msgType 7, ledSync.h) per Funk (ESP-NOW, als Rückweg BLE) an alle
  * - jedes Gerät: otaRequestAndRestart() setzt ein NVS-Flag und startet neu
  * - im setup(): otaIsRequested() liest + löscht das Flag -> otaRun()
  * - otaRun(): WLAN, http://OTA_SERVER:OTA_PORT/<DEVICE_NAME>/version.json lesen,
