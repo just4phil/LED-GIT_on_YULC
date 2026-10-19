@@ -20,6 +20,7 @@ neuer fx:
 
 TODOs
 =======
+
 - TITMH -> sieht sehr anders aus
 
 - billie jean noch mal checken
@@ -37,6 +38,7 @@ SAS
 
 DONE
 =====
+- APT
 - ATTSS ist cool
 - abcdefu auch mit neuen verses cool -> FUCK YOU etc wäre evtl. cooler in rot und drumherum schwarz ausgestanzt
 - TOM auch mit neuen verses cool

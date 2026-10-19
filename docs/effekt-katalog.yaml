@@ -331,7 +331,7 @@ effekte:
     traegt_takte: "8-16"
     alt: {parts: 0, takte: 0}
     urteil: gern
-    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet). Seit 20.10.2026 mit Kontrast (Wunsch des Users): helle Wolken, fast dunkle Täler (plasmaLevel(), gilt auch für progPlasmaBeat) - vom User abgenommen: \"ja viel besser\""
 
   progStarfield:
     wirkung: "Sterne fliegen aus der Mitte auf den Betrachter zu und ziehen einen Schweif, der nach außen länger wird; jeder Stern in eigener Farbe (Schemafarben)"

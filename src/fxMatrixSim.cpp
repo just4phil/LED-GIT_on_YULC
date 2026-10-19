@@ -116,10 +116,29 @@ void progFire(unsigned int durationMillis, byte nextPart) {
 //=========== progPlasma ===========================================
 //==================================================================
 
+// Kontrast der Plasma-Effekte (Wunsch des Users 20.10.2026: "die helleren Bereiche müssen sich stärker von den
+// weniger hellen Teilen abgrenzen"). Früher leuchtete jeder Pixel gleich hell, nur die Farbe wechselte - das Bild
+// wirkte flach. Jetzt bestimmt die Summe der drei Sinuswellen auch die Helligkeit: wo alle drei gerade oben
+// stehen, ist es voll hell, wo sie unten stehen, fast dunkel. Der Mittelwert der drei Wellen liegt meist nahe der
+// Mitte (128) und erreicht 0 oder 255 selten, deshalb wird der Bereich PLASMA_LOW..PLASMA_HIGH auf 0..255
+// gestreckt (darunter dunkel, darüber voll) und danach quadriert: helle Wolken, dunkle Täler, scharfe Grenze.
+#define PLASMA_LOW		70		// Mittelwert der Wellen (0..255), ab dem es überhaupt hell wird
+#define PLASMA_HIGH		200		// ... und ab dem es voll hell ist
+#define PLASMA_FLOOR	12		// so hell bleiben die dunklen Täler mindestens (0..255), damit die Fläche nicht zerfällt
+
+// sum = Summe der drei sin8()-Werte (0..765) -> Helligkeit 0..255
+static uint8_t plasmaLevel(uint16_t sum) {
+	int v = sum / 3;									// Mittelwert der drei Wellen, 0..255
+	v = (v - PLASMA_LOW) * 255 / (PLASMA_HIGH - PLASMA_LOW);	// strecken
+	v = constrain(v, 0, 255);							// constrain(): auf 0..255 begrenzen
+	v = scale8(v, v);									// quadrieren (v * v / 256): die Mitte wird dunkler, die Spitze bleibt hell
+	return v < PLASMA_FLOOR ? PLASMA_FLOOR : v;
+}
+
 // "Plasma": fließende Regenbogen-Schlieren über die ganze Fläche. Für jeden Pixel werden drei Sinuswellen addiert
-// (eine entlang x, eine entlang y, eine schräg); die Summe ist der Farbton. Weil t mit jedem Schritt wächst,
-// verschieben sich die Wellen und das Muster fließt. sin8() ist die schnelle FastLED-Sinusfunktion mit
-// Ein- und Ausgabe 0..255.
+// (eine entlang x, eine entlang y, eine schräg); die Summe ist der Farbton (als uint8_t läuft sie über 255 einfach
+// wieder bei 0 los) und über plasmaLevel() auch die Helligkeit. Weil t mit jedem Schritt wächst, verschieben sich
+// die Wellen und das Muster fließt. sin8() ist die schnelle FastLED-Sinusfunktion mit Ein- und Ausgabe 0..255.
 void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed) {
 	static uint16_t t = 0;	// "Zeit" des Musters
 
@@ -131,10 +150,10 @@ void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceS
 	if (fxEvery(millisCounterTimer, reduceSpeed)) {
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			for (int x = 0; x < MATRIX_WIDTH; x++) {
-				uint8_t hue = sin8(x * 40 + t)
-				            + sin8(y * 40 + t)
-				            + sin8((x + y) * 20 + t / 2);
-				matrix->drawPixel(x, y, CHSV(hue, 255, 255));
+				uint16_t sum = sin8(x * 40 + t)
+				             + sin8(y * 40 + t)
+				             + sin8((x + y) * 20 + t / 2);
+				matrix->drawPixel(x, y, CHSV((uint8_t)sum, 255, plasmaLevel(sum)));
 			}
 		}
 		t += 3;
@@ -421,7 +440,8 @@ static CRGBPalette16 versePalette() {
 
 // Plasma-Wolken: drei Sinuswellen (waagerecht, senkrecht, schräg) werden addiert, die Summe ist die Stelle im
 // Farbverlauf. Die Wellen sind flacher als bei progPlasma (x * 20 statt 40): größere, ruhigere Wolken. t wächst mit
-// der Zeit (1 je 16 ms) und schiebt die Wellen weiter. Helligkeit: 150 zwischen den Beats, voll auf dem Beat.
+// der Zeit (1 je 16 ms) und schiebt die Wellen weiter. Helligkeit je Pixel aus plasmaLevel() (helle Wolken, dunkle
+// Täler, siehe progPlasma), darüber gesamt: 150 zwischen den Beats, voll auf dem Beat.
 void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 	fxPartStart(durationMillis, nextPart);
 
@@ -432,10 +452,10 @@ void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 		uint8_t val = beatSwell(ms, bpm, 150);
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
 			for (int x = 0; x < MATRIX_WIDTH; x++) {
-				uint8_t idx = sin8(x * 20 + t)
-				            + sin8(y * 32 + t)
-				            + sin8((x + y) * 12 + t / 2);
-				leds[matrix->XY(x, y)] = ColorFromPalette(pal, idx, val);
+				uint16_t sum = sin8(x * 20 + t)
+				             + sin8(y * 32 + t)
+				             + sin8((x + y) * 12 + t / 2);
+				leds[matrix->XY(x, y)] = ColorFromPalette(pal, (uint8_t)sum, scale8(val, plasmaLevel(sum)));
 			}
 		}
 	}

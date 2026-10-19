@@ -471,7 +471,7 @@ void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpe
 void progFire(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
 void progFire(unsigned int durationMillis, byte nextPart);
 
-// Plasma: überlagerte Sinuswellen erzeugen fließende Regenbogenmuster
+// Plasma: überlagerte Sinuswellen erzeugen fließende Regenbogenmuster; helle Wolken, dunkle Täler (plasmaLevel() in fxMatrixSim.cpp)
 void progPlasma(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 30);
 void progPlasma(unsigned int durationMillis, byte nextPart);
 
@@ -498,7 +498,7 @@ void progSineCos(unsigned int durationMillis, byte nextPart);
 //--- Strophen-Fassungen im Beat (neu am 18.10.2026, für SCENE_VERSE_... und SCENE_VERSE) ---
 // Anders als die Fassungen darüber: Farben aus dem Farbschema (ohne Schema wie bisher bunt), alles wird aus der Zeit
 // seit Part-Beginn gerechnet (läuft nicht davon), und die Helligkeit schwillt auf jedem Beat leicht an.
-// Plasma-Wolken in den Schemafarben, ruhiger als progPlasma
+// Plasma-Wolken in den Schemafarben, ruhiger als progPlasma, mit demselben Kontrast (helle Wolken, dunkle Täler)
 void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 // Sinus- und Kosinuslinie in den ersten beiden Schemafarben, wandern je Takt eine Wellenlänge weiter
 void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);

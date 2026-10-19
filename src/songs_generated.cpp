@@ -3085,12 +3085,14 @@ void gen_APT() {
 		progBlack(1611, 7);
 		break;
 
-	case 7:	// apt apt apt  8 T  12886ms  @0:44.497  -- Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2. Auf der Matrix steht dazu APT und pulsiert auf jeden Beat in den Schemafarben, die beiden Matrix-Hälften blitzen gedimmt darunter weiter.
+	case 7:	// apt apt apt  8 T  12886ms  @0:44.497  -- Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2, die beiden Matrix-Hälften blitzen im Wechsel. Von Takt 32,25 bis 33 steht AHA AHA auf der Matrix (schwarz umrandet).
 		setColorScheme(SCHEME_NEON);
 #if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(5235, 6443);
 		fxLayerUnder(38);
+		fxLayerOutline();
 		fxLayerBegin();
-		progText("APT", 12886, 8, 403);
+		progText("_*13 AHA_AHA*3 _*16", 12886, 8, 403);
 		fxLayerEnd(FX_OVER);
 #endif
 		scene(SCENE_CALL_RESPONSE, 12886, 8, 149);
@@ -3117,8 +3119,19 @@ void gen_APT() {
 		progStrobo(1610, 12, 100, 255, 255, 255);
 		break;
 
-	case 12:	// apt apt apt (2)  8 T  12886ms  @1:23.154  -- Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe.
+	case 12:	// apt apt apt (2)  8 T  12886ms  @1:23.154  -- Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe. Auf der Matrix blinkt dazu APT auf jeden Beat in wechselnden Neon-Farben, schwarz umrandet, der Strobo läuft gedimmt dahinter.
+		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(89);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("APT", 12886, 13, 403);
+		fxLayerEnd(FX_OVER);
+#endif
 		progStrobo(12886, 13, 400, getRandomCRGB());
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 13:	// hey ….  3 T+2 B  5638ms  @1:36.040  -- Build-up über den ganzen Part in Neon-Farben: Gitarre und Bass laden sich von unten bis zur Kopfplatte auf, die Lampen füllen sich von unten, auf der Matrix fliegen Sterne aus der Mitte. Auf den letzten 2 Beats steht ein starker Blinder voll hell (warmweiß, alle Geräte) und geht direkt in den Strobo über.
@@ -3149,10 +3162,22 @@ void gen_APT() {
 		progSternNeu(6443, 805, 19, 5, 26, 5, true, 3);
 		break;
 
-	case 19:	// apt apt apt (3)  16 T  25772ms  @2:21.141  -- Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus.
+	case 19:	// apt apt apt (3)  16 T  25772ms  @2:21.141  -- Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Auf der Matrix blinkt APT auf jeden Beat in wechselnden Neon-Farben (schwarz umrandet), auf Takt 96,25 und 104,25 steht jeweils AHA AHA bis zum vollen Takt. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus.
+		setColorScheme(SCHEME_NEON);
 		fxBlinder(25369, 805, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 403);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(89);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT _ AHA_AHA*3 APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT APT _ AHA_AHA*3", 25772, 20, 403);
+		fxLayerEnd(FX_OVER);
+#endif
 		progFastBlingBling(25772, 4, 20, 1, 15, 2500);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 20:	// BLACK (Ende)    10000ms  @2:46.913  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop

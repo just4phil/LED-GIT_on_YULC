@@ -47,8 +47,13 @@ sections:
   apt apt apt:
     scene: SCENE_CALL_RESPONSE
     scheme: SCHEME_NEON
-    text: {words: "APT", per: beat, over: true}
-    why: "Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2. Auf der Matrix steht dazu APT und pulsiert auf jeden Beat in den Schemafarben, die beiden Matrix-Hälften blitzen gedimmt darunter weiter."
+    # Wunsch 20.10.2026: kein APT-Text mehr, nur "AHA AHA" von Takt 32,25 bis 33 (Beat 13 bis 16).
+    # Wortfolge je Beat: 13 Beats leer, AHA AHA 3 Beats, 16 Beats leer = 32 Beats = der ganze Part.
+    # from/to begrenzen die Ebene auf das Fenster - sonst wäre die Szene auf der Matrix den ganzen Part gedimmt.
+    text: {words: "_*13 AHA_AHA*3 _*16", per: beat, over: true, outline: true, from: 13, to: 16}
+    cues:
+      32.25: "AHA AHA steht von hier bis Takt 33 auf der Matrix, schwarz umrandet, die Szene darunter gedimmt."
+    why: "Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2, die beiden Matrix-Hälften blitzen im Wechsel. Von Takt 32,25 bis 33 steht AHA AHA auf der Matrix (schwarz umrandet)."
 
   ist whatever:
     fx: "progStrobo(${dur}, ${next}, 200, 255, 255, 255)"
@@ -70,7 +75,11 @@ sections:
 
   apt apt apt (2):
     fx: "progStrobo(${dur}, ${next}, 400, getRandomCRGB())"
-    why: "Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe."
+    scheme: SCHEME_NEON    # nur für die Textfarbe: der Strobo würfelt seine Farben selbst
+    # Wunsch 20.10.2026: APT blinkt im Vierteltakt über den ganzen Part (8 Takte), wechselnde Farbe, schwarzer Rand.
+    # Ein Wort mit per: beat = an auf jedem Beat, im letzten Viertel des Beats aus; jeder Beat die nächste Schemafarbe.
+    text: {words: "APT", per: beat, over: true, outline: true, under: 35}
+    why: "Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe. Auf der Matrix blinkt dazu APT auf jeden Beat in wechselnden Neon-Farben, schwarz umrandet, der Strobo läuft gedimmt dahinter."
 
   hey ….:
     scene: SCENE_BUILDUP
@@ -102,4 +111,25 @@ sections:
   apt apt apt (3):
     fx: "progFastBlingBling(${dur}, 4, ${next}, 1, 15, 2500)"
     blinder: {at: 63, len: 2, hold: 1}
-    why: "Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus."
+    scheme: SCHEME_NEON    # nur für die Textfarbe
+    # Wunsch 20.10.2026: APT blinkt im Vierteltakt (Takt 89 und 97, je 7 Takte), dazwischen AHA AHA (96,25-97 und
+    # 104,25-105). Ein Part hat nur ein Text-Fenster, deshalb alles als eine Wortfolge je Beat:
+    # 28 x APT, 1 Beat leer, AHA AHA 3 Beats, 28 x APT, 1 Beat leer, AHA AHA 3 Beats = 64 Beats = der ganze Part.
+    # Der Blinder auf dem letzten Viertel liegt auf der Matrix von selbst UNTER dem Text (fxBlinderUnderText).
+    text:
+      over: true
+      outline: true
+      under: 35
+      per: beat
+      words: >-
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        _ AHA_AHA*3
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        _ AHA_AHA*3
+    cues:
+      96.25: "AHA AHA steht bis Takt 97 auf der Matrix, schwarz umrandet."
+      97: "APT blinkt wieder auf jeden Beat, 7 Takte lang, wechselnde Farben, schwarz umrandet."
+      104.25: "AHA AHA steht bis zum Part-Ende (Takt 105), der Schluss-Blinder leuchtet auf der Matrix dahinter."
+    why: "Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Auf der Matrix blinkt APT auf jeden Beat in wechselnden Neon-Farben (schwarz umrandet), auf Takt 96,25 und 104,25 steht jeweils AHA AHA bis zum vollen Takt. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus."

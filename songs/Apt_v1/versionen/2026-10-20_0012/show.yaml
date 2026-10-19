@@ -1,0 +1,135 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Wie bei Abcdefu: Parts ohne Änderungswunsch behalten den alten Effekt aus apt() (Spalte "bisher (alter Code)") -
+# sie stehen hier 1:1 als fx:. Der alte Code bleibt in src/songs.cpp.
+# Kein Farbschema auf Song-Ebene: die alten Effekte laufen dadurch wie bisher mit freien Zufallsfarben.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Nach den Änderungswünschen des Users gestaltet (06.10.2026):
+#   verse 1          = "szene -> geräte abwechselnd": SCENE_CALL_RESPONSE (Frage/Antwort: linke und rechte Bühnenhälfte
+#                      blitzen abwechselnd im Beat). Zuerst SCENE_PINGPONG - wirkte auf den User nicht im Takt
+#   chorus 1         = "bitte neue szene vorschlagen": SCENE_DROP in Sunset-Farben statt des Sterns
+#   STOP / STOP (2)  = "Blinder einbauen": Blinder auf den Stopp-Schlag (2 Beats)
+#   apt apt apt      = "geräte abwechselnd, was cooles": Frage/Antwort in Neon, auf der Matrix dazu "APT" im Beat
+#   hey ….           = "build up einbauen und am ende starker blinder": SCENE_BUILDUP, Blinder auf den letzten 2 Beats
+#   nur vocals       = "build up": SCENE_BUILDUP statt Schwarz
+#   apt apt apt (3)  = "blinder erst auf der letzten viertel, dann 5 sekunden ausfaden": Blinder auf Beat 63, steht
+#                      bis zum Part-Ende voll; end_blinder setzt ihn im Schluss-Black fort und lässt ihn 5 s ausklingen
+# Bund-Marker: der alte Code setzt in apt() keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 17) und gelten unverändert - deshalb hier kein markers:-Block.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+
+function: gen_APT
+end_blinder: 5    # der Blinder vom letzten Viertel klingt 5 Sekunden lang ins Schluss-Schwarz aus
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  bassdrum intro:
+    fx: "progRandomLines(${dur}, ${next}, ${half}, true)"
+    why: "Alter Effekt: alle 2 Beats eine neue zufällige Linie in Zufallsfarbe."
+
+  verse 1:
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_ROYAL
+    why: "Frage/Antwort im Takt: auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2; die Matrix blitzt auf jeden Schlag, abwechselnd mit ihrer linken und rechten Hälfte. Jeder Blitz klingt vor dem nächsten Schlag ganz ab. Farben Blau, Lila, Weiß, alle 2 Takte wechseln die Seiten die Farbe."
+
+  chorus 1:
+    scene: SCENE_DROP
+    scheme: SCHEME_SUNSET
+    why: "Vorschlag statt des Sterns: volle Energie im Beat in Orange, Pink, Lila, Gelb - Schockwellen laufen vom Steg über Gitarre und Bass, die Lampen blitzen auf jeden Beat in wechselnder Farbe, auf der Matrix schnelle Wasserringe aus der Mitte."
+
+  STOP:
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 2}
+    why: "1 Takt Stille. Auf den Stopp-Schlag springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats ins Schwarz ab."
+
+  apt apt apt:
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_NEON
+    # Wunsch 20.10.2026: kein APT-Text mehr, nur "AHA AHA" von Takt 32,25 bis 33 (Beat 13 bis 16).
+    # Wortfolge je Beat: 13 Beats leer, AHA AHA 3 Beats, 16 Beats leer = 32 Beats = der ganze Part.
+    # from/to begrenzen die Ebene auf das Fenster - sonst wäre die Szene auf der Matrix den ganzen Part gedimmt.
+    text: {words: "_*13 AHA_AHA*3 _*16", per: beat, over: true, outline: true, from: 13, to: 16}
+    cues:
+      32.25: "AHA AHA steht von hier bis Takt 33 auf der Matrix, schwarz umrandet, die Szene darunter gedimmt."
+    why: "Frage/Antwort wie in Verse 1, jetzt in Pink, Cyan, Violett: Schlag 1 und 3 Lampe 1 und Bass, Schlag 2 und 4 Gitarre und Lampe 2, die beiden Matrix-Hälften blitzen im Wechsel. Von Takt 32,25 bis 33 steht AHA AHA auf der Matrix (schwarz umrandet)."
+
+  ist whatever:
+    fx: "progStrobo(${dur}, ${next}, 200, 255, 255, 255)"
+    why: "Alter Effekt: weißer Strobo, 200 ms an / 200 ms aus."
+
+  verse 2:
+    scene: SCENE_VERSE
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
+
+  chorus 2:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
+
+  STOP (2):
+    fx: "progStrobo(${dur}, ${next}, 100, 255, 255, 255)"
+    blinder: {at: 0, len: 2}
+    why: "Alter Effekt: 1 Takt harter weißer Strobo (100 ms). Neu: auf den ersten Schlag springt ein Blinder auf (warmweiß, alle Geräte) und klingt über 2 Beats in den Strobo ab."
+
+  apt apt apt (2):
+    fx: "progStrobo(${dur}, ${next}, 400, getRandomCRGB())"
+    scheme: SCHEME_NEON    # nur für die Textfarbe: der Strobo würfelt seine Farben selbst
+    # Wunsch 20.10.2026: APT blinkt im Vierteltakt über den ganzen Part (8 Takte), wechselnde Farbe, schwarzer Rand.
+    # Ein Wort mit per: beat = an auf jedem Beat, im letzten Viertel des Beats aus; jeder Beat die nächste Schemafarbe.
+    text: {words: "APT", per: beat, over: true, outline: true, under: 35}
+    why: "Alter Effekt: farbiger Strobo, etwa ein Blitz pro Beat (400 ms), jedes Mal eine neue Zufallsfarbe. Auf der Matrix blinkt dazu APT auf jeden Beat in wechselnden Neon-Farben, schwarz umrandet, der Strobo läuft gedimmt dahinter."
+
+  hey ….:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    blinder: {at: 12, len: 2, hold: 1.5}
+    why: "Build-up über den ganzen Part in Neon-Farben: Gitarre und Bass laden sich von unten bis zur Kopfplatte auf, die Lampen füllen sich von unten, auf der Matrix fliegen Sterne aus der Mitte. Auf den letzten 2 Beats steht ein starker Blinder voll hell (warmweiß, alle Geräte) und geht direkt in den Strobo über."
+
+  get ya get ya:
+    fx: "progStrobo(${dur}, ${next}, 50, 255, 255, 255)"
+    why: "Alter Effekt: 2 Beats weißes Flimmern (50 ms) als Absprung."
+
+  hold on:
+    fx: "progFastBlingBling(${dur}, 4, ${next}, 1, 15, 2500)"
+    why: "Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden (alle 2,5 s eine LED mehr, bis 15)."
+
+  nur vocals:
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_SUNSET
+    why: "Build-up statt Schwarz, in Orange, Pink, Lila: Gitarre und Bass laden sich auf, die Lampen füllen sich, Sterne auf der Matrix - die Explosion fällt genau auf den Strobo-Einsatz."
+
+  strobo:
+    fx: "progStrobo(${dur}, ${next}, 50, 255, 255, 255)"
+    why: "Alter Effekt: 1 Takt weißes Flimmern (50 ms) vor dem letzten Chorus."
+
+  chorus 5:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats."
+
+  apt apt apt (3):
+    fx: "progFastBlingBling(${dur}, 4, ${next}, 1, 15, 2500)"
+    blinder: {at: 63, len: 2, hold: 1}
+    scheme: SCHEME_NEON    # nur für die Textfarbe
+    # Wunsch 20.10.2026: APT blinkt im Vierteltakt (Takt 89 und 97, je 7 Takte), dazwischen AHA AHA (96,25-97 und
+    # 104,25-105). Ein Part hat nur ein Text-Fenster, deshalb alles als eine Wortfolge je Beat:
+    # 28 x APT, 1 Beat leer, AHA AHA 3 Beats, 28 x APT, 1 Beat leer, AHA AHA 3 Beats = 64 Beats = der ganze Part.
+    # Der Blinder auf dem letzten Viertel liegt auf der Matrix von selbst UNTER dem Text (fxBlinderUnderText).
+    text:
+      over: true
+      outline: true
+      under: 35
+      per: beat
+      words: >-
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        _ AHA_AHA*3
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        APT APT APT APT APT APT APT APT APT APT APT APT APT APT
+        _ AHA_AHA*3
+    cues:
+      96.25: "AHA AHA steht bis Takt 97 auf der Matrix, schwarz umrandet."
+      97: "APT blinkt wieder auf jeden Beat, 7 Takte lang, wechselnde Farben, schwarz umrandet."
+      104.25: "AHA AHA steht bis zum Part-Ende (Takt 105), der Schluss-Blinder leuchtet auf der Matrix dahinter."
+    why: "Alter Effekt: schnelle Einzelblitze, die über den Part dichter werden. Auf der Matrix blinkt APT auf jeden Beat in wechselnden Neon-Farben (schwarz umrandet), auf Takt 96,25 und 104,25 steht jeweils AHA AHA bis zum vollen Takt. Erst auf dem letzten Viertel des Parts springt ein starker Blinder auf (warmweiß, alle Geräte), steht dieses Viertel voll hell und klingt danach 5 Sekunden lang ins Schluss-Schwarz aus."

@@ -1,0 +1,9 @@
+zeit: '2026-10-20 00:12:41'
+notiz: 'Text-Wünsche 20.10.2026: Part 1 nur AHA AHA (32,25-33), APT blinkt im Beat
+  in apt (2) und (3), AHA AHA 96,25/104,25, schwarzer Rand'
+werkzeug_git: 6f1243b + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: f23d1385e785c34bca3d2ddb44996a950e76431ddd8adfe8f5c2e060085798f1
+  show.yaml: 49214eca1974b2af32aee80afb9481c3463b42a0db1253b58a0e4fd809c24646
+  generated.cpp: bb81a14264c0df02444796d4266243e01deeabae16e62e0b73b388eda4fb0636
