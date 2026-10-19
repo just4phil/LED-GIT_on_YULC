@@ -75,7 +75,7 @@
       <a href="#ablauf"><b>6</b>Was intern passiert</a>
       <a href="#version"><b>7</b>Versionen &amp; Backups</a>
       <a href="#geraete"><b>8</b>Geräte &amp; Build-Envs</a>
-      <a href="#ble"><b>9</b>BLE-Protokoll</a>
+      <a href="#ble"><b>9</b>Funk-Protokoll</a>
       <a href="#flash"><b>10</b>Flash-Partitionen</a>
       <a href="#dateien"><b>11</b>Dateien</a>
       <a href="#konfig"><b>12</b>Konstanten &amp; Timeouts</a>
@@ -89,10 +89,11 @@
 <main class="wrap">
 
 <h2 id="ueberblick">1 · Überblick</h2>
-<p>Das Update ist ein <b>Pull-Modell</b>: Der PC stellt die fertigen Firmwares per HTTP bereit. Jedes Gerät holt sich seine eigene Datei selbst, aber nur wenn sie neuer ist als die installierte. Ausgelöst wird das Ganze von der Gitarre (MIDI-Proxy), die per BLE ohnehin mit allen anderen Geräten verbunden ist.</p>
+<p>Das Update ist ein <b>Pull-Modell</b>: Der PC stellt die fertigen Firmwares per HTTP bereit. Jedes Gerät holt sich seine eigene Datei selbst, aber nur wenn sie neuer ist als die installierte. Ausgelöst wird das Ganze von der Gitarre (MIDI-Proxy), die per Funk ohnehin mit allen anderen Geräten spricht: seit 19.10.2026 per <b>ESP-NOW</b> (Broadcast über das WLAN-Radio, ohne Router), als Rückweg per Build-Flag <code>SYNC_VIA_BLE</code> noch per Bluetooth (BLE). Plan und Messungen: <code>docs/ESP-NOW-Plan.html</code>.</p>
+<div class="warn"><b>Umstellung von BLE auf ESP-NOW (einmalig):</b> Den Update-Befehl gibt noch die <i>alte</i> Firmware. Also: ESP-NOW-Firmware bauen (<code>python tools/build_ota.py</code>), Server starten, Gitarre mit gedrücktem Knopf einschalten. Die Gitarre schickt den Befehl wie gewohnt per BLE an alle, alle laden die neue Firmware und sprechen danach ESP-NOW. Hat ein Gerät das Update verpasst, spricht es noch BLE und hört nichts mehr: per USB nachflashen (<code>pio run -e &lt;gerät&gt; -t upload --upload-port COMx</code>). Ab dann wird auch der Update-Befehl per ESP-NOW verschickt.</div>
 
 <div class="panel">
-<svg class="flow" viewBox="0 0 980 330" role="img" aria-label="Ablauf des OTA-Updates: PC baut und stellt bereit, Gitarre löst per BLE aus, alle Geräte laden per WLAN">
+<svg class="flow" viewBox="0 0 980 330" role="img" aria-label="Ablauf des OTA-Updates: PC baut und stellt bereit, Gitarre löst per Funk aus, alle Geräte laden per WLAN">
   <defs>
     <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#9aa7b4"/>
@@ -117,13 +118,13 @@
     <!-- Gitarre -->
     <rect x="520" y="20" width="200" height="110" rx="10" fill="#241d12" stroke="#ffb86b"/>
     <text x="620" y="44" text-anchor="middle" font-weight="700">Gitarre (andresgit)</text>
-    <text x="620" y="66" text-anchor="middle" fill="#9aa7b4" font-size="11">MIDI-Proxy / BLE-Server</text>
+    <text x="620" y="66" text-anchor="middle" fill="#9aa7b4" font-size="11">MIDI-Proxy / Sync-Sender</text>
     <text x="620" y="90" text-anchor="middle">Knopf beim Einschalten</text>
-    <text x="620" y="110" text-anchor="middle" fill="#ffb86b" font-size="11">→ BLE msgType 7 an alle</text>
+    <text x="620" y="110" text-anchor="middle" fill="#ffb86b" font-size="11">→ msgType 7 an alle (ESP-NOW)</text>
 
     <!-- Clients -->
     <rect x="520" y="200" width="450" height="110" rx="10" fill="#14211a" stroke="#7ee787"/>
-    <text x="745" y="224" text-anchor="middle" font-weight="700">BLE-Clients</text>
+    <text x="745" y="224" text-anchor="middle" font-weight="700">Sync-Clients</text>
     <rect x="535" y="240" width="100" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
     <text x="585" y="270" text-anchor="middle" font-size="12">rinasbass</text>
     <rect x="645" y="240" width="100" height="50" rx="6" fill="#171c23" stroke="#2b4a33"/>
@@ -135,7 +136,7 @@
 
     <!-- BLE Pfeil -->
     <line x1="660" y1="130" x2="660" y2="198" stroke="#ffb86b" stroke-dasharray="5 4" marker-end="url(#ar)"/>
-    <text x="670" y="170" fill="#ffb86b" font-size="11">① BLE: „in Update-Modus“</text>
+    <text x="670" y="170" fill="#ffb86b" font-size="11">① Funk: „in Update-Modus“</text>
 
     <!-- WLAN Pfeile -->
     <path d="M520,75 C480,75 470,85 452,85" stroke="#7ee787" fill="none" marker-end="url(#ar)"/>
@@ -147,7 +148,7 @@
 </svg>
 </div>
 
-<p>Wichtig für das Verständnis: <b>WLAN und BLE laufen nie gleichzeitig.</b> Ein Gerät, das updaten soll, merkt sich das in einem Flag im Flash (NVS) und startet neu. Im nächsten Start sieht <code>setup()</code> das Flag und geht direkt in den Update-Modus. BLE, Timer und Effekte werden dann gar nicht erst gestartet. Nach dem Update (oder einem Fehler) startet das Gerät wieder ganz normal.</p>
+<p>Wichtig für das Verständnis: <b>Das Update läuft in einem eigenen Start.</b> Ein Gerät, das updaten soll, merkt sich das in einem Flag im Flash (NVS) und startet neu. Im nächsten Start sieht <code>setup()</code> das Flag und geht direkt in den Update-Modus, der sich mit dem Router-WLAN verbindet. ESP-NOW (bzw. BLE), Timer und Effekte werden dann gar nicht erst gestartet - der feste ESP-NOW-Kanal kommt dem Router-WLAN also nicht in die Quere. Nach dem Update (oder einem Fehler) startet das Gerät wieder ganz normal.</p>
 
 <h2 id="kurz">2 · Kurzanleitung</h2>
 <div class="ok">
@@ -230,19 +231,19 @@ python tools/build_ota.py --serve-only       <span class="c"># nichts bauen, nur
 <ol>
   <li><code>setup()</code> initialisiert die LEDs, dann <code>otaIsRequested()</code> (normalerweise false).</li>
   <li><code>otaBootButtonHeld()</code> prüft <code>ROTARY_ENCODER_BUTTON_PIN</code> (GPIO 4, Pull-up, gedrückt = LOW): Bleibt der Knopf 1 s gedrückt → <code>true</code>. Ist er gar nicht gedrückt, kostet das nur ca. 5 ms Startzeit.</li>
-  <li><code>midiProxy_initialize_BLE()</code> startet den BLE-Server wie immer, direkt danach <code>midiProxy_broadcastOTA()</code>:
+  <li><code>syncProxy_initialize()</code> startet den Funk wie immer, direkt danach <code>syncProxy_broadcastOTA()</code> (<code>syncProxy.cpp</code>):
     <ul>
-      <li>wartet, bis <code>subscribedClients</code> ≥ Anzahl erlaubter Clients (4), max. 20 s (<code>OTA_CLIENT_WAIT_MS</code>). Gezählt wird im <code>onSubscribe</code>-Callback: Erst wer Notifications abonniert hat, empfängt den Befehl sicher.</li>
+      <li>wartet, bis alle erwarteten Clients bereit sind, max. 20 s (<code>OTA_CLIENT_WAIT_MS</code>). <b>ESP-NOW:</b> bereit ist, wer in den letzten 3 s auf das Lebenszeichen (<code>KIND_HELLO</code>, jede Sekunde) mit <code>KIND_HELLO_ACK</code> geantwortet hat; erwartet werden <code>ESPNOW_EXPECTED_CLIENTS</code> (4). <b>BLE-Rückweg:</b> wer Notifications abonniert hat (<code>onSubscribe</code>), erwartet die Länge von <code>client_addresses[]</code>. Während des Wartens wird der Funk weiter bedient (Lebenszeichen, Antworten).</li>
       <li>bricht das Warten früher ab, wenn mindestens ein Client da ist und sich 5 s lang (<code>OTA_CLIENT_QUIET_MS</code>) kein weiterer angemeldet hat: Die fehlenden Geräte sind dann wohl aus. Solange noch gar kein Client da ist, läuft die volle Zeit.</li>
       <li>sendet msgType 1 (<code>SYNC_SONG</code>) / Song 0 (alle auf SONGPAUSE), 500 ms Pause.</li>
-      <li>sendet 3× msgType 7 (<code>SYNC_OTA</code>) im Abstand von 500 ms (falls eine Notification verloren geht).</li>
+      <li>sendet 3× msgType 7 (<code>SYNC_OTA</code>) im Abstand von 500 ms (falls ein Paket verloren geht; bei ESP-NOW geht jede davon zusätzlich 3× im Abstand von 3 ms hinaus).</li>
       <li>1 s warten, dann <code>otaRequestAndRestart()</code>.</li>
     </ul>
   </li>
 </ol>
 
 <h3>Client beim Empfang von msgType 7</h3>
-<p><code>ledSyncClientReceived()</code> in <code>ledSync.cpp</code>, <code>case SYNC_OTA</code>: Nur wenn <code>songID == 0</code> verlangt es OTA, und <code>applyAction()</code> in <code>BLE_client_nimBLE.cpp</code> ruft <code>otaRequestAndRestart()</code>. Während eines Songs wird der Befehl ignoriert. Das ist der Schutz gegen ein Update mitten im Gig.</p>
+<p><code>ledSyncClientReceived()</code> in <code>ledSync.cpp</code>, <code>case SYNC_OTA</code>: Nur wenn <code>songID == 0</code> verlangt es OTA, und <code>applyAction()</code> in <code>syncClient.cpp</code> ruft <code>otaRequestAndRestart()</code>. Während eines Songs wird der Befehl ignoriert. Das ist der Schutz gegen ein Update mitten im Gig.</p>
 
 <h3>Update-Modus (alle Geräte)</h3>
 <ol>
@@ -309,14 +310,14 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <p>Das Gerät liest die Felder mit einem Mini-Parser (<code>jsonValue()</code> in <code>otaUpdate.cpp</code>), keine JSON-Bibliothek. Das Format muss flach bleiben (keine verschachtelten Objekte). <code>size</code> wird nicht ausgewertet, die Größe kommt aus dem HTTP-Header.</p>
 
 <h2 id="geraete">8 · Geräte &amp; Build-Envs</h2>
-<p>Jedes Gerät hat ein eigenes PlatformIO-Env, das das Geräte-Define per <code>-D</code> setzt. <code>definitions.h</code> muss dafür <b>nicht</b> editiert werden. Das Geräte-Define schaltet wie bisher alle Features (<code>IS_MIDI_PROXY</code>, <code>IS_BLE_CLIENT</code>, …).</p>
+<p>Jedes Gerät hat ein eigenes PlatformIO-Env, das das Geräte-Define per <code>-D</code> setzt. <code>definitions.h</code> muss dafür <b>nicht</b> editiert werden. Das Geräte-Define schaltet wie bisher alle Features (<code>IS_MIDI_PROXY</code>, <code>IS_SYNC_CLIENT</code>, …). Der Funkweg (<code>SYNC_VIA_ESPNOW</code>, Rückweg <code>-D SYNC_VIA_BLE</code>) gilt für alle Geräte gleich. Die WLAN-MAC eines Boards ist die BLE-MAC − 1 (gemessen an Lampe 1); die der Gitarre steht als <code>ESPNOW_PROXY_MAC</code> in <code>definitions.h</code>, denn Clients nehmen nur von ihr Pakete an.</p>
 <div class="tablewrap"><table>
 <tr><th>Env</th><th>Define</th><th>DEVICE_NAME / Server-Ordner</th><th>Hardware</th><th>Rolle</th><th>BLE-MAC</th><th>COM (Notiz)</th></tr>
-<tr><td><code>andresgit</code></td><td><code>ANDRESGIT</code></td><td><code>andresgit</code></td><td>YULC1</td><td>MIDI-Proxy, BLE-Server, <b>Auslöser</b></td><td><code>48:ca:43:80:8b:95</code></td><td>COM8</td></tr>
-<tr><td><code>rinasbass</code></td><td><code>RINASBASS</code></td><td><code>rinasbass</code></td><td>YULC2 (erster Prototyp, andere Pins)</td><td>BLE-Client</td><td><code>cc:8d:a2:3f:b3:9d</code></td><td>COM9</td></tr>
-<tr><td><code>lampe1</code></td><td><code>LAMPE1</code></td><td><code>lampe1</code></td><td>YULC6</td><td>BLE-Client</td><td><code>48:ca:43:80:98:75</code></td><td>COM11</td></tr>
-<tr><td><code>lampe2</code></td><td><code>LAMPE2</code></td><td><code>lampe2</code></td><td>YULC5</td><td>BLE-Client</td><td><code>48:ca:43:80:98:89</code></td><td>COM10</td></tr>
-<tr><td><code>scrollmatrix</code></td><td><code>SCROLLMATRIX</code></td><td><code>scrollmatrix</code></td><td>YULC4</td><td>BLE-Client</td><td><code>48:ca:43:80:98:4d</code></td><td>COM9? (Konflikt mit Bass in den Notizen, prüfen)</td></tr>
+<tr><td><code>andresgit</code></td><td><code>ANDRESGIT</code></td><td><code>andresgit</code></td><td>YULC1</td><td>MIDI-Proxy, Sync-Sender, <b>Auslöser</b></td><td><code>48:ca:43:80:8b:95</code></td><td>COM8</td></tr>
+<tr><td><code>rinasbass</code></td><td><code>RINASBASS</code></td><td><code>rinasbass</code></td><td>YULC2 (erster Prototyp, andere Pins)</td><td>Sync-Client</td><td><code>cc:8d:a2:3f:b3:9d</code></td><td>COM9</td></tr>
+<tr><td><code>lampe1</code></td><td><code>LAMPE1</code></td><td><code>lampe1</code></td><td>YULC6</td><td>Sync-Client</td><td><code>48:ca:43:80:98:75</code></td><td>COM11</td></tr>
+<tr><td><code>lampe2</code></td><td><code>LAMPE2</code></td><td><code>lampe2</code></td><td>YULC5</td><td>Sync-Client</td><td><code>48:ca:43:80:98:89</code></td><td>COM10</td></tr>
+<tr><td><code>scrollmatrix</code></td><td><code>SCROLLMATRIX</code></td><td><code>scrollmatrix</code></td><td>YULC4</td><td>Sync-Client</td><td><code>48:ca:43:80:98:4d</code></td><td>COM9? (Konflikt mit Bass in den Notizen, prüfen)</td></tr>
 </table></div>
 <ul>
   <li><b>Altes Env</b> <code>esp32-s3-devkitc-1</code>: nimmt das Gerät weiterhin aus <code>definitions.h</code> (Fallback, nur aktiv wenn kein Geräte-Define per Build-Flag gesetzt ist). Funktioniert, enthält ebenfalls OTA.</li>
@@ -325,8 +326,8 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
   <li>Die Firmware kann <b>nur</b> das Gerät aktualisieren, für das sie gebaut wurde: <code>DEVICE_NAME</code> ist fest einkompiliert und bestimmt den Server-Ordner.</li>
 </ul>
 
-<h2 id="ble">9 · BLE-Protokoll</h2>
-<p>Struktur <code>BLEmessage</code> (<code>ledSync.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Eine Characteristic mit READ/WRITE/NOTIFY. Die Nachrichtentypen haben Namen (<code>enum LedSyncMsg</code>); was auf welche Nachricht folgt, entscheidet allein das Abgleich-Modul <code>src/ledSync.cpp</code>. Die beiden Bluetooth-Dateien führen nur aus. Getestet wird es am PC mit <code>pio test -e native</code> (<code>test/test_ledSync/</code>).</p>
+<h2 id="ble">9 · Funk-Protokoll</h2>
+<p>Struktur <code>BLEmessage</code> (<code>ledSync.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Die Nachrichtentypen haben Namen (<code>enum LedSyncMsg</code>); was auf welche Nachricht folgt, entscheidet allein das Abgleich-Modul <code>src/ledSync.cpp</code>. Ausgeführt wird es in <code>syncProxy.cpp</code> / <code>syncClient.cpp</code>, die Bytes bewegt der Funk-Adapter (<code>syncTransport.h</code>). Getestet wird es am PC mit <code>pio test -e native</code> (<code>test/test_ledSync/</code>, <code>test/test_espNowFrame/</code>).</p>
 <div class="tablewrap"><table>
 <tr><th>msgType</th><th>Name</th><th>Richtung</th><th>Bedeutung</th></tr>
 <tr><td>0</td><td><code>SYNC_STATE</code></td><td>Proxy</td><td>Song + Part hinterlegen (Wert zum Lesen für Sync, wird nie aktiv gesendet)</td></tr>
@@ -338,7 +339,20 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td>6</td><td><code>SYNC_REPLY</code></td><td>Client → Proxy</td><td>Client meldet Song/Part nach Sync-Anfrage</td></tr>
 <tr><td><b>7</b></td><td><code>SYNC_OTA</code></td><td>Proxy → Clients</td><td><b>In den OTA-Update-Modus</b> (nur angenommen bei <code>songID == 0</code>)</td></tr>
 </table></div>
-<p>Welche Clients der Proxy überhaupt akzeptiert, steht in <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>. Deren Anzahl ist auch die Zahl, auf die <code>midiProxy_broadcastOTA()</code> wartet.</p>
+<h3>ESP-NOW (Standard, <code>espNowSync.cpp</code>)</h3>
+<p>Die <code>BLEmessage</code> reist in einem 13-Byte-Rahmen <code>EspNowFrame</code> (<code>espNowFrame.h</code>): <code>magic</code> 'L','S' · <code>version</code> 1 · <code>kind</code> · <code>bootId</code> (Zufall je Start) · <code>seq</code> (laufende Nummer) · <code>copy</code> (0..2) · <code>device</code> (Geräte-Bit) · die 3 Bytes. Fester Kanal <code>ESPNOW_CHANNEL</code> (1).</p>
+<div class="tablewrap"><table>
+<tr><th>kind</th><th>Richtung</th><th>Bedeutung</th></tr>
+<tr><td>1 <code>KIND_MSG</code></td><td>Proxy → alle (Broadcast)</td><td>eine Nachricht (msgType 1–7), 3× im Abstand von 3 ms; der Client führt die erste Kopie aus, die anderen verwirft er (bootId + seq)</td></tr>
+<tr><td>2 <code>KIND_READ_REQ</code></td><td>Client → Proxy</td><td>Kurzklick am Client: „schick mir deinen hinterlegten Stand“</td></tr>
+<tr><td>3 <code>KIND_READ_RESP</code></td><td>Proxy → Client</td><td>der hinterlegte Stand (msgType 0 oder 4)</td></tr>
+<tr><td>4 <code>KIND_WRITE</code></td><td>Client → Proxy</td><td>msgType 6 / 4 nach einem Doppelklick am Proxy (je Gerät 2 ms × Bit-Nummer versetzt)</td></tr>
+<tr><td>5 <code>KIND_HELLO</code></td><td>Proxy → alle</td><td>Lebenszeichen jede Sekunde (Warn-LEDs der Clients)</td></tr>
+<tr><td>6 <code>KIND_HELLO_ACK</code></td><td>Client → Proxy</td><td>„ich höre dich“ (Warn-LEDs des Proxys, OTA-Zählung)</td></tr>
+</table></div>
+<p><b>Sicherheit:</b> Clients nehmen nur Pakete von der WLAN-MAC der Gitarre an (<code>ESPNOW_PROXY_MAC</code> in <code>definitions.h</code>); fremde Pakete fallen außerdem an Magic/Version/Länge heraus. Broadcasts lassen sich bei ESP-NOW nicht verschlüsseln.</p>
+<h3>BLE (Rückweg, <code>-D SYNC_VIA_BLE</code>)</h3>
+<p>Eine Characteristic mit READ/WRITE/NOTIFY. Welche Clients der Proxy akzeptiert, steht in <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>; deren Anzahl ist die Zahl, auf die das OTA-Warten wartet.</p>
 
 <h2 id="flash">10 · Flash-Partitionen</h2>
 <p>Das Board <code>esp32-s3-devkitc-1</code> nutzt standardmäßig <code>default_8MB.csv</code> (in <code>platformio.ini</code> steht keine eigene Tabelle):</p>
@@ -359,11 +373,13 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td><code>src/otaUpdate.h/.cpp</code></td><td>Gesamte OTA-Logik: Flag (NVS), <code>otaRun()</code> (WLAN, Version, Download, Flash), LED-Anzeige <code>otaShowStatus()</code>, Knopf-Abfrage <code>otaBootButtonHeld()</code> (nur Proxy)</td></tr>
 <tr><td><code>src/secrets.h</code></td><td>WLAN-Liste, Server-IP, Port. <b>Gitignored</b>, muss lokal angelegt werden. Fehlt sie, gibt es beim Build eine Warnung und OTA scheitert mit „kein WLAN konfiguriert“.</td></tr>
 <tr><td><code>src/secrets.h.example</code></td><td>Vorlage für <code>secrets.h</code> (im Repo)</td></tr>
-<tr><td><code>src/main.cpp</code></td><td>In <code>setup()</code> nach der LED-/Paletten-Initialisierung: Versions-Ausgabe, <code>otaIsRequested()</code> → <code>otaRun()</code>, beim Proxy <code>otaBootButtonHeld()</code>. Nach <code>midiProxy_initialize_BLE()</code>: <code>midiProxy_broadcastOTA()</code></td></tr>
-<tr><td><code>src/midiProxyBLEserver_nimBLE.cpp/.h</code></td><td><code>midiProxy_broadcastOTA()</code>, Zähler <code>subscribedClients</code> im <code>onSubscribe</code>-Callback</td></tr>
-<tr><td><code>src/BLE_client_nimBLE.cpp</code></td><td><code>applyAction()</code> führt <code>ota</code> aus (Entscheidung in <code>ledSync.cpp</code>)</td></tr>
+<tr><td><code>src/main.cpp</code></td><td>In <code>setup()</code> nach der LED-/Paletten-Initialisierung: Versions-Ausgabe, <code>otaIsRequested()</code> → <code>otaRun()</code>, beim Proxy <code>otaBootButtonHeld()</code>. Nach <code>syncProxy_initialize()</code>: <code>syncProxy_broadcastOTA()</code></td></tr>
+<tr><td><code>src/syncProxy.cpp/.h</code></td><td><code>syncProxy_broadcastOTA()</code>: warten auf die Clients (lila Balken), SYNC_SONG 0 + 3× SYNC_OTA</td></tr>
+<tr><td><code>src/syncClient.cpp/.h</code></td><td><code>applyAction()</code> führt <code>ota</code> aus (Entscheidung in <code>ledSync.cpp</code>)</td></tr>
+<tr><td><code>src/espNowSync.cpp</code>, <code>src/espNowFrame.cpp/.h</code></td><td>ESP-NOW: Broadcast mit Wiederholungen, HELLO/HELLO_ACK, Zählung der bereiten Clients (<code>proxyTransport_readyClients()</code>)</td></tr>
+<tr><td><code>src/midiProxyBLEserver_nimBLE.cpp</code></td><td>BLE-Rückweg: Zähler <code>subscribedClients</code> im <code>onSubscribe</code>-Callback</td></tr>
 <tr><td><code>src/ledSync.h/.cpp</code></td><td><code>BLEmessage</code>, Namen und Doku der msgTypes 0–7, alle Entscheidungen des Abgleichs (inkl. „OTA nur in Song 0“); Tests in <code>test/test_ledSync/</code></td></tr>
-<tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code></td></tr>
+<tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code>, Funkweg <code>SYNC_VIA_…</code>, <code>ESPNOW_…</code>-Einstellungen inkl. <code>ESPNOW_PROXY_MAC</code></td></tr>
 <tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
 <tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>
 <tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, Backup-Frage, <code>--restore</code>, HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
@@ -375,9 +391,11 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <div class="tablewrap"><table>
 <tr><th>Wert</th><th>Wo</th><th>Standard</th><th>Bedeutung</th></tr>
 <tr><td>Knopf-Haltezeit</td><td><code>otaBootButtonHeld()</code></td><td>1000 ms</td><td>So lange muss der Knopf beim Einschalten gedrückt sein</td></tr>
-<tr><td><code>OTA_CLIENT_WAIT_MS</code></td><td><code>midiProxyBLEserver_nimBLE.cpp</code></td><td>20 s</td><td>Warten auf Clients; danach wird auch mit weniger Clients gesendet</td></tr>
-<tr><td><code>OTA_CLIENT_QUIET_MS</code></td><td><code>midiProxyBLEserver_nimBLE.cpp</code></td><td>5 s</td><td>Meldet sich nach dem ersten Client so lange kein weiterer an, wird sofort gesendet</td></tr>
-<tr><td>Wiederholungen msgType 7</td><td><code>midiProxy_broadcastOTA()</code></td><td>3 × 500 ms</td><td>Sicherheit gegen verlorene Notifications</td></tr>
+<tr><td><code>OTA_CLIENT_WAIT_MS</code></td><td><code>syncProxy.cpp</code></td><td>20 s</td><td>Warten auf Clients; danach wird auch mit weniger Clients gesendet</td></tr>
+<tr><td><code>OTA_CLIENT_QUIET_MS</code></td><td><code>syncProxy.cpp</code></td><td>5 s</td><td>Meldet sich nach dem ersten Client so lange kein weiterer an, wird sofort gesendet</td></tr>
+<tr><td>Wiederholungen msgType 7</td><td><code>syncProxy_broadcastOTA()</code></td><td>3 × 500 ms</td><td>Sicherheit gegen verlorene Pakete (ESP-NOW zusätzlich je 3 Kopien)</td></tr>
+<tr><td><code>ESPNOW_EXPECTED_CLIENTS</code></td><td><code>definitions.h</code></td><td>4</td><td>So viele Clients wartet die Gitarre beim OTA ab (bei neuen Lampen erhöhen)</td></tr>
+<tr><td><code>ESPNOW_HELLO_MS</code> / <code>ESPNOW_LINK_TIMEOUT_MS</code></td><td><code>definitions.h</code></td><td>1 s / 3 s</td><td>Lebenszeichen der Gitarre; so lange ohne Antwort gilt ein Client als nicht da</td></tr>
 <tr><td><code>OTA_WIFI_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>20 s</td><td>WLAN-Suche</td></tr>
 <tr><td>Anmelde-Timeout je Versuch</td><td><code>otaRun()</code>, <code>wifiMulti.run(8000)</code></td><td>8 s</td><td>Muss für Anmeldung + DHCP reichen, sonst bricht <code>WiFiMulti</code> die laufende Anmeldung mit einem neuen Scan ab</td></tr>
 <tr><td><code>OTA_HTTP_TIMEOUT_MS</code></td><td><code>otaUpdate.cpp</code></td><td>10 s</td><td>Verbindungs- und Lese-Timeout HTTP</td></tr>
@@ -417,7 +435,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
   <li><code>definitions.h</code>: Geräte-Block mit Features, im <code>DEV_ME</code>-Block ein <code>DEVICE_NAME</code> ergänzen, das Define in die Fallback-Bedingung (<code>#if !defined(ANDRESGIT) &amp;&amp; …</code>) aufnehmen.</li>
   <li><code>platformio.ini</code>: neues Env mit <code>extends = esp32_base</code> und <code>build_flags = ${esp32_base.build_flags} -D NEUESGERAET</code>.</li>
   <li><code>tools/build_ota.py</code>: Env-Name in <code>DEVICES</code> aufnehmen.</li>
-  <li>Ist es ein BLE-Client: MAC in <code>definitions.h</code> und in <code>client_addresses[]</code> (<code>midiProxyBLEserver_nimBLE.cpp</code>) eintragen. Sonst akzeptiert der Proxy es nicht und wartet beim OTA vergeblich darauf.</li>
+  <li>ESP-NOW: <code>ESPNOW_EXPECTED_CLIENTS</code> in <code>definitions.h</code> um eins erhöhen (sonst wartet die Gitarre beim OTA nicht auf das neue Gerät). Nur für den BLE-Rückweg: MAC in <code>definitions.h</code> und in <code>client_addresses[]</code> (<code>midiProxyBLEserver_nimBLE.cpp</code>) eintragen.</li>
   <li>Einmal per USB flashen.</li>
 </ol>
 <h3>Ideen für später</h3>
@@ -427,7 +445,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
   <li>Zusätzlicher Auslöser per MIDI-CC vom WIDI.</li>
 </ul>
 
-<div class="note"><b>Pflege:</b> Diese Seite ist die Referenz für alles rund um OTA. Bei jeder Änderung an <code>otaUpdate.*</code>, am BLE-Protokoll, an den Geräte-Envs, an <code>build_ota.py</code>/<code>fw_version.py</code> oder an den Partitionen wird sie mit angepasst.</div>
+<div class="note"><b>Pflege:</b> Diese Seite ist die Referenz für alles rund um OTA. Bei jeder Änderung an <code>otaUpdate.*</code>, am Funk-Protokoll (msgTypes, ESP-NOW-Rahmen), an den Geräte-Envs, an <code>build_ota.py</code>/<code>fw_version.py</code> oder an den Partitionen wird sie mit angepasst.</div>
 
 </main>
 </body>

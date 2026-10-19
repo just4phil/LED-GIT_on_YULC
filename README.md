@@ -1,13 +1,13 @@
 # LED-GIT_on_YULC
 
-**A synchronized LED light show for a live band: guitar, bass, stage lamps and an LED matrix, driven by MIDI and Bluetooth LE**
+**A synchronized LED light show for a live band: guitar, bass, stage lamps and an LED matrix, driven by MIDI and ESP-NOW**
 
 ## Overview
 
 LED-GIT_on_YULC is the firmware for a set of ESP32-S3 devices that carry addressable LEDs: a guitar, a bass, two
 stage lamps and a foldable LED matrix. All of them play the same song-specific light show at the same time. A MIDI
-message at the start of a song starts the show on the guitar; the guitar passes it on to the other devices via
-Bluetooth LE, and from then on every device runs through the parts of the song on its own millisecond timer.
+message at the start of a song starts the show on the guitar; the guitar passes it on to the other devices with
+one ESP-NOW broadcast (WiFi radio, no router), and from then on every device runs through the parts of the song on its own millisecond timer.
 
 ## Features
 
@@ -18,8 +18,10 @@ Bluetooth LE, and from then on every device runs through the parts of the song o
   device type its matching effect, in a shared colour scheme
 - **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
   gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness (also as a cascade that builds up from device to device and fades out on all at once)
-- **MIDI start, BLE sync**: only the song start and manual part jumps are transmitted; everything else runs
-  locally, so the devices stay in sync regardless of their LED count
+- **MIDI start, ESP-NOW sync**: only the song start and manual part jumps are transmitted, as one broadcast that
+  reaches all devices at the same moment (each message sent 3 times against losses); everything else runs locally,
+  so the devices stay in sync regardless of their LED count. Any number of devices can listen. The older Bluetooth
+  LE sync can still be built as a fallback (`-D SYNC_VIA_BLE`)
 - **Fret markers**: red/blue marker LEDs on the fretboard of guitar and bass, always at the same brightness
 - **Rotary knob**: brightness in perceptually even steps, LED sync, emergency stop
 - **Battery monitoring** with low-voltage protection
@@ -33,11 +35,11 @@ All current devices are ESP32-S3 boards (16 MB flash, PSRAM) with two LED output
 
 | Device (build env) | Role | LEDs | Notes |
 |---|---|---|---|
-| `andresgit` | Guitar, **MIDI proxy / BLE server** | 163 + strap | receives MIDI, forwards to all others |
-| `rinasbass` | Bass, BLE client | 155 | |
-| `lampe1` | Stage lamp, BLE client | 94 | |
-| `lampe2` | Stage lamp, BLE client | 78 | |
-| `scrollmatrix` | LED matrix 54 x 10, BLE client | 540 | text and matrix effects |
+| `andresgit` | Guitar, **MIDI proxy / sync sender** | 163 + strap | receives MIDI, forwards to all others |
+| `rinasbass` | Bass, sync client | 155 | |
+| `lampe1` | Stage lamp, sync client | 94 | |
+| `lampe2` | Stage lamp, sync client | 78 | |
+| `scrollmatrix` | LED matrix 54 x 10, sync client | 540 | text and matrix effects |
 
 The LEDs are WS2812B (NeoPixel). Output 1 drives the instrument, lamp or matrix, output 2 the guitar strap.
 
@@ -76,14 +78,20 @@ LED-GIT_on_YULC/
 │   ├── functions.h/cpp           # song/part switching, helpers
 │   ├── TimerFunctions.h/cpp      # 2 ms hardware timer
 │   ├── midi_in.h/cpp             # MIDI input
-│   ├── ledSync.h/cpp             # LED sync protocol: BLE message format and all sync decisions (tested on the PC)
-│   ├── midiProxyBLEserver_nimBLE.h/cpp  # BLE server (guitar), executes what ledSync decides
-│   ├── BLE_client_nimBLE.h/cpp   # BLE client (all other devices), executes what ledSync decides
+│   ├── ledSync.h/cpp             # LED sync protocol: message format and all sync decisions (tested on the PC)
+│   ├── syncProxy.h/cpp           # guitar: executes what ledSync decides, sends via the radio transport
+│   ├── syncClient.h/cpp          # all other devices: executes what ledSync decides
+│   ├── syncTransport.h           # interface between the sync modules and the radio transport
+│   ├── espNowSync.h/cpp          # radio transport ESP-NOW (default): broadcast, read/write, heartbeat
+│   ├── espNowFrame.h/cpp         # ESP-NOW frame, duplicate filter, peer table (tested on the PC)
+│   ├── midiProxyBLEserver_nimBLE.h/cpp  # radio transport Bluetooth LE, guitar (fallback, -D SYNC_VIA_BLE)
+│   ├── BLE_client_nimBLE.h/cpp   # radio transport Bluetooth LE, all other devices (fallback)
 │   ├── rotaryEncoder.h/cpp       # knob: brightness, sync, emergency stop
 │   ├── lipoVoltageCheck.h/cpp    # battery monitoring
 │   ├── otaUpdate.h/cpp           # firmware update over WiFi
 │   └── AiEsp32RotaryEncoder*     # third-party encoder library
 ├── test/test_ledSync/            # unit tests for the sync protocol (pio test -e native)
+├── test/test_espNowFrame/        # unit tests for the ESP-NOW frame (pio test -e native)
 ├── songs/<Song>_v1/              # per song: quelle/struktur.xlsx, show.yaml, generated.cpp, versionen/
 ├── tools/
 │   ├── songgen.py                # generates song code from table + show.yaml
@@ -117,12 +125,13 @@ Environments: `andresgit`, `rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`.
 The legacy environment `esp32-s3-devkitc-1` takes the device from `src/definitions.h`, where exactly one device
 must be uncommented.
 
-Each device define switches its features on automatically (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_BLE_CLIENT`,
+Each device define switches its features on automatically (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_SYNC_CLIENT`,
 `HAS_ROTARY_ENCODER`, `HAS_LIPOVOLTAGE_CHECK`, `NOMARKER` ...). They are not meant to be set by hand.
 
 **FastLED is pinned to 3.5.0.** Newer versions (3.9.x) do not build for the ESP32-S3 in this project.
 
-Unit tests for the LED sync protocol (`src/ledSync.cpp`) run on the PC, no device needed:
+Unit tests for the LED sync protocol (`src/ledSync.cpp`) and the ESP-NOW frame (`src/espNowFrame.cpp`) run on the
+PC, no device needed:
 
 ```bash
 pio test -e native
@@ -136,15 +145,16 @@ not produce a program).
 ### Starting a song
 
 - **MIDI channel 10, CC 22** selects the song, **CC 23** jumps to a part. Everything else is ignored.
-- The guitar (proxy) forwards both to all clients as BLE notifications.
+- The guitar (proxy) forwards both to all clients as one ESP-NOW broadcast (sent 3 times, 3 ms apart; a client
+  executes the first copy that arrives). Channel and settings: `ESPNOW_...` in `src/definitions.h`.
 - Automatic part changes are *not* transmitted: every device knows the part lengths and switches on its own timer.
   A device that joins late can fetch the current song and part from the proxy (see knob).
 
 Song 0 is the pause between songs: a calm sparkle on the instruments and lamps, Conway's Game of Life in colour on the matrix (it keeps running across pauses instead of restarting).
 
 **Connection warning:** during song 0 a few LEDs pulse slowly in red (2 s up, 2 s down) for as long as the
-Bluetooth link is missing - on a client until it has found the guitar, on the guitar until the first client has
-connected. Lamps use their bottom 10 LEDs, the matrix a 3 x 3 square at the bottom right, guitar and bass the
+radio link is missing - on a client while it does not hear the guitar's heartbeat (once a second), on the guitar
+while no client answers it. Lamps use their bottom 10 LEDs, the matrix a 3 x 3 square at the bottom right, guitar and bass the
 3 LEDs right after the last fret marker. The warning never appears while a song is running (`BLE_WARN_...` in
 `src/definitions.h`).
 
@@ -279,7 +289,7 @@ The guides in `docs/` are written in German, as are the inline comments in the s
 | `docs/effekt-katalog.yaml` | Catalogue of effects, palettes and scenes with ratings |
 | `docs/effekt-statistik.md` | Which effects the old songs use (generated by `tools/fxstats.py`) |
 | `docs/FX-Pipeline-Plan.md` | Plan and working state of the effect refactoring |
-| `docs/ESP-NOW-Plan.html` | Plan for moving the LED sync of all devices from BLE to ESP-NOW (tighter common start, any number of lamps); measurements done, not implemented yet |
+| `docs/ESP-NOW-Plan.html` | Plan and working state of moving the LED sync of all devices from BLE to ESP-NOW (tighter common start, any number of lamps), with measurements |
 | `CLAUDE.md` | Architecture overview and working rules for AI-assisted development |
 
 ## Troubleshooting
@@ -302,7 +312,7 @@ and mixing every 5 seconds.
 
 - [FastLED](https://github.com/FastLED/FastLED) (pinned to 3.5.0)
 - [FastLED NeoMatrix](https://github.com/marcmerlin/FastLED_NeoMatrix), Framebuffer GFX, Adafruit GFX
-- [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino)
+- [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino) (Bluetooth fallback)
 - [Arduino MIDI Library](https://github.com/FortySevenEffects/arduino_midi_library)
 - [Ai Esp32 Rotary Encoder](https://github.com/igorantolic/ai-esp32-rotary-encoder)
 - [PlatformIO](https://platformio.org/)

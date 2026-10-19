@@ -20,8 +20,9 @@ pio run -e esp32-s3-devkitc-1 --target upload
 pio device monitor -e esp32-s3-devkitc-1
 ```
 
-Unit tests: only for the LED-sync protocol, on the PC: `pio test -e native` (`test/test_ledSync/`, env `native` builds
-only `src/ledSync.cpp`; needs `g++` in PATH). There are no other tests.
+Unit tests: only for the LED-sync protocol and the ESP-NOW frame, on the PC: `pio test -e native` (`test/test_ledSync/`,
+`test/test_espNowFrame/`; env `native` builds only `src/ledSync.cpp` + `src/espNowFrame.cpp`; needs `g++` in PATH).
+There are no other tests.
 
 ## Comments (binding)
 
@@ -36,7 +37,7 @@ emits (`tools/songgen.py`). `AiEsp32RotaryEncoder*` is third-party code and stay
 
 `README.md` is the public face of the project on GitHub (English). **Keep it up to date in the same change** whenever
 something it describes changes: devices and build envs, the file list in `src/` and `tools/`, the song table (new,
-removed or newly generated songs), MIDI/BLE control, the knob, markers, OTA, the song workflow or the way effects are
+removed or newly generated songs), MIDI/radio sync control, the knob, markers, OTA, the song workflow or the way effects are
 built. It deliberately contains no function-by-function API reference - that goes stale; the headers are the reference.
 
 ## Device Selection (critical before building)
@@ -49,22 +50,27 @@ The legacy env `esp32-s3-devkitc-1` (and `teensy40`) takes the device from `src/
 exactly ONE device must be uncommented (used only when no device flag is set):
 
 ```cpp
-#define ANDRESGIT    // Guitar (YULC1, COM3) — MIDI proxy, BLE server
-//#define RINASBASS  // Bass (YULC2, COM8) — BLE client
-//#define LAMPE1     // Lamp (YULC6, COM11) — BLE client
-//#define LAMPE2     // Lamp (YULC5, COM10) — BLE client
-//#define SCROLLMATRIX // Fold matrix (YULC4, COM9) — BLE client
+#define ANDRESGIT    // Guitar (YULC1, COM8) — MIDI proxy, sync sender
+//#define RINASBASS  // Bass (YULC2, COM9) — sync client
+//#define LAMPE1     // Lamp (YULC6, COM11) — sync client
+//#define LAMPE2     // Lamp (YULC5, COM10) — sync client
+//#define SCROLLMATRIX // Fold matrix (YULC4, COM12) — sync client
 //#define GITBOARD   // Teensy board
 ```
 
-Each device define automatically enables/disables features (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_BLE_CLIENT`, `HAS_ROTARY_ENCODER`, `HAS_LIPOVOLTAGE_CHECK`, `NOMARKER`, etc.). Do not set features manually above the device blocks.
+Each device define automatically enables/disables features (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_SYNC_CLIENT`, `HAS_ROTARY_ENCODER`, `HAS_LIPOVOLTAGE_CHECK`, `NOMARKER`, etc.). Do not set features manually above the device blocks.
 
 ## Architecture
 
 ### Hardware topology
-- **ANDRESGIT** (ESP32-S3): receives MIDI CC from a WIDI CORE device via serial MIDI, acts as BLE proxy server broadcasting song/part changes to all other devices
-- **RINASBASS / LAMPE1 / LAMPE2 / SCROLLMATRIX** (ESP32-S3): BLE clients that receive sync from the proxy
-- **GITBOARD** (Teensy 4.0): receives MIDI directly, no BLE
+- **ANDRESGIT** (ESP32-S3): receives MIDI CC from a WIDI CORE device via serial MIDI, acts as proxy broadcasting song/part changes to all other devices
+- **RINASBASS / LAMPE1 / LAMPE2 / SCROLLMATRIX** (ESP32-S3): sync clients that receive song/part from the proxy
+- **GITBOARD** (Teensy 4.0): receives MIDI directly, no radio
+- Radio transport (`definitions.h`, the same for ALL devices): `SYNC_VIA_ESPNOW` (default since 19.10.2026, after the
+  measurement in issue #8: BLE arrived 6.6 ms later on average, up to 14.5 ms) or `SYNC_VIA_BLE` (old Bluetooth LE
+  version, fallback via `-D SYNC_VIA_BLE`, to be removed after the first gigs, issue #17). With ESP-NOW, Bluetooth is
+  never started, so `WIFI_PS_NONE` is allowed (WiFi + BT together require modem sleep, otherwise boot loop).
+  Plan, measurements and working state: `docs/ESP-NOW-Plan.html`.
 
 ### LED buffers
 Three CRGB arrays in `main.cpp`:
@@ -80,7 +86,7 @@ Effects never call `FastLED.show()` themselves and never check `LEDsTurnedOff`: 
 `leds1`, overlays the red/blue fret-marker LEDs) and sends. Marker brightness is computed, not tabulated
 (`markerValue()`: constant `MARKER_LEVEL` at any global brightness; below `MARKER_MIN_BRIGHTNESS` the global
 brightness is raised for the frame and the image scaled down). In song 0 only, the same function ends with
-`drawBleWarnLEDs()`: a few LEDs pulse red while the BLE link is missing (client: no proxy; proxy: no client yet;
+`drawBleWarnLEDs()`: a few LEDs pulse red while the radio link is missing (`syncLinkMissing()`; client: no proxy heard; proxy: no client yet;
 `BLE_WARN_...` in `definitions.h`). An unchanged frame is not sent again
 (`FX_SKIP_UNCHANGED_FRAMES`, keep-alive every `FX_KEEPALIVE_MS`).
 
@@ -129,7 +135,7 @@ up over a song; hand-written songs keep the old behaviour because their part len
 ### Song / part state machine
 `switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The main loop `switch(songID)` dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.
 
-MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these as BLE notifications using the `BLEmessage` struct (msgTypes 0–7 = `enum LedSyncMsg`, `SYNC_STATE` … `SYNC_OTA`, defined in `ledSync.h`; 7 = enter OTA update mode). All sync decisions (MIDI broadcast, force 3→4, ask 5→6→4, knob read→4, OTA only in song 0) live in `ledSync.cpp`: events in, `LedSyncAction` out, the two BLE files are thin adapters that only move bytes and execute it (`applyAction()`). Keep the wire format byte-identical (old firmware must still sync). Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/BLE.
+MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these using the `BLEmessage` struct (3 bytes; msgTypes 0–7 = `enum LedSyncMsg`, `SYNC_STATE` … `SYNC_OTA`, defined in `ledSync.h`; 7 = enter OTA update mode). All sync decisions (MIDI broadcast, force 3→4, ask 5→6→4, knob read→4, OTA only in song 0) live in `ledSync.cpp`: events in, `LedSyncAction` out. `syncProxy.cpp` / `syncClient.cpp` execute it (`applyAction()`) and send through `syncTransport.h`, which exactly one radio adapter fulfils: `espNowSync.cpp` (default) or the two BLE files (fallback). Per ESP-NOW the `BLEmessage` travels in a 13-byte `EspNowFrame` (`espNowFrame.h`: magic, version, kind MSG/READ_REQ/READ_RESP/WRITE/HELLO/HELLO_ACK, bootId, seq, copy, device); every broadcast goes out `ESPNOW_REPEAT_COUNT` times, receivers drop duplicates by (bootId, seq); the proxy's HELLO every second drives the warn LEDs and the OTA client count. Keep the `BLEmessage` byte-identical. Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/radio.
 
 ### Key source files
 | File | Purpose |
@@ -147,8 +153,11 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `TimerFunctions.cpp/.h` | 2 ms hardware timer, all timing flags |
 | `midi_in.cpp/.h` | MIDI CC parsing; on the proxy hands the change to `ledSyncProxyMidiSong/Part()` |
 | `ledSync.cpp/.h` | LED-sync protocol: `BLEmessage`, msgType names, all sync state + decisions for proxy and client (no Arduino, unit-tested natively) |
-| `midiProxyBLEserver_nimBLE.cpp/.h` | NimBLE BLE server (proxy only) |
-| `BLE_client_nimBLE.cpp/.h` | NimBLE BLE client (non-proxy devices) |
+| `syncProxy.cpp/.h`, `syncClient.cpp/.h` | Execute the `ledSync` decisions on proxy / clients (`applyAction()`), OTA-for-all waiting (`syncProxy_broadcastOTA()`), link state for the warn LEDs |
+| `syncTransport.h` | Interface between the sync modules and the radio transport (`proxyTransport_…`, `clientTransport_…`) |
+| `espNowSync.cpp/.h` | Radio transport ESP-NOW (default): broadcast with repeats, read/write to the proxy, HELLO/HELLO_ACK |
+| `espNowFrame.cpp/.h` | ESP-NOW frame, duplicate filter, peer table (no Arduino, unit-tested natively) |
+| `midiProxyBLEserver_nimBLE.cpp/.h`, `BLE_client_nimBLE.cpp/.h` | Radio transport Bluetooth LE (fallback, only with `SYNC_VIA_BLE`) |
 | `rotaryEncoder.cpp/.h` | Knob: turn = brightness (fully down = LEDs off, markers stay; 32 perceptually even steps, `ROTARY_BRIGHTNESS_STEPS` in `definitions.h`, no acceleration), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
 | `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
@@ -224,13 +233,13 @@ Full workflow: `docs/Song-Workflow.html` (user guide), `.claude/skills/new-song/
 `python tools/build_ota.py --serve` builds all device envs with one shared `FW_VERSION` (Unix time, set by
 `tools/fw_version.py` only for `otaUpdate.cpp`) into `ota/<device>/firmware.bin` + `version.json` and serves
 `ota/` on port 8080. Trigger: switch on ANDRESGIT with the rotary button held → proxy waits for all clients
-to subscribe, sends BLE msgType 7, clients (only while `songID == 0`) and proxy set an NVS flag and reboot.
+(`ESPNOW_EXPECTED_CLIENTS` answering its HELLO; with BLE: subscribed), sends msgType 7 (3×, ESP-NOW broadcast), clients (only while `songID == 0`) and proxy set an NVS flag and reboot.
 In `setup()` the flag is read+cleared and `otaRun()` connects to WiFi (credentials in gitignored
 `src/secrets.h`, template `src/secrets.h.example`), downloads only a newer version (MD5-checked) into the
 free OTA slot (`default_8MB.csv`, 2 × 3.3 MB) and reboots. Any failure → normal boot with the old firmware.
 LEDs: blue = WiFi, yellow = progress, green = done/up to date, red = error, purple = proxy waiting for clients.
 Full reference + user procedure: `docs/OTA-Update.html`. **Keep it up to date in the same change** whenever
-OTA code, the BLE protocol (msgTypes), device envs, `build_ota.py`/`fw_version.py` or partitions change.
+OTA code, the radio protocol (msgTypes, ESP-NOW frame), device envs, `build_ota.py`/`fw_version.py` or partitions change.
 
 ### FastLED version pinned to 3.5.0
 Do **not** upgrade FastLED — 3.9.x breaks on ESP32-S3 (`esp_memory_utils.h` missing).

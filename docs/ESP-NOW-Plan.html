@@ -70,7 +70,7 @@
     <p class="sub">Plan: Alle Geräte stellen den LED-Sync von BLE auf ESP-NOW um, BLE wird abgeschaltet. Ziel ist ein
       genauerer gemeinsamer Start und Platz für beliebig viele Lampen. Das Abgleich-Protokoll (<code>ledSync.cpp</code>)
       bleibt unverändert. Stand 19.10.2026: Messung (Phase 0) erledigt, Entscheidung des Users nach der Messung:
-      <b>komplett umstellen, ohne dauerhafte Übergangszeit</b>. Noch kein Code umgesetzt.</p>
+      <b>komplett umstellen, ohne dauerhafte Übergangszeit</b>. #9–#13 umgesetzt im Branch <code>espnow</code> (19.10.2026), Probe mit allen Geräten (#16) steht aus.</p>
     <nav class="toc">
       <a href="#ziel"><b>1</b>Ziel &amp; Kurzfassung</a>
       <a href="#ist"><b>2</b>Ist-Zustand</a>
@@ -108,7 +108,7 @@ Espressif über das WLAN-Radio, ohne Router und ohne Verbindungsaufbau, als Broa
 <div class="ok"><b>Was gleich bleibt</b>
   <ul>
     <li>Das Protokoll: <code>BLEmessage</code> (3 Bytes), die Nachrichtentypen 0–7, alle Entscheidungen in
-      <code>ledSync.cpp</code>. Die 14 Tests in <code>test/test_ledSync/</code> laufen unverändert.</li>
+      <code>ledSync.cpp</code>. Die 13 Tests in <code>test/test_ledSync/</code> laufen unverändert.</li>
     <li>Die Bedienung: Kurzklick = Abgleich, Doppelklick am Proxy = Stand holen, langer Druck = Not-Aus,
       Knopf beim Einschalten = OTA für alle. Die roten Warn-LEDs in Song 0, wenn der Funk fehlt.</li>
   </ul>
@@ -380,11 +380,18 @@ Der Sende-Callback meldet Erfolg oder Fehler; bei Fehler einmal neu senden.</p>
   <li>Das Bluetooth der YULC-Boards wird in der ESP-NOW-Firmware gar nicht gestartet.</li>
 </ul>
 
-<h3>Fremde Sender</h3>
+<h3>Fremde Sender (Sicherheit)</h3>
 <p>Broadcasts lassen sich bei ESP-NOW nicht verschlüsseln, jedes ESP-Gerät auf dem Kanal hört mit und kann senden.
-Schutz: Magic + Version, und der Client übernimmt Nachrichten nur von der Proxy-Adresse, die er zuerst gelernt hat
-(neu lernen nur in Song 0 oder nach längerer Funkstille, damit ein Proxy-Neustart funktioniert). Wer sicher gehen
-will, trägt die Proxy-MAC fest in <code>definitions.h</code> ein - wie heute die Client-Adressen für BLE.</p>
+Vorgabe des Users (19.10.2026): <b>Clients nehmen nur Pakete von der Gitarre an, andere Absender gibt es nicht.</b>
+Umgesetzt: Die WLAN-MAC der Gitarre steht fest als <code>ESPNOW_PROXY_MAC</code> in <code>definitions.h</code>; jedes Paket
+einer anderen Adresse wird verworfen. Die Adresse setzt die Funk-Hardware des Absenders, sie steht nicht im
+Paketinhalt. Zusätzlich: Magic, Version, Länge, Geräte-Bit und Paketart müssen passen. Gegen jemanden, der gezielt
+die MAC der Gitarre fälscht, schützt das nicht (dafür bräuchte es eine Signatur je Paket, z.B. HMAC mit gemeinsamem
+Schlüssel); gegen jedes andere ESP-NOW-Gerät in der Halle schon.</p>
+<div class="warn">Die MAC der Gitarre (<code>48:CA:43:80:8B:94</code>) ist aus ihrer Bluetooth-Adresse abgeleitet (− 1, wie
+bei Lampe 1 gemessen). Beim ersten Start der ESP-NOW-Firmware gibt die Gitarre ihre echte MAC auf Serial aus
+(<code>ESP-NOW: aktiv auf Kanal 1, MAC …</code>) - stimmt sie nicht, hören die Clients nichts (rote Warn-LEDs). Dann den
+Wert in <code>definitions.h</code> korrigieren.</div>
 
 <!-- ================================================================== -->
 <h2 id="ablaeufe">6. Abläufe Schritt für Schritt</h2>
@@ -533,11 +540,11 @@ Aufgabe steht jeweils im Issue):</p>
 <div class="tablewrap"><table>
   <tr><th>Issue</th><th>Inhalt</th><th>Phase</th><th>blockiert durch</th><th>Stand</th></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">#8</a></td><td>Messung mit zwei Boards</td><td>0</td><td>–</td><td>erledigt</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/9">#9</a></td><td>Umbau: Rolle/Funkweg trennen, Sync-Module</td><td>1</td><td>–</td><td>offen</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/10">#10</a></td><td>Alle Geräte auf ESP-NOW: Broadcast-Weg, Paket-Modul + Tests, OTA-Befehl, Umstellung</td><td>2</td><td>#9</td><td>offen</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/11">#11</a></td><td>Rückweg: Stand lesen / holen</td><td>3</td><td>#10</td><td>offen</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/12">#12</a></td><td>Lebenszeichen + Warn-LEDs</td><td>4</td><td>#10</td><td>offen</td></tr>
-  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle: Zählung der Clients</td><td>5</td><td>#12</td><td>offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/9">#9</a></td><td>Umbau: Rolle/Funkweg trennen, Sync-Module</td><td>1</td><td>–</td><td>umgesetzt (127e993), Probe offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/10">#10</a></td><td>Alle Geräte auf ESP-NOW: Broadcast-Weg, Paket-Modul + Tests, OTA-Befehl, Umstellung</td><td>2</td><td>#9</td><td>umgesetzt (cff1b40), Umstellung + Probe offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/11">#11</a></td><td>Rückweg: Stand lesen / holen</td><td>3</td><td>#10</td><td>umgesetzt, Probe offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/12">#12</a></td><td>Lebenszeichen + Warn-LEDs</td><td>4</td><td>#10</td><td>umgesetzt, Probe offen</td></tr>
+  <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/13">#13</a></td><td>OTA für alle: Zählung der Clients</td><td>5</td><td>#12</td><td>umgesetzt, Probe offen</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/16">#16</a></td><td>Probe mit allen Geräten vor dem ersten Auftritt</td><td>6</td><td>#11, #12, #13</td><td>offen</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/17">#17</a></td><td>BLE-Code entfernen (nach erfolgreichen Auftritten)</td><td>7</td><td>#16</td><td>offen</td></tr>
   <tr><td><a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/14">#14</a></td><td>Neue Lampen lampe3/lampe4 als Klone</td><td>später</td><td>#10</td><td>offen</td></tr>
@@ -563,21 +570,29 @@ Aufgabe steht jeweils im Issue):</p>
         <li><b>Ausgleich der Wiederholungs-Verspätung (#15):</b> nicht nötig, geschlossen.</li>
       </ul>
       Alle Messwerte: <a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/8">Issue #8</a>.</div></li>
-  <li><b>Umbau: Rolle und Funkweg trennen, ohne neues Verhalten (#9)</b> <span class="badge b-open">offen</span>
+  <li><b>Umbau: Rolle und Funkweg trennen, ohne neues Verhalten (#9)</b> <span class="badge b-work">umgesetzt, Probe offen</span>
+    <div class="note">19.10.2026, Branch <code>espnow</code>, Commit <code>127e993</code>: <code>syncTransport.h</code>,
+      <code>syncProxy</code>/<code>syncClient</code>, BLE-Dateien als reiner Transport, <code>IS_SYNC_CLIENT</code>,
+      <code>syncLinkMissing()</code>. 13 Tests grün, alle 5 Envs bauen (BLE-Fassung gleich groß wie vorher).</div>
     <p><code>IS_SYNC_CLIENT</code> und die Funkweg-Einstellung einführen, <code>applyAction()</code> nach
       <code>syncProxy</code>/<code>syncClient</code> ziehen, <code>syncLinkMissing()</code>. Es läuft weiter nur BLE.</p>
     <p><b>Abnahme:</b> alle 5 Envs bauen, Hardware-Probe zeigt dasselbe Verhalten wie vorher.</p></li>
-  <li><b>Alle Geräte auf ESP-NOW (#10)</b> <span class="badge b-open">offen</span>
+  <li><b>Alle Geräte auf ESP-NOW (#10)</b> <span class="badge b-work">umgesetzt, Umstellung + Probe offen</span>
+    <div class="note">19.10.2026, Branch <code>espnow</code>, Commit <code>cff1b40</code> (zusammen mit #11–#13):
+      <code>espNowFrame</code> (10 neue native Tests, 23 grün), <code>espNowSync</code>, ESP-NOW als Standard, BLE per
+      <code>-D SYNC_VIA_BLE</code>. Firmware ~165 KB kleiner. Danach: Absenderprüfung über <code>ESPNOW_PROXY_MAC</code>.
+      <b>Nächster Schritt:</b> ESP-NOW-Firmware per „OTA für alle“ der alten Firmware verteilen (Abschnitt 6a), MAC der
+      Gitarre auf Serial prüfen, dann Probe (#16).</div>
     <p>Paket-Modul + native Tests, ESP-NOW-Adapter für Proxy und Client, Broadcast mit 3 Kopien, ESP-NOW als Standard,
       BLE nur noch per Flag. OTA-Befehl per ESP-NOW (vorerst mit fester Wartezeit). Umstellung aller Geräte wie in
       Abschnitt 6a.</p>
     <p><b>Abnahme:</b> alle Geräte folgen Songstart, Part-Sprung, Abgleich erzwingen und Not-Aus per ESP-NOW; OTA für
       alle per ESP-NOW funktioniert.</p></li>
-  <li><b>Rückweg: Stand lesen und holen (#11)</b> <span class="badge b-open">offen</span>
+  <li><b>Rückweg: Stand lesen und holen (#11)</b> <span class="badge b-work">umgesetzt, Probe offen</span>
     <p>READ_REQ/READ_RESP für den Kurzklick am Client, WRITE für den Doppelklick am Proxy.</p></li>
-  <li><b>Lebenszeichen + Warn-LEDs (#12)</b> <span class="badge b-open">offen</span>
+  <li><b>Lebenszeichen + Warn-LEDs (#12)</b> <span class="badge b-work">umgesetzt, Probe offen</span>
     <p><code>HELLO</code>/<code>HELLO_ACK</code>, Peer-Tabelle, <code>syncLinkMissing()</code> für ESP-NOW.</p></li>
-  <li><b>OTA für alle: Zählung (#13)</b> <span class="badge b-open">offen</span>
+  <li><b>OTA für alle: Zählung (#13)</b> <span class="badge b-work">umgesetzt, Probe offen</span>
     <p>Der Proxy wartet, bis alle erwarteten Clients ein <code>HELLO_ACK</code> geschickt haben, mit lila Balken wie heute.</p></li>
   <li><b>Probe vor dem ersten Auftritt (#16)</b> <span class="badge b-open">offen</span>
     <p>Checkliste aus Abschnitt 11 mit allen Geräten.</p></li>

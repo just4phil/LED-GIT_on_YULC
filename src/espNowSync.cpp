@@ -34,6 +34,13 @@
 //            Lesen (Kurzklick)  -> KIND_READ_REQ an den Proxy, Antwort an syncClient_readResult()
 //            an den Proxy schreiben -> KIND_WRITE, kurz versetzt je Gerät (damit nicht alle gleichzeitig senden)
 //
+// SICHERHEIT
+// Ein Client nimmt NUR Pakete von der Funkadresse der Gitarre an (ESPNOW_PROXY_MAC in definitions.h); andere
+// Absender gibt es nicht. Die Adresse setzt die Funk-Hardware des Absenders selbst. Zusätzlich fallen fremde
+// Pakete schon an Magic, Version und Länge heraus (espNowDecode). Broadcasts lassen sich bei ESP-NOW nicht
+// verschlüsseln; gegen jemanden, der gezielt die MAC der Gitarre fälscht, schützt das nicht - wohl aber gegen
+// jedes andere ESP-NOW-Gerät in der Halle.
+//
 // WICHTIG ZUM VERSTÄNDNIS
 // - Die Empfangsfunktion onReceive() ruft die WLAN-Bibliothek in ihrem eigenen Task auf, nicht in loop(). Sie legt
 //   das Paket deshalb nur in einen kleinen Ringpuffer; ausgewertet wird alles in ..._loop() (aus loop()).
@@ -278,8 +285,8 @@ void proxyTransport_loop() {
 //====================================================================
 // Client
 //====================================================================
+static const uint8_t proxyMac[6] = ESPNOW_PROXY_MAC;	// die EINZIGE Adresse, von der Pakete angenommen werden (definitions.h)
 static bool proxyKnown = false;		// schon ein Paket vom Proxy gehört?
-static uint8_t proxyMac[6];			// seine Funkadresse (für gezielte Pakete)
 static uint32_t lastHeardMs = 0;	// wann zuletzt
 
 // An den Proxy schreiben, kurz versetzt: antworten alle Clients auf dieselbe Frage (SYNC_ASK), senden sie so
@@ -299,6 +306,7 @@ static bool readRetried = false;
 
 void clientTransport_initialize() {
 	startRadio();
+	if (radioOk) ensurePeer(proxyMac);	// der Proxy als Gegenstelle für gezielte Pakete
 }
 
 bool clientTransport_isLinked() {
@@ -335,15 +343,13 @@ void clientTransport_loop() {
 	RxEntry e;
 	while (popRx(e)) {
 		const EspNowFrame& f = e.frame;
-		// Nur Pakete des Proxys zählen (erkannt an seinem Geräte-Bit). Seine Adresse wird jedes Mal übernommen:
-		// so findet der Client ihn auch nach einem Tausch des Boards wieder.
+		// Sicherheit: nur Pakete von der Funkadresse der Gitarre (ESPNOW_PROXY_MAC) annehmen. Die Adresse e.mac
+		// setzt die Funk-Hardware des Absenders, sie steht nicht im Paketinhalt. Zusätzlich muss der Rahmen vom
+		// Proxy kommen (Geräte-Bit) und eine Proxy-Art haben. Alles andere wird stillschweigend verworfen.
+		if (memcmp(e.mac, proxyMac, 6) != 0) continue;
 		if (f.device != DEV_GIT) continue;
 		if (f.kind != KIND_MSG && f.kind != KIND_HELLO && f.kind != KIND_READ_RESP) continue;
-		if (!proxyKnown || memcmp(proxyMac, e.mac, 6) != 0) {
-			memcpy(proxyMac, e.mac, 6);
-			ensurePeer(proxyMac);
-			proxyKnown = true;
-		}
+		proxyKnown = true;
 		lastHeardMs = now;
 		switch (f.kind) {
 			case KIND_MSG:			// erste Kopie ausführen, Wiederholungen verwerfen

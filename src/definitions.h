@@ -144,6 +144,12 @@
 #define ESPNOW_EXPECTED_CLIENTS	4		// so viele Clients gibt es (Bass, Lampe 1, Lampe 2, Matrix) - OTA-Warten am Proxy
 #define ESPNOW_REPLY_STAGGER_MS	2		// Antworten an den Proxy je Gerät so viel ms x Nummer des Geräte-Bits versetzt
 #define ESPNOW_READ_TIMEOUT_MS	200		// Leseanfrage (Kurzklick am Client) ohne Antwort: nach so vielen ms einmal wiederholen
+// Sicherheit: Clients nehmen NUR Pakete von dieser Funkadresse an - der WLAN-MAC der Gitarre ANDRESGIT (YULC1).
+// Andere Absender gibt es nicht (Vorgabe des Users 19.10.2026); alles andere wird verworfen. Die MAC setzt die
+// Funk-Hardware selbst in jedes Paket, sie steht nicht im Paketinhalt. Abgeleitet aus der Bluetooth-Adresse der
+// Gitarre (48:ca:43:80:8b:95) minus 1, so wie bei Lampe 1 gemessen (WLAN 98:74, Bluetooth 98:75). Die Gitarre
+// gibt ihre echte MAC beim Start auf Serial aus ("ESP-NOW: aktiv ... MAC ...") - bei Board-Tausch hier eintragen.
+#define ESPNOW_PROXY_MAC		{0x48, 0xCA, 0x43, 0x80, 0x8B, 0x94}
 //---------------------------------------------------------------------------------------
 
 //==== Geräte-Identität für Szenen (scenes.cpp) =========================================
