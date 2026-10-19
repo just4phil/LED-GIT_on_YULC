@@ -80,6 +80,7 @@
       <a href="#timing"><b>5</b>Zuverlässigkeit &amp; Timing</a>
       <a href="#ablaeufe"><b>6</b>Abläufe</a>
       <a href="#umstellung"><b>6a</b>Die Umstellung</a>
+      <a href="#rueckweg"><b>6b</b>Zurück zu BLE</a>
       <a href="#dateien"><b>7</b>Dateien</a>
       <a href="#phasen"><b>8</b>Phasen &amp; Arbeitsstand</a>
       <a href="#risiken"><b>9</b>Risiken</a>
@@ -470,10 +471,43 @@ jeder Client vor dem Senden eine kleine, geräteabhängige Zeit (z.B. 2 ms × Ge
     (<code>pio run -e &lt;gerät&gt; -t upload</code>).</li>
   <li><b>Weitere Updates</b> laufen über das „OTA für alle“ der neuen Firmware per ESP-NOW.</li>
 </ol>
-<div class="warn"><b>Rückweg:</b> Solange der BLE-Code noch im Repo ist, lässt sich mit dem Build-Flag eine BLE-Firmware
-bauen. Weil OTA nur eine <i>neuere</i> Version lädt, bekommt sie automatisch eine neue Versionsnummer
-(<code>tools/fw_version.py</code>) und lässt sich per „OTA für alle“ (jetzt per ESP-NOW ausgelöst) wieder auf alle Geräte
-bringen. Zur Not per USB.</div>
+<div class="warn"><b>Rückweg:</b> Der BLE-Code ist nicht ersetzt, sondern nur abgeschaltet. Mit einem Build-Flag ist
+die alte Bluetooth-Fassung jederzeit wieder da, Schritt für Schritt in <a href="#rueckweg">6b</a>.</div>
+
+<!-- ================================================================== -->
+<h2 id="rueckweg">6b. Zurück zu BLE (Rückweg per Build-Flag)</h2>
+<p>ESP-NOW wurde <b>ergänzt</b>, nicht an die Stelle von BLE gesetzt. Beide Funkwege liegen vollständig im Code, gebaut
+wird immer genau einer:</p>
+<div class="tablewrap"><table>
+  <tr><th>Was</th><th>ESP-NOW (Standard)</th><th>BLE (Rückweg)</th></tr>
+  <tr><td>Build-Flag</td><td>keins (oder <code>-D SYNC_VIA_ESPNOW</code>)</td><td><code>-D SYNC_VIA_BLE</code></td></tr>
+  <tr><td>Funk-Dateien</td><td><code>espNowSync.cpp</code> (+ <code>espNowFrame.cpp</code>)</td>
+      <td><code>midiProxyBLEserver_nimBLE.cpp</code> (Gitarre), <code>BLE_client_nimBLE.cpp</code> (alle anderen)</td></tr>
+  <tr><td>Die jeweils anderen Dateien</td><td colspan="2">werden zu leeren Dateien übersetzt (<code>#if … defined(SYNC_VIA_…)</code>
+      ganz oben in der Datei)</td></tr>
+  <tr><td>Gleich bei beiden</td><td colspan="2">Protokoll und Entscheidungen (<code>ledSync.cpp</code>),
+      <code>syncProxy</code>/<code>syncClient</code>, die 3-Byte-<code>BLEmessage</code>, MIDI, Knopf, Warn-LEDs, OTA für alle</td></tr>
+</table></div>
+<p>Die Auswahl steht in <code>src/definitions.h</code> (Abschnitt „Funkweg für den LED-Sync“): Ist kein Flag gesetzt, gilt
+ESP-NOW. Sind beide gesetzt, bricht der Build mit einer Fehlermeldung ab.</p>
+<h3>So geht es zurück zu BLE</h3>
+<ol>
+  <li>In <code>platformio.ini</code>, Abschnitt <code>[esp32_base]</code>, die vorbereitete Zeile
+      <code>;-D SYNC_VIA_BLE</code> einkommentieren (das <code>;</code> entfernen). Weil alle Geräte-Envs von
+      <code>esp32_base</code> erben, gilt das Flag damit für alle Geräte und auch für <code>tools/build_ota.py</code>.</li>
+  <li><b>Alle</b> Geräte neu bauen und aufspielen: <code>python tools/build_ota.py</code> und dann „OTA für alle“
+      (der Befehl dazu geht noch per ESP-NOW raus, die neue Firmware spricht danach BLE), oder einzeln per USB
+      (<code>pio run -e &lt;gerät&gt; -t upload</code>).</li>
+  <li>Kontrolle wie bei der Umstellung: Warn-LEDs aus, Songstart per MIDI, Kurzklick.</li>
+</ol>
+<div class="warn"><b>Nie gemischt:</b> Ein Gerät mit ESP-NOW und eines mit BLE hören einander nicht. Hat ein Gerät das
+Update verpasst, zeigt es die Warn-LEDs und muss per USB nachgeflasht werden. Zurück zu ESP-NOW geht genauso: die Zeile
+wieder auskommentieren und alle Geräte neu aufspielen.</div>
+<p>Weil OTA nur eine <i>neuere</i> Version lädt, bekommt jeder Build automatisch eine neue Versionsnummer
+(<code>tools/fw_version.py</code>), der Wechsel in beide Richtungen klappt also auch per OTA.
+Der Rückweg ist vorübergehend: Nach den ersten erfolgreichen Auftritten mit ESP-NOW werden die BLE-Dateien, NimBLE und
+das Flag entfernt (<a href="https://github.com/just4phil/LED-GIT_on_YULC/issues/17">#17</a>). Ab dann gibt es diesen Weg
+nicht mehr.</p>
 
 <!-- ================================================================== -->
 <h2 id="dateien">7. Neue und geänderte Dateien</h2>

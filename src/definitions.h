@@ -126,7 +126,9 @@
 //   SYNC_VIA_ESPNOW  ESP-NOW-Broadcast ohne Verbindung (espNowSync.cpp)
 // Standard ist ESP-NOW (Entscheidung 19.10.2026 nach der Messung in Issue #8: alle Geräte starten genauer
 // gleichzeitig). BLE bleibt als Rückweg: mit dem Build-Flag -D SYNC_VIA_BLE entsteht die alte Bluetooth-Fassung
-// (wird nach den ersten Auftritten mit ESP-NOW entfernt, Issue #17).
+// (wird nach den ersten Auftritten mit ESP-NOW entfernt, Issue #17). Die Zeile dafür steht vorbereitet in
+// platformio.ini unter [esp32_base] (";-D SYNC_VIA_BLE" einkommentieren), danach ALLE Geräte neu aufspielen -
+// gemischt hören sich die Geräte nicht. Schritt für Schritt: docs/ESP-NOW-Plan.html, Abschnitt 6b.
 #if !defined(SYNC_VIA_BLE) && !defined(SYNC_VIA_ESPNOW)
 	#define SYNC_VIA_ESPNOW
 #endif

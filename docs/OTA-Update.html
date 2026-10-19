@@ -352,6 +352,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 </table></div>
 <p><b>Sicherheit:</b> Clients nehmen nur Pakete von der WLAN-MAC der Gitarre an (<code>ESPNOW_PROXY_MAC</code> in <code>definitions.h</code>); fremde Pakete fallen außerdem an Magic/Version/Länge heraus. Broadcasts lassen sich bei ESP-NOW nicht verschlüsseln.</p>
 <h3>BLE (Rückweg, <code>-D SYNC_VIA_BLE</code>)</h3>
+<p>Der BLE-Code ist weiterhin vollständig im Projekt, nur abgeschaltet. Zurück zu BLE: in <code>platformio.ini</code> unter <code>[esp32_base]</code> die Zeile <code>;-D SYNC_VIA_BLE</code> einkommentieren und <b>alle</b> Geräte neu aufspielen. Per „OTA für alle“ geht das, denn der Befehl läuft noch über den alten Funkweg, erst die neue Firmware spricht BLE. Gemischt verstehen sich die Geräte nicht. Anleitung: <code>docs/ESP-NOW-Plan.html</code>, Abschnitt 6b.</p>
 <p>Eine Characteristic mit READ/WRITE/NOTIFY. Welche Clients der Proxy akzeptiert, steht in <code>client_addresses[]</code> in <code>midiProxyBLEserver_nimBLE.cpp</code>; deren Anzahl ist die Zahl, auf die das OTA-Warten wartet.</p>
 
 <h2 id="flash">10 · Flash-Partitionen</h2>

@@ -128,6 +128,11 @@ must be uncommented.
 Each device define switches its features on automatically (`HAS_MIDI_IN`, `IS_MIDI_PROXY`, `IS_SYNC_CLIENT`,
 `HAS_ROTARY_ENCODER`, `HAS_LIPOVOLTAGE_CHECK`, `NOMARKER` ...). They are not meant to be set by hand.
 
+**Radio transport.** ESP-NOW is the default. The Bluetooth LE sync is still fully in the code and can be brought
+back with one build flag: uncomment the prepared line `;-D SYNC_VIA_BLE` in `[esp32_base]` in `platformio.ini`, then
+rebuild and flash **all** devices (USB or OTA). Devices on different transports cannot hear each other. The BLE
+fallback will be removed after the first gigs (issue #17). Step by step: `docs/ESP-NOW-Plan.html`, section 6b.
+
 **FastLED is pinned to 3.5.0.** Newer versions (3.9.x) do not build for the ESP32-S3 in this project.
 
 Unit tests for the LED sync protocol (`src/ledSync.cpp`) and the ESP-NOW frame (`src/espNowFrame.cpp`) run on the
