@@ -17,7 +17,7 @@ one ESP-NOW broadcast (WiFi radio, no router), and from then on every device run
 - **Scenes across all devices**: one scene name (calm, verse, build-up, drop, fire, star, rain ...) gives each
   device type its matching effect, in a shared colour scheme
 - **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
-  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness (also as a cascade that builds up from device to device and fades out on all at once)
+  gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness (also as a cascade that builds up from device to device and fades out on all at once, or behind the letters of the title scroll text)
 - **MIDI start, ESP-NOW sync**: only the song start and manual part jumps are transmitted, as one broadcast that
   reaches all devices at the same moment (each message sent 3 times against losses); everything else runs locally,
   so the devices stay in sync regardless of their LED count. Any number of devices can listen. The older Bluetooth

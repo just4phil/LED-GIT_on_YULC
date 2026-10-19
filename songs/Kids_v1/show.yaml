@@ -29,8 +29,11 @@ sections:
 
   "chorus intro":
     fx: "progFastBlingBling(${dur}, 8, ${next})"
-    transition: flash
-    why: "Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher)."
+    # Test des Users (19.10.2026): statt "transition: flash" ein halb starker warmweißer Blinder, gleich lang (1 Beat).
+    # Grund: progFastBlingBling stellt die Gesamthelligkeit auf 255, der weiße Blitz lag damit voll weiß auf allen
+    # 540 LEDs der Matrix (über 3,6 A, das Labornetzteil riegelte ab). Warmweiß zu 50 % braucht gut ein Drittel davon.
+    blinder: {at: 0, len: 1, amount: 50}
+    why: "Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher)."
 
   "verse 1":
     scene: SCENE_VERSE

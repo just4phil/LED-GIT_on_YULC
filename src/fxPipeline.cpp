@@ -37,7 +37,8 @@ extern boolean progStroboIsBlack;
 //     -> Ebenen darüberlegen (applyLayers): zweiter Effekt, dann Text
 //     -> Modifikatoren (applyMods): Helligkeit, Färbung, Ausschnitt
 //     -> Übergang vom alten Part (applyTransition)
-//     -> Blinder (applyBlinder; mit Kaskade geht jedes Gerät um seinen eigenen Versatz früher an)
+//     -> Blinder (applyBlinder; mit Kaskade geht jedes Gerät um seinen eigenen Versatz früher an;
+//                 mit fxBlinderBehind nur auf den dunklen LEDs, hinter dem Bild)
 //     -> Marker + Kopie auf die beiden Ausgänge (gitBlindingLEDs_OFF_MarkerLEDs_ON)
 //     -> FastLED.show()                  (nur wenn sich das Bild geändert hat)
 //
@@ -126,6 +127,7 @@ static struct {
 	BlinderMod blinder[FX_BLINDER_SLOTS];		// die Blinder des Parts, einer je Platz (lenMs 0 = Platz frei)
 	uint8_t blinderSlot;						// fxBlinderSlot: in diesen Platz schreiben fxBlinder / fxBlinderBeat / fxBlinderShape
 	bool blinderUnderText;						// fxBlinderUnderText: die Blinder des Parts liegen UNTER dem Text (heller Hintergrund)
+	bool blinderBehind;							// fxBlinderBehind: die Blinder füllen nur die dunklen LEDs (hinter dem Bild)
 } mod;
 static bool modReady = false;	// false, bis mod zum ersten Mal mit resetMods() gefüllt wurde
 
@@ -196,6 +198,7 @@ void fxBlinderCascade(unsigned int stepMillis, uint32_t stepsCode) {
 }
 void fxBlinderSchemeColor()	{ mod.blinder[mod.blinderSlot].schemeCol = true; }
 void fxBlinderUnderText()	{ mod.blinderUnderText = true; }
+void fxBlinderBehind()		{ mod.blinderBehind = true; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
 void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
@@ -554,17 +557,29 @@ static uint8_t blinderLevel(uint32_t beatMs) {
 // Der Blinder nutzt die volle Leuchtkraft der LEDs: bei vollem Blinder steigt die Gesamthelligkeit auf 255 (100 %),
 // egal wie hell das Gerät sonst eingestellt ist. Das Bild des Effekts wird im selben Maß heruntergerechnet und bleibt
 // so gleich hell - nur der Blinder selbst strahlt.
-static void applyBlinder(CRGB* buf, uint8_t level) {
+// behind = true (fxBlinderBehind): der Blinder füllt nur die dunklen LEDs, z. B. den Grund hinter dem Titel-Lauftext.
+static void applyBlinder(CRGB* buf, uint8_t level, bool behind) {
 	// Farbe des gerade stärksten Blinders (blinderLevel); mit fxBlinderSchemeColor die Schemafarbe dieses Geräts
 	const CRGB col = mod.blinder[blinderTop].schemeCol ? deviceColor() : mod.blinder[blinderTop].col;
 	const uint8_t base = FastLED.getBrightness();	// die normale Gesamthelligkeit
 	uint8_t bright = base + (uint16_t)(255 - base) * level / 255;	// je stärker der Blinder gerade ist, desto näher an 255
+	uint8_t keep = 255;		// um diesen Faktor wird das Bild des Effekts dunkler gerechnet (255 = gar nicht)
 	if (bright != base) {
-		uint8_t keep = (uint16_t)base * 255 / bright;	// um diesen Faktor wird das Bild des Effekts dunkler gerechnet
-		for (int i = 0; i < NUMMATRIX; i++) buf[i].nscale8(keep);
+		keep = (uint16_t)base * 255 / bright;
 		FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 	}
-	for (int i = 0; i < anz_LEDs; i++) buf[i] = blend(buf[i], col, level);	// nur echte LEDs
+	for (int i = 0; i < NUMMATRIX; i++) {
+		// behind (fxBlinderBehind): wie hell leuchtet diese LED im Bild des Effekts? Gemessen VOR dem Herunterrechnen
+		// am hellsten Farbanteil; "* 4" = schon ein Viertel Helligkeit zählt als ganz belegt (die Buchstaben des
+		// Lauftexts haben eine zufällige, oft nicht volle Farbe). Belegte LEDs behalten ihr Bild, dunkle bekommen
+		// den Blinder - er liegt so HINTER dem Bild, die Schrift bleibt lesbar.
+		uint8_t lit = max(buf[i].r, max(buf[i].g, buf[i].b));
+		if (keep != 255) buf[i].nscale8(keep);
+		if (i >= anz_LEDs) continue;	// nur echte LEDs bekommen den Blinder
+		uint8_t a = level;
+		if (behind) a = scale8(level, 255 - (uint8_t)min(255, lit * 4));
+		buf[i] = blend(buf[i], col, a);
+	}
 }
 
 // Helligkeit aus allen Modifikatoren, die das ganze Gerät betreffen
@@ -955,7 +970,8 @@ void fxPresent() {
 			if (modsActive(bright)) applyMods(ledsOut, bright);
 			if (trans) applyTransition(ledsOut, ms);
 			if (textLast >= 0) dimUnderText(ledsOut, ms, textLast);
-			if (blinder) applyBlinder(ledsOut, blinder);
+			// fxBlinderBehind gilt nur ohne Text-Unterlage (dort hat fxBlinderUnderText schon den Vorrang)
+			if (blinder) applyBlinder(ledsOut, blinder, mod.blinderBehind && textLast < 0);
 			if (textLast >= 0) applyTextOverBlinder(ledsOut, ms, textLast);
 			fxFrame = ledsOut;
 		}

@@ -11,7 +11,20 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 18.10.2026 (Blinder-Kaskade gebaut, Demo 92 Parts 67-69, Abnahme offen)
+Zuletzt aktualisiert: 19.10.2026 (Blinder hinter dem Titel-Lauftext, Demo 92 Part 71, Abnahme offen)
+
+- **19.10.2026, Blinder statt Blitz bei BlingBling + Blinder hinter dem Titel-Lauftext - Envs bauen,
+  committet, Abnahme offen.** Anlass: in Kids „chorus intro“ zog `transition: flash` + `progFastBlingBling` (setzt die
+  Gesamthelligkeit auf 255) über 3,6 A auf der Matrix, das Labornetzteil riegelte ab, der ESP resettete in Song 0.
+  Regel des Users: diese Kombination vermeiden, stattdessen `blinder: {at: 0, len: 1, amount: 50}` (Kids und Maniac
+  „rock intro“ umgestellt, Timing und MIDI unverändert; SKILL.md). In Maniac lief dort auf der Matrix noch der Titel,
+  Wunsch: „kann man den blinder da unter der schrift dennoch einblenden?“. Neu: `fxBlinderBehind()` (applyBlinder mit
+  `behind`: Gewicht je LED = level × (1 - 4 × hellster Farbanteil), Buchstaben bleiben stehen; greift nur ohne
+  Text-Ebene, eigener Schalter, damit `fxBlinderUnderText()` auf Geräten ohne Ebene unverändert bleibt). songgen.py:
+  `title: true` im `blinder` -> `title_blinder_calls()` meldet ihn im Lauftext-case der Scroll-Geräte an (Zeit auf den
+  case umgerechnet). Ohne `title` gleicher Code wie vorher. Demo 92: Part 71 vorn (Doku-Tabelle +19 s). Doku:
+  LED-Effekte-und-Szenen.html, SKILL.md, effekt-katalog.yaml, CLAUDE.md. Nächster Schritt: Urteil des Users zu
+  Part 71 und Maniac Takt 12 auf der Matrix.
 
 - **18.10.2026, Blinder-Kaskade - alle fünf Envs bauen, noch nicht committet, Abnahme offen.** Idee des Users:
   „blinder der sich von gerät zu gerät aufbaut (also schnell nacheinander) aber dann faden alles gleichzeitig lange

@@ -1,0 +1,238 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 18.10.2026).
+# Erste generierte Fassung des handgeschriebenen Songs Maniac (Song-ID 30, bisher Maniac_Tminus1() - die Fassung
+# einen Halbton tiefer). Der alte Code bleibt in src/songs.cpp stehen, in main.cpp ist nur sein Aufruf auskommentiert
+# (Wunsch des Users, 18.10.2026: "für alle noch nicht generierten songs jetzt den song neu generieren. dabei die
+# vorschläge der KI übernehmen. den alten code erstmal nur auskommentieren!").
+# Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: schnell und hell
+# (157 BPM). Strophen in ROYAL/NEON, der Chorus als Stern in NEON, zum Schluss FIRE. Gegen die Länge der 14-Takte-
+# Chorusse helfen Blinder und der Lampen-Backbeat; der Vorschlag "bei Takt 51 eine eigene Zeile chorus 1b" ist
+# umgesetzt (songgen.py --part-name 51="chorus 1b"). Parts ohne Vorschlag behalten ihren alten Effekt; Strobo nach der
+# Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# Kein Trailer springt in diesen Song. Schluss-Black 10 s: steht in der Tabelle in der Zeile "Ende".
+# Taktnummern (bar:) zählen wie die Tabelle ab 1 (DAW Cakewalk).
+
+function: gen_Maniac
+scheme: SCHEME_NEON
+# Kein end_blinder: der Schluss-Blinder in strobe (5) klingt mit carry: true selbst ins Schluss-Schwarz aus.
+
+# Bund-Marker aus Maniac_Tminus1() in src/songs.cpp: case 40 (instrumental a) und case 42 (instrumental b) setzen unter
+# #ifdef GIT markerLED1..6 = ESaite_E, ESaite_Fis, 0, ESaite_B, ASaite_G, ASaite_Fis. Gegenüber den Grund-Markern im
+# case 30 von src/markerLEDs.cpp ändert sich dabei nur Slot 3 (ESaite_G -> aus). Der alte Code schaltet ihn danach
+# nicht wieder ein; hier gilt das "aus" für die beiden Instrumental-Parts, danach wieder die Grund-Marker.
+markers:
+  parts:
+    "instrumental a": {guitar: {3: 0}}
+    "instrumental b": {guitar: {3: 0}}
+
+# Wiederkehrende Bausteine (YAML-Anker: &name legt fest, *name / <<: *name setzt ein)
+strobe: &strobe
+  scene: SCENE_COLORS
+  scheme: SCHEME_WHITE
+  gate: 4
+  why: "Weißer Strobo im Takt (4 Blitze pro Beat)."
+knife: &knife
+  scene: SCENE_PALETTE
+  scheme: SCHEME_SUNSET
+  overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 27}    # knapp unter den 7 Takten des Parts
+  why: "'cut you like a knife': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf."
+# MANIAC über dem Stern: steht 2 Takte und blendet dann in 2 Beats aus; outline = schwarzer Rand, damit die Schrift
+# auch über dem Blinder auf den Einsatz lesbar bleibt. Zweites Fenster bei Takt 52 / 94 / 150 (Wünsche des Users):
+# jeweils 8 Beats nach der Zeile, gleich lang wie das erste.
+maniac_text: &mtext {words: "MANIAC", per: 60, over: true, outline: true, to: 8, fade_out: 2}
+maniac_text2: &mtext2 {words: "MANIAC", per: 60, over: true, outline: true, windows: [[0, 8], [32, 40]], fade_out: 2}
+
+sections:
+  "pause":
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext)."
+
+  "drums intro":
+    # Ping-Pong nur auf den Bühnenplätzen 1-3 (Bass, Matrix, Gitarre): die Lampen (Platz 0 und 4) bleiben dabei dunkel
+    fx: "progPingPong(${dur}, ${next}, ${bpm}, 1, 3)"
+    scheme: SCHEME_WHITE
+    # Wunsch: je Takt 5, 7, 9, 11 "Takt+0,125" ein kurzer Blinder auf Lampe 1 (x,25) und Lampe 2 (x,5), halber Takt Ausklingen
+    blinder:
+      - {bar: 5.375,  len: 2, devices: [LAMPE1]}
+      - {bar: 5.625,  len: 2, devices: [LAMPE2]}
+      - {bar: 7.375,  len: 2, devices: [LAMPE1]}
+      - {bar: 7.625,  len: 2, devices: [LAMPE2]}
+      - {bar: 9.375,  len: 2, devices: [LAMPE1]}
+      - {bar: 9.625,  len: 2, devices: [LAMPE2]}
+      - {bar: 11.375, len: 2, devices: [LAMPE1]}
+      - {bar: 11.625, len: 2, devices: [LAMPE2]}
+    cues:
+      5.25: "Blinder auf Lampe 1 bei Takt 5,375, klingt einen halben Takt aus"
+      5.5: "Blinder auf Lampe 2 bei Takt 5,625, klingt einen halben Takt aus"
+      7.25: "Blinder auf Lampe 1 bei Takt 7,375, klingt einen halben Takt aus"
+      7.5: "Blinder auf Lampe 2 bei Takt 7,625, klingt einen halben Takt aus"
+      9.25: "Blinder auf Lampe 1 bei Takt 9,375, klingt einen halben Takt aus"
+      9.5: "Blinder auf Lampe 2 bei Takt 9,625, klingt einen halben Takt aus"
+      11.25: "Blinder auf Lampe 1 bei Takt 11,375, klingt einen halben Takt aus"
+      11.5: "Blinder auf Lampe 2 bei Takt 11,625, klingt einen halben Takt aus"
+    why: "Nur das Schlagzeug spielt: pro Beat leuchtet genau eines von Bass, Matrix und Gitarre weiß auf. Die Lampen sind dunkel und blitzen alle 2 Takte kurz nacheinander auf (Lampe 1, eine Viertel später Lampe 2), jeweils eine Achtel nach der Zeile."
+
+  "rock intro":
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    # Wunsch des Users (19.10.2026): statt "transition: flash" ein halb starker warmweißer Blinder, gleich lang (1 Beat).
+    # Grund: progFastBlingBling stellt die Gesamthelligkeit auf 255, der weiße Blitz lag damit voll weiß auf allen
+    # 540 LEDs der Matrix (in Kids über 3,6 A gemessen). Sonst bleibt der Song unverändert.
+    blinder: {at: 0, len: 1, amount: 50}
+    why: "Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher)."
+
+  "verse 1a":
+    scene: SCENE_VERSE
+    scheme: SCHEME_ROYAL
+    why: "Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Wasserringe."
+
+  "verse 1b":
+    # Wunsch: ältere Linien sollen ausfaden - letzter Parameter = nach 4 Beats sind sie fast dunkel
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false, ${beats:4})"
+    scheme: SCHEME_NEON
+    why: "Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind."
+
+  "it could cut you like a knife": *knife
+
+  "uebergang":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_NEON
+    why: "Lädt sich einen Takt lang in Pink, Cyan und Violett auf, Explosion genau auf den Chorus."
+
+  "chorus 1":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    soft: 30
+    blinder: {at: 0, len: 2, amount: 100}
+    text: *mtext
+    why: "Drehender Stern in Pink, Cyan und Violett, weiche Farbwechsel, warmweißer Blinder auf den Einsatz; auf der Matrix MANIAC über dem Stern, blendet nach 2 Takten aus."
+
+  "chorus 1b":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    soft: 30
+    blinder: {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    text: {words: "MANIAC", per: 60, over: true, outline: true, from: 4, to: 12, fade_out: 2}
+    cues: {52: "MANIAC erscheint noch einmal über dem Stern, steht 2 Takte, blendet aus"}
+    why: "Zweite Hälfte des Chorus: der Stern läuft weiter, dazu blitzen die Lampen weiß auf 2 und 4; ab Takt 52 noch einmal MANIAC auf der Matrix, blendet nach 2 Takten aus."
+
+  "stehender chord":
+    scene: SCENE_CALM
+    scheme: SCHEME_ROYAL
+    dim: 50
+    blinder: {at: 0.25, len: 13.9, attack: 0.25, amount: 100}    # 13.9: len darf die Part-Länge (14 Beats) nicht erreichen
+    cues: {61: "Strobo kommt erst ab Takt 61,5 (eigener Part), bis dahin läuft der stehende Akkord weiter"}
+    why: "Der stehende Akkord: ein warmweißer Blinder blendet schnell ein und klingt über die ganzen 3,5 Takte aus, darunter atmet die Bühne dunkel in Blau und Lila."
+
+  "strobe":    # beginnt jetzt erst bei Takt 61,5 (Wunsch des Users; die Zeile 61 gehört zum stehenden Akkord)
+    <<: *strobe
+
+  "verse 2a":
+    scene: SCENE_RAIN
+    scheme: SCHEME_NEON
+    fade: {to: triad, per: 8}
+    why: "Anderer Look als verse 1: fallende Leuchtspuren in Pink, Cyan und Violett, die Farben wandern alle 2 Takte weiter."
+
+  "strobe (2)": *strobe    # endet jetzt auf Takt 73 (Wunsch des Users; verse 2b beginnt dort)
+
+  "verse 2b":
+    scene: SCENE_DROP
+    scheme: SCHEME_RED
+    cues: {73.5: "verse 2b läuft weiter (SCENE_DROP, rot)"}
+    why: "Schläge auf die Viertel in Rot auf allen Geräten, ab Takt 73 direkt nach dem kurzen Strobo."
+
+  "ist a cold cinetic heat":
+    scene: SCENE_CALL_RESPONSE_OFFBEAT
+    scheme: SCHEME_NEON
+    why: "Frage/Antwort auf dem Backbeat in Pink, Cyan und Violett: auf 2 blitzt die linke Bühnenhälfte, auf 4 die rechte, auf 1 und 3 ist alles schwarz."
+
+  "strobe (3)": *strobe
+
+  "chorus 2":
+    scene: SCENE_STAR
+    scheme: SCHEME_NEON
+    soft: 30
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    text: *mtext2
+    cues: {94: "MANIAC erscheint noch einmal über dem Stern, steht 2 Takte, blendet aus"}
+    why: "Stern wie in chorus 1 mit Blinder auf den Einsatz, die Lampen blitzen von Anfang an weiß auf 2 und 4; MANIAC auf der Matrix zu Beginn und noch einmal ab Takt 94, jeweils 2 Takte."
+
+  "uebergang zum instrumental":
+    scene: SCENE_WAVE_LR
+    scheme: SCHEME_NEON
+    why: "Der Blitz läuft pro Beat von links nach rechts über die Bühne."
+
+  "instrumental a":
+    scene: SCENE_DNA
+    scheme: SCHEME_NEON
+    why: "Eine DNA-Helix in Pink und Cyan dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben."
+
+  "instrumental b":
+    scene: SCENE_COLORS_WAVE
+    scheme: SCHEME_NEON
+    soft: 60
+    why: "Die Farbe wandert pro Beat weich von Gerät zu Gerät über die Bühne."
+
+  "strobe (4)": *strobe
+
+  "solo a":
+    scene: SCENE_DROP
+    scheme: SCHEME_NEON
+    devices: {ANDRESGIT: "scene(SCENE_SOLO_GIT, ${dur}, ${next}, ${bpm})"}    # die Gitarre zeigt die Solo-Kometen, alle anderen schlagen im Beat
+    transition: stage_lr
+    why: "Gitarrensolo mit Action: der Übergang läuft über die Bühne, auf der Gitarre kreisen zwei Kometen in Pink und Cyan, Bass, Lampen und Matrix schlagen dazu jeden Beat in Pink, Cyan und Violett."
+
+  "solo b":
+    scene: SCENE_SOLO_GIT
+    scheme: SCHEME_SUNSET
+    why: "Das Solo weiter, die Kometen jetzt in Orange, Pink und Gelb."
+
+  "solo c":
+    fx: "progFastBlingBling(${dur}, 8, ${next})"
+    why: "Das Solo dreht auf: schnelle bunte Einzelblitze (wie bisher)."
+
+  "solo d":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_FIRE
+    why: "Alles lädt sich über 4 Takte in Rot, Orange und Gelb auf, Explosion auf 'cut you like a knife'."
+
+  "it could cut you like a knife (2)":
+    scene: SCENE_CALL_RESPONSE_OFFBEAT
+    scheme: SCHEME_NEON
+    why: "Frage/Antwort auf dem Backbeat in Pink, Cyan und Violett: auf 2 blitzt die linke Bühnenhälfte, auf 4 die rechte, auf 1 und 3 ist alles schwarz."
+
+  "uebergang (2)":
+    scene: SCENE_BUILDUP
+    scheme: SCHEME_FIRE
+    why: "Lädt sich einen Takt lang in Rot, Orange und Gelb auf, Explosion genau auf den letzten Chorus."
+
+  "chorus 3":
+    scene: SCENE_STAR
+    scheme: SCHEME_FIRE
+    soft: 30
+    blinder:
+      - {at: 0, len: 2, amount: 100}
+      - {every: 2, at: 1, len: 0.5, color: weiss, devices: [LAMPE1, LAMPE2]}
+    text: *mtext2
+    cues: {150: "MANIAC erscheint noch einmal über dem Stern, steht 2 Takte, blendet aus"}
+    why: "Eine Stufe wärmer: Stern in Rot, Orange und Gelb, Blinder auf den Einsatz, die Lampen blitzen weiß auf 2 und 4; MANIAC auf der Matrix zu Beginn und noch einmal ab Takt 150, jeweils 2 Takte."
+
+  "stehender chord (2)":
+    fx: "progFastBlingBling(${dur}, 2, ${next})"
+    blinder: {bar: 156, len: 4, hold: 0, amount: 100}    # Wunsch 19.10.2026: kürzer - springt auf und klingt sofort über 1 Takt aus
+    why: "Wenige bunte Einzelblitze (wie bisher); ein warmweißer Blinder springt auf die 1 (Takt 156) und klingt über 1 Takt aus."
+
+  "abschluss":
+    scene: SCENE_SPARKLE
+    scheme: SCHEME_FIRE
+    cues: {159.5: "Blinder hier gelöscht - der Schluss-Blinder kommt jetzt erst auf Takt 160 (strobe)"}
+    why: "Dichtes Glitzern in Rot, Orange und Gelb."
+
+  "strobe (5)":
+    fx: "progBlack(${dur}, ${next})"
+    # Wunsch 19.10.2026: "normalen starken langen blinder auf 160 (Höhepunkt bei 160, fade out über 2 Takte)" - keine
+    # Kaskade mehr. Springt auf die 1 des Parts voll auf und klingt 8 Beats aus; der Part ist nur 1 Takt lang, carry: true
+    # lässt den zweiten Takt des Ausklingens im Schluss-Schwarz weiterlaufen.
+    blinder: {bar: 160, len: 8, hold: 0, amount: 100, carry: true}
+    why: "Schwarz; auf Takt 160 springt ein starker warmweißer Blinder voll auf und klingt 2 Takte lang aus, bis ins Schluss-Schwarz."

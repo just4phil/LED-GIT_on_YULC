@@ -598,7 +598,7 @@ def blinder_specs(part, song, offset=0):
 		errors.append(f"{name}: {len(specs)} Blinder in einem Part - möglich sind {slots} (FX_BLINDER_SLOTS in definitions.h); "
 					  f"den Part in der Tabelle teilen oder ein Raster nehmen (every)")
 		specs = specs[:slots]
-	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold", "carry", "cascade")
+	allowed = ("every", "at", "bar", "len", "amount", "color", "devices", "attack", "hold", "carry", "cascade", "title")
 	for slot, one in enumerate(specs):
 		what = "blinder" if len(specs) == 1 else f"blinder {slot + 1}"		# Name in Fehlermeldungen: bei mehreren mit Nummer
 		spec = dict(one) if isinstance(one, dict) else {"every": one}
@@ -682,7 +682,12 @@ def blinder_specs(part, song, offset=0):
 				"every": int(every), "at_ms": at_ms, "len_ms": len_ms, "amount": amount, "col": col,
 				"mask": " | ".join(DEVICE_MASKS[d] for d in devs) if devs else "DEV_ALL", "devs": devs, "shape": shape, "bar_text": bar_text,
 				"carry": spec.get("carry") is True, "scheme_col": scheme_col, "casc": casc,
+				"title": spec.get("title") is True,
 			})
+		# title: true (Wunsch des Users 19.10.2026, Maniac "rock intro"): läuft auf den Scroll-Geräten zu dieser Zeit noch
+		# der Titel-Lauftext, leuchtet der Blinder dort HINTER der Schrift (title_blinder_calls, fxBlinderBehind)
+		if not isinstance(spec.get("title", False), bool) or (spec.get("title") and ("every" in spec or "cascade" in spec)):
+			errors.append(f"{name}: {what} title ist true oder false und gilt nur für einen einmaligen Blinder (ohne every, ohne cascade)")
 		if not isinstance(spec.get("carry", False), bool) or (spec.get("carry") and "every" in spec):
 			errors.append(f"{name}: {what} carry ist true oder false und gilt nur für einen einmaligen Blinder (ohne every)")
 	return out, errors
@@ -715,6 +720,8 @@ def pipeline_calls(part, song, offset=0):
 		notfalls schon im Part davor), hold: <Beats> (so lange voll hell, Standard 0) - der Rest von len klingt ab
 		statt at auch bar: <Taktnummer der Tabelle> (z. B. 63.75 - das 'von takt' der Zwischenzeile mit dem Wunsch)
 		mehrere Blinder in einem Part: eine Liste solcher Angaben, z. B. [{bar: 20, len: 2}, {bar: 23.75, len: 1}]
+		title: true - ein einmaliger Blinder, der in die Zeit des Titel-Lauftexts fällt, leuchtet auf den Scroll-Geräten
+		hinter der Schrift (fxBlinderBehind im Lauftext-case); ohne title bleibt die Matrix dort wie bisher dunkel
 		carry: true - ein einmaliger Blinder, der am Part-Ende noch nicht ausgeklungen ist, klingt im Part danach zu Ende
 	offset > 0: Rest-Part der Matrix nach dem Lauftext - ohne Übergang, FadeIn/Pulse/Gate rechnen ab dem Part-Beginn."""
 	sec = part["sec"]
@@ -1226,7 +1233,7 @@ def plan_scroll(song, timeline, width, start=0):
 	inner = timeline[1:-1]	# Grenzen, an denen die Matrix wieder einsteigen kann (nicht das End-BLACK)
 	if not inner:
 		raise SongError("Song zu kurz für den Lauftext")
-	base = {"text": text, "delay": delay, "natural": S}
+	base = {"text": text, "delay": delay, "natural": S, "start": start, "_timeline": timeline}	# start/_timeline: für title_blinder_calls
 
 	k = next((p for p in inner if p["start"] >= T), None)
 	if k is not None and k["start"] - T <= SCROLL_MAX_WAIT_MS:
@@ -1424,6 +1431,35 @@ def device_call(part, song, device):
 	return default_call(part, song)
 
 
+def title_blinder_calls(song, device, plan, begin):
+	"""Blinder mit title: true, deren Moment der vollen Helligkeit in den Titel-Lauftext dieses Scroll-Geräts fällt, als
+	Anmeldungen für den case des Lauftexts (Wunsch des Users 19.10.2026, Maniac "rock intro": der Blinder kam auf der
+	Matrix nicht, weil dort noch der Titel lief). begin = Zeit im Song, zu der dieser case beginnt; die Zeitpunkte
+	werden darauf umgerechnet. fxBlinderBehind legt sie HINTER die Schrift (nur dunkle LEDs leuchten auf). Ohne
+	title: true kommt hier nichts dazu - alle anderen Songs bleiben unverändert."""
+	end = begin + plan["scroll"]
+	found = []	# Paare (Zeitpunkt ab case-Beginn, Blinder)
+	for p in plan["_timeline"]:
+		if p["start"] >= end or p["start"] + p["dur"] <= begin:
+			continue	# Part liegt nicht in der Zeit des Lauftexts
+		for b in blinder_specs(p, song)[0]:
+			at = p["start"] + b["at_ms"] - begin	# Moment der vollen Helligkeit, ms ab Beginn des Lauftext-case
+			if b["title"] and 0 <= at < end - begin and (not b["devs"] or device in b["devs"]):
+				found.append((at, b))
+	calls = []
+	for slot, (at, b) in enumerate(found[:blinder_slots()]):
+		if len(found) > 1:
+			calls.append(f"\t\tfxBlinderSlot({slot});")	# mehrere Blinder: jeder auf seinem eigenen Platz
+		calls.append(f"\t\tfxBlinder({at}, {b['len_ms']}, {b['amount']}, {b['col']}, {b['mask']});\t// title: hinter dem Lauftext")
+		if b["shape"]:
+			calls.append(f"\t\tfxBlinderShape({b['shape'][0]}, {b['shape'][1]});")
+		if b["scheme_col"]:
+			calls.append("\t\tfxBlinderSchemeColor();")
+	if calls:
+		calls.append("\t\tfxBlinderBehind();")	# nur die dunklen LEDs: die Schrift bleibt davor stehen
+	return calls
+
+
 def scroll_code(song, device, plan, wait_case=1, fill_case=2):
 	"""(Zeilen für case 0 dieses Geräts, Zusatz-cases 1/2). wait_case / fill_case: die Nummern der Zusatz-cases -
 	am Songanfang 1 und 2, beim Einstieg aus einem Vorspann (trailer_entry_lines) freie Nummern hinter dem Part."""
@@ -1436,13 +1472,16 @@ def scroll_code(song, device, plan, wait_case=1, fill_case=2):
 	join = plan["join"]
 	head, extra = [], []
 	if plan["mode"] == "wait" and plan["wait"] == 0:
+		head += title_blinder_calls(song, device, plan, plan["start"])
 		head.append(scroll(plan["scroll"], join["case"]) + f", Einstieg case {join['case']}")
 	elif plan["mode"] == "wait":
 		head.append(f"\t\tprogBlack({plan['wait']}, {wait_case});\t// Lauftext verzögern, damit er genau an case {join['case']} endet")
-		extra += [f"\tcase {wait_case}:\t// Lauftext bis {fmt_time(join['start'])}, Einstieg case {join['case']}",
-				  scroll(plan["scroll"], join["case"]), "\t\tbreak;"]
+		extra += [f"\tcase {wait_case}:\t// Lauftext bis {fmt_time(join['start'])}, Einstieg case {join['case']}"]
+		extra += title_blinder_calls(song, device, plan, plan["start"] + plan["wait"])	# der Lauftext beginnt erst nach dem Warten
+		extra += [scroll(plan["scroll"], join["case"]), "\t\tbreak;"]
 	else:
 		fp = dict(plan["fill_part"], dur=plan["fill_dur"], next=join["case"])
+		head += title_blinder_calls(song, device, plan, plan["start"])
 		head.append(scroll(plan["scroll"], fill_case))
 		off = plan["fill_offset"]	# so viel vom Rest-Part ist schon vorbei, wenn die Matrix einsteigt
 		extra.append(f"\tcase {fill_case}:\t// Rest von '{fp['sec'].get('name')}' ab {fmt_time(plan['fill_part']['start'] + off)}, Einstieg case {join['case']}")

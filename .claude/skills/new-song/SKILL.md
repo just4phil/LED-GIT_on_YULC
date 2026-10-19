@@ -357,6 +357,10 @@ jedem Effekt kombinierbar, synchron auf allen Geräten. Längen in Beats, Stärk
 in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `transition: fade` oder `{type: ..., beats: 2}` (Standard 1 Beat) - so kommt der Part aus dem Bild des vorigen:
   `cut` (Standard), `fade`, `black`, `flash`, `wipe`, `wipe_back`, `stage_lr`, `stage_rl`, `stage_out`, `dissolve`.
+  **Nie `transition: flash` in einem Part mit `progFastBlingBling` oder `SCENE_SPARKLE`** (Regel des Users 19.10.2026):
+  diese Effekte stellen die Gesamthelligkeit auf 255, der weiße Blitz liegt dann voll weiß auf allen 540 LEDs der
+  Matrix (über 3,6 A, Kids). Stattdessen `blinder: {at: 0, len: 1, amount: 50}` (warmweiß, gleich lang, ändert kein
+  Timing) - so in Kids „chorus intro“. Gilt auch für neue Effekte, die die Helligkeit selbst hochsetzen.
 - `fade_in: <Beats>` / `fade_out: <Beats>` - Helligkeit von/nach Schwarz (nicht mit der Farbwanderung `fade` verwechseln).
   Mit `tail` endet `fade_out` vor dem Tail.
 - `pulse: 50` oder `{depth: 50, per: beat|half|bar|<Beats>}` - Helligkeit pumpt im Beat.
@@ -422,6 +426,10 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   `{bar: <letzte Viertel>, len: 2, hold: 1, cascade: lr}` + `end_blinder: 5` (bei `color: scheme` dort auch
   `end_blinder: {seconds: 5, color: scheme}`). Neu, Abnahme durch den User offen (Demo 92, Parts 67-69) - erst nach
   seinem Urteil in Songs einsetzen.
+- **Blinder während des Titel-Lauftexts** (Wunsch des Users 19.10.2026, Maniac „rock intro“): läuft auf der Matrix
+  noch der Titel, fehlt ihr ein Blinder dort normalerweise ganz. `title: true` im `blinder` (nur einmalig, ohne
+  `every`/`cascade`) meldet ihn auch im Lauftext-case an - er leuchtet HINTER der Schrift (`fxBlinderBehind`, nur
+  dunkle LEDs). Neu, Abnahme offen (Demo 92, Part 71).
 - **Text liegt immer über allem** (Regel des Users, 10.10.2026: „der Text muss IMMER ÜBER allem anderen liegen, damit
   es gut sichtbar ist“). Hat ein Part einen Text mit `over: true` und läuft in ihm ein Blinder (eigener, Einblenden für
   den Part danach, Ausklingen aus dem Part davor), legt `songgen.py` die Blinder auf der Matrix von selbst UNTER den

@@ -183,6 +183,9 @@ void fxBlinderSlot(uint8_t slot);				// mehrere Blinder in einem Part: wählt de
 												// (auch 0 für den ersten), weil die Anmeldungen bei jedem Loop-Durchlauf wiederholt werden
 void fxBlinderUnderText();		// die Blinder dieses Parts liegen UNTER der obersten Ebene (dem Text) statt über allem: der Text
 								// steht dann auf dem hellen Blinder als Hintergrund, statt überstrahlt zu werden. Geräte ohne Ebene: wie bisher
+void fxBlinderBehind();			// die Blinder dieses Parts füllen nur die dunklen LEDs, das Bild des Effekts bleibt davor stehen -
+								// für den Titel-Lauftext der Matrix (progScrollText ist keine Ebene, fxBlinderUnderText greift dort
+								// nicht). songgen.py setzt es bei Blindern mit "title: true" im Lauftext-case der Scroll-Geräte
 void fxBlinderCarry(unsigned int elapsedMillis);	// der Blinder dieses Platzes hat schon im Part DAVOR begonnen und klingt hier nur noch aus:
 												// elapsedMillis = so lange vor dem Part-Beginn war sein Moment der vollen Helligkeit. Anmelden wie im
 												// Part davor (gleiche Länge, gleicher Verlauf), aber mit atMillis 0 - dann läuft die Kurve nahtlos weiter.

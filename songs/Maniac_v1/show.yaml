@@ -74,8 +74,13 @@ sections:
 
   "rock intro":
     fx: "progFastBlingBling(${dur}, 6, ${next})"
-    transition: flash
-    why: "Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher)."
+    # Wunsch des Users (19.10.2026): statt "transition: flash" ein halb starker warmweißer Blinder, gleich lang (1 Beat).
+    # Grund: progFastBlingBling stellt die Gesamthelligkeit auf 255, der weiße Blitz lag damit voll weiß auf allen
+    # 540 LEDs der Matrix (in Kids über 3,6 A gemessen). Sonst bleibt der Song unverändert.
+    # title: true (Wunsch des Users 19.10.2026): auf der Matrix läuft hier noch der Titel-Lauftext - der Blinder leuchtet
+    # dort hinter der Schrift, statt ganz zu fehlen.
+    blinder: {at: 0, len: 1, amount: 50, title: true}
+    why: "Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher)."
 
   "verse 1a":
     scene: SCENE_VERSE

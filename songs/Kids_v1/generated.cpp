@@ -3,7 +3,7 @@
 //@function gen_Kids
 //@name Kids
 //@struktur_sha 74dc8547f76a1583ac85a427631230f33d724e4cbc1b0078ed5e884d76e6a95e
-//@show_sha 2f2437c2f95cc5336b11292083d9b1f0bf30bcce949a22760af0643242c69548
+//@show_sha bb53f7724d158c3256c3e9713fe87083767e42f0c010775645439833d34deb4c
 //@part GEN_KIDS_PAUSE 0
 //@part GEN_KIDS_SYNTH_INTRO 3
 //@part GEN_KIDS_CHORUS_INTRO 4
@@ -63,8 +63,8 @@ void gen_Kids() {
 		scene(SCENE_CALL_RESPONSE, 15235, 4, 128);
 		break;
 
-	case 4:	// chorus intro  8 T  15000ms  @0:21.797  -- Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher).
-		fxTransition(TRANS_FLASH, 469);
+	case 4:	// chorus intro  8 T  15000ms  @0:21.797  -- Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher).
+		fxBlinder(0, 469, 128, FX_BLINDER_WARM, DEV_ALL);
 		progFastBlingBling(15000, 8, 5);
 		break;
 

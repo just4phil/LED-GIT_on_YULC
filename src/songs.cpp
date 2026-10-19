@@ -4260,8 +4260,29 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(67);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(71);	break;
+
+	// Blinder HINTER dem Titel-Lauftext (neu am 19.10.2026, Maniac "rock intro": auf der Matrix lief dort noch der Titel,
+	// der Blinder fehlte; Wunsch des Users: "kann man den blinder da unter der schrift dennoch einblenden?").
+	// fxBlinderBehind(): der Blinder füllt nur die dunklen LEDs, die Buchstaben bleiben davor stehen. progScrollText ist
+	// keine Ebene, deshalb greift fxBlinderUnderText() dort nicht. Auf den anderen Geräten ist das Bild schwarz - dort
+	// sieht der Blinder aus wie immer. 16 s:
+	//   bei 4 s ein halb starker Blinder, 1 Beat (wie in Kids / Maniac statt des weißen Blitzes),
+	//   bei 10 s ein voller Blinder, blendet 1 Beat lang ein und klingt 3 Beats aus.
+	case 71:
+		fxBlinderSlot(0);
+		fxBlinder(4000, 500, 128, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderSlot(1);
+		fxBlinder(10000, 2000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(500, 0);
+		fxBlinderBehind();
+#if DEVICE_CLASS == CLASS_MATRIX
+		progScrollText("Blinder hinter Text", 16000, 90, getRandomColor(), DEMO_NR(67));
+#else
+		progBlack(16000, DEMO_NR(67));
+#endif
+		break;
 
 	// Blinder-Kaskade (neu am 18.10.2026, Idee des Users: "blinder der sich von gerät zu gerät aufbaut (also schnell
 	// nacheinander) aber dann faden alles gleichzeitig lange aus ... könnte man gut am ende von songs benutzen", dazu

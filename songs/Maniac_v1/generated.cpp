@@ -3,7 +3,7 @@
 //@function gen_Maniac
 //@name Maniac
 //@struktur_sha 877216ab951364d44d3d88c818f2cf023e555328f01acca8fc75d574858f89de
-//@show_sha 5f14a34e5563929720194b3b6b926a0b7717eae447dfd9d91851c0d13cf3c541
+//@show_sha d39becdf152ce3c2131f9a1a089cb5fb463182aa7e0da86cf260694437e8d362
 //@part GEN_MANIAC_PAUSE 0
 //@part GEN_MANIAC_DRUMS_INTRO 3
 //@part GEN_MANIAC_ROCK_INTRO 4
@@ -51,6 +51,8 @@ void gen_Maniac() {
 
 	case 0:	// pause  3 T  4013ms  @0:00.000  -- Alles schwarz bis zum Einsatz (die Matrix zeigt den Titel-Lauftext).
 #if defined(SCROLLMATRIX)
+		fxBlinder(16242, 382, 128, FX_BLINDER_WARM, DEV_ALL);	// title: hinter dem Lauftext
+		fxBlinderBehind();
 		progScrollText("Maniac by Michael Sembello", 18917, 90, getRandomColor(), 2);	// 1 Durchlauf = 18720 ms
 #elif defined(GITBOARD)
 		progBlack(402, 1);	// Lauftext verzögern, damit er genau an case 4 endet
@@ -61,6 +63,8 @@ void gen_Maniac() {
 
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'rock intro' ab 0:18.917, Einstieg case 5
+		fxBlinder(0, 382, 128, FX_BLINDER_WARM, DEV_ALL);
+		fxTimeOffset(2675);
 		progFastBlingBling(9554, 6, 5);
 		break;
 #endif
@@ -92,8 +96,8 @@ void gen_Maniac() {
 		progPingPong(12229, 4, 157, 1, 3);
 		break;
 
-	case 4:	// rock intro  8 T  12229ms  @0:16.242  -- Weißer Blitz auf den Band-Einsatz, danach schnelle bunte Einzelblitze (wie bisher).
-		fxTransition(TRANS_FLASH, 382);
+	case 4:	// rock intro  8 T  12229ms  @0:16.242  -- Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher).
+		fxBlinder(0, 382, 128, FX_BLINDER_WARM, DEV_ALL);
 		progFastBlingBling(12229, 6, 5);
 		break;
 

@@ -20,18 +20,20 @@ neuer fx:
 
 TODOs
 =======
+- TITMH -> sieht sehr anders aus
 
 - billie jean noch mal checken
     - war da niocht im intro ein effekt auf dem synth???
 
-SAS
-    EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
 titanium
     - triolen ende unsync
 no roots
     - blinder auf den synth fx
 dstm: 
     -> bass solo
+
+SAS
+    EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
 
 DONE
 =====

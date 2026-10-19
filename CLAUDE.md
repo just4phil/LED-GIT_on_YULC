@@ -102,7 +102,7 @@ everything, once or on a beat grid, on all or selected devices; `fxBlinderSlot(n
 blinders into one part (`FX_BLINDER_SLOTS` = 8, YAML: `blinder` as a list, position as `at` in beats or `bar` = bar
 number of the table). A blinder's position is always the moment of FULL brightness (user rule 09.10.2026): a fade-in
 (`fxBlinderShape` / YAML `attack`) runs before it, and if that starts before the part does, `songgen.py` registers the
-blinder in the previous part as well. `fxBlinderUnderText()` (set by `songgen.py` on its own whenever a part has a text with `over: true` and a blinder - user rule 10.10.2026: text always lies on top of everything; YAML `blinder_under_text: true` still asks for it explicitly) puts the part's blinders below the topmost layer (the text) instead of
+blinder in the previous part as well. `fxBlinderBehind()` (YAML `title: true` inside a `blinder`) registers a blinder that falls into the matrix title scroll text in the scroll case as well, filling only the dark LEDs behind the letters. `fxBlinderUnderText()` (set by `songgen.py` on its own whenever a part has a text with `over: true` and a blinder - user rule 10.10.2026: text always lies on top of everything; YAML `blinder_under_text: true` still asks for it explicitly) puts the part's blinders below the topmost layer (the text) instead of
 on top of everything, as a bright background the text stays readable on. A blinder ends with its part unless it has `carry: true`: then `songgen.py`
 registers its remaining fade in the next part (`fxBlinderCarry`). `cascade` (YAML, `fxBlinderCascade` + `FX_CASCADE(...)`) makes the
 devices come on one after another (`lr`/`rl`/`out`/`in` or an own `order`, `step` in beats) with one common full moment
