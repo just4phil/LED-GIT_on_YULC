@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
-//@show_sha 8301dbf24d80049650028419d76af4b60e24b5854c8badc724b6cb96ff2385b5
+//@show_sha fe8c5a296b6ccf00a8d60c670753dc0d009adb25566b83059507c8fecabba26a
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
@@ -39,6 +39,13 @@
 //@code
 //#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
 void gen_AllTheThingsSheSaid() {
+
+	// Marker einzelner Parts (markers.parts in show.yaml), läuft nach setMarkerLEDs()
+#ifdef BASS
+	if (prog == 15) markerLED5 = ESaite_D;	// synth solo a
+	else if (prog == 16) markerLED5 = ESaite_D;	// synth solo b
+	else markerLED5 = 0;
+#endif
 
 	setColorScheme(SCHEME_ICE);	// Default für alle Parts
 

@@ -25,6 +25,15 @@ function: gen_AllTheThingsSheSaid
 scheme: SCHEME_ICE
 trailer_entry: "intro: all thet …."
 
+# Bund-Marker: die Grund-Marker stehen von Hand in src/markerLEDs.cpp (case 31). Zusätzlich am Bass ESaite_D
+# (Bass-LED 46) in Slot 5 (den case 31 nicht setzt, außerhalb der beiden Parts ist er aus; 23.10.2026).
+# Gebraucht wird er nur in "synth solo b"; Regel des Users: ein temporärer Marker leuchtet schon im Part davor,
+# damit man vorher sieht, wo man hin muss - deshalb auch in "synth solo a".
+markers:
+  parts:
+    synth solo a: {bass: {5: ESaite_D}}    # nur zur Vorbereitung
+    synth solo b: {bass: {5: ESaite_D}}
+
 sections:
   pause:
     fx: "progBlack(${dur}, ${next})"

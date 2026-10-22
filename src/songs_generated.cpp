@@ -4840,6 +4840,13 @@ void gen_Maniac() {
 //#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
 void gen_AllTheThingsSheSaid() {
 
+	// Marker einzelner Parts (markers.parts in show.yaml), läuft nach setMarkerLEDs()
+#ifdef BASS
+	if (prog == 15) markerLED5 = ESaite_D;	// synth solo a
+	else if (prog == 16) markerLED5 = ESaite_D;	// synth solo b
+	else markerLED5 = 0;
+#endif
+
 	setColorScheme(SCHEME_ICE);	// Default für alle Parts
 
 	switch (prog) {
