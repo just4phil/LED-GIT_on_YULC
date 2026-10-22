@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaidIntro
 //@name All The Things She Said Intro
 //@struktur_sha 81787eb3e30ba7c5596c717ad8a8ed9f5e29a207cddc39b973bf99bc1f667bc4
-//@show_sha 3e068578f614ff0dfd575c129664b517d926eb153bff0fd565a4934abb4b1b1f
+//@show_sha 88679fef1f46adab803b5ba1e942aad397c17e367c5ae56cf4e09509d2219f47
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_NERDS_ON_FIRE 3
 //@part GEN_ALLTHETHINGSSHESAIDINTRO_TEXT_SONGTITEL 4
@@ -151,6 +151,7 @@ void gen_AllTheThingsSheSaidIntro() {
 }
 //@markers
 	case 82:
+#ifdef GIT
 		markerLED1 = ESaite_F;
 		markerLED2 = ASaite_C;
 		markerLED3 = ASaite_E;
@@ -158,4 +159,13 @@ void gen_AllTheThingsSheSaidIntro() {
 		markerLED5 = 0;
 		markerLED6 = 0;
 		markerLED7 = 0;
+#else
+		markerLED1 = ESaite_F;
+		markerLED2 = ASaite_C;
+		markerLED3 = 0;
+		markerLED4 = 0;
+		markerLED5 = 0;
+		markerLED6 = 0;
+		markerLED7 = 0;
+#endif
 		break;

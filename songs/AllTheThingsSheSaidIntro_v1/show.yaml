@@ -27,7 +27,7 @@
 # Annahmen von Claude, noch nicht vom User bestätigt:
 #   - "NERDS ON FIRE" läuft im gewohnten Tempo der Titel-Lauftexte (90 ms je Pixel) und ist kurz nach Takt 14
 #     fertig; danach ist die Matrix dunkel, bis bei Takt 15 die Wellen kommen
-#   - Bund-Marker: dieselben vier wie bei Song #31 (case 31 in src/markerLEDs.cpp), damit sie schon im Vorspann
+#   - Bund-Marker: dieselben wie bei Song #31 (case 31 in src/markerLEDs.cpp), damit sie schon im Vorspann
 #     leuchten und beim Sprung in den Song stehen bleiben - so wie case 80 die Marker von Song #9 trägt
 # Entscheidung des Users (10.10.2026): der Titel-Lauftext läuft NICHT im Vorspann, sondern wie beim Vorspann zu
 # "I Love It" erst im Song - auf der Matrix ab dem Einstieg in "intro: all thet …." (trailer_entry in
@@ -44,8 +44,11 @@ next_song: AllTheThingsSheSaid_v1
 # ("0 sek." stand in der alten Ende-Zeile bei Takt 29). Ohne diese Angabe kämen 10 s Schwarz vor dem Sprung.
 end_black_ms: 0
 
+# Bund-Marker getrennt für Gitarre und Bass (23.10.2026), wie case 31 in src/markerLEDs.cpp - beide gleich halten.
+# Solange beide Listen gleich sind, erzeugt songgen.py keinen #ifdef; erst wenn sie sich unterscheiden.
 markers:
-  all: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]
+  guitar: [ESaite_F, ASaite_C, ASaite_E, ASaite_F]
+  bass:   [ESaite_F, ASaite_C]    # am Bass ohne ASaite_E (LED 49) und ASaite_F (LED 48), wie case 31
 
 sections:
   "pause":

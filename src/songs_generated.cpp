@@ -5534,6 +5534,7 @@ void setGeneratedMarkerLEDs(byte songID, byte partID) {
 #if !defined(NOMARKER)
 	switch (songID) {
 	case 82:
+#ifdef GIT
 		markerLED1 = ESaite_F;
 		markerLED2 = ASaite_C;
 		markerLED3 = ASaite_E;
@@ -5541,6 +5542,15 @@ void setGeneratedMarkerLEDs(byte songID, byte partID) {
 		markerLED5 = 0;
 		markerLED6 = 0;
 		markerLED7 = 0;
+#else
+		markerLED1 = ESaite_F;
+		markerLED2 = ASaite_C;
+		markerLED3 = 0;
+		markerLED4 = 0;
+		markerLED5 = 0;
+		markerLED6 = 0;
+		markerLED7 = 0;
+#endif
 		break;
 	default:
 		break;	// keine Marker

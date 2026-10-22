@@ -408,12 +408,22 @@ void setMarkerLEDs(byte songID, byte partID) {
 			break;
 
 		case 31: // AllTheThingsSheSaid_tatu
+			// Gitarre und Bass getrennt, damit der Bass eigene Marker bekommen kann (23.10.2026).
+			// Dieselben vier Marker stehen für den Vorspann (Song 82) in songs/AllTheThingsSheSaidIntro_v1/show.yaml
+			// (markers: guitar/bass) - Änderungen dort mitziehen, sonst wechseln die Marker beim Sprung in diesen Song.
+			#ifdef GIT
 				markerLED1 = ESaite_F;
 				markerLED2 = ASaite_C;
 				markerLED3 = ASaite_E;
 				markerLED4 = ASaite_F;				//markerLED5 = ASaite_C;
-				//markerLED6 = ASaite_Fis;
-			break;	
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_F;		// Bass-LED 55
+				markerLED2 = ASaite_C;		// Bass-LED 53
+				//markerLED3 = ASaite_E;		// Bass-LED 49
+				//markerLED4 = ASaite_F;		// Bass-LED 48
+			#endif
+			break;
 
 		case 32: // ItsRainingMen
 				markerLED1 = ESaite_Fis;
