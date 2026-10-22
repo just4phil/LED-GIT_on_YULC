@@ -401,8 +401,10 @@
 
 	#define anz_LEDs			anz_LEDs_BASS
 
+	// Halsbereich: dunkel sind die LEDs Bund_min bis EINSCHLIESSLICH Bund_max - 1 (die Schleife zählt "i < Bund_max"),
+	// am Bass also LED 43 bis 69 (vorher bis 57, erweitert am 23.10.2026)
 	#define Bund_min	 		43
-	#define Bund_max	 		58
+	#define Bund_max	 		70	// war früher: 58 aber Rina wollte weniger geblendet werden
 
 	#define ESaite_E	 		56	// E/A: 56 (leere / tiefe Saiten)
 	#define ESaite_F	 		55	// F/Bb: 55
