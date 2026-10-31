@@ -787,10 +787,14 @@ void gen_DontStopTheMusic() {
 		scene(SCENE_STAR, 8135, 19, 118);
 		break;
 
-	case 19:	// chorus 2a: i just cant refuse it (2)  4 T  8136ms  @2:58.220  -- 'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene.
+	case 19:	// chorus 2a: i just cant refuse it (2)  4 T  8136ms  @2:58.220  -- 'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene. Zum Schluss blendet ein warmweißer Blinder in 2 Beats ein, ist genau auf Takt 93 voll und klingt gut 5 Sekunden ins Schwarz aus.
 		setColorScheme(SCHEME_SUNSET);
+		fxBlinder(8136, 6102, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1017, 0);
+		fxBlinderUnderText();
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
+		fxLayerOutline();
 		fxLayerBegin();
 		progText("DONT STOP THE MUSIC", 8136, 20, 508);
 		fxLayerEnd(FX_OVER);
@@ -801,33 +805,14 @@ void gen_DontStopTheMusic() {
 #endif
 		break;
 
-	case 20:	// chorus 4a: i wanna take it away  4 T  8136ms  @3:06.356  -- Höhepunkt: Feuer auf allen Geräten in Rot, Orange und Gelb, warmweißer Blinder auf den Einsatz.
-		setColorScheme(SCHEME_FIRE);
-		fxBlinder(0, 1017, 255, FX_BLINDER_WARM, DEV_ALL);
-		scene(SCENE_FIRE, 8136, 21, 118);
+	case 20:	// BLACK (Ende)    10000ms  @3:06.356  -- alle Geräte schwarz, dann Pausen-Loop
+		fxBlinder(0, 6102, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(1017, 0);
+		fxBlinderCarry(0);
+		progBlack(10000, 21);
 		break;
 
-	case 21:	// chorus 4a: i just cant refuse it  4 T  8135ms  @3:14.492  -- Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 100,75), der in 'Bass Ende' ausklingt.
-		setColorScheme(SCHEME_FIRE);
-		fxBlinder(7627, 2034, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 254);
-		scene(SCENE_SPARKLE, 8135, 22, 118);
-		break;
-
-	case 22:	// Bass Ende  4 T  8136ms  @3:22.627  -- Nur noch der Bass: zwei rote Kometen kreisen um den Bass, alle anderen atmen dunkel; über die letzten 2 Takte blendet alles nach Schwarz aus.
-		setColorScheme(SCHEME_RED);
-		fxFadeOut(4068);
-		fxBlinder(0, 2034, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 254);
-		fxBlinderCarry(508);
-		scene(SCENE_SOLO_BASS, 8136, 23, 118);
-		break;
-
-	case 23:	// BLACK (Ende)    10000ms  @3:30.763  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 24);
-		break;
-
-	case 24:
+	case 21:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;

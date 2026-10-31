@@ -1,7 +1,7 @@
 # Vorschläge von Claude (10.10.2026) für die Spalte "Neuer Vorschlag (KI)" der Tabelle - nur Ideen, keine Show.
 # In die Tabelle schreiben: python tools/songgen.py DontStop --vorschlag
 # Parts ohne Eintrag: der alte Effekt kann bleiben. Was der User haben will, trägt er in "Änderungswunsch" ein.
-# Leitidee: Club-Song - kühl und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET/FIRE).
+# Leitidee: Club-Song - kühl und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET).
 # Die vier Chorus-Zeilen bekommen ein festes Paar: "take it away" = Stern, "cant refuse it" = Einzelblitze.
 parts:
   "intro": |-
@@ -34,9 +34,3 @@ parts:
     Szene Star, SUNSET - ab hier kippt die Farbe ins Warme.
   "chorus 2a: i just cant refuse it (2)": |-
     Szene Sparkle, SUNSET, Text "DONT STOP THE MUSIC" wie oben.
-  "chorus 4a: i wanna take it away": |-
-    Im alten Code schon Schwarz. Vorschlag: Szene Fire, FIRE - Höhepunkt, Blinder auf den Einsatz.
-  "chorus 4a: i just cant refuse it": |-
-    Szene Sparkle, FIRE; starker Blinder auf der letzten Viertel (Takt 100,75), klingt in "Bass Ende" aus (carry).
-  "Bass Ende": |-
-    Szene Solo Bass, RED, blendet über die letzten 2 Takte aus (fade_out 8 Beats).

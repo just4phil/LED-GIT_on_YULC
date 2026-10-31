@@ -1,0 +1,9 @@
+zeit: '2026-10-31 23:34:07'
+notiz: 'Song gekuerzt: endet bei Takt 93 mit ''chorus 2a: i just cant refuse it (2)'',
+  chorus 4a und Bass Ende entfernt'
+werkzeug_git: 9671a5c
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: da694d63de408d56b1d6c0dffa75efbe22f5a8a278c3c05a1ed4f6b8258228e4
+  show.yaml: a5c840596f1b8f4f1ea20ddf6142cc74f9237ae86147bfe78310a00b49c58982
+  generated.cpp: fe5f100e15da60afa036c2d1371f4d04ca230b40633bef0b316fb85835f881db

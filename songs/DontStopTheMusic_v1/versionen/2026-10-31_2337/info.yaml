@@ -1,0 +1,9 @@
+zeit: '2026-10-31 23:37:23'
+notiz: 'Schluss-Blinder: voll auf Takt 93, 2 Beats Einblenden, gut 5 s Ausklingen
+  ins Schluss-Black'
+werkzeug_git: 9671a5c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: da694d63de408d56b1d6c0dffa75efbe22f5a8a278c3c05a1ed4f6b8258228e4
+  show.yaml: 0061ed4bf2b732cb6053419ac1396ff23ee9606719e66689e05949d91220ad8a
+  generated.cpp: bdb3681beb5764d3195de8ad54ef5f7b1dffa4f71334567f88f5408d50585a54

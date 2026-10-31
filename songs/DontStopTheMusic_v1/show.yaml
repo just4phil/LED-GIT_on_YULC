@@ -4,9 +4,10 @@
 # nicht generierten songs jetzt den song neu generieren. dabei die vorschläge der KI übernehmen. den alten code erstmal
 # nur auskommentieren!").
 # Gestaltung: die Vorschläge aus vorschlag.yaml (10.10.2026, Spalte "Neuer Vorschlag (KI)"). Leitidee: Club-Song - kühl
-# und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET/FIRE). Die vier Chorus-Zeilen haben
-# ein festes Paar: "take it away" = Stern, "cant refuse it" = Einzelblitze. Der alte Code ging ab "chorus 4a" schon in
-# Schwarz - jetzt läuft der Song bis zum Ende der Tabelle.
+# und dunkel in den Strophen (ROYAL), der Chorus in NEON, zum Schluss warm (SUNSET). Die vier Chorus-Zeilen haben
+# ein festes Paar: "take it away" = Stern, "cant refuse it" = Einzelblitze.
+# Der Song ist gekürzt (31.10.2026, Tabelle des Users): er endet mit "chorus 2a: i just cant refuse it (2)" bei Takt 93,
+# die Parts "chorus 4a" und "Bass Ende" gibt es nicht mehr.
 # Abweichung vom Vorschlag: "ist gettin late" nimmt SCENE_VERSE_WAVES statt SCENE_VERSE (Regel des Users vom
 # 18.10.2026: Strophen-Szenen über die Songs verteilen, nicht überall SCENE_VERSE).
 # Strobo nach der Regel des Users nicht mit progStrobo, sondern als weiße Fläche + gate (läuft im Takt, auf allen gleich).
@@ -121,23 +122,8 @@ sections:
   "chorus 2a: i just cant refuse it (2)":
     scene: SCENE_SPARKLE
     scheme: SCHEME_SUNSET
-    text: {words: "DONT STOP THE MUSIC", over: true}
-    why: "'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene."
-
-  "chorus 4a: i wanna take it away":
-    scene: SCENE_FIRE
-    scheme: SCHEME_FIRE
-    blinder: {at: 0, len: 2, amount: 100}
-    why: "Höhepunkt: Feuer auf allen Geräten in Rot, Orange und Gelb, warmweißer Blinder auf den Einsatz."
-
-  "chorus 4a: i just cant refuse it":
-    scene: SCENE_SPARKLE
-    scheme: SCHEME_FIRE
-    blinder: {bar: 100.75, len: 4, hold: 0.5, amount: 100, carry: true}
-    why: "Dichtes Glitzern in Rot, Orange und Gelb; starker Blinder auf der letzten Viertel (Takt 100,75), der in 'Bass Ende' ausklingt."
-
-  "Bass Ende":
-    scene: SCENE_SOLO_BASS
-    scheme: SCHEME_RED
-    fade_out: 8
-    why: "Nur noch der Bass: zwei rote Kometen kreisen um den Bass, alle anderen atmen dunkel; über die letzten 2 Takte blendet alles nach Schwarz aus."
+    text: {words: "DONT STOP THE MUSIC", over: true, outline: true}
+    # Schluss-Blinder: voll genau auf Takt 93 = Ende dieses Parts (16 Beats). Deshalb at statt bar (bar muss vor dem
+    # Part-Ende liegen). Einblenden in den letzten 2 Beats, carry lässt ihn 10 Beats (gut 5 s) ins Schluss-Black ausklingen.
+    blinder: {at: 16, len: 12, attack: 2, amount: 100, carry: true}
+    why: "'cant refuse it': Einzelblitze in warmen Farben; auf der Matrix DONT STOP THE MUSIC, ein Wort pro Beat über der Szene. Zum Schluss blendet ein warmweißer Blinder in 2 Beats ein, ist genau auf Takt 93 voll und klingt gut 5 Sekunden ins Schwarz aus."
