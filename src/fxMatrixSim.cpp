@@ -12,7 +12,7 @@
 //=====================================================================
 // fxMatrixSim.cpp - berechnete Bilder für die LED-Fläche
 //=====================================================================
-// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, DNA-Doppelhelix, Game of Life, Equalizer und Wasserwellen: Effekte,
+// Feuer, Plasma, Sternenfeld, Lissajous-Figur, Wellenlinien, DNA-Doppelhelix, TV-Rauschen, Game of Life, Equalizer und Wasserwellen: Effekte,
 // die ihr Bild in jedem Schritt aus einer kleinen Rechnung (Simulation oder Formel) neu erzeugen. Gemalt wird über
 // x/y-Koordinaten (matrix->drawPixel); auf Gitarre, Bass und Lampen landen die Punkte auf dem Streifen und
 // wirken dort als bewegte Muster. Die Beschreibung der Parameter steht in FXprograms.h.
@@ -708,6 +708,68 @@ CRGB dnaStrandColor(uint8_t n) {
 // Ohne Farbangabe: die Farben aus dnaStrandColor().
 void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis, uint8_t mode) {
 	progDNA(durationMillis, nextPart, turnMillis, mode, dnaStrandColor(0), dnaStrandColor(1));
+}
+
+//==================================================================
+//=========== progTvStatic =========================================
+//==================================================================
+
+// Analoges TV-Rauschen ("Schnee" bzw. "Ameisenkrieg"): so sah ein Röhrenfernseher ohne Sender aus. Vorlage ist ein
+// Video des Users. Das Bild besteht aus drei einfachen Zutaten:
+//   1. Körner: jede Zeile wird von links nach rechts gefüllt, ein Korn ist TV_GRAIN_MAX_LEN LEDs lang oder kürzer - wie
+//      beim echten Fernseher, wo das Rauschen entlang der Bildzeile ein wenig verschmiert ist. Der Zufallswert wird
+//      quadriert: die meisten Körner sind dunkel, wenige hell. Ohne das wäre die Fläche ein grauer Brei, denn das Auge
+//      empfindet schon halbe LED-Helligkeit als fast hell.
+//   2. Brummbalken: eine Sinuswelle über die Höhe des Bildes wandert langsam nach unten und macht die Zeilen abwechselnd
+//      heller und dunkler (beim Fernseher kam das vom Brummen des Stromnetzes). Sie läuft in barMillis einmal durchs Bild
+//      und wird aus der Zeit seit Part-Beginn berechnet, steht also auf allen Geräten an derselben Stelle.
+//   3. Störstreifen: ab und zu blitzt für ein einziges Bild eine Zeile hell auf.
+//
+// Der Effekt merkt sich nichts ("static" ist hier unnötig): jedes Bild ist neu ausgewürfelt. Die Körner sind auf jedem
+// Gerät andere - bei Rauschen sieht man das nicht, es muss nur gleich aussehen.
+// Farbe gibt es bewusst keine: das Rauschen ist schwarzweiß. Getönt wird es mit fxTint(), und als Ebene über einer Szene
+// (fxLayerBegin() ... fxLayerEnd(FX_OVER, Stärke)) wirkt es wie ein Sender, der im Rauschen untergeht.
+#define TV_GRAIN_MAX_LEN	2		// so viele LEDs ist ein Korn höchstens lang (mehr = deutlichere waagerechte Striche)
+#define TV_BAR_MIN			120		// Helligkeit (0..255) der Zeilen im dunklen Teil des Brummbalkens; 255 = kein Balken
+#define TV_STREAK_CHANCE	12		// Chance (von 255) je Bild auf einen Störstreifen: bei 50 Bildern je Sekunde gut 2 Streifen pro Sekunde
+#define TV_STREAK_LEVEL		200		// so viel Helligkeit (0..255) kommt in der Streifen-Zeile hinzu
+
+void progTvStatic(unsigned int durationMillis, byte nextPart, unsigned int barMillis, unsigned int frameMillis) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(frameMillis)) {
+		if (barMillis == 0) barMillis = 1;
+
+		// Sichtbare Zeilen: auf Gitarre, Bass und Lampen sind nur die ersten anz_LEDs Plätze des Rasters echte LEDs.
+		// Der Brummbalken soll über diese Zeilen laufen, nicht über unsichtbare.
+		int rows = (anz_LEDs + MATRIX_WIDTH - 1) / MATRIX_WIDTH;	// aufgerundet: auch eine angefangene Zeile zählt
+		if (rows > MATRIX_HEIGHT) rows = MATRIX_HEIGHT;
+
+		const uint8_t barPhase = (uint32_t)(millisCounterForProgChange % barMillis) * 256 / barMillis;	// 0..255 = einmal durchs Bild
+		const int streakRow = (random8() < TV_STREAK_CHANCE) ? random8(rows) : -1;	// -1 = in diesem Bild kein Streifen
+
+		for (int y = 0; y < rows; y++) {
+			// Das Minus lässt die Welle nach unten wandern (y = 0 ist oben). Der Cast auf uint8_t lässt den Wert
+			// über 255 einfach wieder bei 0 beginnen - das ist für sin8() genau eine volle Schwingung.
+			uint8_t rowLevel = TV_BAR_MIN + scale8(sin8((uint8_t)(y * 256 / rows - barPhase)), 255 - TV_BAR_MIN);
+			uint8_t grain = 0;		// Helligkeit des aktuellen Korns
+			uint8_t left  = 0;		// so viele LEDs ist es noch lang
+
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				if (left == 0) {					// neues Korn auswürfeln
+					grain = random8();
+					grain = scale8(grain, grain);	// quadrieren (grain * grain / 256): viel Dunkel, wenig Hell
+					left  = random8(1, TV_GRAIN_MAX_LEN + 1);	// random8(a, b) liefert a bis b - 1
+				}
+				left--;
+
+				uint8_t v = scale8(grain, rowLevel);
+				if (y == streakRow) v = qadd8(v, TV_STREAK_LEVEL);	// qadd8(): addiert und bleibt bei 255 stehen
+				matrix->drawPixel(x, y, CRGB(v, v, v));
+			}
+		}
+	}
+	fxShow();
 }
 
 //==================================================================

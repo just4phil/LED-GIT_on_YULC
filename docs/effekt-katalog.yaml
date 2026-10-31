@@ -387,6 +387,21 @@ effekte:
     urteil:
     notiz: "neu am 09.10.2026 nach einer Vorlage des Users. Sein Urteil am selben Tag: \"die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden mit eher pulsierenden effekten auf den anderen geräten\" - deshalb in Songs als SCENE_DNA / SCENE_DNA_FLIP verwenden, nicht als fx für alle Geräte. energie/traegt_takte geschätzt"
 
+  progTvStatic:
+    wirkung: "TV-Rauschen wie bei einem analogen Fernseher ohne Sender: schwarzweiße Körner, leicht waagerecht verschmiert, dazu ein langsam rollender Brummbalken und einzelne aufblitzende Störzeilen. Als Ebene über einer Szene: schlechter Empfang"
+    art: raster
+    rolle: [akzent, uebergang, flaeche]
+    energie: [2, 4]
+    bewegung: flackernd
+    beat: param          # barMillis = Umlauf des Balkens (1-2 Takte); das Rauschen selbst läuft frei
+    farbe: eigen         # schwarzweiß, tönen mit fxTint()
+    traegt_takte: "4"
+    alt: {parts: 0, takte: 0}
+    regler: "barMillis (Umlauf des Balkens, Vorgabe 2000), frameMillis (ms je Rauschbild, Vorgabe 20); als Ebene: Stärke in fxLayerEnd(FX_OVER, Stärke); TV_GRAIN_MAX_LEN, TV_BAR_MIN, TV_STREAK_CHANCE, TV_STREAK_LEVEL in fxMatrixSim.cpp"
+    demo: "92: Part 73 (pur), 75 (als Ebene über dem Farbband)"
+    urteil:
+    notiz: "neu am 31.10.2026 (Frage des Users nach einem gestörten analogen TV-Empfang, Vorlage Video \"TV STATIC\"). Sein Urteil am 01.11.2026: \"gefällt mir nicht so sehr weil es im grunde weiß ist anstatt von grau tönen. aber das liegt an den LEDs\". energie/rolle/traegt_takte geschätzt"
+
   progGameOfLife:
     wirkung: "Conways Game of Life in Farbe: Zellen leben und sterben nach zwei Nachbar-Regeln, daraus entstehen Muster, die wachsen, wandern, blinken und zerfallen. Das Feld beginnt leer mit wenigen kleinen Startfiguren (Gleiter, Raumschiffe, kleine Keime), jede in eigener Farbe aus dem Schema-Verlauf (ohne Schema Regenbogen); Kinder erben die Farbe eines Elternteils, eine Struktur bleibt so erkennbar. Geburt blendet hell ein, alte Zellen werden ruhiger und sterben nach 40 Generationen, Gestorbene glimmen aus; jeder Spot entwickelt sich höchstens 80 Generationen (12 s) und verlischt dann; was aus dem Bild hinausläuft, ist weg (kein Umlauf); wird es ruhig, kommt ein neuer Spot dazu"
     art: raster
@@ -1130,6 +1145,7 @@ ausgabestufe:
     TRANS_STAGE_RL:   {wirkung: "… von rechts nach links", yaml: "transition: stage_rl", demo: 35, genutzt: 0, urteil: , notiz: }
     TRANS_STAGE_OUT:  {wirkung: "… von der Mitte (Drums) nach außen", yaml: "transition: stage_out", demo: 40, genutzt: 1, urteil: , notiz: }
     TRANS_DISSOLVE:   {wirkung: "Pixel kippen einzeln ins neue Bild", yaml: "transition: dissolve", demo: 45, genutzt: 1, urteil: , notiz: }
+    TRANS_TV_OFF:     {wirkung: "Fernseher aus: das letzte Bild des alten Parts wird dunkler, zu einer weißen Linie zusammengedrückt, die Linie läuft zum Punkt zusammen, der Punkt verlischt; das neue Bild erscheint erst am Ende. Für die Matrix gebaut, die übrigen Geräte werden weiß und laufen zur Mitte zusammen", yaml: "transition: {type: tv_off, beats: 1.5}", demo: "77-87", genutzt: 0, urteil: , notiz: "neu am 01.11.2026, Länge 500-800 ms. Sein Urteil am selben Tag: \"der TV-off effect ist sehr schön!\"" }
 
   modifikatoren:
     fxFadeIn_fxFadeOut: {wirkung: "Helligkeit steigt am Part-Anfang von 0 an bzw. fällt zum Part-Ende auf 0", yaml: "fade_in: <Beats> / fade_out: <Beats>", demo: 50, genutzt: 0, urteil: , notiz: }

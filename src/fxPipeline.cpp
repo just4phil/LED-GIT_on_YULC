@@ -848,6 +848,129 @@ static uint8_t stageProgress(uint32_t ms, uint8_t order, uint8_t steps) {
 	return t > 255 ? 255 : t;
 }
 
+//--- TRANS_TV_OFF: das Abschalten eines alten Röhrenfernsehers (Wunsch des Users 01.11.2026) ---
+// Das Bild ist das letzte Bild des alten Parts (ledsPrev), also funktioniert der Übergang nach JEDEM Effekt. Der neue
+// Part läuft schon, bleibt aber unsichtbar, bis der Übergang zu Ende ist. Der Ablauf, in Promille der Übergangsdauer
+// (bei 700 ms ist 100 Promille = 70 ms):
+//     0 -  100  Bild wird schlagartig dunkler, mit einem kurzen weißen Blitz
+//   100 -  400  Bild wird von oben und unten zusammengedrückt und dabei immer weißer
+//   400 -  550  eine helle, dünne Linie steht in der Mitte ("kurz stehen bleiben")
+//   550 -  780  die Linie zieht sich von links und rechts zum Punkt zusammen
+//   780 -  900  weißer Punkt mit kleinem Hof: der Hof klingt ab, der Punkt wird kleiner
+//   900 - 1000  der Punkt verlischt, dann ist das Bild schwarz
+#define TV_OFF_FLASH_END	100
+#define TV_OFF_SQUEEZE_END	400
+#define TV_OFF_LINE_END		550
+#define TV_OFF_SHRINK_END	780
+#define TV_OFF_GLOW_END		900
+#define TV_OFF_DIM			130		// um so viel (0..255) wird das Bild am Anfang dunkler
+#define TV_OFF_FLASH		140		// Stärke des weißen Blitzes (0..255)
+#define TV_OFF_HALO			110		// Helligkeit des Hofs um den Punkt (0..255)
+#define TV_OFF_STRIP_DOT	4		// Gitarre/Bass/Lampen: so weit (Lage 0..255) reicht der Punkt um die Mitte
+#define TV_OFF_STRIP_EDGE	6		// ... und so breit (Lage 0..255) ist die weiche Kante der zusammenlaufenden Fläche
+
+// Fortschritt 0.0 .. 1.0 innerhalb eines Abschnitts: vor from 0, hinter to 1.
+static float tvOffPhase(uint32_t permille, uint16_t from, uint16_t to) {
+	return constrain(((float)permille - from) / (to - from), 0.0f, 1.0f);
+}
+
+// Ein Pixel des alten Bildes: dunkler (dim), dazu der Blitz (flash), dann zu Weiß hingezogen (white).
+static CRGB tvOffPicture(CRGB c, uint8_t dim, uint8_t flash, uint8_t white) {
+	c.nscale8(dim);
+	c += CRGB(flash, flash, flash);		// += bleibt bei 255 stehen
+	return blend(c, CRGB(255, 255, 255), white);
+}
+
+// Zeichnet den Übergang nach buf. Alles kommt aus ms (Zeit seit Part-Beginn), auf allen Geräten gleichzeitig.
+// Das Zusammendrücken beschleunigt (1 - p * p): erst langsam, am Ende schnappt es zu.
+static void applyTvOff(CRGB* buf, uint32_t ms) {
+	const uint32_t pm = ms * 1000 / transMs;	// Fortschritt in Promille
+	const float flashP = tvOffPhase(pm, 0, TV_OFF_FLASH_END);
+	const float squeeze = tvOffPhase(pm, TV_OFF_FLASH_END, TV_OFF_SQUEEZE_END);
+	const float shrink = tvOffPhase(pm, TV_OFF_LINE_END, TV_OFF_SHRINK_END);
+	const float widthLeft = 1.0f - shrink * shrink;		// Rest der Breite: 1 = ganze Linie, 0 = Punkt
+	const float out = 1.0f - tvOffPhase(pm, TV_OFF_GLOW_END, 1000);
+	uint8_t dim = 255 - (uint8_t)(TV_OFF_DIM * flashP);
+	const uint8_t flash = TV_OFF_FLASH * (1.0f - flashP) * (1.0f - flashP);
+	const uint8_t white = 255.0f * squeeze * squeeze;	// am Ende des Zusammendrückens ganz weiß
+	const uint8_t dot = 255.0f * out * out;				// Punkt, quadratisch: fällt erst schnell, läuft dann aus
+
+	memset(buf, 0, sizeof(ledsOut));	// alles, was nicht gezeichnet wird, ist schwarz
+
+#if DEVICE_CLASS == CLASS_MATRIX
+	// Linie und Punkt sollen intensiv strahlen, auch wenn die Matrix gerade gedimmt läuft: wie beim Blinder steigt die
+	// Gesamthelligkeit mit dem Weiß-Anteil bis 255, das Bild wird im selben Maß heruntergerechnet und bleibt gleich hell.
+	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück.
+	const uint8_t base = FastLED.getBrightness();
+	const uint8_t bright = base + (uint16_t)(255 - base) * white / 255;
+	if (bright != base) {
+		dim = scale8(dim, (uint16_t)base * 255 / bright);
+		FastLED.setBrightness(bright);
+	}
+
+	// Mitte: die Matrix hat eine gerade Zeilenzahl, also keine echte Mittelzeile. Eine ganze Zeile (cy) ergibt eine
+	// dünne Linie; auf der genauen Mitte zwischen zwei Zeilen wäre sie doppelt so dick.
+	const int cy = MATRIX_HEIGHT / 2;
+	const int cx = MATRIX_WIDTH / 2;
+
+	if (pm < TV_OFF_SQUEEZE_END) {
+		// Bild stauchen: height = verbleibende Höhe (1 = voll). Für jede Zeile wird rückwärts gerechnet, aus welcher Zeile
+		// des alten Bildes sie stammt. Die Randzeile bekommt nur ihren Anteil (cover), so läuft der Rand weich herein.
+		const float height = 1.0f - squeeze * squeeze;
+		const float reach = height * (MATRIX_HEIGHT / 2);	// Zeilen von der Mitte bis zum Bildrand
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			const float dist = abs(y - cy);
+			const float cover = constrain(reach - dist + 1.0f, 0.0f, 1.0f);		// die Mittelzeile hat immer 1
+			if (cover <= 0.0f) continue;
+			const float source = constrain(cy + (y - cy) / height, 0.0f, (float)(MATRIX_HEIGHT - 1));
+			const int sy = lroundf(source);
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				CRGB c = tvOffPicture(ledsPrev[matrix->XY(x, sy)], dim, flash, white);
+				c.nscale8((uint8_t)(cover * 255.0f));
+				buf[matrix->XY(x, y)] = c;
+			}
+		}
+	}
+	else if (pm < TV_OFF_SHRINK_END) {
+		// Linie: steht zuerst in voller Breite (widthLeft = 1) und läuft dann von beiden Seiten zur Mitte
+		const float reach = widthLeft * (MATRIX_WIDTH / 2);
+		for (int x = 0; x < MATRIX_WIDTH; x++) {
+			const float dist = abs(x - cx);
+			const uint8_t v = 255.0f * constrain(reach - dist + 1.0f, 0.0f, 1.0f);
+			buf[matrix->XY(x, cy)] = CRGB(v, v, v);
+		}
+	}
+	else {
+		// Punkt mit Hof aus den vier Nachbarn: der Hof klingt ab, damit wird der Punkt sichtbar kleiner, dann verlischt er
+		const uint8_t halo = TV_OFF_HALO * (1.0f - tvOffPhase(pm, TV_OFF_SHRINK_END, TV_OFF_GLOW_END));
+		const CRGB h(halo, halo, halo);
+		buf[matrix->XY(cx - 1, cy)] = h;
+		buf[matrix->XY(cx + 1, cy)] = h;
+		buf[matrix->XY(cx, cy - 1)] = h;
+		buf[matrix->XY(cx, cy + 1)] = h;
+		buf[matrix->XY(cx, cy)] = CRGB(dot, dot, dot);
+	}
+#else
+	// Gitarre, Bass, Lampen haben keine Zeilen: das Bild wird im selben Takt weiß (statt gestaucht), dann läuft die
+	// weiße Fläche entlang der Wipe-Richtung (fxPixelPos, Lage 0..255) zur Mitte zusammen und verlischt dort.
+	if (!pixelPosReady) initPixelPos();
+	const float reach = widthLeft * 128.0f;
+	for (int i = 0; i < anz_LEDs; i++) {
+		const int dist = abs((int)pixelPos[i] - 128);
+		if (pm < TV_OFF_LINE_END) {
+			buf[i] = tvOffPicture(ledsPrev[i], dim, flash, white);
+		}
+		else if (pm < TV_OFF_SHRINK_END) {
+			const uint8_t v = 255.0f * constrain((reach - dist) / TV_OFF_STRIP_EDGE + 1.0f, 0.0f, 1.0f);
+			buf[i] = CRGB(v, v, v);
+		}
+		else if (dist <= TV_OFF_STRIP_DOT) {
+			buf[i] = CRGB(dot, dot, dot);
+		}
+	}
+#endif
+}
+
 // mischt ledsPrev (altes Bild) und buf (neues Bild) nach buf
 static void applyTransition(CRGB* buf, uint32_t ms) {
 	uint8_t t = ms * 255 / transMs;		// linearer Fortschritt: 0 = nur altes Bild, 255 = nur neues Bild
@@ -899,6 +1022,10 @@ static void applyTransition(CRGB* buf, uint32_t ms) {
 		for (int i = 0; i < NUMMATRIX; i++) {
 			if (pixelHash(i) >= t) buf[i] = ledsPrev[i];
 		}
+		break;
+
+	case TRANS_TV_OFF:
+		applyTvOff(buf, ms);
 		break;
 
 	default: {	// TRANS_FADE und die Bühnen-Übergänge

@@ -356,7 +356,7 @@ nächste Einblendung wird nie verschoben. Im `cues:`- bzw. `why:`-Text sagen, da
 jedem Effekt kombinierbar, synchron auf allen Geräten. Längen in Beats, Stärken in Prozent. Gelten nur für den Part,
 in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
 - `transition: fade` oder `{type: ..., beats: 2}` (Standard 1 Beat) - so kommt der Part aus dem Bild des vorigen:
-  `cut` (Standard), `fade`, `black`, `flash`, `wipe`, `wipe_back`, `stage_lr`, `stage_rl`, `stage_out`, `dissolve`.
+  `cut` (Standard), `fade`, `black`, `flash`, `wipe`, `wipe_back`, `stage_lr`, `stage_rl`, `stage_out`, `dissolve`, `tv_off` (Fernseher aus, das neue Bild erscheint erst am Ende; passt vor Stille und Songenden, gut sind 500-800 ms).
   **Nie `transition: flash` in einem Part mit `progFastBlingBling` oder `SCENE_SPARKLE`** (Regel des Users 19.10.2026):
   diese Effekte stellen die Gesamthelligkeit auf 255, der weiße Blitz liegt dann voll weiß auf allen 540 LEDs der
   Matrix (über 3,6 A, Kids). Stattdessen `blinder: {at: 0, len: 1, amount: 50}` (warmweiß, gleich lang, ändert kein

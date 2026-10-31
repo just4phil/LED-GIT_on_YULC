@@ -4260,8 +4260,34 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(71);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 77, 73, 75, 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(77);	break;
+
+	// TV-Off (neu am 01.11.2026, Wunsch des Users: das charakteristische Abschalten eines analogen Fernsehers, kombinierbar
+	// mit jedem Effekt, vor allem für die Matrix). Dreimal dasselbe nach drei verschiedenen Bildern und mit den drei
+	// Längen aus seinem Wunsch (700, 500, 800 ms); jeweils startet TRANS_TV_OFF mit dem letzten Bild des Parts davor.
+	case 77:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_PALETTE, 4000, 79, bpm);	break;
+	case 79:	fxTransition(TRANS_TV_OFF, 700);	progBlack(2000, 81);				break;
+	case 81:	setColorScheme(SCHEME_FIRE);	scene(SCENE_FIRE, 4000, 83, bpm);		break;
+	case 83:	fxTransition(TRANS_TV_OFF, 500);	progBlack(2000, 85);				break;
+	case 85:	progTvStatic(3000, 87);												break;
+	case 87:	fxTransition(TRANS_TV_OFF, 800);	progBlack(2000, DEMO_NR(73));		break;
+
+	// TV-Rauschen (neu am 31.10.2026, Frage des Users: "könnte man einen kleinen effekt bauen, der einen gestörten empfang
+	// eines analogen TV simuliert?", Vorlage: Video "TV STATIC").
+	//   73: das Rauschen pur auf allen Geräten, 12 s.
+	//   75: dasselbe als Ebene über dem Farbband: das Bild geht im Rauschen unter, scheint aber noch durch (schlechter Empfang).
+	case 73:
+		progTvStatic(12000, DEMO_NR(75));
+		break;
+	case 75:
+		setColorScheme(SCHEME_SUNSET);
+		fxLayerBegin();
+		progTvStatic(12000, DEMO_NR(71));
+		fxLayerEnd(FX_OVER, 170);
+		scene(SCENE_PALETTE, 12000, DEMO_NR(71), bpm);
+		fxLayerFlush();
+		break;
 
 	// Blinder HINTER dem Titel-Lauftext (neu am 19.10.2026, Maniac "rock intro": auf der Matrix lief dort noch der Titel,
 	// der Blinder fehlte; Wunsch des Users: "kann man den blinder da unter der schrift dennoch einblenden?").

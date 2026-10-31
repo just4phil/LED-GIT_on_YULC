@@ -16,7 +16,7 @@ one ESP-NOW broadcast (WiFi radio, no router), and from then on every device run
   `show.yaml`; a Python tool generates the C++ code
 - **Scenes across all devices**: one scene name (calm, verse, build-up, drop, fire, star, rain ...) gives each
   device type its matching effect, in a shared colour scheme
-- **Output stage**: transitions between parts (fade, wipe, dissolve, flash ...), modifiers (fade in/out, pulse,
+- **Output stage**: transitions between parts (fade, wipe, dissolve, flash, TV off ...), modifiers (fade in/out, pulse,
   gate, dim, tint), a second effect as a layer, text over a scene (also with a colour gradient in the font, which the title scroll text of every song uses), and a stage blinder at full brightness (also as a cascade that builds up from device to device and fades out on all at once, or behind the letters of the title scroll text)
 - **MIDI start, ESP-NOW sync**: only the song start and manual part jumps are transmitted, as one broadcast that
   reaches all devices at the same moment (each message sent 3 times against losses); everything else runs locally,
@@ -70,7 +70,7 @@ LED-GIT_on_YULC/
 │   ├── fxText.cpp                # text effects
 │   ├── fxPalette.cpp             # palette effects
 │   ├── fxMatrixRain.cpp          # "Matrix" rain
-│   ├── fxMatrixSim.cpp           # fire, plasma, starfield, Lissajous, DNA helix, Game of Life, equalizer, water ripple
+│   ├── fxMatrixSim.cpp           # fire, plasma, starfield, Lissajous, DNA helix, TV static, Game of Life, equalizer, water ripple
 │   ├── fxState.h                 # state shared by the effect files
 │   ├── guitarShapeFX.h/cpp       # effects that follow the outline of the guitar
 │   ├── matrixFunctions.h/cpp     # matrix drawing helpers

@@ -11,7 +11,33 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 19.10.2026 (Blinder hinter dem Titel-Lauftext, Demo 92 Part 71, Abnahme offen)
+Zuletzt aktualisiert: 01.11.2026 (Übergang `TRANS_TV_OFF` abgenommen, TV-Rauschen gefällt dem User weniger)
+
+- **01.11.2026, Urteil des Users nach dem Test auf den LEDs:** `TRANS_TV_OFF`: „der TV-off effect ist sehr schön!“ -
+  abgenommen. `progTvStatic`: „gefällt mir nicht so sehr weil es im grunde weiß ist anstatt von grau tönen. aber das liegt
+  an den LEDs“ - bleibt im Code, in keinem Song eingesetzt. Beides committet und gepusht.
+
+- **01.11.2026, neuer Übergang `TRANS_TV_OFF` („Fernseher aus“).** Wunsch des Users:
+  das charakteristische Abschalten analoger Fernseher, kombinierbar mit jedem Effekt (beginnt mit dem letzten Bild des
+  vorhergehenden Effekts), 500-800 ms, die Linie bleibt kurz stehen; „mir geht es hier vor allem um den effekt auf der
+  matrix“. Umsetzung als Übergang in `src/fxPipeline.cpp` (`applyTvOff`), weil `ledsPrev` schon das letzte Bild jedes
+  Parts enthält. Fünf Abschnitte in Promille der Dauer (`TV_OFF_...`), aus der Zeit seit Part-Beginn. Matrix: Bild stauchen,
+  Linie in Zeile 5, Punkt in Spalte 27 mit Hof; Gesamthelligkeit steigt wie beim Blinder bis 255. Übrige Geräte: nur eine
+  einfache Entsprechung im selben Takt. Der neue Part läuft unsichtbar weiter und erscheint am Ende hart. YAML:
+  `transition: {type: tv_off, beats: ...}`. Demo 92: Parts 77-87 vorn (Doku-Tabelle +20 s). Doku:
+  LED-Effekte-und-Szenen.html, Song-Workflow.html, SKILL.md, effekt-katalog.yaml, README, CLAUDE.md. Alle fünf Envs gebaut
+  (`FW_VERSION=1793488123`, Stand mit TV-Rauschen in `ota/backup/2026-11-01`). Nächster Schritt: Urteil des Users zu Demo
+  92 Parts 77-87.
+
+- **31.10.2026, neuer Effekt `progTvStatic` (analoges TV-Rauschen).** Frage des Users:
+  „könnte man einen kleinen effekt bauen, der einen gestörten empfang eines analogen TV simuliert?“ (Video „TV STATIC“;
+  das Video selbst konnte Claude nicht ansehen, nur den Titel lesen). Umsetzung in `src/fxMatrixSim.cpp`: Zeilen aus
+  1-2 LEDs langen Körnern (Zufallswert quadriert), Brummbalken als Sinus über die sichtbaren Zeilen aus der Zeit seit
+  Part-Beginn (`barMillis`), Störzeile für ein Bild. Kein Gedächtnis, deshalb auch als Ebene brauchbar; schwarzweiß, tönen
+  über `fxTint`. Alle Werte (`TV_...`, Stärke 170) sind Claudes Wahl, auf den LEDs noch nicht gesehen. Demo 92: Parts 73
+  (pur) und 75 (Ebene `FX_OVER` 170 über `SCENE_PALETTE`) vorn, Doku-Tabelle +30 s. Doku: LED-Effekte-und-Szenen.html,
+  effekt-katalog.yaml, README, CLAUDE.md. Alle fünf Envs mit `build_ota.py --backup` gebaut (`FW_VERSION=1793487232`,
+  vorheriger Stand in `ota/backup/2026-10-31_2`). Nächster Schritt: Urteil des Users zu Demo 92 Parts 73 und 75.
 
 - **19.10.2026, Blinder statt Blitz bei BlingBling + Blinder hinter dem Titel-Lauftext - Envs bauen,
   committet, Abnahme offen.** Anlass: in Kids „chorus intro“ zog `transition: flash` + `progFastBlingBling` (setzt die

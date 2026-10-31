@@ -136,6 +136,8 @@ enum FxTransition : uint8_t {
 	TRANS_STAGE_RL,		// … von rechts nach links
 	TRANS_STAGE_OUT,	// … von der Mitte (Drums) nach außen
 	TRANS_DISSOLVE,		// Pixel kippen einzeln um
+	TRANS_TV_OFF,		// Abschalten eines Röhrenfernsehers: das letzte Bild des alten Parts fällt zu Linie und Punkt zusammen, danach
+						// schwarz; das Bild des neuen Parts erscheint erst am Ende. Echt wirkt es mit 500-800 ms (Ablauf: fxPipeline.cpp)
 };
 void fxTransition(uint8_t type, unsigned int durationMillis);	// type = einer der TRANS_...-Werte, durationMillis = Dauer ab Part-Beginn
 

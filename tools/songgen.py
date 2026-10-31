@@ -157,7 +157,7 @@ SOFT_EFFECTS = ("SCENE_COLORS", "SCENE_COLORS_WAVE", "progBeatColors",	# nur die
 				"SCENE_STAR", "progStern", "progSternNeu", "progLampSpin")
 TRANSITIONS = {"cut": None, "fade": "TRANS_FADE", "black": "TRANS_BLACK", "flash": "TRANS_FLASH", "wipe": "TRANS_WIPE",
 			   "wipe_back": "TRANS_WIPE_BACK", "stage_lr": "TRANS_STAGE_LR", "stage_rl": "TRANS_STAGE_RL",
-			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE"}
+			   "stage_out": "TRANS_STAGE_OUT", "dissolve": "TRANS_DISSOLVE", "tv_off": "TRANS_TV_OFF"}
 LAYER_MODES = {"add": "FX_ADD", "max": "FX_MAX", "over": "FX_OVER", "mask": "FX_MASK", "cut": "FX_CUT"}	# overlay: mode
 LAYER_MOD_KEYS = ("from", "to", "windows", "fade_in", "fade_out", "pulse", "gate", "under", "outline")	# steuern nur die Ebene (fxLayer...)
 LAYER_WINDOWS = 4		# so viele Zeitfenster kann eine Ebene in einem Part haben (FX_LAYER_WINDOWS in definitions.h)

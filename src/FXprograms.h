@@ -10,7 +10,7 @@
  *   fxText.cpp          stehender Text, Lauftext, Buchstaben, Blinktext
  *   fxPalette.cpp       Paletten (Farbverläufe)
  *   fxMatrixRain.cpp    "Matrix"-Regen
- *   fxMatrixSim.cpp     Feuer, Plasma, Sternenfeld, Lissajous, Wellenlinien, Equalizer, Wasserwellen
+ *   fxMatrixSim.cpp     Feuer, Plasma, Sternenfeld, Lissajous, Wellenlinien, TV-Rauschen, Equalizer, Wasserwellen
  *
  * So ruft ein Song einen Effekt auf (ein "case" = ein Part des Songs):
  *
@@ -524,6 +524,13 @@ void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis
 void progDNA(unsigned int durationMillis, byte nextPart, unsigned int turnMillis = 2000, uint8_t mode = DNA_ROTATE);
 CRGB dnaStrandColor(uint8_t n);		// Farbe von Strang 0 / 1 ohne eigene Angabe (Farbschema oder Cyan / Magenta)
 // Als Szene für alle Geräte: SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL (scenes.h) - Matrix zeigt die Helix, die übrigen pulsieren dazu.
+
+// TV-Rauschen: körniger Schwarzweiß-"Schnee" wie bei einem analogen Fernseher ohne Sender, läuft auf allen Geräten.
+//   barMillis    so lange braucht der dunklere/hellere Brummbalken einmal durchs Bild (Vorgabe 2000 ms; gut: 1-2 Takte).
+//   frameMillis  ms je Rauschbild (Vorgabe 20 = die 50 Halbbilder des alten Fernsehers; größer = gröberes Flimmern).
+// Als Ebene über einer Szene wirkt es wie schlechter Empfang: fxLayerBegin(); progTvStatic(...); fxLayerEnd(FX_OVER, 170);
+// Stellgrößen (Kornlänge, Balken, Störstreifen): TV_... in fxMatrixSim.cpp.
+void progTvStatic(unsigned int durationMillis, byte nextPart, unsigned int barMillis = 2000, unsigned int frameMillis = 20);
 
 // Game of Life (Conways "Spiel des Lebens") in Farbe: jede LED ist eine Zelle, die nach zwei einfachen Nachbar-Regeln
 // lebt oder stirbt - daraus entstehen Muster, die wachsen, wandern, blinken und zerfallen.

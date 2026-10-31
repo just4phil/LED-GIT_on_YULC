@@ -91,7 +91,7 @@ brightness is raised for the frame and the image scaled down). In song 0 only, t
 (`FX_SKIP_UNCHANGED_FRAMES`, keep-alive every `FX_KEEPALIVE_MS`).
 
 ### Output stage (`fxPipeline.cpp/.h`)
-Transitions between parts (`fxTransition`: fade, black, flash, wipe, stage, dissolve) and modifiers on the finished
+Transitions between parts (`fxTransition`: fade, black, flash, wipe, stage, dissolve, tv_off) and modifiers on the finished
 frame (`fxFadeIn/Out`, `fxPulse`, `fxGate`, `fxDim`, `fxTint`, `fxMaskStage`, `fxMaskSpan`) are registered at the top of
 a part's `case` on every pass, like the colour scheme; `switchToPart()` resets them via `fxPartReset()`. `fxSoft(percent)`
 is registered the same way but is evaluated by the effect itself (`progBeatColors` blends to the next colour at the end
@@ -144,7 +144,7 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `main.cpp` | `setup()` + `loop()`, global state variables |
 | `songs.cpp/.h` | One function per song, calls FX primitives |
 | `FXprograms.cpp/.h` | Basic strip effects (bling, full colours, strobe, black) + the shared effect state; `FXprograms.h` is the one header for all `prog…` effects, also those in the family files below |
-| `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp`, `fxMatrixRain.cpp`, `fxMatrixSim.cpp` | Effect families: scanner/star/circles/lines/outline, text, palettes, "Matrix" rain, computed matrix effects (fire, plasma, starfield, Lissajous, sine/cos, DNA double helix, Game of Life, equalizer, water ripple) |
+| `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp`, `fxMatrixRain.cpp`, `fxMatrixSim.cpp` | Effect families: scanner/star/circles/lines/outline, text, palettes, "Matrix" rain, computed matrix effects (fire, plasma, starfield, Lissajous, sine/cos, DNA double helix, TV static, Game of Life, equalizer, water ripple) |
 | `fxState.h` | `extern` declarations of what the effect files share (timer counters, buffers, shared counters) |
 | `fxBase.cpp/.h` | Building blocks every effect is made of: part start (`fxBegin`, `fxPartStart`), step timing (`fxEvery`, `fxFrameDue`), output (`fxShow`), `clearAll()`, beat helpers |
 | `fxPipeline.cpp/.h` | Output stage `fxPresent()`: layer (second effect), transitions, modifiers, markers, the only `FastLED.show()` for effects |
