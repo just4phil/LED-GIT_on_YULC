@@ -3,7 +3,7 @@
 //@function gen_BloodyMary
 //@name Bloody Mary
 //@struktur_sha 4d15bdb298f9c4505ad7cd79ab9be42d23a191332f5301fe71363aef396c52f4
-//@show_sha 50d7bea4f039a4660cc444316939fbea920be60f3d3aa0bd9b0fba3cb25d31f6
+//@show_sha 6f37d142f1340eb864603177fda64ef598c497af03a36aa7c790e85e639147c2
 //@part GEN_BLOODYMARY_BLACK 0
 //@part GEN_BLOODYMARY_SYNTH_INTRO 3
 //@part GEN_BLOODYMARY_VERSE_1 4
@@ -108,9 +108,13 @@ void gen_BloodyMary() {
 		progBlack(2105, 9);
 		break;
 
-	case 9:	// verse 2  8 T  16842ms  @1:19.737  -- DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_DNA_FLIP_SCROLL, 16842, 10, 114);
+	case 9:	// verse 2  8 T  16842ms  @1:19.737  -- Blutregen: auf der Matrix fallen Leuchtspuren in Rottönen, der Verlauf wandert langsam durch das Schema; auf den anderen Geräten fallen ruhige rote Spuren.
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixRainColor(16842, 10, 80, 33684);
+#else
+		scene(SCENE_RAIN, 16842, 10, 114);
+#endif
 		break;
 
 	case 10:	// dance dance (2)  8 T  16842ms  @1:36.579  -- Motiv 'dance dance': die Bühnenhälften blitzen abwechselnd im Beat in Rot, Weiß und Blau; auf der Matrix pulsiert DANCE im Beat über der Szene.

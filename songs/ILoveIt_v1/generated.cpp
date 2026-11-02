@@ -3,7 +3,7 @@
 //@function gen_ILoveIt
 //@name I Love It
 //@struktur_sha 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
-//@show_sha 5dd978eefb7dfc3d9a10bd1ba9eb24c3510a4c14c8d5d822ab69066c957312d3
+//@show_sha b5c457581e3efdf89fa4c5bccdf59d5b482229678132b3ff4b938be1722a3ad8
 //@part GEN_ILOVEIT_PAUSE 0
 //@part GEN_ILOVEIT_SYNTH_INTRO 3
 //@part GEN_ILOVEIT_VERSE_1 4
@@ -38,14 +38,14 @@ void gen_ILoveIt() {
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:16.750, Einstieg case 5
 		setColorScheme(SCHEME_TOXIC);
-		scene(SCENE_VERSE_WAVES, 12500, 5, 120);
+		progStarfield(12500, 5, 30);
 		break;
 #endif
 
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:13.750, Einstieg case 5
 		setColorScheme(SCHEME_TOXIC);
-		scene(SCENE_VERSE_WAVES, 15500, 5, 120);
+		progStarfield(15500, 5, 30);
 		break;
 #endif
 
@@ -53,9 +53,13 @@ void gen_ILoveIt() {
 		progPalette(8000, 6, 4);
 		break;
 
-	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe frisch in Grün/Gelb: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat
+	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe frisch in Grün/Gelb, Fahrt-Gefühl ('I crashed my car'): auf der Matrix fliegen Sterne aus der Mitte auf einen zu, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat
 		setColorScheme(SCHEME_TOXIC);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progStarfield(16000, 5, 30);
+#else
 		scene(SCENE_VERSE_WAVES, 16000, 5, 120);
+#endif
 		break;
 
 	case 5:	// chorus 1  4 T  8000ms  @0:29.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein.
@@ -101,10 +105,14 @@ void gen_ILoveIt() {
 		progSternNeu(16000, 500, 12, 5, 26, 5, false, 4);
 		break;
 
-	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Matrix: stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück
+	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Matrix: Plasma-Wolken in Pink/Cyan, die auf jedem Beat leicht anschwellen; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück
 		setColorScheme(SCHEME_NEON);
 		setColorFade(FADE_COMPLEMENT, 4000);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progPlasmaBeat(16000, 13, 120);
+#else
 		scene(SCENE_DNA_FLIP, 16000, 13, 120);
+#endif
 		break;
 
 	case 13:	// chorus 3  8 T  16000ms  @1:49.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.

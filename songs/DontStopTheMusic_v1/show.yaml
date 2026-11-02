@@ -43,9 +43,10 @@ sections:
     why: "Ein Farbband in Pink, Cyan und Violett läuft über die ganze Bühne und pumpt im Beat mit der Kick."
 
   "ist gettin late":
-    scene: SCENE_VERSE_WAVES
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
+    scene: SCENE_VERSE_STARS
     scheme: SCHEME_ROYAL
-    why: "Strophe kühl in Blau und Lila: auf der Matrix laufen Sinus- und Kosinuslinie im Takt, auf Gitarre und Bass fährt je Takt eine Lichtebene durch."
+    why: "Strophe 'it's getting late' kühl in Blau und Lila: Nachthimmel auf allen Geräten - auf jedem Beat leuchten ein paar Sterne auf und verglimmen in etwa 2 Beats."
 
   "who knew …":
     scene: SCENE_CALL_RESPONSE

@@ -3,7 +3,7 @@
 //@function gen_FridayImInLove
 //@name Friday I'm In Love
 //@struktur_sha aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
-//@show_sha f3af012a544b6cc5a1bb91023378b548fcbb8e2b452ffb169d64292886d706a5
+//@show_sha f128980ec66ae01cc79d992c57073b72e368ce4febe78f47396c6fcf533e4e1e
 //@part GEN_FRIDAYIMINLOVE_PAUSE 0
 //@part GEN_FRIDAYIMINLOVE_INTRO 3
 //@part GEN_FRIDAYIMINLOVE_INTRO_2 4
@@ -85,9 +85,13 @@ void gen_FridayImInLove() {
 		progFastBlingBling(13714, 2, 10, 1, 16, 2000);
 		break;
 
-	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau
+	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- anders als verse 2: auf der Matrix laufen ruhige bunte Leuchtspuren durch; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen, Blau/Eisblau
 		setColorScheme(SCHEME_ICE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixHorizontal(13715, 11, 70, true);
+#else
 		scene(SCENE_VERSE_WAVES, 13715, 11, 140);
+#endif
 		break;
 
 	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).

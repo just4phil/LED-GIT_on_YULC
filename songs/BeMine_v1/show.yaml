@@ -54,9 +54,12 @@ sections:
     why: "Alter Effekt: 1 Takt schwarz."
 
   verse 2:
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ROYAL
-    why: "Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß"
+    devices:
+      matrix: "progLissajousBeat(${dur}, ${next}, ${bpm}, 2)"
+    why: "Strophe: auf der Matrix zieht eine verschlungene Schleife ihre Leuchtspur und dreht sich in 8 Takten einmal herum, auf jedem zweiten Beat schlägt sie hell auf; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß"
 
   im going crazy:
     fx: "progWaterRipple(${dur}, ${next}, 50, true, true)"

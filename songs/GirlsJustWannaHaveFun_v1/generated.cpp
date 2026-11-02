@@ -3,7 +3,7 @@
 //@function gen_GirlsJustWannaHaveFun
 //@name Girls just wanna have fun
 //@struktur_sha 06eb890211fefddb9e6340911ddf697b64fabc6ce48806b031f4293fe9da17d1
-//@show_sha 3244efe9406982a2df3dee55bfc822e25e5fdc1d06582b41ccb2e6394cfc609e
+//@show_sha 05dccebd92866787fff90038bf1c661a8e2b93bd0ae391449eb0e70618061895
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_PAUSE 0
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_INTRO 3
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_VERSE_1 4
@@ -106,10 +106,14 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_PINGPONG, 15238, 12, 126);
 		break;
 
-	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
+	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: auf der Matrix wächst auf jedem Beat ein neuer Kreis aus einem zufälligen Punkt, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3810);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progCircles(17143, 13, 476);
+#else
 		scene(SCENE_VERSE_WAVES, 17143, 13, 126);
+#endif
 		break;
 
 	case 13:	// thats all they really want (2)  4 T  7619ms  @1:59.286  -- wie der erste Pre-Chorus

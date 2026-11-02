@@ -53,9 +53,12 @@ sections:
     why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
 
   verse 3:
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ICE
-    why: "wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau"
+    devices:
+      matrix: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "anders als verse 2: auf der Matrix laufen ruhige bunte Leuchtspuren durch; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen, Blau/Eisblau"
 
   Saturday went (2):
     fx: "progRandomLines(${dur}, ${next}, 460, true)"

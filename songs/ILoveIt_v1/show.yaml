@@ -41,9 +41,12 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_NEON
     # Zurück: songgen.py ILoveIt_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_TOXIC
-    why: "Strophe frisch in Grün/Gelb: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat"
+    devices:
+      matrix: "progStarfield(${dur}, ${next}, 30)"
+    why: "Strophe frisch in Grün/Gelb, Fahrt-Gefühl ('I crashed my car'): auf der Matrix fliegen Sterne aus der Mitte auf einen zu, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat"
 
   chorus 1:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
@@ -73,10 +76,13 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_NEON
     # Zurück: songgen.py ILoveIt_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP
     scene: SCENE_DNA_FLIP
     scheme: SCHEME_NEON
+    devices:
+      matrix: "progPlasmaBeat(${dur}, ${next}, ${bpm})"
     fade: {to: complement, per: 8}
-    why: "Matrix: stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück"
+    why: "Matrix: Plasma-Wolken in Pink/Cyan, die auf jedem Beat leicht anschwellen; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück"
 
   chorus 3:
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"

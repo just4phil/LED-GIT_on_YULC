@@ -1,0 +1,8 @@
+zeit: '2026-11-02 17:47:44'
+notiz: ''
+werkzeug_git: 00bc7a6 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
+  show.yaml: f128980ec66ae01cc79d992c57073b72e368ce4febe78f47396c6fcf533e4e1e
+  generated.cpp: 7aa32d235c528e57882baefac0f766c7007accd95f0906ffd860f2cf02c35602

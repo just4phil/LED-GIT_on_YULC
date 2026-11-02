@@ -3,7 +3,7 @@
 //@function gen_Maniac
 //@name Maniac
 //@struktur_sha 877216ab951364d44d3d88c818f2cf023e555328f01acca8fc75d574858f89de
-//@show_sha f8360019a492c57cbf0639a3491eb1e5c5a28bf10a0755394731bfa65e0dd2a0
+//@show_sha c1c133771abf06c615aae46ffbfa8af96db12a00e671abf7e200cd5b1106b803
 //@part GEN_MANIAC_PAUSE 0
 //@part GEN_MANIAC_DRUMS_INTRO 3
 //@part GEN_MANIAC_ROCK_INTRO 4
@@ -101,9 +101,13 @@ void gen_Maniac() {
 		progFastBlingBling(12229, 6, 5);
 		break;
 
-	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe 'cold kinetic heat': Matrix stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten, die anderen pulsieren einmal je Takt - kaltes Muster in heißen Farben (Rot/Orange/Gelb).
+	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe 'cold kinetic heat': auf der Matrix lodert ein Feuer in Rot/Orange/Gelb, die anderen pulsieren einmal je Takt in den heißen Farben.
 		setColorScheme(SCHEME_FIRE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progFire(12230, 6, 30);
+#else
 		scene(SCENE_DNA_FLIP, 12230, 6, 157);
+#endif
 		break;
 
 	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.
@@ -237,9 +241,13 @@ void gen_Maniac() {
 		scene(SCENE_WAVE_LR, 3058, 20, 157);
 		break;
 
-	case 20:	// instrumental a  8 T  12229ms  @2:33.822  -- Eine DNA-Helix in Pink und Cyan dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben.
+	case 20:	// instrumental a  8 T  12229ms  @2:33.822  -- Tanzfläche: auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, die Bühnenhälften pulsieren abwechselnd in Pink und Cyan.
 		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(12229, 21, 157);
+#else
 		scene(SCENE_DNA, 12229, 21, 157);
+#endif
 		break;
 
 	case 21:	// instrumental b  7 T+2 B  11465ms  @2:46.051  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät über die Bühne.

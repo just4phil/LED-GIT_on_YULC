@@ -3,7 +3,7 @@
 //@function gen_BeMine
 //@name Be Mine
 //@struktur_sha c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
-//@show_sha 80759707227c8cea4e9ca71f620b0b1f79fab0198ba065c776d708d84eadbf5e
+//@show_sha 4c8e466308036b84b68d357f642ed700bb55ebf66b3b71bec62c5e08c5607a3b
 //@part GEN_BEMINE_PAUSE 0
 //@part GEN_BEMINE_INTRO 3
 //@part GEN_BEMINE_VERSE_1A 4
@@ -79,9 +79,13 @@ void gen_BeMine() {
 		progBlack(1905, 10);
 		break;
 
-	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
+	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe: auf der Matrix zieht eine verschlungene Schleife ihre Leuchtspur und dreht sich in 8 Takten einmal herum, auf jedem zweiten Beat schlägt sie hell auf; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(15238, 11, 126, 2);
+#else
 		scene(SCENE_VERSE_WAVES, 15238, 11, 126);
+#endif
 		break;
 
 	case 11:	// im going crazy  8 T  15238ms  @1:38.333  -- Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf.

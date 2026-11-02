@@ -3,7 +3,7 @@
 //@function gen_DancingOnMyOwn
 //@name Dancing On My Own
 //@struktur_sha 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
-//@show_sha 666f4529947764c899fd1754f3108604b9ac798a6c263ad0ff76aaa04fb00749
+//@show_sha adc4fe2f25ca4029efd4fc62425343e966927b2dfa6b808e84bba4197dbb779b
 //@part GEN_DANCINGONMYOWN_BLACK 0
 //@part GEN_DANCINGONMYOWN_BASS 3
 //@part GEN_DANCINGONMYOWN_SOMEBODY 4
@@ -84,10 +84,12 @@ void gen_DancingOnMyOwn() {
 #endif
 		break;
 
-	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU; Matrix eine drehende DNA-Doppelhelix in Pink/Cyan, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften
+	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU; auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften
 		setColorScheme(SCHEME_NEON);
 #if defined(ANDRESGIT)
 		progSymmetricVU(15738, 6, 122);
+#elif DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(15738, 6, 122);
 #else
 		scene(SCENE_DNA, 15738, 6, 122);
 #endif
@@ -120,9 +122,9 @@ void gen_DancingOnMyOwn() {
 		progBlack(3935, 12);
 		break;
 
-	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
+	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): allein im Club unter der Discokugel - auf allen Geräten leuchten auf jedem Beat ein paar Sterne auf und verglimmen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE_WAVES, 11803, 13, 122);
+		scene(SCENE_VERSE_STARS, 11803, 13, 122);
 		break;
 
 	case 13:	// bridge  4 T  7869ms  @1:47.951  -- wie der erste Pre-Chorus: lädt sich über 4 Takte in warmen Farben auf und entlädt sich genau auf den Chorus

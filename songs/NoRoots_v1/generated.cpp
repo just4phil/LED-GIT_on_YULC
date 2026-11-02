@@ -3,7 +3,7 @@
 //@function gen_NoRoots
 //@name No Roots
 //@struktur_sha 11af9d12b749e715fd36d18b24a29c8b4c9629b8e83fa0f3c6cebf47d9f91e80
-//@show_sha 8626fcd461a13e39b7d8c8683f761e77a3f4dfbdf0a7876d9068a80e490793d2
+//@show_sha 4ba1bbe6611a97e60864636b33de7105e1a55f60b21daa90cc3909000213df7f
 //@part GEN_NOROOTS_KLICK 0
 //@part GEN_NOROOTS_GIT 3
 //@part GEN_NOROOTS_INTRO1 4
@@ -97,10 +97,14 @@ void gen_NoRoots() {
 		scene(SCENE_PALETTE, 4138, 7, 116);
 		break;
 
-	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe in Grün (Wurzeln): Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück.
+	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe in Grün (Wurzeln): auf der Matrix wachsen grüne Leuchtspuren wie Wurzeln nach unten, der Verlauf wandert langsam durch das Schema; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück.
 		setColorScheme(SCHEME_TOXIC);
 		setColorFade(FADE_ANALOG, 4138);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixRainColor(16552, 8, 80, 33103);
+#else
 		scene(SCENE_VERSE_WAVES, 16552, 8, 116);
+#endif
 		break;
 
 	case 8:	// verse 1b (2)  8 T  16552ms  @0:36.724  -- Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Orange, Pink und Gelb.
@@ -405,11 +409,15 @@ void gen_NoRoots() {
 		scene(SCENE_SPARKLE, 8276, 33, 116);
 		break;
 
-	case 33:	// zwischenspiel  9 T  18621ms  @2:49.138  -- Kühler Kontrast: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder.
+	case 33:	// zwischenspiel  9 T  18621ms  @2:49.138  -- Kühler Kontrast, Weite ('no roots'): auf der Matrix fliegen Sterne in Blau und Lila aus der Mitte auf einen zu, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder.
 		setColorScheme(SCHEME_ROYAL);
 		fxBlinder(0, 414, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(103, 103);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progStarfield(18621, 34, 30);
+#else
 		scene(SCENE_DNA_FLIP_SCROLL, 18621, 34, 116);
+#endif
 		break;
 
 	case 34:	// solo  8 T  14482ms  @3:07.759  -- Solo: zwei Kometen in Pink und Cyan kreisen um die Gitarre, alle anderen atmen dunkel; im letzten Takt lädt sich alles in Rot, Weiß, Blau auf, Explosion auf den Chorus.

@@ -114,10 +114,13 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL, fade: {to: triad, per: 4}
     # Zurück: songgen.py AllTheThingsSheSaid_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_NEON
+    devices:
+      matrix: "progEqualizerBeat(${dur}, ${next}, ${bpm})"
     fade: {to: analog, per: 4}
-    why: "Idee 'etwas gesteigert', energy 3: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; schon in Pink/Cyan/Violett des folgenden Build-ups, die Farben wandern je Takt zur Nachbarfarbe und zurück"
+    why: "Idee 'etwas gesteigert', energy 3: auf der Matrix springen Equalizer-Balken auf jeden Beat hoch (auf der Eins am höchsten) und sinken bis zum nächsten ab, im Verlauf Pink/Cyan/Violett des folgenden Build-ups; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern je Takt zur Nachbarfarbe und zurück"
 
   verse 2 b - build up:
     scene: SCENE_BUILDUP

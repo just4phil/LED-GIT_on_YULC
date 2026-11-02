@@ -3,7 +3,7 @@
 //@function gen_DontStopTheMusic
 //@name Don't Stop The Music
 //@struktur_sha da694d63de408d56b1d6c0dffa75efbe22f5a8a278c3c05a1ed4f6b8258228e4
-//@show_sha 0061ed4bf2b732cb6053419ac1396ff23ee9606719e66689e05949d91220ad8a
+//@show_sha 6c65ea36687fc62edb648577e85a9016dadbba37bcaaf97736e88ebb60c91793
 //@part GEN_DONTSTOPTHEMUSIC_PAUSE 0
 //@part GEN_DONTSTOPTHEMUSIC_INTRO 3
 //@part GEN_DONTSTOPTHEMUSIC_IST_GETTIN_LATE 4
@@ -61,9 +61,9 @@ void gen_DontStopTheMusic() {
 		scene(SCENE_PALETTE, 16271, 4, 118);
 		break;
 
-	case 4:	// ist gettin late  8 T  16271ms  @0:23.644  -- Strophe kühl in Blau und Lila: auf der Matrix laufen Sinus- und Kosinuslinie im Takt, auf Gitarre und Bass fährt je Takt eine Lichtebene durch.
+	case 4:	// ist gettin late  8 T  16271ms  @0:23.644  -- Strophe 'it's getting late' kühl in Blau und Lila: Nachthimmel auf allen Geräten - auf jedem Beat leuchten ein paar Sterne auf und verglimmen in etwa 2 Beats.
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE_WAVES, 16271, 5, 118);
+		scene(SCENE_VERSE_STARS, 16271, 5, 118);
 		break;
 
 	case 5:	// who knew …  8 T  16271ms  @0:39.915  -- Eine Stufe mehr: die Bühnenhälften blitzen abwechselnd im Beat, die Farben wandern alle 2 Takte von Blau/Lila nach Pink/Cyan und zurück.

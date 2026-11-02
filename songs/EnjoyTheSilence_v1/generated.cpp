@@ -3,7 +3,7 @@
 //@function gen_EnjoyTheSilence
 //@name Enjoy The Silence
 //@struktur_sha be1bec4aa43ba9c2faa931e03dd2ea4000401ad167718d582a3ee5cb48975ea9
-//@show_sha 434614ad2447158eb5465d7a0f4306cfabc8b7205f3f2a01b4cff15aaafbeca3
+//@show_sha 88df59c1d64d98635575934b1b47d074fa1403187edaca586c9121716180e2a1
 //@part GEN_ENJOYTHESILENCE_TEXT 0
 //@part GEN_ENJOYTHESILENCE_INTRO 3
 //@part GEN_ENJOYTHESILENCE_WORDS_ARE_VERY 4
@@ -154,9 +154,13 @@ void gen_EnjoyTheSilence() {
 		scene(SCENE_STAR, 16991, 14, 113);
 		break;
 
-	case 14:	// verse 1a (2)  4 T  8496ms  @1:45.398  -- Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila.
+	case 14:	// verse 1a (2)  4 T  8496ms  @1:45.398  -- Stille: auf der Matrix zieht eine einzelne ruhige Schleife ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen pulsieren einmal je Takt in Blau/Lila.
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(8496, 15, 113, 2);
+#else
 		scene(SCENE_DNA_FLIP, 8496, 15, 113);
+#endif
 		break;
 
 	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- kleine Steigerung zum Part davor, ohne zweiten Regen: ruhige Farbwolken in Eisblau auf der Matrix, der Farbverlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
@@ -215,7 +219,7 @@ void gen_EnjoyTheSilence() {
 		progFastBlingBling(8496, 4, 21);
 		break;
 
-	case 21:	// bass slap part  8 T  16991ms  @2:38.496  -- Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix dreht sich die Doppelhelix (eine Umdrehung in 2 Takten); die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück.
+	case 21:	// bass slap part  8 T  16991ms  @2:38.496  -- Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix springen Equalizer-Balken auf jeden Beat wie der Pegel des Basses; die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück.
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_COMPLEMENT, 4248);
 		fxMaskStage(DEV_BASS, 115);
@@ -223,7 +227,7 @@ void gen_EnjoyTheSilence() {
 #if defined(RINASBASS)
 		progCometLoop(16991, 22, 5, 32, true);
 #elif DEVICE_CLASS == CLASS_MATRIX
-		progDNA(16991, 22, 4248, DNA_ROTATE);
+		progEqualizerBeat(16991, 22, 113);
 #else
 		scene(SCENE_CALL_RESPONSE, 16991, 22, 113);
 #endif

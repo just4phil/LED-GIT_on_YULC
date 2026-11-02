@@ -9,6 +9,8 @@ billi: ganz kure blinder auf die synths im intro?
 wir müssen die zonen auf andresgit noch testen
 
 neuer fx:
+- auf den lampen kleine abschnitte die hin und herfahren inkl. beschleunigung und abbremsen...könnten sich auch überlappen mit kurzzeitiger farb-addition
+
 - ausblend-fx alle geräte stehen voll in einer farbe und dann fährt wird auf der matrix zeilenweise nach unten gefahren bis alles schwarze ist (inkl fading damit es smooth wirkt)
     genauso bei den Lampen (von oben nach unten) -> und die gits?
 - einblend fx wäre dann reverse
@@ -58,12 +60,18 @@ DONE
 
 
 
-Hier die Änderungen dieser Sitzung (02.11.2026), alle committet auf MAIN.
+Alle Änderungen an den Songs vom 02.11.2026 zum Testen (Endstand). "[neu]" = zweite Runde (DNA/Sinus ersetzt),
+noch NICHT committet; der Rest ist committet auf MAIN. "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
+Instrumente wie bisher.
 
-Pro Song
+Pro Song (nach Song-ID)
+
+- physical: intro ist zu hektisch
+
+
 
 ┌────────────────────┬─────────────────┬──────────────────────────────────────────────────────────────┐
-│     Song (ID)      │      Part       │                           Änderung                           │
+│     Song (ID)      │       Part      │                           Änderung                           │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Physical (2)       │ verse 1         │ VERSE (blau) → Plasma, TOXIC + Regenbogen. Game of Life war  │
 │                    │                 │ ein Zwischenschritt, der rausflog.                           │
@@ -73,20 +81,36 @@ Pro Song
 │ Take On Me (3)     │ verse 1         │ VERSE (blau) → Plasma, NEON ↔ Gegenfarbe. Die Part-Nummern   │
 │                    │                 │ sind jetzt fortlaufend, deshalb gibt es eine neue .mid.      │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ No Roots (6)       │ verse 1b        │ VERSE → Wellen, TOXIC                                        │
+│                    │ BRIDGE          │ [neu] Matrix: DNA → Lissajous-Schleife                       │
+│                    │                 │ („Bleistiftzeichnung“), Rest wie bisher                      │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Don't Stop The     │ ist gettin late │ [neu] Wellen → Sternenhimmel (ganze Szene), Blau/Lila        │
+│ Music (4)          │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ No Roots (6)       │ verse 1b        │ VERSE → Wellen, TOXIC. [neu] Matrix: grüner Regen            │
+│                    │                 │ („Wurzeln“) statt Sinuswellen                                │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2b        │ VERSE → Plasma, TOXIC (Matrix: Kreise wie bisher)            │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ Dancing On My Own  │ git steigt ein  │ VERSE (blau) → DNA, NEON (Gitarre: VU wie bisher)            │
-│ (8)                │                 │                                                              │
+│                    │ zwischenspiel   │ [neu] Matrix: DNA → Sternenfeld, Rest wie bisher             │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Dancing On My Own  │ git steigt ein  │ VERSE (blau) → DNA-Szene, NEON (Gitarre: VU wie bisher).     │
+│ (8)                │                 │ [neu] Matrix: Equalizer im Beat statt DNA                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ somebody        │ Matrix: EKG-Linie mit halbem Tempo                           │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ I Love It (9)      │ verse 1         │ VERSE → Wellen, TOXIC                                        │
+│                    │ verse 2b        │ [neu] Wellen → Sternenhimmel (ganze Szene), Blau/Violett     │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ I Love It (9)      │ verse 1         │ VERSE → Wellen, TOXIC. [neu] Matrix: Sternenfeld statt       │
+│                    │                 │ Sinuswellen (nach dem Titel-Lauftext)                        │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2         │ Herz → ruhiges Herz, SUNSET                                  │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│                    │ verse 3         │ VERSE → DNA-Flip, NEON ↔ Gegenfarbe                          │
+│                    │ verse 3         │ VERSE → DNA-Flip-Szene, NEON ↔ Gegenfarbe. [neu] Matrix:     │
+│                    │                 │ Plasma-Wolken statt DNA                                      │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Bloody Mary (10)   │ verse 2         │ [neu] DNA (blau) → Regen in Rot („Blutregen“), ganze Szene,  │
+│                    │                 │ Schema RED                                                   │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Titanium (11)      │ im bulletproof  │ VERSE (eisblau) → Farbband, Eisblau ↔ Orange                 │
 │                    │ (1+2)           │                                                              │
@@ -94,7 +118,11 @@ Pro Song
 │                    │ Pause: STONE    │ Herz → ruhiges Herz (nur Gitarre/Bass, rot)                  │
 │                    │ HEART           │                                                              │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ Such A Shame (12)  │ bridge 1        │ VERSE (blau) → Wellen, Blau → Pink                           │
+│ Such A Shame (12)  │ bridge 1        │ VERSE (blau) → [neu] Plasma-Szene (statt Wellen), Blau →     │
+│                    │                 │ Pink; Aufladen im letzten Takt bleibt                        │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ [neu] Matrix: DNA → bunte Leuchtspuren, Rest wie bisher      │
+│                    │                 │ (Eisblau)                                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ In The Dark (13)   │ verse 1         │ VERSE (blau) → Sterne, NEON                                  │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
@@ -111,29 +139,45 @@ Pro Song
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2         │ VERSE → ruhiges Herz, SUNSET                                 │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ Friday I'm In Love │ verse 4a        │ Herz → ruhiges Herz, NEON                                    │
-│  (25)              │                 │                                                              │
+│ Enjoy The Silence  │ verse 1a (2)    │ [neu] Matrix: DNA → Lissajous-Schleife („Stille“), Rest wie  │
+│ (24)               │                 │ bisher                                                       │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ bass slap part  │ [neu] Matrix: DNA → Equalizer im Beat (dein Wunsch           │
+│                    │                 │ „langweilig“ ist damit noch nicht umgesetzt)                 │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Friday I'm In Love │ verse 3         │ [neu] Matrix: Wellen → bunte Leuchtspuren (verse 2 behält    │
+│ (25)               │                 │ die Wellen)                                                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 4a        │ Herz → ruhiges Herz, NEON                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Be Mine (26)       │ verse 1b        │ Herz → ruhiges Herz, NEON                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ [neu] Matrix: Wellen → Lissajous-Schleife, Rest wie bisher   │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ I Wanna Dance With │ verse 1         │ VERSE → ruhiges Herz, FIRE                                   │
-│  Somebody (27)     │                 │                                                              │
+│ Somebody (27)      │                 │                                                              │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2         │ Herz → ruhiges Herz, NEON                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Billie Jean (28)   │ verse 2, verse  │ Herz → ruhiges Herz, NEON                                    │
 │                    │ 2 b             │                                                              │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ Maniac (30)        │ verse 1a        │ VERSE (blau) → DNA-Flip, FIRE                                │
+│ Maniac (30)        │ verse 1a        │ VERSE (blau) → DNA-Flip-Szene, FIRE. [neu] Matrix: Feuer     │
+│                    │                 │ statt DNA                                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ All The Things She │ verse 2 b       │ VERSE (blau) → Wellen, NEON                                  │
-│  Said (31)         │                 │                                                              │
+│                    │ instrumental a  │ [neu] Matrix: DNA → Equalizer im Beat, Rest wie bisher       │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ All The Things She │ verse 2 b       │ VERSE (blau) → Wellen-Szene, NEON. [neu] Matrix: Equalizer   │
+│ Said (31)          │                 │ im Beat statt Sinuswellen                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Girls Just Wanna   │ verse 2         │ VERSE (blau) → Plasma, NEON → SUNSET                         │
 │ Have Fun (33)      │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 3         │ [neu] Matrix: Wellen → ein Kreis pro Beat, Rest wie bisher   │
 └────────────────────┴─────────────────┴──────────────────────────────────────────────────────────────┘
 
 SCENE_VERSE läuft in keinem generierten Song mehr, und der schnelle Herzschlag nur noch in Dancing „somebody“, dort schon mit halbem Tempo.
+DNA/Sinus nur noch an 4 Stellen: Kids SOLO, Titanium „v2: cut me down“, In The Dark verse 2, Friday verse 2.
 
 Song-übergreifend (gilt automatisch überall)
 
@@ -141,15 +185,22 @@ Song-übergreifend (gilt automatisch überall)
 - Herz-Szenen auf der Matrix: EKG-Linie wie auf einem Herzmonitor statt der Lissajous-Schleife. Der Ausschlag läuft in die nächste Schemafarbe.
 - Sterne (SCENE_VERSE_STARS): etwa 2,5-mal so viele Sterne, auf den Lampen etwa 5-mal so viele. Sie glühen länger nach (1,7 s statt 1 s).
 - Build-up (SCENE_BUILDUP): Die Matrix explodiert am Ende mit, als Druckwelle aus der Mitte, gleichzeitig mit Lampen und Gitarre.
+- [neu] Neuer Effekt progEqualizerBeat: Equalizer-Balken springen genau auf jeden Beat (auf der Eins höher), sinken bis zum
+  nächsten ab, weiße Spitze fällt nach; Farben aus dem Schema.
 - Neue Regeln, festgehalten in den Song-Regeln, im Effekt-Katalog und in meinem Gedächtnis:
   - Game of Life nur in der Songpause.
   - Der Herzschlag auf jedem Beat ist zu hektisch.
+  - [neu] DNA und Sinuswellen nur noch selten, nie zweimal im selben Song.
+
+Testen in Demo 92
+
+- Part 94: Equalizer im Beat (Matrix), die anderen Geräte wechseln je Beat die Farbe - springen die Balken genau mit?
+- Part 89: ruhiges Herz wartet noch auf deine Abnahme
 
 Offen für später
 
-- Sinuswellen (10 Parts, davon 6 ältere in kühlem Blau)
 - Matrix-Blitz vor einem Blinder eventuell weglassen
-- Demo 92: Part 89 (ruhiges Herz) wartet noch auf deine Abnahme
+- Enjoy The Silence „bass slap part“: dein Wunsch „sehr langweilig, überleg dir etwas neues“ - bisher nur das Matrix-Motiv getauscht
 
 
 

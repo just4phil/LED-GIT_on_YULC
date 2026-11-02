@@ -292,9 +292,12 @@ sections:
     why: "Build-up über 4 Takte in Pink, Cyan und Violett, Explosion genau auf die Bridge. (Marker: Fis leuchtet schon vor.) Auf der 2. Viertel ein langer Blinder (1 Takt) und auf der Matrix TWO in Rot auf Schwarz, das über 2 Takte ausblendet."
 
   "BRIDGE":
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP_SCROLL
     scene: SCENE_DNA_FLIP_SCROLL
     scheme: SCHEME_ROYAL
-    why: "Auf der Matrix eine DNA-Helix in Blau und Lila, die langsam durchs Bild wandert; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)"
+    devices:
+      matrix: "progLissajousBeat(${dur}, ${next}, ${bpm}, 2)"
+    why: "Wie eine Bleistiftzeichnung: auf der Matrix zieht eine Schleife in Blau und Lila ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)"
 
   "SOLO SYNTH":
     scene: SCENE_BUILDUP

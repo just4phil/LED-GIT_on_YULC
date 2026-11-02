@@ -3,7 +3,7 @@
 //@function gen_SuchAShame
 //@name Such A Shame
 //@struktur_sha f68b77b1013bbdf4fee7500c8282a1328da5a89970a2f8dd510ffdaef0d747c9
-//@show_sha 3cee64718f92b5bbfad967446dffdc4fa7488c56cf1cbb3f189f338324289612
+//@show_sha efbe3315b9058c0b74d72724ef7527a1f5c240bfb2e931934a17e1e95cf985b0
 //@part GEN_SUCHASHAME_BLACK 0
 //@part GEN_SUCHASHAME_INTRO_VERSE_1 3
 //@part GEN_SUCHASHAME_BRIDGE_1 4
@@ -66,10 +66,10 @@ void gen_SuchAShame() {
 		scene(SCENE_GLOW, 22759, 4, 116);
 		break;
 
-	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Matrix Sinus- und Kosinuslinie im Takt, Gitarre/Bass je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
+	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Matrix Plasma-Wolken, auf Gitarre/Bass dreht sich der Schemaverlauf um den Korpus, auf den Lampen wandert er nach oben - alle schwellen auf jedem Beat leicht an; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(SCHEME_NEON, 4138);
-		scene(SCENE_VERSE_WAVES, 10344, 5, 116);
+		scene(SCENE_VERSE_PLASMA, 10344, 5, 116);
 		break;
 
 	case 5:	// bridge 1 (tail)  4 B  2069ms  @0:44.741
@@ -94,9 +94,13 @@ void gen_SuchAShame() {
 		progBlack(5172, 9);
 		break;
 
-	case 9:	// verse 2  8 T  16552ms  @1:25.086  -- Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+	case 9:	// verse 2  8 T  16552ms  @1:25.086  -- Auf der Matrix laufen ruhige bunte Leuchtspuren durch; alle anderen Geräte pulsieren einmal je Takt in Eisblau.
 		setColorScheme(SCHEME_ICE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixHorizontal(16552, 10, 70, true);
+#else
 		scene(SCENE_DNA_FLIP, 16552, 10, 116);
+#endif
 		break;
 
 	case 10:	// bridge 2  5 T  10345ms  @1:41.638  -- Ein Farbband in Blau, Lila und Weiß läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.

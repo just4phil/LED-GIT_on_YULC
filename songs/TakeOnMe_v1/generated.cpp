@@ -3,7 +3,7 @@
 //@function gen_TakeOnMe
 //@name Take On Me
 //@struktur_sha 4e13caaaefa4ab377b44ee33e8c32df97093b5a641db57eafaacf9307df80928
-//@show_sha 844649f8a9426417484cba45cb208a99580a34d623567dda910cc3c4ee835319
+//@show_sha 266c426fac300c49076375b33b524f99e3c70897c1b9fa8516ef55861943feb0
 //@part GEN_TAKEONME_PAUSE 0
 //@part GEN_TAKEONME_DRUMINTRO 3
 //@part GEN_TAKEONME_SYNTHINTRO 4
@@ -343,9 +343,13 @@ void gen_TakeOnMe() {
 #endif
 		break;
 
-	case 19:	// BRIDGE  12 T  18702ms  @2:22.792  -- Auf der Matrix eine DNA-Helix in Blau und Lila, die langsam durchs Bild wandert; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)
+	case 19:	// BRIDGE  12 T  18702ms  @2:22.792  -- Wie eine Bleistiftzeichnung: auf der Matrix zieht eine Schleife in Blau und Lila ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(18702, 20, 154, 2);
+#else
 		scene(SCENE_DNA_FLIP_SCROLL, 18702, 20, 154);
+#endif
 		break;
 
 	case 20:	// SOLO SYNTH  4 T  6233ms  @2:41.494  -- Statt 4 Takten Schwarz: Build-up in Orange, Pink und Gelb, Explosion genau auf das Riff.

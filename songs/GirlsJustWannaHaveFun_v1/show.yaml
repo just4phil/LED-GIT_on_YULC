@@ -62,10 +62,13 @@ sections:
     why: "'farbig und abwechslungsreich', energy 4: pro Beat springt das Licht auf ein anderes Gerät, freie Zufallsfarben - der bunteste Part des Songs"
 
   verse 3:
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ROYAL
+    devices:
+      matrix: "progCircles(${dur}, ${next}, ${beat})"
     fade: {to: triad, per: 8}
-    why: "energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück"
+    why: "energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: auf der Matrix wächst auf jedem Beat ein neuer Kreis aus einem zufälligen Punkt, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück"
 
   thats all they really want (2):
     scene: SCENE_BUILDUP

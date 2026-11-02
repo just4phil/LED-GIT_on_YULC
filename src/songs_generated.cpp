@@ -499,9 +499,13 @@ void gen_TakeOnMe() {
 #endif
 		break;
 
-	case 19:	// BRIDGE  12 T  18702ms  @2:22.792  -- Auf der Matrix eine DNA-Helix in Blau und Lila, die langsam durchs Bild wandert; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)
+	case 19:	// BRIDGE  12 T  18702ms  @2:22.792  -- Wie eine Bleistiftzeichnung: auf der Matrix zieht eine Schleife in Blau und Lila ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen Geräte pulsieren gemeinsam einmal je Takt. (Marker: F und Fis.)
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(18702, 20, 154, 2);
+#else
 		scene(SCENE_DNA_FLIP_SCROLL, 18702, 20, 154);
+#endif
 		break;
 
 	case 20:	// SOLO SYNTH  4 T  6233ms  @2:41.494  -- Statt 4 Takten Schwarz: Build-up in Orange, Pink und Gelb, Explosion genau auf das Riff.
@@ -684,9 +688,9 @@ void gen_DontStopTheMusic() {
 		scene(SCENE_PALETTE, 16271, 4, 118);
 		break;
 
-	case 4:	// ist gettin late  8 T  16271ms  @0:23.644  -- Strophe kühl in Blau und Lila: auf der Matrix laufen Sinus- und Kosinuslinie im Takt, auf Gitarre und Bass fährt je Takt eine Lichtebene durch.
+	case 4:	// ist gettin late  8 T  16271ms  @0:23.644  -- Strophe 'it's getting late' kühl in Blau und Lila: Nachthimmel auf allen Geräten - auf jedem Beat leuchten ein paar Sterne auf und verglimmen in etwa 2 Beats.
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE_WAVES, 16271, 5, 118);
+		scene(SCENE_VERSE_STARS, 16271, 5, 118);
 		break;
 
 	case 5:	// who knew …  8 T  16271ms  @0:39.915  -- Eine Stufe mehr: die Bühnenhälften blitzen abwechselnd im Beat, die Farben wandern alle 2 Takte von Blau/Lila nach Pink/Cyan und zurück.
@@ -874,10 +878,14 @@ void gen_NoRoots() {
 		scene(SCENE_PALETTE, 4138, 7, 116);
 		break;
 
-	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe in Grün (Wurzeln): Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück.
+	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe in Grün (Wurzeln): auf der Matrix wachsen grüne Leuchtspuren wie Wurzeln nach unten, der Verlauf wandert langsam durch das Schema; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück.
 		setColorScheme(SCHEME_TOXIC);
 		setColorFade(FADE_ANALOG, 4138);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixRainColor(16552, 8, 80, 33103);
+#else
 		scene(SCENE_VERSE_WAVES, 16552, 8, 116);
+#endif
 		break;
 
 	case 8:	// verse 1b (2)  8 T  16552ms  @0:36.724  -- Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Orange, Pink und Gelb.
@@ -1182,11 +1190,15 @@ void gen_NoRoots() {
 		scene(SCENE_SPARKLE, 8276, 33, 116);
 		break;
 
-	case 33:	// zwischenspiel  9 T  18621ms  @2:49.138  -- Kühler Kontrast: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder.
+	case 33:	// zwischenspiel  9 T  18621ms  @2:49.138  -- Kühler Kontrast, Weite ('no roots'): auf der Matrix fliegen Sterne in Blau und Lila aus der Mitte auf einen zu, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder.
 		setColorScheme(SCHEME_ROYAL);
 		fxBlinder(0, 414, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(103, 103);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progStarfield(18621, 34, 30);
+#else
 		scene(SCENE_DNA_FLIP_SCROLL, 18621, 34, 116);
+#endif
 		break;
 
 	case 34:	// solo  8 T  14482ms  @3:07.759  -- Solo: zwei Kometen in Pink und Cyan kreisen um die Gitarre, alle anderen atmen dunkel; im letzten Takt lädt sich alles in Rot, Weiß, Blau auf, Explosion auf den Chorus.
@@ -1515,10 +1527,12 @@ void gen_DancingOnMyOwn() {
 #endif
 		break;
 
-	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU; Matrix eine drehende DNA-Doppelhelix in Pink/Cyan, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften
+	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU; auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften
 		setColorScheme(SCHEME_NEON);
 #if defined(ANDRESGIT)
 		progSymmetricVU(15738, 6, 122);
+#elif DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(15738, 6, 122);
 #else
 		scene(SCENE_DNA, 15738, 6, 122);
 #endif
@@ -1551,9 +1565,9 @@ void gen_DancingOnMyOwn() {
 		progBlack(3935, 12);
 		break;
 
-	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
+	case 12:	// verse 2b  6 T  11803ms  @1:36.148  -- zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): allein im Club unter der Discokugel - auf allen Geräten leuchten auf jedem Beat ein paar Sterne auf und verglimmen
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE_WAVES, 11803, 13, 122);
+		scene(SCENE_VERSE_STARS, 11803, 13, 122);
 		break;
 
 	case 13:	// bridge  4 T  7869ms  @1:47.951  -- wie der erste Pre-Chorus: lädt sich über 4 Takte in warmen Farben auf und entlädt sich genau auf den Chorus
@@ -1698,14 +1712,14 @@ void gen_ILoveIt() {
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:16.750, Einstieg case 5
 		setColorScheme(SCHEME_TOXIC);
-		scene(SCENE_VERSE_WAVES, 12500, 5, 120);
+		progStarfield(12500, 5, 30);
 		break;
 #endif
 
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:13.750, Einstieg case 5
 		setColorScheme(SCHEME_TOXIC);
-		scene(SCENE_VERSE_WAVES, 15500, 5, 120);
+		progStarfield(15500, 5, 30);
 		break;
 #endif
 
@@ -1713,9 +1727,13 @@ void gen_ILoveIt() {
 		progPalette(8000, 6, 4);
 		break;
 
-	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe frisch in Grün/Gelb: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat
+	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe frisch in Grün/Gelb, Fahrt-Gefühl ('I crashed my car'): auf der Matrix fliegen Sterne aus der Mitte auf einen zu, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat
 		setColorScheme(SCHEME_TOXIC);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progStarfield(16000, 5, 30);
+#else
 		scene(SCENE_VERSE_WAVES, 16000, 5, 120);
+#endif
 		break;
 
 	case 5:	// chorus 1  4 T  8000ms  @0:29.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein.
@@ -1761,10 +1779,14 @@ void gen_ILoveIt() {
 		progSternNeu(16000, 500, 12, 5, 26, 5, false, 4);
 		break;
 
-	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Matrix: stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück
+	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Matrix: Plasma-Wolken in Pink/Cyan, die auf jedem Beat leicht anschwellen; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück
 		setColorScheme(SCHEME_NEON);
 		setColorFade(FADE_COMPLEMENT, 4000);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progPlasmaBeat(16000, 13, 120);
+#else
 		scene(SCENE_DNA_FLIP, 16000, 13, 120);
+#endif
 		break;
 
 	case 13:	// chorus 3  8 T  16000ms  @1:49.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.
@@ -1875,9 +1897,13 @@ void gen_BloodyMary() {
 		progBlack(2105, 9);
 		break;
 
-	case 9:	// verse 2  8 T  16842ms  @1:19.737  -- DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_DNA_FLIP_SCROLL, 16842, 10, 114);
+	case 9:	// verse 2  8 T  16842ms  @1:19.737  -- Blutregen: auf der Matrix fallen Leuchtspuren in Rottönen, der Verlauf wandert langsam durch das Schema; auf den anderen Geräten fallen ruhige rote Spuren.
+		setColorScheme(SCHEME_RED);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixRainColor(16842, 10, 80, 33684);
+#else
+		scene(SCENE_RAIN, 16842, 10, 114);
+#endif
 		break;
 
 	case 10:	// dance dance (2)  8 T  16842ms  @1:36.579  -- Motiv 'dance dance': die Bühnenhälften blitzen abwechselnd im Beat in Rot, Weiß und Blau; auf der Matrix pulsiert DANCE im Beat über der Szene.
@@ -2323,10 +2349,10 @@ void gen_SuchAShame() {
 		scene(SCENE_GLOW, 22759, 4, 116);
 		break;
 
-	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Matrix Sinus- und Kosinuslinie im Takt, Gitarre/Bass je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
+	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Matrix Plasma-Wolken, auf Gitarre/Bass dreht sich der Schemaverlauf um den Korpus, auf den Lampen wandert er nach oben - alle schwellen auf jedem Beat leicht an; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(SCHEME_NEON, 4138);
-		scene(SCENE_VERSE_WAVES, 10344, 5, 116);
+		scene(SCENE_VERSE_PLASMA, 10344, 5, 116);
 		break;
 
 	case 5:	// bridge 1 (tail)  4 B  2069ms  @0:44.741
@@ -2351,9 +2377,13 @@ void gen_SuchAShame() {
 		progBlack(5172, 9);
 		break;
 
-	case 9:	// verse 2  8 T  16552ms  @1:25.086  -- Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt.
+	case 9:	// verse 2  8 T  16552ms  @1:25.086  -- Auf der Matrix laufen ruhige bunte Leuchtspuren durch; alle anderen Geräte pulsieren einmal je Takt in Eisblau.
 		setColorScheme(SCHEME_ICE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixHorizontal(16552, 10, 70, true);
+#else
 		scene(SCENE_DNA_FLIP, 16552, 10, 116);
+#endif
 		break;
 
 	case 10:	// bridge 2  5 T  10345ms  @1:41.638  -- Ein Farbband in Blau, Lila und Weiß läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.
@@ -3711,9 +3741,13 @@ void gen_EnjoyTheSilence() {
 		scene(SCENE_STAR, 16991, 14, 113);
 		break;
 
-	case 14:	// verse 1a (2)  4 T  8496ms  @1:45.398  -- Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila.
+	case 14:	// verse 1a (2)  4 T  8496ms  @1:45.398  -- Stille: auf der Matrix zieht eine einzelne ruhige Schleife ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen pulsieren einmal je Takt in Blau/Lila.
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(8496, 15, 113, 2);
+#else
 		scene(SCENE_DNA_FLIP, 8496, 15, 113);
+#endif
 		break;
 
 	case 15:	// verse 1b  4 T  8495ms  @1:53.894  -- kleine Steigerung zum Part davor, ohne zweiten Regen: ruhige Farbwolken in Eisblau auf der Matrix, der Farbverlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an
@@ -3772,7 +3806,7 @@ void gen_EnjoyTheSilence() {
 		progFastBlingBling(8496, 4, 21);
 		break;
 
-	case 21:	// bass slap part  8 T  16991ms  @2:38.496  -- Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix dreht sich die Doppelhelix (eine Umdrehung in 2 Takten); die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück.
+	case 21:	// bass slap part  8 T  16991ms  @2:38.496  -- Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix springen Equalizer-Balken auf jeden Beat wie der Pegel des Basses; die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück.
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_COMPLEMENT, 4248);
 		fxMaskStage(DEV_BASS, 115);
@@ -3780,7 +3814,7 @@ void gen_EnjoyTheSilence() {
 #if defined(RINASBASS)
 		progCometLoop(16991, 22, 5, 32, true);
 #elif DEVICE_CLASS == CLASS_MATRIX
-		progDNA(16991, 22, 4248, DNA_ROTATE);
+		progEqualizerBeat(16991, 22, 113);
 #else
 		scene(SCENE_CALL_RESPONSE, 16991, 22, 113);
 #endif
@@ -3956,9 +3990,13 @@ void gen_FridayImInLove() {
 		progFastBlingBling(13714, 2, 10, 1, 16, 2000);
 		break;
 
-	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- wie verse 2: Sinuswellen und Lichtebene im Takt in Blau/Eisblau
+	case 10:	// verse 3  8 T  13715ms  @1:37.071  -- anders als verse 2: auf der Matrix laufen ruhige bunte Leuchtspuren durch; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen, Blau/Eisblau
 		setColorScheme(SCHEME_ICE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progMatrixHorizontal(13715, 11, 70, true);
+#else
 		scene(SCENE_VERSE_WAVES, 13715, 11, 140);
+#endif
 		break;
 
 	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
@@ -4068,9 +4106,13 @@ void gen_BeMine() {
 		progBlack(1905, 10);
 		break;
 
-	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe neu (18.10.2026, statt der alten Leuchtspuren): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
+	case 10:	// verse 2  8 T  15238ms  @1:23.095  -- Strophe: auf der Matrix zieht eine verschlungene Schleife ihre Leuchtspur und dreht sich in 8 Takten einmal herum, auf jedem zweiten Beat schlägt sie hell auf; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen - Blau/Lila/Weiß
 		setColorScheme(SCHEME_ROYAL);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progLissajousBeat(15238, 11, 126, 2);
+#else
 		scene(SCENE_VERSE_WAVES, 15238, 11, 126);
+#endif
 		break;
 
 	case 11:	// im going crazy  8 T  15238ms  @1:38.333  -- Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf.
@@ -4623,9 +4665,13 @@ void gen_Maniac() {
 		progFastBlingBling(12229, 6, 5);
 		break;
 
-	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe 'cold kinetic heat': Matrix stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten, die anderen pulsieren einmal je Takt - kaltes Muster in heißen Farben (Rot/Orange/Gelb).
+	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe 'cold kinetic heat': auf der Matrix lodert ein Feuer in Rot/Orange/Gelb, die anderen pulsieren einmal je Takt in den heißen Farben.
 		setColorScheme(SCHEME_FIRE);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progFire(12230, 6, 30);
+#else
 		scene(SCENE_DNA_FLIP, 12230, 6, 157);
+#endif
 		break;
 
 	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.
@@ -4759,9 +4805,13 @@ void gen_Maniac() {
 		scene(SCENE_WAVE_LR, 3058, 20, 157);
 		break;
 
-	case 20:	// instrumental a  8 T  12229ms  @2:33.822  -- Eine DNA-Helix in Pink und Cyan dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben.
+	case 20:	// instrumental a  8 T  12229ms  @2:33.822  -- Tanzfläche: auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, die Bühnenhälften pulsieren abwechselnd in Pink und Cyan.
 		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(12229, 21, 157);
+#else
 		scene(SCENE_DNA, 12229, 21, 157);
+#endif
 		break;
 
 	case 21:	// instrumental b  7 T+2 B  11465ms  @2:46.051  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät über die Bühne.
@@ -5014,10 +5064,14 @@ void gen_AllTheThingsSheSaid() {
 		fxLayerFlush();
 		break;
 
-	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; schon in Pink/Cyan/Violett des folgenden Build-ups, die Farben wandern je Takt zur Nachbarfarbe und zurück
+	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: auf der Matrix springen Equalizer-Balken auf jeden Beat hoch (auf der Eins am höchsten) und sinken bis zum nächsten ab, im Verlauf Pink/Cyan/Violett des folgenden Build-ups; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern je Takt zur Nachbarfarbe und zurück
 		setColorScheme(SCHEME_NEON);
 		setColorFade(FADE_ANALOG, 2791);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(5581, 19, 86);
+#else
 		scene(SCENE_VERSE_WAVES, 5581, 19, 86);
+#endif
 		break;
 
 	case 19:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo
@@ -5222,10 +5276,14 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_PINGPONG, 15238, 12, 126);
 		break;
 
-	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
+	case 12:	// verse 3  9 T  17143ms  @1:42.143  -- energy 2, Ruhepol nach dem bunten Solo, anders als Verse 2: auf der Matrix wächst auf jedem Beat ein neuer Kreis aus einem zufälligen Punkt, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen; die Farben wandern alle 2 Takte ein Drittel um den Farbkreis und zurück
 		setColorScheme(SCHEME_ROYAL);
 		setColorFade(FADE_TRIAD, 3810);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progCircles(17143, 13, 476);
+#else
 		scene(SCENE_VERSE_WAVES, 17143, 13, 126);
+#endif
 		break;
 
 	case 13:	// thats all they really want (2)  4 T  7619ms  @1:59.286  -- wie der erste Pre-Chorus

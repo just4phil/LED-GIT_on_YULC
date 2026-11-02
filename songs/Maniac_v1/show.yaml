@@ -86,9 +86,12 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
     # Zurück: songgen.py Maniac_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP
     scene: SCENE_DNA_FLIP
     scheme: SCHEME_FIRE
-    why: "Strophe 'cold kinetic heat': Matrix stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten, die anderen pulsieren einmal je Takt - kaltes Muster in heißen Farben (Rot/Orange/Gelb)."
+    devices:
+      matrix: "progFire(${dur}, ${next}, 30)"
+    why: "Strophe 'cold kinetic heat': auf der Matrix lodert ein Feuer in Rot/Orange/Gelb, die anderen pulsieren einmal je Takt in den heißen Farben."
 
   "verse 1b":
     # Wunsch: ältere Linien sollen ausfaden - letzter Parameter = nach 4 Beats sind sie fast dunkel
@@ -169,9 +172,12 @@ sections:
     why: "Der Blitz läuft pro Beat von links nach rechts über die Bühne."
 
   "instrumental a":
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA
     scene: SCENE_DNA
     scheme: SCHEME_NEON
-    why: "Eine DNA-Helix in Pink und Cyan dreht sich auf der Matrix, die Bühnenhälften pulsieren abwechselnd in den Strangfarben."
+    devices:
+      matrix: "progEqualizerBeat(${dur}, ${next}, ${bpm})"
+    why: "Tanzfläche: auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, die Bühnenhälften pulsieren abwechselnd in Pink und Cyan."
 
   "instrumental b":
     scene: SCENE_COLORS_WAVE

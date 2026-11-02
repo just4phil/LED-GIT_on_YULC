@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
-//@show_sha 5d31e4be01b2bd5a6e406f6b70ee94adac7687a5ac61cc3d611923a785f29209
+//@show_sha 3e9cbe168a1dd77ae44c010fd0257cc1550a29f23e863b7ebde014c2ba1324ce
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
@@ -186,10 +186,14 @@ void gen_AllTheThingsSheSaid() {
 		fxLayerFlush();
 		break;
 
-	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; schon in Pink/Cyan/Violett des folgenden Build-ups, die Farben wandern je Takt zur Nachbarfarbe und zurück
+	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: auf der Matrix springen Equalizer-Balken auf jeden Beat hoch (auf der Eins am höchsten) und sinken bis zum nächsten ab, im Verlauf Pink/Cyan/Violett des folgenden Build-ups; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern je Takt zur Nachbarfarbe und zurück
 		setColorScheme(SCHEME_NEON);
 		setColorFade(FADE_ANALOG, 2791);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(5581, 19, 86);
+#else
 		scene(SCENE_VERSE_WAVES, 5581, 19, 86);
+#endif
 		break;
 
 	case 19:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo

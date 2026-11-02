@@ -40,11 +40,13 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
     # Zurück: songgen.py DancingOnMyOwn_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA
     scene: SCENE_DNA
     scheme: SCHEME_NEON
     devices:
+      matrix: "progEqualizerBeat(${dur}, ${next}, ${bpm})"
       ANDRESGIT: "progSymmetricVU(${dur}, ${next}, ${bpm})"
-    why: "Gitarre steigt ein und bekommt ein eigenes VU; Matrix eine drehende DNA-Doppelhelix in Pink/Cyan, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften"
+    why: "Gitarre steigt ein und bekommt ein eigenes VU; auf der Matrix springen Equalizer-Balken in Pink/Cyan auf jeden Beat hoch und sinken ab, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften"
 
   yeah i knwo ist stupid:
     scene: SCENE_BUILDUP
@@ -73,9 +75,10 @@ sections:
     why: "Stopp: alles dunkel"
 
   verse 2b:
-    scene: SCENE_VERSE_WAVES
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
+    scene: SCENE_VERSE_STARS
     scheme: SCHEME_ROYAL
-    why: "zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): Sinuswellen laufen im Takt über die Matrix, eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen"
+    why: "zurück in den Puls, eine Stufe wärmer als Verse 1 (Blau/Violett): allein im Club unter der Discokugel - auf allen Geräten leuchten auf jedem Beat ein paar Sterne auf und verglimmen"
 
   bridge:
     scene: SCENE_BUILDUP

@@ -34,14 +34,15 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
     # Zurück: songgen.py SuchAShame_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
-    scene: SCENE_VERSE_WAVES
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
+    scene: SCENE_VERSE_PLASMA
     scheme: SCHEME_ROYAL
     fade: {to: SCHEME_NEON, per: 8}
     tail:
       beats: 4
       scene: SCENE_BUILDUP
       scheme: SCHEME_ROYAL
-    why: "Matrix Sinus- und Kosinuslinie im Takt, Gitarre/Bass je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus."
+    why: "Matrix Plasma-Wolken, auf Gitarre/Bass dreht sich der Schemaverlauf um den Korpus, auf den Lampen wandert er nach oben - alle schwellen auf jedem Beat leicht an; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus."
 
   "chorus 1":
     scene: SCENE_STAR
@@ -61,9 +62,12 @@ sections:
     why: "Schwarz; ein kurzer warmweißer Blinder auf die 1 (Takt 40), klingt in 2 Beats ab."
 
   "verse 2":
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP
     scene: SCENE_DNA_FLIP
     scheme: SCHEME_ICE
-    why: "Stehende DNA-Helix in Eisblau auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt."
+    devices:
+      matrix: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "Auf der Matrix laufen ruhige bunte Leuchtspuren durch; alle anderen Geräte pulsieren einmal je Takt in Eisblau."
 
   "bridge 2":
     scene: SCENE_PALETTE

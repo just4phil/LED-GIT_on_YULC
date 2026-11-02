@@ -71,10 +71,13 @@ sections:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
     #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
     # Zurück: songgen.py NoRoots_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
     scene: SCENE_VERSE_WAVES
     scheme: SCHEME_TOXIC
+    devices:
+      matrix: "progMatrixRainColor(${dur}, ${next}, 80, ${beats:64})"
     fade: {to: analog, per: 8}
-    why: "Strophe in Grün (Wurzeln): Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück."
+    why: "Strophe in Grün (Wurzeln): auf der Matrix wachsen grüne Leuchtspuren wie Wurzeln nach unten, der Verlauf wandert langsam durch das Schema; auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück."
 
   "verse 1b (2)":
     scene: SCENE_CALL_RESPONSE
@@ -140,10 +143,13 @@ sections:
     why: "Schnelle Einzelblitze in Rot, Weiß und Blau; am Ende drei kurze Blinder (Takt 82,5 / 82,75, der dritte auf die 1 vom Zwischenspiel)."
 
   "zwischenspiel":
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP_SCROLL
     scene: SCENE_DNA_FLIP_SCROLL
     scheme: SCHEME_ROYAL
+    devices:
+      matrix: "progStarfield(${dur}, ${next}, 30)"
     blinder: {bar: 83, len: 0.8, attack: 0.2, hold: 0.2, amount: 100}
-    why: "Kühler Kontrast: eine DNA-Helix in Blau und Lila wandert langsam über die Matrix, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder."
+    why: "Kühler Kontrast, Weite ('no roots'): auf der Matrix fliegen Sterne in Blau und Lila aus der Mitte auf einen zu, alle anderen pulsieren einmal je Takt. Auf der 1 der dritte kurze Blinder."
 
   "solo":
     scene: SCENE_SOLO_GIT

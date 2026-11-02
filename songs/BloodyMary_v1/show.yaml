@@ -70,9 +70,12 @@ sections:
     why: "Atempause vor verse 2: Schwarz, ein warmweißer Blinder springt auf die 1 (Takt 38) und klingt über den ganzen Takt aus."
 
   "verse 2":
-    scene: SCENE_DNA_FLIP_SCROLL
-    scheme: SCHEME_ROYAL
-    why: "DNA-Helix in Blau und Lila wandert langsam über die Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen Geräte pulsieren einmal je Takt."
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP_SCROLL, scheme: SCHEME_ROYAL
+    scene: SCENE_RAIN
+    scheme: SCHEME_RED
+    devices:
+      matrix: "progMatrixRainColor(${dur}, ${next}, 80, ${beats:64})"
+    why: "Blutregen: auf der Matrix fallen Leuchtspuren in Rottönen, der Verlauf wandert langsam durch das Schema; auf den anderen Geräten fallen ruhige rote Spuren."
 
   "dance dance (2)": *dance
 

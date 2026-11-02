@@ -93,9 +93,12 @@ sections:
     why: "Drehender Stern wie am Anfang (Blau, Lila, Weiß, weiche Farbwechsel). Auf den Einsatz springt ein starker Blinder auf und klingt über 2 Beats ab."
 
   verse 1a (2):
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_DNA_FLIP
     scene: SCENE_DNA_FLIP
     scheme: SCHEME_ROYAL
-    why: "Stehende Doppelhelix auf der Matrix, die Stränge tauschen jeden Takt die Seiten; alle anderen pulsieren einmal je Takt in Blau/Lila."
+    devices:
+      matrix: "progLissajousBeat(${dur}, ${next}, ${bpm}, 2)"
+    why: "Stille: auf der Matrix zieht eine einzelne ruhige Schleife ihre Leuchtspur und dreht sich langsam, auf jedem zweiten Beat leuchtet sie auf; alle anderen pulsieren einmal je Takt in Blau/Lila."
 
   verse 1b:
     scene: SCENE_VERSE_PLASMA
@@ -134,15 +137,16 @@ sections:
     why: "Einzelblitze in Neon-Farben, doppelt so dicht."
 
   bass slap part:
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_CALL_RESPONSE, matrix: "progDNA(${dur}, ${next}, ${beats:8}, DNA_ROTATE)"
     scene: SCENE_CALL_RESPONSE
     scheme: SCHEME_ROYAL
     fade: {to: complement, per: 8}
     devices:
       RINASBASS: "progCometLoop(${dur}, ${next}, 5, 32, true)"
-      matrix: "progDNA(${dur}, ${next}, ${beats:8}, DNA_ROTATE)"
+      matrix: "progEqualizerBeat(${dur}, ${next}, ${bpm})"
     only: {devices: [RINASBASS], others: 45}
     blinder: {every: bar, len: 1, color: warm, devices: [RINASBASS]}
-    why: "Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix dreht sich die Doppelhelix (eine Umdrehung in 2 Takten); die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück."
+    why: "Bass-Solo: zwei schnelle orange Kometen jagen um den Bass, auf jeder Eins blitzt der Bass warmweiß auf - er leuchtet voll, alles andere mit 45 %. Dort spielen Gitarre und Lampen Frage/Antwort im Takt, auf der Matrix springen Equalizer-Balken auf jeden Beat wie der Pegel des Basses; die Farben wandern alle 2 Takte von Blau/Lila zur Gegenfarbe und zurück."
 
   all i ever wanted (3):
     scene: SCENE_COLORS
