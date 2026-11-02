@@ -4032,15 +4032,13 @@ void gen_FridayImInLove() {
 		progFastBlingBling(12000, 2, 19, 1, 16, 2000);
 		break;
 
-	case 19:	// git fade out  3 T  5143ms  @3:21.643  -- Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schluss 5 Sekunden lang ins Schwarz ausklingt.
-		fxBlinder(4714, 857, 255, FX_BLINDER_WARM, DEV_ALL);
+	case 19:	// git fade out  3 T  5143ms  @3:21.643  -- Schluss: ein voller warmweißer Blinder auf allen Geräten springt auf der 1 an, steht einen Beat und klingt über die 3 Takte mit der Gitarre ins Schwarz aus.
+		fxBlinder(0, 5143, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(0, 429);
-		progBlingBlingColoring(5143, 20, 6000);
+		progBlack(5143, 20);
 		break;
 
-	case 20:	// BLACK (Ende)    10000ms  @3:26.786  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
-		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
-		fxBlinderShape(0, 0);
+	case 20:	// BLACK (Ende)    10000ms  @3:26.786  -- alle Geräte schwarz, dann Pausen-Loop
 		progBlack(10000, 21);
 		break;
 

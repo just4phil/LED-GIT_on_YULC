@@ -13,9 +13,6 @@
 
 function: gen_FridayImInLove
 scroll_title: "Friday im in Love by The Cure"
-# Wunsch des Users 02.11.2026: Blinder am Ende - der Blinder auf der letzten Viertel von "git fade out" klingt
-# 5 Sekunden lang ins Schluss-Schwarz aus (wie bei APT).
-end_blinder: 5
 
 sections:
   pause:
@@ -100,6 +97,9 @@ sections:
     why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
 
   git fade out:
-    fx: "progBlingBlingColoring(${dur}, ${next}, 6000)"
-    blinder: {at: 11, len: 2, hold: 1}    # Wunsch 02.11.2026: Blinder am Ende; voll bis Part-Ende, end_blinder klingt aus
-    why: "Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schluss 5 Sekunden lang ins Schwarz ausklingt."
+    # Wunsch des Users 02.11.2026: der Blinder am Ende soll diesen Part ERSETZEN (vorher: progBlingBlingColoring mit
+    # Blinder auf der letzten Viertel + end_blinder 5 s). Jetzt: darunter schwarz, der Blinder springt auf der 1 voll an,
+    # steht 1 Beat und klingt über den Rest der 3 Takte mit der ausklingenden Gitarre ins Schwarz aus.
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 12, hold: 1}
+    why: "Schluss: ein voller warmweißer Blinder auf allen Geräten springt auf der 1 an, steht einen Beat und klingt über die 3 Takte mit der Gitarre ins Schwarz aus."
