@@ -1,0 +1,8 @@
+zeit: '2026-11-02 16:10:40'
+notiz: Herzschlag-Strophen auf SCENE_VERSE_HEART_SLOW (halbes Tempo + Farbwechsel)
+werkzeug_git: 2e3a95c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
+  show.yaml: e56fc8fc476eac0163613c88abd2ad19ff092d81ed35c9f28a373b603054e2f3
+  generated.cpp: 7d83815e0fe417929fe43c7f054d9f19f7b2f511a6165e867bb33d0f66670d0e

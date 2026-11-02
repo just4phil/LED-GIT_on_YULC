@@ -3,7 +3,7 @@
 //@function gen_BeMine
 //@name Be Mine
 //@struktur_sha c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
-//@show_sha 2317e7fc12fdf08c6e43e53b908d085716c25af70947bd6747a2cadd54b2561a
+//@show_sha e56fc8fc476eac0163613c88abd2ad19ff092d81ed35c9f28a373b603054e2f3
 //@part GEN_BEMINE_PAUSE 0
 //@part GEN_BEMINE_INTRO 3
 //@part GEN_BEMINE_VERSE_1A 4
@@ -56,9 +56,9 @@ void gen_BeMine() {
 		scene(SCENE_VERSE_STARS, 15238, 5, 126);
 		break;
 
-	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE_HEART, 15238, 6, 126);
+		scene(SCENE_VERSE_HEART_SLOW, 15238, 6, 126);
 		break;
 
 	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
