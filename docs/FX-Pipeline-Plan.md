@@ -11,7 +11,12 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 02.11.2026 (Dancing On My Own: Bass-Outro, `only` mit `fade`)
+Zuletzt aktualisiert: 02.11.2026 (Dancing On My Own: Bass-Outro, `only` mit `fade`, Lampen im Verse 1 halbes Tempo)
+
+- **02.11.2026, Dancing On My Own, Part `somebody` (Takt 12-20):** Wunsch des Users: die Lampen blinkten zu schnell für
+  den ruhigen Start -> Tempo halbiert. Nur in der Show: `devices: lamp: progLampHeartbeat(..., ${bpm} / 2, deviceColor())`,
+  ein Herzschlag alle 2 Beats; Gitarre, Bass, Matrix und andere Songs unverändert. OTA gebaut (`FW_VERSION=1793623461`,
+  vorheriger Stand in `ota/backup/2026-11-02_2`). Nächster Schritt: Test auf den LEDs durch den User.
 
 - **02.11.2026, Dancing On My Own: Bass-Outro.** Wunsch des Users: am Ende spielt der Bass fast allein -> Fokus auf den
   Bass. Ab Takt 130 verlöschen die anderen Geräte über 2 Takte, ab 132 läuft nur auf dem Bass ein ruhiger Effekt, ab 136

@@ -1499,9 +1499,13 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_CALM, 15737, 4, 122);
 		break;
 
-	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: alle Geräte schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: Gitarre und Bass schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Lampen ruhiger nur auf jedem zweiten Beat, die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_ICE);
+#if DEVICE_CLASS == CLASS_LAMP
+		progLampHeartbeat(15738, 5, 122 / 2, deviceColor());
+#else
 		scene(SCENE_VERSE_HEART, 15738, 5, 122);
+#endif
 		break;
 
 	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU, der Rest bleibt im Verse-Puls, Farben Blau/Violett

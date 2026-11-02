@@ -1,0 +1,8 @@
+zeit: '2026-11-02 13:42:52'
+notiz: 'somebody: Lampen-Herzschlag halbes Tempo'
+werkzeug_git: f6c4753
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
+  show.yaml: 7f3539659f764b34a95de1520ea66555b058f1ef758b5518e6d1b5f113489312
+  generated.cpp: a935e0c189accc07138d702405bf57133fbb4144047a5d462ed376e54c11375d

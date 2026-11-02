@@ -27,7 +27,11 @@ sections:
   somebody:
     scene: SCENE_VERSE_HEART
     scheme: SCHEME_ICE
-    why: "Gesang setzt ein, noch zurückhaltend: alle Geräte schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Matrix zeigt eine Lissajous-Schleife"
+    devices:
+      # Wunsch des Users 02.11.2026: die Lampen blinkten zu schnell für den ruhigen Start -> halbes Tempo
+      # (ein Herzschlag alle 2 Beats, bleibt auf dem Beat: 61 BPM = genau jeder zweite Beat von 122)
+      lamp: "progLampHeartbeat(${dur}, ${next}, ${bpm} / 2, deviceColor())"
+    why: "Gesang setzt ein, noch zurückhaltend: Gitarre und Bass schlagen auf jedem Beat wie ein Herz (lub-dub) in Blautönen, die Lampen ruhiger nur auf jedem zweiten Beat, die Matrix zeigt eine Lissajous-Schleife"
 
   git steigt ein:
     scene: SCENE_VERSE
