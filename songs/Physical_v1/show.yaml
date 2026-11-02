@@ -83,7 +83,7 @@ sections:
     # Vorher (seit 18.10.2026): SCENE_VERSE_HEART, SCHEME_ROYAL - Urteil des Users 02.11.2026: blau und etwas zu hektisch
     scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
-    why: "zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
+    why: "zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   pre-chorus 2:
     scene: SCENE_BUILDUP

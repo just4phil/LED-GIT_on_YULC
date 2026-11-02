@@ -3,7 +3,7 @@
 //@function gen_Physical
 //@name Physical
 //@struktur_sha 8db76cd3bd31d89a0c1627bcbf1bb53c3d2bdfa1cf69d9623ced4af8fd776b84
-//@show_sha 3e74fddde4c1b181f8ebee6c539a2cf34c8dd4efa8e7f64c2ea1f051e6a838a1
+//@show_sha 16348c0640e41429ec2c3745751f835d47cf4b5e9a5a566c2f2ebee486b372ed
 //@part GEN_PHYSICAL_PAUSE 0
 //@part GEN_PHYSICAL_SYNTH_INTRO 3
 //@part GEN_PHYSICAL_SYNTH_INTRO_TAIL 4
@@ -118,7 +118,7 @@ void gen_Physical() {
 		scene(SCENE_BUILDUP, 1633, 13, 147);
 		break;
 
-	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 24489, 14, 147);
 		break;
