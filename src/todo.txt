@@ -23,20 +23,12 @@ neuer fx:
 TODOs
 =======
 
+- physical: intro ist zu hektisch
 - In the dark -> strobe zu früh und zu lang
-- no roots -> diese sinus wellen kommen auch sehr häufig vor
 - titanium -> text zu früh und der stone heart teil ist sehr lange BLACK
 
 tv on / off efect einbauen
 -------------------
-
-- TITMH -> sieht sehr anders aus
-
-- billie jean noch mal checken
-    - war da niocht im intro ein effekt auf dem synth???
-
-titanium
-    - triolen ende unsync
 no roots
     - blinder auf den synth fx
 dstm: 
@@ -44,31 +36,13 @@ dstm:
 
 SAS
     EIGENTLICH MÜSSTE STERN ALT AUF ALLEN GERÄTEN SELBE FARBEN NUTZEN
-
-DONE
-=====
-- APT
-- ATTSS ist cool
-- abcdefu auch mit neuen verses cool -> FUCK YOU etc wäre evtl. cooler in rot und drumherum schwarz ausgestanzt
-- TOM auch mit neuen verses cool
-- GJWHF auch mit neuen verses cool
-- enjoy
-- shivers
-- kids neu auto-generiert -> eigentlich ganz cool
-- dancing müsste auch fertig sein
-------------------
-
-
+----------------------
 
 Alle Änderungen an den Songs vom 02.11.2026 zum Testen (Endstand). "[neu]" = zweite Runde (DNA/Sinus ersetzt),
 "[abend]" = dritte Runde am Abend (Wünsche aus dem Test), alles committet auf MAIN (465c4d5). "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
 Instrumente wie bisher.
 
 Pro Song (nach Song-ID)
-
-- physical: intro ist zu hektisch
-
-
 
 ┌────────────────────┬─────────────────┬──────────────────────────────────────────────────────────────┐
 │     Song (ID)      │       Part      │                           Änderung                           │
@@ -234,9 +208,32 @@ Offen für später
 
 - Matrix-Blitz vor einem Blinder eventuell weglassen
 - Enjoy The Silence „bass slap part“: dein Wunsch „sehr langweilig, überleg dir etwas neues“ - bisher nur das Matrix-Motiv getauscht
+--------------------------------------
 
+LOC stand 02.11.2026:
+===================
+Das Projekt hat rund 33.000 Zeilen, wenn man nur zählt, was tatsächlich gebaut wird. Kopien in den Versionsordnern und Fremdcode sind nicht mitgerechnet.
 
+┌──────────────────────────────────────────────────────────┬─────────┬──────────┐
+│                         Bereich                          │ Dateien │  Zeilen  │
+├──────────────────────────────────────────────────────────┼─────────┼──────────┤
+│ src/ (eigener Firmware-Code)                             │ 55      │ 20.619   │
+├──────────────────────────────────────────────────────────┼─────────┼──────────┤
+│ tools/ (Python: songgen, build_ota …)                    │ 7       │ 5.373    │
+├──────────────────────────────────────────────────────────┼─────────┼──────────┤
+│ test/ (Unit-Tests)                                       │ 2       │ 433      │
+├──────────────────────────────────────────────────────────┼─────────┼──────────┤
+│ Generierter Song-Code (generated.cpp, songs_generated.*) │ 28      │ 12.885   │
+├──────────────────────────────────────────────────────────┼─────────┼──────────┤
+│ Summe                                                    │         │ ≈ 39.300 │
+└──────────────────────────────────────────────────────────┴─────────┴──────────┘
 
+Davon geht ab bzw. kommt hinzu:
+- Ohne den generierten Code sind es rund 26.400 Zeilen, die von Hand geschrieben sind. Davon sind etwa 17.200 echter Code, 6.200 Kommentare und 3.100 Leerzeilen (grob gezählt).
+- Kopien in den Versionsordnern (songs/*/versionen/): rund 47.000 Zeilen generierter Code. Das sind nur Sicherungen, sie stecken nicht in der Firmware.
+- Fremdcode (AiEsp32RotaryEncoder): 465 Zeilen.
+
+Zählt man alles mit, was in Git liegt (.cpp/.h/.py), kommt man auf rund 86.700 Zeilen.
 -----------------
 
 Noch handgeschrieben (alter Code) sind diese Songs, nach Song-ID sortiert:
