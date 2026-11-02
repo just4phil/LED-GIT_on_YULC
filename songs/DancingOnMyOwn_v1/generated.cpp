@@ -3,7 +3,7 @@
 //@function gen_DancingOnMyOwn
 //@name Dancing On My Own
 //@struktur_sha 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
-//@show_sha 366e350bc81e0b6f3e53ba28067783e838471d417b66b83be8d5bee68678d4ba
+//@show_sha e93160e5f12dbb405831f59354cfe967271e0c8c757c78faa1686d0b375e338e
 //@part GEN_DANCINGONMYOWN_BLACK 0
 //@part GEN_DANCINGONMYOWN_BASS 3
 //@part GEN_DANCINGONMYOWN_SOMEBODY 4
@@ -82,12 +82,12 @@ void gen_DancingOnMyOwn() {
 #endif
 		break;
 
-	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU, der Rest bleibt im Verse-Puls, Farben Blau/Violett
-		setColorScheme(SCHEME_ROYAL);
+	case 5:	// git steigt ein  8 T  15738ms  @0:37.131  -- Gitarre steigt ein und bekommt ein eigenes VU; Matrix eine drehende DNA-Doppelhelix in Pink/Cyan, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften
+		setColorScheme(SCHEME_NEON);
 #if defined(ANDRESGIT)
 		progSymmetricVU(15738, 6, 122);
 #else
-		scene(SCENE_VERSE, 15738, 6, 122);
+		scene(SCENE_DNA, 15738, 6, 122);
 #endif
 		break;
 

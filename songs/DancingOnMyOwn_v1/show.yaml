@@ -35,11 +35,14 @@ sections:
     why: "Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine Lissajous-Schleife"
 
   git steigt ein:
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
+    # Zurück: songgen.py DancingOnMyOwn_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_DNA
+    scheme: SCHEME_NEON
     devices:
       ANDRESGIT: "progSymmetricVU(${dur}, ${next}, ${bpm})"
-    why: "Gitarre steigt ein und bekommt ein eigenes VU, der Rest bleibt im Verse-Puls, Farben Blau/Violett"
+    why: "Gitarre steigt ein und bekommt ein eigenes VU; Matrix eine drehende DNA-Doppelhelix in Pink/Cyan, Bass und Lampen pulsieren dazu weich im Wechsel der Bühnenhälften"
 
   yeah i knwo ist stupid:
     scene: SCENE_BUILDUP
