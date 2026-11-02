@@ -503,7 +503,8 @@ void progPlasmaBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 // Sinus- und Kosinuslinie in den ersten beiden Schemafarben, wandern je Takt eine Wellenlänge weiter
 void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 // Lissajous-Schleife im Schemaverlauf, dreht sich in 8 Takten einmal; die Helligkeit schlägt wie ein Herz (lub-dub)
-void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
+// beatsPerHeart: 1 = Herzschlag auf jedem Beat, 2 = nur auf jedem zweiten (SCENE_VERSE_HEART_SLOW)
+void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerHeart = 1);
 
 // DNA-Doppelhelix: zwei Stränge winden sich quer über die Fläche umeinander, dazwischen zweifarbige Sprossen; die
 // Helix dreht sich um ihre Längsachse (der Strang vorn ist hell, der hinten dunkel).

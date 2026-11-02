@@ -82,6 +82,10 @@ enum SceneID : uint8_t {
 	//--- Frage/Antwort auf dem Backbeat (neu am 18.10.2026, Wunsch des Users zu Maniac) ---
 	SCENE_CALL_RESPONSE_OFFBEAT,	// wie SCENE_CALL_RESPONSE, aber nur auf 2 und 4: auf 2 die linke Hälfte, auf 4 die rechte,
 									// auf 1 und 3 ist alles schwarz (Tabelle: aufblinken auf x,25 und x,75)
+
+	//--- ruhiger Herzschlag (neu am 02.11.2026: SCENE_VERSE_HEART war dem User in allen Songs "zu hektisch") ---
+	SCENE_VERSE_HEART_SLOW,	// wie SCENE_VERSE_HEART, aber nur auf jedem zweiten Beat (halbes Tempo, bleibt auf dem Beat),
+							// und mit jedem Takt rückt jedes Gerät eine Schemafarbe weiter (Farbwechsel jeden zweiten Schlag)
 };
 
 // Verzögerung pro Bühnenposition bei den WAVE-Szenen, als Bruchteil eines Beats: 16 = eine 64stel-Note (Beat / 16).
@@ -146,6 +150,7 @@ void progLampFireBursts(unsigned int durationMillis, byte nextPart, unsigned int
 void progLampSpin(unsigned int durationMillis, byte nextPart, uint8_t bpm);				// drei Lichtpunkte schwingen um die Mitte, Farbe pro Beat
 void progLampRain(unsigned int durationMillis, byte nextPart, unsigned int msPerStep, CRGB col);	// Leuchtspuren fallen von oben
 void progLampFlow(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis);	// Schemaverlauf wandert nach oben, schwillt im Beat an
-void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);	// ganze Lampe schlägt wie ein Herz (lub-dub)
+void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col,
+					   uint8_t beatsPerHeart = 1);	// ganze Lampe schlägt wie ein Herz (lub-dub); 2 = nur jeder zweite Beat
 // für alle Geräte: Sternenhimmel - pro Beat leuchten perBeat Sterne (einzelne LEDs) in Schemafarben auf und verglimmen
 void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat);

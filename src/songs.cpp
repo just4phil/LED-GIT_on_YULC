@@ -4098,8 +4098,13 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 77, 73, 75, 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(77);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 89, 77, 73, 75, 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(89);	break;
+
+	// Ruhiger Herzschlag SCENE_VERSE_HEART_SLOW (neu am 02.11.2026: SCENE_VERSE_HEART war dem User in Tell It To My
+	// Heart, I Wanna Dance With Somebody, I Love It und Physical "zu hektisch"; Wunsch: "halbes tempo + Farbwechsel").
+	// Herzschlag nur auf jedem zweiten Beat, mit jedem Takt rückt jedes Gerät eine Schemafarbe weiter. 16 s = 8 Takte.
+	case 89:	setColorScheme(SCHEME_SUNSET);	scene(SCENE_VERSE_HEART_SLOW, 16000, DEMO_NR(77), bpm);	break;
 
 	// TV-Off (neu am 01.11.2026, Wunsch des Users: das charakteristische Abschalten eines analogen Fernsehers, kombinierbar
 	// mit jedem Effekt, vor allem für die Matrix). Dreimal dasselbe nach drei verschiedenen Bildern und mit den drei

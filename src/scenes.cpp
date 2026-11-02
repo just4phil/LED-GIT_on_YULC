@@ -380,11 +380,12 @@ void progLampFlow(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsig
 
 // Die ganze Lampe schlägt auf jedem Beat wie ein Herz: erst voll ("lub"), kurz danach etwas schwächer ("dub"),
 // dazwischen glimmt sie ganz schwach (8). Dieselbe Kurve wie progHeartbeat auf Gitarre und Bass (heartEnvelope).
-void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
+// beatsPerHeart = 2: nur auf jedem zweiten Beat (heartPhase(), SCENE_VERSE_HEART_SLOW).
+void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, uint8_t beatsPerHeart) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
-		uint8_t env = heartEnvelope(fxBeatPhase(millisCounterForProgChange, bpm));
+		uint8_t env = heartEnvelope(heartPhase(millisCounterForProgChange, bpm, beatsPerHeart));
 		CRGB c = col;
 		fill_solid(leds, anz_LEDs, c.nscale8(max((uint8_t)8, env)));
 	}
@@ -584,6 +585,14 @@ void progDnaPulse(unsigned int durationMillis, byte nextPart, unsigned int turnM
 //=========== Szenen ===============================================
 //==================================================================
 
+// Farbe dieses Geräts in SCENE_VERSE_HEART_SLOW: wie deviceColor(), aber mit jedem Takt (4 Beats) rückt jedes Gerät
+// eine Schemafarbe weiter. Bei halbem Tempo schlägt das Herz auf Beat 0 und 2 eines Takts - der Wechsel fällt also
+// immer genau auf einen Schlag, nie mitten in ein Ausklingen. Alle Geräte rechnen mit derselben Zeit seit Partbeginn
+// und wechseln gemeinsam. Ein Schema mit nur einer Farbe (SCHEME_RED, _BLUE, _WHITE) wechselt dabei nicht.
+static CRGB heartBarColor(uint8_t bpm) {
+	return schemeColor(STAGE_POS + fxBeats(bpm) / 4);
+}
+
 // scene(): wählt zur Szene den passenden Effekt für DIESES Gerät und ruft ihn auf.
 //   sceneID         eine der SCENE_...-Nummern aus scenes.h
 //   durationMillis  Länge des Parts in ms
@@ -700,6 +709,7 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_VERSE_PLASMA:	progSpatialPalette(durationMillis, nextPart, bpm, beatMs * 32UL);	break;	// eine Umdrehung in 8 Takten
 	case SCENE_VERSE_WAVES:	progPlaneWipe(durationMillis, nextPart, 240000UL / bpm, WIPE_ANGLE_NECK, true);	break;	// eine Fahrt je Takt
 	case SCENE_VERSE_HEART:	progHeartbeat(durationMillis, nextPart, bpm, me);	break;
+	case SCENE_VERSE_HEART_SLOW:	progHeartbeat(durationMillis, nextPart, bpm, heartBarColor(bpm), 2);	break;	// jeder 2. Beat
 	default:			progCometLoop(durationMillis, nextPart, 8, hueOf(me), true);	break;	// Solo
 	}
 
@@ -715,6 +725,7 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_VERSE_PLASMA:	progLampFlow(durationMillis, nextPart, bpm, beatMs * 16UL);	break;	// einmal durch in 4 Takten
 	case SCENE_VERSE_WAVES:	progLampPulse(durationMillis, nextPart, bpm, me);	break;
 	case SCENE_VERSE_HEART:	progLampHeartbeat(durationMillis, nextPart, bpm, me);	break;
+	case SCENE_VERSE_HEART_SLOW:	progLampHeartbeat(durationMillis, nextPart, bpm, heartBarColor(bpm), 2);	break;	// jeder 2. Beat
 	default:			progLampPulse(durationMillis, nextPart, bpm, me);	break;
 	}
 
@@ -733,6 +744,7 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	case SCENE_VERSE_PLASMA:	progPlasmaBeat(durationMillis, nextPart, bpm);	break;
 	case SCENE_VERSE_WAVES:	progSineCosBeat(durationMillis, nextPart, bpm);	break;
 	case SCENE_VERSE_HEART:	progLissajousBeat(durationMillis, nextPart, bpm);	break;
+	case SCENE_VERSE_HEART_SLOW:	progLissajousBeat(durationMillis, nextPart, bpm, 2);	break;	// Schleife im Schemaverlauf, Schlag jeder 2. Beat
 	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;

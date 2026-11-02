@@ -115,7 +115,12 @@ void progZoneBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 // Helligkeit eines Herzschlags ("lub-dub"), t = ms seit dem Beat: 255 auf dem Schlag, nach HEART_DUB_MS ein zweiter,
 // schwächerer Schlag, dazwischen und danach dunkel. Auch für die Lampen und die Matrix (SCENE_VERSE_HEART).
 uint8_t heartEnvelope(unsigned int t);
-void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col);
+// ms seit dem letzten Herzschlag, wenn nur jeder beatsPerHeart-te Beat schlägt (1 = jeder Beat, 2 = halbes Tempo:
+// auf Beat 0, 2, 4 ... seit Partbeginn). Gerechnet aus demselben Beat-Raster wie fxBeatPhase() - bleibt also exakt
+// auf dem Beat, auch bei ungeradem Tempo (anders als bpm / 2, das bei 117 BPM auf 58 abrunden und weglaufen würde).
+unsigned int heartPhase(unsigned int ms, uint8_t bpm, uint8_t beatsPerHeart);
+// beatsPerHeart: 1 = ein Herzschlag auf jedem Beat (wie bisher), 2 = nur auf jedem zweiten Beat (SCENE_VERSE_HEART_SLOW)
+void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, uint8_t beatsPerHeart = 1);
 void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 
 // 10: Regenbogen im Raum: rotating = true dreht um den Korpus, sonst läuft er von unten nach oben

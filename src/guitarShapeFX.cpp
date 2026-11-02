@@ -592,12 +592,26 @@ uint8_t heartEnvelope(unsigned int t) {
 	return scale8((uint8_t)v, (uint8_t)v);
 }
 
-void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
+// ms seit dem letzten Herzschlag bei einem Schlag alle beatsPerHeart Beats. Beispiel 120 BPM (500 ms je Beat),
+// beatsPerHeart = 2, ms = 1700: das ist Beat 3 (ungerade) und 200 ms darin -> 500 + 200 = 700 ms seit dem Schlag
+// auf Beat 2. Nur Ganzzahlen, wie fxBeatPhase(): ms * bpm / 60000 ist die Nummer des Beats.
+unsigned int heartPhase(unsigned int ms, uint8_t bpm, uint8_t beatsPerHeart) {
+	if (bpm == 0) bpm = 1;
+	if (beatsPerHeart == 0) beatsPerHeart = 1;
+	uint32_t scaled = (uint32_t)ms * bpm;						// ms mal Tempo: 60000 davon sind ein Beat
+	uint32_t beat   = scaled / 60000;							// Nummer des Beats seit Partbeginn
+	unsigned int inBeat = (scaled % 60000) / bpm;				// ms seit dem Anfang dieses Beats (= fxBeatPhase)
+	return inBeat + (beat % beatsPerHeart) * (60000 / bpm);	// + die ganzen Beats seit dem letzten Schlag
+}
+
+// beatsPerHeart: 1 = Schlag auf jedem Beat, 2 = auf jedem zweiten (halbes Tempo, bleibt auf dem Beat-Raster)
+void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, uint8_t beatsPerHeart) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(10)) {
-		unsigned int period = 60000 / max((uint8_t)1, bpm);
-		unsigned int t = fxBeatPhase(millisCounterForProgChange, bpm);
+		// period = Zeit von einem Herzschlag zum nächsten; der Puls den Hals hinauf braucht 45 % davon
+		unsigned int period = 60000 / max((uint8_t)1, bpm) * max((uint8_t)1, beatsPerHeart);
+		unsigned int t = heartPhase(millisCounterForProgChange, bpm, beatsPerHeart);
 
 		// Ein Herzschlag sind zwei Schläge kurz hintereinander ("lub-dub"): der erste voll, der zweite etwas schwächer
 		uint8_t env = heartEnvelope(t);

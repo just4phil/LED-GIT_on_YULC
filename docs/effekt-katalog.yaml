@@ -415,7 +415,7 @@ effekte:
     regler: "stepMillis (ms je Generation, Vorgabe 150; kleiner = hektischer, ab etwa 300 Einzelbilder); spots (Startfiguren am Anfang, Vorgabe 2); LIFE_SPAWN_EVERY / LIFE_SPAWN_BELOW_PERCENT (wie oft und bis zu welcher Fülle Nachschub kommt), LIFE_MAX_AGE, LIFE_MAX_DEPTH (Lebensdauer eines Spots), LIFE_CROWD_PERCENT, LIFE_OLD_LEVEL und die Figurenliste lifePatterns in fxMatrixSim.cpp"
     demo: "92: Part 48 (ohne Schema), 49 (NEON) als Szene SCENE_LIFE; Song 0 (Songpause) auf der Matrix, dort mit resume = true durchlaufend"
     urteil:
-    notiz: "neu am 12.10.2026 (Frage des Users: \"kann man das game of life als effekt bauen?\", Wunsch: \"hübsch farbig\"). Abnahme offen. Nach seiner Regel vom 09.10.2026 in Songs als SCENE_LIFE verwenden, nicht als fx für alle Geräte. Startbild je Song/Part immer gleich. Die erste Fassung lief im Beat; sein Urteil dazu: \"besser unabhängig vom beat animieren, damit man die entwicklung gut nachvollziehen kann\" - seitdem festes Tempo. Drittes Urteil (umlaufende Ränder): \"kommt das von oben wieder unten in die matrix rein? das finde ich nicht so gut\" - seitdem wird gelöscht, was das Bild verlässt. Zweites Urteil (dicht gefülltes Zufallsfeld): \"es fällt mir schwer die entwicklung einzelner strukturen zu sehen. vielleicht ist es einfach zu viel? besser ein paar wenige spots die sich dann entwickeln?\" - seitdem leeres Feld mit wenigen Startfiguren. energie/traegt_takte geschätzt"
+    notiz: "neu am 12.10.2026 (Frage des Users: \"kann man das game of life als effekt bauen?\", Wunsch: \"hübsch farbig\"). Abnahme offen. Nach seiner Regel vom 09.10.2026 in Songs als SCENE_LIFE verwenden, nicht als fx für alle Geräte. Startbild je Song/Part immer gleich. Die erste Fassung lief im Beat; sein Urteil dazu: \"besser unabhängig vom beat animieren, damit man die entwicklung gut nachvollziehen kann\" - seitdem festes Tempo. Drittes Urteil (umlaufende Ränder): \"kommt das von oben wieder unten in die matrix rein? das finde ich nicht so gut\" - seitdem wird gelöscht, was das Bild verlässt. Zweites Urteil (dicht gefülltes Zufallsfeld): \"es fällt mir schwer die entwicklung einzelner strukturen zu sehen. vielleicht ist es einfach zu viel? besser ein paar wenige spots die sich dann entwickeln?\" - seitdem leeres Feld mit wenigen Startfiguren. energie/traegt_takte geschätzt. Regel des Users 02.11.2026 (nach einem Test als Strophe in Physical): \"game of life ist nur für songpausen gedacht!\" - nicht in Songs einsetzen"
 
   progEqualizer:
     wirkung: "Springende Pegelbalken (ohne Audio, simuliert)"
@@ -933,7 +933,16 @@ szenen:
     bewegung: pulsierend
     genutzt: 0
     urteil:
-    notiz: "neu am 18.10.2026, Demo 92 Part 65, Abnahme offen. Gut für ruhige, getragene Strophen"
+    notiz: "neu am 18.10.2026, Demo 92 Part 65, Abnahme offen. Gut für ruhige, getragene Strophen. Urteil des Users 02.11.2026 (Tell It To My Heart, I Wanna Dance, I Love It, Physical; vorher schon Dancing On My Own): \"zu hektisch -> halbes tempo + Farbwechsel einbauen\" - dafür SCENE_VERSE_HEART_SLOW"
+  SCENE_VERSE_HEART_SLOW:
+    wirkung: "wie SCENE_VERSE_HEART, aber ruhiger: Herzschlag nur auf jedem zweiten Beat (exakt auf dem Beat-Raster), mit jedem Takt rückt jedes Gerät eine Schemafarbe weiter - alle gleichzeitig auf einem Schlag"
+    geraete: {gitarre: "progHeartbeat(..., 2)", lampe: "progLampHeartbeat(..., 2)", matrix: "progLissajousBeat(..., 2)"}
+    rolle: [flaeche]
+    energie: [1, 3]
+    bewegung: pulsierend
+    genutzt: 0
+    urteil:
+    notiz: "neu am 02.11.2026 nach dem Urteil \"zu hektisch -> halbes tempo + Farbwechsel einbauen\" zu SCENE_VERSE_HEART. Demo 92 Part 89, Abnahme offen. Schema mit mehreren Farben nehmen (RED/BLUE/WHITE wechseln nicht)"
   SCENE_VERSE_STARS:
     wirkung: "Strophe als Sternenhimmel: auf jedem Beat leuchten auf allen Geräten ein paar einzelne LEDs in Schemafarben auf und verglimmen in etwa 2 Beats"
     geraete: {alle: progTwinkleBeat}

@@ -508,7 +508,9 @@ void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
 // sich in 8 Takten einmal ganz herum, der Verlauf wandert langsam mit. Das alte Bild wird nur abgedunkelt
 // (nscale8(200) je Bild) - so zieht die Figur eine Leuchtspur. Die Helligkeit schlägt auf jedem Beat wie ein Herz
 // (heartEnvelope: lub-dub), passend zu Gitarre und Lampen in SCENE_VERSE_HEART; dazwischen bleibt sie bei 70.
-void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+// beatsPerHeart = 2 (SCENE_VERSE_HEART_SLOW): der Herzschlag kommt nur auf jedem zweiten Beat (heartPhase()), die
+// Drehung bleibt gleich schnell.
+void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerHeart) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(20)) {
@@ -516,7 +518,7 @@ void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) 
 		unsigned int ms = millisCounterForProgChange;
 		uint32_t turnMs = 8UL * 240000UL / bpm;						// 8 Takte für eine Umdrehung
 		float delta = 2.0f * (float)M_PI * (float)(ms % turnMs) / (float)turnMs;
-		uint8_t val = 70 + scale8(heartEnvelope(fxBeatPhase(ms, bpm)), 185);
+		uint8_t val = 70 + scale8(heartEnvelope(heartPhase(ms, bpm, beatsPerHeart)), 185);
 		uint8_t hueOffset = ms / 40;
 		CRGBPalette16 pal = versePalette();
 
