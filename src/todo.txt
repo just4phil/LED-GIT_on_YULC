@@ -61,7 +61,7 @@ DONE
 
 
 Alle Änderungen an den Songs vom 02.11.2026 zum Testen (Endstand). "[neu]" = zweite Runde (DNA/Sinus ersetzt),
-alles committet auf MAIN (31c7d3a). "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
+"[abend]" = dritte Runde am Abend (Wünsche aus dem Test), alles committet auf MAIN (465c4d5). "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
 Instrumente wie bisher.
 
 Pro Song (nach Song-ID)
@@ -109,6 +109,10 @@ Pro Song (nach Song-ID)
 │                    │ verse 3         │ VERSE → DNA-Flip-Szene, NEON ↔ Gegenfarbe. [neu] Matrix:     │
 │                    │                 │ Plasma-Wolken statt DNA                                      │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ STOP + chorus 4 │ [abend] Text I (Takt 71,5) – DONT (71,75) – CARE (72, einen  │
+│                    │                 │ halben Takt), rot mit schwarzem Rand; CARE liegt über dem    │
+│                    │                 │ Blinder                                                      │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Bloody Mary (10)   │ verse 2         │ [neu] DNA (blau) → Regen in Rot („Blutregen“), ganze Szene,  │
 │                    │                 │ Schema RED                                                   │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
@@ -145,12 +149,24 @@ Pro Song (nach Song-ID)
 │                    │ bass slap part  │ [neu] Matrix: DNA → Equalizer im Beat (dein Wunsch           │
 │                    │                 │ „langweilig“ ist damit noch nicht umgesetzt)                 │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│ Friday I'm In Love │ verse 3         │ [neu] Matrix: Wellen → bunte Leuchtspuren (verse 2 behält    │
-│ (25)               │                 │ die Wellen)                                                  │
+│ Friday I'm In Love │ Saturday went   │ [abend] Linien verblassen jetzt nach 8 Beats (vorher wurde   │
+│ (25)               │ (1+2)           │ vor jeder Linie alles gelöscht)                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ [abend] blaue Sinuswellen → drehende DNA-Szene, NEON         │
+│                    │                 │ (Pink/Cyan)                                                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 3         │ [neu] Matrix: Wellen → bunte Leuchtspuren                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 4a        │ Herz → ruhiges Herz, NEON                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ git fade out    │ [abend] Blinder ersetzt den Part: voll auf der 1, 1 Beat     │
+│                    │                 │ stehen, über die 3 Takte ins Schwarz ausklingen (kein Bling- │
+│                    │                 │ Füllen mehr)                                                 │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Be Mine (26)       │ verse 1b        │ Herz → ruhiges Herz, NEON                                    │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ you got me so   │ [abend] Linien verblassen nach 8 Beats statt stehen zu       │
+│                    │ high (1+2)      │ bleiben                                                      │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2         │ [neu] Matrix: Wellen → Lissajous-Schleife, Rest wie bisher   │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
@@ -159,11 +175,26 @@ Pro Song (nach Song-ID)
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ verse 2         │ Herz → ruhiges Herz, NEON                                    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ Say you wanna   │ [abend] Text DANCE auf Takt 79,5 / 81,5 / 83,5 / 110,5 /     │
+│                    │ dance, strobe   │ 112,5 / 114,5, je einen halben Takt, pink mit schwarzem      │
+│                    │ (1-3)           │ Rand, Blitze darunter gedimmt                                │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ ...bdy who      │ [abend] Schluss-Blinder auf der letzten Viertel, klingt 5 s  │
+│                    │ loves me        │ ins Schluss-Schwarz aus                                      │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Billie Jean (28)   │ verse 2, verse  │ Herz → ruhiges Herz, NEON                                    │
 │                    │ 2 b             │                                                              │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ solo a (Sirene) │ [abend] Bass-Kometen → blaues Feuer auf allen Geräten        │
+│                    │                 │ (SCHEME_ICE); rotes Feuer bleibt fürs Outro                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ STOP            │ [abend] Text auf der Matrix ab der 2. Viertel: BILLIE – JEAN │
+│                    │                 │ – IS – NOT MY – LOVER, rot mit weißem Rand                   │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Maniac (30)        │ verse 1a        │ VERSE (blau) → DNA-Flip-Szene, FIRE. [neu] Matrix: Feuer     │
 │                    │                 │ statt DNA                                                    │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 1b        │ [abend] Linien verblassen nach 8 Beats (vorher 4)            │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │                    │ instrumental a  │ [neu] Matrix: DNA → Equalizer im Beat, Rest wie bisher       │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
@@ -177,7 +208,7 @@ Pro Song (nach Song-ID)
 └────────────────────┴─────────────────┴──────────────────────────────────────────────────────────────┘
 
 SCENE_VERSE läuft in keinem generierten Song mehr, und der schnelle Herzschlag nur noch in Dancing „somebody“, dort schon mit halbem Tempo.
-DNA/Sinus nur noch an 4 Stellen: Kids SOLO, Titanium „v2: cut me down“, In The Dark verse 2, Friday verse 2.
+DNA/Sinus nur noch an 4 Stellen: Kids SOLO, Titanium „v2: cut me down“, In The Dark verse 2, Friday verse 2 (dort seit dem Abend die drehende DNA statt Sinuswellen, auf Wunsch).
 
 Song-übergreifend (gilt automatisch überall)
 
@@ -187,6 +218,8 @@ Song-übergreifend (gilt automatisch überall)
 - Build-up (SCENE_BUILDUP): Die Matrix explodiert am Ende mit, als Druckwelle aus der Mitte, gleichzeitig mit Lampen und Gitarre.
 - [neu] Neuer Effekt progEqualizerBeat: Equalizer-Balken springen genau auf jeden Beat (auf der Eins höher), sinken bis zum
   nächsten ab, weiße Spitze fällt nach; Farben aus dem Schema.
+- [abend] Text-Rand jetzt auch farbig: in der show.yaml outline: weiss (o. a. Farbe) statt outline: true (schwarz) -
+  erstmals bei Billie Jean STOP (roter Text, weißer Rand).
 - Neue Regeln, festgehalten in den Song-Regeln, im Effekt-Katalog und in meinem Gedächtnis:
   - Game of Life nur in der Songpause.
   - Der Herzschlag auf jedem Beat ist zu hektisch.
