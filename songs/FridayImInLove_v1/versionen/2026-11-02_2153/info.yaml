@@ -1,0 +1,8 @@
+zeit: '2026-11-02 21:53:39'
+notiz: ''
+werkzeug_git: 7d5fea9
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
+  show.yaml: 9ec0cfdac15b7ac2f257f11f452b8d23327a8f32271fc32705abe61f81c13a47
+  generated.cpp: e2a27fa43b2e33144d62d3e9f2077b9b024574071ec774013947b76c3b0cf7be

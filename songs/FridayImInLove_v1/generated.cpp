@@ -3,7 +3,7 @@
 //@function gen_FridayImInLove
 //@name Friday I'm In Love
 //@struktur_sha aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
-//@show_sha 620c227d7bd749469fdeaeac9bcd2759e3c528dc542bc9fc9f3fb120d18852f9
+//@show_sha 9ec0cfdac15b7ac2f257f11f452b8d23327a8f32271fc32705abe61f81c13a47
 //@part GEN_FRIDAYIMINLOVE_PAUSE 0
 //@part GEN_FRIDAYIMINLOVE_INTRO 3
 //@part GEN_FRIDAYIMINLOVE_INTRO_2 4
@@ -72,8 +72,8 @@ void gen_FridayImInLove() {
 		scene(SCENE_VERSE_PLASMA, 13714, 7, 140);
 		break;
 
-	case 7:	// Saturday went  6 T  10286ms  @0:59.357  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
-		progRandomLines(10286, 8, 460, true);
+	case 7:	// Saturday went  6 T  10286ms  @0:59.357  -- Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind.
+		progRandomLines(10286, 8, 460, false, 3429);
 		break;
 
 	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Strophe: auf der Matrix dreht sich eine DNA-Doppelhelix (eine Umdrehung in 2 Takten), Stränge Pink und Cyan mit bunten Sprossen; die übrigen Geräte pulsieren weich in den Strangfarben - linke Bühnenhälfte Pink, rechte Cyan, jeweils hell, wenn ihr Strang vorn ist
@@ -94,8 +94,8 @@ void gen_FridayImInLove() {
 #endif
 		break;
 
-	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat).
-		progRandomLines(10285, 12, 460, true);
+	case 11:	// Saturday went (2)  6 T  10285ms  @1:50.786  -- Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind.
+		progRandomLines(10285, 12, 460, false, 3429);
 		break;
 
 	case 12:	// dressed up  8 T  13715ms  @2:01.071  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.

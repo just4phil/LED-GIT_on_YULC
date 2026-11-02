@@ -1,0 +1,109 @@
+# Technische Show (von Claude aus quelle/struktur.xlsx abgeleitet, 06.10.2026).
+# Auftrag des Users: die Part-Längen neu aus der Tabelle rechnen, damit die Geräte synchron bleiben - das Aussehen
+# bleibt. Deshalb stehen hier alle Parts 1:1 mit dem alten Effekt aus FridayImInLove() (Spalte "bisher (alter Code)")
+# als fx:. Der alte Code bleibt in src/songs.cpp. Kein Farbschema: die alten Effekte laufen mit freien Zufallsfarben.
+# Zeiten in den Effekten, die im alten Code von Hand gerundete Beats waren (430 ms = 1 Beat, 860 ms = 2 Beats bei
+# 140 BPM), stehen als ${beat} / ${half} (429 / 857 ms). NICHT im Beat-Raster und deshalb unverändert übernommen:
+# 1015 ms (Stern in intro 2) und 460 ms (Linien in "Saturday went") - ob das Absicht ist, entscheidet der User.
+# why: steht bei jeder Generierung in der Spalte "Effekt (füllt KI)" der Tabelle - deshalb beschreibt es, was man sieht.
+# intro 2: die Matrix zeigte im alten Code eine eigene Fassung des Sterns (fest in der Mitte, 4 Arm-Paare) - übernommen.
+# Bund-Marker: FridayImInLove() setzt keine Marker in einzelnen Parts; die Grund-Marker stehen von Hand in
+# src/markerLEDs.cpp (case 25) und gelten unverändert. Kein Trailer springt in diesen Song.
+# Titel-Lauftext wörtlich wie im alten Code.
+
+function: gen_FridayImInLove
+scroll_title: "Friday im in Love by The Cure"
+
+sections:
+  pause:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Alles schwarz bis zum Intro (die Matrix zeigt den Titel-Lauftext)."
+
+  intro:
+    fx: "progFastBlingBling(${dur}, 6, ${next})"
+    why: "Alter Effekt: schnelle Einzelblitze."
+
+  intro 2:
+    fx: "progSternNeu(${dur}, 1015, ${next}, 5, 26, 5, true, 3)"
+    devices:
+      matrix: "progSternNeu(${dur}, 1015, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel etwa alle 1 s (1015 ms, nicht im Beat-Raster). Auf der Matrix steht der Stern fest in der Mitte."
+
+  verse 1:
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_SUNSET
+    why: "Strophe neu (18.10.2026, statt der alten Palette): warme Farbwolken auf der Matrix, der Verlauf dreht sich um Gitarre und Bass und steigt in den Lampen auf, alles schwillt im Beat leicht an"
+
+  verse 1b:
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_SUNSET
+    why: "wie verse 1: warme Farbwolken, die im Beat leicht anschwellen"
+
+  Saturday went:
+    # Wunsch des Users 02.11.2026: Ausfaden wie bei Be Mine/Maniac (8 Beats). Vorher: progRandomLines(${dur}, ${next}, 460, true)
+    # - true löschte vor jeder Linie das Bild; fürs Ausfaden müssen die alten Linien stehen bleiben (false).
+    fx: "progRandomLines(${dur}, ${next}, 460, false, ${beats:8})"
+    why: "Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind."
+
+  verse 2:
+    # Wunsch des Users 02.11.2026: "Sinuswelle in Blau ist langweilig -> bitte die DNA, die sich bewegt".
+    # Vorher: scene: SCENE_VERSE_WAVES, scheme: SCHEME_ICE
+    scene: SCENE_DNA
+    scheme: SCHEME_NEON
+    why: "Strophe: auf der Matrix dreht sich eine DNA-Doppelhelix (eine Umdrehung in 2 Takten), Stränge Pink und Cyan mit bunten Sprossen; die übrigen Geräte pulsieren weich in den Strangfarben - linke Bühnenhälfte Pink, rechte Cyan, jeweils hell, wenn ihr Strang vorn ist"
+
+  SOLO:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  verse 3:
+    # Weniger DNA/Sinus (02.11.2026, Wunsch des Users: "zu häufig und teilweise langweilig"). Vorher: scene: SCENE_VERSE_WAVES
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_ICE
+    devices:
+      matrix: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
+    why: "anders als verse 2: auf der Matrix laufen ruhige bunte Leuchtspuren durch; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen, Blau/Eisblau"
+
+  Saturday went (2):
+    # Wunsch des Users 02.11.2026: Ausfaden wie bei Be Mine/Maniac (8 Beats). Vorher: progRandomLines(${dur}, ${next}, 460, true)
+    # - true löschte vor jeder Linie das Bild; fürs Ausfaden müssen die alten Linien stehen bleiben (false).
+    fx: "progRandomLines(${dur}, ${next}, 460, false, ${beats:8})"
+    why: "Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind."
+
+  dressed up:
+    fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
+    why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+
+  dressed up 2:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  strobo:
+    fx: "progStrobo(${dur}, ${next}, 65, 255, 255, 255)"
+    why: "Alter Effekt: 1 Takt weißes Flimmern (65 ms)."
+
+  verse 4a:
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: auf halbes Tempo umstellen
+    scene: SCENE_VERSE_HEART_SLOW
+    scheme: SCHEME_NEON
+    why: "Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
+
+  verse 4b:
+    fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
+    why: "Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf."
+
+  outro chorus 1:
+    fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
+    why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats."
+
+  outro chorus 2:
+    fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
+    why: "Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16)."
+
+  git fade out:
+    # Wunsch des Users 02.11.2026: der Blinder am Ende soll diesen Part ERSETZEN (vorher: progBlingBlingColoring mit
+    # Blinder auf der letzten Viertel + end_blinder 5 s). Jetzt: darunter schwarz, der Blinder springt auf der 1 voll an,
+    # steht 1 Beat und klingt über den Rest der 3 Takte mit der ausklingenden Gitarre ins Schwarz aus.
+    fx: "progBlack(${dur}, ${next})"
+    blinder: {at: 0, len: 12, hold: 1}
+    why: "Schluss: ein voller warmweißer Blinder auf allen Geräten springt auf der 1 an, steht einen Beat und klingt über die 3 Takte mit der Gitarre ins Schwarz aus."

@@ -40,8 +40,10 @@ sections:
     why: "wie verse 1: warme Farbwolken, die im Beat leicht anschwellen"
 
   Saturday went:
-    fx: "progRandomLines(${dur}, ${next}, 460, true)"
-    why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
+    # Wunsch des Users 02.11.2026: Ausfaden wie bei Be Mine/Maniac (8 Beats). Vorher: progRandomLines(${dur}, ${next}, 460, true)
+    # - true löschte vor jeder Linie das Bild; fürs Ausfaden müssen die alten Linien stehen bleiben (false).
+    fx: "progRandomLines(${dur}, ${next}, 460, false, ${beats:8})"
+    why: "Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind."
 
   verse 2:
     # Wunsch des Users 02.11.2026: "Sinuswelle in Blau ist langweilig -> bitte die DNA, die sich bewegt".
@@ -63,8 +65,10 @@ sections:
     why: "anders als verse 2: auf der Matrix laufen ruhige bunte Leuchtspuren durch; eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen, Blau/Eisblau"
 
   Saturday went (2):
-    fx: "progRandomLines(${dur}, ${next}, 460, true)"
-    why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
+    # Wunsch des Users 02.11.2026: Ausfaden wie bei Be Mine/Maniac (8 Beats). Vorher: progRandomLines(${dur}, ${next}, 460, true)
+    # - true löschte vor jeder Linie das Bild; fürs Ausfaden müssen die alten Linien stehen bleiben (false).
+    fx: "progRandomLines(${dur}, ${next}, 460, false, ${beats:8})"
+    why: "Alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat); ältere Linien verblassen und sind nach 8 Beats fast dunkel, so dass immer die letzten paar Linien zu sehen sind."
 
   dressed up:
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
