@@ -3,7 +3,7 @@
 //@function gen_IWannaDanceWithSomebody
 //@name I Wanna Dance With Somebody
 //@struktur_sha 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
-//@show_sha 06ec454a24fee95cfa1c0f85e54f0bd3edef76302a6f6eb65805709d76d6ad45
+//@show_sha da385b43fd5b912b8bb056a0175f9c31fbf44b8a641ded268db330556b3a1e67
 //@part GEN_IWANNADANCEWITHSOMEBODY_PAUSE 0
 //@part GEN_IWANNADANCEWITHSOMEBODY_STROBO 3
 //@part GEN_IWANNADANCEWITHSOMEBODY_INTRO 4
@@ -81,7 +81,7 @@ void gen_IWannaDanceWithSomebody() {
 		progStrobo(1935, 6, 100, getRandomCRGB());
 		break;
 
-	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)
+	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix EKG-Linie wie auf einem Herzmonitor, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)
 		setColorScheme(SCHEME_FIRE);
 		scene(SCENE_VERSE_HEART_SLOW, 15484, 7, 124);
 		break;
@@ -118,7 +118,7 @@ void gen_IWannaDanceWithSomebody() {
 		progMatrixHorizontal(1935, 15, 70, true);
 		break;
 
-	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- 'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- 'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 15484, 16, 124);
 		break;
