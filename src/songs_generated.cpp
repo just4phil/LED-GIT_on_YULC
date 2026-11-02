@@ -4320,11 +4320,15 @@ void gen_IWannaDanceWithSomebody() {
 		progSternNeu(1936, 484, 37, 5, 26, 5, false, 4);
 		break;
 
-	case 37:	// ...bdy who loves me  1 T  1935ms  @3:41.855  -- Alter Effekt: schnelle Einzelblitze.
+	case 37:	// ...bdy who loves me  1 T  1935ms  @3:41.855  -- Alter Effekt: schnelle Einzelblitze. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schlussakkord 5 Sekunden lang ins Schwarz ausklingt.
+		fxBlinder(1452, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 484);
 		progFastBlingBling(1935, 10, 38);
 		break;
 
-	case 38:	// BLACK (Ende)    10000ms  @3:43.790  -- alle Geräte schwarz, dann Pausen-Loop
+	case 38:	// BLACK (Ende)    10000ms  @3:43.790  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
 		progBlack(10000, 39);
 		break;
 

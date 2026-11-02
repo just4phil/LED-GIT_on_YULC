@@ -169,5 +169,5 @@ sections:
 
   "...bdy who loves me":
     fx: "progFastBlingBling(${dur}, 10, ${next})"
-    blinder: {at: 3, len: 1, hold: 1}
+    blinder: {at: 3, len: 2, hold: 1}    # voll bis Part-Ende, end_blinder klingt aus
     why: "Alter Effekt: schnelle Einzelblitze. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schlussakkord 5 Sekunden lang ins Schwarz ausklingt."

@@ -3,7 +3,7 @@
 //@function gen_IWannaDanceWithSomebody
 //@name I Wanna Dance With Somebody
 //@struktur_sha 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
-//@show_sha da385b43fd5b912b8bb056a0175f9c31fbf44b8a641ded268db330556b3a1e67
+//@show_sha ceccda7a4649abe0fc1d8a28e23dff7eab5cd6106a1c135c9c2900b840d0b257
 //@part GEN_IWANNADANCEWITHSOMEBODY_PAUSE 0
 //@part GEN_IWANNADANCEWITHSOMEBODY_STROBO 3
 //@part GEN_IWANNADANCEWITHSOMEBODY_INTRO 4
@@ -207,11 +207,15 @@ void gen_IWannaDanceWithSomebody() {
 		progSternNeu(1936, 484, 37, 5, 26, 5, false, 4);
 		break;
 
-	case 37:	// ...bdy who loves me  1 T  1935ms  @3:41.855  -- Alter Effekt: schnelle Einzelblitze.
+	case 37:	// ...bdy who loves me  1 T  1935ms  @3:41.855  -- Alter Effekt: schnelle Einzelblitze. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schlussakkord 5 Sekunden lang ins Schwarz ausklingt.
+		fxBlinder(1452, 968, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 484);
 		progFastBlingBling(1935, 10, 38);
 		break;
 
-	case 38:	// BLACK (Ende)    10000ms  @3:43.790  -- alle Geräte schwarz, dann Pausen-Loop
+	case 38:	// BLACK (Ende)    10000ms  @3:43.790  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
 		progBlack(10000, 39);
 		break;
 
