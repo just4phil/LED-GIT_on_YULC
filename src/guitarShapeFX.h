@@ -122,8 +122,11 @@ void progHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating, unsigned int msPerStep);
 void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotating);
 // 10b: wie progSpatialRainbow (rotating), aber in den Farben des Farbschemas (ohne Schema Regenbogen): der Verlauf
-//      dreht sich in cycleMillis einmal um den Korpus und schwillt auf jedem Beat leicht an (SCENE_VERSE_PLASMA)
-void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis);
+//      dreht sich in cycleMillis einmal um den Korpus und schwillt auf jedem Beat leicht an (SCENE_VERSE_PLASMA).
+//      floorVal = Helligkeit zwischen den Beats (Vorgabe 140, auf dem Beat immer 255); 255 = kein Anschwellen, ruhig
+//      gleichmäßig (Dancing On My Own, Bass-Outro). Ein sehr großes cycleMillis (z.B. 4000000000) lässt den Verlauf
+//      stillstehen: er zeigt dann das Bild vom Anfang einer Umdrehung ("eingefroren").
+void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis, uint8_t floorVal = 140);
 
 // 11: Funke läuft den Gurt runter und entzündet die Gitarre
 void progFuse(unsigned int durationMillis, byte nextPart, unsigned int fuseMillis);

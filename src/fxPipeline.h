@@ -148,7 +148,10 @@ void fxPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);	// pumpt im Beat: h
 void fxGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50, uint8_t beats = 1);	// Strobo-Tor: perBeat-mal pro Beat an/aus;
 												// beats > 1 = langsamer: ein An/Aus-Schritt dauert beats Beats (2 = Viertel an, Viertel aus)
 void fxDim(uint8_t brightness);					// gleichmäßig dunkler (255 = unverändert)
-void fxMaskStage(uint8_t devMask, uint8_t others = 0);	// nur Geräte aus devMask (DEV_…) leuchten voll, der Rest mit others
+void fxMaskStage(uint8_t devMask, uint8_t others = 0, unsigned int fadeMillis = 0);	// nur Geräte aus devMask (DEV_…) leuchten voll,
+												// der Rest mit others. fadeMillis > 0: der Rest springt nicht sofort auf others,
+												// sondern blendet ab Part-Beginn über fadeMillis weich dorthin ab (0 = sofort, wie bisher;
+												// YAML: only: {devices: ..., fade: <Beats>})
 void fxMaskSpan(uint8_t from, uint8_t to);		// nur ein Abschnitt des Geräts leuchtet (0..255 entlang der Wipe-Richtung)
 void fxTint(CRGB col, uint8_t amount);			// zieht das Bild zur Farbe hin (255 = einfarbig)
 void fxSoft(uint8_t percent);					// weiche Farbwechsel im Beat: im letzten percent-Anteil eines Farbschritts blendet der Effekt

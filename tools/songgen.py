@@ -712,7 +712,7 @@ def pipeline_calls(part, song, offset=0):
 	"""Übergang und Modifikatoren eines Parts (fxPipeline.h) -> (C++-Zeilen, Beschreibungen, Fehler).
 	transition: fade | {type: wipe, beats: 2}     fade_in / fade_out: <Beats>     dim: <Prozent>
 	pulse: <Prozent> | {depth: 50, per: beat|half|bar|<Beats>}     gate: <pro Beat> | {per_beat: 2, duty: 30} | {per: <Beats>, duty: 50}
-	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15}     span: [0, 50]
+	tint: rot | {color: rot, amount: 40}     only: [guitar, LAMPE1] | {devices: [...], others: 15, fade: <Beats>}     span: [0, 50]
 	soft: <Prozent> (weiche Farbwechsel, nur SCENE_COLORS / SCENE_COLORS_WAVE / SCENE_STAR / progStern / progSternNeu)     smooth: <Beats> (Nachleuchten)
 	blinder: bar | {every: beat|half|bar|<Beats>, at: <Beats>, len: <Beats>, amount: 100, color: warm|weiss|scheme, devices: [...],
 	                cascade: lr|rl|out|in | {dir|order: [...], step: <Beats>}} (ohne every: einmal bei at)
@@ -824,17 +824,23 @@ def pipeline_calls(part, song, offset=0):
 
 	if "only" in sec:
 		spec = sec["only"] if isinstance(sec["only"], dict) else {"devices": sec["only"]}
-		unknown = [k for k in spec if k not in ("devices", "others")]
+		unknown = [k for k in spec if k not in ("devices", "others", "fade")]
 		devs = spec.get("devices")
 		devs = [devs] if isinstance(devs, str) else list(devs or [])
 		bad = [str(d) for d in devs if d not in DEVICE_MASKS]
 		others = pct("only others", spec.get("others", 0))
+		# fade: <Beats> - der Rest springt nicht sofort auf others, sondern blendet ab Part-Beginn so lange weich dorthin
+		# (dritter Parameter von fxMaskStage; ohne fade bleibt der Aufruf genau wie bisher)
+		fade = beats_ms("only fade", spec["fade"]) if "fade" in spec else 0
 		if unknown or bad or not devs:
-			errors.append(f"{name}: only braucht Geräte aus {', '.join(DEVICE_MASKS)} (dazu others in Prozent)"
+			errors.append(f"{name}: only braucht Geräte aus {', '.join(DEVICE_MASKS)} (dazu others in Prozent, fade in Beats)"
 						  + (f" - unbekannt: {', '.join(map(str, unknown)) or ', '.join(bad)}" if unknown or bad else ""))
-		elif others is not None:
-			calls.append(f"fxMaskStage({' | '.join(DEVICE_MASKS[d] for d in devs)}" + (f", {others}" if others else "") + ");")
-			infos.append(f"nur {', '.join(devs)}" + (f", Rest {spec['others']} %" if others else ", Rest aus"))
+		elif others is not None and fade is not None:
+			mask = ' | '.join(DEVICE_MASKS[d] for d in devs)
+			args = f", {others}, {fade}" if fade else (f", {others}" if others else "")
+			calls.append(f"fxMaskStage({mask}{args});")
+			infos.append(f"nur {', '.join(devs)}" + (f", Rest {spec['others']} %" if others else ", Rest aus")
+						 + (f", der Rest blendet {fade} ms weich dorthin" if fade else ""))
 
 	if "span" in sec:
 		span = sec["span"]

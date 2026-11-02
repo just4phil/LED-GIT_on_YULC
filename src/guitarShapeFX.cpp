@@ -662,7 +662,8 @@ void progSpatialRainbow(unsigned int durationMillis, byte nextPart, bool rotatin
 // sich in cycleMillis einmal herum. Gerechnet aus der Zeit seit Part-Beginn, nicht Schritt für Schritt: so steht der
 // Verlauf auf Gitarre und Bass immer an derselben Stelle, egal wie schnell das Gerät Bilder schafft.
 // ColorFromPalette(Palette, Index 0..255, Helligkeit) holt die Farbe an einer Stelle des Verlaufs.
-void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis) {
+// floorVal = Helligkeit zwischen den Beats (255 = gar kein Anschwellen). Die Vorgabe 140 steht nur in guitarShapeFX.h.
+void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsigned long cycleMillis, uint8_t floorVal) {
 	fxPartStart(durationMillis, nextPart);
 
 	if (fxFrameDue(20)) {
@@ -670,7 +671,7 @@ void progSpatialPalette(unsigned int durationMillis, byte nextPart, uint8_t bpm,
 		unsigned int ms = millisCounterForProgChange;
 		uint8_t offset = (uint32_t)(ms % cycleMillis) * 256 / cycleMillis;	// wie weit der Verlauf schon gedreht ist
 		CRGBPalette16 pal = colorSchemeActive() ? schemePalette() : CRGBPalette16(RainbowColors_p);
-		uint8_t val = beatSwell(ms, bpm, 140);		// 140 zwischen den Beats, 255 auf dem Beat
+		uint8_t val = beatSwell(ms, bpm, floorVal);	// floorVal zwischen den Beats (meist 140), 255 auf dem Beat
 		for (int i = 0; i < anz_LEDs; i++) {
 			leds[i] = ColorFromPalette(pal, (uint8_t)(ledAngle[i] + offset), val);
 		}

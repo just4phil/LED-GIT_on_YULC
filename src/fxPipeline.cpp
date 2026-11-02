@@ -115,6 +115,8 @@ static struct {
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// fxGate
 	uint8_t gateBeats;							// fxGate: ein Rasterschritt dauert so viele Beats (1 = wie bisher)
 	uint8_t dim, stageDim;						// fxDim und fxMaskStage (255 = volle Helligkeit)
+	unsigned int stageFadeMs;					// fxMaskStage: so lange blendet ein Gerät außerhalb der Maske ab Part-Beginn
+												// von voll auf stageDim ab (0 = springt sofort)
 	uint8_t soft;								// fxSoft (Prozent)
 	bool textGrad;								// fxTextGradient: Farbverlauf in der Schrift angemeldet
 	uint8_t textGradPalette, textGradDir;		// ... Palette (paletteID) und Richtung (TEXT_GRAD_...)
@@ -200,7 +202,12 @@ void fxBlinderSchemeColor()	{ mod.blinder[mod.blinderSlot].schemeCol = true; }
 void fxBlinderUnderText()	{ mod.blinderUnderText = true; }
 void fxBlinderBehind()		{ mod.blinderBehind = true; }
 void fxTimeOffset(unsigned int millis)	{ mod.offsetMs = millis; }
-void fxMaskStage(uint8_t devMask, uint8_t others)	{ mod.stageDim = isDev(devMask) ? 255 : others; }
+// Gehört dieses Gerät zur Maske, bleibt es voll (und blendet auch nicht). Sonst: Ziel others, auf Wunsch weich dorthin.
+void fxMaskStage(uint8_t devMask, uint8_t others, unsigned int fadeMillis) {
+	bool inMask = isDev(devMask);
+	mod.stageDim = inMask ? 255 : others;
+	mod.stageFadeMs = inMask ? 0 : fadeMillis;
+}
 void fxMaskSpan(uint8_t from, uint8_t to)	{ mod.span = true; mod.spanFrom = from; mod.spanTo = to; }
 void fxTint(CRGB col, uint8_t amount)	{ mod.tint = col; mod.tintAmount = amount; }
 
@@ -586,9 +593,17 @@ static void applyBlinder(CRGB* buf, uint8_t level, bool behind) {
 // (fxDim, fxMaskStage, fxFadeIn, fxFadeOut, fxPulse, fxGate). ms = Zeit seit Part-Beginn. Ergebnis 0..255.
 static uint8_t modBrightness(uint32_t ms) {
 	if (!modReady) resetMods();
-	uint8_t v = scale8(mod.dim, mod.stageDim);	// Start: Dimmen mal Bühnen-Maske
-
 	uint32_t beatMs = ms + mod.offsetMs;	// Zeit seit dem Beginn des Parts auf den anderen Geräten
+
+	// Bühnen-Maske (fxMaskStage): normalerweise gleich stageDim. Mit stageFadeMs fällt sie ab Part-Beginn von 255 auf
+	// stageDim: lin läuft von 255 nach 0, quadratisch (scale8(lin, lin)) wie fxFadeOut - wirkt für das Auge gleichmäßig.
+	// Gerechnet aus der Zeit seit Part-Beginn, so verlöschen alle Geräte außerhalb der Maske im Gleichlauf.
+	uint8_t stage = mod.stageDim;
+	if (mod.stageFadeMs && beatMs < mod.stageFadeMs) {
+		uint8_t lin = 255 - beatMs * 255 / mod.stageFadeMs;
+		stage = mod.stageDim + scale8(scale8(lin, lin), 255 - mod.stageDim);
+	}
+	uint8_t v = scale8(mod.dim, stage);	// Start: Dimmen mal Bühnen-Maske
 
 	if (mod.fadeInMs && beatMs < mod.fadeInMs) {
 		uint8_t lin = beatMs * 255 / mod.fadeInMs;

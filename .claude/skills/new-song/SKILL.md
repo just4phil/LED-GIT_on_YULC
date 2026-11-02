@@ -372,6 +372,8 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   Beat) oder `fx: "progBeatColors(${dur}, ${next}, ${bpm}, 2, false)"` (alle 2 Beats).
 - `dim: 60` - Part auf 60 % Helligkeit. `tint: rot` oder `{color: rot, amount: 40}` - Farbstich.
 - `only: [guitar, LAMPE1]` oder `{devices: [...], others: 15}` - nur diese Geräte leuchten voll (Schlüssel wie `devices`).
+  `fade: <Beats>` dazu: der Rest springt nicht hart weg, sondern verlischt ab Part-Beginn weich (z. B. ein Instrument
+  spielt allein weiter - Dancing On My Own, `bass allein`).
 - `span: [0, 50]` - nur ein Abschnitt jedes Geräts leuchtet (Prozent entlang des Geräts).
 - `soft: 30` - weiche Farbwechsel, nur mit `SCENE_COLORS` / `SCENE_COLORS_WAVE` und dem Stern (`SCENE_STAR`, `progStern`,
   `progSternNeu`; sonst Fehler): die Farbe blendet im letzten Anteil des Farbschritts in die nächste, `soft: 100` fließt
