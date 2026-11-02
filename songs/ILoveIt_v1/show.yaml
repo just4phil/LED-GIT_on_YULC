@@ -53,7 +53,7 @@ sections:
     # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Urteil des Users 02.11.2026: zu hektisch
     scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_SUNSET
-    why: "Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
+    why: "Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   chorus 2:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"

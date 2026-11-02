@@ -3,7 +3,7 @@
 //@function gen_ILoveIt
 //@name I Love It
 //@struktur_sha 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
-//@show_sha 0e9c66774218ca5ccf4d178cbc437c4cca2f7d4771528bb6cce6287159a06276
+//@show_sha 5dd978eefb7dfc3d9a10bd1ba9eb24c3510a4c14c8d5d822ab69066c957312d3
 //@part GEN_ILOVEIT_PAUSE 0
 //@part GEN_ILOVEIT_SYNTH_INTRO 3
 //@part GEN_ILOVEIT_VERSE_1 4
@@ -82,7 +82,7 @@ void gen_ILoveIt() {
 		break;
 #endif
 
-	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_SUNSET);
 		scene(SCENE_VERSE_HEART_SLOW, 16000, 9, 120);
 		break;
