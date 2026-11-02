@@ -1,0 +1,8 @@
+zeit: '2026-11-02 16:36:53'
+notiz: EKG-Linie mit Farbverlauf im Ausschlag
+werkzeug_git: f75d1e5 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
+  show.yaml: 666f4529947764c899fd1754f3108604b9ac798a6c263ad0ff76aaa04fb00749
+  generated.cpp: 943a0872bc829717dba1040d2229958af3ee44a12d15bf35a8b162edd1e316a9

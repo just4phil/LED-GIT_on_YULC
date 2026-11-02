@@ -32,7 +32,9 @@ sections:
       # Tempo (ein Herzschlag alle 2 Beats, bleibt auf dem Beat: 61 BPM = genau jeder zweite Beat von 122)
       lamp: "progLampHeartbeat(${dur}, ${next}, ${bpm} / 2, deviceColor())"
       guitar: "progHeartbeat(${dur}, ${next}, ${bpm} / 2, deviceColor())"
-    why: "Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine Lissajous-Schleife"
+      # EKG-Linie auf der Matrix (02.11.2026) ebenfalls mit Schlag nur jeden zweiten Beat, passend zu den anderen
+      matrix: "progEcgBeat(${dur}, ${next}, ${bpm}, deviceColor(), 2, schemeColor(STAGE_POS + 1))"
+    why: "Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   git steigt ein:
     # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:

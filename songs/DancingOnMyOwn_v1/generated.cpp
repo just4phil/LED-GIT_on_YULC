@@ -3,7 +3,7 @@
 //@function gen_DancingOnMyOwn
 //@name Dancing On My Own
 //@struktur_sha 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
-//@show_sha e93160e5f12dbb405831f59354cfe967271e0c8c757c78faa1686d0b375e338e
+//@show_sha 666f4529947764c899fd1754f3108604b9ac798a6c263ad0ff76aaa04fb00749
 //@part GEN_DANCINGONMYOWN_BLACK 0
 //@part GEN_DANCINGONMYOWN_BASS 3
 //@part GEN_DANCINGONMYOWN_SOMEBODY 4
@@ -71,12 +71,14 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_CALM, 15737, 4, 122);
 		break;
 
-	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_ICE);
 #if DEVICE_CLASS == CLASS_GUITAR
 		progHeartbeat(15738, 5, 122 / 2, deviceColor());
 #elif DEVICE_CLASS == CLASS_LAMP
 		progLampHeartbeat(15738, 5, 122 / 2, deviceColor());
+#elif DEVICE_CLASS == CLASS_MATRIX
+		progEcgBeat(15738, 5, 122, deviceColor(), 2, schemeColor(STAGE_POS + 1));
 #else
 		scene(SCENE_VERSE_HEART, 15738, 5, 122);
 #endif
