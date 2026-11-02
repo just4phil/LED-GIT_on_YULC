@@ -33,9 +33,10 @@ sections:
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats."
 
   "verse":
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: wie verse 2 auf halbes Tempo umstellen
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_FIRE
-    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife"
+    why: "'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
 
   "bridge":
     scene: SCENE_CALM
@@ -70,9 +71,13 @@ sections:
     why: "Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats. Ende des vierten Takts drei kurze Blinder auf drei Vierteln hintereinander."
 
   "verse 2":
-    scene: SCENE_VERSE
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
+    # Zurück: songgen.py TellItToMyHeart_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Test 1 (02.11.2026): SCENE_VERSE_HEART, SCHEME_RED, fade analog - Urteil: zu hektisch -> halbes Tempo + Farbwechsel
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_SUNSET
-    why: "Dezenter Puls im Beat in Orange, Pink, Lila und Gelb."
+    why: "'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb)."
 
   "bridge (2)":
     scene: SCENE_PALETTE

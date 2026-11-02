@@ -3,7 +3,7 @@
 //@function gen_TellItToMyHeart
 //@name Tell It To My Heart
 //@struktur_sha 515e7b96b53dd232e6ad26cc263c4efdd93961668bc2ef4bb5ccbd8fdd2732d6
-//@show_sha 0fba52fc393902c97a4d66f604679acf2571fa45ffcad823fb4d4f2c1cc1b983
+//@show_sha a72be8620d96a70ea24aadbe0eac1eb0dac3a0921066158d996c96acc5f57365
 //@part GEN_TELLITTOMYHEART_PAUSE 0
 //@part GEN_TELLITTOMYHEART_INTRO_CHORUS 3
 //@part GEN_TELLITTOMYHEART_VERSE 4
@@ -57,9 +57,9 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16271, 1017, 4, 5, 26, 5, false, 4);
 		break;
 
-	case 4:	// verse  8 T  16271ms  @0:23.644  -- Strophe neu (18.10.2026, statt der alten Vollfarben): 'tell it to my heart' - alle Geräte schlagen auf jedem Beat wie ein Herz in Rot/Orange/Gelb, die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// verse  8 T  16271ms  @0:23.644  -- 'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_FIRE);
-		scene(SCENE_VERSE_HEART, 16271, 5, 118);
+		scene(SCENE_VERSE_HEART_SLOW, 16271, 5, 118);
 		break;
 
 	case 5:	// bridge  7 T  14238ms  @0:39.915  -- Ruhiges Atmen in Rot auf allen Geräten.
@@ -89,9 +89,9 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16272, 1017, 9, 20, 26, 5, true, 3);
 		break;
 
-	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- Dezenter Puls im Beat in Orange, Pink, Lila und Gelb.
+	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- 'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb).
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE, 16271, 10, 118);
+		scene(SCENE_VERSE_HEART_SLOW, 16271, 10, 118);
 		break;
 
 	case 10:	// bridge (2)  7 T  14237ms  @1:28.729  -- Farbband läuft über die Bühne; die Farben wandern jeden Takt von Grün nach Lila und wieder zurück.
