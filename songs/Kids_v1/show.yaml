@@ -36,9 +36,13 @@ sections:
     why: "Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher)."
 
   "verse 1":
-    scene: SCENE_VERSE
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_TOXIC
+    # Zurück: songgen.py Kids_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_PLASMA
     scheme: SCHEME_TOXIC
-    why: "Dezenter Puls im Beat in Grün und Gelb."
+    fade: {to: rainbow, per: 8}
+    why: "Psychedelische Farbwolken in Grün/Gelb (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte rücken die Farben ein Stück weiter um den Farbkreis."
 
   "verse 1b":
     fx: "progRandomLines(${dur}, ${next}, ${beat}, true)"

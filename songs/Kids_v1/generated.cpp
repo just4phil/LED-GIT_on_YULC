@@ -3,7 +3,7 @@
 //@function gen_Kids
 //@name Kids
 //@struktur_sha 74dc8547f76a1583ac85a427631230f33d724e4cbc1b0078ed5e884d76e6a95e
-//@show_sha bb53f7724d158c3256c3e9713fe87083767e42f0c010775645439833d34deb4c
+//@show_sha 2862fe4c3b614a57a85041bcb72515cc171116aee8bb7f0dd000d755193b4729
 //@part GEN_KIDS_PAUSE 0
 //@part GEN_KIDS_SYNTH_INTRO 3
 //@part GEN_KIDS_CHORUS_INTRO 4
@@ -68,9 +68,10 @@ void gen_Kids() {
 		progFastBlingBling(15000, 8, 5);
 		break;
 
-	case 5:	// verse 1  8 T  15000ms  @0:36.797  -- Dezenter Puls im Beat in Grün und Gelb.
+	case 5:	// verse 1  8 T  15000ms  @0:36.797  -- Psychedelische Farbwolken in Grün/Gelb (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte rücken die Farben ein Stück weiter um den Farbkreis.
 		setColorScheme(SCHEME_TOXIC);
-		scene(SCENE_VERSE, 15000, 6, 128);
+		setColorFade(FADE_RAINBOW, 3750);
+		scene(SCENE_VERSE_PLASMA, 15000, 6, 128);
 		break;
 
 	case 6:	// verse 1b  8 T  13125ms  @0:51.797  -- Zufällige bunte Linien, pro Beat neue (wie bisher); im letzten Takt lädt sich alles in den Chorus-Farben auf, Explosion genau auf chorus 1.
