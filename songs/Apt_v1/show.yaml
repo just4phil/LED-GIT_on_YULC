@@ -60,9 +60,13 @@ sections:
     why: "Alter Effekt: weißer Strobo, 200 ms an / 200 ms aus."
 
   verse 2:
-    scene: SCENE_VERSE
-    scheme: SCHEME_NEON
-    why: "Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_NEON
+    # Zurück: songgen.py Apt_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_SUNSET
+    fade: {to: complement, per: 8}
+    why: "Strophe: warme Farbwolken - Matrix Plasma, auf Gitarre/Bass dreht sich der Farbverlauf um den Korpus, in den Lampen steigt er nach oben; alle schwellen auf jedem Beat leicht an. Orange/Pink wandert alle 2 Takte zur Gegenfarbe und zurück"
 
   chorus 2:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"

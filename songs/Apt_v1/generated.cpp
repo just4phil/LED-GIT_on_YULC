@@ -3,7 +3,7 @@
 //@function gen_APT
 //@name APT.
 //@struktur_sha f23d1385e785c34bca3d2ddb44996a950e76431ddd8adfe8f5c2e060085798f1
-//@show_sha 49214eca1974b2af32aee80afb9481c3463b42a0db1253b58a0e4fd809c24646
+//@show_sha 565b9844cf42f3a84bf39cc1ec98d377ecf23e7667a26b8a316b69a7aabe0485
 //@part GEN_APT_PAUSE 0
 //@part GEN_APT_BASSDRUM_INTRO 3
 //@part GEN_APT_VERSE_1 4
@@ -90,9 +90,10 @@ void gen_APT() {
 		progStrobo(3221, 9, 200, 255, 255, 255);
 		break;
 
-	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Strophe neu (18.10.2026, statt der alten Palette): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix
-		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE, 9664, 10, 149);
+	case 9:	// verse 2  6 T  9664ms  @1:00.604  -- Strophe: warme Farbwolken - Matrix Plasma, auf Gitarre/Bass dreht sich der Farbverlauf um den Korpus, in den Lampen steigt er nach oben; alle schwellen auf jedem Beat leicht an. Orange/Pink wandert alle 2 Takte zur Gegenfarbe und zurück
+		setColorScheme(SCHEME_SUNSET);
+		setColorFade(FADE_COMPLEMENT, 3221);
+		scene(SCENE_VERSE_PLASMA, 9664, 10, 149);
 		break;
 
 	case 10:	// chorus 2  7 T  11276ms  @1:10.268  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats.
