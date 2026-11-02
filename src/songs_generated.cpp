@@ -1622,21 +1622,47 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_COLORS, 1967, 28, 122);
 		break;
 
-	case 28:	// instrumental (2)  8 T  15738ms  @4:09.590  -- ausatmen: alle Geräte atmen langsam in warmen Farben
+	case 28:	// instrumental (2)  2 T  3935ms  @4:09.590  -- ausatmen: alle Geräte atmen langsam in warmen Farben
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_CALM, 15738, 29, 122);
+		scene(SCENE_CALM, 3935, 29, 122);
 		break;
 
-	case 29:	// outro  2 T  3934ms  @4:25.328  -- die letzten 2 Takte blenden weich nach Schwarz
+	case 29:	// bass allein  2 T  3934ms  @4:13.525  -- der Bass spielt allein weiter: er atmet weiter, alle anderen Geräte verlöschen langsam über 2 Takte
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_FADEOUT, 3934, 30, 122);
+		fxTransition(TRANS_FADE, 492);
+		fxMaskStage(DEV_BASS, 0, 3934);
+		scene(SCENE_CALM, 3934, 30, 122);
 		break;
 
-	case 30:	// BLACK (Ende)    10000ms  @4:29.262  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 31);
+	case 30:	// bass solo  4 T  7869ms  @4:17.459  -- nur der Bass: ein Farbverlauf in Orange, Pink, Violett und Gold dreht sich ruhig um den Korpus (eine Runde in 4 Takten), alle anderen schwarz
+		setColorScheme(SCHEME_SUNSET);
+		fxTransition(TRANS_FADE, 984);
+#if defined(RINASBASS)
+		progSpatialPalette(7869, 31, 122, 7869UL, 255);
+#else
+		progBlack(7869, 31);
+#endif
 		break;
 
-	case 31:
+	case 31:	// outro  1 T  1967ms  @4:25.328  -- der Farbverlauf auf dem Bass bleibt stehen und verlischt in einem Takt
+		setColorScheme(SCHEME_SUNSET);
+		fxFadeOut(1967);
+#if defined(RINASBASS)
+		progSpatialPalette(1967, 32, 122, 4000000000UL, 255);
+#else
+		progBlack(1967, 32);
+#endif
+		break;
+
+	case 32:	// stille  1 T  1967ms  @4:27.295  -- Stille bis zum Ende
+		progBlack(1967, 33);
+		break;
+
+	case 33:	// BLACK (Ende)    10000ms  @4:29.262  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 34);
+		break;
+
+	case 34:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;

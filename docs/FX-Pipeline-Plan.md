@@ -11,7 +11,20 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 01.11.2026 (Übergang `TRANS_TV_OFF` abgenommen, TV-Rauschen gefällt dem User weniger)
+Zuletzt aktualisiert: 02.11.2026 (Dancing On My Own: Bass-Outro, `only` mit `fade`)
+
+- **02.11.2026, Dancing On My Own: Bass-Outro.** Wunsch des Users: am Ende spielt der Bass fast allein -> Fokus auf den
+  Bass. Ab Takt 130 verlöschen die anderen Geräte über 2 Takte, ab 132 läuft nur auf dem Bass ein ruhiger Effekt, ab 136
+  bleibt er in der Bewegung stehen und verlischt in 1 Takt. Ausdrücklich: „es darf sich nicht auf andere Songs auswirken“.
+  Umsetzung: Tabelle per `--part-name` (neue Parts `bass allein` 130, `bass solo` 132, `stille` 137). Neu in der Pipeline:
+  `fxMaskStage(devMask, others, fadeMillis)` - der dritte Parameter (Vorgabe 0 = wie bisher) lässt die Geräte außerhalb
+  der Maske ab Part-Beginn weich auf `others` abblenden; YAML `only: {devices: ..., fade: <Beats>}`. `progSpatialPalette`
+  hat einen fünften Parameter `floorVal` (Vorgabe 140 = wie bisher; 255 = kein Anschwellen im Beat). Bass 132-136:
+  `progSpatialPalette` SUNSET, eine Runde = genau der Part (7869 ms), 136: dieselbe Funktion mit 4000000000 ms Umdrehung =
+  Standbild, `fade_out: 4`. Alle anderen Songs im erzeugten Code unverändert geprüft (`git diff src/songs_generated.*`),
+  Demo 92 bewusst nicht angefasst (Wunsch des Users). Alle fünf Envs mit `build_ota.py --backup` gebaut (`FW_VERSION=1793622507`, vorheriger Stand in
+  `ota/backup/2026-11-02`). Doku: Song-Workflow.html,
+  LED-Effekte-und-Szenen.html, SKILL.md, effekt-katalog.yaml. Nächster Schritt: Test auf den LEDs durch den User.
 
 - **01.11.2026, Urteil des Users nach dem Test auf den LEDs:** `TRANS_TV_OFF`: „der TV-off effect ist sehr schön!“ -
   abgenommen. `progTvStatic`: „gefällt mir nicht so sehr weil es im grunde weiß ist anstatt von grau tönen. aber das liegt
@@ -1282,7 +1295,7 @@ Bewusste Grenze: Das alte Bild steht während des Übergangs still. Der Gurt ble
 | `fxPulse(bpm, depth, beats)` | pumpt im Beat |
 | `fxGate(bpm, perBeat, duty)` | Strobo-Tor über beliebigem Effekt |
 | `fxDim(wert)` | gleichmäßig dunkler |
-| `fxMaskStage(devMask, others)` | nur bestimmte Geräte leuchten voll |
+| `fxMaskStage(devMask, others, fadeMillis)` | nur bestimmte Geräte leuchten voll; mit `fadeMillis` verlischt der Rest weich (02.11.2026) |
 | `fxMaskSpan(from, to)` | nur ein Abschnitt des Geräts leuchtet |
 | `fxTint(farbe, anteil)` | zieht das Bild zur Farbe hin |
 | `fxTimeOffset(ms)` | Gerät steigt später in den Part ein (Matrix nach Lauftext) und bleibt im Beat |

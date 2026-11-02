@@ -2,8 +2,8 @@
 //@id 8
 //@function gen_DancingOnMyOwn
 //@name Dancing On My Own
-//@struktur_sha 2061556df1ef6813b9d9fbaff321605c89acdf561d2bca5f42df9bf3bc9f0c66
-//@show_sha 8b3f0caefaa11528051bdc08ed0fde6f2a3a660a126ff4b4b1c23cad491dccdc
+//@struktur_sha 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
+//@show_sha 06b2a722d845344a2e6f799d0983df18b246babf15e12f6675bf1c2723a111c3
 //@part GEN_DANCINGONMYOWN_BLACK 0
 //@part GEN_DANCINGONMYOWN_BASS 3
 //@part GEN_DANCINGONMYOWN_SOMEBODY 4
@@ -31,7 +31,10 @@
 //@part GEN_DANCINGONMYOWN_I_KEEP_DANCING_5 26
 //@part GEN_DANCINGONMYOWN_I_KEEP_DANCING_5_TAIL 27
 //@part GEN_DANCINGONMYOWN_INSTRUMENTAL_2 28
-//@part GEN_DANCINGONMYOWN_OUTRO 29
+//@part GEN_DANCINGONMYOWN_BASS_ALLEIN 29
+//@part GEN_DANCINGONMYOWN_BASS_SOLO 30
+//@part GEN_DANCINGONMYOWN_OUTRO 31
+//@part GEN_DANCINGONMYOWN_STILLE 32
 //@code
 //#8 Dancing On My Own - Robyn  122 BPM  midi_offset 1/8 = 246 ms  (generiert aus songs/DancingOnMyOwn_v1: struktur.xlsx + show.yaml)
 void gen_DancingOnMyOwn() {
@@ -191,21 +194,47 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_COLORS, 1967, 28, 122);
 		break;
 
-	case 28:	// instrumental (2)  8 T  15738ms  @4:09.590  -- ausatmen: alle Geräte atmen langsam in warmen Farben
+	case 28:	// instrumental (2)  2 T  3935ms  @4:09.590  -- ausatmen: alle Geräte atmen langsam in warmen Farben
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_CALM, 15738, 29, 122);
+		scene(SCENE_CALM, 3935, 29, 122);
 		break;
 
-	case 29:	// outro  2 T  3934ms  @4:25.328  -- die letzten 2 Takte blenden weich nach Schwarz
+	case 29:	// bass allein  2 T  3934ms  @4:13.525  -- der Bass spielt allein weiter: er atmet weiter, alle anderen Geräte verlöschen langsam über 2 Takte
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_FADEOUT, 3934, 30, 122);
+		fxTransition(TRANS_FADE, 492);
+		fxMaskStage(DEV_BASS, 0, 3934);
+		scene(SCENE_CALM, 3934, 30, 122);
 		break;
 
-	case 30:	// BLACK (Ende)    10000ms  @4:29.262  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 31);
+	case 30:	// bass solo  4 T  7869ms  @4:17.459  -- nur der Bass: ein Farbverlauf in Orange, Pink, Violett und Gold dreht sich ruhig um den Korpus (eine Runde in 4 Takten), alle anderen schwarz
+		setColorScheme(SCHEME_SUNSET);
+		fxTransition(TRANS_FADE, 984);
+#if defined(RINASBASS)
+		progSpatialPalette(7869, 31, 122, 7869UL, 255);
+#else
+		progBlack(7869, 31);
+#endif
 		break;
 
-	case 31:
+	case 31:	// outro  1 T  1967ms  @4:25.328  -- der Farbverlauf auf dem Bass bleibt stehen und verlischt in einem Takt
+		setColorScheme(SCHEME_SUNSET);
+		fxFadeOut(1967);
+#if defined(RINASBASS)
+		progSpatialPalette(1967, 32, 122, 4000000000UL, 255);
+#else
+		progBlack(1967, 32);
+#endif
+		break;
+
+	case 32:	// stille  1 T  1967ms  @4:27.295  -- Stille bis zum Ende
+		progBlack(1967, 33);
+		break;
+
+	case 33:	// BLACK (Ende)    10000ms  @4:29.262  -- alle Geräte schwarz, dann Pausen-Loop
+		progBlack(10000, 34);
+		break;
+
+	case 34:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;

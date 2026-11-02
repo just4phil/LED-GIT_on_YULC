@@ -1,0 +1,9 @@
+zeit: '2026-11-02 13:22:39'
+notiz: 'Bass-Outro: Rest verlischt ab Takt 130, Bass allein ab 132, Standbild-Ausblenden
+  ab 136'
+werkzeug_git: b579ea3 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
+  show.yaml: 06b2a722d845344a2e6f799d0983df18b246babf15e12f6675bf1c2723a111c3
+  generated.cpp: fe18f6b459e13079472879b79ac15e5ca8d107e7879d48bbc491cafb2b639206

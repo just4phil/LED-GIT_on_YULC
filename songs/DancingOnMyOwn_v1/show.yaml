@@ -141,12 +141,40 @@ sections:
       gate: 4
     why: "Höhepunkt: Feuer auf allen Geräten, der letzte Takt weißer Strobo im Takt"
 
+  # Bass-Outro (Wunsch des Users 02.11.2026): der Bass spielt das Ende fast allein -> Fokus auf den Bass.
+  # 128 alle atmen, 130 der Rest verlischt in 2 Takten, 132 nur der Bass mit ruhigem Farbverlauf, 136 der Verlauf
+  # bleibt stehen und verlischt in 1 Takt, 137 still.
   instrumental (2):
     scene: SCENE_CALM
     scheme: SCHEME_SUNSET
     why: "ausatmen: alle Geräte atmen langsam in warmen Farben"
 
-  outro:
-    scene: SCENE_FADEOUT
+  bass allein:
+    scene: SCENE_CALM
     scheme: SCHEME_SUNSET
-    why: "die letzten 2 Takte blenden weich nach Schwarz"
+    only: {devices: RINASBASS, fade: 8}
+    transition: {type: fade, beats: 1}
+    why: "der Bass spielt allein weiter: er atmet weiter, alle anderen Geräte verlöschen langsam über 2 Takte"
+
+  bass solo:
+    fx: "progBlack(${dur}, ${next})"
+    scheme: SCHEME_SUNSET
+    devices:
+      # eine Umdrehung = 16 Beats = genau dieser Part (4 Takte): am Ende steht der Verlauf wieder wie am Anfang,
+      # darum passt das stehende Bild im outro ohne Sprung. 255 = kein Anschwellen im Beat, ruhig.
+      RINASBASS: "progSpatialPalette(${dur}, ${next}, ${bpm}, 7869UL, 255)"
+    transition: {type: fade, beats: 2}
+    why: "nur der Bass: ein Farbverlauf in Orange, Pink, Violett und Gold dreht sich ruhig um den Korpus (eine Runde in 4 Takten), alle anderen schwarz"
+
+  outro:
+    fx: "progBlack(${dur}, ${next})"
+    scheme: SCHEME_SUNSET
+    devices:
+      # riesige Umdrehungszeit = der Verlauf steht still, im Bild vom Ende des Parts davor
+      RINASBASS: "progSpatialPalette(${dur}, ${next}, ${bpm}, 4000000000UL, 255)"
+    fade_out: 4
+    why: "der Farbverlauf auf dem Bass bleibt stehen und verlischt in einem Takt"
+
+  stille:
+    fx: "progBlack(${dur}, ${next})"
+    why: "Stille bis zum Ende"
