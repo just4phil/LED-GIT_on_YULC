@@ -40,9 +40,12 @@ sections:
     why: "'in the dark': die Geräte füllen sich langsam in Blau und Lila, gedimmt auf 60 %; die Farben wandern alle 2 Takte nach Pink/Orange und zurück."
 
   "verse 1":
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    why: "Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Plasma-Wolken."
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
+    # Zurück: songgen.py InTheDark_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_STARS
+    scheme: SCHEME_NEON
+    why: "Strophe als Sternenhimmel 'in the dark': auf jedem Beat leuchten auf allen Geräten ein paar Sterne in Pink/Cyan/Violett auf und verglimmen."
 
   "bridge 1":
     scene: SCENE_COLORS_WAVE

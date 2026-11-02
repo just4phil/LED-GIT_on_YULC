@@ -3,7 +3,7 @@
 //@function gen_InTheDark
 //@name In The Dark
 //@struktur_sha c6978f45ddeb06064f8a5a61e222abab07802f5322bbfdf9fcb881a2147a209e
-//@show_sha 246c6184e31b48c8504ea41bc33412551302760cdd4a97b496d6d7af903b76bb
+//@show_sha dbfe02e72de15292c4f661ce89dd6f7e2809aa7f33ae8177d7d978712593b113
 //@part GEN_INTHEDARK_BLACK 0
 //@part GEN_INTHEDARK_INTRO_VERSE_1 3
 //@part GEN_INTHEDARK_VERSE_1 4
@@ -70,9 +70,9 @@ void gen_InTheDark() {
 		scene(SCENE_GLOW, 16552, 4, 116);
 		break;
 
-	case 4:	// verse 1  8 T  16551ms  @0:24.052  -- Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Plasma-Wolken.
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 16551, 5, 116);
+	case 4:	// verse 1  8 T  16551ms  @0:24.052  -- Strophe als Sternenhimmel 'in the dark': auf jedem Beat leuchten auf allen Geräten ein paar Sterne in Pink/Cyan/Violett auf und verglimmen.
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_STARS, 16551, 5, 116);
 		break;
 
 	case 5:	// bridge 1  8 T  14483ms  @0:40.603  -- Die Farbe wandert pro Beat weich von Gerät zu Gerät, in Orange, Pink, Lila und Gelb; im letzten Takt weißer Strobo im Takt (4 Blitze pro Beat).
