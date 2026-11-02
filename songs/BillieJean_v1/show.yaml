@@ -6,7 +6,7 @@
 #                                im Chorus-Block wandert stattdessen die Farbe weich von Gerät zu Gerät (COLORS_WAVE + soft)
 #   Chorus                     = drehender Stern (SCENE_STAR), ab Chorus 2 blitzen die Lampen weiß auf 2 und 4 (Snare)
 #   Instrumental-Zwischenspiel = schnelle Einzelblitze (SCENE_SPARKLE), wie im alten Code
-#   Sirenen-Instrumental ("solo a") = Feuer auf allen Geräten (SCENE_FIRE, Wunsch des Users 02.11.2026)
+#   Sirenen-Instrumental ("solo a") = blaues Feuer auf allen Geräten (SCENE_FIRE + SCHEME_ICE, Wunsch des Users 02.11.2026)
 #   Rufe "do think twice" / "BABY" = Schläge auf die Viertel in Rot (SCENE_DROP)
 # Farben: Intro und Verses kühl und dunkel (WHITE, ROYAL, RETRO = rot/weiß/blau), der Pre-Chorus warm (SUNSET), der
 # Chorus in NEON. Nach dem Stopp kippt das Finale ins Warme (SUNSET -> FIRE).
@@ -174,10 +174,12 @@ sections:
   solo a:
     # Wunsch des Users 02.11.2026: "im Sirenen-Instrumental ist es langweilig und Fokus auf Bass ... spielt aber kein
     # Solo => besser Fire rein". Vorher: SCENE_SOLO_BASS, SCHEME_SUNSET, transition stage_rl 2 Beats.
+    # Blau auf Wunsch des Users (02.11.2026): ein kaltes Schema macht das Feuer blau (passt zur Sirene), das rote Feuer
+    # bleibt dem Outro vorbehalten.
     scene: SCENE_FIRE
-    scheme: SCHEME_FIRE
+    scheme: SCHEME_ICE
     transition: {type: fade, beats: 2}
-    why: "Sirenen-Instrumental: Feuer auf allen Geräten - die Gitarre brennt die Kontur hinauf, die Lampen brennen von unten, auf der Matrix lodern Flammen; blendet in 2 Beats aus den Einzelblitzen herüber"
+    why: "Sirenen-Instrumental: blaues Feuer auf allen Geräten wie Blaulicht - die Gitarre brennt die Kontur hinauf, die Lampen brennen von unten, auf der Matrix lodern Flammen; blendet in 2 Beats aus den Einzelblitzen herüber. Das rote Feuer kommt erst im Outro"
 
   "the ONE …..halftime":
     scene: SCENE_CALM

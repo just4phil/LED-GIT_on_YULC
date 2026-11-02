@@ -4527,8 +4527,8 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 30, 128);
 		break;
 
-	case 30:	// solo a  8 T  15000ms  @3:12.422  -- Sirenen-Instrumental: Feuer auf allen Geräten - die Gitarre brennt die Kontur hinauf, die Lampen brennen von unten, auf der Matrix lodern Flammen; blendet in 2 Beats aus den Einzelblitzen herüber
-		setColorScheme(SCHEME_FIRE);
+	case 30:	// solo a  8 T  15000ms  @3:12.422  -- Sirenen-Instrumental: blaues Feuer auf allen Geräten wie Blaulicht - die Gitarre brennt die Kontur hinauf, die Lampen brennen von unten, auf der Matrix lodern Flammen; blendet in 2 Beats aus den Einzelblitzen herüber. Das rote Feuer kommt erst im Outro
+		setColorScheme(SCHEME_ICE);
 		fxTransition(TRANS_FADE, 938);
 		scene(SCENE_FIRE, 15000, 31, 128);
 		break;
