@@ -3,7 +3,7 @@
 //@function gen_BillieJean
 //@name Billie Jean
 //@struktur_sha 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
-//@show_sha f71c29cf138771b775e8c3a5828d491e49da5133c180461a070bb9cc30231266
+//@show_sha 14453e707c87a52da9acc9e024db4ca92570e065ff9acf6c59491c27ec06abbc
 //@part GEN_BILLIEJEAN_PAUSE 0
 //@part GEN_BILLIEJEAN_DRUMS_INTRO 3
 //@part GEN_BILLIEJEAN_BASS_INTRO 4
@@ -232,10 +232,10 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 30, 128);
 		break;
 
-	case 30:	// solo a  8 T  15000ms  @3:12.422  -- Bass-Solo (Angabe des Users): zwei Kometen laufen um den Bass, alle anderen atmen dunkel in warmen Farben; der Übergang läuft über die Bühne zum Bass hin (alt: progWaterRipple)
-		setColorScheme(SCHEME_SUNSET);
-		fxTransition(TRANS_STAGE_RL, 938);
-		scene(SCENE_SOLO_BASS, 15000, 31, 128);
+	case 30:	// solo a  8 T  15000ms  @3:12.422  -- Sirenen-Instrumental: Feuer auf allen Geräten - die Gitarre brennt die Kontur hinauf, die Lampen brennen von unten, auf der Matrix lodern Flammen; blendet in 2 Beats aus den Einzelblitzen herüber
+		setColorScheme(SCHEME_FIRE);
+		fxTransition(TRANS_FADE, 938);
+		scene(SCENE_FIRE, 15000, 31, 128);
 		break;
 
 	case 31:	// the ONE …..halftime  2 T  3750ms  @3:27.422  -- Idee des Users 'BLINDER fadet schnell ein und sehr langsam aus': der Blinder blendet in einem halben Beat auf allen Geräten auf und klingt dann über die ganzen 2 Takte ab; darunter atmet die Bühne dunkel in Blau/Lila und kommt langsam hervor
