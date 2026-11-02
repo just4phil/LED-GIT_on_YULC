@@ -944,14 +944,14 @@ szenen:
     urteil:
     notiz: "neu am 02.11.2026 nach dem Urteil \"zu hektisch -> halbes tempo + Farbwechsel einbauen\" zu SCENE_VERSE_HEART. Demo 92 Part 89, Abnahme offen. Schema mit mehreren Farben nehmen (RED/BLUE/WHITE wechseln nicht)"
   SCENE_VERSE_STARS:
-    wirkung: "Strophe als Sternenhimmel: auf jedem Beat leuchten auf allen Geräten ein paar einzelne LEDs in Schemafarben auf und verglimmen in etwa 2 Beats"
+    wirkung: "Strophe als Sternenhimmel: auf jedem Beat leuchten auf allen Geräten einzelne LEDs in Schemafarben auf (je 16 LEDs ein Stern, Lampen je 8) und verglimmen in etwa 1,7 s"
     geraete: {alle: progTwinkleBeat}
     rolle: [flaeche]
     energie: [1, 2]
     bewegung: funkelnd
     genutzt: 0
     urteil:
-    notiz: "neu am 18.10.2026, Demo 92 Part 66, Abnahme offen. Sehr ruhig - für leise Strophen und Intros"
+    notiz: "neu am 18.10.2026, Demo 92 Part 66, Abnahme offen. Sehr ruhig - für leise Strophen und Intros. Urteil des Users 02.11.2026 (In The Dark, Shivers): \"etwas zu dünn, also zu wenige pixel aktiv und/oder zu dunkel -> etwas voller machen, insbesondere auch die Lampen\" - seitdem 2,5-mal so dicht (Lampen 5-mal) und längeres Nachglühen (STARS_... in scenes.h)"
   SCENE_WAVE_RL:
     wirkung: "wie WAVE_LR, von rechts nach links"
     geraete: {alle: progBeatFlash}

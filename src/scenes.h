@@ -95,6 +95,14 @@ enum SceneID : uint8_t {
 // fast einen ganzen Beat, und die Geräte wirkten wie aus dem Takt.
 #define WAVE_BEAT_DIVISOR	16
 
+// SCENE_VERSE_STARS (Sternenhimmel): auf je so viele LEDs kommt pro Beat ein neuer Stern - kleiner = voller. Die Lampen
+// bekommen mehr (je 8 LEDs ein Stern), weil sie wenige LEDs haben und sonst fast leer wirken. STARS_FADE: wie schnell
+// ein Stern verglimmt (fadeToBlackBy je 20 ms; 6 = etwa 1,7 s). Bis 02.11.2026: je 40 LEDs ein Stern, Fade 10 - dem
+// User "zu dünn, zu wenige Pixel aktiv und/oder zu dunkel, insbesondere auch die Lampen".
+#define STARS_LEDS_PER_STAR			16
+#define STARS_LEDS_PER_STAR_LAMP	8
+#define STARS_FADE					6
+
 // Verzögerung pro Bühnenposition bei SCENE_WAVE_LR_BAR, ebenfalls als Bruchteil eines Beats: 2 = eine Achtel.
 // Die Welle braucht damit 2 Beats von Lampe 1 bis Lampe 2 und läuft deshalb nur einmal pro Takt (WAVE_BAR_BEATS) -
 // bei einem Blitz auf jedem Beat käme die Matrix (2 Achtel = 1 Beat später) wieder genau mit Lampe 1 zusammen.
@@ -153,4 +161,5 @@ void progLampFlow(unsigned int durationMillis, byte nextPart, uint8_t bpm, unsig
 void progLampHeartbeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col,
 					   uint8_t beatsPerHeart = 1);	// ganze Lampe schlägt wie ein Herz (lub-dub); 2 = nur jeder zweite Beat
 // für alle Geräte: Sternenhimmel - pro Beat leuchten perBeat Sterne (einzelne LEDs) in Schemafarben auf und verglimmen
-void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat);
+// fadeBy: so viel (von 256) wird jedes Bild (20 ms) dunkler - kleiner = Sterne glühen länger nach
+void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat, uint8_t fadeBy = 10);

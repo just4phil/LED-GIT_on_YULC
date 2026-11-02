@@ -396,16 +396,16 @@ static uint32_t twinkleBeat = 0;	// letzter Beat, auf dem schon Sterne gesetzt w
 
 // Sternenhimmel für jedes Gerät (arbeitet nur mit der LED-Nummer, die Form des Geräts spielt keine Rolle):
 // auf jedem Beat leuchten perBeat zufällige LEDs in einer Schemafarbe auf, auf der Eins ist einer davon weißlich.
-// Bei jedem Bild (alle 20 ms) wird alles um 10/256 dunkler (fadeToBlackBy) - ein Stern verglimmt so in etwa einer
-// Sekunde, bei mittlerem Tempo rund 2 Beats. Welche LEDs es trifft, ist auf jedem Gerät anders (random16) - das ist
-// gewollt; der Zeitpunkt (der Beat) ist überall derselbe.
-void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat) {
+// Bei jedem Bild (alle 20 ms) wird alles um fadeBy/256 dunkler (fadeToBlackBy) - bei 10 verglimmt ein Stern in etwa
+// einer Sekunde, bei 6 (SCENE_VERSE_STARS seit 02.11.2026) in etwa 1,7 Sekunden. Welche LEDs es trifft, ist auf jedem
+// Gerät anders (random16) - das ist gewollt; der Zeitpunkt (der Beat) ist überall derselbe.
+void progTwinkleBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t perBeat, uint8_t fadeBy) {
 	if (fxPartStart(durationMillis, nextPart)) {
 		twinkleBeat = 0xFFFFFFFF;	// "noch kein Beat": der erste Beat (0) setzt sofort Sterne
 	}
 
 	if (fxFrameDue(20)) {
-		fadeToBlackBy(leds, anz_LEDs, 10);
+		fadeToBlackBy(leds, anz_LEDs, fadeBy);
 		uint32_t beat = fxBeats(bpm);
 		if (beat != twinkleBeat) {
 			twinkleBeat = beat;
@@ -619,8 +619,13 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		progBeatFlash(durationMillis, nextPart, bpm, me, abs(STAGE_POS - (STAGE_POSITIONS - 1) / 2) * waveStep);
 		return;
 	case SCENE_VERSE_STARS:
-		// auf jedem Gerät derselbe Sternenhimmel, Dichte nach LED-Zahl: Matrix 13, Gitarre/Bass 4, Lampen 2 je Beat
-		progTwinkleBeat(durationMillis, nextPart, bpm, max(2, anz_LEDs / 40));
+		// auf jedem Gerät derselbe Sternenhimmel, Dichte nach LED-Zahl (scenes.h, seit 02.11.2026 voller - Urteil des
+		// Users: "zu dünn ... insbesondere auch die Lampen"): Matrix 33, Gitarre 10, Bass 9, Lampen 11 bzw. 9 je Beat
+#if DEVICE_CLASS == CLASS_LAMP
+		progTwinkleBeat(durationMillis, nextPart, bpm, max(4, anz_LEDs / STARS_LEDS_PER_STAR_LAMP), STARS_FADE);
+#else
+		progTwinkleBeat(durationMillis, nextPart, bpm, max(4, anz_LEDs / STARS_LEDS_PER_STAR), STARS_FADE);
+#endif
 		return;
 	case SCENE_WAVE_LR_BAR:
 		// Achtel je Bühnenposition, exakt über bpm gerechnet (60000 / bpm / 2 ohne zweimal zu runden):
