@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
-//@show_sha 3e9cbe168a1dd77ae44c010fd0257cc1550a29f23e863b7ebde014c2ba1324ce
+//@show_sha e8b8a5aa89cf624bd16652cb8e674b0bc0e878167b57304095e4694cbaf93271
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
@@ -34,7 +34,8 @@
 //@part GEN_ALLTHETHINGSSHESAID_UEBERGANG_ZUM_CHORUS_4 31
 //@part GEN_ALLTHETHINGSSHESAID_CHRORUS_2 32
 //@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH_4 33
-//@part GEN_ALLTHETHINGSSHESAID_FADE_OUT 34
+//@part GEN_ALLTHETHINGSSHESAID_THIS_IS_NOT_ENOUGH_4_TAIL 34
+//@part GEN_ALLTHETHINGSSHESAID_FADE_OUT 35
 //@entry GEN_ALLTHETHINGSSHESAID_TRAILER 6 5
 //@code
 //#31 All The Things She Said - t.A.T.u.  86 BPM  midi_offset 3/8 = 1047 ms  (generiert aus songs/AllTheThingsSheSaid_v1: struktur.xlsx + show.yaml)
@@ -286,32 +287,53 @@ void gen_AllTheThingsSheSaid() {
 		scene(SCENE_SPARKLE, 5582, 33, 86);
 		break;
 
-	case 33:	// this is not enough (4)  2 T  5581ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab
+	case 33:	// this is not enough (4)  2 T  4883ms  @3:19.884  -- die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab. Letzter Beat (Takt 74,75): schneller weißer Strobo auf allen Geräten (8 Blitze pro Beat), ENOUGH weiß mit schwarzem Rand darüber
 		setColorScheme(SCHEME_FIRE);
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxTextUnder(38);
 		fxTextBegin();
-		progText("THIS IS NOT ENOUGH*5", 5581, 34, 698, CRGB::White);
+		progText("THIS IS NOT ENOUGH*5", 4883, 34, 698, CRGB::White);
 		fxTextEnd();
 #endif
 		fxLayerBegin();
-		scene(SCENE_SPARKLE, 5581, 34, 86);
+		scene(SCENE_SPARKLE, 4883, 34, 86);
 		fxLayerEnd(FX_ADD, 153);
-		scene(SCENE_DROP, 5581, 34, 86);
+		scene(SCENE_DROP, 4883, 34, 86);
 		fxLayerFlush();
 		break;
 
-	case 34:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz
+	case 34:	// this is not enough (4) (tail)  1 B  698ms  @3:24.767
+		setColorScheme(SCHEME_WHITE);
+		fxGate(86, 8);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("ENOUGH", 698, 35, 2791, CRGB::White);
+		fxLayerEnd(FX_OVER);
+#endif
+		scene(SCENE_COLORS, 698, 35, 86);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
+		break;
+
+	case 35:	// fade out  1 T  2791ms  @3:25.465  -- Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz. Auf Takt 75 als Abschluss ein langer warmweißer Blinder auf allen Geräten: voll auf der 1, klingt über 2 Takte bis ins Schluss-Schwarz aus
 		setColorScheme(SCHEME_RED);
 		fxTransition(TRANS_FADE, 1395);
-		scene(SCENE_FADEOUT, 2791, 35, 86);
+		fxBlinder(0, 5581, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 698);
+		scene(SCENE_FADEOUT, 2791, 36, 86);
 		break;
 
-	case 35:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
-		progBlack(10000, 36);
+	case 36:	// BLACK (Ende)    10000ms  @3:28.256  -- alle Geräte schwarz, dann Pausen-Loop
+		fxBlinder(0, 5581, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 698);
+		fxBlinderCarry(2791);
+		progBlack(10000, 37);
 		break;
 
-	case 36:
+	case 37:
 		clearAll();
 		switchToSong(0);	// SongID 0 == DEFAULT loop
 		break;

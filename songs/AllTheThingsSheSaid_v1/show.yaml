@@ -201,10 +201,23 @@ sections:
     scheme: SCHEME_FIRE
     overlay: {scene: SCENE_SPARKLE, amount: 60}
     text: {words: "THIS IS NOT ENOUGH*5", per: beat, color: weiss, over: true}
-    why: "die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab"
+    # Wunsch des Users (02.11.2026): "am ende muss ein schneller strobe rein auf takt 74,75 -> dann auf 75,0 langer
+    # Blinder als abschluss". Der letzte Beat des Parts (Takt 74,75) ist deshalb ein eigener Schluss-Part: Strobo nach
+    # der Regel des Users als weiße Fläche + gate (läuft im Takt, auf allen Geräten gleich), 8 Blitze pro Beat = schnell.
+    # ENOUGH steht dort weiter, weiß mit schwarzem Rand - lesbar im Blitz und in der Pause.
+    tail:
+      beats: 1
+      scene: SCENE_COLORS
+      scheme: SCHEME_WHITE
+      gate: 8
+      text: {words: "ENOUGH", per: bar, color: weiss, over: true, outline: true}
+    why: "die Hook zum letzten Mal, Viertel in Feuerfarben - das Glitzern des Höhepunkts läuft als Ebene darüber weiter. Wunsch des Users (Tabelle 06.10.2026): der Text 'This is not enough' liegt auf den Matrix-Geräten über dem Effekt - THIS, IS, NOT je auf ein Viertel zusammen mit dem Blitz der Lampen, ENOUGH (ab Schlag 4) bleibt den ganzen folgenden Takt stehen; hart an/aus, ohne flash - Urteil des Users (06.10.2026): beides super, hart hebt sich hier besser vom Effekt darunter ab. Letzter Beat (Takt 74,75): schneller weißer Strobo auf allen Geräten (8 Blitze pro Beat), ENOUGH weiß mit schwarzem Rand darüber"
 
   fade out:
     scene: SCENE_FADEOUT
     scheme: SCHEME_RED
     transition: {type: fade, beats: 2}
-    why: "Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz"
+    # Wunsch 02.11.2026: langer Blinder als Abschluss auf Takt 75,0 (= 1 dieses Parts). Springt voll auf, steht einen Beat
+    # und klingt über 2 Takte aus; der Part ist nur 1 Takt lang, carry: true lässt den Rest im Schluss-Schwarz ausklingen.
+    blinder: {bar: 75, len: 8, hold: 1, amount: 100, carry: true}
+    why: "Idee 'fade out', Wunsch des Users 'richtig schön soft': Rot blendet über den ganzen Part weich nach Schwarz aus (erst zügig, dann lang und flach), danach 10 s schwarz. Auf Takt 75 als Abschluss ein langer warmweißer Blinder auf allen Geräten: voll auf der 1, klingt über 2 Takte bis ins Schluss-Schwarz aus"
