@@ -241,13 +241,25 @@ void setMarkerLEDs(byte songID, byte partID) {
 			break;
 
 		case 17://apt();
-			markerLED1 = ESaite_E; 
-			markerLED2 = ESaite_Fis; 
-			markerLED3 = ESaite_A; 
-			markerLED4 = ASaite_D; 
-			markerLED5 = ASaite_E; 
-			markerLED6 = ASaite_Fis; 
-			markerLED7 = ASaite_Cis; 
+			#ifdef GIT
+				markerLED1 = ESaite_E;
+				markerLED2 = ESaite_Fis;
+				markerLED3 = ESaite_A;
+				markerLED4 = ASaite_D;
+				markerLED5 = ASaite_E;
+				markerLED6 = ASaite_Fis;
+				markerLED7 = ASaite_Cis;
+			#endif
+			#ifdef BASS
+				// für RINA: die Marker-LED, die sie nicht braucht, hier auskommentieren (//)
+				markerLED1 = ESaite_E;
+				markerLED2 = ESaite_Fis;
+				markerLED3 = ESaite_A;
+				markerLED4 = ASaite_D;
+				markerLED5 = ASaite_E;
+				markerLED6 = ASaite_Fis;
+				//markerLED7 = ASaite_Cis;
+			#endif
 			break;
 
 		case 18://prisoner();
