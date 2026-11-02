@@ -3,7 +3,7 @@
 //@function gen_BillieJean
 //@name Billie Jean
 //@struktur_sha 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
-//@show_sha 762cff2087e02f5e460369bcea20d3e2863ac626edfba67482d12836ddae3702
+//@show_sha 7a49d7c68cc26961aef4806bcc5058ac6d80cca02a514aa804817079f20413c6
 //@part GEN_BILLIEJEAN_PAUSE 0
 //@part GEN_BILLIEJEAN_DRUMS_INTRO 3
 //@part GEN_BILLIEJEAN_BASS_INTRO 4
@@ -251,8 +251,18 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 33, 128);
 		break;
 
-	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel machen den letzten Einsatz stärker
+	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel, nur auf der Matrix steht Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand (LOVER die letzten 2 Beats); macht den letzten Einsatz stärker
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerOutline(CRGB::White);
+		fxLayerBegin();
+		progText("BILLIE JEAN IS_NOT MY LOVER*2", 2812, 34, 469, CRGB::Red);
+		fxLayerEnd(FX_OVER);
+#endif
 		progBlack(2812, 34);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 34:	// STROBE  2 B  938ms  @3:37.734  -- Strobo-Absprung in den letzten Chorus

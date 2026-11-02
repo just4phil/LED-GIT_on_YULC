@@ -11,7 +11,14 @@ kann.
 
 ## Arbeitsstand
 
-Zuletzt aktualisiert: 02.11.2026 (Dancing On My Own: Bass-Outro, `only` mit `fade`, Herzschlag im Verse 1 halbes Tempo)
+Zuletzt aktualisiert: 02.11.2026 (Billie Jean: Text im STOP, farbiger Text-Rand `outline: <Farbe>`)
+
+- **02.11.2026, Billie Jean, Part `STOP`:** Wunsch des Users: Text „Billie Jean - is not my - lover“ rot mit weißem
+  Rand auf der sonst schwarzen Matrix. Neu: `fxLayerOutline(CRGB color = CRGB::Black)` / `fxTextOutline(...)` -
+  Schwarz dunkelt wie bisher ab, jede andere Farbe wird als Rand über das Bild geblendet (`applyOutline()`); YAML
+  `outline: weiss` (Farbname wie bei `color` oder CRGB-Ausdruck) statt `true`. Bestehende Aufrufe ohne Parameter
+  bleiben gleich. Show: `words: "BILLIE JEAN IS_NOT MY LOVER*2"` je Beat (54 LEDs = 9 Zeichen, „BILLIE JEAN“ passt nicht
+  am Stück), `over: true`. Gebaut: andresgit + scrollmatrix. Nächster Schritt: Test auf der Matrix durch den User.
 
 - **02.11.2026, Dancing On My Own, Part `somebody` (Takt 12-20):** Wunsch des Users: die Lampen blinkten zu schnell für
   den ruhigen Start -> Tempo halbiert, danach auf seinen Wunsch auch Gitarre und Bass. Nur in der Show: `devices:`

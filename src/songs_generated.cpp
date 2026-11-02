@@ -4550,8 +4550,18 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 33, 128);
 		break;
 
-	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel machen den letzten Einsatz stärker
+	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel, nur auf der Matrix steht Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand (LOVER die letzten 2 Beats); macht den letzten Einsatz stärker
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerOutline(CRGB::White);
+		fxLayerBegin();
+		progText("BILLIE JEAN IS_NOT MY LOVER*2", 2812, 34, 469, CRGB::Red);
+		fxLayerEnd(FX_OVER);
+#endif
 		progBlack(2812, 34);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 34:	// STROBE  2 B  938ms  @3:37.734  -- Strobo-Absprung in den letzten Chorus

@@ -111,7 +111,7 @@ effect can run as a layer on top: between `fxLayerBegin()` and `fxLayerEnd(mode,
 buffer with its own copy of the shared effect counters, `fxPresent()` mixes it over the part's effect
 (`FX_ADD`/`FX_MAX`/`FX_OVER`/`FX_MASK`/`FX_CUT`), `fxLayerFlush()` after the lower effect keeps the layer running. Never the
 same effect above and below (effects keep static state). `fxLayerPulse/Gate/FadeIn/FadeOut/Window` change only the
-layer's strength, `fxLayerUnder` dims only the effect below while the layer is present, `fxLayerOutline` / `fxTextOutline` (YAML `outline: true` inside `text:` or `overlay`) draw a black rim of one LED around whatever the layer draws (matrix only), so text stays readable on a bright picture or blinder. A second layer reserved
+layer's strength, `fxLayerUnder` dims only the effect below while the layer is present, `fxLayerOutline` / `fxTextOutline` (YAML `outline: true` inside `text:` or `overlay`) draw a black rim of one LED around whatever the layer draws (matrix only), so text stays readable on a bright picture or blinder; `outline: <colour>` (e.g. `weiss`, `fxTextOutline(CRGB::White)`) draws a coloured rim instead. A second layer reserved
 for text sits on top of both (`fxTextBegin()` / `fxTextEnd()`, steered by `fxText…`), so scene + layer + text run
 together. `fxTextGradient(paletteID, dir, cycleMillis)` is registered the same way and evaluated by
 `progText` / `progTextScroll` themselves: a palette gradient in the font instead of one colour (YAML: `gradient` inside `text:`). Everything is

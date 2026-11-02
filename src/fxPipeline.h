@@ -75,9 +75,11 @@ void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);		// nur die Eb
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);	// nur die Ebene blitzt im Raster (wie fxGate)
 void fxLayerUnder(uint8_t brightness);			// Effekt darunter dunkler, solange die Ebene da ist (255 = unverändert):
 												// folgt Zeitfenster und Ein-/Ausblenden der Ebene, nicht Puls und Tor
-void fxLayerOutline();							// schwarzer Rand (1 LED, auch schräg) um alles, was die Ebene zeichnet - nur auf der Matrix.
+void fxLayerOutline(CRGB color = CRGB::Black);	// Rand (1 LED, auch schräg) um alles, was die Ebene zeichnet - nur auf der Matrix.
 												// Für Text über hellem Bild oder über einem Blinder (fxBlinderUnderText): die Buchstaben
-												// bleiben lesbar. Der Rand ist so stark, wie die Ebene gerade deckt, und blendet mit ihr aus
+												// bleiben lesbar. Der Rand ist so stark, wie die Ebene gerade deckt, und blendet mit ihr aus.
+												// color: Schwarz (Vorgabe) dunkelt das Bild am Rand ab, jede andere Farbe malt einen
+												// farbigen Rand (z. B. CRGB::White um roten Text auf Schwarz)
 // Für den Effekt, der gerade in einer Ebene zeichnet (nicht für den case): Deckkraft seiner Ebene, 255 = voll.
 // progText lässt damit ein Wort abklingen - die Szene darunter scheint zunehmend durch, statt dass dunkle
 // Buchstaben auf ihr stehen bleiben. Rückgabe false = es zeichnet gerade keine Ebene (der Effekt läuft direkt
@@ -103,7 +105,7 @@ void fxTextFadeOut(unsigned int millis);
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats = 1);
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent = 50);
 void fxTextUnder(uint8_t brightness);
-void fxTextOutline();	// schwarzer Rand um die Buchstaben der Text-Ebene (wie fxLayerOutline)
+void fxTextOutline(CRGB color = CRGB::Black);	// Rand um die Buchstaben der Text-Ebene (wie fxLayerOutline, auch farbig)
 
 //--- Farbverlauf in der Schrift: progText / progTextScroll färben die Buchstaben nicht einfarbig, sondern mit einer
 //    Palette (paletteID wie bei progPalette, FXprograms.h; PALETTE_SCHEME = Verlauf aus dem aktiven Farbschema).

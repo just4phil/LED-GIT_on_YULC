@@ -1082,12 +1082,20 @@ def layer_mod_calls(spec, part, sec, song, name, errors, prefix="fxLayer", label
 
 	# outline: true - schwarzer Rand um alles, was die Ebene zeichnet (nur auf der Matrix; fxLayerOutline / fxTextOutline).
 	# Gedacht für Text über hellem Bild oder über einem Blinder: die Buchstaben bleiben lesbar.
+	# outline: <Farbe> (weiss, rot ... wie bei text color, oder ein CRGB-Ausdruck) - farbiger Rand statt eines schwarzen
+	# (Wunsch zu "Billie Jean", 02.11.2026: roter Text mit weißem Rand auf Schwarz).
 	if "outline" in spec:
-		if not isinstance(spec["outline"], bool):
-			errors.append(f"{name}: {label} outline ist true oder false, nicht '{spec['outline']}'")
-		elif spec["outline"]:
+		o = spec["outline"]
+		if o is True:
 			calls.append(f"{prefix}Outline();")
 			infos.append("schwarzer Rand um die Schrift")
+		elif o is False:
+			pass
+		elif crgb(o) is None:
+			errors.append(f"{name}: {label} outline ist true/false oder eine Farbe ({', '.join(sorted(TEXT_COLORS))} oder CRGB-Ausdruck), nicht '{o}'")
+		else:
+			calls.append(f"{prefix}Outline({crgb(o)});")
+			infos.append(f"Rand in {o} um die Schrift")
 	return calls, infos
 
 
@@ -1100,7 +1108,8 @@ def overlay_code(part, song):
 	nur für die Ebene (der Effekt darunter bleibt): from / to: <Beats> (Zeitfenster) oder windows: [[von, bis], ...]
 	(bis zu 4 Zeitfenster, eins auch als {from, to, hard: true}; bis darf hinter dem Part-Ende liegen), fade_in / fade_out: <Beats>,
 	pulse: <Prozent> | {depth, per}, gate: <pro Beat> | {per_beat, duty}, under: <Prozent> (Effekt darunter dunkler),
-	outline: true (schwarzer Rand um alles, was die Ebene zeichnet - nur auf der Matrix, für lesbaren Text)"""
+	outline: true (schwarzer Rand um alles, was die Ebene zeichnet - nur auf der Matrix, für lesbaren Text) oder eine
+	Farbe (outline: weiss = farbiger Rand)"""
 	sec = part["sec"]
 	name = sec.get("name", "?")
 	spec = sec.get("overlay")

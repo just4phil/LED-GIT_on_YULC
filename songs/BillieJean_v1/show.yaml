@@ -196,7 +196,11 @@ sections:
 
   STOP:
     fx: "progBlack(${dur}, ${next})"
-    why: "Stopp: 1,5 Takte Dunkel machen den letzten Einsatz stärker"
+    # Wunsch des Users 02.11.2026: Text "Billie Jean - is not my - lover", rot mit weißem Rand. Die Matrix ist 54 LEDs
+    # breit = 9 Zeichen; "BILLIE JEAN" (11) passt nicht, deshalb Wort für Wort im Beat: BILLIE, JEAN, IS NOT, MY, und
+    # LOVER steht die letzten 2 Beats bis zum Strobo. over: true, damit der Text eine Ebene ist - nur dort gibt es den Rand.
+    text: {words: "BILLIE JEAN IS_NOT MY LOVER*2", per: beat, color: rot, over: true, outline: weiss}
+    why: "Stopp: 1,5 Takte Dunkel, nur auf der Matrix steht Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand (LOVER die letzten 2 Beats); macht den letzten Einsatz stärker"
 
   STROBE:
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"

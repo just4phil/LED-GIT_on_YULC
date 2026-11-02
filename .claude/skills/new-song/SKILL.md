@@ -445,6 +445,9 @@ in dem sie stehen (nicht in den `tail` vererbt, der kann eigene haben):
   was die Ebene zeichnet, nur auf der Matrix (`fxLayerOutline` / `fxTextOutline`). So stark, wie die Ebene gerade
   deckt: blendet der Text aus, verschwindet der Rand mit ihm. Sein „drumherum schwarz ausgestanzt“ meint genau das -
   nicht eine ganz schwarze Matrix (`under: 0`) und nicht `color: schwarz` (dunkle Buchstaben in heller Fläche).
+- `outline: <Farbe>` (`weiss`, `rot` ... wie bei `color`, oder ein CRGB-Ausdruck) statt `true` = farbiger Rand, z. B.
+  roter Text mit weißem Rand auf Schwarz (Billie Jean, STOP: `color: rot, over: true, outline: weiss`). Text auf
+  Schwarz braucht dafür `over: true`, denn den Rand gibt es nur für Ebenen.
 - **Ein Wort länger stehen lassen, als sein Part dauert** („ME soll 2 Takte ausfaden“, der Part endet nach einer
   Viertel): ein Part hat nur EIN Text-Fenster und die Matrix zeigt ein Wort zur Zeit. Im Part bleibt das Wort bis zum
   Ende voll stehen (kein `to`, kein `fade_out`), der Part danach zeigt es von Beginn an weiter und blendet es aus:

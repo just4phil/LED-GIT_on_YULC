@@ -88,7 +88,8 @@ struct LayerMod {
 	uint8_t pulseBpm, pulseDepth, pulseBeats;	// Pumpen im Beat (pulseBpm 0 = aus)
 	uint8_t gateBpm, gatePerBeat, gateDuty;		// Strobo-Tor (gateBpm 0 = aus)
 	uint8_t under;								// Helligkeit des Bildes darunter, solange die Ebene da ist (255 = unverändert)
-	bool outline;								// fxLayerOutline / fxTextOutline: schwarzer Rand um alles, was die Ebene zeichnet
+	bool outline;								// fxLayerOutline / fxTextOutline: Rand um alles, was die Ebene zeichnet
+	CRGB outlineCol;							// Farbe dieses Rands; Schwarz (Vorgabe, resetMods() füllt mit 0) = abdunkeln
 };
 
 // ein Blinder des Parts (fxBlinder / fxBlinderBeat / fxBlinderShape); ein Part hat FX_BLINDER_SLOTS Plätze dafür
@@ -241,7 +242,7 @@ void fxLayerFadeOut(unsigned int millis)	{ mod.layer[LAYER_FX].fadeOutMs = milli
 void fxLayerPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_FX], bpm, depth, beats); }
 void fxLayerGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_FX], bpm, perBeat, dutyPercent); }
 void fxLayerUnder(uint8_t brightness)		{ mod.layer[LAYER_FX].under = brightness; }
-void fxLayerOutline()						{ mod.layer[LAYER_FX].outline = true; }
+void fxLayerOutline(CRGB color)				{ mod.layer[LAYER_FX].outline = true; mod.layer[LAYER_FX].outlineCol = color; }
 
 void fxTextWindow(unsigned int fromMillis, unsigned int toMillis, uint8_t slot, bool fades)	{ setLayerWindow(mod.layer[LAYER_TEXT], fromMillis, toMillis, slot, fades); }
 void fxTextFadeIn(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeInMs = millis; }
@@ -249,7 +250,7 @@ void fxTextFadeOut(unsigned int millis)		{ mod.layer[LAYER_TEXT].fadeOutMs = mil
 void fxTextPulse(uint8_t bpm, uint8_t depth, uint8_t beats)			{ setLayerPulse(mod.layer[LAYER_TEXT], bpm, depth, beats); }
 void fxTextGate(uint8_t bpm, uint8_t perBeat, uint8_t dutyPercent)	{ setLayerGate(mod.layer[LAYER_TEXT], bpm, perBeat, dutyPercent); }
 void fxTextUnder(uint8_t brightness)		{ mod.layer[LAYER_TEXT].under = brightness; }
-void fxTextOutline()						{ mod.layer[LAYER_TEXT].outline = true; }
+void fxTextOutline(CRGB color)				{ mod.layer[LAYER_TEXT].outline = true; mod.layer[LAYER_TEXT].outlineCol = color; }
 
 // Farbverlauf in der Schrift: hier wird er nur gemerkt, gezeichnet wird er in fxText.cpp (progText / progTextScroll
 // fragen ihn mit fxTextGradientGet() ab).
@@ -717,8 +718,10 @@ static void applySmooth(CRGB* buf) {
 // lesbar bleibt). Nur auf der Matrix: dort hat jede LED Nachbarn in zwei Richtungen. Jede LED, die selbst nicht zur
 // Ebene gehört, aber direkt neben einer leuchtenden LED der Ebene liegt (auch schräg), wird im Bild darunter
 // abgedunkelt - so stark, wie die Ebene gerade deckt (amount). Blendet der Text aus, verschwindet der Rand mit ihm.
+// col = Farbe des Rands: Schwarz (Vorgabe) dunkelt ab wie beschrieben; eine andere Farbe (Wunsch zu "Billie Jean",
+// 02.11.2026: roter Text mit weißem Rand) wird stattdessen über das Bild darunter geblendet, ebenso stark wie amount.
 #if DEVICE_CLASS == CLASS_MATRIX
-static void applyOutline(CRGB* buf, const FxLayer& L, uint8_t amount) {
+static void applyOutline(CRGB* buf, const FxLayer& L, uint8_t amount, CRGB col) {
 	static uint8_t edge[NUMMATRIX];		// 1 = diese LED liegt neben einer LED der Ebene ("static": nicht bei jedem Aufruf neu auf dem Stack)
 	memset(edge, 0, sizeof(edge));
 	for (int x = 0; x < MATRIX_WIDTH; x++) {
@@ -737,8 +740,11 @@ static void applyOutline(CRGB* buf, const FxLayer& L, uint8_t amount) {
 		}
 	}
 	uint8_t keep = 255 - amount;	// so viel bleibt vom Bild darunter stehen (0 = ganz schwarz)
+	bool dark = !col;				// CRGB als Bedingung: false = Schwarz (alle drei Kanäle 0)
 	for (int i = 0; i < NUMMATRIX; i++) {
-		if (edge[i] && !L.buf[i]) buf[i].nscale8(keep);	// die LEDs der Ebene selbst bleiben, wie sie sind
+		if (!edge[i] || L.buf[i]) continue;	// die LEDs der Ebene selbst bleiben, wie sie sind
+		if (dark) buf[i].nscale8(keep);
+		else buf[i] = blend(buf[i], col, amount);	// blend(a, b, x): x = 0 -> a, 255 -> b
 	}
 }
 #endif
@@ -774,7 +780,7 @@ static void applyLayer(CRGB* buf, uint32_t ms, const FxLayer& L, const LayerMod&
 	if (span && !pixelPosReady) initPixelPos();
 	#if DEVICE_CLASS == CLASS_MATRIX
 		// schwarzer Rand um die Ebene (nicht bei Maske und Stanze: die bringen kein eigenes Bild mit)
-		if (lm.outline && L.mode != FX_MASK && L.mode != FX_CUT) applyOutline(buf, L, amount);
+		if (lm.outline && L.mode != FX_MASK && L.mode != FX_CUT) applyOutline(buf, L, amount, lm.outlineCol);
 	#endif
 	// Jetzt LED für LED mischen: buf[i] = Bild darunter, l = Farbe der Ebene an dieser Stelle
 	for (int i = 0; i < NUMMATRIX; i++) {
