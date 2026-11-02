@@ -3,7 +3,7 @@
 //@function gen_Shivers
 //@name Shivers
 //@struktur_sha d1b44ee95d9f08aabbe260a8741252b2cb710037a8016406c21f66fcac5febfb
-//@show_sha 7726cafdd54b9e21002a5463f5ead0afeb5dde7aa644a8cfc59bb4f683d87932
+//@show_sha f7d1794f5b1f83f13b5380104af3c61addcf4415fdfbc82ee8f8eb4342c3d349
 //@part GEN_SHIVERS_PAUSE 0
 //@part GEN_SHIVERS_INTRO 3
 //@part GEN_SHIVERS_VERSE_1 4
@@ -69,9 +69,9 @@ void gen_Shivers() {
 		scene(SCENE_GLOW, 14545, 4, 132);
 		break;
 
-	case 4:	// verse 1  8 T  14546ms  @0:21.136  -- Dezenter Puls im Beat in Sunset-Farben - sichtbarer Wechsel beim Gesangseinsatz.
-		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE, 14546, 5, 132);
+	case 4:	// verse 1  8 T  14546ms  @0:21.136  -- Strophe als warmer Sternenhimmel: auf jedem Beat funkeln auf allen Geräten ein paar Sterne in Rot/Orange/Gelb auf und verglimmen - sichtbarer Wechsel beim Gesangseinsatz.
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_VERSE_STARS, 14546, 5, 132);
 		break;
 
 	case 5:	// verse 1b  8 T  14545ms  @0:35.682  -- Frage/Antwort im Takt: auf Schlag 1 und 3 blitzen Lampe 1 und Bass, auf Schlag 2 und 4 Gitarre und Lampe 2, die Matrix wechselt die Hälften. Sunset-Farben.

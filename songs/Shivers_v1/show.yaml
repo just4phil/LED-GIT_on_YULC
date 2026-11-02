@@ -25,9 +25,12 @@ sections:
     why: "Die Geräte füllen sich langsam mit warmen Sunset-Farben (Orange, Pink, Lila, Gelb) und wechseln gemeinsam die Farbe; alle 2 Takte wandert der Farbton leicht zu den Nachbarfarben und zurück."
 
   verse 1:
-    scene: SCENE_VERSE
-    scheme: SCHEME_SUNSET
-    why: "Dezenter Puls im Beat in Sunset-Farben - sichtbarer Wechsel beim Gesangseinsatz."
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
+    # Zurück: songgen.py Shivers_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_STARS
+    scheme: SCHEME_FIRE
+    why: "Strophe als warmer Sternenhimmel: auf jedem Beat funkeln auf allen Geräten ein paar Sterne in Rot/Orange/Gelb auf und verglimmen - sichtbarer Wechsel beim Gesangseinsatz."
 
   verse 1b:
     scene: SCENE_CALL_RESPONSE
