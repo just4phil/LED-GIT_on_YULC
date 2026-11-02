@@ -41,6 +41,8 @@
  *   HAS_ROTARY_ENCODER     Drehknopf zur Song-Wahl vorhanden
  *   HAS_LIPOVOLTAGE_CHECK  Akkuspannung wird überwacht
  *   NOMARKER               Gerät hat keine Bund-Marker (Lampen, Matrix)
+ *   REMOTE_BRIGHTNESS      Helligkeit lässt sich vom Proxy aus ändern: Knopf an der Gitarre gedrückt halten +
+ *                          drehen + loslassen (SYNC_BRIGHT, ledSync.h). Nur die Lampen - sie haben keinen eigenen Knopf.
  */
 
 //====== DEFINES ========================================================================
@@ -96,11 +98,13 @@
 #ifdef LAMPE1
 	#define NOMARKER 
 	#define IS_SYNC_CLIENT
+	#define REMOTE_BRIGHTNESS	// Helligkeit per gedrückt gedrehtem Knopf an der Gitarre (SYNC_BRIGHT)
 #endif
 
 #ifdef LAMPE2
 	#define NOMARKER 
 	#define IS_SYNC_CLIENT
+	#define REMOTE_BRIGHTNESS	// Helligkeit per gedrückt gedrehtem Knopf an der Gitarre (SYNC_BRIGHT)
 #endif
 
 #ifdef SCROLLMATRIX				// besser mit ESP32 wegen Strombedarf

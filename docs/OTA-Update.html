@@ -338,6 +338,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td>5</td><td><code>SYNC_ASK</code></td><td>Proxy → Clients</td><td>Proxy braucht LED-Sync von einem Client</td></tr>
 <tr><td>6</td><td><code>SYNC_REPLY</code></td><td>Client → Proxy</td><td>Client meldet Song/Part nach Sync-Anfrage</td></tr>
 <tr><td><b>7</b></td><td><code>SYNC_OTA</code></td><td>Proxy → Clients</td><td><b>In den OTA-Update-Modus</b> (nur angenommen bei <code>songID == 0</code>)</td></tr>
+<tr><td>8</td><td><code>SYNC_BRIGHT</code></td><td>Proxy → Clients</td><td>Lampen-Helligkeit um n Knopfstufen ändern (<code>part</code> = n als <code>int8_t</code>, 255 = −1). Nur Geräte mit <code>REMOTE_BRIGHTNESS</code> (die Lampen) reagieren; ausgelöst durch gedrückt Drehen am Knopf der Gitarre. Geräte mit älterer Firmware übergehen den Typ.</td></tr>
 </table></div>
 <h3>ESP-NOW (Standard, <code>espNowSync.cpp</code>)</h3>
 <p>Die <code>BLEmessage</code> reist in einem 13-Byte-Rahmen <code>EspNowFrame</code> (<code>espNowFrame.h</code>): <code>magic</code> 'L','S' · <code>version</code> 1 · <code>kind</code> · <code>bootId</code> (Zufall je Start) · <code>seq</code> (laufende Nummer) · <code>copy</code> (0..2) · <code>device</code> (Geräte-Bit) · die 3 Bytes. Fester Kanal <code>ESPNOW_CHANNEL</code> (1).</p>
@@ -379,7 +380,7 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td><code>src/syncClient.cpp/.h</code></td><td><code>applyAction()</code> führt <code>ota</code> aus (Entscheidung in <code>ledSync.cpp</code>)</td></tr>
 <tr><td><code>src/espNowSync.cpp</code>, <code>src/espNowFrame.cpp/.h</code></td><td>ESP-NOW: Broadcast mit Wiederholungen, HELLO/HELLO_ACK, Zählung der bereiten Clients (<code>proxyTransport_readyClients()</code>)</td></tr>
 <tr><td><code>src/midiProxyBLEserver_nimBLE.cpp</code></td><td>BLE-Rückweg: Zähler <code>subscribedClients</code> im <code>onSubscribe</code>-Callback</td></tr>
-<tr><td><code>src/ledSync.h/.cpp</code></td><td><code>BLEmessage</code>, Namen und Doku der msgTypes 0–7, alle Entscheidungen des Abgleichs (inkl. „OTA nur in Song 0“); Tests in <code>test/test_ledSync/</code></td></tr>
+<tr><td><code>src/ledSync.h/.cpp</code></td><td><code>BLEmessage</code>, Namen und Doku der msgTypes 0–8, alle Entscheidungen des Abgleichs (inkl. „OTA nur in Song 0“); Tests in <code>test/test_ledSync/</code></td></tr>
 <tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code>, Funkweg <code>SYNC_VIA_…</code>, <code>ESPNOW_…</code>-Einstellungen inkl. <code>ESPNOW_PROXY_MAC</code></td></tr>
 <tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
 <tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>

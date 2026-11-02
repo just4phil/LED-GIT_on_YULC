@@ -37,6 +37,10 @@
 //   Stand abfragen     Doppelklick am Proxy -> SYNC_ASK; ein Client antwortet mit SYNC_REPLY (Song + Part)
 //                      und meldet zusätzlich seinen nächsten Part-Wechsel (SYNC_ENTRY) an den Proxy
 //   OTA                SYNC_OTA: alle Geräte in den Firmware-Update-Modus (nur in Song 0, siehe otaUpdate.h)
+//   Lampen-Helligkeit  Knopf am Proxy gedrückt halten + drehen + loslassen -> SYNC_BRIGHT mit der Zahl der
+//                      Rasten (+/-); nur die Lampen (REMOTE_BRIGHTNESS in definitions.h) stellen ihre
+//                      Helligkeit um so viele Stufen höher/tiefer. Wird nicht wiederholt (User 03.11.2026):
+//                      startet eine Lampe neu, hat sie wieder ihre Grundhelligkeit.
 //
 // Warum der Einstieg immer erst beim NÄCHSTEN Part-Wechsel kommt: Song und Part lassen sich sofort übertragen,
 // aber nicht, wie viele Millisekunden der Part beim anderen Gerät schon läuft. Der Beginn eines Parts ist
@@ -62,7 +66,7 @@
  * passt. Im Code schreibt man SYNC_FORCE statt 3 - das liest sich besser, und der Compiler setzt die 3 ein.
  *
  * Wer sendet was an wen:
- *   Proxy -> alle Clients:  SYNC_SONG, SYNC_PART, SYNC_FORCE, SYNC_ENTRY, SYNC_ASK, SYNC_OTA
+ *   Proxy -> alle Clients:  SYNC_SONG, SYNC_PART, SYNC_FORCE, SYNC_ENTRY, SYNC_ASK, SYNC_OTA, SYNC_BRIGHT
  *   Proxy, nur hinterlegt:  SYNC_STATE
  *   Client -> Proxy:        SYNC_REPLY, SYNC_ENTRY
  */
@@ -74,7 +78,10 @@ enum LedSyncMsg : uint8_t {
     SYNC_ENTRY = 4,  // "jetzt beginnt Part n": zeitgenauer Einstieg nach einem Abgleich
     SYNC_ASK   = 5,  // Proxy fragt einen Client nach seinem Stand
     SYNC_REPLY = 6,  // Antwort des Clients auf SYNC_ASK (songID und part)
-    SYNC_OTA   = 7   // in den OTA-Update-Modus wechseln (wird nur bei songID == 0 angenommen)
+    SYNC_OTA   = 7,  // in den OTA-Update-Modus wechseln (wird nur bei songID == 0 angenommen)
+    SYNC_BRIGHT = 8  // Lampen-Helligkeit um n Knopfstufen ändern: n steht im Part-Feld als Zahl MIT Vorzeichen
+                     // (int8_t: 1 = eine Stufe heller, 255 = -1 = eine Stufe dunkler), Song-Feld unbenutzt (0).
+                     // Geräte mit älterer Firmware kennen den Typ nicht und tun nichts (default im switch).
 };
 
 /**
@@ -95,7 +102,7 @@ enum LedSyncMsg : uint8_t {
 // Größe als in der Bibliothek selbst, und das führt zu schwer auffindbaren Speicherfehlern.
 #pragma pack(push, 1)   // ab hier: Strukturen ohne Füllbytes
 struct BLEmessage {
-    uint8_t msgType; /**< Nachrichtentyp (LedSyncMsg, 0-7) */
+    uint8_t msgType; /**< Nachrichtentyp (LedSyncMsg, 0-8) */
     uint8_t songID;  /**< Song-ID */
     uint8_t part;    /**< Part-Nummer */
 };
@@ -132,8 +139,9 @@ BLEmessage ledSyncMessage(LedSyncMsg type, uint8_t songID, uint8_t part);
 bool ledSyncDecode(const uint8_t* buf, size_t len, BLEmessage& out);
 
 // Höchstens so viele Nachrichten kann ein einzelnes Ergebnis verlangen. Der größte Fall ist ledSyncProxyLoop(),
-// wenn im selben Durchlauf MIDI-Wechsel, Abfrage (Doppelklick) und Abgleich (Kurzklick) zusammenkommen.
-#define LEDSYNC_MAX_SENDS 3
+// wenn im selben Durchlauf MIDI-Wechsel, Abfrage (Doppelklick), Abgleich (Kurzklick) und Lampen-Helligkeit
+// zusammenkommen.
+#define LEDSYNC_MAX_SENDS 4
 
 // Eine Nachricht, die der Adapter verschicken soll (ein Eintrag auf dem Auftragszettel)
 struct LedSyncSend {
@@ -147,7 +155,7 @@ struct LedSyncSend {
  *
  * Jede Funktion des Moduls gibt so einen Zettel zurück. Alle Felder sind zu Beginn 0/false = "nichts tun";
  * die Funktion setzt nur das, was nötig ist. Der Adapter arbeitet den Zettel in seiner applyAction() in dieser
- * Reihenfolge ab: sends (der Reihe nach), jump, goDark, switchSong, switchPart, readProxy, ota.
+ * Reihenfolge ab: sends (der Reihe nach), jump, goDark, switchSong, switchPart, brightSteps, readProxy, ota.
  *
  * Beispiel: Ein Client empfängt SYNC_FORCE für Song 15, Part 3. Der Zettel lautet dann
  * jump = true, goDark = true, song = 15, part = 3 -> der Adapter ruft switchToSongAndPart(15, 3) auf und
@@ -155,13 +163,15 @@ struct LedSyncSend {
  */
 struct LedSyncAction {
     uint8_t sendCount;                     // so viele Einträge in sends[] gelten (0 = nichts senden)
-    LedSyncSend sends[LEDSYNC_MAX_SENDS];  // zu verschickende Nachrichten (Platz für höchstens 3)
+    LedSyncSend sends[LEDSYNC_MAX_SENDS];  // zu verschickende Nachrichten (Platz für höchstens 4)
     bool jump;        // switchToSongAndPart(song, part): Song UND Part auf einmal wechseln
     bool goDark;      // danach sofort dunkel schalten (clearAll() + FastLED.show())
     bool switchSong;  // switchToSong(song): nur den Song wechseln (beginnt bei Part 0)
     bool switchPart;  // switchToPart(part): im laufenden Song in einen anderen Part springen
     bool readProxy;   // nur Client: den Stand beim Proxy lesen, Ergebnis an ledSyncClientReadResult()
     bool ota;         // otaRequestAndRestart(): in den Update-Modus neu starten
+    int8_t brightSteps; // nur Client (SYNC_BRIGHT): Helligkeit um so viele Knopfstufen ändern (+ heller, - dunkler,
+                        // 0 = nichts). Ob das Gerät es tut, entscheidet syncClient.cpp (nur REMOTE_BRIGHTNESS = Lampen).
     uint8_t song;     // Song für jump / switchSong
     uint8_t part;     // Part für jump / switchPart
 };
@@ -183,9 +193,15 @@ void ledSyncProxyMidiPart(uint8_t part);
 void ledSyncProxyRequestForce();
 void ledSyncProxyRequestAsk();
 
+// Drehknopf am Proxy gedrückt gehalten, gedreht und losgelassen (rotaryEncoder.cpp): die Lampen um "steps"
+// Knopfstufen heller (+) oder dunkler (-) stellen. Gesendet als SYNC_BRIGHT beim nächsten ledSyncProxyLoop().
+// Kommen vor dem Senden mehrere an, werden sie zusammengezählt. Begrenzt auf -127 .. +127 (passt in 1 Byte).
+void ledSyncProxyRequestBrightness(int steps);
+
 // Bei jedem loop()-Durchlauf (über syncProxy_loop()): vorgemerkte MIDI-Wechsel und Knopf-Wünsche in
 // Nachrichten verwandeln. songID / prog = aktueller Stand des Proxys (für den erzwungenen Abgleich).
 // Liegt nichts vor, ist der Zettel leer - das kostet praktisch keine Zeit.
+// Reihenfolge der Nachrichten: MIDI-Wechsel, Abfrage, Abgleich, Lampen-Helligkeit.
 LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog);
 
 // Ein Client hat den Stand GELESEN (über syncProxy_clientRead()): den nächsten Part-Wechsel aktiv melden

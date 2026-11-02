@@ -40,6 +40,7 @@ static uint8_t proxyMidiValue = 0;		// ... die Song-ID bzw. Part-Nummer
 static bool proxyForceRequested = false;	// Kurzklick / Not-Aus: Abgleich erzwingen
 static bool proxyAskRequested = false;		// Doppelklick: Stand eines Clients abfragen
 static volatile bool proxyEntryOnNextChange = false;	// beim nächsten Part-Wechsel SYNC_ENTRY an alle senden
+static int proxyBrightSteps = 0;			// Knopf gedrückt + gedreht: so viele Stufen sollen die Lampen ändern (0 = nichts)
 
 //--- Merker der Client-Seite ---
 static bool clientWaitingForEntry = false;	// Song/Part sind übernommen, der zeitgenaue Einstieg (SYNC_ENTRY) fehlt noch
@@ -110,10 +111,19 @@ void ledSyncProxyMidiPart(uint8_t part) {
 void ledSyncProxyRequestForce() { proxyForceRequested = true; }		// Kurzklick, Not-Aus
 void ledSyncProxyRequestAsk()   { proxyAskRequested = true; }		// Doppelklick
 
+// Gedrückt drehen am Proxy: Stufen aufsummieren (zwei Gesten vor dem nächsten Senden zählen zusammen) und
+// auf -127 .. +127 begrenzen, denn gesendet wird die Zahl als ein Byte mit Vorzeichen (int8_t).
+void ledSyncProxyRequestBrightness(int steps) {
+    proxyBrightSteps += steps;
+    if (proxyBrightSteps > 127) proxyBrightSteps = 127;
+    if (proxyBrightSteps < -127) proxyBrightSteps = -127;
+}
+
 // Läuft bei jedem loop()-Durchlauf des Proxys (über syncProxy_loop()). Arbeitet alle vorgemerkten Wünsche
 // ab und löscht ihre Merker, damit jeder Wunsch genau einmal gesendet wird.
-// Reihenfolge wie von Anfang an: erst der MIDI-Wechsel, dann die Abfrage, dann der Abgleich.
-// Alle drei werden mit notify = true eingetragen, gehen also sofort an alle Clients.
+// Reihenfolge wie von Anfang an: erst der MIDI-Wechsel, dann die Abfrage, dann der Abgleich; die
+// Lampen-Helligkeit kam 03.11.2026 dazu und steht als letzte auf dem Zettel.
+// Alle werden mit notify = true eingetragen, gehen also sofort an alle Clients.
 LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog) {
     LedSyncAction a = noAction();
 
@@ -138,6 +148,14 @@ LedSyncAction ledSyncProxyLoop(uint8_t songID, uint8_t prog) {
         proxyForceRequested = false;
         addSend(a, ledSyncMessage(SYNC_FORCE, songID, prog), true);
         proxyEntryOnNextChange = true;
+    }
+
+    // Gedrückt drehen: "Lampen n Stufen heller/dunkler" an alle (nur die Lampen reagieren darauf, siehe
+    // syncClient.cpp). "(uint8_t)(int8_t)" verpackt die Zahl mit Vorzeichen in ein Byte: -1 wird zu 255,
+    // -2 zu 254 ... ; der Client macht es mit (int8_t) wieder rückgängig.
+    if (proxyBrightSteps != 0) {
+        addSend(a, ledSyncMessage(SYNC_BRIGHT, 0, (uint8_t)(int8_t)proxyBrightSteps), true);
+        proxyBrightSteps = 0;
     }
     return a;
 }
@@ -235,6 +253,12 @@ LedSyncAction ledSyncClientReceived(const BLEmessage& msg, uint8_t songID, uint8
             if (songID == 0) a.ota = true;
             break;
 
+        // Lampen-Helligkeit (Knopf am Proxy gedrückt gedreht): das Part-Byte zurück in eine Zahl mit Vorzeichen
+        // verwandeln (255 -> -1). Wirkt in jedem Song, auch mitten im Lied - genau dafür ist es da.
+        case SYNC_BRIGHT:
+            a.brightSteps = (int8_t)msg.part;
+            break;
+
         default:			// SYNC_STATE, SYNC_REPLY und unbekannte Typen: nichts tun (Eigenheit 3)
             break;
     }
@@ -294,6 +318,7 @@ void ledSyncReset() {
     proxyForceRequested = false;
     proxyAskRequested = false;
     proxyEntryOnNextChange = false;
+    proxyBrightSteps = 0;
     clientWaitingForEntry = false;
     clientInformOnNextChange = false;
     clientReadRequested = false;

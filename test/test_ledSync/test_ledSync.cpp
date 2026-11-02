@@ -54,6 +54,7 @@ void test_nummern_bleiben_fest() {
     TEST_ASSERT_EQUAL_UINT8(5, SYNC_ASK);
     TEST_ASSERT_EQUAL_UINT8(6, SYNC_REPLY);
     TEST_ASSERT_EQUAL_UINT8(7, SYNC_OTA);
+    TEST_ASSERT_EQUAL_UINT8(8, SYNC_BRIGHT);
     TEST_ASSERT_EQUAL(3, sizeof(BLEmessage));
 }
 
@@ -244,6 +245,47 @@ void test_proxy_schleife_reihenfolge() {
     assertSend(p, 0, SYNC_SONG, 3, 0, true);
     assertSend(p, 1, SYNC_ASK, 0, 0, true);
     assertSend(p, 2, SYNC_FORCE, 3, 0, true);
+
+    // alle vier Wünsche zugleich: die Lampen-Helligkeit kommt als letzte, und alle passen auf den Zettel
+    ledSyncProxyRequestForce();
+    ledSyncProxyRequestAsk();
+    ledSyncProxyMidiSong(3);
+    ledSyncProxyRequestBrightness(1);
+    p = ledSyncProxyLoop(3, 0);
+    TEST_ASSERT_EQUAL_UINT8(4, p.sendCount);
+    assertSend(p, 3, SYNC_BRIGHT, 0, 1, true);
+}
+
+//--- Lampen-Helligkeit ------------------------------------------------
+
+// Gedrückt drehen am Proxy: +3 Stufen gehen als Byte 3, -2 Stufen als Byte 254 hinaus; der Client macht daraus
+// wieder +3 bzw. -2. Danach ist der Wunsch erledigt (der nächste Durchlauf sendet nichts mehr).
+void test_lampen_helligkeit_mit_vorzeichen() {
+    ledSyncProxyRequestBrightness(3);
+    LedSyncAction p = ledSyncProxyLoop(12, 4);
+    TEST_ASSERT_EQUAL_UINT8(1, p.sendCount);
+    assertSend(p, 0, SYNC_BRIGHT, 0, 3, true);
+    TEST_ASSERT_EQUAL(3, ledSyncClientReceived(p.sends[0].msg, 12, 4).brightSteps);
+    TEST_ASSERT_EQUAL_UINT8(0, ledSyncProxyLoop(12, 4).sendCount);
+
+    ledSyncProxyRequestBrightness(-2);
+    p = ledSyncProxyLoop(12, 4);
+    assertSend(p, 0, SYNC_BRIGHT, 0, 254, true);
+    LedSyncAction c = ledSyncClientReceived(p.sends[0].msg, 12, 4);
+    TEST_ASSERT_EQUAL(-2, c.brightSteps);
+    TEST_ASSERT_FALSE(c.jump || c.switchSong || c.switchPart || c.ota || c.sendCount);	// sonst nichts
+}
+
+// Zwei Gesten vor dem Senden zählen zusammen; heben sie sich auf, geht nichts hinaus. Riesige Werte werden
+// auf 127 begrenzt (mehr passt nicht in ein Byte mit Vorzeichen).
+void test_lampen_helligkeit_summe_und_grenze() {
+    ledSyncProxyRequestBrightness(2);
+    ledSyncProxyRequestBrightness(-2);
+    TEST_ASSERT_EQUAL_UINT8(0, ledSyncProxyLoop(1, 0).sendCount);
+    ledSyncProxyRequestBrightness(500);
+    assertSend(ledSyncProxyLoop(1, 0), 0, SYNC_BRIGHT, 0, 127, true);
+    ledSyncProxyRequestBrightness(-500);
+    assertSend(ledSyncProxyLoop(1, 0), 0, SYNC_BRIGHT, 0, (uint8_t)-127, true);
 }
 
 //--- OTA ---------------------------------------------------------------
@@ -258,9 +300,9 @@ void test_ota_nur_in_song_0() {
 // SYNC_STATE (nur hinterlegt) und SYNC_REPLY (nur für den Proxy) lösen beim Client nichts aus.
 void test_state_und_reply_tun_beim_client_nichts() {
     LedSyncAction c = ledSyncClientReceived(ledSyncMessage(SYNC_STATE, 5, 5), 1, 1);
-    TEST_ASSERT_FALSE(c.jump || c.switchSong || c.switchPart || c.ota || c.sendCount);
+    TEST_ASSERT_FALSE(c.jump || c.switchSong || c.switchPart || c.ota || c.sendCount || c.brightSteps);
     c = ledSyncClientReceived(ledSyncMessage(SYNC_REPLY, 5, 5), 1, 1);
-    TEST_ASSERT_FALSE(c.jump || c.switchSong || c.switchPart || c.ota || c.sendCount);
+    TEST_ASSERT_FALSE(c.jump || c.switchSong || c.switchPart || c.ota || c.sendCount || c.brightSteps);
 }
 
 // Einstieg des Testprogramms am PC: Unity starten, jeden Test einmal ausführen (vorher jeweils setUp()),
@@ -278,6 +320,8 @@ int main(int argc, char** argv) {
     RUN_TEST(test_proxy_fragt_client_ab);
     RUN_TEST(test_client_part_wechsel_ohne_frage_sendet_nichts);
     RUN_TEST(test_proxy_schleife_reihenfolge);
+    RUN_TEST(test_lampen_helligkeit_mit_vorzeichen);
+    RUN_TEST(test_lampen_helligkeit_summe_und_grenze);
     RUN_TEST(test_ota_nur_in_song_0);
     RUN_TEST(test_state_und_reply_tun_beim_client_nichts);
     return UNITY_END();

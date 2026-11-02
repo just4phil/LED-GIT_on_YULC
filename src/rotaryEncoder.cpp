@@ -3,7 +3,8 @@
 #include "definitions.h"
 #include "AiEsp32RotaryEncoder.h"
 #include <FastLED.h>
-#include "ledSync.h"	// Abgleich-Wünsche des Knopfs: ledSyncProxyRequestForce/Ask, ledSyncClientRequestRead
+#include "ledSync.h"	// Abgleich-Wünsche des Knopfs: ledSyncProxyRequestForce/Ask/Brightness, ledSyncClientRequestRead
+#include "brightnessCurve.h"	// Helligkeit je Knopfstufe
 //---------------------------------
 
 //extern const boolean DEBUG;
@@ -30,7 +31,14 @@ static bool wasButtonDown = false;				// war der Taster beim letzten Nachsehen g
 static bool shortClickHappened = false;			// es gab einen Klick, der noch nicht ausgeführt ist
 static bool wasButtonDownFIRST = false;			// erster Klick erkannt
 static bool wasButtonDownSECOND = false;		// zweiter Klick erkannt -> Doppelklick
-static uint8_t brightnessCurve[ROTARY_BRIGHTNESS_STEPS];	// Helligkeit je Stufe des Knopfs (berechnet in rotary_initialize)
+
+// Lampen-Helligkeit (nur am Proxy): Knopf gedrückt halten, drehen, loslassen. Solange der Taster unten ist,
+// zählt das Drehen nicht für die Gitarre, sondern wird für die Lampen gesammelt (Erklärung: rotaryEncoder.h).
+#if defined(IS_MIDI_PROXY)
+#define ROTARY_HOLD_RANGE 1000					// Zählbereich beim gedrückten Drehen: groß genug, dass nie ein Rand erreicht wird
+static long holdStartValue = 0;					// Encoder-Wert beim Herunterdrücken (= die Stufe der Gitarre, negativ)
+static bool holdTurned = false;					// wurde gedreht, während der Taster unten war?
+#endif
 //---------------------------------
 
 void IRAM_ATTR readEncoderISR() {    // Function required for interupts
@@ -50,23 +58,10 @@ void rotary_initialize() {
 	rotaryEncoder->disableAcceleration();
 
 	//--- Helligkeit: wenige Stufen, die fürs Auge gleich groß wirken ---
-	// Der Knopf zählt nur die Stufe (0 .. ROTARY_BRIGHTNESS_STEPS-1); die Helligkeit dazu steht in brightnessCurve[].
-	// Stufe 0 = "LEDs aus" (Wert 2), Stufe 1 = die kleinste Helligkeit, die letzte Stufe = 255.
-	// Dazwischen wächst die Helligkeit von Stufe zu Stufe um denselben FAKTOR (nicht um denselben Betrag):
-	//     helligkeit(stufe) = 3 * (255 / 3) ^ ((stufe - 1) / (Stufenzahl - 2))
-	// Bei 32 Stufen ist das rund 16 % mehr je Raste. So nimmt das Auge Helligkeit wahr - jede Raste wirkt gleich groß.
-	// Ganz unten gibt es nur ganze Zahlen (3, 4, 5 ...), dort steigt der Wert deshalb mindestens um 1 je Stufe.
-	brightnessCurve[0] = 2;
-	for (int i = 1; i < ROTARY_BRIGHTNESS_STEPS; i++) {
-		int v = lroundf(3.0f * powf(255.0f / 3.0f, (float)(i - 1) / (ROTARY_BRIGHTNESS_STEPS - 2)));
-		if (v <= brightnessCurve[i - 1]) v = brightnessCurve[i - 1] + 1;
-		brightnessCurve[i] = (v > 255) ? 255 : v;
-	}
+	// Der Knopf zählt nur die Stufe (0 .. ROTARY_BRIGHTNESS_STEPS-1); die Helligkeit dazu liefert
+	// brightnessCurveValue() (brightnessCurve.h: Stufe 0 = "LEDs aus", jede Raste rund 16 % heller).
 	// Startstufe: die, deren Helligkeit der Grundhelligkeit des Geräts am nächsten liegt
-	int startStep = 1;
-	for (int i = 1; i < ROTARY_BRIGHTNESS_STEPS; i++) {
-		if (abs((int)brightnessCurve[i] - DEFAULT_BRIGHTNESS) < abs((int)brightnessCurve[startStep] - DEFAULT_BRIGHTNESS)) startStep = i;
-	}
+	int startStep = brightnessCurveNearestStep(DEFAULT_BRIGHTNESS);
 	// Zählbereich des Encoders = die Stufen, am Ende kein Überlauf (false). Der Encoder zählt dabei NEGATIV
 	// (-(Stufenzahl-1) .. 0) und die Stufe ist der Wert ohne Vorzeichen (siehe rotary_loop). Das kehrt die
 	// Drehrichtung um, passend zur Verdrahtung des Knopfs.
@@ -128,8 +123,17 @@ void rotary_onButtonClick() {
 		if (!wasButtonDown) {
 			lastTimeButtonDown = millis();
 			wasButtonDown = true;	//else we wait since button is still down
+			#if defined(IS_MIDI_PROXY)
+				// Proxy: ab jetzt zählt Drehen für die Lampen. Der Zählbereich wird dafür weit aufgemacht, damit
+				// auch an einer Gitarre, die schon ganz hell oder ganz dunkel steht, jede Raste mitgezählt wird.
+				// Der Wert selbst bleibt stehen; beim Loslassen kommt der alte Bereich zurück.
+				holdStartValue = rotaryEncoder->readEncoder();
+				holdTurned = false;
+				rotaryEncoder->setBoundaries(-ROTARY_HOLD_RANGE, ROTARY_HOLD_RANGE, false);
+			#endif
 		}
-		
+
+		#if !defined(IS_MIDI_PROXY)	// Proxy: der lange Druck wird erst beim Loslassen entschieden (siehe unten)
 		if (wasButtonDown && !encoderButtonNotAvailable) {	// der button wird immer noch gedrückt
 			if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
 				encoderButtonLongPress = true;	// for rotary encoder button push
@@ -138,13 +142,59 @@ void rotary_onButtonClick() {
 				#if defined(debug_rotary)
 					Serial.println("Long press detected!");
 				#endif
-			} 
+			}
 		}
-		
+		#endif
+
 		return;	// solange gedrückt ist, gibt es sonst nichts zu tun
 	}
 
 	//--- button is up
+
+	#if defined(IS_MIDI_PROXY)
+	// Proxy: der Taster wurde gerade losgelassen. Drei Fälle, in dieser Reihenfolge:
+	//   1. es wurde gedreht           -> Lampen um die gedrehten Stufen ändern; KEIN Klick, KEIN Not-Aus
+	//   2. mindestens 1 s gehalten    -> Not-Aus (Song 0 auf allen Geräten)
+	//   3. mindestens 50 ms gedrückt  -> Klick (kurz/doppelt entscheidet rotary_loop)
+	// Der Not-Aus kommt hier erst beim Loslassen und nicht schon nach 1 s Halten: sonst würde er beim
+	// gedrückten Drehen auslösen, sobald man länger als eine Sekunde braucht - mitten im Song fatal.
+	if (wasButtonDown) {
+		long endValue = rotaryEncoder->readEncoder();	// Stand nach dem Drehen (im weiten Zählbereich)
+		// Gitarre zurück auf ihre Stufe von vor dem Drücken, alter Zählbereich. setEncoderValue() merkt sich den
+		// Wert auch als "zuletzt gelesen", rotary_loop() sieht dadurch keine Drehung und die Gitarre bleibt, wie sie war.
+		rotaryEncoder->setBoundaries(-(ROTARY_BRIGHTNESS_STEPS - 1), 0, false);
+		rotaryEncoder->setEncoderValue(holdStartValue);
+
+		if (holdTurned) {
+			// Der Encoder zählt negativ (siehe rotary_initialize): eine Raste "heller" macht den Wert kleiner.
+			// Deshalb Start minus Ende = Stufen heller (+) bzw. dunkler (-).
+			int steps = (int)(holdStartValue - endValue);
+			if (steps != 0) ledSyncProxyRequestBrightness(steps);	// gesendet beim nächsten syncProxy_loop()
+			#if defined(debug_rotary)
+				Serial.printf("Lampen-Helligkeit: %+d Stufen\n", steps);
+			#endif
+		}
+		else if (!encoderButtonNotAvailable && millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+			encoderButtonLongPress = true;		// Not-Aus, ausgeführt in loop() (main.cpp)
+			encoderButtonNotAvailable = true;	// danach 3 s gesperrt (rotary_loop)
+			lastTimeLongPress = millis();
+			#if defined(debug_rotary)
+				Serial.println("Long press detected!");
+			#endif
+		}
+		else if (!encoderButtonNotAvailable && millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+			if (wasButtonDownFIRST == false) {
+				wasButtonDownFIRST = true;
+			}
+			else {
+				wasButtonDownSECOND = true;
+			}
+			lastTimeShortClick = millis();
+			shortClickHappened = true;
+		}
+	}
+	wasButtonDown = false;
+	#else
 	// Der Taster wurde gerade losgelassen (und es war kein langer Druck): das ist ein Klick.
 
 	if (wasButtonDown && !encoderButtonNotAvailable) {
@@ -168,16 +218,26 @@ void rotary_onButtonClick() {
 		}
 	}
 	wasButtonDown = false;
+	#endif
 }
 
 void rotary_loop() {
 
 	int16_t encoderDelta = rotaryEncoder->encoderChanged();	// um wie viele Schritte wurde seit dem letzten Mal gedreht? (0 = gar nicht)
 
+	#if defined(IS_MIDI_PROXY)
+	// Proxy, Taster gedrückt: das Drehen gilt den Lampen. Hier nur merken, dass gedreht wurde - gezählt und
+	// gesendet wird beim Loslassen (rotary_onButtonClick). Die Gitarre behält ihre Helligkeit.
+	if (encoderDelta != 0 && wasButtonDown) {
+		holdTurned = true;
+		encoderDelta = 0;
+	}
+	#endif
+
 	// When getting value
-	if (encoderDelta != 0) {		
+	if (encoderDelta != 0) {
 		int step = constrain((int)-rotaryEncoder->readEncoder(), 0, ROTARY_BRIGHTNESS_STEPS - 1);	// Stufe des Knopfs (der Encoder zählt negativ)
-		BRIGHTNESS = brightnessCurve[step];		// Helligkeit dieser Stufe (Stufe 0 -> 2 = "LEDs aus")
+		BRIGHTNESS = brightnessCurveValue(step);	// Helligkeit dieser Stufe (Stufe 0 -> 2 = "LEDs aus")
 		FastLED.setBrightness(BRIGHTNESS);
 		
 		if (BRIGHTNESS == 2) { // wenn LEDs ausgedreht sind... 

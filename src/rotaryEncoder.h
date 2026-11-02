@@ -13,7 +13,15 @@
 //                         am Proxy (Gitarre): alle Clients auf Song + Part des Proxys zwingen
 //                         an einem Client:    Song + Part vom Proxy holen
 //   Doppelklick         nur am Proxy: Song + Part von einem Client übernehmen
-//   lang drücken (1 s)  Not-Aus: zurück auf Song 0 (Pause); der Proxy nimmt alle Clients mit
+//   lang drücken (1 s)  Not-Aus: zurück auf Song 0 (Pause); der Proxy nimmt alle Clients mit.
+//                       Am Client löst er nach 1 s Halten aus, am Proxy erst beim Loslassen (wegen der
+//                       nächsten Zeile: gedrückt drehen darf nie zum Not-Aus werden)
+//   gedrückt halten + drehen + loslassen
+//                       nur am Proxy: Helligkeit der LAMPEN um so viele Stufen heller/dunkler, wie
+//                       gedreht wurde (SYNC_BRIGHT, ledSync.h). Die Gitarre und alle anderen Geräte
+//                       bleiben, wie sie sind; es gibt dabei keinen Klick und keinen Not-Aus, auch wenn
+//                       man länger als 1 s hält. Wird nicht wiederholt: nach einem Neustart hat eine Lampe
+//                       wieder ihre Grundhelligkeit.
 //   beim Einschalten gedrückt halten (nur Proxy): Firmware-Update aller Geräte (otaUpdate.h)
 //
 // Die Erkennung der Drehimpulse übernimmt die Bibliothek AiEsp32RotaryEncoder (liegt als Quelltext
@@ -34,7 +42,7 @@ void IRAM_ATTR readEncoderISR();    // Function required for interrupts
  * @brief Drehknopf einrichten (einmal aus setup())
  *
  * Legt das Encoder-Objekt mit den Pins aus definitions.h an (ROTARY_ENCODER_A_PIN, _B_PIN,
- * _BUTTON_PIN), meldet die Interrupt-Routine an und berechnet die Helligkeit je Stufe:
+ * _BUTTON_PIN) und meldet die Interrupt-Routine an. Die Helligkeit je Stufe kommt aus brightnessCurve.h:
  * ROTARY_BRIGHTNESS_STEPS Stufen (definitions.h) von "aus" bis 255, die fürs Auge gleich groß wirken
  * (bei 32 Stufen jede Raste rund 16 % heller). Eine Raste = eine Stufe, ohne Beschleunigung bei
  * schnellem Drehen. Startwert ist die Stufe, die DEFAULT_BRIGHTNESS am nächsten liegt; am Ende des
@@ -61,6 +69,10 @@ void on_button_short_click();
  *   Danach ist der Taster 3 s gesperrt, damit ein langer Druck nicht mehrfach auslöst.
  * - losgelassen nach mindestens 50 ms: zählt als Klick. Ob es ein einzelner Klick oder ein
  *   Doppelklick war, entscheidet rotary_loop() erst 800 ms später.
+ * Am Proxy wird alles erst beim Loslassen entschieden: wurde gedreht -> Lampen-Helligkeit
+ * (ledSyncProxyRequestBrightness), sonst mindestens 1 s -> Not-Aus, sonst mindestens 50 ms -> Klick.
+ * Beim Herunterdrücken macht der Proxy den Zählbereich des Encoders weit auf (damit jede Raste zählt, auch
+ * wenn die Gitarre schon am Anschlag steht) und setzt ihn beim Loslassen samt Gitarren-Stufe zurück.
  *
  * Die 50 ms sind die "Entprellung": ein mechanischer Taster liefert beim Drücken für wenige
  * Millisekunden ein flatterndes Signal, das sonst als mehrere Klicks gezählt würde.
@@ -72,6 +84,7 @@ void rotary_onButtonClick();
  * @brief Den Drehknopf abfragen (bei jedem loop()-Durchlauf)
  *
  * - wurde gedreht: Helligkeit der neuen Stufe übernehmen; auf Stufe 0 (Wert 2) LEDsTurnedOff setzen
+ *   (am Proxy bei gedrücktem Taster nicht: dann wird nur vermerkt, dass für die Lampen gedreht wurde)
  * - Taster auswerten (rotary_onButtonClick)
  * - 800 ms nach dem letzten Klick: kurzen Klick oder Doppelklick ausführen
  * - 3 s nach einem langen Druck: Taster wieder freigeben

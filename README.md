@@ -86,7 +86,8 @@ LED-GIT_on_YULC/
 │   ├── espNowFrame.h/cpp         # ESP-NOW frame, duplicate filter, peer table (tested on the PC)
 │   ├── midiProxyBLEserver_nimBLE.h/cpp  # radio transport Bluetooth LE, guitar (fallback, -D SYNC_VIA_BLE)
 │   ├── BLE_client_nimBLE.h/cpp   # radio transport Bluetooth LE, all other devices (fallback)
-│   ├── rotaryEncoder.h/cpp       # knob: brightness, sync, emergency stop
+│   ├── rotaryEncoder.h/cpp       # knob: brightness, sync, emergency stop, lamp brightness
+│   ├── brightnessCurve.h/cpp     # the knob's brightness steps (shared by knob and lamps)
 │   ├── lipoVoltageCheck.h/cpp    # battery monitoring
 │   ├── otaUpdate.h/cpp           # firmware update over WiFi
 │   └── AiEsp32RotaryEncoder*     # third-party encoder library
@@ -170,7 +171,8 @@ while no client answers it. Lamps use their bottom 10 LEDs, the matrix a 3 x 3 s
 | Turn | Brightness. Fully down = LEDs off, only the fret markers stay on |
 | Short press | LED sync: the proxy forces its song/part on all clients; a client fetches it from the proxy |
 | Double click (proxy only) | Take song/part from a client |
-| Long press (1 s) | Emergency stop: back to song 0 |
+| Long press (1 s) | Emergency stop: back to song 0 (on the proxy it fires when the button is released) |
+| Hold + turn + release (proxy only) | Lamp brightness: both lamps go up/down by as many steps as the knob was turned. Guitar and all other devices stay as they are; no sync and no emergency stop is triggered. Not repeated - a lamp that restarts is back at its default brightness |
 
 The knob has 32 steps that look evenly spaced to the eye (about 16 % more light per detent); the number of
 steps is `ROTARY_BRIGHTNESS_STEPS` in `src/definitions.h`.
