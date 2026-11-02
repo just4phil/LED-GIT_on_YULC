@@ -1315,6 +1315,86 @@ void progEqualizer(unsigned int durationMillis, byte nextPart) {
 	progEqualizer(durationMillis, nextPart, 50);
 }
 
+//=========== progEqualizerBeat ====================================
+// Neu am 02.11.2026: Equalizer im Songtempo (Regel des Users: "Beat-Effekte immer auf dem Beat"). Anlass: die DNA- und
+// Sinus-Bilder kamen dem User zu oft vor, der Equalizer ersetzt sie an einigen Stellen auf der Matrix.
+// Anders als progEqualizer gibt es hier keinen Zufall, der Schritt für Schritt weiterläuft: Jeder Balken springt
+// GENAU auf dem Beat auf eine neue Höhe und sinkt bis zum nächsten Beat auf ein Viertel davon ab - wie der Pegel
+// eines Schlagzeugs. Die Höhe kommt aus eqBeatHash(Beat-Nummer, Balken): eine feste Rechnung, die "zufällig"
+// aussieht, aber bei gleicher Beat-Nummer immer dasselbe liefert. Weil die Beat-Nummer aus der Zeit seit Part-Beginn
+// stammt, zeigen alle Geräte dasselbe Bild, und der Effekt kann nicht aus dem Takt laufen.
+// Über jedem Balken steht ein heller Punkt (die "Spitze"): er bleibt einen halben Beat oben stehen und fällt dann
+// langsam nach (EQB_PEAK_FALL).
+
+#define EQB_MIN_PERCENT   40	// niedrigster Sprung auf dem Beat, in Prozent der Höhe
+#define EQB_ONE_PERCENT   70	// auf der Eins jedes Takts mindestens so hoch (die Eins soll man sehen)
+#define EQB_REST_PERCENT  25	// bis zum nächsten Beat sinkt ein Balken auf diesen Anteil seiner Sprunghöhe
+#define EQB_PEAK_FALL     30	// so viel Prozent der Sprunghöhe fällt die Spitze in der zweiten Beat-Hälfte
+
+// Fester "Zufall" aus zwei Zahlen (ein sogenannter Hash): kleine Unterschiede bei beat oder band ergeben ganz
+// verschiedene Ergebnisse 0..255. Die Konstanten sind übliche Mischzahlen, ihr genauer Wert ist egal.
+static uint8_t eqBeatHash(uint32_t beat, int band) {
+	uint32_t x = beat * 2654435761UL ^ ((uint32_t)band * 40503UL + 0x9E37UL);
+	x ^= x >> 15;
+	x *= 0x2C1B3C6DUL;
+	x ^= x >> 12;
+	return (uint8_t)x;
+}
+
+void progEqualizerBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm) {
+	fxPartStart(durationMillis, nextPart);
+
+	if (fxFrameDue(20)) {
+		if (bpm == 0) bpm = 1;
+		unsigned int ms     = millisCounterForProgChange;
+		uint32_t beat       = fxBeats(bpm);								// Nummer des laufenden Beats seit Part-Beginn
+		float    frac       = (float)fxBeatPhase(ms, bpm) * bpm / 60000.0f;	// 0.0 = auf dem Beat ... 1.0 = kurz vor dem nächsten
+		bool     isOne      = (beat % 4) == 0;							// Eins des Takts (Part-Anfang = Eins)
+		CRGBPalette16 pal   = versePalette();							// Verlauf durch die Schemafarben (je Bild neu: "fade:" wirkt)
+		bool     useScheme  = colorSchemeActive();						// ohne Schema: eigene Farben grün -> rot
+
+		const int numBands = MATRIX_WIDTH / EQ_BAND_STEP;
+		const int xOffset  = (MATRIX_WIDTH - numBands * EQ_BAND_STEP + EQ_BAR_GAP) / 2;	// Balken mittig ausrichten
+
+		clearAll();
+		for (int b = 0; b < numBands; b++) {
+			// Sprunghöhe dieses Balkens in diesem Beat, in Pixeln (als Kommazahl, damit das Absinken weich bleibt)
+			uint8_t minPct = isOne ? EQB_ONE_PERCENT : EQB_MIN_PERCENT;
+			uint8_t pct    = minPct + scale8(eqBeatHash(beat, b), 100 - minPct);
+			float   jump   = MATRIX_HEIGHT * pct / 100.0f;
+
+			// Pegel sinkt im Lauf des Beats von der Sprunghöhe auf EQB_REST_PERCENT davon
+			float h = jump * (1.0f - (1.0f - EQB_REST_PERCENT / 100.0f) * frac);
+			int height = constrain((int)(h + 0.5f), 0, MATRIX_HEIGHT);
+
+			// Spitze: erste Beat-Hälfte oben, danach fällt sie langsam
+			float peak = jump;
+			if (frac > 0.5f) peak -= jump * (EQB_PEAK_FALL / 100.0f) * (frac - 0.5f) * 2.0f;
+			int peakStep = constrain((int)(peak + 0.5f) - 1, 0, MATRIX_HEIGHT - 1);
+
+			int xStart = xOffset + b * EQ_BAND_STEP;
+			for (int step = 0; step < height; step++) {
+				// Farbe nach Höhe: mit Schema der Verlauf durch die Schemafarben (unten die erste), ohne Schema wie
+				// progEqualizer grün -> gelb -> rot
+				uint8_t pos = (uint8_t)((long)step * 240 / (MATRIX_HEIGHT > 1 ? MATRIX_HEIGHT - 1 : 1));
+				CRGB col = useScheme ? ColorFromPalette(pal, pos) : CRGB(CHSV(96 - pos * 96 / 240, 255, 255));
+				int y = MATRIX_HEIGHT - 1 - step;							// step 0 = Boden, y 0 = oben
+				for (int px = 0; px < EQ_BAR_WIDTH; px++) {
+					int x = xStart + px;
+					if (x >= 0 && x < MATRIX_WIDTH) leds[matrix->XY(x, y)] = col;
+				}
+			}
+			// Spitze in Weiß, etwas gedämpft, damit sie den Balken nicht überstrahlt
+			int yPeak = MATRIX_HEIGHT - 1 - peakStep;
+			for (int px = 0; px < EQ_BAR_WIDTH; px++) {
+				int x = xStart + px;
+				if (x >= 0 && x < MATRIX_WIDTH) leds[matrix->XY(x, yPeak)] = CRGB(200, 200, 200);
+			}
+		}
+	}
+	fxShow();
+}
+
 //==================================================================
 //=========== progWaterRipple ======================================
 //==================================================================

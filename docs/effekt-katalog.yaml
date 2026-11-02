@@ -385,7 +385,7 @@ effekte:
     regler: "turnMillis (1 Takt = lebhaft, 2-4 Takte = ruhig); mode DNA_ROTATE (dreht/wandert) / DNA_FLIP (steht, Seiten tauschen) / DNA_FLIP_SCROLL (Seiten tauschen + langsames Wandern); DNA_WAVELENGTH / DNA_RUNG_STEP in fxMatrixSim.cpp"
     demo: "92: Part 39, 41, 42, 43 (als Szenen SCENE_DNA / SCENE_DNA_FLIP / SCENE_DNA_FLIP_SCROLL)"
     urteil:
-    notiz: "neu am 09.10.2026 nach einer Vorlage des Users. Sein Urteil am selben Tag: \"die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden mit eher pulsierenden effekten auf den anderen geräten\" - deshalb in Songs als SCENE_DNA / SCENE_DNA_FLIP verwenden, nicht als fx für alle Geräte. energie/traegt_takte geschätzt"
+    notiz: "neu am 09.10.2026 nach einer Vorlage des Users. Sein Urteil am selben Tag: \"die DNA Effekte sehen alle gut aus, müssten aber in szenen kombiniert werden mit eher pulsierenden effekten auf den anderen geräten\" - deshalb in Songs als SCENE_DNA / SCENE_DNA_FLIP verwenden, nicht als fx für alle Geräte. energie/traegt_takte geschätzt. Urteil des Users 02.11.2026 (DNA und Sinuswellen): \"sind zu häufig. sie sind teilweise recht langweilig und dafür kommen sie dann doch zu häufig vor\" - von 13 Stellen sind 3 geblieben (Kids SOLO, Titanium v2: cut me down, In The Dark verse 2), der Rest bekam andere Matrix-Motive. Höchstens noch selten einsetzen, nie zweimal im selben Song"
 
   progTvStatic:
     wirkung: "TV-Rauschen wie bei einem analogen Fernseher ohne Sender: schwarzweiße Körner, leicht waagerecht verschmiert, dazu ein langsam rollender Brummbalken und einzelne aufblitzende Störzeilen. Als Ebene über einer Szene: schlechter Empfang"
@@ -428,7 +428,22 @@ effekte:
     traegt_takte: "8"
     alt: {parts: 0, takte: 0}
     urteil: gern
-    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet)"
+    notiz: "pauschal: die neuen, mit KI entwickelten Effekte sind sehr geil (nicht einzeln bewertet). Läuft frei, nicht im Beat - in Songs progEqualizerBeat nehmen"
+
+  progEqualizerBeat:
+    wirkung: "Equalizer im Songtempo: jeder Balken springt genau auf dem Beat auf eine neue Höhe (auf der Eins höher) und sinkt bis zum nächsten Beat auf ein Viertel ab; darüber eine weiße Spitze, die einen halben Beat steht und dann nachfällt. Farben von unten nach oben durch das Schema (ohne Schema grün -> rot)"
+    art: raster
+    rolle: [flaeche]
+    energie: [3, 4]
+    bewegung: pulsierend
+    beat: fest
+    farbe: schema
+    traegt_takte: "8"
+    alt: {parts: 0, takte: 0}
+    regler: "EQB_MIN_PERCENT / EQB_ONE_PERCENT (Sprunghöhe normal / auf der Eins), EQB_REST_PERCENT (wie tief er bis zum nächsten Beat sinkt), EQB_PEAK_FALL in fxMatrixSim.cpp; Balkenbreite EQ_BAR_WIDTH wie progEqualizer"
+    demo: "92: Part 94 (NEON, übrige Geräte SCENE_COLORS)"
+    urteil:
+    notiz: "neu am 02.11.2026 (Urteil des Users zu DNA/Sinus: \"zu häufig, teilweise recht langweilig\"); ersetzt sie auf der Matrix per devices: {matrix: ...} in All The Things She Said (verse 2 b), Dancing On My Own (git steigt ein), Enjoy The Silence (bass slap part), Maniac (instrumental a). Abnahme offen. energie/traegt_takte geschätzt"
 
   # ---------- Kontur-Effekte (neu, nutzen die Form der Gitarre) ----------
 
@@ -923,7 +938,7 @@ szenen:
     energie: [2, 3]
     bewegung: wandernd
     genutzt: 0
-    urteil:
+    urteil: selten     # 02.11.2026: Sinuswellen/DNA "zu häufig, teilweise recht langweilig" - von 12 Stellen blieb 1 (Friday I'm In Love verse 2); die Szene geht weiter, aber mit anderem Matrix-Motiv (devices: {matrix: ...}) wirkt sie frischer
     notiz: "neu am 18.10.2026, Demo 92 Part 63, Abnahme offen"
   SCENE_VERSE_HEART:
     wirkung: "Strophe als Herzschlag: alle Geräte schlagen auf jedem Beat lub-dub; Matrix EKG-Linie wie auf einem Herzmonitor (seit 02.11.2026, vorher Lissajous-Schleife), Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz"

@@ -4098,8 +4098,22 @@ void pipelineDemo() {
 
 	//--- NOCH NICHT ABGENOMMEN (steht immer am Anfang, damit man es beim Testen sofort sieht; Abgenommenes rückt nach hinten) ---
 	// Neue Bausteine hier einfügen: case 0 zeigt mit demoNumber(n) die Nummer des ersten offenen Parts, jeder offene Part
-	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 89, 77, 73, 75, 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
-	case 0:		demoNumber(89);	break;
+	// springt mit DEMO_NR(nächster) weiter, der letzte in Part 34. Derzeit offen: Part 94, 89, 77, 73, 75, 71, 67, 68, 69, 61, 63, 65, 66, 51, 59, 57, 53, 55, 48, 49, 44, 46, 47, 39, 41, 42, 43, 38, 37.
+	case 0:		demoNumber(94);	break;
+
+	// Equalizer im Beat progEqualizerBeat (neu am 02.11.2026: die DNA- und Sinus-Bilder waren dem User "zu häufig und
+	// teilweise langweilig", der Equalizer ersetzt sie in mehreren Songs auf der Matrix; der alte progEqualizer lief
+	// frei, nicht im Beat). Matrix: die Balken springen auf jeden Beat hoch (auf der Eins am höchsten) und sinken ab.
+	// Die übrigen Geräte wechseln auf jeden Beat die Farbe (SCENE_COLORS) - so sieht man, ob die Balken genau mitspringen.
+	// 16 s = 8 Takte.
+	case 94:
+		setColorScheme(SCHEME_NEON);
+#if DEVICE_CLASS == CLASS_MATRIX
+		progEqualizerBeat(16000, DEMO_NR(89), bpm);
+#else
+		scene(SCENE_COLORS, 16000, DEMO_NR(89), bpm);
+#endif
+		break;
 
 	// Ruhiger Herzschlag SCENE_VERSE_HEART_SLOW (neu am 02.11.2026: SCENE_VERSE_HEART war dem User in Tell It To My
 	// Heart, I Wanna Dance With Somebody, I Love It und Physical "zu hektisch"; Wunsch: "halbes tempo + Farbwechsel").

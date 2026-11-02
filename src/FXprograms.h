@@ -567,6 +567,11 @@ void progGameOfLife(unsigned int durationMillis, byte nextPart, unsigned int ste
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed, const uint8_t* centers, byte numCenters, byte deviation);
 void progEqualizer(unsigned int durationMillis, byte nextPart, unsigned int reduceSpeed = 50);
 void progEqualizer(unsigned int durationMillis, byte nextPart);
+// Equalizer im Songtempo (neu am 02.11.2026): jeder Balken springt GENAU auf dem Beat auf eine neue Höhe (auf der Eins
+// höher) und sinkt bis zum nächsten Beat ab, darüber eine weiße Spitze, die nachfällt. Kein laufender Zufall: die
+// Höhen sind aus der Beat-Nummer seit Part-Beginn berechnet, alle Geräte zeigen dasselbe. Farben: Verlauf durch das
+// Farbschema von unten nach oben, ohne Schema grün -> rot. Stellgrößen EQB_... in fxMatrixSim.cpp.
+void progEqualizerBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 
 // 2D Wasseroberflächen-Effekt: expandierende Wellenringe wie ein Stein ins Wasser
 //   baseColor (CRGB)    alle Wellen in dieser Farbe
