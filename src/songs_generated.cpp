@@ -4548,12 +4548,12 @@ void gen_BillieJean() {
 		scene(SCENE_SPARKLE, 3750, 33, 128);
 		break;
 
-	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel, nur auf der Matrix steht Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand (LOVER die letzten 2 Beats); macht den letzten Einsatz stärker
+	case 33:	// STOP  1 T+2 B  2812ms  @3:34.922  -- Stopp: 1,5 Takte Dunkel; ab der zweiten Viertel steht nur auf der Matrix Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand; macht den letzten Einsatz stärker
 #if DEVICE_CLASS == CLASS_MATRIX
 		fxLayerUnder(38);
 		fxLayerOutline(CRGB::White);
 		fxLayerBegin();
-		progText("BILLIE JEAN IS_NOT MY LOVER*2", 2812, 34, 469, CRGB::Red);
+		progText("_ BILLIE JEAN IS_NOT MY LOVER", 2812, 34, 469, CRGB::Red);
 		fxLayerEnd(FX_OVER);
 #endif
 		progBlack(2812, 34);
