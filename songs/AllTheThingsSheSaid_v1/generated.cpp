@@ -3,7 +3,7 @@
 //@function gen_AllTheThingsSheSaid
 //@name All The Things She Said
 //@struktur_sha 9db256f0e52d2a3c06a4545b1a12e8f4a3f5bc084c5f9a8ea0e41dbcc4fe41f3
-//@show_sha fe8c5a296b6ccf00a8d60c670753dc0d009adb25566b83059507c8fecabba26a
+//@show_sha 5d31e4be01b2bd5a6e406f6b70ee94adac7687a5ac61cc3d611923a785f29209
 //@part GEN_ALLTHETHINGSSHESAID_PAUSE 0
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO 3
 //@part GEN_ALLTHETHINGSSHESAID_SYNTH_INTRO_TAIL 4
@@ -186,10 +186,10 @@ void gen_AllTheThingsSheSaid() {
 		fxLayerFlush();
 		break;
 
-	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)
-		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 2791);
-		scene(SCENE_VERSE, 5581, 19, 86);
+	case 18:	// verse 2 b  2 T  5581ms  @1:56.163  -- Idee 'etwas gesteigert', energy 3: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; schon in Pink/Cyan/Violett des folgenden Build-ups, die Farben wandern je Takt zur Nachbarfarbe und zurück
+		setColorScheme(SCHEME_NEON);
+		setColorFade(FADE_ANALOG, 2791);
+		scene(SCENE_VERSE_WAVES, 5581, 19, 86);
 		break;
 
 	case 19:	// verse 2 b - build up  1 T+2 B  4186ms  @2:01.744  -- Idee 'build up', energy 4: 1,5 Takte Aufladen in den Chorus-Farben, Explosion auf den Strobo

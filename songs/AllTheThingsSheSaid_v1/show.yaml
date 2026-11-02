@@ -111,10 +111,13 @@ sections:
     why: "Idee 'ruhig', dem User war das Farbband zu statisch: jetzt füllen sich die Geräte Pixel für Pixel, und die Farben verwandeln sich langsam von Blau/Lila nach Pink/Orange (2 Takte hin, 2 zurück)"
 
   verse 2 b:
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 4}
-    why: "Idee 'etwas gesteigert', energy 3: jetzt Puls im Beat (Zonen der Gitarre, Lichtschuss in den Lampen); die Farbwanderung läuft doppelt so schnell weiter (1 Takt hin, 1 zurück)"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL, fade: {to: triad, per: 4}
+    # Zurück: songgen.py AllTheThingsSheSaid_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_NEON
+    fade: {to: analog, per: 4}
+    why: "Idee 'etwas gesteigert', energy 3: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; schon in Pink/Cyan/Violett des folgenden Build-ups, die Farben wandern je Takt zur Nachbarfarbe und zurück"
 
   verse 2 b - build up:
     scene: SCENE_BUILDUP
