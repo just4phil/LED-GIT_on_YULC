@@ -40,9 +40,14 @@ sections:
     why: "größter Pegelsprung im Song (+14 dB): Blitze laufen pro Beat von den Drums nach außen"
 
   verse 1:
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    why: "rhythmischer Puls im Beat, dunkler als das Intro, damit der Chorus aufgehen kann"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
+    # Zurück: songgen.py Physical_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Test 1 (02.11.2026): SCENE_LIFE, SCHEME_RETRO - Regel des Users: Game of Life ist nur für Songpausen gedacht -> Plasma, TOXIC + Regenbogen
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_TOXIC
+    fade: {to: rainbow, per: 8}
+    why: "Fließende Farbwolken in Grün/Gelb (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte rücken die Farben ein Stück weiter um den Farbkreis - wie in Kids, vom User dort als 'sehr schön' abgenommen"
 
   sample:
     fx: "progBlack(${dur}, ${next})"
@@ -75,9 +80,10 @@ sections:
     why: "Snare-Wirbel steigert sich (build 1.0): lädt einen Takt auf, Explosion auf Verse 2"
 
   verse 2:
-    scene: SCENE_VERSE_HEART
-    scheme: SCHEME_ROYAL
-    why: "zweite Strophe anders als die erste (18.10.2026): alle Geräte schlagen auf jedem Beat wie ein Herz, die Matrix zeigt eine Lissajous-Schleife"
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART, SCHEME_ROYAL - Urteil des Users 02.11.2026: blau und etwas zu hektisch
+    scene: SCENE_VERSE_HEART_SLOW
+    scheme: SCHEME_NEON
+    why: "zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
 
   pre-chorus 2:
     scene: SCENE_BUILDUP

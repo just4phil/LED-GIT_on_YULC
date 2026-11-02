@@ -3,7 +3,7 @@
 //@function gen_Physical
 //@name Physical
 //@struktur_sha 8db76cd3bd31d89a0c1627bcbf1bb53c3d2bdfa1cf69d9623ced4af8fd776b84
-//@show_sha e171a3dd08274031b138f4d6be231ebc073de5a4d6389888e7b97f91f8d9f858
+//@show_sha 3e74fddde4c1b181f8ebee6c539a2cf34c8dd4efa8e7f64c2ea1f051e6a838a1
 //@part GEN_PHYSICAL_PAUSE 0
 //@part GEN_PHYSICAL_SYNTH_INTRO 3
 //@part GEN_PHYSICAL_SYNTH_INTRO_TAIL 4
@@ -81,9 +81,10 @@ void gen_Physical() {
 		scene(SCENE_WAVE_OUT, 13061, 6, 147);
 		break;
 
-	case 6:	// verse 1  16 T  26122ms  @0:27.551  -- rhythmischer Puls im Beat, dunkler als das Intro, damit der Chorus aufgehen kann
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 26122, 7, 147);
+	case 6:	// verse 1  16 T  26122ms  @0:27.551  -- Fließende Farbwolken in Grün/Gelb (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte rücken die Farben ein Stück weiter um den Farbkreis - wie in Kids, vom User dort als 'sehr schön' abgenommen
+		setColorScheme(SCHEME_TOXIC);
+		setColorFade(FADE_RAINBOW, 3265);
+		scene(SCENE_VERSE_PLASMA, 26122, 7, 147);
 		break;
 
 	case 7:	// sample  2 T  2449ms  @0:53.673  -- Schwarz auf dem Sprach-Sample, im letzten halben Takt weißer Strobo im Takt (4 Blitze pro Beat) auf dem Synth-Auftakt - hier steigt auch der Trailer ein.
@@ -117,9 +118,9 @@ void gen_Physical() {
 		scene(SCENE_BUILDUP, 1633, 13, 147);
 		break;
 
-	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste (18.10.2026): alle Geräte schlagen auf jedem Beat wie ein Herz, die Matrix zeigt eine Lissajous-Schleife
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE_HEART, 24489, 14, 147);
+	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_VERSE_HEART_SLOW, 24489, 14, 147);
 		break;
 
 	case 14:	// pre-chorus 2  1 T  1633ms  @1:50.816  -- die Band spielt hier durch (kein Stopp wie beim ersten Mal): aufladen statt Black, Explosion auf Chorus 2
