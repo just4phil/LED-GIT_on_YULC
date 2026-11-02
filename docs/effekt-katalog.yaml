@@ -443,7 +443,7 @@ effekte:
     regler: "EQB_MIN_PERCENT / EQB_ONE_PERCENT (Sprunghöhe normal / auf der Eins), EQB_REST_PERCENT (wie tief er bis zum nächsten Beat sinkt), EQB_PEAK_FALL in fxMatrixSim.cpp; Balkenbreite EQ_BAR_WIDTH wie progEqualizer"
     demo: "92: Part 94 (NEON, übrige Geräte SCENE_COLORS)"
     urteil:
-    notiz: "neu am 02.11.2026 (Urteil des Users zu DNA/Sinus: \"zu häufig, teilweise recht langweilig\"); ersetzt sie auf der Matrix per devices: {matrix: ...} in All The Things She Said (verse 2 b), Dancing On My Own (git steigt ein), Enjoy The Silence (bass slap part), Maniac (instrumental a). Abnahme offen. energie/traegt_takte geschätzt"
+    notiz: "neu am 02.11.2026 (Urteil des Users zu DNA/Sinus: \"zu häufig, teilweise recht langweilig\"); ersetzt sie auf der Matrix per devices: {matrix: ...} in All The Things She Said (verse 2 b), Dancing On My Own (git steigt ein), Enjoy The Silence (bass slap part), Maniac (instrumental a). 02.11.2026: in Enjoy The Silence (bass slap part) vom User abgenommen (\"jetzt gut so\"), übrige Stellen noch offen. energie/traegt_takte geschätzt"
 
   # ---------- Kontur-Effekte (neu, nutzen die Form der Gitarre) ----------
 

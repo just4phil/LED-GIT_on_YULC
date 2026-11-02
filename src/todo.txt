@@ -120,8 +120,7 @@ Pro Song (nach Song-ID)
 │ Enjoy The Silence  │ verse 1a (2)    │ [neu] Matrix: DNA → Lissajous-Schleife („Stille“), Rest wie  │
 │ (24)               │                 │ bisher                                                       │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
-│                    │ bass slap part  │ [neu] Matrix: DNA → Equalizer im Beat (dein Wunsch           │
-│                    │                 │ „langweilig“ ist damit noch nicht umgesetzt)                 │
+│                    │ bass slap part  │ [neu] Matrix: DNA → Equalizer im Beat (abgenommen 02.11.)    │
 ├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
 │ Friday I'm In Love │ Saturday went   │ [abend] Linien verblassen jetzt nach 8 Beats (vorher wurde   │
 │ (25)               │ (1+2)           │ vor jeder Linie alles gelöscht)                              │
@@ -207,7 +206,6 @@ Testen in Demo 92
 Offen für später
 
 - Matrix-Blitz vor einem Blinder eventuell weglassen
-- Enjoy The Silence „bass slap part“: dein Wunsch „sehr langweilig, überleg dir etwas neues“ - bisher nur das Matrix-Motiv getauscht
 --------------------------------------
 
 LOC stand 02.11.2026:
