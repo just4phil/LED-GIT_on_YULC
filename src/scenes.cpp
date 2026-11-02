@@ -334,6 +334,46 @@ void progLampFill(unsigned int durationMillis, byte nextPart, CRGB col) {
 	fxShow();
 }
 
+// Matrix-Teil von SCENE_BUILDUP: erst das Sternenfeld (Sterne fliegen aus der Mitte nach außen, progStarfield), in
+// den letzten SCENE_BLAST_MS des Parts die Explosion - gleichzeitig mit dem Blitz der Lampen (progLampFill) und
+// Gitarre/Bass (progChargeBlast). Neu am 02.11.2026 (Wunsch des Users: "wenn die lampen am ende aufblitzen sollte die
+// matrix ... auch aufblitzen"); vorher lief das Sternenfeld einfach bis zum Ende.
+// Die Explosion: eine Druckwelle läuft in 150 ms von der Mitte bis an die Ränder (vorn ein weißer Saum), hinter ihr
+// ist die Fläche hell in col, zu Beginn fast weiß; über die ganze Explosionsdauer klingt alles nach Schwarz ab -
+// dieselbe Kurve v wie bei den Lampen.
+static void progMatrixChargeBlast(unsigned int durationMillis, byte nextPart, CRGB col) {
+	unsigned int fillMs = durationMillis > 2 * SCENE_BLAST_MS ? durationMillis - SCENE_BLAST_MS : durationMillis;
+	unsigned int ms = millisCounterForProgChange;
+	if (ms < fillMs) {								// Aufbau: das bekannte Sternenfeld
+		progStarfield(durationMillis, nextPart, 20);
+		return;
+	}
+
+	fxPartStart(durationMillis, nextPart);			// hält wie jeder Effekt die Part-Länge ein
+	if (fxFrameDue(10)) {
+		unsigned int tb = ms - fillMs;				// ms seit Beginn der Explosion
+		uint8_t v = 255 - min(255L, (long)tb * 255 / SCENE_BLAST_MS);	// Helligkeit: 255 -> 0 wie bei den Lampen
+		// Radius der Druckwelle in Zehntel-LEDs: in 150 ms von 0 bis zur entferntesten Ecke
+		int maxR = (int)(sqrtf((float)(center_x * center_x + center_y * center_y)) * 10) + 10;
+		int radius = (long)min(tb, 150U) * maxR / 150;
+		CRGB fill = blend(col, CRGB::White, v);		// erst fast weiß, dann immer mehr die Gerätefarbe ...
+		fill.nscale8(v);							// ... und dabei dunkler
+		CRGB edge = CRGB::White;
+		edge.nscale8(v);
+		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			for (int x = 0; x < MATRIX_WIDTH; x++) {
+				int dx = x - center_x, dy = y - center_y;
+				int d = (int)(sqrtf((float)(dx * dx + dy * dy)) * 10);	// Abstand zur Mitte in Zehntel-LEDs
+				CRGB c = CRGB::Black;
+				if (d <= radius - 15) c = fill;		// schon von der Welle erfasst
+				else if (d <= radius) c = edge;		// die Front der Welle: ein heller Saum von 1,5 LEDs
+				leds[matrix->XY(x, y)] = c;
+			}
+		}
+	}
+	fxShow();
+}
+
 // Auf jedem Beat: die ganze Lampe blitzt kurz auf und ein Lichtpunkt mit Schweif schießt von unten nach oben.
 void progLampPulse(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col) {
 	fxPartStart(durationMillis, nextPart);
@@ -754,7 +794,7 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 	// (Grundlinie in der Farbe des Geräts, der Ausschlag läuft in die nächste Schemafarbe)
 	case SCENE_VERSE_HEART:	progEcgBeat(durationMillis, nextPart, bpm, me, 1, schemeColor(STAGE_POS + 1));	break;
 	case SCENE_VERSE_HEART_SLOW:	progEcgBeat(durationMillis, nextPart, bpm, heartBarColor(bpm), 2, heartBarColor(bpm, 1));	break;	// jeder 2. Beat, Farben je Takt
-	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
+	case SCENE_BUILDUP:	progMatrixChargeBlast(durationMillis, nextPart, me);	break;	// Sternenfeld, am Ende Explosion wie die Lampen
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;
 	case SCENE_STAR:	progSternNeu(durationMillis, beatMs, nextPart, 5, center_x, center_y, true, 3);	break;

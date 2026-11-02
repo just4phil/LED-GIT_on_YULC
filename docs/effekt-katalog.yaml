@@ -864,7 +864,7 @@ szenen:
     notiz: "Matrix seit 17.10.2026 progMatrixRainColor statt matrixMovieFX (User: Regen \"sehr kühl\", zu weiß). Seit 18.10.2026: die Matrix wählt je Song einen Look (songID % 4: Regen, Plasma, Wasserringe, Sinuswellen), alle Strophen eines Songs gleich - Wunsch des Users nach mehr Abwechslung."
   SCENE_BUILDUP:
     wirkung: "alles lädt sich über den ganzen Part auf, Explosion genau auf der Part-Grenze"
-    geraete: {gitarre: progChargeBlast, lampe: progLampFill, matrix: progStarfield}
+    geraete: {gitarre: progChargeBlast, lampe: progLampFill, matrix: "progStarfield, am Ende Explosion (Druckwelle aus der Mitte, seit 02.11.2026)"}
     rolle: [aufbau]
     energie: [3, 4]
     bewegung: wandernd

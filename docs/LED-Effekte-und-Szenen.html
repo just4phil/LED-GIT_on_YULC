@@ -266,7 +266,7 @@
   <tr><td><code>SCENE_VERSE_HEART</code></td><td><code>progHeartbeat(bpm, Gerätefarbe)</code>: Korpus schlägt lub-dub, Puls läuft den Hals hinauf</td><td><code>progLampHeartbeat(bpm)</code>: ganze Lampe schlägt lub-dub</td><td><code>progEcgBeat(bpm, Gerätefarbe)</code>: EKG-Linie wie auf einem Herzmonitor, ein Takt je Durchlauf, Zacken auf jedem Schlag (seit 02.11.2026 statt Lissajous)</td></tr>
   <tr><td><code>SCENE_VERSE_HEART_SLOW</code></td><td><code>progHeartbeat(bpm, Farbe, 2)</code>: wie VERSE_HEART, Schlag nur jeden 2. Beat; jeden Takt die nächste Schemafarbe</td><td><code>progLampHeartbeat(bpm, Farbe, 2)</code>: ganze Lampe, jeden 2. Beat, jeden Takt neue Farbe</td><td><code>progEcgBeat(bpm, Farbe, 2)</code>: EKG-Linie, Zacken nur jeden 2. Beat, Farbe je Takt; der Ausschlag läuft in die nächste Schemafarbe</td></tr>
   <tr><td><code>SCENE_VERSE_STARS</code></td><td colspan="3">alle: <code>progTwinkleBeat(bpm, LED-Zahl / 16, STARS_FADE)</code>, Lampen <code>LED-Zahl / 8</code>: Sternenhimmel – auf jedem Beat leuchten einzelne LEDs in Schemafarben auf (Matrix 33, Gitarre 10, Bass 9, Lampen 11 / 9; seit 02.11.2026 voller, vorher „zu dünn“) und verglimmen in etwa 1,7 s; auf der Eins einer weißlich</td></tr>
-  <tr><td><code>SCENE_BUILDUP</code></td><td><code>progChargeBlast</code>, eine Aufladung über <i>Dauer − 600 ms</i>, dann Explosion</td><td><code>progLampFill</code>, füllt sich synchron und explodiert gleichzeitig</td><td><code>progStarfield</code></td></tr>
+  <tr><td><code>SCENE_BUILDUP</code></td><td><code>progChargeBlast</code>, eine Aufladung über <i>Dauer − 600 ms</i>, dann Explosion</td><td><code>progLampFill</code>, füllt sich synchron und explodiert gleichzeitig</td><td><code>progStarfield</code>, in den letzten 600 ms dieselbe Explosion: Druckwelle aus der Mitte, Fläche hell, klingt aus (seit 02.11.2026)</td></tr>
   <tr><td><code>SCENE_DROP</code></td><td><code>progShockwave</code>, eine Welle pro Beat</td><td><code>progBeatFlash</code>, jeder Beat eine andere Schemafarbe</td><td><code>progWaterRipple</code> mit Schemafarben und Verlauf, aus der Mitte</td></tr>
   <tr><td><code>SCENE_FIRE</code></td><td><code>progOutlineFire</code></td><td><code>progLampFire</code></td><td><code>progFire</code></td></tr>
   <tr><td colspan="4" style="color:var(--muted)">Bei ICE, ROYAL und BLUE brennt das Feuer in allen drei Spalten blau.</td></tr>
@@ -1102,7 +1102,9 @@ function makeSceneFX(id,d,dur,bpm,sch){
   switch(id){   // Matrix
     case "SCENE_CALM": return mxFX.ripple({speed:70,col:me,scheme:sch});
     case "SCENE_VERSE": return mxFX.rain(me);
-    case "SCENE_BUILDUP": return mxFX.starfield(sch);
+    case "SCENE_BUILDUP": { const sf=mxFX.starfield(sch), fill=dur>1200?dur-600:dur; return {step(ms,L){ if(ms<fill) return sf.step(ms,L);
+        const tb=ms-fill, v=255-Math.min(255,tb*255/600), maxR=Math.hypot(26,5)+1, r=Math.min(tb,150)*maxR/150, f=scale(blend(me,WHITE,v),v), e=scale(WHITE,v);
+        for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){ const d=Math.hypot(x-26,y-5); L[y*MW+x]= d<=r-1.5? f : d<=r? e : BLACK; } }}; }
     case "SCENE_DROP": return mxFX.ripple({speed:30,scheme:sch,center:true});
     case "SCENE_FIRE": return mxFX.fire(sch.cold);
     default: return mxFX.ripple({speed:25,scheme:sch});
