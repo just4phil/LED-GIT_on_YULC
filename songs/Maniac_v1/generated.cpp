@@ -3,7 +3,7 @@
 //@function gen_Maniac
 //@name Maniac
 //@struktur_sha 877216ab951364d44d3d88c818f2cf023e555328f01acca8fc75d574858f89de
-//@show_sha d39becdf152ce3c2131f9a1a089cb5fb463182aa7e0da86cf260694437e8d362
+//@show_sha f8360019a492c57cbf0639a3491eb1e5c5a28bf10a0755394731bfa65e0dd2a0
 //@part GEN_MANIAC_PAUSE 0
 //@part GEN_MANIAC_DRUMS_INTRO 3
 //@part GEN_MANIAC_ROCK_INTRO 4
@@ -101,9 +101,9 @@ void gen_Maniac() {
 		progFastBlingBling(12229, 6, 5);
 		break;
 
-	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Wasserringe.
-		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 12230, 6, 157);
+	case 5:	// verse 1a  8 T  12230ms  @0:28.471  -- Strophe 'cold kinetic heat': Matrix stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten, die anderen pulsieren einmal je Takt - kaltes Muster in heißen Farben (Rot/Orange/Gelb).
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_DNA_FLIP, 12230, 6, 157);
 		break;
 
 	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.

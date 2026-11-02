@@ -83,9 +83,12 @@ sections:
     why: "Warmweißer Blinder auf den Band-Einsatz (halbe Stärke, 1 Beat), danach schnelle bunte Einzelblitze (wie bisher)."
 
   "verse 1a":
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    why: "Strophe: dezenter Puls im Beat in Blau und Lila, auf der Matrix Wasserringe."
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
+    # Zurück: songgen.py Maniac_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_DNA_FLIP
+    scheme: SCHEME_FIRE
+    why: "Strophe 'cold kinetic heat': Matrix stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten, die anderen pulsieren einmal je Takt - kaltes Muster in heißen Farben (Rot/Orange/Gelb)."
 
   "verse 1b":
     # Wunsch: ältere Linien sollen ausfaden - letzter Parameter = nach 4 Beats sind sie fast dunkel
