@@ -1,0 +1,8 @@
+zeit: '2026-11-02 16:21:35'
+notiz: 'STONE HEART: ruhiger Herzschlag (SCENE_VERSE_HEART_SLOW)'
+werkzeug_git: 2e3a95c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 5561ed391909d8d75eb4af4ea3930b827e05ecd5a0a7f89d67c27204f098ed38
+  show.yaml: 6cbafc2c3740d4eb3a951d4ea385ef462f0590f83ab8c3a3d2cdff8529b924da
+  generated.cpp: 848941d88169449d58735ff2e1da069824f7b52b37c3229a21055fdbce0e457f

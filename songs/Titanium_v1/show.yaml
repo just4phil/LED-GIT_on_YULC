@@ -19,14 +19,18 @@ scheme: SCHEME_ICE
 
 # Wiederkehrende Bausteine (YAML-Anker: &name legt fest, *name / <<: *name setzt ein)
 bulletproof: &bulletproof
-  scene: SCENE_VERSE
+  # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+  #   scene: SCENE_VERSE, scheme: SCHEME_ICE
+  # Zurück: songgen.py Titanium_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+  scene: SCENE_PALETTE
   scheme: SCHEME_ICE
+  fade: {to: complement, per: 8}
   overlay: {scene: SCENE_SPARKLE, amount: 40, fade_in: 28}
   tail:
     beats: 4
     scene: SCENE_BUILDUP
     scheme: SCHEME_WHITE
-  why: "Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'."
+  why: "Aufbau zum Chorus: ein Farbband läuft in 4 Takten über die ganze Bühne, Eisblau wandert alle 2 Takte nach Orange und zurück (metallisch statt nur kalt), darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'."
 titanium_text: &ttext {words: "TITANIUM", per: 34, over: true, to: 8, fade_out: 2}
 drop: &drop
   scene: SCENE_DROP
@@ -106,10 +110,11 @@ sections:
     why: "Der Drop wie beim ersten Mal: weißer Blitz auf den Einsatz, Schockwellen und Blitze in Pink, Cyan und Violett; starker Blinder auf der letzten Viertel (Takt 91,5), danach Schwarz."
 
   "Pause: STONE HEART ..":
-    scene: SCENE_VERSE_HEART
+    # Vorher: SCENE_VERSE_HEART (Schlag auf jedem Beat) - Wunsch des Users 02.11.2026: zu schnell -> halbes Tempo
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_RED
     only: {devices: [guitar], others: 0}
-    why: "'Stone heart': nur Gitarre und Bass schlagen wie ein Herz auf jedem Beat in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein."
+    why: "'Stone heart': nur Gitarre und Bass schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein."
 
   "chorus 3":
     scene: SCENE_SPARKLE

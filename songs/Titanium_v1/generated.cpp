@@ -3,7 +3,7 @@
 //@function gen_Titanium
 //@name Titanium
 //@struktur_sha 5561ed391909d8d75eb4af4ea3930b827e05ecd5a0a7f89d67c27204f098ed38
-//@show_sha 53d3bd06f8aedce4a468d89d4685d3baf54b1dedcbcc3d4bb6edbee7c0a0f41e
+//@show_sha 6cbafc2c3740d4eb3a951d4ea385ef462f0590f83ab8c3a3d2cdff8529b924da
 //@part GEN_TITANIUM_TEXT 0
 //@part GEN_TITANIUM_INTRO 3
 //@part GEN_TITANIUM_V1_U_SHOUT_IT_OUT 4
@@ -73,13 +73,14 @@ void gen_Titanium() {
 		scene(SCENE_RAIN, 15239, 6, 126);
 		break;
 
-	case 6:	// im bulletproof  8 T  13333ms  @0:51.429  -- Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
+	case 6:	// im bulletproof  8 T  13333ms  @0:51.429  -- Aufbau zum Chorus: ein Farbband läuft in 4 Takten über die ganze Bühne, Eisblau wandert alle 2 Takte nach Orange und zurück (metallisch statt nur kalt), darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
 		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_COMPLEMENT, 3810);
 		fxLayerFadeIn(13333);
 		fxLayerBegin();
 		scene(SCENE_SPARKLE, 13333, 7, 126);
 		fxLayerEnd(FX_ADD, 102);
-		scene(SCENE_VERSE, 13333, 7, 126);
+		scene(SCENE_PALETTE, 13333, 7, 126);
 		fxLayerFlush();
 		break;
 
@@ -131,13 +132,14 @@ void gen_Titanium() {
 		progWaterRipple(15238, 13, 50, true, false);
 		break;
 
-	case 13:	// im bulletproof (2)  8 T  13333ms  @2:07.619  -- Aufbau zum Chorus: dezenter Puls im Beat in Eisblau, auf der Matrix Sinuswellen, darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
+	case 13:	// im bulletproof (2)  8 T  13333ms  @2:07.619  -- Aufbau zum Chorus: ein Farbband läuft in 4 Takten über die ganze Bühne, Eisblau wandert alle 2 Takte nach Orange und zurück (metallisch statt nur kalt), darüber baut sich ein Glitzern auf; im letzten Takt lädt sich alles weiß auf, Explosion auf 'I am titanium'.
 		setColorScheme(SCHEME_ICE);
+		setColorFade(FADE_COMPLEMENT, 3810);
 		fxLayerFadeIn(13333);
 		fxLayerBegin();
 		scene(SCENE_SPARKLE, 13333, 14, 126);
 		fxLayerEnd(FX_ADD, 102);
-		scene(SCENE_VERSE, 13333, 14, 126);
+		scene(SCENE_PALETTE, 13333, 14, 126);
 		fxLayerFlush();
 		break;
 
@@ -177,12 +179,12 @@ void gen_Titanium() {
 		scene(SCENE_DROP, 14762, 17, 126);
 		break;
 
-	case 17:	// Pause: STONE HEART ..  8 T+1 B  15714ms  @2:52.857  -- 'Stone heart': nur Gitarre und Bass schlagen wie ein Herz auf jedem Beat in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein.
+	case 17:	// Pause: STONE HEART ..  8 T+1 B  15714ms  @2:52.857  -- 'Stone heart': nur Gitarre und Bass schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot, Lampen und Matrix bleiben dunkel; in den letzten 2 Takten blendet der Blinder für chorus 3 ein.
 		setColorScheme(SCHEME_RED);
 		fxMaskStage(DEV_GIT | DEV_BASS);
 		fxBlinder(15714, 4762, 255, FX_BLINDER_WARM, DEV_ALL);
 		fxBlinderShape(3810, 0);
-		scene(SCENE_VERSE_HEART, 15714, 18, 126);
+		scene(SCENE_VERSE_HEART_SLOW, 15714, 18, 126);
 		break;
 
 	case 18:	// chorus 3  8 T  15239ms  @3:08.571  -- Glitzern in Eisblau; der Blinder aus der Pause steht voll auf dem Einsatz (Takt 100) und klingt in 2 Beats ab.
