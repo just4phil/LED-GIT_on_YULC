@@ -3,7 +3,7 @@
 //@function gen_IWannaDanceWithSomebody
 //@name I Wanna Dance With Somebody
 //@struktur_sha 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
-//@show_sha 1d77b4607e84e53d41f71999fc0f64511628ee1a43d1cccce03161854e3e46fd
+//@show_sha 06ec454a24fee95cfa1c0f85e54f0bd3edef76302a6f6eb65805709d76d6ad45
 //@part GEN_IWANNADANCEWITHSOMEBODY_PAUSE 0
 //@part GEN_IWANNADANCEWITHSOMEBODY_STROBO 3
 //@part GEN_IWANNADANCEWITHSOMEBODY_INTRO 4
@@ -58,8 +58,8 @@ void gen_IWannaDanceWithSomebody() {
 
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:26.370, Einstieg case 7
-		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE, 13549, 7, 124);
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_VERSE_HEART_SLOW, 13549, 7, 124);
 		break;
 #endif
 
@@ -81,9 +81,9 @@ void gen_IWannaDanceWithSomebody() {
 		progStrobo(1935, 6, 100, getRandomCRGB());
 		break;
 
-	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe neu (18.10.2026, statt der alten Zufallslinien): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Sinuswellen im Takt auf der Matrix, warme Farben
-		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE, 15484, 7, 124);
+	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)
+		setColorScheme(SCHEME_FIRE);
+		scene(SCENE_VERSE_HEART_SLOW, 15484, 7, 124);
 		break;
 
 	case 7:	// ive done alright  6 T  11613ms  @0:39.919  -- Alter Effekt: ruhiger Scanner, eine Leuchtlinie fährt hin und her.
@@ -118,9 +118,9 @@ void gen_IWannaDanceWithSomebody() {
 		progMatrixHorizontal(1935, 15, 70, true);
 		break;
 
-	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- Strophe neu (18.10.2026, statt der alten Wasserringe): 'somebody who loves me' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- 'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE_HEART, 15484, 16, 124);
+		scene(SCENE_VERSE_HEART_SLOW, 15484, 16, 124);
 		break;
 
 	case 16:	// ive done alright (2)  6 T  11613ms  @1:43.790  -- Alter Effekt: rot-weiß-blaue Blöcke mit Lücken, harte Kanten.

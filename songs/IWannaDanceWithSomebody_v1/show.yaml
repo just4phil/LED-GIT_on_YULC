@@ -33,9 +33,13 @@ sections:
     why: "Alter Effekt: harter Strobo (100 ms) in Zufallsfarbe."
 
   "verse 1":
-    scene: SCENE_VERSE
-    scheme: SCHEME_SUNSET
-    why: "Strophe neu (18.10.2026, statt der alten Zufallslinien): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Sinuswellen im Takt auf der Matrix, warme Farben"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
+    # Zurück: songgen.py IWannaDanceWithSomebody_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Test 1 (02.11.2026): SCENE_VERSE_HEART, SCHEME_FIRE, fade analog - Urteil: viel zu hektisch -> halbes Tempo + Farbwechsel
+    scene: SCENE_VERSE_HEART_SLOW
+    scheme: SCHEME_FIRE
+    why: "Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)"
 
   "ive done alright":
     fx: "progMatrixScanner(${dur}, ${next}, 30)"
@@ -70,9 +74,10 @@ sections:
     why: "Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen."
 
   "verse 2":
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Urteil des Users 02.11.2026: viel zu hektisch -> halbes Tempo + Farbwechsel
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
-    why: "Strophe neu (18.10.2026, statt der alten Wasserringe): 'somebody who loves me' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
+    why: "'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
 
   "ive done alright (2)":
     fx: "progPalette(${dur}, 9, ${next})"

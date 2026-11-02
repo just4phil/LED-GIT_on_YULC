@@ -1,0 +1,8 @@
+zeit: '2026-11-02 15:03:10'
+notiz: 'Strophen-Abwechslung 02.11.2026: SCENE_VERSE ersetzt (neue Szene/Farbe)'
+werkzeug_git: 2e3a95c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
+  show.yaml: 0620334a494f695530dde6af8ec97947414d473a05e0bea83716a43fbff35338
+  generated.cpp: 20b0409eb813c024660f63503bdb960d68624f217b1d376fe8b4d5841c2c9ed0
