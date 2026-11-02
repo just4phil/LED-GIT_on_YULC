@@ -14,6 +14,10 @@
 
 function: gen_IWannaDanceWithSomebody
 scroll_delay: 80
+# Wunsch des Users 02.11.2026: "am Ende noch ein Blinder rein, aktuell hört der Song einfach nur so auf". Der Blinder
+# auf der letzten Viertel von "...bdy who loves me" steht bis zum Part-Ende voll, end_blinder lässt ihn 5 Sekunden
+# lang ins Schluss-Schwarz ausklingen (wie bei APT).
+end_blinder: 5
 
 sections:
   "pause":
@@ -165,4 +169,5 @@ sections:
 
   "...bdy who loves me":
     fx: "progFastBlingBling(${dur}, 10, ${next})"
-    why: "Alter Effekt: schnelle Einzelblitze."
+    blinder: {at: 3, len: 1, hold: 1}
+    why: "Alter Effekt: schnelle Einzelblitze. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schlussakkord 5 Sekunden lang ins Schwarz ausklingt."
