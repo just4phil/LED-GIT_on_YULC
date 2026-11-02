@@ -31,13 +31,17 @@ sections:
     why: "Kühler Einstieg: die Geräte füllen sich langsam in Eisblau, die Farben wandern alle 2 Takte nach Pink/Gelb und zurück."
 
   "bridge 1":
-    scene: SCENE_VERSE
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL
+    # Zurück: songgen.py SuchAShame_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_WAVES
     scheme: SCHEME_ROYAL
+    fade: {to: SCHEME_NEON, per: 8}
     tail:
       beats: 4
       scene: SCENE_BUILDUP
       scheme: SCHEME_ROYAL
-    why: "Dezenter Puls im Beat in Blau und Lila, auf der Matrix farbiger Regen; im letzten Takt lädt sich alles auf, Explosion auf den Chorus."
+    why: "Matrix Sinus- und Kosinuslinie im Takt, Gitarre/Bass je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus."
 
   "chorus 1":
     scene: SCENE_STAR

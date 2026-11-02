@@ -3,7 +3,7 @@
 //@function gen_SuchAShame
 //@name Such A Shame
 //@struktur_sha f68b77b1013bbdf4fee7500c8282a1328da5a89970a2f8dd510ffdaef0d747c9
-//@show_sha 76a4e43038064ae4c0f9695cbee761a7dbcd9b735cfc024a647a23a796c4c480
+//@show_sha 3cee64718f92b5bbfad967446dffdc4fa7488c56cf1cbb3f189f338324289612
 //@part GEN_SUCHASHAME_BLACK 0
 //@part GEN_SUCHASHAME_INTRO_VERSE_1 3
 //@part GEN_SUCHASHAME_BRIDGE_1 4
@@ -66,9 +66,10 @@ void gen_SuchAShame() {
 		scene(SCENE_GLOW, 22759, 4, 116);
 		break;
 
-	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Dezenter Puls im Beat in Blau und Lila, auf der Matrix farbiger Regen; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
+	case 4:	// bridge 1  6 T  10344ms  @0:34.397  -- Matrix Sinus- und Kosinuslinie im Takt, Gitarre/Bass je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; Blau/Lila wandert alle 2 Takte nach Pink/Cyan und zurück; im letzten Takt lädt sich alles auf, Explosion auf den Chorus.
 		setColorScheme(SCHEME_ROYAL);
-		scene(SCENE_VERSE, 10344, 5, 116);
+		setColorFade(SCHEME_NEON, 4138);
+		scene(SCENE_VERSE_WAVES, 10344, 5, 116);
 		break;
 
 	case 5:	// bridge 1 (tail)  4 B  2069ms  @0:44.741
