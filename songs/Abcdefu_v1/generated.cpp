@@ -3,7 +3,7 @@
 //@function gen_Abcdefu
 //@name abcdefu
 //@struktur_sha 323f3b77009c796563753d1cad5a779358089431c741b55cdd8fccc2deb16d78
-//@show_sha 42acaf7f5c1e3edbcc8aafca4c6e95e0d050dd03d391e4de2eec194560041c13
+//@show_sha 1ebbae46912734a1aa4a2158ef15f044ee3bce49acb5107c1eb0458e7e05c873
 //@part GEN_ABCDEFU_PAUSE 0
 //@part GEN_ABCDEFU_INTRO 3
 //@part GEN_ABCDEFU_STROBE 4
@@ -136,10 +136,10 @@ void gen_Abcdefu() {
 		progBlack(1875, 12);
 		break;
 
-	case 12:	// verse 2 weiter  4 T  7500ms  @1:40.636  -- Schneller Blinder (1 Beat) auf den Wiedereinstieg, dann dezenter Puls im Beat in Pink/Cyan/Violett: Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix (statt noch einmal das langsame Füllen).
-		setColorScheme(SCHEME_NEON);
+	case 12:	// verse 2 weiter  4 T  7500ms  @1:40.636  -- Schneller Blinder (1 Beat) auf den Wiedereinstieg, dann Frage/Antwort in Rot/Weiß/Blau auf jedem Beat: auf 1 und 3 blitzt die linke Bühnenhälfte, auf 2 und 4 die rechte - trotzig statt dezent.
+		setColorScheme(SCHEME_RETRO);
 		fxBlinder(0, 469, 255, FX_BLINDER_WARM, DEV_ALL);
-		scene(SCENE_VERSE, 7500, 13, 128);
+		scene(SCENE_CALL_RESPONSE, 7500, 13, 128);
 		break;
 
 	case 13:	// i was into you (2)  8 T  15000ms  @1:48.136  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf. Ab Takt 6,5 des Parts (Beat 26) erscheinen auf der Matrix A, B, C, D, E in Weiß, je ein Viertel lang, über dem gedimmten Effekt. Auf der letzten Viertel (64,75) steht FUCK YOU schwarz ausgestanzt und bleibt bis in den Chorus.

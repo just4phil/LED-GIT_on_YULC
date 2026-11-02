@@ -83,10 +83,14 @@ sections:
     why: "1 Takt Stille (der Blinder davor klingt noch kurz aus)."
 
   verse 2 weiter:
-    scene: SCENE_VERSE
-    scheme: SCHEME_NEON
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_NEON
+    # Zurück: songgen.py Abcdefu_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    # Test 1 (02.11.2026): SCENE_CALL_RESPONSE_OFFBEAT (nur 2 und 4) - Urteil: ok, aber evtl. doppelte Geschwindigkeit besser -> jeder Beat
+    scene: SCENE_CALL_RESPONSE
+    scheme: SCHEME_RETRO
     blinder: {at: 0, len: 1}
-    why: "Schneller Blinder (1 Beat) auf den Wiedereinstieg, dann dezenter Puls im Beat in Pink/Cyan/Violett: Zonen der Gitarre, Lichtschuss in den Lampen, Regen auf der Matrix (statt noch einmal das langsame Füllen)."
+    why: "Schneller Blinder (1 Beat) auf den Wiedereinstieg, dann Frage/Antwort in Rot/Weiß/Blau auf jedem Beat: auf 1 und 3 blitzt die linke Bühnenhälfte, auf 2 und 4 die rechte - trotzig statt dezent."
 
   i was into you (2):
     fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"
