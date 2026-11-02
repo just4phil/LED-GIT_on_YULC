@@ -52,7 +52,7 @@ sections:
     scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
     transition: {type: fade, beats: 2}
-    why: "zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine Lissajous-Schleife"
+    why: "zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   i am the one (2):
     scene: SCENE_PINGPONG

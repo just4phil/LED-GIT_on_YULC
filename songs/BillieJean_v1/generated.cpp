@@ -3,7 +3,7 @@
 //@function gen_BillieJean
 //@name Billie Jean
 //@struktur_sha 1789d299c7b79a629c422b6b6b4a060fb0c7f592c8913faf877a65ef1d457723
-//@show_sha f551463b1ee5aa67ed29702c3a3215b0e272af2bcb1915a9067cec0fb78f2648
+//@show_sha f71c29cf138771b775e8c3a5828d491e49da5133c180461a070bb9cc30231266
 //@part GEN_BILLIEJEAN_PAUSE 0
 //@part GEN_BILLIEJEAN_DRUMS_INTRO 3
 //@part GEN_BILLIEJEAN_BASS_INTRO 4
@@ -103,7 +103,7 @@ void gen_BillieJean() {
 		scene(SCENE_PINGPONG, 15000, 8, 128);
 		break;
 
-	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine Lissajous-Schleife
+	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
 		scene(SCENE_VERSE_HEART_SLOW, 7500, 9, 128);
