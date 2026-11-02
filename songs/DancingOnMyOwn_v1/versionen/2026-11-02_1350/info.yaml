@@ -1,0 +1,8 @@
+zeit: '2026-11-02 13:50:24'
+notiz: 'somebody: Herzschlag Gitarre/Bass halbes Tempo'
+werkzeug_git: 341626f
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 46196b10016dca6894b6cfbf896082a9ee0d81a45222967ea2694399857cdb79
+  show.yaml: 366e350bc81e0b6f3e53ba28067783e838471d417b66b83be8d5bee68678d4ba
+  generated.cpp: a96a6c385f2f798ea1addf6651a8a4bd18b9523cf3a56ab4f3f9183e21133edd
