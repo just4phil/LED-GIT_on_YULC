@@ -106,7 +106,7 @@ void gen_Physical() {
 		scene(SCENE_BUILDUP, 1633, 13, 147);
 		break;
 
-	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 13:	// verse 2  15 T  24489ms  @1:26.327  -- zweite Strophe anders als die erste: alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 24489, 14, 147);
 		break;
@@ -1502,12 +1502,14 @@ void gen_DancingOnMyOwn() {
 		scene(SCENE_CALM, 15737, 4, 122);
 		break;
 
-	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// somebody  8 T  15738ms  @0:21.393  -- Gesang setzt ein, noch zurückhaltend: Gitarre, Bass und Lampen schlagen ruhig wie ein Herz (lub-dub) auf jedem zweiten Beat in Blautönen, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_ICE);
 #if DEVICE_CLASS == CLASS_GUITAR
 		progHeartbeat(15738, 5, 122 / 2, deviceColor());
 #elif DEVICE_CLASS == CLASS_LAMP
 		progLampHeartbeat(15738, 5, 122 / 2, deviceColor());
+#elif DEVICE_CLASS == CLASS_MATRIX
+		progEcgBeat(15738, 5, 122, deviceColor(), 2, schemeColor(STAGE_POS + 1));
 #else
 		scene(SCENE_VERSE_HEART, 15738, 5, 122);
 #endif
@@ -1740,7 +1742,7 @@ void gen_ILoveIt() {
 		break;
 #endif
 
-	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_SUNSET);
 		scene(SCENE_VERSE_HEART_SLOW, 16000, 9, 120);
 		break;
@@ -3441,7 +3443,7 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16271, 1017, 4, 5, 26, 5, false, 4);
 		break;
 
-	case 4:	// verse  8 T  16271ms  @0:23.644  -- 'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// verse  8 T  16271ms  @0:23.644  -- 'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_FIRE);
 		scene(SCENE_VERSE_HEART_SLOW, 16271, 5, 118);
 		break;
@@ -3473,7 +3475,7 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16272, 1017, 9, 20, 26, 5, true, 3);
 		break;
 
-	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- 'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb).
+	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- 'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix EKG-Linie wie auf einem Herzmonitor, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb).
 		setColorScheme(SCHEME_SUNSET);
 		scene(SCENE_VERSE_HEART_SLOW, 16271, 10, 118);
 		break;
@@ -3975,7 +3977,7 @@ void gen_FridayImInLove() {
 		progStrobo(1714, 15, 65, 255, 255, 255);
 		break;
 
-	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 13714, 16, 140);
 		break;
@@ -4043,7 +4045,7 @@ void gen_BeMine() {
 		scene(SCENE_VERSE_STARS, 15238, 5, 126);
 		break;
 
-	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 15238, 6, 126);
 		break;
@@ -4150,7 +4152,7 @@ void gen_IWannaDanceWithSomebody() {
 		progStrobo(1935, 6, 100, getRandomCRGB());
 		break;
 
-	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)
+	case 6:	// verse 1  8 T  15484ms  @0:24.435  -- Strophe als ruhiger, warmer Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix EKG-Linie wie auf einem Herzmonitor, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Rot, Orange, Gelb)
 		setColorScheme(SCHEME_FIRE);
 		scene(SCENE_VERSE_HEART_SLOW, 15484, 7, 124);
 		break;
@@ -4187,7 +4189,7 @@ void gen_IWannaDanceWithSomebody() {
 		progMatrixHorizontal(1935, 15, 70, true);
 		break;
 
-	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- 'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 15:	// verse 2  8 T  15484ms  @1:28.306  -- 'somebody who loves me' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 15484, 16, 124);
 		break;
@@ -4350,7 +4352,7 @@ void gen_BillieJean() {
 		scene(SCENE_PINGPONG, 15000, 8, 128);
 		break;
 
-	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine Lissajous-Schleife
+	case 8:	// verse 2  4 T  7500ms  @0:49.922  -- zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		fxTransition(TRANS_FADE, 938);
 		scene(SCENE_VERSE_HEART_SLOW, 7500, 9, 128);
