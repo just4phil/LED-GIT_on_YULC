@@ -528,9 +528,8 @@ void loop() {
 			gen_BillieJean(); // <<< GENERATED SONGS <<<
 			break;	
 
-		case 29:
-			Maniac();
-			break;	
+		// case 29: FREI - die alte Maniac-Fassung wurde am 02.11.2026 gelöscht, Maniac ist #30.
+		// Die Song-ID 29 kann für einen neuen Song verwendet werden.
 
 		case 30:
 			//Maniac_Tminus1();

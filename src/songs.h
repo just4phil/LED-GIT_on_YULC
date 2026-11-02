@@ -168,11 +168,12 @@ void IWannaDanceWithSomebody();
 //void BillyJean();	// ersetzt durch gen_BillieJean() (songs_generated.h), alter Code auskommentiert in songs.cpp
 
 
-/** @brief #29 Maniac (Michael Sembello) - alte Fassung; gespielt wird #30 */
-// #29 Maniac();
-void Maniac();
+// #29 FREI - die alte Maniac-Fassung (Maniac()) wurde am 02.11.2026 gelöscht. Die Song-ID 29 kann für einen
+// neuen Song verwendet werden.
 
-/** @brief #30 Maniac in der transponierten Fassung "T-1" - das ist die Fassung, die gespielt wird */
+/** @brief #30 Maniac (Michael Sembello) in der transponierten Fassung "T-1" - die einzige Maniac-Fassung.
+ *  Gespielt wird inzwischen gen_Maniac() (songs_generated.h); der alte handgeschriebene Code bleibt hier stehen,
+ *  sein Aufruf in main.cpp ist auskommentiert. */
 void Maniac_Tminus1();
 
 /**

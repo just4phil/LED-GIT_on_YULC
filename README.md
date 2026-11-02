@@ -210,13 +210,12 @@ firmware. Details: `docs/OTA-Update.html`.
 | 7 | Firework * | | 26 | Be Mine * |
 | 8 | Dancing On My Own * | | 27 | I Wanna Dance With Somebody * |
 | 9 | I Love It * | | 28 | Billie Jean * |
-| 10 | Bloody Mary * | | 29 | Maniac |
-| 11 | Titanium * | | 30 | Maniac (one semitone lower) * |
-| 12 | Such A Shame * | | 31 | All The Things She Said * |
-| 13 | In The Dark * | | 33 | Girls Just Wanna Have Fun * |
-| 14 | Shivers * | | 80 | I Love It (trailer) * |
-| 15 | abcdefu * | | 81 | Dancing On My Own (intro) |
-| | | | 82 | All The Things She Said (trailer) * |
+| 10 | Bloody Mary * | | 30 | Maniac (one semitone lower) * |
+| 11 | Titanium * | | 31 | All The Things She Said * |
+| 12 | Such A Shame * | | 33 | Girls Just Wanna Have Fun * |
+| 13 | In The Dark * | | 80 | I Love It (trailer) * |
+| 14 | Shivers * | | 81 | Dancing On My Own (intro) |
+| 15 | abcdefu * | | 82 | All The Things She Said (trailer) * |
 | | | | 90-92 | Demo songs for effects, scenes and the output stage |
 | | | | 99 | Startup animation |
 

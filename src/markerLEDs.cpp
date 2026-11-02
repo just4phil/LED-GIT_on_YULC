@@ -382,21 +382,12 @@ void setMarkerLEDs(byte songID, byte partID) {
 			#endif
 			break;
 
-		case 29:// Maniac
+		case 29:// FREI (alte Maniac-Fassung am 02.11.2026 gelöscht) -> kann für einen neuen Song verwendet werden
 			#ifdef GIT
-				markerLED1 = ESaite_F;
-				markerLED2 = ESaite_G;
-				markerLED3 = ESaite_Gis;
-				markerLED4 = ASaite_Gis;
-				markerLED5 = ASaite_G;
+
 			#endif
 			#ifdef BASS
-				markerLED1 = ESaite_F;
-				markerLED2 = ESaite_G;
-				markerLED3 = ESaite_Gis;
-				markerLED4 = ESaite_Bb;
-				markerLED5 = ESaite_C;
-				markerLED6 = ESaite_D;
+
 			#endif
 			break;
 
@@ -414,7 +405,7 @@ void setMarkerLEDs(byte songID, byte partID) {
 				markerLED2 = ESaite_Fis;
 				markerLED3 = ESaite_G;
 				markerLED4 = ESaite_B;
-				markerLED5 = ESaite_Bb;
+				//markerLED5 = ESaite_Bb;
 				markerLED6 = ESaite_Cis;
 			#endif			
 			break;

@@ -907,7 +907,7 @@ Zuletzt aktualisiert: 01.11.2026 (Übergang `TRANS_TV_OFF` abgenommen, TV-Rausch
   - `src/definitions.h`: `mw` / `mh` / `NUMPIXELS` mit „TODO: ausmerzen", auskommentierter Block `GITMARKER_GIT1`;
   - `getRandomColorIncludingBlack()` ist fast eine Kopie von `getRandomColor()` (`src/functions.cpp`).
   - Aus `songs_plan.md` (02.05.2026, gelöscht wie `SONG_SETUP_GUIDE.md`): in `src/songs.cpp` stehen noch vier als
-    „TO BE DELETED" markierte Stellen (#5, #18, #19 Hot n Cold, eine Maniac-Fassung). Vor dem Löschen prüfen, ob sie
+    „TO BE DELETED" markierte Stellen (#5, #18, #19 Hot n Cold; die vierte, die alte Maniac-Fassung #29, wurde am 02.11.2026 gelöscht - ID 29 ist frei). Vor dem Löschen prüfen, ob sie
     noch von `main.cpp`, `markerLEDs.cpp` oder per `switchToPart()` aus einem anderen Song erreicht werden. Eigener
     Schritt, nur auf Zuruf. Für eine Neugestaltung notiert: #26 hat eine sehr dichte Strobo-Kette, #29 nutzt
     Strobo als Dauer-Textur.
