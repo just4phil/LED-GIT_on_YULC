@@ -1797,14 +1797,37 @@ void gen_ILoveIt() {
 		progWaterRipple(14000, 15, 50, true, false);
 		break;
 
-	case 15:	// STOP  1 T  2000ms  @2:19.250  -- Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz.
+	case 15:	// STOP  1 T  2000ms  @2:19.250  -- Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz; auf der Matrix erscheint auf Takt 71,5 rot I und auf 71,75 DONT.
 		fxBlinder(0, 500, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("_ _ I DONT", 2000, 16, 500, CRGB::Red);
+		fxLayerEnd(FX_OVER);
+#endif
 		progBlack(2000, 16);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
-	case 16:	// chorus 4  8 T  16000ms  @2:21.250  -- Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.
+	case 16:	// chorus 4  8 T  16000ms  @2:21.250  -- Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat. Dazu steht auf der Matrix die ersten 2 Beats rot mit schwarzem Rand CARE (I DONT CARE).
 		fxBlinder(0, 1000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderUnderText();
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(0, 1000);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("CARE", 16000, 17, 32000, CRGB::Red);
+		fxLayerEnd(FX_OVER);
+#endif
 		progSternNeu(16000, 500, 17, 5, 26, 5, false, 4);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 17:	// chorus 5  4 T  8000ms  @2:37.250  -- Alter Effekt: schnelle Einzelblitze zum Schluss. Auf der letzten Viertel ein starker Blinder, der voll stehen bleibt und danach 5 Sekunden lang ins Schluss-Schwarz ausklingt.

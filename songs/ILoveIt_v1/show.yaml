@@ -95,12 +95,20 @@ sections:
   STOP:
     fx: "progBlack(${dur}, ${next})"
     blinder: {at: 0, len: 1}
-    why: "Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz."
+    # Wunsch des Users 02.11.2026: "I - DONT - CARE" auf der Matrix: I auf Takt 71,5, DONT auf 71,75, CARE auf 72
+    # (steht einen halben Takt, siehe chorus 4). Hier im STOP (Takt 71) also Beat 2 = I, Beat 3 = DONT; die beiden
+    # "_" sind leere Beats. Rot mit schwarzem Rand wie CARE, damit es im Chorus über dem Blinder lesbar bleibt.
+    text: {words: "_ _ I DONT", per: beat, color: rot, over: true, outline: true}
+    why: "Kurzer Blinder auf die Eins, der in einem Beat abklingt - danach der Rest des Takts schwarz; auf der Matrix erscheint auf Takt 71,5 rot I und auf 71,75 DONT."
 
   chorus 4:
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
     blinder: {at: 0, len: 2}
-    why: "Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
+    # Wunsch 02.11.2026: CARE ab Takt 72 einen halben Takt (Beat 0-2). Der Blinder liegt dabei auf der Matrix von
+    # selbst UNTER dem Text (Text immer zuoberst); der schwarze Rand hält die roten Buchstaben auf dem hellen Blinder
+    # lesbar, der Stern darunter ist gedimmt. per: 64 = steht ruhig, ohne Pulsieren.
+    text: {words: "CARE", per: 64, color: rot, over: true, outline: true, windows: [[0, 2]]}
+    why: "Blinder auf den Einsatz (klingt über 2 Beats ab), darunter der alte Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat. Dazu steht auf der Matrix die ersten 2 Beats rot mit schwarzem Rand CARE (I DONT CARE)."
 
   chorus 5:
     fx: "progFastBlingBling(${dur}, 6, ${next})"
