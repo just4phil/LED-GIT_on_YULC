@@ -3,7 +3,7 @@
 //@function gen_Maniac
 //@name Maniac
 //@struktur_sha 877216ab951364d44d3d88c818f2cf023e555328f01acca8fc75d574858f89de
-//@show_sha c1c133771abf06c615aae46ffbfa8af96db12a00e671abf7e200cd5b1106b803
+//@show_sha fa4d25b1f65508283bfa3ebb1c2c6a59b80b78fa0706e806027f726334fcafc8
 //@part GEN_MANIAC_PAUSE 0
 //@part GEN_MANIAC_DRUMS_INTRO 3
 //@part GEN_MANIAC_ROCK_INTRO 4
@@ -110,9 +110,9 @@ void gen_Maniac() {
 #endif
 		break;
 
-	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.
+	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa zwei Takten, so dass immer nur die letzten paar zu sehen sind.
 		setColorScheme(SCHEME_NEON);
-		progRandomLines(12229, 7, 382, false, 1529);
+		progRandomLines(12229, 7, 382, false, 3057);
 		break;
 
 	case 7:	// it could cut you like a knife  7 T  10701ms  @0:52.930  -- 'cut you like a knife': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.

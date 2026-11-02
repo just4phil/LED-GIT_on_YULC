@@ -4092,8 +4092,8 @@ void gen_BeMine() {
 		scene(SCENE_VERSE_HEART_SLOW, 15238, 6, 126);
 		break;
 
-	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
-		progRandomLines(13334, 7, 476, false, 1905);
+	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 8 Beats (2 Takten) fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
+		progRandomLines(13334, 7, 476, false, 3810);
 		break;
 
 	case 7:	// snareroll  1 T  1904ms  @1:04.048  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.
@@ -4123,8 +4123,8 @@ void gen_BeMine() {
 		progWaterRipple(15238, 12, 50, true, true);
 		break;
 
-	case 12:	// you got me so high (2)  7 T  13334ms  @1:53.571  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
-		progRandomLines(13334, 13, 476, false, 1905);
+	case 12:	// you got me so high (2)  7 T  13334ms  @1:53.571  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 8 Beats (2 Takten) fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
+		progRandomLines(13334, 13, 476, false, 3810);
 		break;
 
 	case 13:	// snareroll (2)  1 T  1905ms  @2:06.905  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.
@@ -4692,9 +4692,9 @@ void gen_Maniac() {
 #endif
 		break;
 
-	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind.
+	case 6:	// verse 1b  8 T  12229ms  @0:40.701  -- Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa zwei Takten, so dass immer nur die letzten paar zu sehen sind.
 		setColorScheme(SCHEME_NEON);
-		progRandomLines(12229, 7, 382, false, 1529);
+		progRandomLines(12229, 7, 382, false, 3057);
 		break;
 
 	case 7:	// it could cut you like a knife  7 T  10701ms  @0:52.930  -- 'cut you like a knife': ein Farbband in Orange, Pink, Lila und Gelb läuft über die ganze Bühne, darüber baut sich über den ganzen Part ein Glitzern auf.

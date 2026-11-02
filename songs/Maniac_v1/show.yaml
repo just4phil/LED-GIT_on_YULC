@@ -94,10 +94,11 @@ sections:
     why: "Strophe 'cold kinetic heat': auf der Matrix lodert ein Feuer in Rot/Orange/Gelb, die anderen pulsieren einmal je Takt in den heißen Farben."
 
   "verse 1b":
-    # Wunsch: ältere Linien sollen ausfaden - letzter Parameter = nach 4 Beats sind sie fast dunkel
-    fx: "progRandomLines(${dur}, ${next}, ${beat}, false, ${beats:4})"
+    # Wunsch: ältere Linien sollen ausfaden - letzter Parameter = nach 8 Beats sind sie fast dunkel
+    # (erst 4 Beats, am 02.11.2026 auf Wunsch des Users "etwas länger" -> 8 Beats)
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false, ${beats:8})"
     scheme: SCHEME_NEON
-    why: "Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa einem Takt, so dass immer nur die letzten paar zu sehen sind."
+    why: "Pro Beat eine neue Linie in Pink, Cyan und Violett; ältere Linien verblassen in etwa zwei Takten, so dass immer nur die letzten paar zu sehen sind."
 
   "it could cut you like a knife": *knife
 
