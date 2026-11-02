@@ -3,7 +3,7 @@
 //@function gen_GirlsJustWannaHaveFun
 //@name Girls just wanna have fun
 //@struktur_sha 06eb890211fefddb9e6340911ddf697b64fabc6ce48806b031f4293fe9da17d1
-//@show_sha 46c5d26a7e28f6afe5102aa7aa3497062824a767058d3b49e1f7eb2d9dab110c
+//@show_sha 3244efe9406982a2df3dee55bfc822e25e5fdc1d06582b41ccb2e6394cfc609e
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_PAUSE 0
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_INTRO 3
 //@part GEN_GIRLSJUSTWANNAHAVEFUN_VERSE_1 4
@@ -75,10 +75,10 @@ void gen_GirlsJustWannaHaveFun() {
 		scene(SCENE_WAVE_OUT, 7619, 6, 126);
 		break;
 
-	case 6:	// verse 2  9 T  17143ms  @0:45.000  -- energy 2: gleicher Puls wie Verse 1, eine Stufe farbiger (Blau + Lila + Weiß); die Farben wandern alle 2 Takte ein Drittel um den Farbkreis (Blau -> Pink, Lila -> Orange) und zurück
-		setColorScheme(SCHEME_ROYAL);
-		setColorFade(FADE_TRIAD, 3810);
-		scene(SCENE_VERSE, 17143, 7, 126);
+	case 6:	// verse 2  9 T  17143ms  @0:45.000  -- energy 2: fließende Farbwolken in 80er-Pink/Cyan/Violett (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte wandern die Farben nach Orange/Gelb (Sunset, wie der folgende Build-up) und zurück
+		setColorScheme(SCHEME_NEON);
+		setColorFade(SCHEME_SUNSET, 3810);
+		scene(SCENE_VERSE_PLASMA, 17143, 7, 126);
 		break;
 
 	case 7:	// thats all they really want  4 T  7619ms  @1:02.143  -- Pre-Chorus, energy 3: lädt sich über 4 Takte auf, Explosion genau auf 'when the working day is done'; Farbe kippt ins Warme

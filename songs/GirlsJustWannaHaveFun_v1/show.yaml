@@ -30,10 +30,13 @@ sections:
     why: "das Riff vom Intro kehrt zurück (energy 4, brightness 0.95) - erkennbar gleich gestaltet"
 
   verse 2:
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 8}
-    why: "energy 2: gleicher Puls wie Verse 1, eine Stufe farbiger (Blau + Lila + Weiß); die Farben wandern alle 2 Takte ein Drittel um den Farbkreis (Blau -> Pink, Lila -> Orange) und zurück"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL, fade: {to: triad, per: 8}
+    # Zurück: songgen.py GirlsJustWannaHaveFun_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_NEON
+    fade: {to: SCHEME_SUNSET, per: 8}
+    why: "energy 2: fließende Farbwolken in 80er-Pink/Cyan/Violett (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus, Lampen Verlauf nach oben), leichtes Anschwellen im Beat; alle 2 Takte wandern die Farben nach Orange/Gelb (Sunset, wie der folgende Build-up) und zurück"
 
   thats all they really want:
     scene: SCENE_BUILDUP
