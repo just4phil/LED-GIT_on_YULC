@@ -1,0 +1,8 @@
+zeit: '2026-11-02 16:30:29'
+notiz: 'Herz-Szene: Matrix EKG-Linie statt Lissajous-Schleife'
+werkzeug_git: f75d1e5 + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 515e7b96b53dd232e6ad26cc263c4efdd93961668bc2ef4bb5ccbd8fdd2732d6
+  show.yaml: 3946d83ae8533162de379a1b157b3fd0586f4ba725aca203a0c115c82c06f0c6
+  generated.cpp: 2f41dbf8d34ec2ce9e60ef4db126211f4260ba3a9cff9779d1192d9a4e7f6eb4

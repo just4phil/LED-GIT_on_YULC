@@ -3,7 +3,7 @@
 //@function gen_TellItToMyHeart
 //@name Tell It To My Heart
 //@struktur_sha 515e7b96b53dd232e6ad26cc263c4efdd93961668bc2ef4bb5ccbd8fdd2732d6
-//@show_sha a72be8620d96a70ea24aadbe0eac1eb0dac3a0921066158d996c96acc5f57365
+//@show_sha 3946d83ae8533162de379a1b157b3fd0586f4ba725aca203a0c115c82c06f0c6
 //@part GEN_TELLITTOMYHEART_PAUSE 0
 //@part GEN_TELLITTOMYHEART_INTRO_CHORUS 3
 //@part GEN_TELLITTOMYHEART_VERSE 4
@@ -57,7 +57,7 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16271, 1017, 4, 5, 26, 5, false, 4);
 		break;
 
-	case 4:	// verse  8 T  16271ms  @0:23.644  -- 'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 4:	// verse  8 T  16271ms  @0:23.644  -- 'tell it to my heart' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Rot/Orange/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_FIRE);
 		scene(SCENE_VERSE_HEART_SLOW, 16271, 5, 118);
 		break;
@@ -89,7 +89,7 @@ void gen_TellItToMyHeart() {
 		progSternNeu(16272, 1017, 9, 20, 26, 5, true, 3);
 		break;
 
-	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- 'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb).
+	case 9:	// verse 2  8 T  16271ms  @1:12.458  -- 'Tell it to my heart' als ruhiger Herzschlag (lub-dub nur auf jedem zweiten Beat): Matrix EKG-Linie wie auf einem Herzmonitor, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz; mit jedem Takt rückt jedes Gerät eine Farbe weiter (Orange, Pink, Lila, Gelb).
 		setColorScheme(SCHEME_SUNSET);
 		scene(SCENE_VERSE_HEART_SLOW, 16271, 10, 118);
 		break;
