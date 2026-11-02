@@ -38,18 +38,22 @@ sections:
     why: "Alter Effekt: weiße Wellen, weich an- und abschwellend."
 
   verse 1:
-    scene: SCENE_VERSE
-    scheme: SCHEME_NEON
-    why: "Strophe neu (18.10.2026, statt der alten Vollfarben): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix"
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_NEON
+    # Zurück: songgen.py ILoveIt_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_TOXIC
+    why: "Strophe frisch in Grün/Gelb: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat"
 
   chorus 1:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, false, 4)"
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein."
 
   verse 2:
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Urteil des Users 02.11.2026: zu hektisch
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_SUNSET
-    why: "Strophe neu (18.10.2026, statt des alten Scanners): alle Geräte schlagen auf jedem Beat wie ein Herz in Orange/Pink/Lila, die Matrix zeigt eine Lissajous-Schleife"
+    why: "Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
 
   chorus 2:
     fx: "progSternNeu(${dur}, ${half}, ${next}, 5, 26, 5, true, 3)"
@@ -66,9 +70,13 @@ sections:
     why: "Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat."
 
   verse 3:
-    scene: SCENE_VERSE
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_NEON
+    # Zurück: songgen.py ILoveIt_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_DNA_FLIP
     scheme: SCHEME_NEON
-    why: "wie verse 1: Zonen im Beat, Lichtschuss, Plasma-Wolken auf der Matrix"
+    fade: {to: complement, per: 8}
+    why: "Matrix: stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück"
 
   chorus 3:
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, true, 3)"

@@ -3,7 +3,7 @@
 //@function gen_ILoveIt
 //@name I Love It
 //@struktur_sha 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
-//@show_sha 9e42601aa7fde76fffb380df8abb2b6df113108a2e2511015a1a7fb0bdb927a4
+//@show_sha 0e9c66774218ca5ccf4d178cbc437c4cca2f7d4771528bb6cce6287159a06276
 //@part GEN_ILOVEIT_PAUSE 0
 //@part GEN_ILOVEIT_SYNTH_INTRO 3
 //@part GEN_ILOVEIT_VERSE_1 4
@@ -37,15 +37,15 @@ void gen_ILoveIt() {
 
 #if defined(SCROLLMATRIX)
 	case 2:	// Rest von 'verse 1' ab 0:16.750, Einstieg case 5
-		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE, 12500, 5, 120);
+		setColorScheme(SCHEME_TOXIC);
+		scene(SCENE_VERSE_WAVES, 12500, 5, 120);
 		break;
 #endif
 
 #if defined(GITBOARD)
 	case 2:	// Rest von 'verse 1' ab 0:13.750, Einstieg case 5
-		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE, 15500, 5, 120);
+		setColorScheme(SCHEME_TOXIC);
+		scene(SCENE_VERSE_WAVES, 15500, 5, 120);
 		break;
 #endif
 
@@ -53,9 +53,9 @@ void gen_ILoveIt() {
 		progPalette(8000, 6, 4);
 		break;
 
-	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe neu (18.10.2026, statt der alten Vollfarben): dezent im Beat - Zonen der Gitarre, Lichtschuss in den Lampen, Plasma-Wolken in Pink/Cyan/Violett auf der Matrix
-		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE, 16000, 5, 120);
+	case 4:	// verse 1  8 T  16000ms  @0:13.250  -- Strophe frisch in Grün/Gelb: Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat
+		setColorScheme(SCHEME_TOXIC);
+		scene(SCENE_VERSE_WAVES, 16000, 5, 120);
 		break;
 
 	case 5:	// chorus 1  4 T  8000ms  @0:29.250  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel alle 2 Beats. Hier steigt auch der Trailer (Song 80) ein.
@@ -68,7 +68,7 @@ void gen_ILoveIt() {
 		break;
 	case 7:	// Rest von 'verse 2' ab 0:46.250, Einstieg case 9
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE_HEART, 7000, 9, 120);
+		scene(SCENE_VERSE_HEART_SLOW, 7000, 9, 120);
 		break;
 #endif
 
@@ -78,13 +78,13 @@ void gen_ILoveIt() {
 		break;
 	case 7:	// Rest von 'verse 2' ab 0:43.250, Einstieg case 9
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE_HEART, 10000, 9, 120);
+		scene(SCENE_VERSE_HEART_SLOW, 10000, 9, 120);
 		break;
 #endif
 
-	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Strophe neu (18.10.2026, statt des alten Scanners): alle Geräte schlagen auf jedem Beat wie ein Herz in Orange/Pink/Lila, die Matrix zeigt eine Lissajous-Schleife
+	case 8:	// verse 2  8 T  16000ms  @0:37.250  -- Alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Orange/Pink/Lila/Gelb, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE_HEART, 16000, 9, 120);
+		scene(SCENE_VERSE_HEART_SLOW, 16000, 9, 120);
 		break;
 
 	case 9:	// chorus 2  4 T  8000ms  @0:53.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel alle 2 Beats.
@@ -101,9 +101,10 @@ void gen_ILoveIt() {
 		progSternNeu(16000, 500, 12, 5, 26, 5, false, 4);
 		break;
 
-	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- wie verse 1: Zonen im Beat, Lichtschuss, Plasma-Wolken auf der Matrix
+	case 12:	// verse 3  8 T  16000ms  @1:33.250  -- Matrix: stehende DNA-Helix, die Stränge tauschen jeden Takt die Seiten; die anderen Geräte pulsieren einmal je Takt; Pink/Cyan wandert alle 2 Takte zur Gegenfarbe und zurück
 		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE, 16000, 13, 120);
+		setColorFade(FADE_COMPLEMENT, 4000);
+		scene(SCENE_DNA_FLIP, 16000, 13, 120);
 		break;
 
 	case 13:	// chorus 3  8 T  16000ms  @1:49.250  -- Alter Effekt: drehender, wandernder Stern, Farbwechsel pro Beat.

@@ -1,0 +1,9 @@
+zeit: '2026-11-02 15:59:23'
+notiz: 'Strophen Test 2 (02.11.2026): Herzschlag halbes Tempo + Farbwechsel, Physical
+  Plasma, Abcdefu Call/Response'
+werkzeug_git: 2e3a95c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: 0aa65ba973c903384ffed19de3a4759443115131d4ddfa793b9eb468a4948f98
+  show.yaml: 0e9c66774218ca5ccf4d178cbc437c4cca2f7d4771528bb6cce6287159a06276
+  generated.cpp: e1d7f32ef863453208d19a540d69a1045386777b44e898d3fb03aba40139c2bd
