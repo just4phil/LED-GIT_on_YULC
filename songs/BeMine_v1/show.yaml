@@ -34,7 +34,7 @@ sections:
     # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: auf halbes Tempo umstellen
     scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
-    why: "Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
+    why: "Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   you got me so high:
     fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"

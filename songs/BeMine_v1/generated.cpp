@@ -3,7 +3,7 @@
 //@function gen_BeMine
 //@name Be Mine
 //@struktur_sha c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
-//@show_sha e56fc8fc476eac0163613c88abd2ad19ff092d81ed35c9f28a373b603054e2f3
+//@show_sha 80759707227c8cea4e9ca71f620b0b1f79fab0198ba065c776d708d84eadbf5e
 //@part GEN_BEMINE_PAUSE 0
 //@part GEN_BEMINE_INTRO 3
 //@part GEN_BEMINE_VERSE_1A 4
@@ -56,7 +56,7 @@ void gen_BeMine() {
 		scene(SCENE_VERSE_STARS, 15238, 5, 126);
 		break;
 
-	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
+	case 5:	// verse 1b  8 T  15238ms  @0:35.476  -- Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor
 		setColorScheme(SCHEME_NEON);
 		scene(SCENE_VERSE_HEART_SLOW, 15238, 6, 126);
 		break;
