@@ -21,6 +21,13 @@ neuer fx:
 TODOs
 =======
 
+- In the dark -> strobe zu früh und zu lang
+- no roots -> diese sinus wellen kommen auch sehr häufig vor
+- titanium -> text zu früh und der stone heart teil ist sehr lange BLACK
+
+tv on / off efect einbauen
+-------------------
+
 - TITMH -> sieht sehr anders aus
 
 - billie jean noch mal checken
@@ -47,8 +54,106 @@ DONE
 - shivers
 - kids neu auto-generiert -> eigentlich ganz cool
 - dancing müsste auch fertig sein
+------------------
 
 
+
+Hier die Änderungen dieser Sitzung (02.11.2026), alle committet auf MAIN.
+
+Pro Song
+
+┌────────────────────┬─────────────────┬──────────────────────────────────────────────────────────────┐
+│     Song (ID)      │      Part       │                           Änderung                           │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Physical (2)       │ verse 1         │ VERSE (blau) → Plasma, TOXIC + Regenbogen. Game of Life war  │
+│                    │                 │ ein Zwischenschritt, der rausflog.                           │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ Herz (blau, hektisch) → ruhiges Herz, NEON                   │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Take On Me (3)     │ verse 1         │ VERSE (blau) → Plasma, NEON ↔ Gegenfarbe. Die Part-Nummern   │
+│                    │                 │ sind jetzt fortlaufend, deshalb gibt es eine neue .mid.      │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ No Roots (6)       │ verse 1b        │ VERSE → Wellen, TOXIC                                        │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2b        │ VERSE → Plasma, TOXIC (Matrix: Kreise wie bisher)            │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Dancing On My Own  │ git steigt ein  │ VERSE (blau) → DNA, NEON (Gitarre: VU wie bisher)            │
+│ (8)                │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ somebody        │ Matrix: EKG-Linie mit halbem Tempo                           │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ I Love It (9)      │ verse 1         │ VERSE → Wellen, TOXIC                                        │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ Herz → ruhiges Herz, SUNSET                                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 3         │ VERSE → DNA-Flip, NEON ↔ Gegenfarbe                          │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Titanium (11)      │ im bulletproof  │ VERSE (eisblau) → Farbband, Eisblau ↔ Orange                 │
+│                    │ (1+2)           │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ Pause: STONE    │ Herz → ruhiges Herz (nur Gitarre/Bass, rot)                  │
+│                    │ HEART           │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Such A Shame (12)  │ bridge 1        │ VERSE (blau) → Wellen, Blau → Pink                           │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ In The Dark (13)   │ verse 1         │ VERSE (blau) → Sterne, NEON                                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Shivers (14)       │ verse 1         │ VERSE → Sterne, FIRE                                         │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Abcdefu (15)       │ verse 2 weiter  │ VERSE → Frage/Antwort auf jedem Beat, RETRO                  │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ APT (17)           │ verse 2         │ VERSE → Plasma, SUNSET ↔ Gegenfarbe                          │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Kids (20)          │ verse 1         │ VERSE → Plasma, TOXIC + Regenbogen                           │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Tell It To My      │ verse           │ Herz → ruhiges Herz, FIRE                                    │
+│ Heart (21)         │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ VERSE → ruhiges Herz, SUNSET                                 │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Friday I'm In Love │ verse 4a        │ Herz → ruhiges Herz, NEON                                    │
+│  (25)              │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Be Mine (26)       │ verse 1b        │ Herz → ruhiges Herz, NEON                                    │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ I Wanna Dance With │ verse 1         │ VERSE → ruhiges Herz, FIRE                                   │
+│  Somebody (27)     │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│                    │ verse 2         │ Herz → ruhiges Herz, NEON                                    │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Billie Jean (28)   │ verse 2, verse  │ Herz → ruhiges Herz, NEON                                    │
+│                    │ 2 b             │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Maniac (30)        │ verse 1a        │ VERSE (blau) → DNA-Flip, FIRE                                │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ All The Things She │ verse 2 b       │ VERSE (blau) → Wellen, NEON                                  │
+│  Said (31)         │                 │                                                              │
+├────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ Girls Just Wanna   │ verse 2         │ VERSE (blau) → Plasma, NEON → SUNSET                         │
+│ Have Fun (33)      │                 │                                                              │
+└────────────────────┴─────────────────┴──────────────────────────────────────────────────────────────┘
+
+SCENE_VERSE läuft in keinem generierten Song mehr, und der schnelle Herzschlag nur noch in Dancing „somebody“, dort schon mit halbem Tempo.
+
+Song-übergreifend (gilt automatisch überall)
+
+- Neue Szene SCENE_VERSE_HEART_SLOW: Herzschlag nur auf jedem zweiten Beat, exakt auf dem Beat. Jeden Takt rückt jedes Gerät eine Schemafarbe weiter.
+- Herz-Szenen auf der Matrix: EKG-Linie wie auf einem Herzmonitor statt der Lissajous-Schleife. Der Ausschlag läuft in die nächste Schemafarbe.
+- Sterne (SCENE_VERSE_STARS): etwa 2,5-mal so viele Sterne, auf den Lampen etwa 5-mal so viele. Sie glühen länger nach (1,7 s statt 1 s).
+- Build-up (SCENE_BUILDUP): Die Matrix explodiert am Ende mit, als Druckwelle aus der Mitte, gleichzeitig mit Lampen und Gitarre.
+- Neue Regeln, festgehalten in den Song-Regeln, im Effekt-Katalog und in meinem Gedächtnis:
+  - Game of Life nur in der Songpause.
+  - Der Herzschlag auf jedem Beat ist zu hektisch.
+
+Offen für später
+
+- Sinuswellen (10 Parts, davon 6 ältere in kühlem Blau)
+- Matrix-Blitz vor einem Blinder eventuell weglassen
+- Demo 92: Part 89 (ruhiges Herz) wartet noch auf deine Abnahme
+
+
+
+-----------------
 
 Noch handgeschrieben (alter Code) sind diese Songs, nach Song-ID sortiert:
 
