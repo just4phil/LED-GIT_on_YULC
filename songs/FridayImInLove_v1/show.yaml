@@ -74,9 +74,10 @@ sections:
     why: "Alter Effekt: 1 Takt weißes Flimmern (65 ms)."
 
   verse 4a:
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: auf halbes Tempo umstellen
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
-    why: "Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
+    why: "Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife"
 
   verse 4b:
     fx: "progWaterRipple(${dur}, ${next}, 50, true, false)"

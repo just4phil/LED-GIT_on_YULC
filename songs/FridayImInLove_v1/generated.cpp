@@ -3,7 +3,7 @@
 //@function gen_FridayImInLove
 //@name Friday I'm In Love
 //@struktur_sha aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
-//@show_sha 126662d927aabe7a577ab158a9215492a9ca7f06084eb2b63263bf434c3c25e9
+//@show_sha 0f9e2f2ff41eeb3e12d14daebd42ab7197410f49c736646dd82f0ad6fc24ca33
 //@part GEN_FRIDAYIMINLOVE_PAUSE 0
 //@part GEN_FRIDAYIMINLOVE_INTRO 3
 //@part GEN_FRIDAYIMINLOVE_INTRO_2 4
@@ -106,9 +106,9 @@ void gen_FridayImInLove() {
 		progStrobo(1714, 15, 65, 255, 255, 255);
 		break;
 
-	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen auf jedem Beat wie ein Herz in Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife
+	case 15:	// verse 4a  8 T  13714ms  @2:28.500  -- Strophe neu (18.10.2026): 'Friday I'm in love' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine Lissajous-Schleife
 		setColorScheme(SCHEME_NEON);
-		scene(SCENE_VERSE_HEART, 13714, 16, 140);
+		scene(SCENE_VERSE_HEART_SLOW, 13714, 16, 140);
 		break;
 
 	case 16:	// verse 4b  8 T  13715ms  @2:42.214  -- Alter Effekt: Wasserringe an zufälligen Stellen, mit Farbverlauf.

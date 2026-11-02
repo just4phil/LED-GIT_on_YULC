@@ -1,0 +1,8 @@
+zeit: '2026-11-02 16:12:35'
+notiz: verse 4a auf SCENE_VERSE_HEART_SLOW (halbes Tempo + Farbwechsel)
+werkzeug_git: 2e3a95c + lokale Änderungen in tools/ oder src/
+code_passt_zu_tabelle_und_show: true
+sha256:
+  struktur.xlsx: aa0b17e184e7de52acf10449db7143bd5d221ab734bbb80cbaec67c57c0b3956
+  show.yaml: 0f9e2f2ff41eeb3e12d14daebd42ab7197410f49c736646dd82f0ad6fc24ca33
+  generated.cpp: bf9102f7883616b215ff4994752a890d144bcb436434f26918356949bd0f1219
