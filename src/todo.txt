@@ -61,7 +61,7 @@ DONE
 
 
 Alle Änderungen an den Songs vom 02.11.2026 zum Testen (Endstand). "[neu]" = zweite Runde (DNA/Sinus ersetzt),
-noch NICHT committet; der Rest ist committet auf MAIN. "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
+alles committet auf MAIN (31c7d3a). "Matrix: ..." = nur das Matrix-Motiv getauscht, Lampen und
 Instrumente wie bisher.
 
 Pro Song (nach Song-ID)
