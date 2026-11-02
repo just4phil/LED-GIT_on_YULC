@@ -926,8 +926,8 @@ szenen:
     urteil:
     notiz: "neu am 18.10.2026, Demo 92 Part 63, Abnahme offen"
   SCENE_VERSE_HEART:
-    wirkung: "Strophe als Herzschlag: alle Geräte schlagen auf jedem Beat lub-dub; Matrix Lissajous-Schleife im Schemaverlauf, Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz"
-    geraete: {gitarre: progHeartbeat, lampe: progLampHeartbeat, matrix: progLissajousBeat}
+    wirkung: "Strophe als Herzschlag: alle Geräte schlagen auf jedem Beat lub-dub; Matrix EKG-Linie wie auf einem Herzmonitor (seit 02.11.2026, vorher Lissajous-Schleife), Gitarre/Bass Korpus + Puls den Hals hinauf, Lampen ganz"
+    geraete: {gitarre: progHeartbeat, lampe: progLampHeartbeat, matrix: "progEcgBeat (Ausschlag läuft in die nächste Schemafarbe)"}
     rolle: [flaeche]
     energie: [1, 3]
     bewegung: pulsierend
@@ -936,7 +936,7 @@ szenen:
     notiz: "neu am 18.10.2026, Demo 92 Part 65, Abnahme offen. Gut für ruhige, getragene Strophen. Urteil des Users 02.11.2026 (Tell It To My Heart, I Wanna Dance, I Love It, Physical; vorher schon Dancing On My Own): \"zu hektisch -> halbes tempo + Farbwechsel einbauen\" - dafür SCENE_VERSE_HEART_SLOW"
   SCENE_VERSE_HEART_SLOW:
     wirkung: "wie SCENE_VERSE_HEART, aber ruhiger: Herzschlag nur auf jedem zweiten Beat (exakt auf dem Beat-Raster), mit jedem Takt rückt jedes Gerät eine Schemafarbe weiter - alle gleichzeitig auf einem Schlag"
-    geraete: {gitarre: "progHeartbeat(..., 2)", lampe: "progLampHeartbeat(..., 2)", matrix: "progLissajousBeat(..., 2)"}
+    geraete: {gitarre: "progHeartbeat(..., 2)", lampe: "progLampHeartbeat(..., 2)", matrix: "progEcgBeat(..., 2)"}
     rolle: [flaeche]
     energie: [1, 3]
     bewegung: pulsierend

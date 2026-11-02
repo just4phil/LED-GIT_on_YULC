@@ -74,7 +74,7 @@ enum SceneID : uint8_t {
 						// Lampen: Schemaverlauf wandert nach oben - alle schwellen auf jedem Beat leicht an
 	SCENE_VERSE_WAVES,	// Matrix: Sinus- und Kosinuslinie laufen im Takt; Gitarre/Bass: Lichtebene fährt je Takt einmal
 						// über die Gitarre (jede Fahrt die nächste Schemafarbe); Lampen: Lichtschuss nach oben pro Beat
-	SCENE_VERSE_HEART,	// Herzschlag (lub-dub) auf jedem Beat: Matrix Lissajous-Schleife, Gitarre/Bass Korpus + Puls den
+	SCENE_VERSE_HEART,	// Herzschlag (lub-dub) auf jedem Beat: Matrix EKG-Linie (Herzmonitor), Gitarre/Bass Korpus + Puls den
 						// Hals hinauf, Lampen ganz - alle im selben Schlag
 	SCENE_VERSE_STARS,	// Sternenhimmel auf allen Geräten: auf jedem Beat leuchten ein paar Sterne in Schemafarben auf und
 						// verglimmen in etwa 2 Beats (auf der Eins einer weißlich)

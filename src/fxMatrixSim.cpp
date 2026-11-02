@@ -539,6 +539,103 @@ void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, 
 }
 
 //==================================================================
+//=========== progEcgBeat ==========================================
+//==================================================================
+
+// EKG-Linie wie auf einem Herzmonitor (neu am 02.11.2026: die Lissajous-Schleife in SCENE_VERSE_HEART "erschließt sich
+// nicht" - Wunsch des Users nach einem Motiv, das man als Herz versteht). Ein Leuchtpunkt (der "Stift") läuft in einem
+// Takt einmal von links nach rechts über die Matrix und zeichnet die Linie. Zwischen den Schlägen ist sie flach; auf
+// jedem Herzschlag schlägt sie aus: erst ein kleiner Knick nach unten, dann der große Zacken nach oben ("lub") und
+// tief hinunter, kurz danach eine flache, runde Welle ("dub", HEART_DUB_MS nach dem Schlag wie bei Gitarre und Lampen).
+// Weil der Stift langsam läuft und der Zacken schnell ist, entsteht der Zacken als senkrechter Strich in einer Spalte -
+// genau so sieht ein EKG aus. Hinter dem Stift verblasst die Linie langsam (fadeToBlackBy), drei Spalten vor ihm ist
+// alles schwarz - dort "löscht" der Monitor die alte Linie, bevor er sie überschreibt.
+// Alles ist aus der Zeit seit Partbeginn gerechnet (Takt-Position, heartPhase()): alle Geräte bleiben im Gleichlauf.
+//   col            Farbe der Linie auf der Grundlinie (die Spitze des Stifts ist heller, fast weiß)
+//   beatsPerHeart  1 = Schlag auf jedem Beat, 2 = nur jeder zweite (SCENE_VERSE_HEART_SLOW)
+//   peak           Farbe, in die der Ausschlag läuft (Wunsch des Users 02.11.2026: "den ausschlag nach oben dann in eine
+//                  farbe laufen lassen"): je weiter ein Punkt von der Grundlinie weg ist, desto mehr hat er diese Farbe,
+//                  ganz oben (und ganz unten) nur noch sie. CRGB::Black = automatisch: col zur Hälfte nach Weiß.
+
+// Ausschlag der EKG-Kurve t ms nach dem Herzschlag, in "Zehnteln der Höhe über der Grundlinie" (60 = ganz oben,
+// negativ = unter die Grundlinie). Werte in ms, frei nach einer echten EKG-Kurve, nur kürzer und deutlicher.
+static int ecgLevel(unsigned int t) {
+	if (t < 20)  return -8;								// Q: kurzer Knick nach unten direkt auf dem Schlag
+	if (t < 45)  return -8 + (int)(t - 20) * 68 / 25;	// R: steil hinauf bis ganz oben (60)
+	if (t < 75)  return 60 - (int)(t - 45) * 80 / 30;	// ... und tief hinunter (-20)
+	if (t < 105) return -20 + (int)(t - 75) * 20 / 30;	// S: zurück zur Grundlinie
+	if (t >= HEART_DUB_MS && t < HEART_DUB_MS + 160) {	// T-Welle = "dub": flacher, runder Buckel
+		return (int)(sinf((float)M_PI * (t - HEART_DUB_MS) / 160.0f) * 22.0f);
+	}
+	return 0;											// dazwischen flach
+}
+
+static int ecgLastX = -1, ecgLastY = 0;	// wo der Stift beim letzten Bild war (-1 = noch nicht gezeichnet)
+
+// Farbe eines Punkts der EKG-Linie in Zeile row: auf der Grundlinie (base) col, zum oberen bzw. unteren Rand hin
+// immer mehr peak. blend(a, b, 0) = a, blend(a, b, 255) = b.
+static CRGB ecgColor(int row, int base, CRGB col, CRGB peak) {
+	int dist = abs(row - base);										// Abstand zur Grundlinie in Zeilen
+	int span = (row < base) ? base : (MATRIX_HEIGHT - 1 - base);	// so weit geht es in diese Richtung höchstens
+	if (span <= 0) return col;
+	return blend(col, peak, (uint8_t)min(255, dist * 255 / span));
+}
+
+void progEcgBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, uint8_t beatsPerHeart, CRGB peak) {
+	if (fxPartStart(durationMillis, nextPart)) {
+		clearAll();
+		ecgLastX = -1;
+	}
+
+	if (fxFrameDue(10)) {
+		if (bpm == 0) bpm = 1;
+		unsigned int ms = millisCounterForProgChange;
+		const uint32_t barScaled = 240000UL;							// ein Takt = 4 Beats = 240000 / bpm ms
+		uint32_t inBar = ((uint32_t)ms * bpm) % barScaled;			// Position im Takt (in ms * bpm)
+		int x = (int)((uint64_t)inBar * MATRIX_WIDTH / barScaled);		// Spalte des Stifts: ein Takt = einmal quer
+
+		// Höhe: Grundlinie bei 60 % der Höhe von oben (Platz für den großen Zacken nach oben), Ausschlag 60 = ganz oben
+		int base = MATRIX_HEIGHT * 6 / 10;
+		int y = base - ecgLevel(heartPhase(ms, bpm, beatsPerHeart)) * base / 60;
+		y = constrain(y, 0, MATRIX_HEIGHT - 1);
+
+		// keine Ausschlag-Farbe angegeben, oder dieselbe wie col (Schema mit nur einer Farbe, z.B. SCHEME_RED):
+		// dann läuft der Ausschlag halb nach Weiß, damit er trotzdem heller wird als die Grundlinie
+		if (!peak || peak == col) peak = blend(col, CRGB::White, 128);
+
+		fadeToBlackBy(leds, MATRIX_SIZE, 4);	// alte Linie verblasst langsam (in etwa einem halben Takt auf ein Fünftel)
+
+		// Spalten, die der Stift seit dem letzten Bild überquert hat, mit der Grundlinie bzw. der letzten Höhe füllen,
+		// damit die Linie keine Lücken hat (bei schnellem Tempo springt er mehr als eine Spalte pro Bild)
+		int from = (ecgLastX < 0) ? x : ecgLastX;
+		int steps = (x - from + MATRIX_WIDTH) % MATRIX_WIDTH;		// so viele Spalten weiter (über den Rand hinweg)
+		int prevY = (ecgLastX < 0) ? y : ecgLastY;
+		for (int s = 1; s <= steps; s++) {
+			int cx = (from + s) % MATRIX_WIDTH;
+			for (int r = 0; r < MATRIX_HEIGHT; r++) leds[matrix->XY(cx, r)] = CRGB::Black;	// alte Linie weg
+			leds[matrix->XY(cx, prevY)] = ecgColor(prevY, base, col, peak);
+		}
+
+		// senkrechter Strich von der vorigen zur jetzigen Höhe in der Spalte des Stifts: so entsteht der Zacken - jeder
+		// Punkt in der Farbe seiner Höhe, der Zacken läuft also von col an der Grundlinie bis peak an der Spitze
+		for (int r = min(prevY, y); r <= max(prevY, y); r++) leds[matrix->XY(x, r)] = ecgColor(r, base, col, peak);
+		CRGB head = ecgColor(y, base, col, peak);
+		head += CRGB(90, 90, 90);										// Spitze des Stifts: heller, fast weiß
+		leds[matrix->XY(x, y)] = head;
+
+		// drei Spalten vor dem Stift schwarz: hier wird gleich neu gezeichnet
+		for (int g = 1; g <= 3; g++) {
+			int gx = (x + g) % MATRIX_WIDTH;
+			for (int r = 0; r < MATRIX_HEIGHT; r++) leds[matrix->XY(gx, r)] = CRGB::Black;
+		}
+
+		ecgLastX = x;
+		ecgLastY = y;
+	}
+	fxShow();
+}
+
+//==================================================================
 //=========== progDNA ==============================================
 //==================================================================
 

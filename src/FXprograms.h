@@ -505,6 +505,12 @@ void progSineCosBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm);
 // Lissajous-Schleife im Schemaverlauf, dreht sich in 8 Takten einmal; die Helligkeit schlägt wie ein Herz (lub-dub)
 // beatsPerHeart: 1 = Herzschlag auf jedem Beat, 2 = nur auf jedem zweiten (SCENE_VERSE_HEART_SLOW)
 void progLissajousBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, uint8_t beatsPerHeart = 1);
+// EKG-Linie wie auf einem Herzmonitor: der Stift läuft in einem Takt einmal quer über die Matrix, auf jedem Herzschlag
+// (beatsPerHeart: 1 = jeder Beat, 2 = jeder zweite) ein Zacken ("lub") und eine flache Welle ("dub"); Matrix-Teil von
+// SCENE_VERSE_HEART und SCENE_VERSE_HEART_SLOW (seit 02.11.2026 statt progLissajousBeat). col = Farbe der Grundlinie,
+// peak = Farbe, in die der Ausschlag nach oben/unten läuft (CRGB::Black = col halb nach Weiß).
+void progEcgBeat(unsigned int durationMillis, byte nextPart, uint8_t bpm, CRGB col, uint8_t beatsPerHeart = 1,
+				 CRGB peak = CRGB::Black);
 
 // DNA-Doppelhelix: zwei Stränge winden sich quer über die Fläche umeinander, dazwischen zweifarbige Sprossen; die
 // Helix dreht sich um ihre Längsachse (der Strang vorn ist hell, der hinten dunkel).

@@ -589,8 +589,9 @@ void progDnaPulse(unsigned int durationMillis, byte nextPart, unsigned int turnM
 // eine Schemafarbe weiter. Bei halbem Tempo schlägt das Herz auf Beat 0 und 2 eines Takts - der Wechsel fällt also
 // immer genau auf einen Schlag, nie mitten in ein Ausklingen. Alle Geräte rechnen mit derselben Zeit seit Partbeginn
 // und wechseln gemeinsam. Ein Schema mit nur einer Farbe (SCHEME_RED, _BLUE, _WHITE) wechselt dabei nicht.
-static CRGB heartBarColor(uint8_t bpm) {
-	return schemeColor(STAGE_POS + fxBeats(bpm) / 4);
+// next = 1: die Farbe danach im Schema (die EKG-Linie der Matrix läuft im Ausschlag in diese Farbe).
+static CRGB heartBarColor(uint8_t bpm, uint8_t next = 0) {
+	return schemeColor(STAGE_POS + fxBeats(bpm) / 4 + next);
 }
 
 // scene(): wählt zur Szene den passenden Effekt für DIESES Gerät und ruft ihn auf.
@@ -743,8 +744,11 @@ void scene(uint8_t sceneID, unsigned int durationMillis, byte nextPart, uint8_t 
 		break;
 	case SCENE_VERSE_PLASMA:	progPlasmaBeat(durationMillis, nextPart, bpm);	break;
 	case SCENE_VERSE_WAVES:	progSineCosBeat(durationMillis, nextPart, bpm);	break;
-	case SCENE_VERSE_HEART:	progLissajousBeat(durationMillis, nextPart, bpm);	break;
-	case SCENE_VERSE_HEART_SLOW:	progLissajousBeat(durationMillis, nextPart, bpm, 2);	break;	// Schleife im Schemaverlauf, Schlag jeder 2. Beat
+	// Herz-Szenen: EKG-Linie wie auf einem Herzmonitor (seit 02.11.2026 statt der Lissajous-Schleife, die der User nicht
+	// als Herz erkannt hat), Zacken genau auf dem Schlag der anderen Geräte
+	// (Grundlinie in der Farbe des Geräts, der Ausschlag läuft in die nächste Schemafarbe)
+	case SCENE_VERSE_HEART:	progEcgBeat(durationMillis, nextPart, bpm, me, 1, schemeColor(STAGE_POS + 1));	break;
+	case SCENE_VERSE_HEART_SLOW:	progEcgBeat(durationMillis, nextPart, bpm, heartBarColor(bpm), 2, heartBarColor(bpm, 1));	break;	// jeder 2. Beat, Farben je Takt
 	case SCENE_BUILDUP:	progStarfield(durationMillis, nextPart, 20);	break;
 	case SCENE_DROP:	progWaterRipple(durationMillis, nextPart, 30, true, true);	break;	// Schemafarben, aus der Mitte
 	case SCENE_FIRE:	progFire(durationMillis, nextPart, 30, isColdScheme());	break;
