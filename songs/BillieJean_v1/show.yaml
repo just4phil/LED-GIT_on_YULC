@@ -48,10 +48,11 @@ sections:
     why: "Motiv Leuchtplatten: pro Beat leuchtet genau ein Gerät in Rot, Weiß oder Blau, der Rest ist dunkel (alt: progRandomLines im Beat)"
 
   verse 2:
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: auf halbes Tempo umstellen
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
     transition: {type: fade, beats: 2}
-    why: "zweite Strophe mit anderem Look: alle Geräte schlagen auf jedem Beat wie ein Herz (zum pochenden Bass), Pink/Cyan/Violett, die Matrix zeigt eine Lissajous-Schleife"
+    why: "zweite Strophe mit anderem Look: alle Geräte schlagen ruhig wie ein Herz (zum pochenden Bass, nur auf jedem zweiten Beat), Pink/Cyan/Violett mit einer Farbe weiter je Takt, die Matrix zeigt eine Lissajous-Schleife"
 
   i am the one (2):
     scene: SCENE_PINGPONG
@@ -113,10 +114,11 @@ sections:
     why: "Ruf: Schläge auf die Viertel in Rot (alt: progFastBlingBling)"
 
   verse 2 b:
-    scene: SCENE_VERSE_HEART
+    # Vorher (seit 18.10.2026): SCENE_VERSE_HEART - Wunsch des Users 02.11.2026: auf halbes Tempo umstellen
+    scene: SCENE_VERSE_HEART_SLOW
     scheme: SCHEME_NEON
     transition: {type: fade, beats: 2}
-    why: "Strophe wie verse 2: Herzschlag auf allen Geräten in Pink/Cyan/Violett, das Rot blendet weich aus"
+    why: "Strophe wie verse 2: ruhiger Herzschlag (jeder zweite Beat) auf allen Geräten in Pink/Cyan/Violett, je Takt eine Farbe weiter, das Rot blendet weich aus"
 
   i ma the one:
     scene: SCENE_PINGPONG
