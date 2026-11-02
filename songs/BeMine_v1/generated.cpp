@@ -3,7 +3,7 @@
 //@function gen_BeMine
 //@name Be Mine
 //@struktur_sha c944ac42ec5426412bd6915706ad716e13c7c27a7d5944134a7c1d4a61792326
-//@show_sha 4c8e466308036b84b68d357f642ed700bb55ebf66b3b71bec62c5e08c5607a3b
+//@show_sha a78019d8f57efc0ee4320b1037a661414e9c9fd982c4ae8717fda67c651a25f4
 //@part GEN_BEMINE_PAUSE 0
 //@part GEN_BEMINE_INTRO 3
 //@part GEN_BEMINE_VERSE_1A 4
@@ -61,8 +61,8 @@ void gen_BeMine() {
 		scene(SCENE_VERSE_HEART_SLOW, 15238, 6, 126);
 		break;
 
-	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
-		progRandomLines(13334, 7, 476, false);
+	case 6:	// you got me so high  7 T  13334ms  @0:50.714  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
+		progRandomLines(13334, 7, 476, false, 1905);
 		break;
 
 	case 7:	// snareroll  1 T  1904ms  @1:04.048  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.
@@ -92,8 +92,8 @@ void gen_BeMine() {
 		progWaterRipple(15238, 12, 50, true, true);
 		break;
 
-	case 12:	// you got me so high (2)  7 T  13334ms  @1:53.571  -- Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild.
-		progRandomLines(13334, 13, 476, false);
+	case 12:	// you got me so high (2)  7 T  13334ms  @1:53.571  -- Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind.
+		progRandomLines(13334, 13, 476, false, 1905);
 		break;
 
 	case 13:	// snareroll (2)  1 T  1905ms  @2:06.905  -- Alter Effekt: 1 Takt schnelle Einzelblitze als Auftakt zum Chorus.

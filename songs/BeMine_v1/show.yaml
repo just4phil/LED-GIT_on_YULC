@@ -37,8 +37,9 @@ sections:
     why: "Strophe neu (18.10.2026): 'be mine' - alle Geräte schlagen ruhig wie ein Herz (nur auf jedem zweiten Beat) in Pink/Cyan/Violett, mit jedem Takt rückt jedes Gerät eine Farbe weiter; die Matrix zeigt eine EKG-Linie wie auf einem Herzmonitor"
 
   you got me so high:
-    fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"
-    why: "Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild."
+    # Wunsch des Users 02.11.2026: "fade out Feature für die Linien aktivieren" - vorher ohne 5. Wert (Linien blieben stehen)
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false, ${beats:4})"
+    why: "Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind."
 
   snareroll:
     fx: "progFastBlingBling(${dur}, 6, ${next})"
@@ -66,8 +67,9 @@ sections:
     why: "Alter Effekt: Wasserringe breiten sich von der Mitte aus, mit Farbverlauf."
 
   you got me so high (2):
-    fx: "progRandomLines(${dur}, ${next}, ${beat}, false)"
-    why: "Alter Effekt: pro Beat eine weitere zufällige Linie, die Linien bleiben stehen und füllen das Bild."
+    # Wunsch des Users 02.11.2026: "fade out Feature für die Linien aktivieren" - vorher ohne 5. Wert (Linien blieben stehen)
+    fx: "progRandomLines(${dur}, ${next}, ${beat}, false, ${beats:4})"
+    why: "Alter Effekt: pro Beat eine neue zufällige Linie; ältere Linien verblassen und sind nach 4 Beats fast dunkel, so dass immer nur die letzten paar Linien zu sehen sind."
 
   snareroll (2):
     fx: "progFastBlingBling(${dur}, 6, ${next})"
