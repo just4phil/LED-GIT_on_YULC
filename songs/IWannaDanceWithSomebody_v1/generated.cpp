@@ -3,7 +3,7 @@
 //@function gen_IWannaDanceWithSomebody
 //@name I Wanna Dance With Somebody
 //@struktur_sha 9985d66282f6634c0ed875df4955859a722f0b85f66f80937d2ffe143bdb7aa5
-//@show_sha ceccda7a4649abe0fc1d8a28e23dff7eab5cd6106a1c135c9c2900b840d0b257
+//@show_sha 5bc3075945eefd155a67d706e47375b073b7096b8bc3c7fc69008ad874dadfb0
 //@part GEN_IWANNADANCEWITHSOMEBODY_PAUSE 0
 //@part GEN_IWANNADANCEWITHSOMEBODY_STROBO 3
 //@part GEN_IWANNADANCEWITHSOMEBODY_INTRO 4
@@ -147,8 +147,21 @@ void gen_IWannaDanceWithSomebody() {
 		progStrobo(1935, 22, 100, getRandomCRGB());
 		break;
 
-	case 22:	// Say you wanna dance  7 T  13549ms  @2:28.306  -- Alter Effekt: schnelle Einzelblitze.
+	case 22:	// Say you wanna dance  7 T  13549ms  @2:28.306  -- Schnelle Einzelblitze; auf den Takten 79,5, 81,5 und 83,5 steht auf der Matrix je einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt.
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(2903, 3871);
+		fxLayerWindow(6774, 7742, 1);
+		fxLayerWindow(10645, 11613, 2);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("DANCE", 13549, 23, 30968, CRGB::DeepPink);
+		fxLayerEnd(FX_OVER);
+#endif
 		progFastBlingBling(13549, 6, 23);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 23:	// übergang  1 T  1935ms  @2:41.855  -- Alter Effekt: 1 Takt Leuchtspuren, die nach Weiß aufhellen.
@@ -183,24 +196,57 @@ void gen_IWannaDanceWithSomebody() {
 		progRandomLines(2662, 31, 120, true);
 		break;
 
-	case 31:	// strobe  2.5 B  1209ms  @3:30.968  -- Alter Effekt: schnelle Einzelblitze.
+	case 31:	// strobe  2.5 B  1209ms  @3:30.968  -- Schnelle Einzelblitze; ab Takt 110,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt.
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(242, 1210);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("DANCE", 1209, 32, 30968, CRGB::DeepPink);
+		fxLayerEnd(FX_OVER);
+#endif
 		progFastBlingBling(1209, 4, 32);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 32:	// Say you wanna dance (3)  1 T+1.5 B  2662ms  @3:32.177  -- Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel).
 		progRandomLines(2662, 33, 120, true);
 		break;
 
-	case 33:	// strobe (2)  2.5 B  1209ms  @3:34.839  -- Alter Effekt: schnelle Einzelblitze.
+	case 33:	// strobe (2)  2.5 B  1209ms  @3:34.839  -- Schnelle Einzelblitze; ab Takt 112,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt.
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(242, 1210);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("DANCE", 1209, 34, 30968, CRGB::DeepPink);
+		fxLayerEnd(FX_OVER);
+#endif
 		progFastBlingBling(1209, 6, 34);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 34:	// Say you wanna dance (4)  1 T+1.5 B  2662ms  @3:36.048  -- Alter Effekt: sehr schnell wechselnde zufällige Linien (alle 120 ms, eine Sechzehntel).
 		progRandomLines(2662, 35, 120, true);
 		break;
 
-	case 35:	// strobe (3)  2.5 B  1209ms  @3:38.710  -- Alter Effekt: schnelle Einzelblitze.
+	case 35:	// strobe (3)  2.5 B  1209ms  @3:38.710  -- Schnelle Einzelblitze; ab Takt 114,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt.
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerWindow(242, 1210);
+		fxLayerUnder(38);
+		fxLayerOutline();
+		fxLayerBegin();
+		progText("DANCE", 1209, 36, 30968, CRGB::DeepPink);
+		fxLayerEnd(FX_OVER);
+#endif
 		progFastBlingBling(1209, 8, 36);
+#if DEVICE_CLASS == CLASS_MATRIX
+		fxLayerFlush();
+#endif
 		break;
 
 	case 36:	// w. some…  1 T  1936ms  @3:39.919  -- Alter Effekt: drehender Stern, fest in der Mitte, Farbwechsel pro Beat.

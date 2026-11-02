@@ -109,7 +109,12 @@ sections:
 
   "Say you wanna dance":
     fx: "progFastBlingBling(${dur}, 6, ${next})"
-    why: "Alter Effekt: schnelle Einzelblitze."
+    # Wunsch des Users 02.11.2026: "DANCE" auf den Takten 79,5 / 81,5 / 83,5, je einen halben Takt, knallige Farbe mit
+    # Rand, der sich vom Hintergrund absetzt. Part beginnt bei Takt 78 -> Beats 6-8, 14-16, 22-24. Über den hellen
+    # Einzelblitzen hilft ein schwarzer Rand (outline: true) am meisten, die Blitze darunter sind dabei auf 15 % gedimmt.
+    # per: 64 = länger als der Part, das Wort steht in seinem Fenster ruhig statt zu pulsieren.
+    text: {words: "DANCE", per: 64, color: pink, over: true, outline: true, windows: [[6, 8], [14, 16], [22, 24]]}
+    why: "Schnelle Einzelblitze; auf den Takten 79,5, 81,5 und 83,5 steht auf der Matrix je einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt."
 
   "übergang":
     fx: "progMatrixHorizontal(${dur}, ${next}, 70, true)"
@@ -145,7 +150,10 @@ sections:
 
   "strobe":
     fx: "progFastBlingBling(${dur}, 4, ${next})"
-    why: "Alter Effekt: schnelle Einzelblitze."
+    # Wunsch 02.11.2026: DANCE auf Takt 110,5 für einen halben Takt - der Part beginnt eine Achtel früher (x,375),
+    # also Beat 0,5 bis 2,5 = genau bis zum Part-Ende. Aussehen wie in "Say you wanna dance".
+    text: {words: "DANCE", per: 64, color: pink, over: true, outline: true, windows: [[0.5, 2.5]]}
+    why: "Schnelle Einzelblitze; ab Takt 110,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt."
 
   "Say you wanna dance (3)":
     fx: "progRandomLines(${dur}, ${next}, 120, true)"
@@ -153,7 +161,10 @@ sections:
 
   "strobe (2)":
     fx: "progFastBlingBling(${dur}, 6, ${next})"
-    why: "Alter Effekt: schnelle Einzelblitze."
+    # Wunsch 02.11.2026: DANCE auf Takt 112,5 für einen halben Takt - der Part beginnt eine Achtel früher (x,375),
+    # also Beat 0,5 bis 2,5 = genau bis zum Part-Ende. Aussehen wie in "Say you wanna dance".
+    text: {words: "DANCE", per: 64, color: pink, over: true, outline: true, windows: [[0.5, 2.5]]}
+    why: "Schnelle Einzelblitze; ab Takt 112,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt."
 
   "Say you wanna dance (4)":
     fx: "progRandomLines(${dur}, ${next}, 120, true)"
@@ -161,7 +172,10 @@ sections:
 
   "strobe (3)":
     fx: "progFastBlingBling(${dur}, 8, ${next})"
-    why: "Alter Effekt: schnelle Einzelblitze."
+    # Wunsch 02.11.2026: DANCE auf Takt 114,5 für einen halben Takt - der Part beginnt eine Achtel früher (x,375),
+    # also Beat 0,5 bis 2,5 = genau bis zum Part-Ende. Aussehen wie in "Say you wanna dance".
+    text: {words: "DANCE", per: 64, color: pink, over: true, outline: true, windows: [[0.5, 2.5]]}
+    why: "Schnelle Einzelblitze; ab Takt 114,5 steht auf der Matrix einen halben Takt DANCE in knalligem Pink mit schwarzem Rand, die Blitze darunter gedimmt."
 
   "w. some…":
     fx: "progSternNeu(${dur}, ${beat}, ${next}, 5, 26, 5, false, 4)"
