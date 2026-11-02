@@ -68,9 +68,13 @@ sections:
     why: "Ein Farbband in warmen Farben läuft über die ganze Bühne (wie bisher, jetzt auf allen Geräten gleich schnell)."
 
   "verse 1b":
-    scene: SCENE_VERSE
-    scheme: SCHEME_SUNSET
-    why: "Strophe: dezenter Puls im Beat in warmen Farben, auf der Matrix Wasserringe."
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
+    # Zurück: songgen.py NoRoots_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_WAVES
+    scheme: SCHEME_TOXIC
+    fade: {to: analog, per: 8}
+    why: "Strophe in Grün (Wurzeln): Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück."
 
   "verse 1b (2)":
     scene: SCENE_CALL_RESPONSE
@@ -104,10 +108,14 @@ sections:
     why: "Weich in die Strophe: fallende Leuchtspuren in warmen Farben, die Farben wandern alle 2 Takte weiter."
 
   "verse 2b":
-    scene: SCENE_VERSE
-    scheme: SCHEME_SUNSET
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_SUNSET
+    # Zurück: songgen.py NoRoots_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_TOXIC
+    fade: {to: complement, per: 8}
     devices: {matrix: "progCircles(${dur}, ${next}, ${beat})"}
-    why: "Dezenter Puls im Beat in warmen Farben; auf der Matrix Kreise im Beat (wie bisher)."
+    why: "Grün wie verse 1b, jetzt fließend: Gitarre/Bass Farbverlauf um den Korpus, Lampen Verlauf nach oben, auf der Matrix Kreise im Beat (wie bisher); Grün wandert alle 2 Takte nach Pink/Violett und zurück."
 
   "bridge (2)":
     scene: SCENE_PALETTE

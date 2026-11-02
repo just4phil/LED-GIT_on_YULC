@@ -3,7 +3,7 @@
 //@function gen_NoRoots
 //@name No Roots
 //@struktur_sha 11af9d12b749e715fd36d18b24a29c8b4c9629b8e83fa0f3c6cebf47d9f91e80
-//@show_sha 961b36973e57e4e970b68d34539f58cf6b0fbf9ca256d0e82ad2a5526e9bbb2d
+//@show_sha 8626fcd461a13e39b7d8c8683f761e77a3f4dfbdf0a7876d9068a80e490793d2
 //@part GEN_NOROOTS_KLICK 0
 //@part GEN_NOROOTS_GIT 3
 //@part GEN_NOROOTS_INTRO1 4
@@ -97,9 +97,10 @@ void gen_NoRoots() {
 		scene(SCENE_PALETTE, 4138, 7, 116);
 		break;
 
-	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe: dezenter Puls im Beat in warmen Farben, auf der Matrix Wasserringe.
-		setColorScheme(SCHEME_SUNSET);
-		scene(SCENE_VERSE, 16552, 8, 116);
+	case 7:	// verse 1b  8 T  16552ms  @0:20.172  -- Strophe in Grün (Wurzeln): Matrix Sinus- und Kosinuslinie im Takt, auf Gitarre/Bass fährt je Takt eine Lichtebene den Hals entlang, Lampen Lichtschuss pro Beat; die Farben wandern alle 2 Takte zur Nachbarfarbe und zurück.
+		setColorScheme(SCHEME_TOXIC);
+		setColorFade(FADE_ANALOG, 4138);
+		scene(SCENE_VERSE_WAVES, 16552, 8, 116);
 		break;
 
 	case 8:	// verse 1b (2)  8 T  16552ms  @0:36.724  -- Steigerung: die Bühnenhälften blitzen abwechselnd im Beat in Orange, Pink und Gelb.
@@ -250,12 +251,13 @@ void gen_NoRoots() {
 		scene(SCENE_RAIN, 16552, 21, 116);
 		break;
 
-	case 21:	// verse 2b  8 T  16552ms  @1:51.207  -- Dezenter Puls im Beat in warmen Farben; auf der Matrix Kreise im Beat (wie bisher).
-		setColorScheme(SCHEME_SUNSET);
+	case 21:	// verse 2b  8 T  16552ms  @1:51.207  -- Grün wie verse 1b, jetzt fließend: Gitarre/Bass Farbverlauf um den Korpus, Lampen Verlauf nach oben, auf der Matrix Kreise im Beat (wie bisher); Grün wandert alle 2 Takte nach Pink/Violett und zurück.
+		setColorScheme(SCHEME_TOXIC);
+		setColorFade(FADE_COMPLEMENT, 4138);
 #if DEVICE_CLASS == CLASS_MATRIX
 		progCircles(16552, 22, 517);
 #else
-		scene(SCENE_VERSE, 16552, 22, 116);
+		scene(SCENE_VERSE_PLASMA, 16552, 22, 116);
 #endif
 		break;
 
