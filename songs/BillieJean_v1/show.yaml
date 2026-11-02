@@ -197,12 +197,12 @@ sections:
   STOP:
     fx: "progBlack(${dur}, ${next})"
     # Wunsch des Users 02.11.2026: Text "Billie Jean - is not my - lover", rot mit weißem Rand. Die Matrix ist 54 LEDs
-    # breit = 9 Zeichen; "BILLIE JEAN" (11) passt nicht, deshalb Wort für Wort im Beat: BILLIE, JEAN, IS NOT, MY,
+    # breit = 9 Zeichen; "BILLIE JEAN" (11) passt nicht, deshalb Wort für Wort im Beat: BILLIE, JEAN, IS, NOT MY,
     # LOVER steht bis zum Strobo. over: true, damit der Text eine Ebene ist - nur dort gibt es den Rand.
     # Wunsch 02.11.2026: der Text startet erst auf der zweiten Viertel - das erste "Wort" "_" ist ein Leerzeichen
-    # (1 Beat nichts), LOVER dafür nur noch 1 Beat (vorher LOVER*2).
-    text: {words: "_ BILLIE JEAN IS_NOT MY LOVER", per: beat, color: rot, over: true, outline: weiss}
-    why: "Stopp: 1,5 Takte Dunkel; ab der zweiten Viertel steht nur auf der Matrix Wort für Wort im Beat BILLIE - JEAN - IS NOT - MY - LOVER in Rot mit weißem Rand; macht den letzten Einsatz stärker"
+    # (1 Beat nichts), LOVER dafür nur noch 1 Beat (vorher LOVER*2). Aufteilung auf Wunsch des Users: IS | NOT MY.
+    text: {words: "_ BILLIE JEAN IS NOT_MY LOVER", per: beat, color: rot, over: true, outline: weiss}
+    why: "Stopp: 1,5 Takte Dunkel; ab der zweiten Viertel steht nur auf der Matrix Wort für Wort im Beat BILLIE - JEAN - IS - NOT MY - LOVER in Rot mit weißem Rand; macht den letzten Einsatz stärker"
 
   STROBE:
     fx: "progStrobo(${dur}, ${next}, 60, CRGB::White)"
