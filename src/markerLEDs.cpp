@@ -337,9 +337,16 @@ void setMarkerLEDs(byte songID, byte partID) {
 			break;
 
 		case 26://Be Mine
-			markerLED1 = ESaite_Fis;
-			markerLED2 = ASaite_E;
-			markerLED3 = ASaite_Fis;
+			#ifdef GIT
+				markerLED1 = ESaite_Fis;
+				markerLED2 = ASaite_E;
+				markerLED3 = ASaite_Fis;
+			#endif
+			#ifdef BASS
+				markerLED1 = ESaite_Fis;
+				//markerLED2 = ASaite_E;
+				//markerLED3 = ASaite_Fis;
+			#endif
 			break;
 
 		case 27:// I WANNA DANCE WITH SOMEBODY (124 BPM)
