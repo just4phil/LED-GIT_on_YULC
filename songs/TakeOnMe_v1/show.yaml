@@ -133,15 +133,18 @@ sections:
     why: "Riff-Motiv über den ganzen Part im selben Tempo: auf der Viertel an, auf der nächsten Viertel aus, jedes Mal eine neue Farbe (Pink, Cyan, Violett), alle Geräte gleichzeitig. Warmweißer Blinder auf den Einsatz, nur eine Viertel lang - auf der zweiten Viertel ist es dunkel wie im Blink-Raster."
 
   "verse 1":
-    scene: SCENE_VERSE
-    scheme: SCHEME_ROYAL
-    fade: {to: triad, per: 8}
+    # Strophen-Abwechslung (02.11.2026, Wunsch des Users: weniger SCENE_VERSE, weniger kühles Blau). Vorher:
+    #   scene: SCENE_VERSE, scheme: SCHEME_ROYAL, fade: {to: triad, per: 8}
+    # Zurück: songgen.py TakeOnMe_v1 --restore <Version davor> (siehe --versions) oder diese Zeilen zurücksetzen.
+    scene: SCENE_VERSE_PLASMA
+    scheme: SCHEME_NEON
+    fade: {to: complement, per: 8}
     # Wunsch des Users (10.10.2026): der Blitz auf den beiden Lampen war pro Beat "zu hektisch, sollte nur halb so oft
     # kommen". Die Lampen bekommen deshalb denselben Effekt wie in der Szene (progLampPulse), aber mit halbem Tempo:
     # ein Blitz alle 2 Beats, auf die 1 und die 3.
     devices:
       lamp: "progLampPulse(${dur}, ${next}, ${bpm} / 2, deviceColor())"
-    why: "Dezenter Puls im Beat in Blau, Lila und Weiß; die Farben wandern alle 2 Takte nach Pink und wieder zurück. Die beiden Lampen blitzen nur alle 2 Beats (auf 1 und 3)."
+    why: "Fließende Farbwolken in Pink/Cyan/Violett (Matrix Plasma, Gitarre/Bass Verlauf um den Korpus), die alle 2 Takte zur Gegenfarbe wandern und zurück. Die beiden Lampen blitzen nur alle 2 Beats (auf 1 und 3)."
 
   "take on me":
     scene: SCENE_STAR
