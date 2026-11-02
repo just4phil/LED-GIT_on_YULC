@@ -13,6 +13,9 @@
 
 function: gen_FridayImInLove
 scroll_title: "Friday im in Love by The Cure"
+# Wunsch des Users 02.11.2026: Blinder am Ende - der Blinder auf der letzten Viertel von "git fade out" klingt
+# 5 Sekunden lang ins Schluss-Schwarz aus (wie bei APT).
+end_blinder: 5
 
 sections:
   pause:
@@ -44,9 +47,11 @@ sections:
     why: "Alter Effekt: alle 460 ms eine neue zufällige Linie in Zufallsfarbe (etwas langsamer als der Beat)."
 
   verse 2:
-    scene: SCENE_VERSE_WAVES
-    scheme: SCHEME_ICE
-    why: "Strophe neu (18.10.2026): Sinuswellen in Blau/Eisblau laufen im Takt über die Matrix ('Monday you can hold your head'), eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen"
+    # Wunsch des Users 02.11.2026: "Sinuswelle in Blau ist langweilig -> bitte die DNA, die sich bewegt".
+    # Vorher: scene: SCENE_VERSE_WAVES, scheme: SCHEME_ICE
+    scene: SCENE_DNA
+    scheme: SCHEME_NEON
+    why: "Strophe: auf der Matrix dreht sich eine DNA-Doppelhelix (eine Umdrehung in 2 Takten), Stränge Pink und Cyan mit bunten Sprossen; die übrigen Geräte pulsieren weich in den Strangfarben - linke Bühnenhälfte Pink, rechte Cyan, jeweils hell, wenn ihr Strang vorn ist"
 
   SOLO:
     fx: "progFastBlingBling(${dur}, 2, ${next}, 1, 16, 2000)"
@@ -96,4 +101,5 @@ sections:
 
   git fade out:
     fx: "progBlingBlingColoring(${dur}, ${next}, 6000)"
-    why: "Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe (ruhiger Ausklang)."
+    blinder: {at: 11, len: 2, hold: 1}    # Wunsch 02.11.2026: Blinder am Ende; voll bis Part-Ende, end_blinder klingt aus
+    why: "Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schluss 5 Sekunden lang ins Schwarz ausklingt."

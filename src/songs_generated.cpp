@@ -3981,9 +3981,9 @@ void gen_FridayImInLove() {
 		progRandomLines(10286, 8, 460, true);
 		break;
 
-	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Strophe neu (18.10.2026): Sinuswellen in Blau/Eisblau laufen im Takt über die Matrix ('Monday you can hold your head'), eine Lichtebene fährt je Takt über Gitarre und Bass, Lichtschuss in den Lampen
-		setColorScheme(SCHEME_ICE);
-		scene(SCENE_VERSE_WAVES, 13714, 9, 140);
+	case 8:	// verse 2  8 T  13714ms  @1:09.643  -- Strophe: auf der Matrix dreht sich eine DNA-Doppelhelix (eine Umdrehung in 2 Takten), Stränge Pink und Cyan mit bunten Sprossen; die übrigen Geräte pulsieren weich in den Strangfarben - linke Bühnenhälfte Pink, rechte Cyan, jeweils hell, wenn ihr Strang vorn ist
+		setColorScheme(SCHEME_NEON);
+		scene(SCENE_DNA, 13714, 9, 140);
 		break;
 
 	case 9:	// SOLO  8 T  13714ms  @1:23.357  -- Alter Effekt: Einzelblitze, die über den Part dichter werden (alle 2 s eine LED mehr, bis 16).
@@ -4032,11 +4032,15 @@ void gen_FridayImInLove() {
 		progFastBlingBling(12000, 2, 19, 1, 16, 2000);
 		break;
 
-	case 19:	// git fade out  3 T  5143ms  @3:21.643  -- Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe (ruhiger Ausklang).
+	case 19:	// git fade out  3 T  5143ms  @3:21.643  -- Alter Effekt: jedes Gerät füllt sich langsam LED für LED mit einer Farbe. Auf der letzten Viertel ein voller warmweißer Blinder auf allen Geräten, der nach dem Schluss 5 Sekunden lang ins Schwarz ausklingt.
+		fxBlinder(4714, 857, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 429);
 		progBlingBlingColoring(5143, 20, 6000);
 		break;
 
-	case 20:	// BLACK (Ende)    10000ms  @3:26.786  -- alle Geräte schwarz, dann Pausen-Loop
+	case 20:	// BLACK (Ende)    10000ms  @3:26.786  -- Blinder klingt ins Schwarz aus, dann Pausen-Loop
+		fxBlinder(0, 5000, 255, FX_BLINDER_WARM, DEV_ALL);
+		fxBlinderShape(0, 0);
 		progBlack(10000, 21);
 		break;
 
