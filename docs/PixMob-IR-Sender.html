@@ -92,7 +92,7 @@ svg text{font-family:var(--f-mono)}
   <h1>PixMob IR-Sender für LAMPE1 / LAMPE2</h1>
   <p>Konzept, Berechnungen, Schaltung, Stückliste, Platinenlayout und Firmware-Plan, um PixMob-Armbänder im Publikum über Infrarot aus den beiden Bühnenlampen anzusteuern, synchron zur LED-Show.</p>
   <div class="meta">
-    <span>Version</span><b>1.1</b>
+    <span>Version</span><b>1.2 (Platine rund oder quadratisch)</b>
     <span>Stand</span><b>19.11.2026</b>
     <span>Status</span><b>Konzept · Hardware geplant, Teile bestellt · Firmware nicht implementiert</b>
     <span>Betroffene Geräte</span><b>LAMPE1 (YULC6), LAMPE2 (YULC5), beide ESP32-S3</b>
@@ -258,7 +258,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <div class="panel" style="display:flex;flex-direction:column;gap:8px">
       <h3 style="margin:0">Leistungsteil</h3>
       <ul>
-        <li>4 Stränge mit je 2 IR-LEDs in Reihe (Stränge 1–2: TSAL6100, Stränge 3–4: TSAL6200) und einem eigenen 27-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. <b>27 Ω begrenzen den Strom so, dass die LEDs selbst bei dauerhaft durchgeschaltetem MOSFET (jedes Tastverhältnis bis 100 %) unter dem Dauerlimit von 100 mA bleiben</b> (7.2). Die Sicherheit der LEDs hängt damit weder von der Software noch von der Gate-Beschaltung ab. 0,6 W reichen (7.4).</li>
+        <li>4 Stränge mit je 2 IR-LEDs in Reihe (Stränge 1–2: TSAL6100, Stränge 3–4: TSAL6200) und einem eigenen 27-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. Bei den Strängen 3–4 sitzt der Widerstand auf der 5-V-Seite. Das ist elektrisch gleichwertig (in einer Reihenschaltung fließt überall derselbe Strom) und spart im Layout eine zweite 5-V-Schiene. <b>27 Ω begrenzen den Strom so, dass die LEDs selbst bei dauerhaft durchgeschaltetem MOSFET (jedes Tastverhältnis bis 100 %) unter dem Dauerlimit von 100 mA bleiben</b> (7.2). Die Sicherheit der LEDs hängt damit weder von der Software noch von der Gate-Beschaltung ab. 0,6 W reichen (7.4).</li>
         <li>Q1 (IRLB8748PBF, Logic-Level-N-MOSFET) schaltet DRAIN nach GND (Low-Side-Schalter).</li>
         <li>C2 (470 µF) und C1 (100 nF) puffern die Pulsströme direkt an den LEDs. R5 (1 Ω) entkoppelt sie von der Zuleitung, er ist nur nötig, wenn die 5 V am LED-Strip abgegriffen werden.</li>
       </ul>
@@ -379,7 +379,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><td>9</td><td>D1</td><td>Schottkydiode 30 V, 0,2 A, DO-35, BAT 85</td><td class="mono">BAT 85</td><td class="num">1</td><td class="num">3</td><td class="num">0,08 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>10</td><td>–</td><td>IR-Empfängermodul 38 kHz (nur Prüfmittel)</td><td class="mono">TSOP 38238</td><td class="num">–</td><td class="num">2</td><td class="num">0,51 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>11</td><td>J1</td><td>JST-XH Stiftleiste 3-pol. gerade + Buchsengehäuse + Crimpkontakte</td><td class="mono">JST XH3P ST / BU, XH1 CKS</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
-    <tr><td>12</td><td>–</td><td>Streifenrasterplatine 2,54 mm, mind. 45 × 8 Löcher (≈ 115 × 20 mm)</td><td class="mono">z. B. H25SR160</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
+    <tr><td>12</td><td>–</td><td>Streifenrasterplatine 2,54 mm: quadratisch 16 × 16 Löcher (40,6 mm) oder rund Ø 46 mm (Rohling mind. 19 × 19 Löcher), siehe 11</td><td class="mono">z. B. H25SR160</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
     <tr><td>13</td><td>–</td><td>Kabel 3-adrig, Schrumpfschlauch, isolierter Draht (Br1)</td><td>–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
     <tr><td>14</td><td>–</td><td>PixMob-Armbänder des einzusetzenden Modells (Test)</td><td>–</td><td class="num">–</td><td class="num">3–5</td><td class="num">–</td><td><span class="pill warn">beschaffen</span></td></tr>
   </table></div>
@@ -388,73 +388,106 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
 
 <!-- 11 -->
 <section id="layout">
-  <h2>11 · Platinenlayout (Streifenraster)</h2>
+  <h2>11 · Platinenlayout (Streifenraster, rund oder quadratisch)</h2>
   <div class="toolbar">
-    <p class="note" style="max-width:70ch">Waagerechte Kupferstreifen A–F, Spalten 1–45, Raster 2,54 mm. Je eine freie Reihe oben und unten als Rand. Alle 4 Stränge werden bestückt.</p>
-    <div class="seg noprint" role="group" aria-label="Ansicht">
-      <button id="v-top" aria-pressed="true">Bauteilseite</button>
-      <button id="v-bot" aria-pressed="false">Lötseite (gespiegelt)</button>
+    <p class="note" style="max-width:62ch">Waagerechte Kupferstreifen, Reihen A–P, Spalten 1–16, Raster 2,54 mm. Beide Zuschnitte haben dieselben Lochbezeichnungen und dieselbe Bestückung, nur die Außenkontur unterscheidet sich. Alle 4 Stränge werden bestückt.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px" class="noprint">
+      <div class="seg" role="group" aria-label="Zuschnitt">
+        <button id="s-rund" aria-pressed="true">Rund Ø 46 mm</button>
+        <button id="s-quad" aria-pressed="false">Quadrat 40,6 mm</button>
+      </div>
+      <div class="seg" role="group" aria-label="Ansicht">
+        <button id="v-top" aria-pressed="true">Bauteilseite</button>
+        <button id="v-bot" aria-pressed="false">Lötseite (gespiegelt)</button>
+      </div>
     </div>
   </div>
   <div class="panel scroll"><svg id="board" role="img" aria-label="Bestückungsplan"></svg></div>
   <div class="legend" id="legend"></div>
+  <div class="panel scroll"><table>
+    <tr><th>Zuschnitt</th><th>Maß</th><th>Lage</th><th>Hinweise</th></tr>
+    <tr><td><b>Quadratisch</b></td><td class="num">16 × 16 Löcher<br>40,6 × 40,6 mm</td><td>Reihen A–P, Spalten 1–16. Jeweils mittig zwischen zwei Lochreihen schneiden.</td><td>Ränder: links 0,9 mm bis zum Gehäuse von J1, sonst ≥ 1,3 mm bis zum nächsten Lötpunkt.</td></tr>
+    <tr><td><b>Rund</b></td><td class="num">Ø 46 mm</td><td>Mittelpunkt = Mitte des Quadrats: zwischen Reihe H/I und Spalte 8/9. Rohling mind. 19 × 19 Löcher (A–P und je 1–2 Reihen/Spalten Zugabe).</td><td>Kreis mit Zirkel auf der Lötseite anreißen, grob aussägen, rund schleifen. Löcher, die der Rand anschneidet, bleiben frei. Mindestens 1,5 mm Abstand jedes Lötpunkts zum Rand.</td></tr>
+    <tr><td><b>Befestigung</b> (optional)</td><td class="num">2 × Ø 3,2 mm</td><td>zwischen B8/B9 und zwischen O8/O9</td><td>Gilt für beide Zuschnitte. Die Streifen B und O sind unbenutzt, die Bohrung darf sie zerstören. M3-Schraube mit Distanzhülse, Kopf Ø ≤ 5,5 mm.</td></tr>
+  </table></div>
   <div class="grid2">
     <div class="panel" style="display:flex;flex-direction:column;gap:10px">
-      <h3 style="margin:0">Streifen unterbrechen (11 Stellen)</h3>
-      <p class="mono" style="line-height:1.9">C11 · D11 · C17 · D17 · C23 · D23 · C29 · D29 · D36 · D42 · E35</p>
-      <h3 style="margin:0">Drahtbrücken (Bauteilseite)</h3>
+      <h3 style="margin:0">Streifen unterbrechen (6 Stellen)</h3>
+      <p class="mono" style="line-height:1.9">F5 · H7 · J9 · K9 · M10 · N9</p>
+      <h3 style="margin:0">Drahtbrücke (Bauteilseite)</h3>
       <table>
-        <tr><td class="pos">Br1</td><td class="pos">A2 → F2</td><td>isoliert, läuft über B–E</td></tr>
-        <tr><td class="pos">Br2</td><td class="pos">E44 → F44</td><td>kurz, blank</td></tr>
+        <tr><td class="pos">Br1</td><td class="pos">F16 → L16</td><td>isoliert, läuft über G–K, verbindet die beiden Drain-Streifen</td></tr>
       </table>
       <h3 style="margin:0">Netze je Streifen</h3>
       <table>
-        <tr><td class="pos">A</td><td>GND (für C1/C2), per Br1 an F</td></tr>
-        <tr><td class="pos">B</td><td>+5 V (Anoden der LEDs a)</td></tr>
-        <tr><td class="pos">C</td><td>1–10 / 12–16 / 18–22 / 24–28: Strangmitte · 30–45: 5 V Eingang</td></tr>
-        <tr><td class="pos">D</td><td>1–10 / … / 24–28: Kathode LED b → R · 30–35 Gate · 37–41 Koppelknoten · 43–45 DATA</td></tr>
-        <tr><td class="pos">E</td><td>1–34 DRAIN · 36–45 GND</td></tr>
-        <tr><td class="pos">F</td><td>GND</td></tr>
+        <tr><td class="pos">A–C</td><td>frei</td></tr>
+        <tr><td class="pos">D</td><td>Koppelknoten X (R6–C3)</td></tr>
+        <tr><td class="pos">E</td><td>Gate</td></tr>
+        <tr><td class="pos">F</td><td>bis 4: DATA · ab 6: Drain (Q1, Br1)</td></tr>
+        <tr><td class="pos">G</td><td>GND</td></tr>
+        <tr><td class="pos">H</td><td>bis 6: 5 V Eingang · ab 8: frei</td></tr>
+        <tr><td class="pos">I</td><td>+5 V (Anoden LED1a/2a, R3, R4, C1, C2, R5)</td></tr>
+        <tr><td class="pos">J</td><td>bis 8: Strang 1 Mitte · ab 10: Strang 2 Mitte</td></tr>
+        <tr><td class="pos">K</td><td>bis 8: Kathode LED1b → R1 · ab 10: Kathode LED2b → R2</td></tr>
+        <tr><td class="pos">L</td><td>Drain (R1, R2, Kathoden LED3b/4b, Br1)</td></tr>
+        <tr><td class="pos">M</td><td>bis 9: Strang 3 Mitte · ab 11: Strang 4 Mitte</td></tr>
+        <tr><td class="pos">N</td><td>bis 8: R3 → Anode LED3a · ab 10: R4 → Anode LED4a</td></tr>
+        <tr><td class="pos">O–P</td><td>frei (O: Befestigungsbohrung)</td></tr>
       </table>
     </div>
     <div class="panel scroll">
       <h3 style="margin:0 0 8px">Bestückung</h3>
       <table>
         <tr><th>Ref.</th><th>Wert</th><th>Löcher</th></tr>
-        <tr><td>LED1a–4a</td><td>1a, 2a: TSAL6100 · 3a, 4a: TSAL6200</td><td class="pos">Anode B6/12/18/24 · Kathode C</td></tr>
-        <tr><td>LED1b–4b</td><td>1b, 2b: TSAL6100 · 3b, 4b: TSAL6200</td><td class="pos">Anode C9/15/21/27 · Kathode D</td></tr>
-        <tr><td>R1–R4</td><td>27 Ω</td><td class="pos">D10/16/22/28 → E, stehend</td></tr>
-        <tr><td>R5</td><td>1 Ω / Brücke</td><td class="pos">B38 → C38, stehend</td></tr>
-        <tr><td>R6</td><td>100 Ω</td><td class="pos">D40 → D44, liegend</td></tr>
-        <tr><td>R7</td><td>10 kΩ</td><td class="pos">D33 → F33, stehend</td></tr>
-        <tr><td>D1</td><td>BAT 85</td><td class="pos">Ring D34 · Anode F34</td></tr>
-        <tr><td>C1</td><td>100 nF</td><td class="pos">A1 / B1</td></tr>
-        <tr><td>C2</td><td>470 µF</td><td class="pos">− A4 / + B4</td></tr>
-        <tr><td>C3</td><td>100 nF</td><td class="pos">D35 → D37, liegend</td></tr>
-        <tr><td>Q1</td><td>IRLB8748PBF</td><td class="pos">G D31 · D E31 · S F31</td></tr>
-        <tr><td>J1</td><td>JST-XH 3-pol.</td><td class="pos">5V C45 · DATA D45 · GND E45</td></tr>
+        <tr><td>LED1a, 2a</td><td>TSAL6100</td><td class="pos">Anode I4 / I10 · Kathode J</td></tr>
+        <tr><td>LED1b, 2b</td><td>TSAL6100</td><td class="pos">Anode J7 / J13 · Kathode K</td></tr>
+        <tr><td>LED3a, 4a</td><td>TSAL6200</td><td class="pos">Anode N6 / N12 · Kathode M</td></tr>
+        <tr><td>LED3b, 4b</td><td>TSAL6200</td><td class="pos">Anode M9 / M15 · Kathode L</td></tr>
+        <tr><td>R1, R2</td><td>27 Ω</td><td class="pos">K8 → L8 · K14 → L14, stehend</td></tr>
+        <tr><td>R3, R4</td><td>27 Ω</td><td class="pos">I5 → N5 · I11 → N11, liegend, RM 12,7</td></tr>
+        <tr><td>R5</td><td>1 Ω / Brücke</td><td class="pos">H6 → I6, stehend</td></tr>
+        <tr><td>R6</td><td>100 Ω</td><td class="pos">F4 → D4, stehend über E4</td></tr>
+        <tr><td>R7</td><td>10 kΩ</td><td class="pos">E8 → G8, stehend über F8</td></tr>
+        <tr><td>D1</td><td>BAT 85</td><td class="pos">Ring E7 · Anode G7, über F7</td></tr>
+        <tr><td>C1</td><td>100 nF</td><td class="pos">G9 / I9, über H9</td></tr>
+        <tr><td>C2</td><td>470 µF</td><td class="pos">− G14 / + I14, über H14</td></tr>
+        <tr><td>C3</td><td>100 nF</td><td class="pos">D6 / E6</td></tr>
+        <tr><td>Q1</td><td>IRLB8748PBF</td><td class="pos">G E11 · D F11 · S G11</td></tr>
+        <tr><td>J1</td><td>JST-XH 3-pol.</td><td class="pos">DATA F2 · GND G2 · 5V H2</td></tr>
       </table>
     </div>
   </div>
+  <div class="box"><b>Gegenüber dem langen 45 × 8-Layout geändert:</b> Bei den Strängen 3 und 4 sitzt der 27-Ω-Widerstand auf der 5-V-Seite (5 V → R → LED a → LED b → Drain). Elektrisch ist das gleichwertig, der Strom ist in einer Reihenschaltung überall gleich. R3/R4 liegen senkrecht und reichen von der 5-V-Schiene I direkt hinunter in den Strang. So entfällt eine zweite 5-V-Schiene samt Brücke. Q1 sitzt neben der Gate-Beschaltung, Br1 führt den Drain zu den LED-Strängen. J1 hat jetzt die Pin-Reihenfolge DATA – GND – 5V (von oben). Netzliste, Lochbelegung, Bauteilabstände und Kontur wurden per Skript gegen den Schaltplan geprüft.</div>
 </section>
 
 <!-- 12 -->
 <section id="aufbau">
   <h2>12 · Aufbau und Inbetriebnahme</h2>
   <ol>
-    <li>Platine zuschneiden: 45 Löcher lang, mindestens 8 Streifen hoch.</li>
-    <li>11 Unterbrechungen bohren (Lötseite, gespiegelte Ansicht). Mit dem Durchgangsprüfer kontrollieren.</li>
-    <li>Drahtbrücken Br1 (isoliert) und Br2.</li>
-    <li>R1–R4 (27 Ω), R5 (1 Ω oder Brücke), R6 liegend über D42, R7 stehend über E33 nach F33.</li>
-    <li>D1 stehend: Ring (Kathode) in D34, Anode über E34 nach F34.</li>
-    <li>C1, C3 (C3 liegend über D36, Beine auf 5,08 mm), C2 mit Minus auf A4.</li>
-    <li>Q1 stehend in Spalte 31 (G D31, D E31, S F31), Fahne frei.</li>
-    <li>J1 in Spalte 45.</li>
-    <li><b>Messungen ohne LEDs:</b> 5V–GND kein Kurzschluss · DATA–GND kein Durchgang (C3) · Gate (D31)–GND ≈ 10 kΩ · Diodentest rot F34 / schwarz D34 ≈ 0,2–0,4 V.</li>
-    <li>LEDs zuletzt: Stränge 1–2 (Spalten 6–15) TSAL6100, Stränge 3–4 (Spalten 18–27) TSAL6200. Die Typen vor dem Einlöten getrennt halten, sie sehen gleich aus. Beine 15–20 mm lang lassen, Anode (langes Bein) nach oben. Nach Tabelle 3.2 ausrichten und im Halter fixieren, blanke Beine mit Schrumpfschlauch isolieren.</li>
-    <li><b>Sicherheitstest:</b> 5 V anlegen, DATA über ca. 1 kΩ fest auf 5 V. Die LEDs dürfen <b>nicht</b> leuchten (Handykamera), Drain (E31) bleibt ≈ 5 V.</li>
+    <li>Zuschnitt (11): quadratisch 16 × 16 Löcher (Reihen A–P, Spalten 1–16) oder rund Ø 46 mm um die Mitte zwischen H/I und 8/9. Reihe A oben, Spalte 1 links mit Bleistift auf die Bauteilseite schreiben. Optional die beiden Befestigungsbohrungen (B8/B9, O8/O9).</li>
+    <li>6 Unterbrechungen bohren (Lötseite, gespiegelte Ansicht). Mit dem Durchgangsprüfer kontrollieren, insbesondere J9/K9 und M10/N9.</li>
+    <li>Drahtbrücke Br1 (isoliert) von F16 nach L16.</li>
+    <li>R3 und R4 (27 Ω) liegend, Beine auf 12,7 mm (5 Raster) biegen: R3 I5 → N5, R4 I11 → N11. Sie liegen über den Reihen J–M, die Löcher darunter bleiben frei.</li>
+    <li>R1, R2 (27 Ω) stehend K8 → L8 und K14 → L14. R5 (1 Ω oder Brücke) stehend H6 → I6. R6 stehend, Körper auf D4, Draht über E4 nach F4. R7 stehend, Körper auf E8, Draht über F8 nach G8.</li>
+    <li>D1 stehend: Körper auf G7 (Anode), Ring (Kathode) oben, Draht über F7 nach E7.</li>
+    <li>C3 in D6/E6. C1 in G9/I9 und C2 mit Minus auf G14, Plus auf I14, bei beiden die Beine auf 5,08 mm (über H) biegen.</li>
+    <li>Q1 stehend in Spalte 11 (G E11, D F11, S G11). Beschriftung nach links, Metallfahne nach rechts zu C2. Etwa 1 mm Luft lassen, die Fahne liegt auf Drain.</li>
+    <li>J1 in Spalte 2 (DATA F2, GND G2, 5V H2). <b>Pin-Reihenfolge am Kabel prüfen</b>, bevor es eingesteckt wird.</li>
+    <li><b>Messungen ohne LEDs:</b> 5V–GND (H2–G2 und I–G) kein Kurzschluss · DATA–GND kein Durchgang (C3) · Gate (E11)–GND ≈ 10 kΩ · Diodentest rot G7 / schwarz E7 ≈ 0,2–0,4 V · Drain F11–L8 ≈ 0 Ω (Br1).</li>
+    <li>LEDs zuletzt. Oben (Reihen I–K, Stränge 1–2) TSAL6100, unten (Reihen L–N, Stränge 3–4) TSAL6200. Die Typen vor dem Einlöten getrennt halten, sie sehen gleich aus. Oben zeigt die Anode (langes Bein) nach oben, <b>unten nach unten</b> (Anode LED3a/4a in N, LED3b/4b in M). Beine 15–20 mm lang lassen, damit die LED-Köpfe über C2 (11,5 mm hoch) liegen. Nach Tabelle 3.2 ausrichten und im Halter fixieren, blanke Beine mit Schrumpfschlauch isolieren.</li>
+    <li><b>Sicherheitstest:</b> 5 V anlegen, DATA über ca. 1 kΩ fest auf 5 V. Die LEDs dürfen <b>nicht</b> leuchten (Handykamera), Drain (F11) bleibt ≈ 5 V.</li>
     <li><b>Funktionstest:</b> Testbefehl senden. Handykamera zeigt lila Blitzen, TSOP 38238 am zweiten Controller gibt die Bitfolge aus. Nicht aus der Nähe mit bloßem Auge in den Sender schauen (8.2).</li>
   </ol>
+  <div class="box"><b>Variante (noch nicht festgelegt): LEDs vorne auf der Kupferseite, alle anderen Bauteile hinten.</b> Lochbelegung, Streifen, Unterbrechungen und Netzliste bleiben unverändert, nur die 8 LEDs werden von der Kupferseite gesteckt.
+    <ul style="margin-top:6px">
+      <li><b>Vorteile:</b> freie Strahlrichtung (kein C2, Q1 oder stehender Widerstand im Strahl), kürzere LED-Beine (sie müssen nicht über den 11,5 mm hohen Elko reichen), Halter oder Frontplatte direkt auf der flachen Vorderseite, aufgeräumter Look.</li>
+      <li><b>Löten:</b> Die LEDs werden auf derselben Seite gelötet, auf der ihr Gehäuse sitzt. Die Lötstelle liegt am Beinfuß und ist mechanisch schwächer als normal. Deshalb jede LED <b>vor</b> dem Löten ausrichten (Halter oder Schablone) und danach nicht mehr biegen, sonst kann sich der Kupferstreifen ablösen.</li>
+      <li><b>Zugentlastung:</b> Die Beinenden auf der Rückseite umbiegen. Dabei vom liegenden R3/R4 (Spalten 5 und 11) wegbiegen oder bündig abschneiden.</li>
+      <li><b>Polarität:</b> Die Lochbelegung gilt unverändert (Anode oben in I/J, unten in M/N). Beim Stecken von der Kupferseite die gespiegelte Ansicht (Lötseite) verwenden.</li>
+      <li><b>Offenes Kupfer:</b> Die Streifen mit 5 V liegen vorne frei. Nach dem Funktionstest mit Lötlack oder Plastik 70 versiegeln (LED-Köpfe abdecken).</li>
+      <li><b>Bauhöhe hinten:</b> Die Rückseite zeigt zur Lampe. Mit stehendem Q1 (TO-220) sind etwa 22 mm Abstandshalter nötig. Liegt Q1 flach, reichen etwa 13 mm (C2 ist dann das höchste Teil). Dafür muss die Lage von Q1 im Layout neu geprüft werden.</li>
+    </ul>
+  </div>
 </section>
 
 <!-- 13 -->
@@ -501,7 +534,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>ID</th><th>Test</th><th>Aufbau</th><th>Erwartung / Abnahme</th></tr>
     <tr><td>T1</td><td>Messungen ohne LEDs</td><td>Multimeter</td><td>Werte aus 12, Schritt 9</td></tr>
     <tr><td>T2</td><td>Dauer-High-Sicherheit</td><td>DATA über 1 kΩ an 5 V</td><td>LEDs aus, Drain ≈ 5 V</td></tr>
-    <tr><td>T3</td><td>Gate-Ansteuerung und Verhalten des Kanal-2-Ausgangs</td><td>a) am aufgebauten Sender, beide Lampen, <b>LED-Strips auf Vollweiß</b> (minimale 5-V-Versorgung): mit Oszilloskop Spitzenwert V<sub>GS</sub> an Q1 (D31 gegen F31) während des Trägers; ohne Oszilloskop: Testprogramm DATA = High, Spannung an J1 DATA messen, minus V<sub>F</sub>(D1) aus dem Diodentest · b) Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) <b>V<sub>GS</sub> ≥ 4,5 V</b> (Referenz: LAMPE2 ohne Last 4,9 V an DATA) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt. Wird a) nicht erreicht: IRLML6344 statt IRLB8748 (R<sub>DS(on)</sub> bei 2,5 V spezifiziert).</td></tr>
+    <tr><td>T3</td><td>Gate-Ansteuerung und Verhalten des Kanal-2-Ausgangs</td><td>a) am aufgebauten Sender, beide Lampen, <b>LED-Strips auf Vollweiß</b> (minimale 5-V-Versorgung): mit Oszilloskop Spitzenwert V<sub>GS</sub> an Q1 (E11 gegen G11) während des Trägers; ohne Oszilloskop: Testprogramm DATA = High, Spannung an J1 DATA messen, minus V<sub>F</sub>(D1) aus dem Diodentest · b) Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) <b>V<sub>GS</sub> ≥ 4,5 V</b> (Referenz: LAMPE2 ohne Last 4,9 V an DATA) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt. Wird a) nicht erreicht: IRLML6344 statt IRLB8748 (R<sub>DS(on)</sub> bei 2,5 V spezifiziert).</td></tr>
     <tr><td>T4</td><td>Signalform</td><td>TSOP 38238 an zweitem Controller, Ausgabe dekodieren (Python-Decoder der Quelle)</td><td>Rahmen fehlerfrei dekodiert, Prüfsumme korrekt</td></tr>
     <tr><td>T5</td><td>Band-Reaktion</td><td>3–5 Bänder des Einsatzmodells, 1 m Abstand</td><td>Farbe, Hüllkurve und Chance wie befohlen</td></tr>
     <tr><td>T6</td><td>Reichweite und Abdeckung</td><td>eine Lampe, Band in 6 m seitlich und abgewandt, Duty 50 % / 25 % / 10 %; Band quer durch die hinteren Reihen führen (Übergänge zwischen den engen Strahlen) und durch die vorderen Reihen bis 70°</td><td>Zuverlässiger Empfang bei 50 % in 6 m, auch zwischen zwei Strahlen. Gewählter Duty-Wert dokumentiert.</td></tr>
@@ -541,7 +574,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li><b>Q3</b> BAT 85: V<sub>F</sub> bei kleinen Strömen, Sperrstrom (Einfluss auf R7-Messung). Trägt 7.7.</li>
     <li><b>Q4</b> Klemmschaltung C3/D1/R7: Funktion bei Burst-Beginn, im Burst und bei Dauer-High, Zeitkonstanten (7.8, 7.9, 8).</li>
     <li><b>Q5</b> Fail-safe-Nachweis (8): LED-Strom bei Dauer-Ein mit 27 Ω im ungünstigsten Fall (minimales V<sub>F</sub>, 5-V-Toleranz nach oben).</li>
-    <li><b>Q6</b> Layout: Netze je Streifen gegen Schaltplan (11), Unterbrechungen, keine ungewollten Verbindungen über stehende Bauteile (R7, D1 überspringen E33/E34), Platz für TO-220 neben R7.</li>
+    <li><b>Q6</b> Layout: Netze je Streifen gegen Schaltplan (11), Unterbrechungen, keine ungewollten Verbindungen über überspringende Bauteile (R6, R7, D1, C1, C2 je eine Reihe, R3/R4 die Reihen J–M, Br1 die Reihen G–K), Platz für TO-220 und Elko, Zuschnittkontur rund/quadratisch gegen alle Lötpunkte und Bauteile, Pin-Reihenfolge J1 (DATA – GND – 5V) gegen das Kabel.</li>
     <li><b>Q7</b> Stückliste gegen Schaltplan und Layout (Referenzen, Mengen, Bauformen, Rastermaße).</li>
     <li><b>Q8</b> Protokollzusammenfassung (2) gegen die Quelle, insbesondere Byte-Reihenfolge (G, R, B), Bitreihenfolge, Kodiertabelle, Prüfsumme.</li>
     <li><b>Q9</b> Zeitschlitz-Konzept (4) und Vorziehen des Sendebeginns (13.4).</li>
@@ -569,113 +602,131 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
 (function(){
   const f='var(--fg)', m='var(--muted)';
   /* ---------- Platinenlayout ---------- */
-  const P=26, COLS=45, RW=['A','B','C','D','E','F'], L=70, T=100;
-  const W=L*2+(COLS-1)*P, H=T+5*P+100;
-  let mirror=false;
-  const X=c=>mirror? L+(COLS-c)*P : L+(c-1)*P;
-  const Y=r=>T+RW.indexOf(r)*P;
+  /* Raster in Lochschritten: Spalte x = 1..16, Reihe y = 1..16 (A..P). Quadrat x/y 0,5..16,5,
+     Kreis Ø 46 mm um denselben Mittelpunkt (8,5 | 8,5). Im Kreis liegen noch Teil-Löcher außerhalb 1..16. */
+  const P=30, RW='ABCDEFGHIJKLMNOP', CX=8.5, CY=8.5, RAD=23/2.54, SQ0=0.5, SQ1=16.5;
+  const MIN=CX-RAD-0.35, MAX=CX+RAD+0.35, L=46, T=56;
+  const W=Math.round(L*2+(MAX-MIN)*P), H=Math.round(T*2+(MAX-MIN)*P);
+  let mirror=false, round=true;
+  const X=c=>mirror? L+(MAX-c)*P : L+(c-MIN)*P;
+  const ri=r=>typeof r==='string'?RW.indexOf(r)+1:r;
+  const Y=r=>T+(ri(r)-MIN)*P;
   const pos=s=>({r:s[0],c:+s.slice(1)});
   const v=n=>`var(${n})`;
+  const inside=(c,r)=>round? Math.hypot(c-CX,r-CY)<=RAD-0.45 : (c>=1&&c<=16&&r>=1&&r<=16);
   const NET={gnd:['--n-gnd','GND'],v5:['--n-v5','+5 V'],v5in:['--n-v5in','5 V Eingang'],drain:['--n-drain','Drain'],gate:['--n-gate','Gate'],sig:['--n-sig','DATA (GPIO 2)'],x:['--n-x','Koppelknoten (R6–C3)'],mk:['--n-mk','Strang-Zwischenknoten']};
-  const segs=[['A',1,45,'gnd'],['B',1,45,'v5'],
-    ['C',1,10,'mk'],['C',12,16,'mk'],['C',18,22,'mk'],['C',24,28,'mk'],['C',30,45,'v5in'],
-    ['D',1,10,'mk'],['D',12,16,'mk'],['D',18,22,'mk'],['D',24,28,'mk'],['D',30,35,'gate'],['D',37,41,'x'],['D',43,45,'sig'],
-    ['E',1,34,'drain'],['E',36,45,'gnd'],['F',1,45,'gnd']];
-  const cuts=['C11','D11','C17','D17','C23','D23','C29','D29','D36','D42','E35'];
-  const parts=[];
-  [6,12,18,24].forEach((b,i)=>{const o=false;
-    parts.push({t:'led',id:(i+1)+'a',a:'B'+b,k:'C'+b,o});
-    parts.push({t:'led',id:(i+1)+'b',a:'C'+(b+3),k:'D'+(b+3),o});
-    parts.push({t:'rs',id:'R'+(i+1),a:'D'+(b+4),b:'E'+(b+4),o});});
-  parts.push({t:'rs',id:'R5',a:'B38',b:'C38'},{t:'rs',id:'R7',a:'D33',b:'F33'},{t:'dio',id:'D1',a:'D34',b:'F34'},
-    {t:'capl',id:'C3',a:'D35',b:'D37'},{t:'rl',id:'R6',a:'D40',b:'D44'},
-    {t:'cap',id:'C1',a:'A1',b:'B1'},{t:'elko',id:'C2',a:'A4',b:'B4'},
-    {t:'wire',id:'Br1',a:'A2',b:'F2'},{t:'wire',id:'Br2',a:'E44',b:'F44'},
-    {t:'fet',id:'Q1',p:['D31','E31','F31']},{t:'conn',id:'J1',p:['C45','D45','E45'],l:['5V','DATA','GND']});
+  // Streifen-Abschnitte mit Netz [Reihe, von, bis, Netz]; -1/18 = bis zum Rand
+  const segs=[['D',-1,18,'x'],['E',-1,18,'gate'],['F',-1,4,'sig'],['F',6,18,'drain'],['G',-1,18,'gnd'],['H',-1,6,'v5in'],['I',-1,18,'v5'],
+    ['J',-1,8,'mk'],['J',10,18,'mk'],['K',-1,8,'mk'],['K',10,18,'mk'],['L',-1,18,'drain'],['M',-1,9,'mk'],['M',11,18,'mk'],['N',-1,8,'mk'],['N',10,18,'mk']];
+  const cuts=['F5','H7','J9','K9','M10','N9'];
+  const mounts=[[8.5,2],[8.5,15]];
+  const parts=[
+    {t:'led',id:'1a',a:'I4',k:'J4'},{t:'led',id:'1b',a:'J7',k:'K7'},{t:'rs',id:'R1',a:'K8',b:'L8'},
+    {t:'led',id:'2a',a:'I10',k:'J10'},{t:'led',id:'2b',a:'J13',k:'K13'},{t:'rs',id:'R2',a:'K14',b:'L14'},
+    {t:'rl',id:'R3',a:'I5',b:'N5'},{t:'led',id:'3a',a:'N6',k:'M6'},{t:'led',id:'3b',a:'M9',k:'L9'},
+    {t:'rl',id:'R4',a:'I11',b:'N11'},{t:'led',id:'4a',a:'N12',k:'M12'},{t:'led',id:'4b',a:'M15',k:'L15'},
+    {t:'rs',id:'R5',a:'H6',b:'I6'},{t:'rs',id:'R6',a:'D4',b:'F4'},{t:'rs',id:'R7',a:'E8',b:'G8'},
+    {t:'dio',id:'D1',a:'G7',b:'E7'},                       // a = Körper (Anode), b = Kathode (Ring oben)
+    {t:'cap',id:'C3',a:'D6',b:'E6'},{t:'cap',id:'C1',a:'G9',b:'I9'},{t:'elko',id:'C2',a:'G14',b:'I14'},
+    {t:'wire',id:'Br1',a:'F16',b:'L16'},
+    {t:'fet',id:'Q1',p:['E11','F11','G11'],tab:1},        // tab: Fahne +1 = Richtung höhere Spalten
+    {t:'conn',id:'J1',p:['F2','G2','H2'],l:['DATA','GND','5V']}];
   const legs=p=>p.p?p.p:(p.t==='led'?[p.a,p.k]:[p.a,p.b]);
   function drawPart(p){
-    const d=mirror?-1:1, op=p.o?' opacity="0.55"':'', dash=p.o?' stroke-dasharray="4 3"':'';
+    const d=mirror?-1:1;
     let s='';
-    if(p.t==='led'){const A=pos(p.a),K=pos(p.k),x=X(A.c),y1=Y(A.r),y2=Y(K.r),cy=(y1+y2)/2,r=P*0.66,h=r*0.72,w=Math.sqrt(r*r-h*h);
-      s+=`<g${op}><path d="M${x-w},${cy+h} A${r} ${r} 0 1 1 ${x+w},${cy+h} Z" fill="${v('--led')}" stroke="${f}" stroke-width="1"${dash}/>`+
-         `<text x="${x}" y="${cy+1}" font-size="10" text-anchor="middle" dominant-baseline="middle" fill="${v('--led-fg')}">${p.id}</text></g>`;}
+    if(p.t==='led'){const A=pos(p.a),K=pos(p.k),x=X(A.c),ya=Y(A.r),yk=Y(K.r),cy=(ya+yk)/2,r=P*0.66,h=r*0.72,w=Math.sqrt(r*r-h*h),fy=yk>ya?1:-1;
+      // Abgeflachte Seite = Kathode
+      s+=`<g><path d="M${x-w},${cy+fy*h} A${r} ${r} 0 1 ${fy>0?1:0} ${x+w},${cy+fy*h} Z" fill="${v('--led')}" stroke="${f}" stroke-width="1"/>`+
+         `<text x="${x}" y="${cy+1}" font-size="10" text-anchor="middle" dominant-baseline="middle" fill="${v('--led-fg')}">${p.id}</text>`+
+         `<text x="${x+d*11}" y="${ya-fy*9+4}" font-size="11" font-weight="700" text-anchor="middle" fill="${v('--n-v5')}">+</text></g>`;}
     else if(p.t==='rs'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r);
-      s+=`<g${op}><line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
-         `<circle cx="${x}" cy="${y1}" r="9.5" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"${dash}/>`+
-         `<text x="${x}" y="${y1+0.5}" font-size="8.5" font-weight="600" text-anchor="middle" dominant-baseline="middle" fill="#3a2e1a">${p.id}</text></g>`;}
-    else if(p.t==='dio'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r);
+      s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
+         `<circle cx="${x}" cy="${y1}" r="10.5" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"/>`+
+         `<text x="${x}" y="${y1+0.5}" font-size="8.5" font-weight="600" text-anchor="middle" dominant-baseline="middle" fill="#3a2e1a">${p.id}</text>`;}
+    else if(p.t==='rl'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2,hl=P*1.24;
+      s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
+         `<rect x="${x-P*0.45}" y="${cy-hl}" width="${P*0.9}" height="${2*hl}" rx="6" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"/>`+
+         `<text x="${x}" y="${cy+3}" font-size="9" font-weight="600" text-anchor="middle" fill="#3a2e1a">${p.id}</text>`;}
+    else if(p.t==='dio'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),up=y2<y1;
       s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
          `<rect x="${x-7}" y="${y1-11}" width="14" height="22" rx="4" fill="${v('--fet')}" stroke="${f}" stroke-width="0.8"/>`+
-         `<rect x="${x-7}" y="${y1-11}" width="14" height="4" fill="#d9dde3"/>`+
+         `<rect x="${x-7}" y="${up?y1-11:y1+7}" width="14" height="4" fill="#d9dde3"/>`+
          `<text x="${x}" y="${y1+4}" font-size="7.5" font-weight="600" text-anchor="middle" fill="#fff">D1</text>`;}
-    else if(p.t==='capl'){const A=pos(p.a),B=pos(p.b),x1=X(A.c),x2=X(B.c),y=Y(A.r),lo=Math.min(x1,x2),hi=Math.max(x1,x2);
-      s+=`<path d="M${lo},${y}L${lo+6},${y-12}L${hi-6},${y-12}L${hi},${y}" fill="none" stroke="${v('--leg')}" stroke-width="2"/>`+
-         `<rect x="${lo+5}" y="${y-19}" width="${hi-lo-10}" height="13" rx="6" fill="${v('--kerko')}" stroke="${f}" stroke-width="0.8"/>`+
-         `<text x="${(lo+hi)/2}" y="${y-23}" font-size="10" text-anchor="middle" fill="${f}">C3</text>`;}
-    else if(p.t==='rl'){const A=pos(p.a),B=pos(p.b),x1=X(A.c),x2=X(B.c),y=Y(A.r),lo=Math.min(x1,x2),hi=Math.max(x1,x2);
-      s+=`<line x1="${lo}" y1="${y}" x2="${hi}" y2="${y}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
-         `<rect x="${lo+P*0.6}" y="${y-7}" width="${hi-lo-P*1.2}" height="14" rx="6" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"/>`+
-         `<text x="${(lo+hi)/2}" y="${y-12}" font-size="10" text-anchor="middle" fill="${f}">R6</text>`;}
     else if(p.t==='cap'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2;
       s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2"/>`+
-         `<ellipse cx="${x}" cy="${cy}" rx="9" ry="6" fill="${v('--kerko')}" stroke="${f}" stroke-width="0.8"/>`+
-         `<text x="${x}" y="${y1-P*0.75}" font-size="10" text-anchor="middle" fill="${f}">C1</text>`;}
-    else if(p.t==='elko'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2,r=P*1.15,id='ek'+(mirror?1:0);
+         `<ellipse cx="${x}" cy="${cy}" rx="7" ry="11" fill="${v('--kerko')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<text x="${x-d*11}" y="${cy+4}" font-size="10" text-anchor="${d>0?'end':'start'}" fill="${f}">${p.id}</text>`;}
+    else if(p.t==='elko'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2,r=P*1.575,id='ek'+(mirror?1:0)+(round?1:0);
       s+=`<defs><clipPath id="${id}"><circle cx="${x}" cy="${cy}" r="${r}"/></clipPath></defs>`+
-         `<circle cx="${x}" cy="${cy}" r="${r}" fill="${v('--elko')}" stroke="${f}" stroke-width="1"/>`+
-         `<rect x="${x-r}" y="${cy-r}" width="${2*r}" height="${r*0.55}" fill="${v('--elko-band')}" clip-path="url(#${id})"/>`+
-         `<text x="${x}" y="${cy-r+r*0.42}" font-size="11" font-weight="700" text-anchor="middle" fill="${v('--elko')}">−</text>`+
-         `<text x="${x}" y="${cy+r*0.62}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">+</text>`+
-         `<text x="${x}" y="${cy+3}" font-size="9" text-anchor="middle" fill="#fff">C2</text>`;}
+         `<circle cx="${x}" cy="${cy}" r="${r}" fill="${v('--elko')}" stroke="${f}" stroke-width="1" opacity="0.92"/>`+
+         `<rect x="${x-r}" y="${cy-r}" width="${2*r}" height="${r*0.5}" fill="${v('--elko-band')}" clip-path="url(#${id})"/>`+
+         `<text x="${x}" y="${cy-r+r*0.38}" font-size="12" font-weight="700" text-anchor="middle" fill="${v('--elko')}">−</text>`+
+         `<text x="${x}" y="${cy+r*0.62}" font-size="12" font-weight="700" text-anchor="middle" fill="#fff">+</text>`+
+         `<text x="${x+d*r*0.55}" y="${cy+4}" font-size="10" text-anchor="middle" fill="#fff">${p.id}</text>`;}
     else if(p.t==='wire'){const A=pos(p.a),B=pos(p.b),x=X(A.c);
-      s+=`<line x1="${x}" y1="${Y(A.r)}" x2="${x}" y2="${Y(B.r)}" stroke="${v('--wire')}" stroke-width="${p.id==='Br1'?5:3}" stroke-linecap="round"/>`+
-         `<text x="${x-d*8}" y="${(Y(A.r)+Y(B.r))/2+3}" font-size="10" text-anchor="${d>0?'end':'start'}" fill="${v('--wire')}">${p.id}</text>`;}
-    else if(p.t==='fet'){const x=X(31),ym=Y('E'),hh=P*1.95,tw=P*0.88,tabX=x-d*tw;
-      s+=`<rect x="${Math.min(tabX,tabX+d*P*0.28)}" y="${ym-hh-4}" width="${P*0.28}" height="${2*hh+8}" fill="${v('--tab')}" stroke="${f}" stroke-width="0.8"/>`+
-         `<rect x="${Math.min(x-d*tw*0.72,x+d*tw)}" y="${ym-hh}" width="${tw*1.72}" height="${2*hh}" rx="2" fill="${v('--fet')}" opacity="0.88"/>`+
-         `<text x="${x+d*(tw+5)}" y="${ym-hh+6}" font-size="10" text-anchor="${d>0?'start':'end'}" fill="${f}">Q1</text>`+
-         `<text x="${tabX-d*4}" y="${ym-hh-8}" font-size="9" text-anchor="middle" fill="${m}">Fahne</text>`;
-      ['G','D','S'].forEach((n,i)=>{s+=`<text x="${x+d*12}" y="${Y(RW[3+i])+4}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">${n}</text>`;});}
-    else if(p.t==='conn'){const x=X(45);
-      s+=`<rect x="${x-P*0.45}" y="${Y('C')-P*0.5}" width="${P*0.9}" height="${P*3}" rx="3" fill="none" stroke="${f}" stroke-width="1.5"/>`+
-         `<text x="${x}" y="${Y('C')-P*0.75}" font-size="10" text-anchor="middle" fill="${f}">J1</text>`;
-      p.l.forEach((t,i)=>{s+=`<text x="${x+d*P*0.75}" y="${Y(RW[2+i])+4}" font-size="11" font-weight="600" text-anchor="${d>0?'start':'end'}" fill="${f}">${t}</text>`;});}
+      s+=`<line x1="${x}" y1="${Y(A.r)}" x2="${x}" y2="${Y(B.r)}" stroke="${v('--wire')}" stroke-width="5" stroke-linecap="round"/>`+
+         `<text x="${x+d*9}" y="${(Y(A.r)+Y(B.r))/2+3}" font-size="10" text-anchor="${d>0?'start':'end'}" fill="${v('--wire')}">${p.id}</text>`;}
+    else if(p.t==='fet'){const G=pos(p.p[0]),x=X(G.c),ym=Y(pos(p.p[1]).r),hh=P*2.05,s1=d*p.tab,back=x+s1*P*0.98,front=x-s1*P*0.79,tabIn=x+s1*P*0.47;
+      s+=`<rect x="${Math.min(tabIn,back)}" y="${ym-hh}" width="${Math.abs(back-tabIn)}" height="${2*hh}" fill="${v('--tab')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<rect x="${Math.min(front,tabIn)}" y="${ym-hh}" width="${Math.abs(tabIn-front)}" height="${2*hh}" rx="2" fill="${v('--fet')}" opacity="0.88"/>`+
+         `<text x="${front-s1*5}" y="${ym-hh+10}" font-size="10" text-anchor="${s1>0?'end':'start'}" fill="${f}">Q1</text>`+
+         `<text x="${back}" y="${ym-hh-6}" font-size="9" text-anchor="middle" fill="${m}">Fahne</text>`;
+      ['G','D','S'].forEach((n,i)=>{s+=`<text x="${x-s1*13}" y="${Y(pos(p.p[i]).r)+4}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">${n}</text>`;});}
+    else if(p.t==='conn'){const x=X(pos(p.p[0]).c),ym=Y(pos(p.p[1]).r);
+      s+=`<rect x="${x-P*1.13}" y="${ym-P*1.95}" width="${P*2.26}" height="${P*3.9}" rx="3" fill="none" stroke="${f}" stroke-width="1.5"/>`+
+         `<text x="${x}" y="${ym-P*1.95-6}" font-size="10" text-anchor="middle" fill="${f}">J1</text>`;
+      p.l.forEach((t,i)=>{s+=`<text x="${x-d*P*1.25}" y="${Y(pos(p.p[i]).r)+4}" font-size="10" font-weight="600" text-anchor="${d>0?'end':'start'}" fill="${f}">${t}</text>`;});}
     return s;
   }
   function render(){
     const svg=document.getElementById('board');
     svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.style.width=W+'px'; svg.style.maxWidth='none'; svg.style.height='auto'; svg.style.display='block';
     let s='';
-    const bx0=Math.min(X(1),X(COLS))-P*0.8, bx1=Math.max(X(1),X(COLS))+P*0.8, by0=Y('A')-P*1.7, by1=Y('F')+P*1.7;
-    s+=`<rect x="${bx0}" y="${by0}" width="${bx1-bx0}" height="${by1-by0}" rx="6" fill="${v('--pcb')}" stroke="${v('--pcb-edge')}" stroke-width="2"/>`;
-    [Y('A')-P,Y('F')+P].forEach(y=>{s+=`<rect x="${bx0+P*0.3}" y="${y-P*0.3}" width="${bx1-bx0-P*0.6}" height="${P*0.6}" fill="${v('--n-mk')}" opacity="${mirror?0.25:0.12}"/>`;
-      for(let c=1;c<=COLS;c++) s+=`<circle cx="${X(c)}" cy="${y}" r="3" fill="${v('--hole')}" opacity="0.5"/>`;});
-    const so=mirror?0.85:0.32;
+    // Platinenkontur + Clip-Pfad, damit Streifen am Rand enden
+    const outline=round? `<circle cx="${X(CX)}" cy="${Y(CY)}" r="${RAD*P}"/>`
+                       : `<rect x="${Math.min(X(SQ0),X(SQ1))}" y="${Y(SQ0)}" width="${(SQ1-SQ0)*P}" height="${(SQ1-SQ0)*P}" rx="3"/>`;
+    s+=`<defs><clipPath id="bclip">${outline}</clipPath></defs>`;
+    s+=outline.replace('/>',` fill="${v('--pcb')}" stroke="${v('--pcb-edge')}" stroke-width="2"/>`);
+    const so=mirror?0.85:0.32, lo=Math.floor(MIN), hi=Math.ceil(MAX);
+    let st='';
+    for(let r=lo;r<=hi;r++) st+=`<rect x="${Math.min(X(lo),X(hi))}" y="${Y(r)-P*0.3}" width="${(hi-lo)*P}" height="${P*0.6}" fill="${v('--n-mk')}" opacity="${mirror?0.22:0.1}"/>`;
     segs.forEach(([r,a,b,n])=>{const x0=Math.min(X(a),X(b))-P*0.42, x1=Math.max(X(a),X(b))+P*0.42;
-      s+=`<rect x="${x0}" y="${Y(r)-P*0.3}" width="${x1-x0}" height="${P*0.6}" rx="2" fill="${v(NET[n][0])}" opacity="${so}"/>`;});
-    RW.forEach(r=>{for(let c=1;c<=COLS;c++) s+=`<circle cx="${X(c)}" cy="${Y(r)}" r="3.2" fill="${v('--hole')}"/>`;});
-    for(let c=1;c<=COLS;c++){const big=c===1||c%5===0;
-      s+=`<text x="${X(c)}" y="${by0-8}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`+
-         `<text x="${X(c)}" y="${by1+16}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`;}
-    RW.forEach(r=>{s+=`<text x="${bx0-12}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${r}</text>`+
-      `<text x="${bx1+12}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${r}</text>`;});
+      st+=`<rect x="${x0}" y="${Y(r)-P*0.3}" width="${x1-x0}" height="${P*0.6}" rx="2" fill="${v(NET[n][0])}" opacity="${so}"/>`;});
+    s+=`<g clip-path="url(#bclip)">${st}</g>`;
+    for(let r=lo;r<=hi;r++) for(let c=lo;c<=hi;c++) if(inside(c,r)) s+=`<circle cx="${X(c)}" cy="${Y(r)}" r="3.4" fill="${v('--hole')}"/>`;
+    mounts.forEach(([c,r])=>{s+=`<circle cx="${X(c)}" cy="${Y(r)}" r="${1.6/2.54*P}" fill="${v('--surface')}" stroke="${m}" stroke-width="1.5" stroke-dasharray="3 2"/>`+
+      `<text x="${X(c)}" y="${Y(r)+4}" font-size="9" text-anchor="middle" fill="${m}">M3</text>`;});
+    // Beschriftung Spalten 1..16 oben/unten, Reihen A..P links/rechts
+    const top=Y(MIN)-6, bot=Y(MAX)+14, xl=Math.min(X(MIN),X(MAX))-12, xr=Math.max(X(MIN),X(MAX))+12;
+    for(let c=1;c<=16;c++){const big=c===1||c%5===0;
+      s+=`<text x="${X(c)}" y="${top}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`+
+         `<text x="${X(c)}" y="${bot}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`;}
+    for(let r=1;r<=16;r++) s+=`<text x="${xl}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${RW[r-1]}</text>`+
+      `<text x="${xr}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${RW[r-1]}</text>`;
     s+=`<g opacity="${mirror?0.22:1}">`+parts.map(drawPart).join('')+`</g>`;
-    parts.forEach(p=>legs(p).forEach(q=>{const Q=pos(q); s+=`<circle cx="${X(Q.c)}" cy="${Y(Q.r)}" r="${mirror?5.5:4}" fill="${v('--solder')}" stroke="${f}" stroke-width="${mirror?1:0.6}" opacity="${p.o?0.6:1}"/>`;}));
+    parts.forEach(p=>legs(p).forEach(q=>{const Q=pos(q); s+=`<circle cx="${X(Q.c)}" cy="${Y(Q.r)}" r="${mirror?5.5:4}" fill="${v('--solder')}" stroke="${f}" stroke-width="${mirror?1:0.6}"/>`;}));
     cuts.forEach(q=>{const Q=pos(q),x=X(Q.c),y=Y(Q.r),k=7;
       s+=`<circle cx="${x}" cy="${y}" r="10" fill="${v('--surface')}" stroke="${v('--cut')}" stroke-width="2"/>`+
          `<path d="M${x-k+2},${y-k+2}L${x+k-2},${y+k-2}M${x+k-2},${y-k+2}L${x-k+2},${y+k-2}" stroke="${v('--cut')}" stroke-width="2.6" stroke-linecap="round"/>`;});
-    s+=`<text x="${bx0}" y="22" font-size="12" font-weight="600" fill="${f}">${mirror?'LÖTSEITE – Platine um die senkrechte Achse gedreht, Spalte 1 rechts':'BAUTEILSEITE – Ansicht von oben, Spalte 1 links'}</text>`;
+    s+=`<text x="10" y="20" font-size="12" font-weight="600" fill="${f}">${mirror?'LÖTSEITE – Platine um die senkrechte Achse gedreht, Spalte 1 rechts':'BAUTEILSEITE – Ansicht von oben, Spalte 1 links'}</text>`+
+       `<text x="10" y="36" font-size="11" fill="${m}">${round?'Zuschnitt rund Ø 46 mm, Mitte zwischen H/I und 8/9':'Zuschnitt quadratisch 16 × 16 Löcher = 40,6 mm'}</text>`;
     svg.innerHTML=s;
     document.getElementById('v-top').setAttribute('aria-pressed',String(!mirror));
     document.getElementById('v-bot').setAttribute('aria-pressed',String(mirror));
+    document.getElementById('s-rund').setAttribute('aria-pressed',String(round));
+    document.getElementById('s-quad').setAttribute('aria-pressed',String(!round));
   }
   document.getElementById('v-top').onclick=()=>{mirror=false;render();};
   document.getElementById('v-bot').onclick=()=>{mirror=true;render();};
+  document.getElementById('s-rund').onclick=()=>{round=true;render();};
+  document.getElementById('s-quad').onclick=()=>{round=false;render();};
   document.getElementById('legend').innerHTML=Object.values(NET).map(([c,t])=>`<span><i class="sw" style="background:var(${c})"></i>${t}</span>`).join('')+
     `<span><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--cut)" stroke-width="2"/><path d="M6,6L14,14M14,6L6,14" stroke="var(--cut)" stroke-width="2.4"/></svg>Streifen unterbrechen</span>`+
-    `<span><i class="sw" style="background:var(--wire)"></i>Drahtbrücke</span>`;
+    `<span><i class="sw" style="background:var(--wire)"></i>Drahtbrücke</span>`+
+    `<span><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 2"/></svg>Befestigung (optional)</span>`+
+    `<span><b style="color:var(--n-v5)">+</b>&nbsp;Anode (langes Bein)</span>`;
   render();
-
   /* ---------- Schaltplan ---------- */
   const ln=(x1,y1,x2,y2,ex='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${f}" stroke-width="1.6"${ex}/>`;
   const tx=(x,y,t,a='start',sz=11,c=f,w=400)=>`<text x="${x}" y="${y}" font-size="${sz}" text-anchor="${a}" fill="${c}" font-weight="${w}">${t}</text>`;
@@ -689,12 +740,14 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   s+=ln(48,340,660,340)+tx(655,358,'GND','end',10,'var(--n-gnd)',600);
   s+=dot(180,60)+ln(180,60,180,192)+ln(166,192,194,192,' stroke-width="2.4"')+ln(166,201,194,201,' stroke-width="2.4"')+ln(180,201,180,340)+dot(180,340)+tx(198,190,'C1')+tx(198,204,'100 nF','start',9,m);
   s+=dot(250,60)+ln(250,60,250,192)+ln(236,192,264,192,' stroke-width="2.4"')+`<rect x="236" y="199" width="28" height="5" fill="${f}"/>`+ln(250,204,250,340)+dot(250,340)+tx(228,188,'+','middle',12,f,700)+tx(268,190,'C2')+tx(268,204,'470 µF','start',9,m);
-  [340,410,480,550].forEach((x,i)=>{const o=false, da=o?' stroke-dasharray="5 3"':'', op=o?' opacity="0.6"':'';
-    s+=`<g${op}>`+dot(x,60)+ln(x,60,x,80,da);
-    [[80,'a'],[118,'b']].forEach(([y,n])=>{s+=`<path d="M${x-11},${y}L${x+11},${y}L${x},${y+20}Z" fill="var(--led)" stroke="${f}" stroke-width="1.4"/>`+ln(x-11,y+20,x+11,y+20,' stroke-width="2"')+
+  // Stränge 1–2: 5 V → LED a → LED b → R → Drain · Stränge 3–4: 5 V → R → LED a → LED b → Drain (wie im Layout, elektrisch gleichwertig)
+  [340,410,480,550].forEach((x,i)=>{const rTop=i>=2, yL=rTop?[[130,'a'],[168,'b']]:[[80,'a'],[118,'b']], yR=rTop?68:160;
+    s+=dot(x,60);
+    yL.forEach(([y,n])=>{s+=`<path d="M${x-11},${y}L${x+11},${y}L${x},${y+20}Z" fill="var(--led)" stroke="${f}" stroke-width="1.4"/>`+ln(x-11,y+20,x+11,y+20,' stroke-width="2"')+
       `<path d="M${x+13},${y+6}l11,-7 M${x+13},${y+13}l11,-7" stroke="var(--n-v5in)" stroke-width="1.4"/><path d="M${x+24},${y-1}l-5,0 l2,4z M${x+24},${y+6}l-5,0 l2,4z" fill="var(--n-v5in)"/>`+
       tx(x-15,y+14,(i+1)+n,'end',10,m);});
-    s+=ln(x,100,x,118,da)+ln(x,138,x,160,da)+rv(x,160,40)+tx(x+12,178,'R'+(i+1),'start',10)+tx(x+12,191,'27 Ω','start',9,m)+ln(x,200,x,230,da)+dot(x,230)+`</g>`;});
+    s+=ln(x,yL[0][0]+20,x,yL[1][0])+rv(x,yR,40)+tx(x+12,yR+18,'R'+(i+1),'start',10)+tx(x+12,yR+31,'27 Ω','start',9,m);
+    s+=(rTop? ln(x,60,x,68)+ln(x,108,x,130)+ln(x,188,x,230) : ln(x,60,x,80)+ln(x,138,x,160)+ln(x,200,x,230))+dot(x,230);});
   s+=ln(340,230,640,230)+tx(345,246,'DRAIN','start',9,'var(--n-drain)',600)+tx(450,30,'Stränge 1–2: TSAL6100 (eng) · Stränge 3–4: TSAL6200 (breit)','middle',10,m);
   s+=ln(640,230,640,255)+`<rect x="618" y="255" width="44" height="50" rx="3" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(640,284,'Q1','middle',11,f,600)+
      tx(646,251,'D','start',9,m)+tx(646,318,'S','start',9,m)+tx(612,276,'G','end',9,m)+ln(640,305,640,340)+dot(640,340)+tx(668,276,'IRLB','start',9,m)+tx(668,288,'8748','start',9,m);
