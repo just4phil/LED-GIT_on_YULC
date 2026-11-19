@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PixMob IR-Sender</title>
+<style>
+/* Self-contained: keine externen Schriften, Skripte oder Bilder. Alle Grafiken sind Inline-SVG, per Skript gezeichnet. */
+:root{
+  --bg:#f4f6f3; --surface:#ffffff; --fg:#1c2220; --muted:#57625d; --line:#d3dad5; --accent:#a8571f; --accent-bg:#f6ebe2;
+  --ok:#2c8a46; --warn:#b07400; --crit:#c8204f;
+  --pcb:#e3c99b; --pcb-edge:#c7a873; --hole:#3b2e22; --solder:#b9bec6; --leg:#7d858f;
+  --n-gnd:#56677a; --n-v5:#d03a3a; --n-v5in:#e08425; --n-drain:#8a4fd0; --n-gate:#15908f; --n-sig:#2c9a48; --n-x:#c4459a; --n-mk:#b0702c;
+  --cut:#e0195a; --led:#433a63; --led-fg:#ffffff; --res:#ecdcb8; --res-edge:#9c8656; --elko:#2f4f8a; --elko-band:#d5ddef;
+  --kerko:#e0a83a; --wire:#1f6fd1; --fet:#26292d; --tab:#a6abb2;
+  --f-body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:Consolas,"Cascadia Mono","SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141816; --surface:#1c211f; --fg:#e4e9e6; --muted:#9aa6a0; --line:#2e3633; --accent:#e08a4c; --accent-bg:#2c221a;
+  --ok:#4cc46c; --warn:#e0a83a; --crit:#ff5c8a;
+  --pcb:#5c4830; --pcb-edge:#7a6242; --hole:#16110c; --solder:#c9ced6; --leg:#9aa2ac;
+  --n-gnd:#8aa0b6; --n-v5:#f06060; --n-v5in:#f5a04a; --n-drain:#b07ef0; --n-gate:#36c2c0; --n-sig:#4cc46c; --n-x:#e472bd; --n-mk:#d39250;
+  --cut:#ff4f86; --led:#6a5d9c; --res:#d8c79e; --res-edge:#7c6a42; --elko:#4c73c0; --elko-band:#dfe6f5;
+  --kerko:#e8b54c; --wire:#4d95f0; --fet:#0d0f11; --tab:#c3c8cf; color-scheme:dark}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding:32px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:40px}
+h1,h2,h3,h4{line-height:1.25;margin:0;text-wrap:balance}
+h1{font-size:1.9rem}
+h2{font-size:1.35rem;padding-bottom:6px;border-bottom:2px solid var(--line)}
+h3{font-size:1.06rem;margin-top:6px}
+h4{font-size:.95rem}
+p,ul,ol{margin:0;max-width:78ch}
+ul,ol{padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+a{color:var(--accent)}
+code,.mono{font-family:var(--f-mono);font-size:.9em}
+code{background:color-mix(in srgb,var(--fg) 7%,transparent);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--f-mono);font-size:.84rem;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin:0;line-height:1.45}
+.meta{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;font-size:.9rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.pos{font-family:var(--f-mono);white-space:nowrap}
+.box{border-left:3px solid var(--accent);background:var(--accent-bg);padding:10px 14px;border-radius:0 8px 8px 0;max-width:86ch}
+.box.crit{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 8%,var(--surface))}
+.box.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+.pill{display:inline-block;font-size:.75rem;font-weight:600;padding:1px 8px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.pill.crit{background:color-mix(in srgb,var(--crit) 16%,transparent);color:var(--crit)}
+.pill.info{background:color-mix(in srgb,var(--fg) 10%,transparent);color:var(--muted)}
+nav.toc{columns:2 260px;column-gap:32px;font-size:.92rem}
+nav.toc a{display:block;padding:2px 0;text-decoration:none;color:var(--fg)}
+nav.toc a span{font-family:var(--f-mono);color:var(--accent);display:inline-block;min-width:2.4em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.grid2>*{min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:10px;border-radius:2px;display:inline-block}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:.88rem;padding:6px 13px;border:0;background:transparent;color:var(--fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.note{font-size:.88rem;color:var(--muted)}
+svg text{font-family:var(--f-mono)}
+.formula{font-family:var(--f-mono);font-size:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px;display:inline-block}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  .seg,.noprint{display:none}
+  .panel{break-inside:avoid}
+  section{break-inside:auto}
+  h2{break-after:avoid}
+  .wrap{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:12px">
+  <div class="eyebrow">LED-GIT on YULC · Konzept + Hardware </div>
+  <h1>PixMob IR-Sender für LAMPE1 / LAMPE2</h1>
+  <p>Konzept, Berechnungen, Schaltung, Stückliste, Platinenlayout und Firmware-Plan, um PixMob-Armbänder im Publikum über Infrarot aus den beiden Bühnenlampen anzusteuern, synchron zur LED-Show.</p>
+  <div class="meta">
+    <span>Version</span><b>1.1</b>
+    <span>Stand</span><b>19.11.2026</b>
+    <span>Status</span><b>Konzept · Hardware geplant, Teile bestellt · Firmware nicht implementiert</b>
+    <span>Betroffene Geräte</span><b>LAMPE1 (YULC6), LAMPE2 (YULC5), beide ESP32-S3</b>
+  </div>
+</header>
+
+<nav class="toc panel" aria-label="Inhalt">
+  <a href="#ziel"><span>1</span>Ziel und Rahmenbedingungen</a>
+  <a href="#protokoll"><span>2</span>PixMob-IR-Protokoll</a>
+  <a href="#geometrie"><span>3</span>Geometrie, Reichweite, LED-Anzahl</a>
+  <a href="#zweisender"><span>4</span>Zwei Sender gleichzeitig</a>
+  <a href="#leistung"><span>5</span>Sendeleistung per Software</a>
+  <a href="#schaltung"><span>6</span>Schaltung und Funktion</a>
+  <a href="#dimensionierung"><span>7</span>Dimensionierung (Rechnungen)</a>
+  <a href="#fehlerfaelle"><span>8</span>Fehlerfälle (Fail-safe-Nachweis)</a>
+  <a href="#versorgung"><span>9</span>Versorgung und Verkabelung</a>
+  <a href="#stueckliste"><span>10</span>Stückliste</a>
+  <a href="#layout"><span>11</span>Platinenlayout</a>
+  <a href="#aufbau"><span>12</span>Aufbau und Inbetriebnahme</a>
+  <a href="#firmware"><span>13</span>Firmware-Konzept</a>
+  <a href="#tests"><span>14</span>Testplan</a>
+  <a href="#risiken"><span>15</span>Annahmen, Risiken, offene Punkte</a>
+  <a href="#qs"><span>16</span>Prüfpunkte</a>
+  <a href="#quellen"><span>17</span>Quellen</a>
+</nav>
+
+<!-- 1 -->
+<section id="ziel">
+  <h2>1 · Ziel und Rahmenbedingungen</h2>
+  <p>Das Publikum trägt PixMob-Armbänder. Diese haben einen 38-kHz-IR-Empfänger und eine RGB-LED. Die beiden Bühnenlampen (LAMPE1 links, LAMPE2 rechts) bekommen oben je eine kleine IR-Sendeplatine. Die Firmware der Lampen sendet zu festgelegten Zeitpunkten im Song IR-Befehle, z. B. „Farbe rot aufblitzen, 960 ms ausblenden, nur bei 50 % der Bänder“. So wird das Publikum Teil der Lichtshow.</p>
+  <div class="panel"><table>
+    <tr><th>Rahmenbedingung</th><th>Wert / Festlegung</th></tr>
+    <tr><td>Publikum</td><td>ca. 100 Personen, 1–6 m vor der Bühne</td></tr>
+    <tr><td>Abstand der Lampen</td><td>ca. 6 m (links/rechts der Bühne)</td></tr>
+    <tr><td>Controller</td><td>YULC-Board mit ESP32-S3, zwei LED-Kanäle (Kanal 1 = GPIO 1, Kanal 2 = GPIO 2)</td></tr>
+    <tr><td>Heutige Belegung Lampen</td><td>Beide Kanäle treiben je einen gleichen WS2812-Strip (94 LEDs LAMPE1, 78 LEDs LAMPE2), gleiches Bild, keine Marker</td></tr>
+    <tr><td>Neue Belegung</td><td>Beide Strips gemeinsam an Kanal 1 (Datenleitung per Y-Abzweig, gleiches Bild). <b>Kanal 2 (GPIO 2) wird IR-Ausgang.</b></td></tr>
+    <tr><td>Versorgung</td><td>Lampen hängen am Netz (5-V-Netzteil), Strom ist kein Engpass</td></tr>
+    <tr><td>Synchronität</td><td>Jedes Gerät läuft die Parts auf eigenem Timer. Nur Songstart und manuelle Sprünge kommen per ESP-NOW. Restversatz zwischen Geräten: einige ms.</td></tr>
+    <tr><td>Anforderung Robustheit</td><td><b>Bullet-proof:</b> Kein Zustand von Software, Bootloader oder Pegelwandler darf die IR-LEDs beschädigen. Manuelle Vorsichtsmaßnahmen sind nicht akzeptabel.</td></tr>
+  </table></div>
+</section>
+
+<!-- 2 -->
+<section id="protokoll">
+  <h2>2 · PixMob-IR-Protokoll</h2>
+  <p>Grundlage ist das Reverse Engineering in <code>jamesw343/PixMob_IR</code> (Dateien <code>docs/ir_protocol.md</code> und <code>pixmob_ir_protocol.py</code>) mit Verweis auf den Arduino-Sender aus <code>danielweidman/pixmob-ir-reverse-engineering</code>. Die folgenden Angaben stammen von dort. Sie sind nicht offiziell und nicht von uns gemessen.</p>
+  <h3>2.1 Physikalische Ebene</h3>
+  <ul>
+    <li><b>Träger:</b> 38 kHz moduliertes IR (Standard-Fernbedienungsempfänger im Band).</li>
+    <li><b>Bitzeit:</b> ca. 700 µs pro Bit. Träger an = 1, Träger aus = 0 (On-Off-Keying in festen Zeitscheiben).</li>
+    <li><b>Bitreihenfolge:</b> beginnend mit dem niederwertigsten Bit des ersten Bytes. Führende und abschließende Nullen dürfen entfallen, weil der Empfänger eine Null nicht von „nichts“ unterscheiden kann.</li>
+    <li><b>Rahmenlänge:</b> 6 oder 9 Bytes = 48 bzw. 72 Bit, also etwa <b>34 bzw. 50 ms</b> pro Befehl.</li>
+  </ul>
+  <h3>2.2 Rahmenaufbau</h3>
+  <pre>Byte 0  1000 0000          Magic-Konstante (nicht kodiert)
+Byte 1  Prüfsumme          (kodiert, siehe 2.3)
+Byte 2  0 0 ? gsten type[2:0] onstrt   Flags, bestimmen das Format des Rumpfs
+Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
+  <p>Ab Byte 2 werden nur die unteren 6 Bit verwendet (PixMob nutzt intern 6-Bit-Werte, vermutlich wegen DMX). Farben werden daher mit 6 Bit je Kanal übertragen (obere 6 Bit von 8, die unteren 2 Bit sind implizit 0). Reihenfolge im Rahmen: <b>Grün, Rot, Blau</b>.</p>
+  <h3>2.3 Kodierung und Prüfsumme</h3>
+  <p>Jedes 6-Bit-Byte ab Offset 2 wird über eine Tabelle auf ein 8-Bit-Muster abgebildet. Die Tabelle sorgt dafür, dass nie zu viele gleiche Bits aufeinander folgen. Prüfsumme: Summe der kodierten Bytes ab Offset 2, davon die oberen 6 Bit, wieder durch die Tabelle.</p>
+  <pre>0x21,0x32,0x54,0x65,0xa9,0x9a,0x6d,0x29, 0x56,0x92,0xa1,0xb4,0xb2,0x84,0x66,0x2a,
+0x4c,0x6a,0xa6,0x95,0x62,0x51,0x42,0x24, 0x35,0x46,0x8a,0xac,0x8c,0x6c,0x2c,0x4a,
+0x59,0x86,0xa4,0xa2,0x91,0x64,0x55,0x44, 0x22,0x31,0xb1,0x52,0x85,0x96,0xa5,0x69,
+0x5a,0x2d,0x4d,0x89,0x45,0x34,0x61,0x25, 0x36,0xad,0x94,0xaa,0x8d,0x49,0x99,0x26</pre>
+  <p class="note">Beispiel aus der Quelle: „Display Single Color“ rgb(0, 252, 192) ergibt kodiert <code>80 5A 21 26 21 5A</code>.</p>
+  <h3>2.4 Für die Show relevante Befehle</h3>
+  <div class="panel scroll"><table>
+    <tr><th>Befehl</th><th>Länge</th><th>Inhalt</th><th>Nutzen für uns</th></tr>
+    <tr><td>Display Single Color</td><td>6 B</td><td>RGB, feste Hüllkurve (Attack 0, Sustain 384 ms bzw. GST)</td><td>einfacher Farbblitz im Beat</td></tr>
+    <tr><td>Display Single Color (konfigurierbar)</td><td>9 B</td><td>RGB, Attack, Sustain, Release, Chance, Repeat-Flag, Gruppe</td><td><b>Hauptbefehl:</b> Blitze, Fades, zufälliges Funkeln</td></tr>
+    <tr><td>Display Two Colors</td><td>9 B</td><td>Farbe 1 ca. 25 ms, dann Farbe 2</td><td>Akzent mit Farbwechsel</td></tr>
+    <tr><td>Set Color / Set Config / Group / Repeat / GST</td><td>9 B</td><td>schreiben EEPROM bzw. Einstellungen</td><td><b>nicht verwenden</b> (verändern Bänder dauerhaft)</td></tr>
+    <tr><td>Do Reset</td><td>9 B</td><td>LEDs aus, Zustände löschen</td><td>„Alles aus“ am Songende, Notaus</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="panel"><h4>Attack / Sustain / Release (3 Bit)</h4><table>
+      <tr><th>Wert</th><th class="num">Zeit</th></tr>
+      <tr><td>0</td><td class="num">0 ms</td></tr><tr><td>1</td><td class="num">32 ms</td></tr><tr><td>2</td><td class="num">96 ms</td></tr><tr><td>3</td><td class="num">192 ms</td></tr>
+      <tr><td>4</td><td class="num">480 ms</td></tr><tr><td>5</td><td class="num">960 ms</td></tr><tr><td>6</td><td class="num">2 400 ms</td></tr><tr><td>7</td><td class="num">3 840 ms</td></tr>
+    </table><p class="note" style="margin-top:8px">Sonderfälle laut Quelle: Sustain = 7 mit Release ≠ 0 nimmt die globale Sustain-Zeit; Release = 0 setzt zusätzlich die Hintergrundfarbe (noch nicht vollständig verstanden).</p></div>
+    <div class="panel"><h4>Chance (3 Bit)</h4><table>
+      <tr><th>Wert</th><th class="num">Wahrscheinlichkeit</th></tr>
+      <tr><td>0</td><td class="num">100 %</td></tr><tr><td>1</td><td class="num">88 %</td></tr><tr><td>2</td><td class="num">67 %</td></tr><tr><td>3</td><td class="num">50 %</td></tr>
+      <tr><td>4</td><td class="num">32 %</td></tr><tr><td>5</td><td class="num">16 %</td></tr><tr><td>6</td><td class="num">10 %</td></tr><tr><td>7</td><td class="num">4 %</td></tr>
+    </table><p class="note" style="margin-top:8px">Restrict Group ID = 0 heißt: alle Bänder führen den Befehl aus.</p></div>
+  </div>
+  <h3>2.5 Konsequenzen für die Show</h3>
+  <ul>
+    <li>Ein Befehl ist ein <b>einzelner Leuchtimpuls</b> mit Hüllkurve, kein Dauerzustand. Dauerlicht entsteht nur durch Wiederholen.</li>
+    <li>Ein Band reagiert erst, wenn der ganze Rahmen empfangen ist. Damit der Blitz auf den Beat fällt, muss das Senden <b>um die Rahmendauer früher</b> beginnen (34 bzw. 50 ms).</li>
+    <li>Maximal etwa 10–20 Befehle pro Sekunde. Das reicht für Beat-Akzente.</li>
+    <li>Getestete Modelle laut Quelle: X2 (PALM v2.1, VIC v2.3r1, PALM v2.6r1), X4 (AURORA v1.7), NOVA (FRENCH VANILLA v3.1), Firmware 0x01–0x08. Nicht jedes Modell kann jede Funktion. <b>Die tatsächlich eingesetzten Bänder müssen getestet werden.</b></li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="geometrie">
+  <h2>3 · Geometrie, Reichweite, LED-Anzahl</h2>
+  <p>Ergebnis vorab: Bei 1–6 m ist nicht die Strahlungsleistung der Engpass, sondern der <b>Winkel</b>. Die vorderen Reihen sitzen bis etwa 70° seitlich zur Lampe. Deshalb werden mehrere LEDs gefächert ausgerichtet.</p>
+  <h3>3.1 Abschätzung der Bestrahlungsstärke</h3>
+  <div class="formula">E = I<sub>e</sub> / d²   (Punktquelle, auf der Achse)</div>
+  <div class="panel scroll"><table>
+    <tr><th>Größe</th><th>Wert</th><th>Herkunft</th></tr>
+    <tr><td>Empfindlichkeit Empfänger E<sub>min</sub></td><td>ca. 0,1–0,3 mW/m²</td><td>typisch für 38-kHz-Empfänger (TSOP382xx). <b>Annahme</b>, der Empfänger im Band ist unbekannt.</td></tr>
+    <tr><td>Strahlstärke TSAL6200 bei 100 mA</td><td>typ. ca. 60 mW/sr</td><td>Datenblatt Vishay (gegenprüfen)</td></tr>
+    <tr><td>Strahlstärke bei ca. 115 mA Puls (18 Ω, siehe 7.1)</td><td>ca. 65–75 mW/sr</td><td>näherungsweise linear zum Strom</td></tr>
+    <tr><td>E in 6 m, eine LED auf der Achse</td><td>70 / 36 ≈ <b>1,9 mW/m²</b></td><td>Faktor 6–19 über E<sub>min</sub></td></tr>
+    <tr><td>E in 2 m, eine LED auf der Achse</td><td>70 / 4 ≈ <b>17 mW/m²</b></td><td>Faktor 60–170</td></tr>
+    <tr><td>Am Rand des Halbwinkels (±17°)</td><td>50 % von obigem</td><td>Definition Halbwertswinkel</td></tr>
+  </table></div>
+  <p>Die Reserve wird gebraucht. Bänder hängen in beliebiger Lage am Arm, der Empfänger sitzt hinter einem Streukörper, Körper und Hände schatten ab. Angestrebt ist ein Faktor 10. Mit den 18-Ω-Vorwiderständen (Begründung in 6) liegt die untere Abschätzung in 6 m bei Faktor 6. Deshalb werden alle 8 LEDs bestückt und Test T6 ist die Abnahme. Weiße Decken und Wände helfen in Räumen durch Reflexion. Draußen entfällt das. Halogen-Bühnenlicht strahlt viel IR ab und senkt die Empfindlichkeit der Empfänger (Verstärkungsregelung).</p>
+  <h3>3.2 Abdeckung und Ausrichtung je Lampe</h3>
+  <div class="panel scroll">
+    <svg id="geo" viewBox="0 0 560 340" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Draufsicht Bühne und Publikum"></svg>
+  </div>
+  <div class="panel scroll"><table>
+    <tr><th>LEDs</th><th>Ausrichtung waagerecht</th><th>Ziel</th></tr>
+    <tr><td>2</td><td>geradeaus, leicht nach unten</td><td>hintere Reihen (4–6 m)</td></tr>
+    <tr><td>2</td><td>ca. 35° zur Bühnenmitte</td><td>mittlere Reihen, Mitte</td></tr>
+    <tr><td>1</td><td>ca. 65° zur Bühnenmitte</td><td>vorne Mitte (1–2 m)</td></tr>
+    <tr><td>1</td><td>ca. 30° nach außen</td><td>Seitenrand</td></tr>
+    <tr><td>2</td><td>nach Test</td><td>4. Strang: verstärkt die schwächste Zone aus T6</td></tr>
+  </table></div>
+  <p>Senkrecht leicht nach unten auf Höhe erhobener Arme (ca. 1,5–2 m). <b>Festlegung:</b> 8 LEDs je Lampe (4 Stränge, alle bestückt). LED-Typ <b>TSAL6200</b> (±17°, 34° gesamt). Der breitere Strahl ist bei der kurzen Distanz wichtiger als die Reichweite der schmaleren TSAL6100 (±10°).</p>
+</section>
+
+<!-- 4 -->
+<section id="zweisender">
+  <h2>4 · Zwei Sender gleichzeitig</h2>
+  <p>In der Mitte des Publikums empfangen Bänder beide Lampen. Senden beide denselben Rahmen „gleichzeitig“, sind die Signale um den Synchronitätsversatz der Geräte (einige ms) gegeneinander verschoben. Bei 0,7 ms Bitzeit überlagern sich dann verschiedene Bits. Das Band erkennt <b>keinen</b> der beiden Rahmen.</p>
+  <div class="box"><b>Festlegung: Zeitschlitze.</b> LAMPE1 sendet im Schlitz 0, LAMPE2 im Schlitz 1. Ein Schlitz ist mindestens eine Rahmenlänge plus Pause lang (Vorschlag 60 ms für 9-Byte-Rahmen). Wiederholungen eines Befehls laufen abwechselnd (L1, L2, L1, …). So liegen nie zwei Rahmen gleichzeitig in der Luft, auch wenn die Geräte einige ms gegeneinander versetzt sind.</div>
+  <ul>
+    <li>Folge: Ein Band in der Mitte kann denselben Befehl zweimal ausführen (etwa 60 ms Abstand). Bei Blitzen mit Attack 0 wirkt das wie ein Verlängern. Ob ein sichtbares „Stottern“ entsteht, ist <b>im Test zu prüfen</b> (siehe 14).</li>
+    <li>Der Schlitzversatz von LAMPE2 wird beim Vorziehen des Sendebeginns berücksichtigt (LAMPE1 trifft den Beat, LAMPE2 ca. 60 ms später).</li>
+    <li>Alternativen, verworfen: Nur eine Lampe sendet (Abdeckung reicht vermutlich nicht). Räumlich getrennte Kegel (die Überschneidung in der Mitte ist gewollt).</li>
+  </ul>
+</section>
+
+<!-- 5 -->
+<section id="leistung">
+  <h2>5 · Sendeleistung per Software</h2>
+  <p>Die Hardware legt das Maximum fest (LED-Anzahl, Vorwiderstände). Per Software wird über das <b>Tastverhältnis D des 38-kHz-Trägers</b> reduziert. Der Empfänger filtert eng um 38 kHz und wertet die Grundschwingung aus. Deren Amplitude folgt näherungsweise:</p>
+  <div class="formula">A(D) ∝ sin(π·D),   Reichweite ∝ √A</div>
+  <div class="panel scroll"><table>
+    <tr><th>Tastverhältnis</th><th class="num">Signalstärke</th><th class="num">Reichweite</th><th>Bemerkung</th></tr>
+    <tr><td>50 %</td><td class="num">100 %</td><td class="num">100 %</td><td>Maximum, darüber kein Gewinn</td></tr>
+    <tr><td>25 %</td><td class="num">71 %</td><td class="num">84 %</td><td></td></tr>
+    <tr><td>15 %</td><td class="num">45 %</td><td class="num">67 %</td><td></td></tr>
+    <tr><td>10 %</td><td class="num">31 %</td><td class="num">56 %</td><td>empfohlene Untergrenze</td></tr>
+    <tr><td>5 %</td><td class="num">16 %</td><td class="num">40 %</td><td>Pulsform leidet (Gate-Umschaltzeit, siehe 7.5)</td></tr>
+  </table></div>
+  <p>Zweck: Reichweite an den Raum anpassen, z. B. Bar-Bereich nicht erreichen. Einstellbar per Define, später je Lampe bzw. je Song. Nebeneffekt: weniger Wärme in den LEDs und weniger Last auf 5 V. Verworfene Variante: Stränge einzeln schalten (Richtungswahl). Sie braucht 3–4 GPIOs, die YULC hat nur zwei Kanalausgänge.</p>
+</section>
+
+<!-- 6 -->
+<section id="schaltung">
+  <h2>6 · Schaltung und Funktion</h2>
+  <div class="panel scroll"><svg id="schem" viewBox="0 0 720 372" style="width:100%;min-width:600px;height:auto" role="img" aria-label="Schaltplan"></svg></div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+      <h3 style="margin:0">Leistungsteil</h3>
+      <ul>
+        <li>4 Stränge mit je 2 × TSAL6200 in Reihe und einem eigenen 18-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. 18 Ω begrenzen den Strom so, dass die LEDs auch bei einem endlos laufenden Träger sicher unter dem Dauerlimit bleiben. Die Sicherheit der LEDs hängt damit nicht von der Software ab. 0,6 W reichen auch bei Dauer-Ein (7.4).</li>
+        <li>Q1 (IRLB8748PBF, Logic-Level-N-MOSFET) schaltet DRAIN nach GND (Low-Side-Schalter).</li>
+        <li>C2 (470 µF) und C1 (100 nF) puffern die Pulsströme direkt an den LEDs. R5 (1 Ω) entkoppelt sie von der Zuleitung, er ist nur nötig, wenn die 5 V am LED-Strip abgegriffen werden.</li>
+      </ul>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+      <h3 style="margin:0">Gate-Ansteuerung (fail-safe)</h3>
+      <ul>
+        <li><b>Gatetreiber ist der 5-V-Pegelwandler der YULC</b> am Kanal-2-Ausgang (gemessen 4,9 V, siehe 9). Am Gate liegen damit ≈ 4,6 V, also im Bereich, für den der IRLB8748 einen garantierten R<sub>DS(on)</sub> hat (4,5 V). Ein zusätzlicher Treiber ist nicht nötig.</li>
+        <li>R6 (100 Ω) begrenzt Ströme aus dem Pegelwandler und dämpft Klingeln auf der Leitung.</li>
+        <li><b>C3 (100 nF) koppelt nur Wechselsignale durch.</b> Ein Dauer-High erreicht das Gate höchstens für ca. 1 ms.</li>
+        <li>R7 (10 kΩ) zieht das Gate auf GND: definiert bei offenem Eingang und entlädt C3 bei Dauer-Pegel (τ = R7·C3 = 1 ms).</li>
+        <li><b>D1 (BAT 85, Schottky)</b> klemmt negative Halbwellen (Klemmschaltung zur Pegelwiederherstellung). Ohne D1 würde ein 50-%-Rechteck hinter C3 um 0 V pendeln (±1,65 V) und den MOSFET nie einschalten. Mit D1 schwingt das Gate zwischen ca. −0,3 V und ca. +3,0 V.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <svg id="to220" viewBox="0 0 150 210" width="120" role="img" aria-label="TO-220 Anschlussbelegung"></svg>
+      <p class="note" style="flex:1;min-width:160px"><b>IRLB8748PBF</b>, Sicht auf die Beschriftung, Beine unten: 1 = Gate, 2 = Drain, 3 = Source. Die Metallfahne liegt auf Drain und darf nichts berühren.</p>
+    </div>
+    <div class="panel"><p class="note"><b>TSAL6200:</b> langes Bein = Anode (+), kurzes Bein und abgeflachte Gehäuseseite = Kathode (−). <b>BAT 85:</b> Ring = Kathode. <b>Elko:</b> Streifen am Gehäuse = Minus.</p></div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="dimensionierung">
+  <h2>7 · Dimensionierung (Rechnungen)</h2>
+  <p class="note">Datenblattwerte aus dem Gedächtnis übernommen und als „gegenprüfen“ markiert, wo sie die Auslegung tragen.</p>
+  <div class="panel scroll"><table>
+    <tr><th>#</th><th>Größe</th><th>Rechnung</th><th>Ergebnis</th><th>Grenze / Bewertung</th></tr>
+    <tr><td>7.1</td><td>Strangstrom (Spitze)</td><td>(5 V − 2·V<sub>F</sub>) / 18 Ω, V<sub>F</sub> ≈ 1,35–1,6 V bei ~100 mA</td><td class="num">100–128 mA</td><td>TSAL6200 I<sub>FM</sub> = 200 mA bei t<sub>p</sub>/T = 0,5, t<sub>p</sub> ≤ 100 µs (gegenprüfen). 38 kHz: t<sub>p</sub> = 13 µs <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.2</td><td>Strangstrom (Mittel bei Dauerträger)</td><td>0,5 · 128 mA (ungünstigster Fall)</td><td class="num">≤ 64 mA</td><td>I<sub>F</sub> = 100 mA dauerhaft <span class="pill ok">ok</span>, Reserve ≥ 36 %</td></tr>
+    <tr><td>7.3</td><td>LED-Verlustleistung (Dauerträger)</td><td>0,5 · 0,128 A · 1,4 V</td><td class="num">≈ 90 mW</td><td>P<sub>V</sub> = 160 mW bei 25 °C; Reserve auch für Derating bei Wärme <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.4</td><td>Vorwiderstand 18 Ω</td><td>I² · R = 0,128² · 18 (Spitze, auch Dauer-Ein), ·0,5 (Mittel)</td><td class="num">0,29 / 0,15 W</td><td>0,6 W <span class="pill ok">ok</span>, auch im Fehlerfall</td></tr>
+    <tr><td>7.5</td><td>Gate-Umschaltzeit</td><td>R6 · C<sub>iss</sub> ≈ 100 Ω · ~1,5–2 nF (C3 in Reihe vernachlässigbar)</td><td class="num">τ ≈ 0,2 µs, Flanke ≈ 0,5 µs</td><td>Bei D = 50 % (13 µs) unkritisch. Unter D ≈ 10 % verformt sich die Pulsform. <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.6</td><td>MOSFET Durchlass</td><td>V<sub>GS</sub> ≈ 4,6 V (7.7), I<sub>D</sub> ≤ 0,51 A (4 × 128 mA)</td><td class="num">R<sub>DS(on)</sub> ≤ Datenblattwert bei 4,5 V (wenige mΩ), P &lt; 5 mW</td><td>Garantierter Arbeitspunkt (Datenblatt-Spezifikation bei 4,5 V), nicht aus der typischen Kennlinie abgeleitet <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.7</td><td>Gate-Hub hinter Klemmdiode</td><td><b>gemessen:</b> High-Pegel Kanal 2 = 4,9 V (LAMPE2, 19.11.2026, Strip-Eingang angeschlossen) → 4,9 V − V<sub>F</sub>(D1) ≈ 0,25–0,3 V</td><td class="num">≈ 4,6 V</td><td>≥ 4,5 V <span class="pill ok">ok</span>. Die YULC hat einen 5-V-Pegelwandler. Bei 4,75 V Versorgung (−5 %) wären es ≈ 4,45 V. Dort liegt der MOSFET bei V<sub>GS(th)</sub> ≤ 2,35 V weiterhin tief im eingeschalteten Bereich, der Strom (≤ 0,51 A) ist sehr klein gegenüber dem Nennstrom. Das wird als ausreichend bewertet (R11). Ohne Schottky (1N4148, 0,7 V) nur ≈ 4,2 V.</td></tr>
+    <tr><td>7.8</td><td>Abschaltzeit bei Dauer-High</td><td>t = τ · ln(4,6 / 1,35), τ = 10 kΩ · 100 nF</td><td class="num">≈ 1,2 ms</td><td>Einzelpuls 1,2 ms × 128 mA unkritisch (I<sub>FSM</sub> 1,5 A bei 100 µs) <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.9</td><td>Dachschräge im Träger</td><td>t<sub>high</sub> / τ = 13 µs / 1 ms</td><td class="num">1,3 %</td><td>auch bei Z5U-Toleranz (−56 %: τ ≥ 0,44 ms → 3 %) <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.10</td><td>Strom durch D1 und Pegelwandler</td><td>4,9 V / 100 Ω (kurzer Umladestoß)</td><td class="num">≤ 49 mA Spitze</td><td>BAT 85: 200 mA. Pegelwandler: kurzzeitige Umladung, Mittelwert klein <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.11</td><td>Spannungsabfall an R5 (1 Ω)</td><td>Mittelstrom während Rahmen ca. 0,1–0,25 A</td><td class="num">0,1–0,25 V</td><td>Strangstrom sinkt um ca. 5–10 %. Bei Versorgung direkt von der YULC durch Brücke ersetzen. <span class="pill info">info</span></td></tr>
+    <tr><td>7.12</td><td>Leistung R5 (Dauerträger, 4 Stränge)</td><td>I<sub>eff</sub>² · R = (0,51 A)² · 0,5 · 1 Ω</td><td class="num">0,13 W</td><td>0,6 W <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.13</td><td>Pufferung C2</td><td>Ladung pro Trägerpuls 0,51 A · 13 µs = 6,6 µC → ΔU = Q / C</td><td class="num">≈ 14 mV</td><td>glättet die 38 kHz. Über einen ganzen Rahmen trägt die Zuleitung den Mittelstrom (τ = R5·C2 = 0,47 ms). <span class="pill ok">ok</span></td></tr>
+  </table></div>
+</section>
+
+<!-- 8 -->
+<section id="fehlerfaelle">
+  <h2>8 · Fehlerfälle (Fail-safe-Nachweis)</h2>
+  <div class="panel scroll"><table>
+    <tr><th>Zustand am Eingang DATA</th><th>Ursache</th><th>Wirkung</th><th>Bewertung</th></tr>
+    <tr><td>Low</td><td>Normalbetrieb, Ruhe</td><td>Gate 0 V, LEDs aus</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Offen / hochohmig</td><td>Reset, Bootloader, ESP32 stromlos, Kabel ab</td><td>R7 hält das Gate auf 0 V</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Dauer-High</td><td>Pegelwandler mit offenem Eingang, Flashen, Absturz, Softwarefehler</td><td>C3 sperrt Gleichspannung; LEDs nach ≤ 1 ms aus</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Träger 38 kHz, 50 %, endlos</td><td>Softwarefehler (Timer-ISR hängt mit aktivem Träger)</td><td>LEDs mit ≤ 64 mA im Mittel (7.2)</td><td><span class="pill ok">sicher</span> deutlich unter 100 mA Dauerlimit</td></tr>
+    <tr><td>Schnelles Rechteck mit hohem Tastverhältnis (z. B. 90 %)</td><td>Theoretisch: schwingender Pegelwandler bei offenem Eingang</td><td>Würde durchgekoppelt, Mittelstrom bis ≈ 115 mA</td><td><span class="pill info">sehr unwahrscheinlich</span> Prüfung siehe 14, T3</td></tr>
+    <tr><td>Doppelfehler: C3 kurzgeschlossen <i>und</i> Dauer-High</td><td>Keramik-C fällt als Kurzschluss aus und der Ausgang liefert gleichzeitig Dauer-High</td><td>Gleichstrom bis ≈ 128 mA je Strang</td><td><span class="pill warn">bewusst akzeptiert</span> Doppelfehler. Voll gleichstromfest erst mit 27 Ω (Reichweite ca. −37 %).</td></tr>
+    <tr><td>Kurzschluss DATA nach 5 V oder GND</td><td>Verkabelungsfehler</td><td>R6 begrenzt; Gleichspannung wird gesperrt</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Verpolte Versorgung</td><td>falscher Stecker</td><td>Elko C2 gefährdet, LEDs sperren (V<sub>R</sub> 5 V)</td><td><span class="pill warn">mechanisch verhindern</span> verpolsicherer JST-XH</td></tr>
+  </table></div>
+  <div class="box ok">Die Firmware muss den Pin beim Booten nicht in einen bestimmten Zustand bringen. Die Hardware ist für Low, offen und Dauer-High sicher. Ein Bit entsteht ausschließlich durch den 38-kHz-Träger.</div>
+</section>
+
+<!-- 9 -->
+<section id="versorgung">
+  <h2>9 · Versorgung und Verkabelung</h2>
+  <ul>
+    <li><b>Empfohlen:</b> 3-adriges Kabel (5 V, DATA, GND) vom Kanal-2-Anschluss der YULC zur IR-Platine oben auf der Lampe. Signal und Masse beziehen sich auf denselben Punkt, nichts wird mit dem Strip geteilt. R5 wird durch eine Brücke ersetzt. Am Kanal-2-Stecker 5 V nachmessen.</li>
+    <li><b>Alternative:</b> 5 V und GND am oberen Strip-Ende abgreifen, DATA separat von unten. Bei Vollweiß (Blinder 255) sinkt die Spannung am Strip-Ende auf ca. 4,3–4,6 V (weniger IR-Leistung). Die IR-Pulse fließen über die Strip-Masse zurück. R5 und C2 entkoppeln sie.</li>
+    <li>Pinfolge J1: <b>5V / DATA / GND</b>, wie bei WS2812-Strips üblich.</li>
+    <li>Zweiter LED-Strip der Lampe: Datenleitung per Y-Abzweig parallel an Kanal 1 (zwei WS2812-Eingänge an einem Ausgang, kurze Leitung). Beide Strips zeigen schon heute dasselbe Bild.</li>
+    <li>GPIO 2 ist beim ESP32-S3 kein Strapping-Pin (Strapping: GPIO 0, 3, 45, 46). Er beeinflusst den Boot also nicht.</li>
+    <li><b>Gemessen (19.11.2026, LAMPE2, Testprogramm GPIO 2 = High):</b> Kanal 2 liefert <b>4,9 V</b> High-Pegel (Low ≈ 0 V). Auf der YULC sitzt also ein 5-V-Pegelwandler. Das ist die Grundlage für 7.7. LAMPE1 hat dieselbe Platine (YULC); die Messung dort bei der Inbetriebnahme wiederholen (T3).</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section id="stueckliste">
+  <h2>10 · Stückliste</h2>
+  <p>Für 2 Platinen und Reserve. Reichelt-Artikelnummern und Preise (inkl. 19 % MwSt.) vom 19.11.2026.</p>
+  <div class="panel scroll"><table>
+    <tr><th>Pos.</th><th>Ref.</th><th>Bauteil</th><th>Reichelt-Nr.</th><th class="num">je Platine</th><th class="num">Menge gesamt</th><th class="num">Stückpreis</th><th>Bezug</th></tr>
+    <tr><td>1</td><td>LED1a–LED4b</td><td>IR-LED 940 nm, 34° (±17°), 5 mm, Vishay TSAL6200</td><td class="mono">TSAL6200</td><td class="num">8</td><td class="num">20</td><td class="num">0,20 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>2</td><td>Q1</td><td>N-MOSFET Logic-Level, 30 V, TO-220AB, IRLB8748PBF</td><td class="mono">IRLB8748PBF</td><td class="num">1</td><td class="num">3</td><td class="num">0,86 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>3</td><td>R1–R4</td><td>Metallschicht 18 Ω, 0207, 0,6 W, 1 %</td><td class="mono">METALL 18,0</td><td class="num">4</td><td class="num">10</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>4</td><td>R6</td><td>Metallschicht 100 Ω, 0207, 0,6 W</td><td class="mono">METALL 100</td><td class="num">1</td><td class="num">3</td><td class="num">0,09 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>5</td><td>R7</td><td>Metallschicht 10 kΩ, 0207, 0,6 W</td><td class="mono">METALL 10,0K</td><td class="num">1</td><td class="num">3</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>6</td><td>R5</td><td>Metallschicht 1 Ω, 0207, 0,6 W (oder Drahtbrücke)</td><td class="mono">METALL 1,00</td><td class="num">1</td><td class="num">3</td><td class="num">0,08 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>7</td><td>C2</td><td>Elko radial 470 µF, 16 V, 105 °C, low ESR</td><td class="mono">RAD FR 470/16</td><td class="num">1</td><td class="num">3</td><td class="num">0,21 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>8</td><td>C1, C3</td><td>Vielschicht-Kerko 100 nF, Z5U, RM 2,5</td><td class="mono">Z5U-2,5 100N</td><td class="num">2</td><td class="num">6</td><td class="num">0,05 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>9</td><td>D1</td><td>Schottkydiode 30 V, 0,2 A, DO-35, BAT 85</td><td class="mono">BAT 85</td><td class="num">1</td><td class="num">3</td><td class="num">0,08 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>10</td><td>–</td><td>IR-Empfängermodul 38 kHz (nur Prüfmittel)</td><td class="mono">TSOP 38238</td><td class="num">–</td><td class="num">2</td><td class="num">0,51 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>11</td><td>J1</td><td>JST-XH Stiftleiste 3-pol. gerade + Buchsengehäuse + Crimpkontakte</td><td class="mono">JST XH3P ST / BU, XH1 CKS</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
+    <tr><td>12</td><td>–</td><td>Streifenrasterplatine 2,54 mm, mind. 45 × 8 Löcher (≈ 115 × 20 mm)</td><td class="mono">z. B. H25SR160</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
+    <tr><td>13</td><td>–</td><td>Kabel 3-adrig, Schrumpfschlauch, isolierter Draht (Br1)</td><td>–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td><span class="pill info">vorhanden</span></td></tr>
+    <tr><td>14</td><td>–</td><td>PixMob-Armbänder des einzusetzenden Modells (Test)</td><td>–</td><td class="num">–</td><td class="num">3–5</td><td class="num">–</td><td><span class="pill warn">beschaffen</span></td></tr>
+  </table></div>
+  <p class="note">Warenwert der Reichelt-Positionen 1–10: ca. 9,85 € zzgl. Versand. Z5U-Dielektrikum ist für C3 ausreichend (Kapazitätsverlust bis −56 % ist in 7.9 berücksichtigt). X7R oder Folie wäre stabiler, wird aber nicht benötigt. Q1 (IRLB8748PBF) ist abgekündigt. Das wird akzeptiert, weil nur 2 Platinen gebaut werden und das Teil noch lieferbar ist (Reserve: 1 Stück). Ohne den 5-V-Pegelwandler der YULC wäre ein MOSFET mit R<sub>DS(on)</sub>-Spezifikation bei 2,5 V nötig (z. B. IRLML6344, SOT-23 auf Adapter).</p>
+</section>
+
+<!-- 11 -->
+<section id="layout">
+  <h2>11 · Platinenlayout (Streifenraster)</h2>
+  <div class="toolbar">
+    <p class="note" style="max-width:70ch">Waagerechte Kupferstreifen A–F, Spalten 1–45, Raster 2,54 mm. Je eine freie Reihe oben und unten als Rand. Alle 4 Stränge werden bestückt.</p>
+    <div class="seg noprint" role="group" aria-label="Ansicht">
+      <button id="v-top" aria-pressed="true">Bauteilseite</button>
+      <button id="v-bot" aria-pressed="false">Lötseite (gespiegelt)</button>
+    </div>
+  </div>
+  <div class="panel scroll"><svg id="board" role="img" aria-label="Bestückungsplan"></svg></div>
+  <div class="legend" id="legend"></div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <h3 style="margin:0">Streifen unterbrechen (11 Stellen)</h3>
+      <p class="mono" style="line-height:1.9">C11 · D11 · C17 · D17 · C23 · D23 · C29 · D29 · D36 · D42 · E35</p>
+      <h3 style="margin:0">Drahtbrücken (Bauteilseite)</h3>
+      <table>
+        <tr><td class="pos">Br1</td><td class="pos">A2 → F2</td><td>isoliert, läuft über B–E</td></tr>
+        <tr><td class="pos">Br2</td><td class="pos">E44 → F44</td><td>kurz, blank</td></tr>
+      </table>
+      <h3 style="margin:0">Netze je Streifen</h3>
+      <table>
+        <tr><td class="pos">A</td><td>GND (für C1/C2), per Br1 an F</td></tr>
+        <tr><td class="pos">B</td><td>+5 V (Anoden der LEDs a)</td></tr>
+        <tr><td class="pos">C</td><td>1–10 / 12–16 / 18–22 / 24–28: Strangmitte · 30–45: 5 V Eingang</td></tr>
+        <tr><td class="pos">D</td><td>1–10 / … / 24–28: Kathode LED b → R · 30–35 Gate · 37–41 Koppelknoten · 43–45 DATA</td></tr>
+        <tr><td class="pos">E</td><td>1–34 DRAIN · 36–45 GND</td></tr>
+        <tr><td class="pos">F</td><td>GND</td></tr>
+      </table>
+    </div>
+    <div class="panel scroll">
+      <h3 style="margin:0 0 8px">Bestückung</h3>
+      <table>
+        <tr><th>Ref.</th><th>Wert</th><th>Löcher</th></tr>
+        <tr><td>LED1a–4a</td><td>TSAL6200</td><td class="pos">Anode B6/12/18/24 · Kathode C</td></tr>
+        <tr><td>LED1b–4b</td><td>TSAL6200</td><td class="pos">Anode C9/15/21/27 · Kathode D</td></tr>
+        <tr><td>R1–R4</td><td>18 Ω</td><td class="pos">D10/16/22/28 → E, stehend</td></tr>
+        <tr><td>R5</td><td>1 Ω / Brücke</td><td class="pos">B38 → C38, stehend</td></tr>
+        <tr><td>R6</td><td>100 Ω</td><td class="pos">D40 → D44, liegend</td></tr>
+        <tr><td>R7</td><td>10 kΩ</td><td class="pos">D33 → F33, stehend</td></tr>
+        <tr><td>D1</td><td>BAT 85</td><td class="pos">Ring D34 · Anode F34</td></tr>
+        <tr><td>C1</td><td>100 nF</td><td class="pos">A1 / B1</td></tr>
+        <tr><td>C2</td><td>470 µF</td><td class="pos">− A4 / + B4</td></tr>
+        <tr><td>C3</td><td>100 nF</td><td class="pos">D35 → D37, liegend</td></tr>
+        <tr><td>Q1</td><td>IRLB8748PBF</td><td class="pos">G D31 · D E31 · S F31</td></tr>
+        <tr><td>J1</td><td>JST-XH 3-pol.</td><td class="pos">5V C45 · DATA D45 · GND E45</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="aufbau">
+  <h2>12 · Aufbau und Inbetriebnahme</h2>
+  <ol>
+    <li>Platine zuschneiden: 45 Löcher lang, mindestens 8 Streifen hoch.</li>
+    <li>11 Unterbrechungen bohren (Lötseite, gespiegelte Ansicht). Mit dem Durchgangsprüfer kontrollieren.</li>
+    <li>Drahtbrücken Br1 (isoliert) und Br2.</li>
+    <li>R1–R4 (18 Ω), R5 (1 Ω oder Brücke), R6 liegend über D42, R7 stehend über E33 nach F33.</li>
+    <li>D1 stehend: Ring (Kathode) in D34, Anode über E34 nach F34.</li>
+    <li>C1, C3 (C3 liegend über D36, Beine auf 5,08 mm), C2 mit Minus auf A4.</li>
+    <li>Q1 stehend in Spalte 31 (G D31, D E31, S F31), Fahne frei.</li>
+    <li>J1 in Spalte 45.</li>
+    <li><b>Messungen ohne LEDs:</b> 5V–GND kein Kurzschluss · DATA–GND kein Durchgang (C3) · Gate (D31)–GND ≈ 10 kΩ · Diodentest rot F34 / schwarz D34 ≈ 0,2–0,4 V.</li>
+    <li>LEDs zuletzt, Beine 15–20 mm lang lassen, Anode (langes Bein) nach oben. Nach dem Ausrichten blanke Beine mit Schrumpfschlauch isolieren.</li>
+    <li><b>Sicherheitstest:</b> 5 V anlegen, DATA über ca. 1 kΩ fest auf 5 V. Die LEDs dürfen <b>nicht</b> leuchten (Handykamera), Drain (E31) bleibt ≈ 5 V.</li>
+    <li><b>Funktionstest:</b> Testbefehl senden. Handykamera zeigt lila Blitzen, TSOP 38238 am zweiten Controller gibt die Bitfolge aus.</li>
+  </ol>
+</section>
+
+<!-- 13 -->
+<section id="firmware">
+  <h2>13 · Firmware-Konzept <span class="pill info">nicht implementiert</span></h2>
+  <h3>13.1 Signalerzeugung</h3>
+  <ul>
+    <li><b>Träger:</b> LEDC-PWM des ESP32-S3, 38 kHz, Tastverhältnis einstellbar (Auflösung bis ca. 11 Bit bei 80 MHz Takt). Hardware, keine CPU-Last.</li>
+    <li><b>Bits:</b> eigener Hardware-Timer (gptimer) im 700-µs-Takt. Die ISR schaltet je Bit den Träger auf den Pin oder den Pin auf Low. Vorschlag: Umschalten über die GPIO-Matrix zwischen LEDC-Signal und GPIO-Low (Registerzugriff, ISR-tauglich). <b>Zu prüfen</b>, ob die verwendete Arduino-/IDF-Version das sauber erlaubt, Alternative ist <code>ledc_set_duty</code> mit Update.</li>
+    <li>Ca. 70 Interrupts pro Rahmen. Jitter durch ESP-NOW- und FastLED-Interrupts von einigen 10 µs bei 700 µs Bitzeit ist unkritisch (Toleranz des Band-Empfängers unbekannt, siehe Test T5).</li>
+    <li><b>Nicht blockierend:</b> Bibliotheken mit <code>delayMicroseconds</code> (IRremote o. ä.) scheiden aus, sie würden die Effekte für 50 ms anhalten.</li>
+  </ul>
+  <h3>13.2 Warum nicht RMT</h3>
+  <p>Das RMT-Modul könnte Träger und Bits komplett in Hardware erzeugen. FastLED 3.5.0 (fest gepinnt, 3.9.x bricht auf ESP32-S3) treibt die WS2812 aber über RMT mit eigenem Interrupt-Handler. Ein zweiter RMT-Nutzer daneben ist eine bekannte Konfliktquelle. LEDC + Timer berührt FastLED nicht.</p>
+  <h3>13.3 Einbindung in die Gerätekonfiguration</h3>
+  <ul>
+    <li>Neues Gerätemerkmal <code>HAS_PIXMOB_IR</code> nur bei <code>LAMPE1</code>/<code>LAMPE2</code> in <code>definitions.h</code>, dazu <code>IR_PIN</code> (= GPIO 2).</li>
+    <li><code>FastLED.addLeds&lt;…, DATA_PIN_2&gt;</code> in <code>main.cpp</code> wird bei <code>HAS_PIXMOB_IR</code> übersprungen, sonst würde FastLED den Pin weiter mit LED-Daten treiben.</li>
+    <li>Defines: <code>PIXMOB_IR_DUTY_PERCENT</code> (Leistung), <code>PIXMOB_SLOT_MS</code> (Zeitschlitz, Vorschlag 60), Schlitznummer je Lampe.</li>
+  </ul>
+  <h3>13.4 Einbindung in die Show</h3>
+  <ul>
+    <li>Neuer YAML-Schlüssel in <code>show.yaml</code>, z. B. <code>pixmob: {at: 4, color: rot, attack: 0, sustain: 192, release: 960, chance: 50}</code>, Position in Beats wie bei <code>blinder</code> (<code>at</code>/<code>bar</code>). Mehrere Einträge pro Part als Liste.</li>
+    <li><code>tools/songgen.py</code> erzeugt daraus Aufrufe, die nur Geräte mit <code>HAS_PIXMOB_IR</code> ausführen. Der Zeitpunkt wird wie alle Effekte aus der Zeit seit Partstart berechnet (Gleichlauf aller Geräte).</li>
+    <li>Sendebeginn = Zielzeitpunkt − Rahmendauer (Band reagiert am Rahmenende), plus Schlitzversatz für LAMPE2.</li>
+    <li>Am Songende bzw. Notaus (Song 0): Befehl „Do Reset“ (LEDs der Bänder aus).</li>
+    <li>Keine EEPROM-schreibenden Befehle (Set Color, Group, Repeat, GST) im Showbetrieb.</li>
+  </ul>
+  <h3>13.5 Zusätzliche Software-Absicherung</h3>
+  <ul>
+    <li>Der Träger ist nur innerhalb eines laufenden Rahmens aktiv. Nach Rahmenende wird er hart abgeschaltet.</li>
+    <li>Watchdog: Ist der Träger länger als 100 ms ununterbrochen aktiv, wird er aus der Hauptschleife zwangsweise abgeschaltet.</li>
+    <li>Sendezeit-Budget: höchstens ca. 30 % Sendezeit pro Sekunde. Damit bleiben die LEDs auch thermisch deutlich unter dem Limit aus 7.3.</li>
+    <li>Diese Maßnahmen ergänzen die Hardware-Absicherung (8), sie ersetzen sie nicht. Für die Sicherheit der LEDs sind sie nicht nötig (18 Ω, 7.2). Sie verhindern nur unnötige Sendezeit.</li>
+  </ul>
+  <h3>13.6 Dokumentation bei Umsetzung</h3>
+  <p>Gemäß Projektregeln mitziehen: <code>README.md</code> (Geräte, Dateien, YAML-Schlüssel), deutsche Inline-Kommentare, <code>docs/Song-Workflow.html</code> / Skill <code>new-song</code> (neuer Schlüssel), diese Datei.</p>
+</section>
+
+<!-- 14 -->
+<section id="tests">
+  <h2>14 · Testplan</h2>
+  <div class="panel scroll"><table>
+    <tr><th>ID</th><th>Test</th><th>Aufbau</th><th>Erwartung / Abnahme</th></tr>
+    <tr><td>T1</td><td>Messungen ohne LEDs</td><td>Multimeter</td><td>Werte aus 12, Schritt 9</td></tr>
+    <tr><td>T2</td><td>Dauer-High-Sicherheit</td><td>DATA über 1 kΩ an 5 V</td><td>LEDs aus, Drain ≈ 5 V</td></tr>
+    <tr><td>T3</td><td>Verhalten des Kanal-2-Ausgangs</td><td>a) Pegel mit Testprogramm (GPIO 2 = High/Low) · b) Oszilloskop oder Multimeter: Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) High ≥ 4,75 V (LAMPE2: 4,9 V gemessen; LAMPE1 bei Inbetriebnahme) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt</td></tr>
+    <tr><td>T4</td><td>Signalform</td><td>TSOP 38238 an zweitem Controller, Ausgabe dekodieren (Python-Decoder der Quelle)</td><td>Rahmen fehlerfrei dekodiert, Prüfsumme korrekt</td></tr>
+    <tr><td>T5</td><td>Band-Reaktion</td><td>3–5 Bänder des Einsatzmodells, 1 m Abstand</td><td>Farbe, Hüllkurve und Chance wie befohlen</td></tr>
+    <tr><td>T6</td><td>Reichweite und Abdeckung</td><td>eine Lampe, Band in 6 m seitlich und abgewandt, Duty 50 % / 25 % / 10 %</td><td>Zuverlässiger Empfang bei 50 % in 6 m. Gewählter Duty-Wert dokumentiert.</td></tr>
+    <tr><td>T7</td><td>Zwei Sender</td><td>beide Lampen, Band in der Mitte, Zeitschlitze an/aus</td><td>Ohne Schlitze Ausfälle, mit Schlitzen sicherer Empfang. Kein störendes Doppelblitzen.</td></tr>
+    <tr><td>T8</td><td>Timing zum Beat</td><td>Testsong mit Klick, Video mit hoher Bildrate</td><td>Blitz der Bänder liegt innerhalb ±1 Frame (bei 60 fps) am Beat</td></tr>
+    <tr><td>T9</td><td>Rückwirkung auf die LED-Show</td><td>volle Show mit IR-Befehlen</td><td>Kein Ruckeln der Effekte, kein Flackern der Strips, ESP-NOW-Sync unverändert</td></tr>
+    <tr><td>T10</td><td>Thermik</td><td>Dauerträger 60 s (Fehlerfall) und typischer Song</td><td>LEDs und Widerstände handwarm. Kein Defekt.</td></tr>
+  </table></div>
+</section>
+
+<!-- 15 -->
+<section id="risiken">
+  <h2>15 · Annahmen, Risiken, offene Punkte</h2>
+  <div class="panel scroll"><table>
+    <tr><th>#</th><th>Punkt</th><th>Art</th><th>Umgang</th></tr>
+    <tr><td>R1</td><td>Protokoll stammt aus Reverse Engineering, nicht offiziell. Bitzeit „ca. 700 µs“ nicht genau spezifiziert.</td><td><span class="pill warn">Annahme</span></td><td>Bitzeit aus dem Arduino-Sender der Quelle übernehmen, mit T4/T5 verifizieren</td></tr>
+    <tr><td>R2</td><td>Modell und Firmware der eingesetzten Bänder unbekannt</td><td><span class="pill warn">offen</span></td><td>Bänder beschaffen, T5</td></tr>
+    <tr><td>R3</td><td>Empfindlichkeit des Band-Empfängers unbekannt (0,1–0,3 mW/m² angenommen)</td><td><span class="pill warn">Annahme</span></td><td>T6, Strang 4 als Reserve</td></tr>
+    <tr><td>R4</td><td>Datenblattwerte TSAL6200 / IRLB8748 / BAT 85 aus dem Gedächtnis</td><td><span class="pill warn">gegenprüfen</span></td><td>Prüfpunkte Q1–Q3</td></tr>
+    <tr><td>R5</td><td>Doppelte Ausführung eines Befehls in der Überlappungszone</td><td><span class="pill info">zu testen</span></td><td>T7. Ggf. nur eine Lampe für Effekte mit kurzer Hüllkurve.</td></tr>
+    <tr><td>R6</td><td>Halogen-Bühnenlicht (IR-Anteil) senkt die Empfangsempfindlichkeit</td><td><span class="pill info">Umgebung</span></td><td>Am Spielort testen. Duty-Reserve.</td></tr>
+    <tr><td>R7</td><td>Jitter der Bit-ISR durch WiFi/ESP-NOW und FastLED</td><td><span class="pill info">zu testen</span></td><td>T4 unter Last (volle Show)</td></tr>
+    <tr><td>R8</td><td>Rechtliches: Ansteuerung fremder Bänder, die das Publikum mitbringt bzw. die verteilt werden</td><td><span class="pill info">organisatorisch</span></td><td>Nur eigene bzw. von der Band verteilte Bänder ansteuern</td></tr>
+    <tr><td>R9</td><td>Doppelfehler C3-Kurzschluss + Dauer-High (8)</td><td><span class="pill warn">akzeptiert</span></td><td>Doppelfehler; Alternative 27 Ω kostet ca. 37 % Reichweite</td></tr>
+    <tr><td>R10</td><td>IRLB8748PBF abgekündigt</td><td><span class="pill info">akzeptiert</span></td><td>nur 2 Platinen, Teile vorrätig (1 Reserve)</td></tr>
+    <tr><td>R11</td><td>Gate-Spannung hängt am 5-V-Pegel der YULC; bei 4,75 V Versorgung ≈ 4,45 V statt 4,5 V</td><td><span class="pill info">bewertet</span></td><td>Bewertung in 7.7; Messung an beiden Lampen (T3)</td></tr>
+  </table></div>
+</section>
+
+<!-- 16 -->
+<section id="qs">
+  <h2>16 · Prüfpunkte</h2>
+  <ol>
+    <li><b>Q1</b> TSAL6200-Datenblatt: I<sub>F</sub>, I<sub>FM</sub> (Bedingungen), I<sub>FSM</sub>, P<sub>V</sub> und Derating, V<sub>F</sub> bei 200 mA, I<sub>e</sub> und Halbwinkel. Trägt 7.1–7.3 und 3.1.</li>
+    <li><b>Q2</b> IRLB8748PBF: Pinbelegung, V<sub>GS(th)</sub>-Bereich, Transferkennlinie bei V<sub>GS</sub> = 2,6–3,0 V für I<sub>D</sub> = 0,8 A, C<sub>iss</sub>. Trägt 7.5–7.7.</li>
+    <li><b>Q3</b> BAT 85: V<sub>F</sub> bei kleinen Strömen, Sperrstrom (Einfluss auf R7-Messung). Trägt 7.7.</li>
+    <li><b>Q4</b> Klemmschaltung C3/D1/R7: Funktion bei Burst-Beginn, im Burst und bei Dauer-High, Zeitkonstanten (7.8, 7.9, 8).</li>
+    <li><b>Q5</b> Restfehlerfälle aus 8: schnelles Rechteck mit hohem Tastverhältnis und der akzeptierte Doppelfehler R9.</li>
+    <li><b>Q6</b> Layout: Netze je Streifen gegen Schaltplan (11), Unterbrechungen, keine ungewollten Verbindungen über stehende Bauteile (R7, D1 überspringen E33/E34), Platz für TO-220 neben R7.</li>
+    <li><b>Q7</b> Stückliste gegen Schaltplan und Layout (Referenzen, Mengen, Bauformen, Rastermaße).</li>
+    <li><b>Q8</b> Protokollzusammenfassung (2) gegen die Quelle, insbesondere Byte-Reihenfolge (G, R, B), Bitreihenfolge, Kodiertabelle, Prüfsumme.</li>
+    <li><b>Q9</b> Zeitschlitz-Konzept (4) und Vorziehen des Sendebeginns (13.4).</li>
+    <li><b>Q10</b> Firmware-Ansatz LEDC + Timer neben FastLED 3.5.0 (RMT) und ESP-NOW (13.1, 13.2).</li>
+  </ol>
+</section>
+
+
+<section id="quellen">
+  <h2>17 · Quellen</h2>
+  <ul>
+    <li>jamesw343/PixMob_IR: <span class="mono">https://github.com/jamesw343/PixMob_IR</span> (README, docs/ir_protocol.md, pixmob_ir_protocol.py)</li>
+    <li>danielweidman/pixmob-ir-reverse-engineering (Arduino-Sender, von obiger Quelle referenziert)</li>
+    <li>Vishay TSAL6200 Datenblatt · Infineon IRLB8748PBF Datenblatt · BAT 85 Datenblatt · Vishay TSOP382xx Datenblatt</li>
+    <li>Reichelt-Shop, Artikelnummern und Preise vom 19.11.2026</li>
+    <li>Projekt: <code>src/definitions.h</code> (Pins, Geräte), <code>src/main.cpp</code> (FastLED-Ausgänge), <code>CLAUDE.md</code> (Architektur, Sync)</li>
+  </ul>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const f='var(--fg)', m='var(--muted)';
+  /* ---------- Platinenlayout ---------- */
+  const P=26, COLS=45, RW=['A','B','C','D','E','F'], L=70, T=100;
+  const W=L*2+(COLS-1)*P, H=T+5*P+100;
+  let mirror=false;
+  const X=c=>mirror? L+(COLS-c)*P : L+(c-1)*P;
+  const Y=r=>T+RW.indexOf(r)*P;
+  const pos=s=>({r:s[0],c:+s.slice(1)});
+  const v=n=>`var(${n})`;
+  const NET={gnd:['--n-gnd','GND'],v5:['--n-v5','+5 V'],v5in:['--n-v5in','5 V Eingang'],drain:['--n-drain','Drain'],gate:['--n-gate','Gate'],sig:['--n-sig','DATA (GPIO 2)'],x:['--n-x','Koppelknoten (R6–C3)'],mk:['--n-mk','Strang-Zwischenknoten']};
+  const segs=[['A',1,45,'gnd'],['B',1,45,'v5'],
+    ['C',1,10,'mk'],['C',12,16,'mk'],['C',18,22,'mk'],['C',24,28,'mk'],['C',30,45,'v5in'],
+    ['D',1,10,'mk'],['D',12,16,'mk'],['D',18,22,'mk'],['D',24,28,'mk'],['D',30,35,'gate'],['D',37,41,'x'],['D',43,45,'sig'],
+    ['E',1,34,'drain'],['E',36,45,'gnd'],['F',1,45,'gnd']];
+  const cuts=['C11','D11','C17','D17','C23','D23','C29','D29','D36','D42','E35'];
+  const parts=[];
+  [6,12,18,24].forEach((b,i)=>{const o=false;
+    parts.push({t:'led',id:(i+1)+'a',a:'B'+b,k:'C'+b,o});
+    parts.push({t:'led',id:(i+1)+'b',a:'C'+(b+3),k:'D'+(b+3),o});
+    parts.push({t:'rs',id:'R'+(i+1),a:'D'+(b+4),b:'E'+(b+4),o});});
+  parts.push({t:'rs',id:'R5',a:'B38',b:'C38'},{t:'rs',id:'R7',a:'D33',b:'F33'},{t:'dio',id:'D1',a:'D34',b:'F34'},
+    {t:'capl',id:'C3',a:'D35',b:'D37'},{t:'rl',id:'R6',a:'D40',b:'D44'},
+    {t:'cap',id:'C1',a:'A1',b:'B1'},{t:'elko',id:'C2',a:'A4',b:'B4'},
+    {t:'wire',id:'Br1',a:'A2',b:'F2'},{t:'wire',id:'Br2',a:'E44',b:'F44'},
+    {t:'fet',id:'Q1',p:['D31','E31','F31']},{t:'conn',id:'J1',p:['C45','D45','E45'],l:['5V','DATA','GND']});
+  const legs=p=>p.p?p.p:(p.t==='led'?[p.a,p.k]:[p.a,p.b]);
+  function drawPart(p){
+    const d=mirror?-1:1, op=p.o?' opacity="0.55"':'', dash=p.o?' stroke-dasharray="4 3"':'';
+    let s='';
+    if(p.t==='led'){const A=pos(p.a),K=pos(p.k),x=X(A.c),y1=Y(A.r),y2=Y(K.r),cy=(y1+y2)/2,r=P*0.66,h=r*0.72,w=Math.sqrt(r*r-h*h);
+      s+=`<g${op}><path d="M${x-w},${cy+h} A${r} ${r} 0 1 1 ${x+w},${cy+h} Z" fill="${v('--led')}" stroke="${f}" stroke-width="1"${dash}/>`+
+         `<text x="${x}" y="${cy+1}" font-size="10" text-anchor="middle" dominant-baseline="middle" fill="${v('--led-fg')}">${p.id}</text></g>`;}
+    else if(p.t==='rs'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r);
+      s+=`<g${op}><line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
+         `<circle cx="${x}" cy="${y1}" r="9.5" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"${dash}/>`+
+         `<text x="${x}" y="${y1+0.5}" font-size="8.5" font-weight="600" text-anchor="middle" dominant-baseline="middle" fill="#3a2e1a">${p.id}</text></g>`;}
+    else if(p.t==='dio'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r);
+      s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
+         `<rect x="${x-7}" y="${y1-11}" width="14" height="22" rx="4" fill="${v('--fet')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<rect x="${x-7}" y="${y1-11}" width="14" height="4" fill="#d9dde3"/>`+
+         `<text x="${x}" y="${y1+4}" font-size="7.5" font-weight="600" text-anchor="middle" fill="#fff">D1</text>`;}
+    else if(p.t==='capl'){const A=pos(p.a),B=pos(p.b),x1=X(A.c),x2=X(B.c),y=Y(A.r),lo=Math.min(x1,x2),hi=Math.max(x1,x2);
+      s+=`<path d="M${lo},${y}L${lo+6},${y-12}L${hi-6},${y-12}L${hi},${y}" fill="none" stroke="${v('--leg')}" stroke-width="2"/>`+
+         `<rect x="${lo+5}" y="${y-19}" width="${hi-lo-10}" height="13" rx="6" fill="${v('--kerko')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<text x="${(lo+hi)/2}" y="${y-23}" font-size="10" text-anchor="middle" fill="${f}">C3</text>`;}
+    else if(p.t==='rl'){const A=pos(p.a),B=pos(p.b),x1=X(A.c),x2=X(B.c),y=Y(A.r),lo=Math.min(x1,x2),hi=Math.max(x1,x2);
+      s+=`<line x1="${lo}" y1="${y}" x2="${hi}" y2="${y}" stroke="${v('--leg')}" stroke-width="2.4"/>`+
+         `<rect x="${lo+P*0.6}" y="${y-7}" width="${hi-lo-P*1.2}" height="14" rx="6" fill="${v('--res')}" stroke="${v('--res-edge')}" stroke-width="1.2"/>`+
+         `<text x="${(lo+hi)/2}" y="${y-12}" font-size="10" text-anchor="middle" fill="${f}">R6</text>`;}
+    else if(p.t==='cap'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2;
+      s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${v('--leg')}" stroke-width="2"/>`+
+         `<ellipse cx="${x}" cy="${cy}" rx="9" ry="6" fill="${v('--kerko')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<text x="${x}" y="${y1-P*0.75}" font-size="10" text-anchor="middle" fill="${f}">C1</text>`;}
+    else if(p.t==='elko'){const A=pos(p.a),B=pos(p.b),x=X(A.c),y1=Y(A.r),y2=Y(B.r),cy=(y1+y2)/2,r=P*1.15,id='ek'+(mirror?1:0);
+      s+=`<defs><clipPath id="${id}"><circle cx="${x}" cy="${cy}" r="${r}"/></clipPath></defs>`+
+         `<circle cx="${x}" cy="${cy}" r="${r}" fill="${v('--elko')}" stroke="${f}" stroke-width="1"/>`+
+         `<rect x="${x-r}" y="${cy-r}" width="${2*r}" height="${r*0.55}" fill="${v('--elko-band')}" clip-path="url(#${id})"/>`+
+         `<text x="${x}" y="${cy-r+r*0.42}" font-size="11" font-weight="700" text-anchor="middle" fill="${v('--elko')}">−</text>`+
+         `<text x="${x}" y="${cy+r*0.62}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">+</text>`+
+         `<text x="${x}" y="${cy+3}" font-size="9" text-anchor="middle" fill="#fff">C2</text>`;}
+    else if(p.t==='wire'){const A=pos(p.a),B=pos(p.b),x=X(A.c);
+      s+=`<line x1="${x}" y1="${Y(A.r)}" x2="${x}" y2="${Y(B.r)}" stroke="${v('--wire')}" stroke-width="${p.id==='Br1'?5:3}" stroke-linecap="round"/>`+
+         `<text x="${x-d*8}" y="${(Y(A.r)+Y(B.r))/2+3}" font-size="10" text-anchor="${d>0?'end':'start'}" fill="${v('--wire')}">${p.id}</text>`;}
+    else if(p.t==='fet'){const x=X(31),ym=Y('E'),hh=P*1.95,tw=P*0.88,tabX=x-d*tw;
+      s+=`<rect x="${Math.min(tabX,tabX+d*P*0.28)}" y="${ym-hh-4}" width="${P*0.28}" height="${2*hh+8}" fill="${v('--tab')}" stroke="${f}" stroke-width="0.8"/>`+
+         `<rect x="${Math.min(x-d*tw*0.72,x+d*tw)}" y="${ym-hh}" width="${tw*1.72}" height="${2*hh}" rx="2" fill="${v('--fet')}" opacity="0.88"/>`+
+         `<text x="${x+d*(tw+5)}" y="${ym-hh+6}" font-size="10" text-anchor="${d>0?'start':'end'}" fill="${f}">Q1</text>`+
+         `<text x="${tabX-d*4}" y="${ym-hh-8}" font-size="9" text-anchor="middle" fill="${m}">Fahne</text>`;
+      ['G','D','S'].forEach((n,i)=>{s+=`<text x="${x+d*12}" y="${Y(RW[3+i])+4}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">${n}</text>`;});}
+    else if(p.t==='conn'){const x=X(45);
+      s+=`<rect x="${x-P*0.45}" y="${Y('C')-P*0.5}" width="${P*0.9}" height="${P*3}" rx="3" fill="none" stroke="${f}" stroke-width="1.5"/>`+
+         `<text x="${x}" y="${Y('C')-P*0.75}" font-size="10" text-anchor="middle" fill="${f}">J1</text>`;
+      p.l.forEach((t,i)=>{s+=`<text x="${x+d*P*0.75}" y="${Y(RW[2+i])+4}" font-size="11" font-weight="600" text-anchor="${d>0?'start':'end'}" fill="${f}">${t}</text>`;});}
+    return s;
+  }
+  function render(){
+    const svg=document.getElementById('board');
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.style.width=W+'px'; svg.style.maxWidth='none'; svg.style.height='auto'; svg.style.display='block';
+    let s='';
+    const bx0=Math.min(X(1),X(COLS))-P*0.8, bx1=Math.max(X(1),X(COLS))+P*0.8, by0=Y('A')-P*1.7, by1=Y('F')+P*1.7;
+    s+=`<rect x="${bx0}" y="${by0}" width="${bx1-bx0}" height="${by1-by0}" rx="6" fill="${v('--pcb')}" stroke="${v('--pcb-edge')}" stroke-width="2"/>`;
+    [Y('A')-P,Y('F')+P].forEach(y=>{s+=`<rect x="${bx0+P*0.3}" y="${y-P*0.3}" width="${bx1-bx0-P*0.6}" height="${P*0.6}" fill="${v('--n-mk')}" opacity="${mirror?0.25:0.12}"/>`;
+      for(let c=1;c<=COLS;c++) s+=`<circle cx="${X(c)}" cy="${y}" r="3" fill="${v('--hole')}" opacity="0.5"/>`;});
+    const so=mirror?0.85:0.32;
+    segs.forEach(([r,a,b,n])=>{const x0=Math.min(X(a),X(b))-P*0.42, x1=Math.max(X(a),X(b))+P*0.42;
+      s+=`<rect x="${x0}" y="${Y(r)-P*0.3}" width="${x1-x0}" height="${P*0.6}" rx="2" fill="${v(NET[n][0])}" opacity="${so}"/>`;});
+    RW.forEach(r=>{for(let c=1;c<=COLS;c++) s+=`<circle cx="${X(c)}" cy="${Y(r)}" r="3.2" fill="${v('--hole')}"/>`;});
+    for(let c=1;c<=COLS;c++){const big=c===1||c%5===0;
+      s+=`<text x="${X(c)}" y="${by0-8}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`+
+         `<text x="${X(c)}" y="${by1+16}" font-size="${big?10:8}" font-weight="${big?600:400}" text-anchor="middle" fill="${big?f:m}">${c}</text>`;}
+    RW.forEach(r=>{s+=`<text x="${bx0-12}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${r}</text>`+
+      `<text x="${bx1+12}" y="${Y(r)+4}" font-size="11" font-weight="600" text-anchor="middle" fill="${f}">${r}</text>`;});
+    s+=`<g opacity="${mirror?0.22:1}">`+parts.map(drawPart).join('')+`</g>`;
+    parts.forEach(p=>legs(p).forEach(q=>{const Q=pos(q); s+=`<circle cx="${X(Q.c)}" cy="${Y(Q.r)}" r="${mirror?5.5:4}" fill="${v('--solder')}" stroke="${f}" stroke-width="${mirror?1:0.6}" opacity="${p.o?0.6:1}"/>`;}));
+    cuts.forEach(q=>{const Q=pos(q),x=X(Q.c),y=Y(Q.r),k=7;
+      s+=`<circle cx="${x}" cy="${y}" r="10" fill="${v('--surface')}" stroke="${v('--cut')}" stroke-width="2"/>`+
+         `<path d="M${x-k+2},${y-k+2}L${x+k-2},${y+k-2}M${x+k-2},${y-k+2}L${x-k+2},${y+k-2}" stroke="${v('--cut')}" stroke-width="2.6" stroke-linecap="round"/>`;});
+    s+=`<text x="${bx0}" y="22" font-size="12" font-weight="600" fill="${f}">${mirror?'LÖTSEITE – Platine um die senkrechte Achse gedreht, Spalte 1 rechts':'BAUTEILSEITE – Ansicht von oben, Spalte 1 links'}</text>`;
+    svg.innerHTML=s;
+    document.getElementById('v-top').setAttribute('aria-pressed',String(!mirror));
+    document.getElementById('v-bot').setAttribute('aria-pressed',String(mirror));
+  }
+  document.getElementById('v-top').onclick=()=>{mirror=false;render();};
+  document.getElementById('v-bot').onclick=()=>{mirror=true;render();};
+  document.getElementById('legend').innerHTML=Object.values(NET).map(([c,t])=>`<span><i class="sw" style="background:var(${c})"></i>${t}</span>`).join('')+
+    `<span><svg width="18" height="18" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--cut)" stroke-width="2"/><path d="M6,6L14,14M14,6L6,14" stroke="var(--cut)" stroke-width="2.4"/></svg>Streifen unterbrechen</span>`+
+    `<span><i class="sw" style="background:var(--wire)"></i>Drahtbrücke</span>`;
+  render();
+
+  /* ---------- Schaltplan ---------- */
+  const ln=(x1,y1,x2,y2,ex='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${f}" stroke-width="1.6"${ex}/>`;
+  const tx=(x,y,t,a='start',sz=11,c=f,w=400)=>`<text x="${x}" y="${y}" font-size="${sz}" text-anchor="${a}" fill="${c}" font-weight="${w}">${t}</text>`;
+  const dot=(x,y)=>`<circle cx="${x}" cy="${y}" r="3.2" fill="${f}"/>`;
+  const rv=(x,y,h)=>`<rect x="${x-8}" y="${y}" width="16" height="${h}" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`;
+  let s='';
+  s+=`<rect x="14" y="40" width="40" height="316" rx="4" fill="none" stroke="${m}" stroke-dasharray="4 3"/>`+tx(34,32,'J1','middle',11,f,600);
+  [[60,'5V'],[280,'DATA'],[340,'GND']].forEach(([y,t])=>{s+=`<circle cx="44" cy="${y}" r="4" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(22,y-8,t,'start',9,m);});
+  s+=ln(48,60,84,60)+`<rect x="84" y="52" width="46" height="16" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+ln(130,60,620,60)+
+     tx(107,44,'R5 1 Ω','middle',10)+tx(107,84,'oder Brücke','middle',9,m)+tx(615,52,'+5 V','end',10,'var(--n-v5)',600);
+  s+=ln(48,340,660,340)+tx(655,358,'GND','end',10,'var(--n-gnd)',600);
+  s+=dot(180,60)+ln(180,60,180,192)+ln(166,192,194,192,' stroke-width="2.4"')+ln(166,201,194,201,' stroke-width="2.4"')+ln(180,201,180,340)+dot(180,340)+tx(198,190,'C1')+tx(198,204,'100 nF','start',9,m);
+  s+=dot(250,60)+ln(250,60,250,192)+ln(236,192,264,192,' stroke-width="2.4"')+`<rect x="236" y="199" width="28" height="5" fill="${f}"/>`+ln(250,204,250,340)+dot(250,340)+tx(228,188,'+','middle',12,f,700)+tx(268,190,'C2')+tx(268,204,'470 µF','start',9,m);
+  [340,410,480,550].forEach((x,i)=>{const o=false, da=o?' stroke-dasharray="5 3"':'', op=o?' opacity="0.6"':'';
+    s+=`<g${op}>`+dot(x,60)+ln(x,60,x,80,da);
+    [[80,'a'],[118,'b']].forEach(([y,n])=>{s+=`<path d="M${x-11},${y}L${x+11},${y}L${x},${y+20}Z" fill="var(--led)" stroke="${f}" stroke-width="1.4"/>`+ln(x-11,y+20,x+11,y+20,' stroke-width="2"')+
+      `<path d="M${x+13},${y+6}l11,-7 M${x+13},${y+13}l11,-7" stroke="var(--n-v5in)" stroke-width="1.4"/><path d="M${x+24},${y-1}l-5,0 l2,4z M${x+24},${y+6}l-5,0 l2,4z" fill="var(--n-v5in)"/>`+
+      tx(x-15,y+14,(i+1)+n,'end',10,m);});
+    s+=ln(x,100,x,118,da)+ln(x,138,x,160,da)+rv(x,160,40)+tx(x+12,178,'R'+(i+1),'start',10)+tx(x+12,191,'18 Ω','start',9,m)+ln(x,200,x,230,da)+dot(x,230)+`</g>`;});
+  s+=ln(340,230,640,230)+tx(345,246,'DRAIN','start',9,'var(--n-drain)',600)+tx(450,30,'4 Stränge à 2 × TSAL6200','middle',10,m);
+  s+=ln(640,230,640,255)+`<rect x="618" y="255" width="44" height="50" rx="3" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(640,284,'Q1','middle',11,f,600)+
+     tx(646,251,'D','start',9,m)+tx(646,318,'S','start',9,m)+tx(612,276,'G','end',9,m)+ln(640,305,640,340)+dot(640,340)+tx(668,276,'IRLB','start',9,m)+tx(668,288,'8748','start',9,m);
+  s+=ln(48,280,400,280)+`<rect x="400" y="272" width="46" height="16" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(423,266,'R6 100 Ω','middle',10)+
+     ln(446,280,476,280)+ln(476,266,476,294,' stroke-width="2.4"')+ln(485,266,485,294,' stroke-width="2.4"')+tx(481,258,'C3 100 nF','middle',10)+ln(485,280,618,280)+
+     dot(525,280)+ln(525,280,525,292)+rv(525,292,30)+ln(525,322,525,340)+dot(525,340)+tx(513,312,'R7 10 kΩ','end',10)+
+     dot(580,280)+ln(580,280,580,300)+`<path d="M569,318L591,318L580,300Z" fill="${f}"/>`+ln(569,300,591,300,' stroke-width="2"')+ln(580,318,580,340)+dot(580,340)+tx(594,316,'D1','start',10)+tx(594,329,'BAT 85','start',9,m)+
+     tx(90,274,'DATA (GPIO 2)','start',9,'var(--n-sig)',600);
+  document.getElementById('schem').innerHTML=s;
+
+  /* ---------- TO-220 ---------- */
+  let u=`<rect x="30" y="8" width="90" height="46" rx="3" fill="var(--tab)" stroke="${f}"/><circle cx="75" cy="30" r="9" fill="var(--surface)" stroke="${f}"/>`+
+        `<rect x="30" y="50" width="90" height="70" rx="3" fill="var(--fet)"/><text x="75" y="80" font-size="10" text-anchor="middle" fill="#fff">IRLB</text><text x="75" y="94" font-size="10" text-anchor="middle" fill="#fff">8748</text>`;
+  [['G','Gate',48],['D','Drain',75],['S','Source',102]].forEach(([k,n,x],i)=>{u+=`<rect x="${x-3}" y="120" width="6" height="56" fill="var(--leg)"/><text x="${x}" y="190" font-size="12" font-weight="700" text-anchor="middle" fill="${f}">${i+1}·${k}</text><text x="${x}" y="204" font-size="8" text-anchor="middle" fill="${m}">${n}</text>`;});
+  document.getElementById('to220').innerHTML=u;
+
+  /* ---------- Geometrie (Draufsicht, 1 m = 40 px) ---------- */
+  const g=document.getElementById('geo'), k=40, ox=140, oy=40;   // Lampe L bei x=0 m, Lampe R bei x=6 m, Publikum y=1..6 m
+  const gx=xm=>ox+xm*k, gy=ym=>oy+ym*k;
+  let q='';
+  q+=`<rect x="${gx(-1)}" y="${gy(1)}" width="${8*k}" height="${5*k}" rx="8" fill="var(--n-mk)" opacity="0.12" stroke="${m}" stroke-dasharray="4 3"/>`;
+  q+=tx(gx(3),gy(3.6),'Publikum ca. 100 Personen','middle',12,m)+tx(gx(3),gy(3.6)+16,'1–6 m vor der Bühne','middle',10,m);
+  q+=`<rect x="${gx(-0.6)}" y="${gy(-0.55)}" width="${7.2*k}" height="${0.4*k}" fill="var(--line)"/>`+tx(gx(3),gy(-0.25)-4,'Bühne','middle',10,m);
+  const fan=(lx,dirs,col)=>dirs.forEach(a=>{const r=a*Math.PI/180, len=6.3*k, x2=gx(lx)+Math.sin(r)*len, y2=gy(0)+Math.cos(r)*len;
+    const h=17*Math.PI/180, xa=gx(lx)+Math.sin(r-h)*len, ya=gy(0)+Math.cos(r-h)*len, xb=gx(lx)+Math.sin(r+h)*len, yb=gy(0)+Math.cos(r+h)*len;
+    q+=`<path d="M${gx(lx)},${gy(0)}L${xa},${ya}L${xb},${yb}Z" fill="${col}" opacity="0.10"/>`+`<line x1="${gx(lx)}" y1="${gy(0)}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1.2" opacity="0.8"/>`;});
+  fan(0,[0,35,65,-30],'var(--n-v5)'); fan(6,[0,-35,-65,30],'var(--n-gate)');
+  q+=`<circle cx="${gx(0)}" cy="${gy(0)}" r="9" fill="var(--n-v5)"/>`+tx(gx(0),gy(0)-16,'LAMPE1','middle',10,f,600);
+  q+=`<circle cx="${gx(6)}" cy="${gy(0)}" r="9" fill="var(--n-gate)"/>`+tx(gx(6),gy(0)-16,'LAMPE2','middle',10,f,600);
+  q+=ln(gx(0),gy(6.6),gx(6),gy(6.6))+tx(gx(3),gy(6.6)+14,'6 m','middle',10,m);
+  q+=tx(gx(-1.7),gy(1)+4,'1 m','start',9,m)+tx(gx(-1.7),gy(6)+4,'6 m','start',9,m);
+  q+=tx(gx(7.6),gy(1.2),'Achsen: 0°, ±35°,','end',9,m)+tx(gx(7.6),gy(1.2)+12,'±65° innen, 30° außen','end',9,m)+tx(gx(7.6),gy(1.2)+24,'Kegel = ±17°','end',9,m);
+  g.innerHTML=q;
+})();
+</script>
+</body>
+</html>
