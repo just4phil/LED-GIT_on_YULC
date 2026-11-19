@@ -199,26 +199,27 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   <div class="panel scroll"><table>
     <tr><th>Größe</th><th>Wert</th><th>Herkunft</th></tr>
     <tr><td>Empfindlichkeit Empfänger E<sub>min</sub></td><td>ca. 0,1–0,3 mW/m²</td><td>typisch für 38-kHz-Empfänger (TSOP382xx). <b>Annahme</b>, der Empfänger im Band ist unbekannt.</td></tr>
-    <tr><td>Strahlstärke TSAL6200 bei 100 mA</td><td>typ. ca. 60 mW/sr</td><td>Datenblatt Vishay (gegenprüfen)</td></tr>
-    <tr><td>Strahlstärke bei ca. 80 mA Puls (27 Ω, siehe 7.1)</td><td>ca. 45–50 mW/sr</td><td>näherungsweise linear zum Strom</td></tr>
-    <tr><td>E in 6 m, eine LED auf der Achse</td><td>48 / 36 ≈ <b>1,3 mW/m²</b></td><td>Faktor 4–13 über E<sub>min</sub></td></tr>
-    <tr><td>E in 2 m, eine LED auf der Achse</td><td>48 / 4 ≈ <b>12 mW/m²</b></td><td>Faktor 40–120</td></tr>
-    <tr><td>Am Rand des Halbwinkels (±17°)</td><td>50 % von obigem</td><td>Definition Halbwertswinkel</td></tr>
+    <tr><td>Strahlstärke TSAL6200 (±17°) bei 100 mA</td><td>typ. ca. 60 mW/sr</td><td>Datenblatt Vishay (gegenprüfen)</td></tr>
+    <tr><td>Strahlstärke TSAL6100 (±10°) bei 100 mA</td><td>typ. ca. 2 × TSAL6200</td><td>gleiche Leistung auf kleinerem Kegel; Datenblatt Vishay (gegenprüfen)</td></tr>
+    <tr><td>Strahlstärke bei ca. 80 mA Puls (27 Ω, siehe 7.1)</td><td>TSAL6200 ≈ 48 mW/sr · TSAL6100 ≈ 100 mW/sr</td><td>näherungsweise linear zum Strom</td></tr>
+    <tr><td>E in 6 m, TSAL6100 auf der Achse (hintere Reihen)</td><td>100 / 36 ≈ <b>2,8 mW/m²</b></td><td>Faktor 9–28 über E<sub>min</sub></td></tr>
+    <tr><td>E in 3 m, TSAL6200 auf der Achse (mittlere Reihen)</td><td>48 / 9 ≈ <b>5,3 mW/m²</b></td><td>Faktor 18–53</td></tr>
+    <tr><td>E in 2 m, TSAL6200 auf der Achse (vordere Reihen)</td><td>48 / 4 ≈ <b>12 mW/m²</b></td><td>Faktor 40–120</td></tr>
+    <tr><td>Am Rand des Halbwinkels (±10° bzw. ±17°)</td><td>50 % von obigem</td><td>Definition Halbwertswinkel</td></tr>
   </table></div>
-  <p>Die Reserve wird gebraucht. Bänder hängen in beliebiger Lage am Arm, der Empfänger sitzt hinter einem Streukörper, Körper und Hände schatten ab. Angestrebt ist ein Faktor 10. Mit den 27-Ω-Vorwiderständen (Begründung in 6) liegt die untere Abschätzung in 6 m bei Faktor 4. Deshalb werden alle 8 LEDs bestückt, Test T6 ist die Abnahme. Reicht die Reserve in den hinteren Reihen nicht, werden mehr LEDs auf diese Zone ausgerichtet (Reichweite wächst mit der Wurzel der Strahlstärke). Weiße Decken und Wände helfen in Räumen durch Reflexion. Draußen entfällt das. Halogen-Bühnenlicht strahlt viel IR ab und senkt die Empfindlichkeit der Empfänger (Verstärkungsregelung).</p>
+  <p>Die Reserve wird gebraucht. Bänder hängen in beliebiger Lage am Arm, der Empfänger sitzt hinter einem Streukörper, Körper und Hände schatten ab. Angestrebt ist ein Faktor 10. Deshalb wird gemischt bestückt: <b>eng strahlende TSAL6100 für die hinteren Reihen</b>, wo die Entfernung die Reserve begrenzt, und <b>breit strahlende TSAL6200 für vorne und seitlich</b>, wo der Winkel die Abdeckung begrenzt. Test T6 ist die Abnahme. Weiße Decken und Wände helfen in Räumen durch Reflexion. Draußen entfällt das. Halogen-Bühnenlicht strahlt viel IR ab und senkt die Empfindlichkeit der Empfänger (Verstärkungsregelung).</p>
   <h3>3.2 Abdeckung und Ausrichtung je Lampe</h3>
   <div class="panel scroll">
-    <svg id="geo" viewBox="0 0 560 340" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Draufsicht Bühne und Publikum"></svg>
+    <svg id="geo" viewBox="0 0 560 372" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Draufsicht Bühne und Publikum"></svg>
   </div>
   <div class="panel scroll"><table>
-    <tr><th>LEDs</th><th>Ausrichtung waagerecht</th><th>Ziel</th></tr>
-    <tr><td>2</td><td>geradeaus, leicht nach unten</td><td>hintere Reihen (4–6 m)</td></tr>
-    <tr><td>2</td><td>ca. 35° zur Bühnenmitte</td><td>mittlere Reihen, Mitte</td></tr>
-    <tr><td>1</td><td>ca. 65° zur Bühnenmitte</td><td>vorne Mitte (1–2 m)</td></tr>
-    <tr><td>1</td><td>ca. 30° nach außen</td><td>Seitenrand</td></tr>
-    <tr><td>2</td><td>nach Test</td><td>4. Strang: verstärkt die schwächste Zone aus T6</td></tr>
+    <tr><th>Strang</th><th>LEDs</th><th>Typ</th><th>Waagerecht (+ = zur Bühnenmitte)</th><th>Senkrecht</th><th>Ziel</th></tr>
+    <tr><td>1</td><td>1a, 1b</td><td>TSAL6100 (±10°)</td><td>0° und 12°</td><td>flach, Ziel ca. 5 m</td><td>hintere Reihen, außen</td></tr>
+    <tr><td>2</td><td>2a, 2b</td><td>TSAL6100 (±10°)</td><td>24° und 36°</td><td>flach, Ziel ca. 5 m</td><td>hintere Reihen, zur Mitte</td></tr>
+    <tr><td>3</td><td>3a, 3b</td><td>TSAL6200 (±17°)</td><td>50° und 70°</td><td>stärker geneigt, Ziel ca. 1,5 m</td><td>vordere Reihen, Mitte</td></tr>
+    <tr><td>4</td><td>4a, 4b</td><td>TSAL6200 (±17°)</td><td>25° und −30°</td><td>stärker geneigt, Ziel ca. 3 m</td><td>mittlere Reihen, Seitenrand</td></tr>
   </table></div>
-  <p>Senkrecht leicht nach unten auf Höhe erhobener Arme (ca. 1,5–2 m). <b>Festlegung:</b> 8 LEDs je Lampe (4 Stränge, alle bestückt). LED-Typ <b>TSAL6200</b> (±17°, 34° gesamt). Der breitere Strahl ist bei der kurzen Distanz wichtiger als die Reichweite der schmaleren TSAL6100 (±10°).</p>
+  <p>Die vier engen LEDs bilden einen lückenlosen Fächer von etwa −10° bis 46° für die Reihen in 4–6 m, die breiten decken Nahbereich und steile Winkel ab. Senkrecht zielen alle auf Höhe erhobener Arme (ca. 1,5–2 m). <b>Festlegung:</b> 8 LEDs je Lampe, 4 × TSAL6100 und 4 × TSAL6200. Die Zuordnung zu den Strängen ist elektrisch beliebig (gleiche Flussspannung, gleicher Strom); die Aufteilung oben dient dem übersichtlichen Löten und Ausrichten. Enge Strahlen verzeihen Ausrichtfehler schlechter (10° daneben halbiert die Stärke). Die Richtungen werden deshalb mit einem Halter fixiert, nicht nur über gebogene Beine.</p>
 </section>
 
 <!-- 4 -->
@@ -257,7 +258,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <div class="panel" style="display:flex;flex-direction:column;gap:8px">
       <h3 style="margin:0">Leistungsteil</h3>
       <ul>
-        <li>4 Stränge mit je 2 × TSAL6200 in Reihe und einem eigenen 27-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. <b>27 Ω begrenzen den Strom so, dass die LEDs selbst bei dauerhaft durchgeschaltetem MOSFET (jedes Tastverhältnis bis 100 %) unter dem Dauerlimit von 100 mA bleiben</b> (7.2). Die Sicherheit der LEDs hängt damit weder von der Software noch von der Gate-Beschaltung ab. 0,6 W reichen (7.4).</li>
+        <li>4 Stränge mit je 2 IR-LEDs in Reihe (Stränge 1–2: TSAL6100, Stränge 3–4: TSAL6200) und einem eigenen 27-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. <b>27 Ω begrenzen den Strom so, dass die LEDs selbst bei dauerhaft durchgeschaltetem MOSFET (jedes Tastverhältnis bis 100 %) unter dem Dauerlimit von 100 mA bleiben</b> (7.2). Die Sicherheit der LEDs hängt damit weder von der Software noch von der Gate-Beschaltung ab. 0,6 W reichen (7.4).</li>
         <li>Q1 (IRLB8748PBF, Logic-Level-N-MOSFET) schaltet DRAIN nach GND (Low-Side-Schalter).</li>
         <li>C2 (470 µF) und C1 (100 nF) puffern die Pulsströme direkt an den LEDs. R5 (1 Ω) entkoppelt sie von der Zuleitung, er ist nur nötig, wenn die 5 V am LED-Strip abgegriffen werden.</li>
       </ul>
@@ -278,7 +279,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
       <svg id="to220" viewBox="0 0 150 210" width="120" role="img" aria-label="TO-220 Anschlussbelegung"></svg>
       <p class="note" style="flex:1;min-width:160px"><b>IRLB8748PBF</b>, Sicht auf die Beschriftung, Beine unten: 1 = Gate, 2 = Drain, 3 = Source. Die Metallfahne liegt auf Drain und darf nichts berühren.</p>
     </div>
-    <div class="panel"><p class="note"><b>TSAL6200:</b> langes Bein = Anode (+), kurzes Bein und abgeflachte Gehäuseseite = Kathode (−). <b>BAT 85:</b> Ring = Kathode. <b>Elko:</b> Streifen am Gehäuse = Minus.</p></div>
+    <div class="panel"><p class="note"><b>TSAL6100 / TSAL6200:</b> langes Bein = Anode (+), kurzes Bein und abgeflachte Gehäuseseite = Kathode (−). <b>BAT 85:</b> Ring = Kathode. <b>Elko:</b> Streifen am Gehäuse = Minus.</p></div>
   </div>
 </section>
 
@@ -343,7 +344,8 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   <p>Für 2 Platinen und Reserve. Reichelt-Artikelnummern und Preise (inkl. 19 % MwSt.) vom 19.11.2026.</p>
   <div class="panel scroll"><table>
     <tr><th>Pos.</th><th>Ref.</th><th>Bauteil</th><th>Reichelt-Nr.</th><th class="num">je Platine</th><th class="num">Menge gesamt</th><th class="num">Stückpreis</th><th>Bezug</th></tr>
-    <tr><td>1</td><td>LED1a–LED4b</td><td>IR-LED 940 nm, 34° (±17°), 5 mm, Vishay TSAL6200</td><td class="mono">TSAL6200</td><td class="num">8</td><td class="num">20</td><td class="num">0,20 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>1a</td><td>LED1a–LED2b</td><td>IR-LED 940 nm, 20° (±10°), 5 mm, Vishay TSAL6100</td><td class="mono">TSAL 6100 VIS</td><td class="num">4</td><td class="num">10</td><td class="num">0,20 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>1b</td><td>LED3a–LED4b</td><td>IR-LED 940 nm, 34° (±17°), 5 mm, Vishay TSAL6200</td><td class="mono">TSAL6200</td><td class="num">4</td><td class="num">10</td><td class="num">0,20 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>2</td><td>Q1</td><td>N-MOSFET Logic-Level, 30 V, TO-220AB, IRLB8748PBF</td><td class="mono">IRLB8748PBF</td><td class="num">1</td><td class="num">3</td><td class="num">0,86 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>3</td><td>R1–R4</td><td>Metallschicht 27 Ω, 0207, 0,6 W, 1 %</td><td class="mono">METALL 27,0</td><td class="num">4</td><td class="num">10</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>4</td><td>R6</td><td>Metallschicht 100 Ω, 0207, 0,6 W</td><td class="mono">METALL 100</td><td class="num">1</td><td class="num">3</td><td class="num">0,09 €</td><td><span class="pill info">Reichelt</span></td></tr>
@@ -396,8 +398,8 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
       <h3 style="margin:0 0 8px">Bestückung</h3>
       <table>
         <tr><th>Ref.</th><th>Wert</th><th>Löcher</th></tr>
-        <tr><td>LED1a–4a</td><td>TSAL6200</td><td class="pos">Anode B6/12/18/24 · Kathode C</td></tr>
-        <tr><td>LED1b–4b</td><td>TSAL6200</td><td class="pos">Anode C9/15/21/27 · Kathode D</td></tr>
+        <tr><td>LED1a–4a</td><td>1a, 2a: TSAL6100 · 3a, 4a: TSAL6200</td><td class="pos">Anode B6/12/18/24 · Kathode C</td></tr>
+        <tr><td>LED1b–4b</td><td>1b, 2b: TSAL6100 · 3b, 4b: TSAL6200</td><td class="pos">Anode C9/15/21/27 · Kathode D</td></tr>
         <tr><td>R1–R4</td><td>27 Ω</td><td class="pos">D10/16/22/28 → E, stehend</td></tr>
         <tr><td>R5</td><td>1 Ω / Brücke</td><td class="pos">B38 → C38, stehend</td></tr>
         <tr><td>R6</td><td>100 Ω</td><td class="pos">D40 → D44, liegend</td></tr>
@@ -426,7 +428,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li>Q1 stehend in Spalte 31 (G D31, D E31, S F31), Fahne frei.</li>
     <li>J1 in Spalte 45.</li>
     <li><b>Messungen ohne LEDs:</b> 5V–GND kein Kurzschluss · DATA–GND kein Durchgang (C3) · Gate (D31)–GND ≈ 10 kΩ · Diodentest rot F34 / schwarz D34 ≈ 0,2–0,4 V.</li>
-    <li>LEDs zuletzt, Beine 15–20 mm lang lassen, Anode (langes Bein) nach oben. Nach dem Ausrichten blanke Beine mit Schrumpfschlauch isolieren.</li>
+    <li>LEDs zuletzt: Stränge 1–2 (Spalten 6–15) TSAL6100, Stränge 3–4 (Spalten 18–27) TSAL6200. Die Typen vor dem Einlöten getrennt halten, sie sehen gleich aus. Beine 15–20 mm lang lassen, Anode (langes Bein) nach oben. Nach Tabelle 3.2 ausrichten und im Halter fixieren, blanke Beine mit Schrumpfschlauch isolieren.</li>
     <li><b>Sicherheitstest:</b> 5 V anlegen, DATA über ca. 1 kΩ fest auf 5 V. Die LEDs dürfen <b>nicht</b> leuchten (Handykamera), Drain (E31) bleibt ≈ 5 V.</li>
     <li><b>Funktionstest:</b> Testbefehl senden. Handykamera zeigt lila Blitzen, TSOP 38238 am zweiten Controller gibt die Bitfolge aus.</li>
   </ol>
@@ -479,7 +481,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><td>T3</td><td>Gate-Ansteuerung und Verhalten des Kanal-2-Ausgangs</td><td>a) am aufgebauten Sender, beide Lampen, <b>LED-Strips auf Vollweiß</b> (minimale 5-V-Versorgung): mit Oszilloskop Spitzenwert V<sub>GS</sub> an Q1 (D31 gegen F31) während des Trägers; ohne Oszilloskop: Testprogramm DATA = High, Spannung an J1 DATA messen, minus V<sub>F</sub>(D1) aus dem Diodentest · b) Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) <b>V<sub>GS</sub> ≥ 4,5 V</b> (Referenz: LAMPE2 ohne Last 4,9 V an DATA) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt. Wird a) nicht erreicht: IRLML6344 statt IRLB8748 (R<sub>DS(on)</sub> bei 2,5 V spezifiziert).</td></tr>
     <tr><td>T4</td><td>Signalform</td><td>TSOP 38238 an zweitem Controller, Ausgabe dekodieren (Python-Decoder der Quelle)</td><td>Rahmen fehlerfrei dekodiert, Prüfsumme korrekt</td></tr>
     <tr><td>T5</td><td>Band-Reaktion</td><td>3–5 Bänder des Einsatzmodells, 1 m Abstand</td><td>Farbe, Hüllkurve und Chance wie befohlen</td></tr>
-    <tr><td>T6</td><td>Reichweite und Abdeckung</td><td>eine Lampe, Band in 6 m seitlich und abgewandt, Duty 50 % / 25 % / 10 %</td><td>Zuverlässiger Empfang bei 50 % in 6 m. Gewählter Duty-Wert dokumentiert.</td></tr>
+    <tr><td>T6</td><td>Reichweite und Abdeckung</td><td>eine Lampe, Band in 6 m seitlich und abgewandt, Duty 50 % / 25 % / 10 %; Band quer durch die hinteren Reihen führen (Übergänge zwischen den engen Strahlen) und durch die vorderen Reihen bis 70°</td><td>Zuverlässiger Empfang bei 50 % in 6 m, auch zwischen zwei Strahlen. Gewählter Duty-Wert dokumentiert.</td></tr>
     <tr><td>T7</td><td>Zwei Sender</td><td>beide Lampen, Band in der Mitte, Zeitschlitze an/aus</td><td>Ohne Schlitze Ausfälle, mit Schlitzen sicherer Empfang. Kein störendes Doppelblitzen.</td></tr>
     <tr><td>T8</td><td>Timing zum Beat</td><td>Testsong mit Klick, Video mit hoher Bildrate</td><td>Blitz der Bänder liegt innerhalb ±1 Frame (bei 60 fps) am Beat</td></tr>
     <tr><td>T9</td><td>Rückwirkung auf die LED-Show</td><td>volle Show mit IR-Befehlen</td><td>Kein Ruckeln der Effekte, kein Flackern der Strips, ESP-NOW-Sync unverändert</td></tr>
@@ -494,15 +496,15 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>#</th><th>Punkt</th><th>Art</th><th>Umgang</th></tr>
     <tr><td>R1</td><td>Protokoll stammt aus Reverse Engineering, nicht offiziell. Bitzeit „ca. 700 µs“ nicht genau spezifiziert.</td><td><span class="pill warn">Annahme</span></td><td>Bitzeit aus dem Arduino-Sender der Quelle übernehmen, mit T4/T5 verifizieren</td></tr>
     <tr><td>R2</td><td>Modell und Firmware der eingesetzten Bänder unbekannt</td><td><span class="pill warn">offen</span></td><td>Bänder beschaffen, T5</td></tr>
-    <tr><td>R3</td><td>Empfindlichkeit des Band-Empfängers unbekannt (0,1–0,3 mW/m² angenommen)</td><td><span class="pill warn">Annahme</span></td><td>T6. Untere Reserve in 6 m nur Faktor 4 (3.1). Bei Bedarf mehr LEDs auf die hinteren Reihen ausrichten.</td></tr>
-    <tr><td>R4</td><td>Datenblattwerte TSAL6200 / IRLB8748 / BAT 85 aus dem Gedächtnis</td><td><span class="pill warn">gegenprüfen</span></td><td>Prüfpunkte Q1–Q3</td></tr>
+    <tr><td>R3</td><td>Empfindlichkeit des Band-Empfängers unbekannt (0,1–0,3 mW/m² angenommen)</td><td><span class="pill warn">Annahme</span></td><td>T6. Reserve in 6 m Faktor 9–28 mit TSAL6100 (3.1). Bei Bedarf Strahlrichtungen nachjustieren.</td></tr>
+    <tr><td>R4</td><td>Datenblattwerte TSAL6100 / TSAL6200 / IRLB8748 / BAT 85 aus dem Gedächtnis</td><td><span class="pill warn">gegenprüfen</span></td><td>Prüfpunkte Q1–Q3</td></tr>
     <tr><td>R5</td><td>Doppelte Ausführung eines Befehls in der Überlappungszone</td><td><span class="pill info">zu testen</span></td><td>T7. Ggf. nur eine Lampe für Effekte mit kurzer Hüllkurve.</td></tr>
     <tr><td>R6</td><td>Halogen-Bühnenlicht (IR-Anteil) senkt die Empfangsempfindlichkeit</td><td><span class="pill info">Umgebung</span></td><td>Am Spielort testen. Duty-Reserve.</td></tr>
     <tr><td>R7</td><td>Jitter der Bit-ISR durch WiFi/ESP-NOW und FastLED</td><td><span class="pill info">zu testen</span></td><td>T4 unter Last (volle Show)</td></tr>
     <tr><td>R8</td><td>Rechtliches: Ansteuerung fremder Bänder, die das Publikum mitbringt bzw. die verteilt werden</td><td><span class="pill info">organisatorisch</span></td><td>Nur eigene bzw. von der Band verteilte Bänder ansteuern</td></tr>
     <tr><td>R9</td><td>IRLB8748PBF abgekündigt</td><td><span class="pill info">akzeptiert</span></td><td>nur 2 Platinen, Teile vorrätig (1 Reserve)</td></tr>
     <tr><td>R10</td><td>Gate-Spannung folgt der 5-V-Versorgung des YULC-Pegelwandlers, Reserve zur 4,5-V-Spezifikation nur ≈ 0,1 V (7.7)</td><td><span class="pill warn">Messung</span></td><td>Abnahme T3 unter Volllast an beiden Lampen; sonst IRLML6344. Unterschreitung kostet nur Leistung (7.14).</td></tr>
-    <tr><td>R11</td><td>Zulässige Umgebungstemperatur der LEDs bei Dauer-Ein (115 mW)</td><td><span class="pill info">gegenprüfen</span></td><td>Derating-Kurve TSAL6200 (Q1), T10</td></tr>
+    <tr><td>R11</td><td>Zulässige Umgebungstemperatur der LEDs bei Dauer-Ein (115 mW)</td><td><span class="pill info">gegenprüfen</span></td><td>Derating-Kurven TSAL6100 / TSAL6200 (Q1), T10</td></tr>
   </table></div>
 </section>
 
@@ -510,7 +512,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
 <section id="qs">
   <h2>16 · Prüfpunkte</h2>
   <ol>
-    <li><b>Q1</b> TSAL6200-Datenblatt: I<sub>F</sub>, I<sub>FM</sub> (Bedingungen), I<sub>FSM</sub>, P<sub>V</sub> und Derating (zulässige Umgebungstemperatur bei 85 mA Dauerstrom), minimales V<sub>F</sub> bei 80–100 mA, I<sub>e</sub> und Halbwinkel. Trägt 7.1–7.3 und 3.1.</li>
+    <li><b>Q1</b> TSAL6100- und TSAL6200-Datenblatt (beide Typen, insbesondere gleiche V<sub>F</sub>-Spanne für den gemeinsamen 27-Ω-Strang und Verhältnis der Strahlstärken): I<sub>F</sub>, I<sub>FM</sub> (Bedingungen), I<sub>FSM</sub>, P<sub>V</sub> und Derating (zulässige Umgebungstemperatur bei 85 mA Dauerstrom), minimales V<sub>F</sub> bei 80–100 mA, I<sub>e</sub> und Halbwinkel. Trägt 7.1–7.3 und 3.1.</li>
     <li><b>Q2</b> IRLB8748PBF: Pinbelegung, R<sub>DS(on)</sub>-Spezifikation bei V<sub>GS</sub> = 4,5 V, C<sub>iss</sub>, R<sub>thJA</sub>. Trägt 7.5, 7.6 und 7.14.</li>
     <li><b>Q3</b> BAT 85: V<sub>F</sub> bei kleinen Strömen, Sperrstrom (Einfluss auf R7-Messung). Trägt 7.7.</li>
     <li><b>Q4</b> Klemmschaltung C3/D1/R7: Funktion bei Burst-Beginn, im Burst und bei Dauer-High, Zeitkonstanten (7.8, 7.9, 8).</li>
@@ -529,7 +531,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   <ul>
     <li>jamesw343/PixMob_IR: <span class="mono">https://github.com/jamesw343/PixMob_IR</span> (README, docs/ir_protocol.md, pixmob_ir_protocol.py)</li>
     <li>danielweidman/pixmob-ir-reverse-engineering (Arduino-Sender, von obiger Quelle referenziert)</li>
-    <li>Vishay TSAL6200 Datenblatt · Infineon IRLB8748PBF Datenblatt · BAT 85 Datenblatt · Vishay TSOP382xx Datenblatt</li>
+    <li>Vishay TSAL6100 und TSAL6200 Datenblatt · Infineon IRLB8748PBF Datenblatt · BAT 85 Datenblatt · Vishay TSOP382xx Datenblatt</li>
     <li>Reichelt-Shop, Artikelnummern und Preise vom 19.11.2026</li>
     <li>Projekt: <code>src/definitions.h</code> (Pins, Geräte), <code>src/main.cpp</code> (FastLED-Ausgänge), <code>CLAUDE.md</code> (Architektur, Sync)</li>
   </ul>
@@ -667,7 +669,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
       `<path d="M${x+13},${y+6}l11,-7 M${x+13},${y+13}l11,-7" stroke="var(--n-v5in)" stroke-width="1.4"/><path d="M${x+24},${y-1}l-5,0 l2,4z M${x+24},${y+6}l-5,0 l2,4z" fill="var(--n-v5in)"/>`+
       tx(x-15,y+14,(i+1)+n,'end',10,m);});
     s+=ln(x,100,x,118,da)+ln(x,138,x,160,da)+rv(x,160,40)+tx(x+12,178,'R'+(i+1),'start',10)+tx(x+12,191,'27 Ω','start',9,m)+ln(x,200,x,230,da)+dot(x,230)+`</g>`;});
-  s+=ln(340,230,640,230)+tx(345,246,'DRAIN','start',9,'var(--n-drain)',600)+tx(450,30,'4 Stränge à 2 × TSAL6200','middle',10,m);
+  s+=ln(340,230,640,230)+tx(345,246,'DRAIN','start',9,'var(--n-drain)',600)+tx(450,30,'Stränge 1–2: TSAL6100 (eng) · Stränge 3–4: TSAL6200 (breit)','middle',10,m);
   s+=ln(640,230,640,255)+`<rect x="618" y="255" width="44" height="50" rx="3" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(640,284,'Q1','middle',11,f,600)+
      tx(646,251,'D','start',9,m)+tx(646,318,'S','start',9,m)+tx(612,276,'G','end',9,m)+ln(640,305,640,340)+dot(640,340)+tx(668,276,'IRLB','start',9,m)+tx(668,288,'8748','start',9,m);
   s+=ln(48,280,400,280)+`<rect x="400" y="272" width="46" height="16" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(423,266,'R6 100 Ω','middle',10)+
@@ -690,15 +692,17 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   q+=`<rect x="${gx(-1)}" y="${gy(1)}" width="${8*k}" height="${5*k}" rx="8" fill="var(--n-mk)" opacity="0.12" stroke="${m}" stroke-dasharray="4 3"/>`;
   q+=tx(gx(3),gy(3.6),'Publikum ca. 100 Personen','middle',12,m)+tx(gx(3),gy(3.6)+16,'1–6 m vor der Bühne','middle',10,m);
   q+=`<rect x="${gx(-0.6)}" y="${gy(-0.55)}" width="${7.2*k}" height="${0.4*k}" fill="var(--line)"/>`+tx(gx(3),gy(-0.25)-4,'Bühne','middle',10,m);
-  const fan=(lx,dirs,col)=>dirs.forEach(a=>{const r=a*Math.PI/180, len=6.3*k, x2=gx(lx)+Math.sin(r)*len, y2=gy(0)+Math.cos(r)*len;
-    const h=17*Math.PI/180, xa=gx(lx)+Math.sin(r-h)*len, ya=gy(0)+Math.cos(r-h)*len, xb=gx(lx)+Math.sin(r+h)*len, yb=gy(0)+Math.cos(r+h)*len;
-    q+=`<path d="M${gx(lx)},${gy(0)}L${xa},${ya}L${xb},${yb}Z" fill="${col}" opacity="0.10"/>`+`<line x1="${gx(lx)}" y1="${gy(0)}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1.2" opacity="0.8"/>`;});
-  fan(0,[0,35,65,-30],'var(--n-v5)'); fan(6,[0,-35,-65,30],'var(--n-gate)');
+  // Strahl = [Richtung in Grad (+ = zur Mitte), Halbwinkel, gezeichnete Länge in m]; eng (TSAL6100) lang und kräftiger, breit (TSAL6200) kürzer
+  const beams=[[0,10,6.4],[12,10,6.4],[24,10,6.4],[36,10,6.4],[50,17,3.2],[70,17,2.6],[25,17,3.6],[-30,17,3.2]];
+  const fan=(lx,sgn,col)=>beams.forEach(([a,hw,lm])=>{const r=sgn*a*Math.PI/180, len=lm*k, x2=gx(lx)+Math.sin(r)*len, y2=gy(0)+Math.cos(r)*len;
+    const h=hw*Math.PI/180, xa=gx(lx)+Math.sin(r-h)*len, ya=gy(0)+Math.cos(r-h)*len, xb=gx(lx)+Math.sin(r+h)*len, yb=gy(0)+Math.cos(r+h)*len;
+    q+=`<path d="M${gx(lx)},${gy(0)}L${xa},${ya}L${xb},${yb}Z" fill="${col}" opacity="${hw<15?0.16:0.08}"/>`+`<line x1="${gx(lx)}" y1="${gy(0)}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${hw<15?1.6:1}" opacity="0.8"${hw<15?'':' stroke-dasharray="3 2"'}/>`;});
+  fan(0,1,'var(--n-v5)'); fan(6,-1,'var(--n-gate)');
   q+=`<circle cx="${gx(0)}" cy="${gy(0)}" r="9" fill="var(--n-v5)"/>`+tx(gx(0),gy(0)-16,'LAMPE1','middle',10,f,600);
   q+=`<circle cx="${gx(6)}" cy="${gy(0)}" r="9" fill="var(--n-gate)"/>`+tx(gx(6),gy(0)-16,'LAMPE2','middle',10,f,600);
   q+=ln(gx(0),gy(6.6),gx(6),gy(6.6))+tx(gx(3),gy(6.6)+14,'6 m','middle',10,m);
   q+=tx(gx(-1.7),gy(1)+4,'1 m','start',9,m)+tx(gx(-1.7),gy(6)+4,'6 m','start',9,m);
-  q+=tx(gx(7.6),gy(1.2),'Achsen: 0°, ±35°,','end',9,m)+tx(gx(7.6),gy(1.2)+12,'±65° innen, 30° außen','end',9,m)+tx(gx(7.6),gy(1.2)+24,'Kegel = ±17°','end',9,m);
+  q+=tx(gx(-1.7),gy(7.4),'durchgezogen, lang: TSAL6100 ±10° (hintere Reihen)','start',9,m)+tx(gx(-1.7),gy(7.4)+12,'gestrichelt, kurz: TSAL6200 ±17° (vorne, seitlich)','start',9,m);
   g.innerHTML=q;
 })();
 </script>
