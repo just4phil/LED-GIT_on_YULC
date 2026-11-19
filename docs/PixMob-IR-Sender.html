@@ -107,7 +107,7 @@ svg text{font-family:var(--f-mono)}
   <a href="#leistung"><span>5</span>Sendeleistung per Software</a>
   <a href="#schaltung"><span>6</span>Schaltung und Funktion</a>
   <a href="#dimensionierung"><span>7</span>Dimensionierung (Rechnungen)</a>
-  <a href="#fehlerfaelle"><span>8</span>Fehlerfälle (Fail-safe-Nachweis)</a>
+  <a href="#fehlerfaelle"><span>8</span>Sicherheitsnachweis (Fehlerfälle, Augen)</a>
   <a href="#versorgung"><span>9</span>Versorgung und Verkabelung</a>
   <a href="#stueckliste"><span>10</span>Stückliste</a>
   <a href="#layout"><span>11</span>Platinenlayout</a>
@@ -308,7 +308,8 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
 
 <!-- 8 -->
 <section id="fehlerfaelle">
-  <h2>8 · Fehlerfälle (Fail-safe-Nachweis)</h2>
+  <h2>8 · Sicherheitsnachweis</h2>
+  <h3>8.1 Elektrische Fehlerfälle (fail-safe)</h3>
   <div class="panel scroll"><table>
     <tr><th>Zustand am Eingang DATA</th><th>Ursache</th><th>Wirkung</th><th>Bewertung</th></tr>
     <tr><td>Low</td><td>Normalbetrieb, Ruhe</td><td>Gate 0 V, LEDs aus</td><td><span class="pill ok">sicher</span></td></tr>
@@ -323,6 +324,28 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><td>Verpolte Versorgung</td><td>falscher Stecker</td><td>Elko C2 gefährdet, LEDs sperren (V<sub>R</sub> 5 V)</td><td><span class="pill warn">mechanisch verhindern</span> verpolsicherer JST-XH</td></tr>
   </table></div>
   <div class="box ok"><b>Zwei unabhängige Sicherungsebenen.</b> 1. Die 27-Ω-Vorwiderstände halten die LEDs in <i>jedem</i> Zustand des MOSFET (aus, getaktet, dauerhaft ein, defekt) unter dem Dauerlimit. 2. C3/R7/D1 sorgen dafür, dass bei Low, offenem Eingang und Dauer-High gar nichts leuchtet. Die Firmware muss den Pin beim Booten nicht in einen bestimmten Zustand bringen. Ein Bit entsteht ausschließlich durch den 38-kHz-Träger.</div>
+
+  <h3 id="augen">8.2 Optische Sicherheit (Augen)</h3>
+  <p>940 nm ist unsichtbar. Es gibt deshalb keinen zuverlässigen Abwende- oder Lidschlussreflex, und die Bewertung muss über die komplette Leuchte erfolgen, nicht nur über eine einzelne LED. Bei 940 nm sind thermische Gefährdungen von Netzhaut sowie Hornhaut/Linse maßgeblich, eine Blaulichtgefährdung besteht nicht. Vishay stuft einzelne IR-LEDs dieser Bauart nach IEC 62471 als „Exempt“ (freie Gruppe) ein, weist aber darauf hin, dass bei Anordnungen mehrerer LEDs die fertige optische und mechanische Anordnung zu bewerten ist.</p>
+  <div class="panel scroll"><table>
+    <tr><th>Größe</th><th>Wert</th><th>Herkunft / Rechnung</th></tr>
+    <tr><td>Strahlstärke je LED bei Dauer-Ein (≤ 85 mA, 7.2)</td><td>TSAL6200 ≈ 0,05 W/sr · TSAL6100 ≈ 0,11 W/sr</td><td>3.1, linear auf 85 mA hochgerechnet</td></tr>
+    <tr><td>Summe aller 8 LEDs, konservativ als vollständig überlappend angenommen</td><td class="num">≈ 0,65 W/sr</td><td>4 × 0,11 + 4 × 0,05. Tatsächlich zeigen die LEDs in verschiedene Richtungen (3.2), auf einer Achse überlagern sich höchstens die Ränder benachbarter Strahlen.</td></tr>
+    <tr><td>Bewertungsgrenze Hornhaut/Linse für 940-nm-IREDs, Messabstand 20 cm</td><td class="num">≈ 4 W/sr</td><td>Vishay, Eye-Safety-Bewertung nach IEC 62471</td></tr>
+    <tr><td>Abstand zur Grenze (Strahlstärke)</td><td class="num">Faktor ≈ 6</td><td>bereits im Fehlerfall Dauer-Ein, ohne 38-kHz-Tastgrad und Sendezeit-Budget (13.5)</td></tr>
+    <tr><td>Bestrahlungsstärke in 1 m auf der Achse</td><td class="num">≤ 0,65 W/m²</td><td>E = I / d²</td></tr>
+    <tr><td>Grenzwert IR-Bestrahlung Hornhaut/Linse (IEC 62471, lange Expositionsdauer)</td><td class="num">100 W/m²</td><td>Faktor &gt; 150 Reserve bei ≥ 1 m</td></tr>
+    <tr><td>Normalbetrieb</td><td colspan="2">Träger 50 %, nur während der Rahmen (ca. 35–50 ms je Befehl), Sendezeit ≤ 30 % pro Sekunde (13.5): mittlere Strahlung nochmals deutlich geringer</td></tr>
+  </table></div>
+  <div class="box ok"><b>Einstufung:</b> voraussichtlich augensicher für das Publikum bei ≥ 1 m Abstand, auch im elektrischen Dauerfehlerfall. Voraussetzungen:
+    <ul style="margin-top:6px">
+      <li>Keine Linsen, Reflektoren oder sonstige optische Bündelung vor den LEDs.</li>
+      <li>Sender oberhalb der Augenhöhe montieren und nach unten auf das Publikum ausrichten (3.2).</li>
+      <li>Beim Aufbau und Testen nicht aus wenigen Zentimetern direkt in den Sender schauen. Funktionskontrolle mit Handykamera oder TSOP 38238.</li>
+      <li>Publikum ≥ 1 m vom Sender entfernt.</li>
+    </ul>
+  </div>
+  <p class="note">Eine formale Klassifizierung nach IEC 62471 kann nur eine Messung am fertigen Lampenkopf liefern. Sie ist nötig, falls das System außerhalb des eigenen Band-Setups weitergegeben oder verkauft wird.</p>
 </section>
 
 <!-- 9 -->
@@ -430,7 +453,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li><b>Messungen ohne LEDs:</b> 5V–GND kein Kurzschluss · DATA–GND kein Durchgang (C3) · Gate (D31)–GND ≈ 10 kΩ · Diodentest rot F34 / schwarz D34 ≈ 0,2–0,4 V.</li>
     <li>LEDs zuletzt: Stränge 1–2 (Spalten 6–15) TSAL6100, Stränge 3–4 (Spalten 18–27) TSAL6200. Die Typen vor dem Einlöten getrennt halten, sie sehen gleich aus. Beine 15–20 mm lang lassen, Anode (langes Bein) nach oben. Nach Tabelle 3.2 ausrichten und im Halter fixieren, blanke Beine mit Schrumpfschlauch isolieren.</li>
     <li><b>Sicherheitstest:</b> 5 V anlegen, DATA über ca. 1 kΩ fest auf 5 V. Die LEDs dürfen <b>nicht</b> leuchten (Handykamera), Drain (E31) bleibt ≈ 5 V.</li>
-    <li><b>Funktionstest:</b> Testbefehl senden. Handykamera zeigt lila Blitzen, TSOP 38238 am zweiten Controller gibt die Bitfolge aus.</li>
+    <li><b>Funktionstest:</b> Testbefehl senden. Handykamera zeigt lila Blitzen, TSOP 38238 am zweiten Controller gibt die Bitfolge aus. Nicht aus der Nähe mit bloßem Auge in den Sender schauen (8.2).</li>
   </ol>
 </section>
 
@@ -505,6 +528,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><td>R9</td><td>IRLB8748PBF abgekündigt</td><td><span class="pill info">akzeptiert</span></td><td>nur 2 Platinen, Teile vorrätig (1 Reserve)</td></tr>
     <tr><td>R10</td><td>Gate-Spannung folgt der 5-V-Versorgung des YULC-Pegelwandlers, Reserve zur 4,5-V-Spezifikation nur ≈ 0,1 V (7.7)</td><td><span class="pill warn">Messung</span></td><td>Abnahme T3 unter Volllast an beiden Lampen; sonst IRLML6344. Unterschreitung kostet nur Leistung (7.14).</td></tr>
     <tr><td>R11</td><td>Zulässige Umgebungstemperatur der LEDs bei Dauer-Ein (115 mW)</td><td><span class="pill info">gegenprüfen</span></td><td>Derating-Kurven TSAL6100 / TSAL6200 (Q1), T10</td></tr>
+    <tr><td>R12</td><td>Augensicherheit nur rechnerisch abgeschätzt, keine Messung nach IEC 62471</td><td><span class="pill info">bewertet</span></td><td>Reserve Faktor ≈ 6 (Strahlstärke) bzw. &gt; 150 (Bestrahlung bei 1 m), Bedingungen in 8.2. Formale Messung nur bei Weitergabe.</td></tr>
   </table></div>
 </section>
 
@@ -522,6 +546,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li><b>Q8</b> Protokollzusammenfassung (2) gegen die Quelle, insbesondere Byte-Reihenfolge (G, R, B), Bitreihenfolge, Kodiertabelle, Prüfsumme.</li>
     <li><b>Q9</b> Zeitschlitz-Konzept (4) und Vorziehen des Sendebeginns (13.4).</li>
     <li><b>Q10</b> Firmware-Ansatz LEDC + Timer neben FastLED 3.5.0 (RMT) und ESP-NOW (13.1, 13.2).</li>
+    <li><b>Q11</b> Optische Sicherheit (8.2): Grenzwerte (≈ 4 W/sr bei 20 cm, 100 W/m²) gegen Vishay-Applikationsschrift und IEC 62471; Strahlstärke der TSAL6100 bei 85 mA, insbesondere maximale Strahlstärke laut Datenblatt.</li>
   </ol>
 </section>
 
@@ -532,6 +557,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li>jamesw343/PixMob_IR: <span class="mono">https://github.com/jamesw343/PixMob_IR</span> (README, docs/ir_protocol.md, pixmob_ir_protocol.py)</li>
     <li>danielweidman/pixmob-ir-reverse-engineering (Arduino-Sender, von obiger Quelle referenziert)</li>
     <li>Vishay TSAL6100 und TSAL6200 Datenblatt · Infineon IRLB8748PBF Datenblatt · BAT 85 Datenblatt · Vishay TSOP382xx Datenblatt</li>
+    <li>Vishay, Eye-Safety-Bewertung von IR-Emittern nach IEC 62471 · IEC 62471 (Photobiologische Sicherheit von Lampen und Lampensystemen)</li>
     <li>Reichelt-Shop, Artikelnummern und Preise vom 19.11.2026</li>
     <li>Projekt: <code>src/definitions.h</code> (Pins, Geräte), <code>src/main.cpp</code> (FastLED-Ausgänge), <code>CLAUDE.md</code> (Architektur, Sync)</li>
   </ul>
