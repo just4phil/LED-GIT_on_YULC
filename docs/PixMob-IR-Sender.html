@@ -200,12 +200,12 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>Größe</th><th>Wert</th><th>Herkunft</th></tr>
     <tr><td>Empfindlichkeit Empfänger E<sub>min</sub></td><td>ca. 0,1–0,3 mW/m²</td><td>typisch für 38-kHz-Empfänger (TSOP382xx). <b>Annahme</b>, der Empfänger im Band ist unbekannt.</td></tr>
     <tr><td>Strahlstärke TSAL6200 bei 100 mA</td><td>typ. ca. 60 mW/sr</td><td>Datenblatt Vishay (gegenprüfen)</td></tr>
-    <tr><td>Strahlstärke bei ca. 115 mA Puls (18 Ω, siehe 7.1)</td><td>ca. 65–75 mW/sr</td><td>näherungsweise linear zum Strom</td></tr>
-    <tr><td>E in 6 m, eine LED auf der Achse</td><td>70 / 36 ≈ <b>1,9 mW/m²</b></td><td>Faktor 6–19 über E<sub>min</sub></td></tr>
-    <tr><td>E in 2 m, eine LED auf der Achse</td><td>70 / 4 ≈ <b>17 mW/m²</b></td><td>Faktor 60–170</td></tr>
+    <tr><td>Strahlstärke bei ca. 80 mA Puls (27 Ω, siehe 7.1)</td><td>ca. 45–50 mW/sr</td><td>näherungsweise linear zum Strom</td></tr>
+    <tr><td>E in 6 m, eine LED auf der Achse</td><td>48 / 36 ≈ <b>1,3 mW/m²</b></td><td>Faktor 4–13 über E<sub>min</sub></td></tr>
+    <tr><td>E in 2 m, eine LED auf der Achse</td><td>48 / 4 ≈ <b>12 mW/m²</b></td><td>Faktor 40–120</td></tr>
     <tr><td>Am Rand des Halbwinkels (±17°)</td><td>50 % von obigem</td><td>Definition Halbwertswinkel</td></tr>
   </table></div>
-  <p>Die Reserve wird gebraucht. Bänder hängen in beliebiger Lage am Arm, der Empfänger sitzt hinter einem Streukörper, Körper und Hände schatten ab. Angestrebt ist ein Faktor 10. Mit den 18-Ω-Vorwiderständen (Begründung in 6) liegt die untere Abschätzung in 6 m bei Faktor 6. Deshalb werden alle 8 LEDs bestückt und Test T6 ist die Abnahme. Weiße Decken und Wände helfen in Räumen durch Reflexion. Draußen entfällt das. Halogen-Bühnenlicht strahlt viel IR ab und senkt die Empfindlichkeit der Empfänger (Verstärkungsregelung).</p>
+  <p>Die Reserve wird gebraucht. Bänder hängen in beliebiger Lage am Arm, der Empfänger sitzt hinter einem Streukörper, Körper und Hände schatten ab. Angestrebt ist ein Faktor 10. Mit den 27-Ω-Vorwiderständen (Begründung in 6) liegt die untere Abschätzung in 6 m bei Faktor 4. Deshalb werden alle 8 LEDs bestückt, Test T6 ist die Abnahme. Reicht die Reserve in den hinteren Reihen nicht, werden mehr LEDs auf diese Zone ausgerichtet (Reichweite wächst mit der Wurzel der Strahlstärke). Weiße Decken und Wände helfen in Räumen durch Reflexion. Draußen entfällt das. Halogen-Bühnenlicht strahlt viel IR ab und senkt die Empfindlichkeit der Empfänger (Verstärkungsregelung).</p>
   <h3>3.2 Abdeckung und Ausrichtung je Lampe</h3>
   <div class="panel scroll">
     <svg id="geo" viewBox="0 0 560 340" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Draufsicht Bühne und Publikum"></svg>
@@ -257,7 +257,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <div class="panel" style="display:flex;flex-direction:column;gap:8px">
       <h3 style="margin:0">Leistungsteil</h3>
       <ul>
-        <li>4 Stränge mit je 2 × TSAL6200 in Reihe und einem eigenen 18-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. 18 Ω begrenzen den Strom so, dass die LEDs auch bei einem endlos laufenden Träger sicher unter dem Dauerlimit bleiben. Die Sicherheit der LEDs hängt damit nicht von der Software ab. 0,6 W reichen auch bei Dauer-Ein (7.4).</li>
+        <li>4 Stränge mit je 2 × TSAL6200 in Reihe und einem eigenen 27-Ω-Vorwiderstand (R1–R4), parallel zwischen +5 V und DRAIN. <b>27 Ω begrenzen den Strom so, dass die LEDs selbst bei dauerhaft durchgeschaltetem MOSFET (jedes Tastverhältnis bis 100 %) unter dem Dauerlimit von 100 mA bleiben</b> (7.2). Die Sicherheit der LEDs hängt damit weder von der Software noch von der Gate-Beschaltung ab. 0,6 W reichen (7.4).</li>
         <li>Q1 (IRLB8748PBF, Logic-Level-N-MOSFET) schaltet DRAIN nach GND (Low-Side-Schalter).</li>
         <li>C2 (470 µF) und C1 (100 nF) puffern die Pulsströme direkt an den LEDs. R5 (1 Ω) entkoppelt sie von der Zuleitung, er ist nur nötig, wenn die 5 V am LED-Strip abgegriffen werden.</li>
       </ul>
@@ -265,11 +265,11 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <div class="panel" style="display:flex;flex-direction:column;gap:8px">
       <h3 style="margin:0">Gate-Ansteuerung (fail-safe)</h3>
       <ul>
-        <li><b>Gatetreiber ist der 5-V-Pegelwandler der YULC</b> am Kanal-2-Ausgang (gemessen 4,9 V, siehe 9). Am Gate liegen damit ≈ 4,6 V, also im Bereich, für den der IRLB8748 einen garantierten R<sub>DS(on)</sub> hat (4,5 V). Ein zusätzlicher Treiber ist nicht nötig.</li>
+        <li><b>Gatetreiber ist der 5-V-Pegelwandler der YULC</b> am Kanal-2-Ausgang (gemessen 4,9 V, siehe 9). Am Gate liegen damit ≈ 4,6 V. Der IRLB8748 hat ab 4,5 V einen garantierten R<sub>DS(on)</sub>. Die Abnahme dafür ist T3 (V<sub>GS</sub> ≥ 4,5 V am aufgebauten Sender unter Volllast). Ein zusätzlicher Treiber ist nicht nötig.</li>
         <li>R6 (100 Ω) begrenzt Ströme aus dem Pegelwandler und dämpft Klingeln auf der Leitung.</li>
         <li><b>C3 (100 nF) koppelt nur Wechselsignale durch.</b> Ein Dauer-High erreicht das Gate höchstens für ca. 1 ms.</li>
         <li>R7 (10 kΩ) zieht das Gate auf GND: definiert bei offenem Eingang und entlädt C3 bei Dauer-Pegel (τ = R7·C3 = 1 ms).</li>
-        <li><b>D1 (BAT 85, Schottky)</b> klemmt negative Halbwellen (Klemmschaltung zur Pegelwiederherstellung). Ohne D1 würde ein 50-%-Rechteck hinter C3 um 0 V pendeln (±1,65 V) und den MOSFET nie einschalten. Mit D1 schwingt das Gate zwischen ca. −0,3 V und ca. +3,0 V.</li>
+        <li><b>D1 (BAT 85, Schottky)</b> klemmt negative Halbwellen (Klemmschaltung zur Pegelwiederherstellung). Ohne D1 würde das 4,9-V-Rechteck (50 %) hinter C3 um 0 V pendeln (≈ ±2,45 V) und den MOSFET nicht ausreichend einschalten. Mit D1 schwingt das Gate zwischen ca. −0,3 V und ca. +4,6 V.</li>
       </ul>
     </div>
   </div>
@@ -288,19 +288,20 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
   <p class="note">Datenblattwerte aus dem Gedächtnis übernommen und als „gegenprüfen“ markiert, wo sie die Auslegung tragen.</p>
   <div class="panel scroll"><table>
     <tr><th>#</th><th>Größe</th><th>Rechnung</th><th>Ergebnis</th><th>Grenze / Bewertung</th></tr>
-    <tr><td>7.1</td><td>Strangstrom (Spitze)</td><td>(5 V − 2·V<sub>F</sub>) / 18 Ω, V<sub>F</sub> ≈ 1,35–1,6 V bei ~100 mA</td><td class="num">100–128 mA</td><td>TSAL6200 I<sub>FM</sub> = 200 mA bei t<sub>p</sub>/T = 0,5, t<sub>p</sub> ≤ 100 µs (gegenprüfen). 38 kHz: t<sub>p</sub> = 13 µs <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.2</td><td>Strangstrom (Mittel bei Dauerträger)</td><td>0,5 · 128 mA (ungünstigster Fall)</td><td class="num">≤ 64 mA</td><td>I<sub>F</sub> = 100 mA dauerhaft <span class="pill ok">ok</span>, Reserve ≥ 36 %</td></tr>
-    <tr><td>7.3</td><td>LED-Verlustleistung (Dauerträger)</td><td>0,5 · 0,128 A · 1,4 V</td><td class="num">≈ 90 mW</td><td>P<sub>V</sub> = 160 mW bei 25 °C; Reserve auch für Derating bei Wärme <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.4</td><td>Vorwiderstand 18 Ω</td><td>I² · R = 0,128² · 18 (Spitze, auch Dauer-Ein), ·0,5 (Mittel)</td><td class="num">0,29 / 0,15 W</td><td>0,6 W <span class="pill ok">ok</span>, auch im Fehlerfall</td></tr>
+    <tr><td>7.1</td><td>Strangstrom (Spitze)</td><td>(5 V − 2·V<sub>F</sub>) / 27 Ω, V<sub>F</sub> ≈ 1,35–1,6 V</td><td class="num">67–85 mA (typ. ≈ 80 mA)</td><td>unter I<sub>F</sub> = 100 mA, also auch ohne Pulsbedingungen zulässig <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.2</td><td>Strangstrom bei Dauer-Ein (100 %)</td><td>(5 V − 2 · 1,35 V) / 27 Ω (ungünstigster Fall)</td><td class="num">≤ 85 mA</td><td>I<sub>F</sub> = 100 mA dauerhaft <span class="pill ok">ok</span>. Gilt für jedes Tastverhältnis, also auch für festhängenden Träger, schwingenden Eingang und durchlegierten MOSFET.</td></tr>
+    <tr><td>7.3</td><td>LED-Verlustleistung bei Dauer-Ein</td><td>0,085 A · 1,35 V</td><td class="num">≤ 115 mW</td><td>P<sub>V</sub> = 160 mW bei 25 °C <span class="pill ok">ok</span>. Zulässige Umgebungstemperatur laut Derating-Kurve prüfen (Q1). Im Normalbetrieb (≤ 50 % Träger, kurze Rahmen) ein Bruchteil davon.</td></tr>
+    <tr><td>7.4</td><td>Vorwiderstand 27 Ω</td><td>I² · R = 0,085² · 27 (Dauer-Ein)</td><td class="num">≤ 0,2 W</td><td>0,6 W <span class="pill ok">ok</span>, in jedem Zustand</td></tr>
     <tr><td>7.5</td><td>Gate-Umschaltzeit</td><td>R6 · C<sub>iss</sub> ≈ 100 Ω · ~1,5–2 nF (C3 in Reihe vernachlässigbar)</td><td class="num">τ ≈ 0,2 µs, Flanke ≈ 0,5 µs</td><td>Bei D = 50 % (13 µs) unkritisch. Unter D ≈ 10 % verformt sich die Pulsform. <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.6</td><td>MOSFET Durchlass</td><td>V<sub>GS</sub> ≈ 4,6 V (7.7), I<sub>D</sub> ≤ 0,51 A (4 × 128 mA)</td><td class="num">R<sub>DS(on)</sub> ≤ Datenblattwert bei 4,5 V (wenige mΩ), P &lt; 5 mW</td><td>Garantierter Arbeitspunkt (Datenblatt-Spezifikation bei 4,5 V), nicht aus der typischen Kennlinie abgeleitet <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.7</td><td>Gate-Hub hinter Klemmdiode</td><td><b>gemessen:</b> High-Pegel Kanal 2 = 4,9 V (LAMPE2, 19.11.2026, Strip-Eingang angeschlossen) → 4,9 V − V<sub>F</sub>(D1) ≈ 0,25–0,3 V</td><td class="num">≈ 4,6 V</td><td>≥ 4,5 V <span class="pill ok">ok</span>. Die YULC hat einen 5-V-Pegelwandler. Bei 4,75 V Versorgung (−5 %) wären es ≈ 4,45 V. Dort liegt der MOSFET bei V<sub>GS(th)</sub> ≤ 2,35 V weiterhin tief im eingeschalteten Bereich, der Strom (≤ 0,51 A) ist sehr klein gegenüber dem Nennstrom. Das wird als ausreichend bewertet (R11). Ohne Schottky (1N4148, 0,7 V) nur ≈ 4,2 V.</td></tr>
-    <tr><td>7.8</td><td>Abschaltzeit bei Dauer-High</td><td>t = τ · ln(4,6 / 1,35), τ = 10 kΩ · 100 nF</td><td class="num">≈ 1,2 ms</td><td>Einzelpuls 1,2 ms × 128 mA unkritisch (I<sub>FSM</sub> 1,5 A bei 100 µs) <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.6</td><td>MOSFET Durchlass</td><td>V<sub>GS</sub> ≥ 4,5 V (Abnahme T3), I<sub>D</sub> ≤ 0,34 A (4 × 85 mA)</td><td class="num">R<sub>DS(on)</sub> ≤ Datenblattwert bei 4,5 V (wenige mΩ), P &lt; 2 mW</td><td>Garantierter Arbeitspunkt (Datenblatt-Spezifikation bei 4,5 V), nachgewiesen durch Messung T3 <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.7</td><td>Gate-Hub hinter Klemmdiode</td><td>High-Pegel Kanal 2 gemessen 4,9 V (LAMPE2, Strip-Eingang angeschlossen) − V<sub>F</sub>(D1) ≈ 0,25–0,3 V</td><td class="num">≈ −0,3 … +4,6 V</td><td>Reserve zur 4,5-V-Spezifikation nur ≈ 0,1 V. Der Pegel folgt der 5-V-Versorgung des Pegelwandlers, deshalb Abnahme unter Volllast (T3, R10). Ohne Schottky (1N4148, 0,7 V) nur ≈ 4,2 V. <span class="pill warn">Messung</span></td></tr>
+    <tr><td>7.8</td><td>Abschaltzeit bei Dauer-High</td><td>t = τ · ln(4,6 / 1,35), τ = 10 kΩ · 100 nF</td><td class="num">≈ 1,2 ms</td><td>Verhindert ungewolltes Leuchten. Für die LED-Sicherheit nicht nötig (7.2). <span class="pill ok">ok</span></td></tr>
     <tr><td>7.9</td><td>Dachschräge im Träger</td><td>t<sub>high</sub> / τ = 13 µs / 1 ms</td><td class="num">1,3 %</td><td>auch bei Z5U-Toleranz (−56 %: τ ≥ 0,44 ms → 3 %) <span class="pill ok">ok</span></td></tr>
     <tr><td>7.10</td><td>Strom durch D1 und Pegelwandler</td><td>4,9 V / 100 Ω (kurzer Umladestoß)</td><td class="num">≤ 49 mA Spitze</td><td>BAT 85: 200 mA. Pegelwandler: kurzzeitige Umladung, Mittelwert klein <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.11</td><td>Spannungsabfall an R5 (1 Ω)</td><td>Mittelstrom während Rahmen ca. 0,1–0,25 A</td><td class="num">0,1–0,25 V</td><td>Strangstrom sinkt um ca. 5–10 %. Bei Versorgung direkt von der YULC durch Brücke ersetzen. <span class="pill info">info</span></td></tr>
-    <tr><td>7.12</td><td>Leistung R5 (Dauerträger, 4 Stränge)</td><td>I<sub>eff</sub>² · R = (0,51 A)² · 0,5 · 1 Ω</td><td class="num">0,13 W</td><td>0,6 W <span class="pill ok">ok</span></td></tr>
-    <tr><td>7.13</td><td>Pufferung C2</td><td>Ladung pro Trägerpuls 0,51 A · 13 µs = 6,6 µC → ΔU = Q / C</td><td class="num">≈ 14 mV</td><td>glättet die 38 kHz. Über einen ganzen Rahmen trägt die Zuleitung den Mittelstrom (τ = R5·C2 = 0,47 ms). <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.11</td><td>Spannungsabfall an R5 (1 Ω)</td><td>Mittelstrom während Rahmen ca. 0,08–0,16 A</td><td class="num">0,08–0,16 V</td><td>Strangstrom sinkt um ca. 5 %. Bei Versorgung direkt von der YULC durch Brücke ersetzen. <span class="pill info">info</span></td></tr>
+    <tr><td>7.12</td><td>Leistung R5 (Dauer-Ein, 4 Stränge)</td><td>I² · R = (0,34 A)² · 1 Ω</td><td class="num">0,12 W</td><td>0,6 W <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.13</td><td>Pufferung C2</td><td>Ladung pro Trägerpuls 0,34 A · 13 µs = 4,4 µC → ΔU = Q / C</td><td class="num">≈ 9 mV</td><td>glättet die 38 kHz. Über einen ganzen Rahmen trägt die Zuleitung den Mittelstrom (τ = R5·C2 = 0,47 ms). <span class="pill ok">ok</span></td></tr>
+    <tr><td>7.14</td><td>MOSFET bei zu schwacher Gate-Spannung</td><td>ungünstigster Arbeitspunkt im linearen Bereich: P<sub>max</sub> = U² / (4 · R<sub>Last</sub>), R<sub>Last</sub> = 27 Ω / 4 (ohne V<sub>F</sub>, pessimistisch)</td><td class="num">≤ 0,93 W Spitze, ≤ 0,46 W bei 50 %</td><td>TO-220 ohne Kühlkörper (R<sub>thJA</sub> ≈ 62 K/W, gegenprüfen): ≈ +30 K. Folge ist nur weniger IR-Leistung, kein Sicherheitsproblem. <span class="pill ok">ok</span></td></tr>
   </table></div>
 </section>
 
@@ -311,14 +312,16 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>Zustand am Eingang DATA</th><th>Ursache</th><th>Wirkung</th><th>Bewertung</th></tr>
     <tr><td>Low</td><td>Normalbetrieb, Ruhe</td><td>Gate 0 V, LEDs aus</td><td><span class="pill ok">sicher</span></td></tr>
     <tr><td>Offen / hochohmig</td><td>Reset, Bootloader, ESP32 stromlos, Kabel ab</td><td>R7 hält das Gate auf 0 V</td><td><span class="pill ok">sicher</span></td></tr>
-    <tr><td>Dauer-High</td><td>Pegelwandler mit offenem Eingang, Flashen, Absturz, Softwarefehler</td><td>C3 sperrt Gleichspannung; LEDs nach ≤ 1 ms aus</td><td><span class="pill ok">sicher</span></td></tr>
-    <tr><td>Träger 38 kHz, 50 %, endlos</td><td>Softwarefehler (Timer-ISR hängt mit aktivem Träger)</td><td>LEDs mit ≤ 64 mA im Mittel (7.2)</td><td><span class="pill ok">sicher</span> deutlich unter 100 mA Dauerlimit</td></tr>
-    <tr><td>Schnelles Rechteck mit hohem Tastverhältnis (z. B. 90 %)</td><td>Theoretisch: schwingender Pegelwandler bei offenem Eingang</td><td>Würde durchgekoppelt, Mittelstrom bis ≈ 115 mA</td><td><span class="pill info">sehr unwahrscheinlich</span> Prüfung siehe 14, T3</td></tr>
-    <tr><td>Doppelfehler: C3 kurzgeschlossen <i>und</i> Dauer-High</td><td>Keramik-C fällt als Kurzschluss aus und der Ausgang liefert gleichzeitig Dauer-High</td><td>Gleichstrom bis ≈ 128 mA je Strang</td><td><span class="pill warn">bewusst akzeptiert</span> Doppelfehler. Voll gleichstromfest erst mit 27 Ω (Reichweite ca. −37 %).</td></tr>
+    <tr><td>Dauer-High</td><td>Pegelwandler mit offenem Eingang, Flashen, Absturz, Softwarefehler</td><td>C3 sperrt Gleichspannung; LEDs nach ≤ 1,2 ms aus</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Träger 38 kHz, 50 %, endlos</td><td>Softwarefehler (Timer-ISR hängt mit aktivem Träger)</td><td>LEDs mit ≤ 43 mA im Mittel</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Schnelles Rechteck mit beliebigem Tastverhältnis (bis 100 %)</td><td>schwingender Pegelwandler bei offenem Eingang</td><td>wird durchgekoppelt, LEDs mit ≤ 85 mA im Mittel (7.2)</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>C3 kurzgeschlossen, dazu Dauer-High</td><td>Keramik-C fällt als Kurzschluss aus</td><td>MOSFET dauerhaft ein, LEDs mit ≤ 85 mA Gleichstrom</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>MOSFET Drain–Source durchlegiert</td><td>Bauteildefekt</td><td>LEDs dauerhaft ein mit ≤ 85 mA</td><td><span class="pill ok">sicher</span></td></tr>
+    <tr><td>Gate-Spannung zu niedrig (&lt; 4,5 V)</td><td>5-V-Versorgung unter Last abgesunken</td><td>MOSFET nicht voll durchgeschaltet, weniger IR-Leistung, MOSFET ≤ 0,46 W (7.14)</td><td><span class="pill ok">sicher</span> Leistungseinbuße, Abnahme T3</td></tr>
     <tr><td>Kurzschluss DATA nach 5 V oder GND</td><td>Verkabelungsfehler</td><td>R6 begrenzt; Gleichspannung wird gesperrt</td><td><span class="pill ok">sicher</span></td></tr>
     <tr><td>Verpolte Versorgung</td><td>falscher Stecker</td><td>Elko C2 gefährdet, LEDs sperren (V<sub>R</sub> 5 V)</td><td><span class="pill warn">mechanisch verhindern</span> verpolsicherer JST-XH</td></tr>
   </table></div>
-  <div class="box ok">Die Firmware muss den Pin beim Booten nicht in einen bestimmten Zustand bringen. Die Hardware ist für Low, offen und Dauer-High sicher. Ein Bit entsteht ausschließlich durch den 38-kHz-Träger.</div>
+  <div class="box ok"><b>Zwei unabhängige Sicherungsebenen.</b> 1. Die 27-Ω-Vorwiderstände halten die LEDs in <i>jedem</i> Zustand des MOSFET (aus, getaktet, dauerhaft ein, defekt) unter dem Dauerlimit. 2. C3/R7/D1 sorgen dafür, dass bei Low, offenem Eingang und Dauer-High gar nichts leuchtet. Die Firmware muss den Pin beim Booten nicht in einen bestimmten Zustand bringen. Ein Bit entsteht ausschließlich durch den 38-kHz-Träger.</div>
 </section>
 
 <!-- 9 -->
@@ -342,7 +345,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>Pos.</th><th>Ref.</th><th>Bauteil</th><th>Reichelt-Nr.</th><th class="num">je Platine</th><th class="num">Menge gesamt</th><th class="num">Stückpreis</th><th>Bezug</th></tr>
     <tr><td>1</td><td>LED1a–LED4b</td><td>IR-LED 940 nm, 34° (±17°), 5 mm, Vishay TSAL6200</td><td class="mono">TSAL6200</td><td class="num">8</td><td class="num">20</td><td class="num">0,20 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>2</td><td>Q1</td><td>N-MOSFET Logic-Level, 30 V, TO-220AB, IRLB8748PBF</td><td class="mono">IRLB8748PBF</td><td class="num">1</td><td class="num">3</td><td class="num">0,86 €</td><td><span class="pill info">Reichelt</span></td></tr>
-    <tr><td>3</td><td>R1–R4</td><td>Metallschicht 18 Ω, 0207, 0,6 W, 1 %</td><td class="mono">METALL 18,0</td><td class="num">4</td><td class="num">10</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
+    <tr><td>3</td><td>R1–R4</td><td>Metallschicht 27 Ω, 0207, 0,6 W, 1 %</td><td class="mono">METALL 27,0</td><td class="num">4</td><td class="num">10</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>4</td><td>R6</td><td>Metallschicht 100 Ω, 0207, 0,6 W</td><td class="mono">METALL 100</td><td class="num">1</td><td class="num">3</td><td class="num">0,09 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>5</td><td>R7</td><td>Metallschicht 10 kΩ, 0207, 0,6 W</td><td class="mono">METALL 10,0K</td><td class="num">1</td><td class="num">3</td><td class="num">0,07 €</td><td><span class="pill info">Reichelt</span></td></tr>
     <tr><td>6</td><td>R5</td><td>Metallschicht 1 Ω, 0207, 0,6 W (oder Drahtbrücke)</td><td class="mono">METALL 1,00</td><td class="num">1</td><td class="num">3</td><td class="num">0,08 €</td><td><span class="pill info">Reichelt</span></td></tr>
@@ -395,7 +398,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
         <tr><th>Ref.</th><th>Wert</th><th>Löcher</th></tr>
         <tr><td>LED1a–4a</td><td>TSAL6200</td><td class="pos">Anode B6/12/18/24 · Kathode C</td></tr>
         <tr><td>LED1b–4b</td><td>TSAL6200</td><td class="pos">Anode C9/15/21/27 · Kathode D</td></tr>
-        <tr><td>R1–R4</td><td>18 Ω</td><td class="pos">D10/16/22/28 → E, stehend</td></tr>
+        <tr><td>R1–R4</td><td>27 Ω</td><td class="pos">D10/16/22/28 → E, stehend</td></tr>
         <tr><td>R5</td><td>1 Ω / Brücke</td><td class="pos">B38 → C38, stehend</td></tr>
         <tr><td>R6</td><td>100 Ω</td><td class="pos">D40 → D44, liegend</td></tr>
         <tr><td>R7</td><td>10 kΩ</td><td class="pos">D33 → F33, stehend</td></tr>
@@ -417,7 +420,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li>Platine zuschneiden: 45 Löcher lang, mindestens 8 Streifen hoch.</li>
     <li>11 Unterbrechungen bohren (Lötseite, gespiegelte Ansicht). Mit dem Durchgangsprüfer kontrollieren.</li>
     <li>Drahtbrücken Br1 (isoliert) und Br2.</li>
-    <li>R1–R4 (18 Ω), R5 (1 Ω oder Brücke), R6 liegend über D42, R7 stehend über E33 nach F33.</li>
+    <li>R1–R4 (27 Ω), R5 (1 Ω oder Brücke), R6 liegend über D42, R7 stehend über E33 nach F33.</li>
     <li>D1 stehend: Ring (Kathode) in D34, Anode über E34 nach F34.</li>
     <li>C1, C3 (C3 liegend über D36, Beine auf 5,08 mm), C2 mit Minus auf A4.</li>
     <li>Q1 stehend in Spalte 31 (G D31, D E31, S F31), Fahne frei.</li>
@@ -460,7 +463,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <li>Der Träger ist nur innerhalb eines laufenden Rahmens aktiv. Nach Rahmenende wird er hart abgeschaltet.</li>
     <li>Watchdog: Ist der Träger länger als 100 ms ununterbrochen aktiv, wird er aus der Hauptschleife zwangsweise abgeschaltet.</li>
     <li>Sendezeit-Budget: höchstens ca. 30 % Sendezeit pro Sekunde. Damit bleiben die LEDs auch thermisch deutlich unter dem Limit aus 7.3.</li>
-    <li>Diese Maßnahmen ergänzen die Hardware-Absicherung (8), sie ersetzen sie nicht. Für die Sicherheit der LEDs sind sie nicht nötig (18 Ω, 7.2). Sie verhindern nur unnötige Sendezeit.</li>
+    <li>Diese Maßnahmen ergänzen die Hardware-Absicherung (8), sie ersetzen sie nicht. Für die Sicherheit der LEDs sind sie nicht nötig (27 Ω, 7.2). Sie verhindern nur unnötige Sendezeit.</li>
   </ul>
   <h3>13.6 Dokumentation bei Umsetzung</h3>
   <p>Gemäß Projektregeln mitziehen: <code>README.md</code> (Geräte, Dateien, YAML-Schlüssel), deutsche Inline-Kommentare, <code>docs/Song-Workflow.html</code> / Skill <code>new-song</code> (neuer Schlüssel), diese Datei.</p>
@@ -473,14 +476,14 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>ID</th><th>Test</th><th>Aufbau</th><th>Erwartung / Abnahme</th></tr>
     <tr><td>T1</td><td>Messungen ohne LEDs</td><td>Multimeter</td><td>Werte aus 12, Schritt 9</td></tr>
     <tr><td>T2</td><td>Dauer-High-Sicherheit</td><td>DATA über 1 kΩ an 5 V</td><td>LEDs aus, Drain ≈ 5 V</td></tr>
-    <tr><td>T3</td><td>Verhalten des Kanal-2-Ausgangs</td><td>a) Pegel mit Testprogramm (GPIO 2 = High/Low) · b) Oszilloskop oder Multimeter: Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) High ≥ 4,75 V (LAMPE2: 4,9 V gemessen; LAMPE1 bei Inbetriebnahme) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt</td></tr>
+    <tr><td>T3</td><td>Gate-Ansteuerung und Verhalten des Kanal-2-Ausgangs</td><td>a) am aufgebauten Sender, beide Lampen, <b>LED-Strips auf Vollweiß</b> (minimale 5-V-Versorgung): mit Oszilloskop Spitzenwert V<sub>GS</sub> an Q1 (D31 gegen F31) während des Trägers; ohne Oszilloskop: Testprogramm DATA = High, Spannung an J1 DATA messen, minus V<sub>F</sub>(D1) aus dem Diodentest · b) Einschalten, Flashen per USB, BOOT gedrückt</td><td>a) <b>V<sub>GS</sub> ≥ 4,5 V</b> (Referenz: LAMPE2 ohne Last 4,9 V an DATA) · b) kein schnelles Schwingen am Ausgang; statisches High ist erlaubt. Wird a) nicht erreicht: IRLML6344 statt IRLB8748 (R<sub>DS(on)</sub> bei 2,5 V spezifiziert).</td></tr>
     <tr><td>T4</td><td>Signalform</td><td>TSOP 38238 an zweitem Controller, Ausgabe dekodieren (Python-Decoder der Quelle)</td><td>Rahmen fehlerfrei dekodiert, Prüfsumme korrekt</td></tr>
     <tr><td>T5</td><td>Band-Reaktion</td><td>3–5 Bänder des Einsatzmodells, 1 m Abstand</td><td>Farbe, Hüllkurve und Chance wie befohlen</td></tr>
     <tr><td>T6</td><td>Reichweite und Abdeckung</td><td>eine Lampe, Band in 6 m seitlich und abgewandt, Duty 50 % / 25 % / 10 %</td><td>Zuverlässiger Empfang bei 50 % in 6 m. Gewählter Duty-Wert dokumentiert.</td></tr>
     <tr><td>T7</td><td>Zwei Sender</td><td>beide Lampen, Band in der Mitte, Zeitschlitze an/aus</td><td>Ohne Schlitze Ausfälle, mit Schlitzen sicherer Empfang. Kein störendes Doppelblitzen.</td></tr>
     <tr><td>T8</td><td>Timing zum Beat</td><td>Testsong mit Klick, Video mit hoher Bildrate</td><td>Blitz der Bänder liegt innerhalb ±1 Frame (bei 60 fps) am Beat</td></tr>
     <tr><td>T9</td><td>Rückwirkung auf die LED-Show</td><td>volle Show mit IR-Befehlen</td><td>Kein Ruckeln der Effekte, kein Flackern der Strips, ESP-NOW-Sync unverändert</td></tr>
-    <tr><td>T10</td><td>Thermik</td><td>Dauerträger 60 s (Fehlerfall) und typischer Song</td><td>LEDs und Widerstände handwarm. Kein Defekt.</td></tr>
+    <tr><td>T10</td><td>Thermik</td><td>Dauer-Ein 60 s (DATA-Kette überbrückt, Gate fest auf 5 V) und typischer Song</td><td>LEDs und Widerstände handwarm. Kein Defekt. Strangstrom ≤ 85 mA.</td></tr>
   </table></div>
 </section>
 
@@ -491,15 +494,15 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     <tr><th>#</th><th>Punkt</th><th>Art</th><th>Umgang</th></tr>
     <tr><td>R1</td><td>Protokoll stammt aus Reverse Engineering, nicht offiziell. Bitzeit „ca. 700 µs“ nicht genau spezifiziert.</td><td><span class="pill warn">Annahme</span></td><td>Bitzeit aus dem Arduino-Sender der Quelle übernehmen, mit T4/T5 verifizieren</td></tr>
     <tr><td>R2</td><td>Modell und Firmware der eingesetzten Bänder unbekannt</td><td><span class="pill warn">offen</span></td><td>Bänder beschaffen, T5</td></tr>
-    <tr><td>R3</td><td>Empfindlichkeit des Band-Empfängers unbekannt (0,1–0,3 mW/m² angenommen)</td><td><span class="pill warn">Annahme</span></td><td>T6, Strang 4 als Reserve</td></tr>
+    <tr><td>R3</td><td>Empfindlichkeit des Band-Empfängers unbekannt (0,1–0,3 mW/m² angenommen)</td><td><span class="pill warn">Annahme</span></td><td>T6. Untere Reserve in 6 m nur Faktor 4 (3.1). Bei Bedarf mehr LEDs auf die hinteren Reihen ausrichten.</td></tr>
     <tr><td>R4</td><td>Datenblattwerte TSAL6200 / IRLB8748 / BAT 85 aus dem Gedächtnis</td><td><span class="pill warn">gegenprüfen</span></td><td>Prüfpunkte Q1–Q3</td></tr>
     <tr><td>R5</td><td>Doppelte Ausführung eines Befehls in der Überlappungszone</td><td><span class="pill info">zu testen</span></td><td>T7. Ggf. nur eine Lampe für Effekte mit kurzer Hüllkurve.</td></tr>
     <tr><td>R6</td><td>Halogen-Bühnenlicht (IR-Anteil) senkt die Empfangsempfindlichkeit</td><td><span class="pill info">Umgebung</span></td><td>Am Spielort testen. Duty-Reserve.</td></tr>
     <tr><td>R7</td><td>Jitter der Bit-ISR durch WiFi/ESP-NOW und FastLED</td><td><span class="pill info">zu testen</span></td><td>T4 unter Last (volle Show)</td></tr>
     <tr><td>R8</td><td>Rechtliches: Ansteuerung fremder Bänder, die das Publikum mitbringt bzw. die verteilt werden</td><td><span class="pill info">organisatorisch</span></td><td>Nur eigene bzw. von der Band verteilte Bänder ansteuern</td></tr>
-    <tr><td>R9</td><td>Doppelfehler C3-Kurzschluss + Dauer-High (8)</td><td><span class="pill warn">akzeptiert</span></td><td>Doppelfehler; Alternative 27 Ω kostet ca. 37 % Reichweite</td></tr>
-    <tr><td>R10</td><td>IRLB8748PBF abgekündigt</td><td><span class="pill info">akzeptiert</span></td><td>nur 2 Platinen, Teile vorrätig (1 Reserve)</td></tr>
-    <tr><td>R11</td><td>Gate-Spannung hängt am 5-V-Pegel der YULC; bei 4,75 V Versorgung ≈ 4,45 V statt 4,5 V</td><td><span class="pill info">bewertet</span></td><td>Bewertung in 7.7; Messung an beiden Lampen (T3)</td></tr>
+    <tr><td>R9</td><td>IRLB8748PBF abgekündigt</td><td><span class="pill info">akzeptiert</span></td><td>nur 2 Platinen, Teile vorrätig (1 Reserve)</td></tr>
+    <tr><td>R10</td><td>Gate-Spannung folgt der 5-V-Versorgung des YULC-Pegelwandlers, Reserve zur 4,5-V-Spezifikation nur ≈ 0,1 V (7.7)</td><td><span class="pill warn">Messung</span></td><td>Abnahme T3 unter Volllast an beiden Lampen; sonst IRLML6344. Unterschreitung kostet nur Leistung (7.14).</td></tr>
+    <tr><td>R11</td><td>Zulässige Umgebungstemperatur der LEDs bei Dauer-Ein (115 mW)</td><td><span class="pill info">gegenprüfen</span></td><td>Derating-Kurve TSAL6200 (Q1), T10</td></tr>
   </table></div>
 </section>
 
@@ -507,11 +510,11 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
 <section id="qs">
   <h2>16 · Prüfpunkte</h2>
   <ol>
-    <li><b>Q1</b> TSAL6200-Datenblatt: I<sub>F</sub>, I<sub>FM</sub> (Bedingungen), I<sub>FSM</sub>, P<sub>V</sub> und Derating, V<sub>F</sub> bei 200 mA, I<sub>e</sub> und Halbwinkel. Trägt 7.1–7.3 und 3.1.</li>
-    <li><b>Q2</b> IRLB8748PBF: Pinbelegung, V<sub>GS(th)</sub>-Bereich, Transferkennlinie bei V<sub>GS</sub> = 2,6–3,0 V für I<sub>D</sub> = 0,8 A, C<sub>iss</sub>. Trägt 7.5–7.7.</li>
+    <li><b>Q1</b> TSAL6200-Datenblatt: I<sub>F</sub>, I<sub>FM</sub> (Bedingungen), I<sub>FSM</sub>, P<sub>V</sub> und Derating (zulässige Umgebungstemperatur bei 85 mA Dauerstrom), minimales V<sub>F</sub> bei 80–100 mA, I<sub>e</sub> und Halbwinkel. Trägt 7.1–7.3 und 3.1.</li>
+    <li><b>Q2</b> IRLB8748PBF: Pinbelegung, R<sub>DS(on)</sub>-Spezifikation bei V<sub>GS</sub> = 4,5 V, C<sub>iss</sub>, R<sub>thJA</sub>. Trägt 7.5, 7.6 und 7.14.</li>
     <li><b>Q3</b> BAT 85: V<sub>F</sub> bei kleinen Strömen, Sperrstrom (Einfluss auf R7-Messung). Trägt 7.7.</li>
     <li><b>Q4</b> Klemmschaltung C3/D1/R7: Funktion bei Burst-Beginn, im Burst und bei Dauer-High, Zeitkonstanten (7.8, 7.9, 8).</li>
-    <li><b>Q5</b> Restfehlerfälle aus 8: schnelles Rechteck mit hohem Tastverhältnis und der akzeptierte Doppelfehler R9.</li>
+    <li><b>Q5</b> Fail-safe-Nachweis (8): LED-Strom bei Dauer-Ein mit 27 Ω im ungünstigsten Fall (minimales V<sub>F</sub>, 5-V-Toleranz nach oben).</li>
     <li><b>Q6</b> Layout: Netze je Streifen gegen Schaltplan (11), Unterbrechungen, keine ungewollten Verbindungen über stehende Bauteile (R7, D1 überspringen E33/E34), Platz für TO-220 neben R7.</li>
     <li><b>Q7</b> Stückliste gegen Schaltplan und Layout (Referenzen, Mengen, Bauformen, Rastermaße).</li>
     <li><b>Q8</b> Protokollzusammenfassung (2) gegen die Quelle, insbesondere Byte-Reihenfolge (G, R, B), Bitreihenfolge, Kodiertabelle, Prüfsumme.</li>
@@ -663,7 +666,7 @@ Byte 3… Rumpf, 3 oder 6 Bytes, je nur die unteren 6 Bit genutzt</pre>
     [[80,'a'],[118,'b']].forEach(([y,n])=>{s+=`<path d="M${x-11},${y}L${x+11},${y}L${x},${y+20}Z" fill="var(--led)" stroke="${f}" stroke-width="1.4"/>`+ln(x-11,y+20,x+11,y+20,' stroke-width="2"')+
       `<path d="M${x+13},${y+6}l11,-7 M${x+13},${y+13}l11,-7" stroke="var(--n-v5in)" stroke-width="1.4"/><path d="M${x+24},${y-1}l-5,0 l2,4z M${x+24},${y+6}l-5,0 l2,4z" fill="var(--n-v5in)"/>`+
       tx(x-15,y+14,(i+1)+n,'end',10,m);});
-    s+=ln(x,100,x,118,da)+ln(x,138,x,160,da)+rv(x,160,40)+tx(x+12,178,'R'+(i+1),'start',10)+tx(x+12,191,'18 Ω','start',9,m)+ln(x,200,x,230,da)+dot(x,230)+`</g>`;});
+    s+=ln(x,100,x,118,da)+ln(x,138,x,160,da)+rv(x,160,40)+tx(x+12,178,'R'+(i+1),'start',10)+tx(x+12,191,'27 Ω','start',9,m)+ln(x,200,x,230,da)+dot(x,230)+`</g>`;});
   s+=ln(340,230,640,230)+tx(345,246,'DRAIN','start',9,'var(--n-drain)',600)+tx(450,30,'4 Stränge à 2 × TSAL6200','middle',10,m);
   s+=ln(640,230,640,255)+`<rect x="618" y="255" width="44" height="50" rx="3" fill="var(--surface)" stroke="${f}" stroke-width="1.6"/>`+tx(640,284,'Q1','middle',11,f,600)+
      tx(646,251,'D','start',9,m)+tx(646,318,'S','start',9,m)+tx(612,276,'G','end',9,m)+ln(640,305,640,340)+dot(640,340)+tx(668,276,'IRLB','start',9,m)+tx(668,288,'8748','start',9,m);
