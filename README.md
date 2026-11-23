@@ -90,6 +90,7 @@ LED-GIT_on_YULC/
 │   ├── brightnessCurve.h/cpp     # the knob's brightness steps (shared by knob and lamps)
 │   ├── lipoVoltageCheck.h/cpp    # battery monitoring
 │   ├── otaUpdate.h/cpp           # firmware update over WiFi
+│   ├── gurtTest.cpp              # stand-alone strap test (slow colour fade on both outputs), env gurttest only
 │   └── AiEsp32RotaryEncoder*     # third-party encoder library
 ├── test/test_ledSync/            # unit tests for the sync protocol (pio test -e native)
 ├── test/test_espNowFrame/        # unit tests for the ESP-NOW frame (pio test -e native)
@@ -122,6 +123,11 @@ pio device monitor -e andresgit
 ```
 
 Environments: `andresgit`, `rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`.
+
+Strap test: `pio run -e gurttest -t upload --upload-port COM8` flashes a stand-alone program instead of the show
+(endless slow colour fade on both outputs, strap and instrument, to spot a broken LED). Over the air: `python tools/build_ota.py
+--gurttest` puts it into `ota/andresgit/`. Back to the show: `python tools/build_ota.py andresgit`, then switch the
+guitar on with the knob held (the test program goes straight into update mode), or flash `andresgit` by USB.
 
 The legacy environment `esp32-s3-devkitc-1` takes the device from `src/definitions.h`, where exactly one device
 must be uncommented.

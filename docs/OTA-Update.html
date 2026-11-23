@@ -326,6 +326,14 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
   <li>Die Firmware kann <b>nur</b> das Gerät aktualisieren, für das sie gebaut wurde: <code>DEVICE_NAME</code> ist fest einkompiliert und bestimmt den Server-Ordner.</li>
 </ul>
 
+<h3 id="gurttest">Gurt-Testprogramm per OTA (<code>gurttest</code>)</h3>
+<p>Das Env <code>gurttest</code> baut statt der Show nur <code>src/gurtTest.cpp</code> + <code>otaUpdate.cpp</code>: ein endloser langsamer Farbverlauf auf beiden Ausgängen der Gitarre (Gurt <code>DATA_PIN_2</code> und Instrument <code>DATA_PIN_1</code>), um defekte LEDs zu finden. Kein Funk, kein MIDI.</p>
+<ul>
+  <li><b>Hin:</b> <code>python tools/build_ota.py --gurttest</code> legt das Testprogramm mit neuer Version als Firmware der Gitarre nach <code>ota/andresgit/</code> (in <code>version.json</code> steht <code>"env": "gurttest"</code>). Server starten, Gitarre mit gedrücktem Knopf einschalten wie in Kap. 4. Die anderen Geräte haben nichts Neueres auf dem Server und starten normal weiter.</li>
+  <li><b>Zurück:</b> <code>python tools/build_ota.py andresgit</code> (neuere Version), Server starten, Gitarre mit gedrücktem Knopf einschalten: das Testprogramm geht <b>direkt</b> in den Update-Modus (ohne Warten auf Clients, es hat keinen Funk) und lädt die Show. Alternativ per USB <code>pio run -e andresgit -t upload --upload-port COM8</code>.</li>
+  <li>Die Show-Firmware, die vorher in <code>ota/andresgit/</code> lag, sichert die Backup-Frage wie gewohnt.</li>
+</ul>
+
 <h2 id="ble">9 · Funk-Protokoll</h2>
 <p>Struktur <code>BLEmessage</code> (<code>ledSync.h</code>), 3 Bytes, gepackt: <code>msgType</code>, <code>songID</code>, <code>part</code>. Die Nachrichtentypen haben Namen (<code>enum LedSyncMsg</code>); was auf welche Nachricht folgt, entscheidet allein das Abgleich-Modul <code>src/ledSync.cpp</code>. Ausgeführt wird es in <code>syncProxy.cpp</code> / <code>syncClient.cpp</code>, die Bytes bewegt der Funk-Adapter (<code>syncTransport.h</code>). Getestet wird es am PC mit <code>pio test -e native</code> (<code>test/test_ledSync/</code>, <code>test/test_espNowFrame/</code>).</p>
 <div class="tablewrap"><table>
@@ -384,7 +392,8 @@ OTA: FEHLER - http://192.168.137.1:8080/lampe1/version.json -> HTTP -1 -> Neusta
 <tr><td><code>src/definitions.h</code></td><td>Fallback-Geräteauswahl, <code>DEVICE_NAME</code> je Gerät, <code>ROTARY_ENCODER_BUTTON_PIN</code>, <code>anz_LEDs</code>, Funkweg <code>SYNC_VIA_…</code>, <code>ESPNOW_…</code>-Einstellungen inkl. <code>ESPNOW_PROXY_MAC</code></td></tr>
 <tr><td><code>platformio.ini</code></td><td><code>[esp32_base]</code>, Geräte-Envs, <code>extra_scripts = pre:tools/fw_version.py</code></td></tr>
 <tr><td><code>tools/fw_version.py</code></td><td>Setzt <code>FW_VERSION</code> / <code>FW_GIT</code> für <code>otaUpdate.cpp</code></td></tr>
-<tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, Backup-Frage, <code>--restore</code>, HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
+<tr><td><code>tools/build_ota.py</code></td><td>Baut alle Geräte-Envs, schreibt <code>ota/</code>, Backup-Frage, <code>--restore</code>, <code>--gurttest</code> (Gurt-Test als Gitarren-Firmware, Kap. 8), HTTP-Server (<code>--serve</code>, <code>--serve-only</code>)</td></tr>
+<tr><td><code>src/gurtTest.cpp</code></td><td>Gurt-Testprogramm (Env <code>gurttest</code>), eigenes <code>setup()</code>/<code>loop()</code>; Knopf beim Einschalten → <code>otaRun()</code> (Rückweg zur Show)</td></tr>
 <tr><td><code>ota/&lt;gerät&gt;/</code></td><td>Build-Ausgabe: <code>firmware.bin</code> + <code>version.json</code>. <b>Gitignored</b></td></tr>
 <tr><td><code>ota/backup/&lt;JJJJ-MM-TT&gt;/&lt;gerät&gt;/</code></td><td>Gesicherte frühere Stände (s. Kap. 7). <b>Gitignored</b>, nur lokal</td></tr>
 </table></div>

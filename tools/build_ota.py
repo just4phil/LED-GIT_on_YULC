@@ -7,6 +7,8 @@ build_ota.py - baut die Firmware für alle Geräte und legt sie für das OTA-Upd
     python tools/build_ota.py --serve          # bauen + HTTP-Server auf Port 8080 starten
     python tools/build_ota.py --serve-only     # nur den Server starten (ohne neu zu bauen)
     python tools/build_ota.py --restore 2026-09-28   # Backup wieder ausliefern (mit neuer Version)
+    python tools/build_ota.py --gurttest       # Gurt-Testprogramm (src/gurtTest.cpp) als Firmware der Gitarre ablegen
+                                               # zurück zur Show: python tools/build_ota.py andresgit
 
 Vor dem Bauen fragt das Skript, ob der bisherige Stand aus ota/ gesichert werden soll
 (-> ota/backup/<JJJJ-MM-TT>/, bei mehreren am selben Tag _2, _3, ...).
@@ -125,29 +127,34 @@ def restore(name):
 
 
 # Firmware für die genannten Geräte bauen und mit version.json in ota/<gerät>/ ablegen.
-def build(devices):
+# envs: optional eine andere PlatformIO-Umgebung je Gerät, z.B. {"andresgit": "gurttest"} = das Gurt-Testprogramm
+# wird gebaut, landet aber im Ordner der Gitarre (die Gitarre fragt beim Update nur ihren Ordner ab).
+def build(devices, envs=None):
+    envs = envs or {}
     version = str(int(time.time()))             # Versionsnummer = jetzige Zeit in Sekunden seit 1970
     # Die Version wird als Umgebungsvariable an PlatformIO übergeben; tools/fw_version.py liest sie beim Bauen
     # aus und trägt sie in die Firmware ein. So bekommen alle Geräte dieses Laufs dieselbe Nummer.
     env = dict(os.environ, FW_VERSION=version)
     cmd = [find_pio(), "run"]
     for d in devices:
-        cmd += ["-e", d]
-    print(f"Baue {', '.join(devices)} mit FW_VERSION={version} ...")
+        cmd += ["-e", envs.get(d, d)]
+    print(f"Baue {', '.join(envs.get(d, d) for d in devices)} mit FW_VERSION={version} ...")
     if subprocess.call(cmd, cwd=ROOT, env=env) != 0:
         sys.exit("Build fehlgeschlagen - nichts abgelegt")
 
     git = git_hash()
     for d in devices:
-        src = ROOT / ".pio" / "build" / d / "firmware.bin"
+        src = ROOT / ".pio" / "build" / envs.get(d, d) / "firmware.bin"
         data = src.read_bytes()
         out = OTA_DIR / d
         out.mkdir(parents=True, exist_ok=True)
         (out / "firmware.bin").write_bytes(data)
         # md5 = Prüfsumme der Datei: das Gerät rechnet sie nach dem Laden nach und verwirft eine beschädigte Datei
         info = {"version": int(version), "git": git, "md5": hashlib.md5(data).hexdigest(), "size": len(data)}
+        if d in envs:
+            info["env"] = envs[d]               # nur zur Info: hier liegt nicht die Show, sondern z.B. der Gurt-Test
         (out / "version.json").write_text(json.dumps(info, indent=1) + "\n", encoding="utf-8")
-        print(f"  {d:13s} {len(data) / 1024:7.0f} KB  -> ota/{d}/")
+        print(f"  {d:13s} {len(data) / 1024:7.0f} KB  -> ota/{d}/" + (f"  ({envs[d]})" if d in envs else ""))
 
 
 # Die Netzwerk-Adressen dieses Rechners (ohne 127.x.x.x = "nur ich selbst") - eine davon muss als OTA_SERVER
@@ -186,6 +193,8 @@ def main():
     ap.add_argument("--serve", action="store_true", help="nach dem Bauen den HTTP-Server starten")
     ap.add_argument("--serve-only", action="store_true", help="nur den HTTP-Server starten")
     ap.add_argument("--restore", metavar="ORDNER", help="Backup aus ota/backup/<ORDNER> ausliefern statt zu bauen")
+    ap.add_argument("--gurttest", action="store_true",
+                    help="Gurt-Testprogramm (Env gurttest) als Firmware der Gitarre nach ota/andresgit/ legen")
     grp = ap.add_mutually_exclusive_group()
     grp.add_argument("--backup", dest="backup", action="store_true", default=None, help="vorher ohne Frage sichern")
     grp.add_argument("--no-backup", dest="backup", action="store_false", help="vorher nicht sichern, nicht fragen")
@@ -194,7 +203,10 @@ def main():
     if unknown:
         ap.error(f"unbekanntes Gerät: {', '.join(unknown)} (möglich: {', '.join(DEVICES)})")
 
-    if args.restore:
+    if args.gurttest:
+        maybe_backup(args.backup)
+        build(["andresgit"], {"andresgit": "gurttest"})
+    elif args.restore:
         maybe_backup(args.backup)
         restore(args.restore)
     elif not args.serve_only:
