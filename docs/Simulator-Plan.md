@@ -169,7 +169,7 @@ Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umset
 | #22 | Gitarre und Bass mit Gurt | #20 | erledigt (25.11.2026) | `build_sim.py` baut `sim_andresgit.dll` / `sim_rinasbass.dll`; Schnittstelle **Version 2** (`SimInfo` + `headTipIdx`, `loopDir`, `strapPinPos`, `zoneNeckUpStart`, `zoneHeadUpStart`, `bundMin`, `bundMax`). showview: `shape.rs` (SG-Kontur aus `guitarShapeFX.cpp`, LEDs gleichmäßig auf der Kontur wie `initGuitarShape()`, Gurt als Bezier-Kurve), `stage.rs` für drei Geräte auf gemeinsamer Uhr (Bass links, Matrix Mitte, Gitarre rechts, ein Maßstab, fehlende DLL = Gerät fehlt, Rest läuft), Farbkorrektur TypicalLEDStrip (255/176/240) in der Anzeige für alle Geräte (Schalter). **Annahmen:** Ausrichtung wie Foto/Vorschau (Kopf oben rechts, Rechtshänder von vorn); Bass = dieselbe Kontur mit 155 LEDs und umgerechneten Zonen; Gurt = die ersten 60 LEDs von `leds2` (Firmware sendet auf beiden Ausgängen LEDS_OUT = anz_LEDs), LED 0 am oberen Gurtpin, Kurve über die Schulter am Korpus vorbei zum unteren Pin (keine Messung); Matrix-LED-Abstand = LED-Abstand der Kontur (Rastergröße unbekannt); Marker haben nur Pegel ~7/255 -> in "aufgehellt" auf feste Sichtbarkeit angehoben + Ring (Griffbrett = Bund_min..Bund_max-1). Zeit-Test grün für alle 3 DLLs (26 Songs, Abweichung 0 ms). Nächster Schritt: #23 / #24. Commit siehe Git-Log |
 | #23 | Lampen | #20 | erledigt (25.11.2026) | `build_sim.py` baut zusätzlich `sim_lampe1.dll` / `sim_lampe2.dll`; Schnittstelle **Version 3** (`SimInfo` + `lampIdx0AtBottom` = `LAMP_IDX0_AT_BOTTOM`, damit showview das Ende von LED 0 nicht raten muss). showview `stage.rs`: `Kind::Lamp`, zwei parallele senkrechte Reihen (Abstand 1,6 LED-Abstände), Anordnung Lampe 1 | Bass | Matrix | Gitarre | Lampe 2, gleicher Maßstab (Lampe 1 = 94 x LED-Abstand hoch, Lampe 2 = 78). **Annahmen:** beide Reihen zeigen **Ausgang 1** (`leds1`): bei Lampen (NOMARKER) kopiert `gitBlindingLEDs_OFF_MarkerLEDs_ON()` dasselbe Bild nach `leds1` und `leds2`, die Wahl ändert nichts; Reihenabstand 1,6 und Gehäuse = Annahme (echtes Maß unbekannt); `REMOTE_BRIGHTNESS` nicht nachgebildet. **Abweichung vom Issue:** Warn-LEDs "kein Funk" in Song 0 entfallen im Simulator (Entscheidung #20: Funk gilt als verbunden), die Richtung ist über `LAMP_IDX0_AT_BOTTOM` aus der DLL bestimmt (dasselbe Makro benutzen `fxPipeline.cpp`/`scenes.cpp`/`markerLEDs.cpp`). Prüfung: Maniac "drums intro" zeigt Blinder abwechselnd auf Lampe 1 und Lampe 2, beide Reihen gleich. Zeit-Test grün für alle 5 DLLs (26 Songs, 0 ms), Smoke-Test 5/5. `src/` unverändert. Bekannt: in sehr kleinem Fenster überlappen die Beschriftungen "Lampe 1" / "Bass" (gehört zu #24). Nächster Schritt: #24. Commit siehe Git-Log |
 | #24 | Bühne komplett (Anordnung, Skalierung, Bedienung) | #22, #23 | offen | |
-| #25 | MIDI-Eingang (Stufe 4) | #20 | offen | |
+| #25 | MIDI-Eingang (Stufe 4) | #20 | erledigt (25.11.2026) | Siehe unten "MIDI-Eingang (#25)". Nächster Schritt: #24 (Pause/Tempo ausgrauen bei aktivem MIDI), dann #26. Commit siehe Git-Log |
 | LP16-Tool #16 | Zweiter MIDI-Ausgang (Stufe 5, Repo Cymatic-uTool-for-LP-16, Branch `feature/second-midi-port`) | - | offen | |
 | #26 | Anleitung docs/Simulator.html, Doku-Abschluss (Stufe 6) | #24, #25, LP16 #16 | offen | |
 
@@ -185,3 +185,29 @@ Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umset
   steckt in `show()`; Wechsel wird erst danach bemerkt). Das ist gewollte Eigenschaft der Firmware: der Verspätungsausgleich in
   `showEngine_step()` schreibt die Verspätung dem neuen Part gut, so dass die Part-Uhr stimmt und sich nichts summiert; nur
   der Bildinhalt des ersten Bildes kommt entsprechend später. Bei den handgeschriebenen Songs gibt es diesen Ausgleich nicht.
+
+## MIDI-Eingang (#25)
+
+`tools/showview/src/midi_in.rs` (`midir`), eingebunden in `stage.rs` (Zeile "MIDI-Eingang" im Reiter Bühne).
+
+- **Auswertung:** nur `0xB9` (Kanal 10) mit CC 22 / 23, alles andere ignoriert (`parse_cc`). Weitergabe über `sim_midi(10, cc, wert)`
+  an alle geladenen DLLs im selben Moment (Funkverzögerung der Clients bewusst nicht nachgebildet).
+- **Zeitgenau:** der midir-Callback (Thread des Treibers) stempelt zusätzlich die Ankunftszeit (µs seit Programmstart) und schickt
+  das Ereignis über `std::sync::mpsc` ins Fenster. `ClockMap` rechnet den Treiber-Zeitstempel auf die Programm-Uhr um (Versatz =
+  kleinste bisher gesehene Differenz Ankunft - Zeitstempel, damit die Thread-Verzögerung herausfällt). `run_to()` stellt alle Geräte
+  bis auf die Millisekunde des Ereignisses vor, gibt den Befehl, rechnet weiter bis "jetzt" (Rundung auf ganze ms = +-0,5 ms,
+  unabhängig von der Bildrate; liegt der Zeitpunkt vor dem Start oder schon hinter uns, wird sofort angewendet). `cargo test`:
+  6 Tests mit einer Attrappe statt DLL (Reihenfolge, Zeitpunkt bei Bildschritt 1/16/100/5000 ms, verspätetes Ereignis, Bruchteile, Uhr-Umrechnung, Filter).
+- **Läuft noch nichts** beim ersten Befehl: die Geräte werden geladen (Song 0 = Songpause), dann bekommen sie den Befehl. Danach laufen
+  die DLLs weiter wie die echten Geräte (ein CC 22 schaltet nur den Song um, kein Neuladen; Chasing startet den Part am Anfang, gewollt).
+- **Uhr:** bei offenem Port immer Echtzeit (die 250-ms-Obergrenze für Hänger gilt dann nicht). Pause/Tempo gibt es noch nicht: **#24 muss
+  sie bei offenem MIDI-Port ausgrauen** (Hinweis "Uhr in Echtzeit" steht schon in `midi_row()`).
+- **Einstellung:** gewählter Port in `%APPDATA%\showview\settings.json` (`{"midi_port": "Name"|null}`; eframe-Persistenz ist nicht
+  aktiviert). Fehlender Port = "nicht gefunden"; Liste wird beim Aufklappen und mit dem Knopf neu gelesen und der gemerkte Port dann geöffnet.
+- **Testsender:** `cargo run --release --example send_cc -- <port|nr> <cc> <wert> [kanal]`; ohne Argumente Liste der Ausgänge.
+- **Einrichten (virtueller Port):** Windows MIDI Services (Windows 11: Loopback-Endpunkte, mehrere Programme gleichzeitig) oder loopMIDI;
+  im LP16-Tool (Branch `feature/second-midi-port`, Einstellungen -> MIDI-Ausgabe, Schlüssel `midi_port2`) als zweiten Ausgang wählen,
+  in showview als Eingang.
+- **Stand der Prüfung:** auf diesem Rechner gibt es keinen virtuellen MIDI-Port (nur "Microsoft GS Wavetable Synth"); es wurde keine
+  Software installiert. Tests + Programmstart ohne Absturz geprüft; **Ende-zu-Ende mit Port steht aus.** Offen: ob Windows-MIDI-Services-Endpunkte
+  für das WinMM-Backend von midir sichtbar sind (sonst loopMIDI).

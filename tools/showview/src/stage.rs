@@ -38,6 +38,7 @@ use crate::shape::{Pt, Shape};
 use crate::sim::Sim;
 use eframe::egui::{self, Color32, Painter, Pos2, Rect, Sense, Stroke, StrokeKind, Ui, Vec2};
 use std::path::{Path, PathBuf};
+use crate::midi_in::{self, ClockMap, Devices, MidiEvent, MidiIn};
 use std::time::Instant;
 
 /// Wie ein Gerät gezeichnet wird.
@@ -97,13 +98,34 @@ struct Device {
 pub struct Stage {
     devices: Vec<Device>,   // die geladenen Geräte (leer = noch nicht gestartet)
     running: bool,          // läuft die Uhr?
-    last: Option<Instant>,  // Zeitpunkt des vorigen Fensterbildes (Echtzeit)
-    rest_ms: f64,           // Bruchteile von Millisekunden, die noch nicht vorgestellt wurden
+    t0_us: i64,             // Simulator-Zeit 0 auf der Programm-Uhr (µs seit midi_in::epoch()): Zeitpunkt des Starts
+    done_ms: f64,           // bis wohin (Simulator-ms seit Start) die Geräte schon gerechnet sind (ganze ms)
+    midi: Option<MidiIn>,   // offene MIDI-Verbindung (None = MIDI-Eingang aus oder Port fehlt)
+    midi_choice: Option<String>, // gewählter Port (auch wenn er gerade fehlt; None = "aus")
+    midi_ports: Vec<String>, // zuletzt gelesene Port-Liste
+    midi_note: Option<String>, // Hinweis zum Eingang ("nicht gefunden", Fehlertext)
+    midi_list_open: bool,   // war die Aufklappliste im vorigen Bild offen? (zum Erkennen des Öffnens)
+    clock_map: ClockMap,    // Treiber-Zeitstempel -> Programm-Uhr
+    last_cc: Option<(u8, u8, Instant)>, // zuletzt empfangener Befehl (CC, Wert, Zeitpunkt) für die Anzeige
     error: Option<String>,  // Fehlertext (DLL nicht ladbar ...)
     bright_view: bool,      // true = aufgehellte Darstellung (dunkle Effekte bleiben sichtbar)
     auto_start: bool,       // true = den Song beim ersten Zeichnen sofort starten (Befehlszeile --buehne), danach wieder false
     inited: bool,           // wurden die Standardwerte der Schalter schon einmal gesetzt?
     correction: bool,       // true = Farbkorrektur der LED-Streifen nachrechnen
+}
+
+/// Alle Geräte als Ziel für midi_in::run_to(): jeder Aufruf geht an jede DLL (gemeinsame Uhr, gleiche Befehle).
+impl Devices for Vec<Device> {
+    fn advance(&mut self, ms: u32) {
+        for d in self.iter_mut() {
+            d.sim.advance(ms);
+        }
+    }
+    fn midi(&mut self, channel: i32, cc: i32, value: i32) {
+        for d in self.iter_mut() {
+            d.sim.midi(channel, cc, value);
+        }
+    }
 }
 
 impl Stage {
@@ -176,8 +198,8 @@ impl Stage {
             }
         }
         self.running = !self.devices.is_empty();
-        self.last = Some(Instant::now());
-        self.rest_ms = 0.0;
+        self.t0_us = midi_in::epoch().elapsed().as_micros() as i64; // Simulator-Zeit 0 = jetzt
+        self.done_ms = 0.0;
     }
 
     /// Stop: wie am Gerät "Song 0" (Songpause) wählen. Die Uhr läuft weiter, die Songpause ist ja auch eine Show.
@@ -187,24 +209,27 @@ impl Stage {
         }
     }
 
-    /// Uhr vorstellen und die neuesten Bilder holen (einmal pro Fensterbild).
-    fn tick(&mut self) {
-        let now = Instant::now();
-        let mut whole = 0.0;
+    /// Uhr vorstellen und die neuesten Bilder holen (einmal pro Fensterbild). `raw` = die seit dem letzten Bild
+    /// angekommenen MIDI-Befehle (Ankunftsreihenfolge): sie werden auf der Simulator-Uhr zeitgenau eingefügt.
+    fn tick(&mut self, raw: &[MidiEvent]) {
         if self.running {
-            if let Some(last) = self.last {
-                // Echtzeit seit dem letzten Bild in Millisekunden, gedeckelt; ganze ms an die DLLs, den Rest merken
-                let dt = (now - last).as_secs_f64() * 1000.0;
-                self.rest_ms += dt.min(MAX_STEP_MS);
-                whole = self.rest_ms.floor();
-                self.rest_ms -= whole;
+            // Simulator-Zeit "jetzt" in ms = Echtzeit seit dem Start
+            let mut target = (midi_in::epoch().elapsed().as_micros() as i64 - self.t0_us) as f64 / 1000.0;
+            // Ohne MIDI: nach einem Hänger (Fenster verschoben ...) nicht alles auf einmal nachholen, sondern die
+            // Uhr nur um höchstens MAX_STEP_MS vorstellen und den Rest verfallen lassen. Mit MIDI-Eingang NICHT:
+            // dort muss die Uhr immer die Echtzeit sein, sonst passt sie nicht mehr zur Musik.
+            if self.midi.is_none() && target - self.done_ms > MAX_STEP_MS {
+                self.t0_us += ((target - self.done_ms - MAX_STEP_MS) * 1000.0) as i64;
+                target = self.done_ms + MAX_STEP_MS;
             }
+            // Treiber-Zeitstempel -> Simulator-ms; Befehle vor dem Start (negativ) werden sofort angewendet
+            let events: Vec<(f64, MidiEvent)> = raw
+                .iter()
+                .map(|e| (((self.clock_map.map(e.stamp_us, e.arrival_us) - self.t0_us) as f64) / 1000.0, *e))
+                .collect();
+            midi_in::run_to(&mut self.devices, &mut self.done_ms, &events, target);
         }
-        self.last = Some(now);
         for d in self.devices.iter_mut() {
-            if whole >= 1.0 {
-                d.sim.advance(whole as u32); // alle Geräte um dieselbe Zeit: gemeinsame Uhr
-            }
             let has_strap = d.sim.info.strap_leds > 0;
             let (n, b) = d.sim.frame(&mut d.rgb1, if has_strap { Some(&mut d.rgb2) } else { None });
             d.frame_no = n;
@@ -238,6 +263,9 @@ impl Stage {
             self.bright_view = true; // Standard: aufgehellt (auf dem Bildschirm wirkt "echte" Helligkeit viel dunkler als auf der Bühne)
             self.correction = true; // Standard: Farbkorrektur wie auf dem Gerät
             self.inited = true;
+            // Gemerkten MIDI-Port wiederherstellen und versuchen zu öffnen
+            self.midi_choice = midi_in::settings_load();
+            self.midi_refresh(ui.ctx(), true);
         }
         let Some(root) = root else {
             ui.label("Projektordner nicht gefunden.");
@@ -276,6 +304,7 @@ impl Stage {
                 "an = die Farbkorrektur der LED-Streifen (TypicalLEDStrip: Rot 255, Grün 176, Blau 240) wie auf dem Gerät nachrechnen",
             );
         });
+        self.midi_row(ui);
         if !missing.is_empty() {
             ui.colored_label(Color32::YELLOW, format!("{} fehlt - erst bauen: python tools/build_sim.py", missing.join(", ")));
         }
@@ -283,8 +312,17 @@ impl Stage {
             ui.colored_label(Color32::LIGHT_RED, e);
         }
 
+        // --- MIDI-Befehle abholen; kommt der erste, bevor etwas läuft, erst die Geräte laden (Song 0 = Songpause) ---
+        let raw = self.midi.as_ref().map(|m| m.drain()).unwrap_or_default();
+        if let Some(last) = raw.last() {
+            self.last_cc = Some((last.cc, last.value, Instant::now()));
+            if self.devices.is_empty() && any_dll {
+                self.start(root, 0);
+            }
+        }
+
         // --- Uhr stellen, Bilder holen ---
-        self.tick();
+        self.tick(&raw);
         if !self.devices.is_empty() && self.running {
             ui.ctx().request_repaint(); // solange es läuft, sofort das nächste Bild (Zeit läuft in Echtzeit weiter)
         }
@@ -316,6 +354,89 @@ impl Stage {
                 d.brightness
             ));
         }
+    }
+
+    /// MIDI-Port-Liste neu lesen. Ist der gemerkte Port jetzt da und noch nicht offen, wird er geöffnet
+    /// (`first` = erster Aufruf beim Programmstart: dann wird auch ein fehlender Port gemeldet).
+    fn midi_refresh(&mut self, ctx: &egui::Context, first: bool) {
+        self.midi_ports = midi_in::list_ports();
+        if self.midi.is_none() {
+            if let Some(name) = self.midi_choice.clone() {
+                if self.midi_ports.contains(&name) {
+                    self.midi_open(ctx, &name);
+                } else if first {
+                    self.midi_note = Some("nicht gefunden".to_string());
+                }
+            }
+        }
+    }
+
+    /// Port öffnen (die alte Verbindung wird dabei geschlossen). Fehler landen in `midi_note`.
+    fn midi_open(&mut self, ctx: &egui::Context, name: &str) {
+        self.midi = None; // alte Verbindung schließen
+        self.clock_map = ClockMap::default(); // neue Verbindung = neuer Treiber-Nullpunkt
+        let ctx = ctx.clone(); // Kopie des Fenster-Zugangs für den Callback-Thread
+        match MidiIn::open(name, midi_in::epoch(), move || ctx.request_repaint()) {
+            Ok(m) => {
+                self.midi = Some(m);
+                self.midi_note = None;
+            }
+            Err(e) => self.midi_note = Some(e),
+        }
+    }
+
+    /// Zeile "MIDI-Eingang": Aufklappliste (aus / Ports), Neu-lesen-Knopf, Status und zuletzt empfangener Befehl.
+    fn midi_row(&mut self, ui: &mut Ui) {
+        ui.horizontal(|ui| {
+            ui.label("MIDI-Eingang:");
+            let shown = match (&self.midi_choice, &self.midi) {
+                (None, _) => "aus".to_string(),
+                (Some(n), Some(_)) => n.clone(),
+                (Some(n), None) => format!("{n} (nicht gefunden)"),
+            };
+            let mut pick: Option<Option<String>> = None; // Some(None) = "aus" gewählt
+            let combo = egui::ComboBox::from_id_salt("midi_port").selected_text(shown).width(240.0).show_ui(ui, |ui| {
+                if ui.selectable_label(self.midi_choice.is_none(), "aus").clicked() {
+                    pick = Some(None);
+                }
+                for p in &self.midi_ports {
+                    if ui.selectable_label(self.midi_choice.as_deref() == Some(p.as_str()), p).clicked() {
+                        pick = Some(Some(p.clone()));
+                    }
+                }
+            });
+            // Beim Öffnen der Liste neu suchen (der Port kann seit dem Start entstanden sein)
+            let open_now = combo.inner.is_some();
+            let opened = open_now && !self.midi_list_open;
+            self.midi_list_open = open_now;
+            let refresh_click = ui.button("↻").on_hover_text("Port-Liste neu lesen").clicked();
+            let ctx = ui.ctx().clone();
+            if let Some(choice) = pick {
+                self.midi_choice = choice.clone();
+                midi_in::settings_save(choice.as_deref());
+                self.midi_note = None;
+                match choice {
+                    Some(name) => self.midi_open(&ctx, &name),
+                    None => self.midi = None, // aus: Verbindung schließen
+                }
+            } else if opened || refresh_click {
+                self.midi_refresh(&ctx, false);
+            }
+            if let Some(note) = &self.midi_note {
+                ui.colored_label(Color32::YELLOW, note);
+            }
+            if let Some(m) = &self.midi {
+                let last = match self.last_cc {
+                    Some((cc, v, t)) => format!("zuletzt CC {cc} = {v} vor {:.0} s", t.elapsed().as_secs_f32()),
+                    None => "noch nichts empfangen".to_string(),
+                };
+                ui.label(format!("MIDI: {} - {last}", m.port_name));
+                // Pause/Tempo gibt es noch nicht (kommt mit #24). Dann diese Knöpfe bei aktivem MIDI ausgrauen.
+                ui.label("(Uhr in Echtzeit)")
+                    .on_hover_text("Bei aktivem MIDI-Eingang läuft die Uhr immer in Echtzeit, sonst passt sie nicht mehr zur Musik.");
+                ui.ctx().request_repaint_after(std::time::Duration::from_millis(500)); // "vor x s" aktuell halten
+            }
+        });
     }
 
     /// Alle Geräte nebeneinander in `rect` zeichnen.

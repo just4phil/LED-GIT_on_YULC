@@ -23,6 +23,7 @@
 //                        So friert das Fenster nicht ein, während Python rechnet (ein Song dauert ~1 s).
 
 mod export;
+mod midi_in;
 mod model;
 mod shape;
 mod sim;

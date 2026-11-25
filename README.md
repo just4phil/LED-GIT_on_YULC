@@ -104,7 +104,7 @@ LED-GIT_on_YULC/
 │   ├── build_sim.py              # builds the simulator DLLs (sim/bin/sim_<device>.dll) from src/ + the libraries
 │   ├── sim_timetest.py           # timing test: part changes of all generated songs in the simulator vs. songgen.py
 │   ├── fw_version.py             # sets the firmware version at build time
-│   ├── showview/                 # Windows GUI (Rust/egui): a song's flow as a timeline, view only
+│   ├── showview/                 # Windows GUI (Rust/egui): a song's flow as a timeline + the simulator tab (MIDI input, `src/midi_in.rs`, `examples/send_cc.rs`)
 │   └── fxstats.py                # statistics on effects used in the old songs
 ├── docs/                         # guides (German), see "Documentation"
 ├── ota/                          # built firmware per device (not in git)
@@ -287,6 +287,20 @@ first: `python tools/build_sim.py` (all devices, or name them; needs `g++` from 
 `--test` for a smoke test that plays song 30 for 60 s). `sim/shim/` replaces everything that only exists on the
 microcontroller (Arduino API, the hardware part of FastLED); the maths of FastLED 3.5.0 is the real library code.
 `showview.exe <song> --buehne` opens the tab and starts the song right away.
+**MIDI input (Bühne tab):** like the guitar with the WIDI, the simulator can be driven from a MIDI port: **channel 10
+only, CC 22 = song, CC 23 = part** (everything else is ignored); the commands go to all loaded devices at once (the
+radio delay of the clients is deliberately not simulated). Pick the port in the "MIDI-Eingang" list of the tab ("aus" =
+off; the choice is remembered in `%APPDATA%\showview\settings.json`; a missing port is shown as "nicht gefunden", the
+list is re-read when it is opened or with the refresh button). The devices keep running like real ones: a CC 22 only
+switches the song (the first command also loads the devices, song 0 = pause loop). Every command carries the driver's
+time stamp (microseconds) and is applied at exactly that moment of the simulator clock (+-1 ms, independent of the
+window's frame rate; the logic and its `cargo test` tests are in `tools/showview/src/midi_in.rs`). While a port is open
+the clock always runs in real time. To drive it from the LP16 tool (Cymatic-uTool-for-LP-16, branch
+`feature/second-midi-port`) set up a virtual port - **Windows MIDI Services** (current Windows 11: loopback endpoints,
+several programs at once) or **loopMIDI** (Tobias Erichsen) - and choose it in the LP16 tool as the second output
+(Settings -> MIDI output, config key `midi_port2`) and in showview as the input. Without any other program:
+`cargo run --release --example send_cc -- <port> 22 30` (no arguments = list the output ports) sends CC 22 = 30 on channel 10.
+
 The simulator also copies the device's frame rate: after a real `FastLED.show()` no new frame is computed until the LEDs
 have received the data (30 us per LED + 50 us latch; both outputs are sent in parallel on the ESP32), while the 2 ms
 timer keeps counting. `python tools/build_sim.py scrollmatrix --zeittest` (or `python tools/sim_timetest.py [<Song>]`)
