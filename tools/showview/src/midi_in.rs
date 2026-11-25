@@ -5,14 +5,14 @@
 // Alles andere wird ignoriert. Wer die Befehle schickt, ist egal - z. B. das LP16-Tool über einen virtuellen
 // MIDI-Port (Windows MIDI Services Loopback oder loopMIDI), oder das Beispielprogramm examples/send_cc.rs.
 //
-// Die Datei hat drei Teile:
+// Die Datei hat zwei Teile:
 //   1. REINE LOGIK (ohne Port, ohne DLL, mit `cargo test` geprüft):
 //        parse_cc()   - aus den MIDI-Bytes den CC herausholen (oder nichts)
 //        ClockMap     - den Zeitstempel des MIDI-Treibers auf die Uhr des Programms umrechnen
 //        run_to()     - Geräte bis zu einem Zeitpunkt vorstellen und dabei Befehle auf die Millisekunde genau einfügen
 //   2. MidiIn        - die echte Verbindung zu einem Port (midir). Der Callback läuft in einem eigenen Thread des
 //                      Treibers und schickt jedes passende Ereignis über einen Kanal (std::sync::mpsc) an das Fenster.
-//   3. Einstellungen - der gewählte Port wird in einer kleinen JSON-Datei gemerkt (settings_load/settings_save).
+//   (Die Einstellungen - auch der gewählte Port - liegen seit Issue #24 in settings.rs.)
 //
 // WARUM ZEITSTEMPEL? Das Fenster zeichnet nur etwa alle 16 ms ein Bild. Würde man einen Befehl erst beim nächsten Bild
 // anwenden, käme er bis zu 16 ms (bei hängendem Fenster mehr) zu spät, und das hinge von der Bildrate ab. Der MIDI-Treiber
@@ -23,7 +23,6 @@
 // bekommen den Befehl im selben Moment.
 
 use midir::{Ignore, MidiInput, MidiInputConnection};
-use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::OnceLock;
 use std::time::Instant;
@@ -170,33 +169,6 @@ impl MidiIn {
     pub fn drain(&self) -> Vec<MidiEvent> {
         self.rx.try_iter().collect()
     }
-}
-
-// ---------------------------------------------------------------- Einstellungen
-
-/// Wo die Einstellungen liegen: %APPDATA%\showview\settings.json (Windows), sonst neben dem Arbeitsordner.
-fn settings_path() -> PathBuf {
-    match std::env::var_os("APPDATA") {
-        Some(dir) => PathBuf::from(dir).join("showview").join("settings.json"),
-        None => PathBuf::from("showview-settings.json"),
-    }
-}
-
-/// Den gemerkten Port-Namen lesen (None = aus oder keine Datei).
-pub fn settings_load() -> Option<String> {
-    let text = std::fs::read_to_string(settings_path()).ok()?;
-    let v: serde_json::Value = serde_json::from_str(&text).ok()?;
-    v.get("midi_port")?.as_str().map(|s| s.to_string())
-}
-
-/// Den Port-Namen merken (None = "aus"). Fehler werden ignoriert: die Einstellung ist nur eine Bequemlichkeit.
-pub fn settings_save(port: Option<&str>) {
-    let path = settings_path();
-    if let Some(dir) = path.parent() {
-        let _ = std::fs::create_dir_all(dir);
-    }
-    let v = serde_json::json!({ "midi_port": port });
-    let _ = std::fs::write(path, v.to_string());
 }
 
 #[cfg(test)]

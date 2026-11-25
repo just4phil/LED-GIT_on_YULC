@@ -112,14 +112,20 @@ impl Shape {
         }
         let on_contour = |k: i32| point_at(total * k.rem_euclid(nn) as f32 / nn as f32, &seg);
 
-        // Gurt: eine Kurve vom oberen Gurtpin (am oberen Horn) hinauf über die Schulter, links am Korpus vorbei zum
-        // unteren Gurtpin am Korpusende. ANNAHME (es gibt keine Messung): die Nummern laufen vom oberen Pin zum
-        // unteren, LED 0 sitzt am oberen Gurtpin. Der Gurt hinter dem Rücken ist nicht zu sehen; die Kurve ist
-        // eine Andeutung, wie die LEDs ungefähr hängen.
+        // Gurt, so wie ein getragener Gurt von vorn aussieht (Issue #24): vom oberen Gurtpin (am oberen Horn) steigt er in
+        // einem weichen Bogen auf zur Schulter des Spielers (höchster Punkt, oberhalb von Hals und Korpus), läuft von dort
+        // links AM Korpus vorbei (nicht um ihn herum, nicht über ihn) wieder hinunter und endet am unteren Gurtpin am
+        // Korpusende. Zwei Bezier-Stücke, die sich an der Schulter berühren; dort zeigen beide Kurven waagerecht nach
+        // links, darum hat die Schulter keinen Knick. ANNAHME (es gibt keine Messung): die Nummern laufen vom oberen Pin
+        // zum unteren, LED 0 sitzt am oberen Gurtpin (so war es seit Issue #22). Der Gurt hinter dem Rücken ist nicht zu
+        // sehen; die Kurve ist eine Andeutung, wie die LEDs ungefähr hängen.
         let top_pin = on_contour(strap_pin);
-        let c1 = [top_pin[0] + 10.0, top_pin[1] - 450.0];
-        let c2 = [-350.0, 950.0];
-        let dense: Vec<Pt> = (0..=STRAP_SAMPLES).map(|i| bezier(top_pin, c1, c2, LOWER_STRAP_PIN, i as f32 / STRAP_SAMPLES as f32)).collect();
+        let shoulder = [top_pin[0] - 40.0, top_pin[1] - 300.0]; // höchster Punkt: links über dem oberen Horn
+        let up_arc = |t: f32| bezier(top_pin, [top_pin[0] + 60.0, top_pin[1] - 170.0], [shoulder[0] + 130.0, shoulder[1] - 5.0], shoulder, t);
+        let down_arc = |t: f32| bezier(shoulder, [shoulder[0] - 130.0, shoulder[1] + 5.0], [-70.0, 1150.0], LOWER_STRAP_PIN, t);
+        let half = STRAP_SAMPLES / 2;
+        let mut dense: Vec<Pt> = (0..=half).map(|i| up_arc(i as f32 / half as f32)).collect();
+        dense.extend((1..=half).map(|i| down_arc(i as f32 / half as f32)));
         // Weglänge entlang der Kurve, damit die LEDs gleiche Abstände bekommen (nicht gleiche Zeitschritte t)
         let mut cum = vec![0.0f32; dense.len()];
         for i in 1..dense.len() {

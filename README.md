@@ -286,7 +286,17 @@ applies the strip's colour correction (R 255, G 176, B 240). A lamp is a vertica
 first: `python tools/build_sim.py` (all devices, or name them; needs `g++` from w64devkit in the PATH, like `pio test -e native`; add
 `--test` for a smoke test that plays song 30 for 60 s). `sim/shim/` replaces everything that only exists on the
 microcontroller (Arduino API, the hardware part of FastLED); the maths of FastLED 3.5.0 is the real library code.
-`showview.exe <song> --buehne` opens the tab and starts the song right away.
+`showview.exe <song> --buehne` opens the tab and starts the song right away (`--sprung <case>` additionally jumps to that part).
+**Stage layout and controls:** left to right like the real stage (`JSON_STAGE`): lamp 1, bass, matrix, guitar, lamp 2, in one
+stage coordinate system fitted into the window (aspect ratio kept, free scaling; labels shorten or hide so they never overlap;
+a device whose DLL is missing stays as a grey "nicht gebaut" field). Size ratios are assumptions (matrix LED pitch 1.5 x and lamp
+pitch 0.75 x the instruments' pitch). The strap is drawn as a worn strap seen from the front: from the upper pin over the
+shoulder and down past the body to the lower pin (LED 0 at the upper pin is an assumption). Controls: Start, Stop, Pause,
+tempo x1 / x0.5 (halves the simulator time), "Sprung zu Part" (CC 23 = case to all devices, the part begins at its start; if the
+song is not running it is started first) and, in the "Ablauf" tab, the button "auf der Bühne ab hier abspielen" in a part's
+details. While a MIDI port is open Pause/Tempo are greyed out (real-time clock). A status list under the stage shows song,
+part (+ part name), time in part per device; devices that differ in the part are orange (the matrix during the title scroll text
+is not an error). The switches "aufgehellt" and "Farbkorrektur" are remembered in `settings.json` (`tools/showview/src/settings.rs`).
 **MIDI input (Bühne tab):** like the guitar with the WIDI, the simulator can be driven from a MIDI port: **channel 10
 only, CC 22 = song, CC 23 = part** (everything else is ignored); the commands go to all loaded devices at once (the
 radio delay of the clients is deliberately not simulated). Pick the port in the "MIDI-Eingang" list of the tab ("aus" =

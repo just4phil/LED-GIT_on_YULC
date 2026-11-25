@@ -25,6 +25,7 @@
 mod export;
 mod midi_in;
 mod model;
+mod settings;
 mod shape;
 mod sim;
 mod stage;
@@ -41,8 +42,11 @@ fn main() -> eframe::Result {
     let mut root_arg = None;
     let mut song_arg = None;
     let mut buehne = false; // --buehne: gleich im Reiter "Bühne" starten und den Song abspielen
-    for a in std::env::args().skip(1) {
+    let mut jump = None; // --sprung <case>: nach dem Start gleich zu diesem Part springen (CC 23)
+    let mut args = std::env::args().skip(1);
+    while let Some(a) = args.next() {
         if a == "--buehne" { buehne = true }
+        else if a == "--sprung" { jump = args.next().and_then(|v| v.parse::<i64>().ok()) }
         else if PathBuf::from(&a).is_dir() { root_arg = Some(a) } else { song_arg = Some(a) }
     }
     let options = eframe::NativeOptions {
@@ -56,7 +60,7 @@ fn main() -> eframe::Result {
         "showview",
         options,
         // Die "App-Erzeugung" ist eine Closure, die eframe einmal beim Start aufruft
-        Box::new(move |_cc| Ok(Box::new(App::new(export::find_root(root_arg), song_arg, buehne)))),
+        Box::new(move |_cc| Ok(Box::new(App::new(export::find_root(root_arg), song_arg, buehne, jump)))),
     )
 }
 
@@ -86,6 +90,7 @@ struct App {
     rx: Option<Receiver<Loaded>>, // Empfänger des laufenden Ladevorgangs
     view: timeline::TimelineView,
     selected: Option<usize>, // angeklickter Part
+    play_from: Option<i64>,  // gewünschter Start auf der Bühne ab diesem Part (case): Knopf im Detailbereich
     watched: Vec<PathBuf>,
     stamps: Vec<Option<SystemTime>>,
     last_check: Instant,
@@ -93,10 +98,11 @@ struct App {
 }
 
 impl App {
-    fn new(root: Option<PathBuf>, want_song: Option<String>, buehne: bool) -> Self {
+    fn new(root: Option<PathBuf>, want_song: Option<String>, buehne: bool, jump: Option<i64>) -> Self {
         let mut app = Self {
             tab: if buehne { Tab::Buehne } else { Tab::Ablauf },
-            stage: stage::Stage::new(buehne),
+            stage: stage::Stage::new(buehne, jump),
+            play_from: None,
             root,
             songs: Vec::new(),
             filter: String::new(),
@@ -221,14 +227,21 @@ impl App {
     }
 
     /// Untere Spalte: alles über den angeklickten Part.
-    fn details(&self, ui: &mut egui::Ui) {
+    fn details(&mut self, ui: &mut egui::Ui) {
+        let mut play = None; // gesetzt, wenn der Knopf gedrückt wurde (self.data ist unten ausgeliehen, darum erst danach in self.play_from)
         let Some(data) = &self.data else { return };
         let Some(part) = self.selected.and_then(|i| data.parts.get(i)) else {
             ui.label("Einen Part im Zeitstrahl anklicken, um seine Details zu sehen.  (Mausrad = Zoom, Ziehen = verschieben, Doppelklick = ganzer Song)");
             return;
         };
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-            ui.heading(format!("{}  (case {} → {})", part.name, part.case, part.next));
+            ui.horizontal(|ui| {
+                ui.heading(format!("{}  (case {} → {})", part.name, part.case, part.next));
+                // Knopf: auf der Bühne ab diesem Part abspielen (Reiter wechselt, Song startet, CC 23 = case)
+                if ui.button("▶ auf der Bühne ab hier abspielen").clicked() {
+                    play = Some(part.case);
+                }
+            });
             let bars = match (part.bar_from, part.bar_to) {
                 (Some(a), Some(b)) => format!(", Takt {a} bis vor {b}"),
                 _ => String::new(),
@@ -264,6 +277,9 @@ impl App {
                 ui.label(egui::RichText::new(text).monospace());
             });
         });
+        if play.is_some() {
+            self.play_from = play;
+        }
     }
 }
 
@@ -315,6 +331,11 @@ impl eframe::App for App {
                 }
             }
         });
+        // Knopf "auf der Bühne ab hier abspielen": Reiter wechseln, Sprung bestellen (Start + CC 23 macht die Bühne)
+        if let Some(case) = self.play_from.take() {
+            self.tab = Tab::Buehne;
+            self.stage.request_jump(case);
+        }
         egui::CentralPanel::default().show(ui, |ui| match self.tab {
             Tab::Ablauf => {
                 if let Some(d) = &self.data {
@@ -331,7 +352,7 @@ impl eframe::App for App {
                     let from_data = self.data.as_ref().and_then(|d| d.song.id);
                     from_list.or(from_data).map(|id| (id, dir.clone()))
                 });
-                self.stage.show(ui, self.root.as_deref(), song);
+                self.stage.show(ui, self.root.as_deref(), song, self.data.as_ref());
             }
         });
     }
