@@ -148,7 +148,7 @@ cargo run --release                       <span class="c"># baut beim ersten Mal
 <div class="note">Auf dem Entwicklungsrechner gab es beim Schreiben dieser Anleitung <b>keinen</b> virtuellen Port (nur „Microsoft GS Wavetable Synth“). Der Ende-zu-Ende-Test mit einem echten Port (LP16-Tool -&gt; Port -&gt; Simulator) steht noch aus; die Auswertung der MIDI-Befehle ist mit Tests ohne Port geprüft (<code>cargo test</code>) und mit <code>send_cc</code> (<a href="#allein">Abschnitt 5</a>).</div>
 
 <h2 id="lp16">4 · Mit dem LP16-Tool proben</h2>
-<div class="warn"><b>Stand:</b> der zweite MIDI-Ausgang liegt im Projekt des LP16-Tools (Repository Cymatic-uTool-for-LP-16, Issue 16) auf dem Branch <code>feature/second-midi-port</code> und ist <b>noch nicht gemergt</b>. Bis dahin muss man diesen Branch bauen (<code>git checkout feature/second-midi-port</code>, dann <code>cargo build --release</code>).</div>
+<div class="warn"><b>Stand:</b> der zweite MIDI-Ausgang liegt im Projekt des LP16-Tools (Repository Cymatic-uTool-for-LP-16, Issue 16) auf dem Branch <code>feature/second-midi-port</code> und ist <b>noch nicht gemergt</b>. Bis dahin muss man diesen Branch bauen (<code>git checkout feature/second-midi-port</code>, dann <code>cargo build --release --features asio</code>). <b>Das LP16-Tool immer mit ASIO bauen</b> (Feature <code>asio</code>; es braucht das ASIO-SDK und LLVM, siehe dessen README, Abschnitt „Building with ASIO“) - ein Build ohne ASIO ist für das Proben nicht gedacht.</div>
 <ol class="steps">
   <li><b>Virtuellen Port bereithalten</b><span class="who du">du</span><br>
     <a href="#port">Abschnitt 3</a>, loopMIDI muss laufen.</li>
