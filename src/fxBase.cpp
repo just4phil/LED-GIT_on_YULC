@@ -12,7 +12,7 @@
 // "Ersatz für delay()", Marker + show()). Die Übersicht, wie ein Effekt daraus zusammengesetzt wird und welcher
 // Takt-Baustein wofür gedacht ist, steht in fxBase.h.
 //
-// Die Variablen dahinter liegen in main.cpp und werden vom Timer (TimerFunctions.cpp) und von switchToPart()
+// Die Variablen dahinter liegen in showEngine.cpp und werden vom Timer (TimerFunctions.cpp) und von switchToPart()
 // (functions.cpp) bedient:
 //   nextChangeMillisAlreadyCalculated   false = der Part hat gerade begonnen (switchToPart() löscht das Flag)
 //   nextChangeMillis / nextSongPart     Länge des laufenden Parts und der Part danach; der Timer wechselt von selbst

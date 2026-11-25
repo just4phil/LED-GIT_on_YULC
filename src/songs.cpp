@@ -69,7 +69,7 @@ extern volatile byte prog;							// the actual song-part
 //   - Auskommentierte Zeilen in einem case (//progStern(...)) sind frühere Fassungen dieses Parts.
 //
 // Neue Songs entstehen nicht mehr hier, sondern werden generiert (songs_generated.cpp, tools/songgen.py).
-// Ein generierter Song ersetzt den alten nur im Aufruf in main.cpp; der alte Code bleibt hier stehen.
+// Ein generierter Song ersetzt den alten nur im Aufruf in showEngine.cpp; der alte Code bleibt hier stehen.
 
 //--- Merkzettel: getestete Effekt-Aufrufe zum Kopieren (alles auskommentiert) -------------------------
 
@@ -200,8 +200,8 @@ extern volatile byte prog;							// the actual song-part
 //==================================================================
 
 // im Code springt nichts von selbst zu Song 99.
-// - Dispatch vorhanden: src/main.cpp:580 hat case 99: STARTUP();, die Funktion steht in src/songs.cpp:203.
-// - Kein interner Aufruf: Nirgends steht switchToSong(99) oder songID = 99. Beim Booten geht es in src/main.cpp:304 zu Song 0 (bzw. 90/91/92 bei den Demo-Defines); die 99 in Zeile 307 ist nur ein alter Kommentar.
+// - Dispatch vorhanden: src/showEngine.cpp (switch(songID)) hat case 99: STARTUP();, die Funktion steht in src/songs.cpp:203.
+// - Kein interner Aufruf: Nirgends steht switchToSong(99) oder songID = 99. Beim Booten geht es in src/showEngine.cpp (showEngine_start()) zu Song 0 (bzw. 90/91/92 bei den Demo-Defines); die 99 dort ist nur ein alter Kommentar.
 // - Einziger Weg hinein: von außen per MIDI CC 22 mit Wert 99 auf Kanal 10 (src/midi_in.cpp:53), was der Proxy per Funk an die Clients weitergibt (syncClient_received() in src/syncClient.cpp). Ob dein MIDI-Setup diesen Wert tatsächlich sendet, lässt sich aus dem Repo nicht ablesen.
 // STARTUP() selbst springt am Ende zu Song 100 (src/songs.cpp:213), und auch defaultLoop() (Song 100) wird nur über diesen Weg oder per MIDI erreicht.
 // Wenn du Song 99 nicht per MIDI startest, ist er also toter Code – dazu passt der Eintrag in src/todo.txt:5 (Test-Aufruf progSternNeu vor dem switch).
@@ -3510,9 +3510,9 @@ void IWannaDanceWithSomebody() {
 
 //#28 BillyJean  128 BPM  half=938ms  quarter=460ms  (fertiggestellt 01.05.2026)
 // ERSETZT (06.10.2026) durch die generierte Fassung gen_BillieJean() in songs_generated.cpp
-// (Quelle: songs/BillieJean_v1/song.yaml + show.yaml, erzeugt mit tools/songgen.py BillieJean; Aufruf in main.cpp case 28).
+// (Quelle: songs/BillieJean_v1/song.yaml + show.yaml, erzeugt mit tools/songgen.py BillieJean; Aufruf in showEngine.cpp case 28).
 // Der alte Code bleibt hier auskommentiert als Referenz stehen. Zurück zur alten Show: Kommentar hier und die Deklaration
-// in songs.h wieder aktivieren, in main.cpp case 28 BillyJean() statt gen_BillieJean() aufrufen.
+// in songs.h wieder aktivieren, in showEngine.cpp case 28 BillyJean() statt gen_BillieJean() aufrufen.
 /*
 void BillyJean() {
 
@@ -3874,7 +3874,7 @@ void Maniac_Tminus1() {
 //-----------
 
 //#80 INTRO fuer ILoveIt
-// Wird seit 09.10.2026 nicht mehr aufgerufen: in main.cpp (case 80) läuft die generierte Fassung gen_ILoveItIntro()
+// Wird seit 09.10.2026 nicht mehr aufgerufen: in showEngine.cpp (case 80) läuft die generierte Fassung gen_ILoveItIntro()
 // aus songs/ILoveItIntro_v1. Der alte Code bleibt als Referenz stehen (wie bei allen ersetzten Songs).
 void ILoveItTRAILER() {
 		

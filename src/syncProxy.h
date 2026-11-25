@@ -9,7 +9,7 @@
 // sie benutzt nur die Funktionen aus syncTransport.h (Überblick dort).
 //
 // Aufrufer:
-//   main.cpp       syncProxy_initialize(), syncProxy_loop(), syncProxy_onPartChange(), syncProxy_broadcastOTA()
+//   main.cpp       syncProxy_initialize(), syncProxy_loop(), syncProxy_onPartChange() (aus dem Hook showEngine_onPartChange()), syncProxy_broadcastOTA()
 //   markerLEDs.cpp syncProxy_connectedClients() (rote Warn-LEDs in Song 0)
 //   Funk-Adapter   syncProxy_clientRead(), syncProxy_clientWrote() - wenn ein Client etwas gelesen/geschickt hat
 

@@ -9,7 +9,7 @@
 // Datei nicht - sie benutzt nur die Funktionen aus syncTransport.h (Überblick dort).
 //
 // Aufrufer:
-//   main.cpp       syncClient_initialize(), syncClient_loop(), syncClient_onPartChange()
+//   main.cpp       syncClient_initialize(), syncClient_loop(), syncClient_onPartChange() (aus dem Hook showEngine_onPartChange())
 //   markerLEDs.cpp syncClient_isLinked() (rote Warn-LEDs in Song 0)
 //   Funk-Adapter   syncClient_received(), syncClient_readResult() - wenn vom Proxy etwas angekommen ist
 

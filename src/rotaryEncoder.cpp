@@ -175,7 +175,7 @@ void rotary_onButtonClick() {
 			#endif
 		}
 		else if (!encoderButtonNotAvailable && millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
-			encoderButtonLongPress = true;		// Not-Aus, ausgeführt in loop() (main.cpp)
+			encoderButtonLongPress = true;		// Not-Aus, ausgeführt in showEngine_step() (showEngine.cpp)
 			encoderButtonNotAvailable = true;	// danach 3 s gesperrt (rotary_loop)
 			lastTimeLongPress = millis();
 			#if defined(debug_rotary)

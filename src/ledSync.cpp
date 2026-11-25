@@ -106,7 +106,7 @@ void ledSyncProxyMidiPart(uint8_t part) {
     proxyMidiValue = part;
 }
 
-// Aufgerufen vom Drehknopf (rotaryEncoder.cpp) bzw. vom Not-Aus (main.cpp). Nur Merker setzen; die Nachricht
+// Aufgerufen vom Drehknopf (rotaryEncoder.cpp) bzw. vom Not-Aus (Hook showEngine_onEmergencyStop() in main.cpp). Nur Merker setzen; die Nachricht
 // entsteht im nächsten ledSyncProxyLoop().
 void ledSyncProxyRequestForce() { proxyForceRequested = true; }		// Kurzklick, Not-Aus
 void ledSyncProxyRequestAsk()   { proxyAskRequested = true; }		// Doppelklick

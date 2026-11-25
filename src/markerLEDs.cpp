@@ -8,7 +8,7 @@
 //-----------------------
 
 extern byte songID;					// aktueller Song (0 = Songpause)
-extern FastLED_NeoMatrix* matrix;	// das Matrix-Objekt aus main.cpp
+extern FastLED_NeoMatrix* matrix;	// das Matrix-Objekt aus showEngine.cpp
 
 extern byte markerLED1;
 extern byte markerLED2;
@@ -29,7 +29,7 @@ extern CRGB leds2[NUMMATRIX];
 //=====================================================================
 // HINWEIS: Die Marker der Songs sind von den Musikern abgenommen - an den Zuweisungen nichts ändern.
 
-// Legt je Song fest, welche Bünde markiert werden. Die case-Nummern sind die Song-IDs wie in main.cpp.
+// Legt je Song fest, welche Bünde markiert werden. Die case-Nummern sind die Song-IDs wie in showEngine.cpp.
 // "#ifdef GIT ... #endif" wird nur für die Gitarre übersetzt, "#ifdef BASS ..." nur für den Bass;
 // Zeilen ohne #ifdef gelten für beide.
 void setMarkerLEDs(byte songID, byte partID) {
@@ -592,7 +592,7 @@ void gitBlindingLEDs_OFF_MarkerLEDs_ON() {
 		// Deshalb wird die Gesamthelligkeit für dieses Bild auf MARKER_MIN_BRIGHTNESS angehoben und das Bild des Effekts
 		// im selben Verhältnis dunkler gerechnet - der Effekt bleibt so dunkel wie eingestellt (bei "LEDs aus" ist er
 		// ohnehin schwarz), nur die Marker bekommen genug Spielraum. (Derselbe Kniff wie beim Blinder in fxPipeline.cpp.)
-		// main.cpp setzt die Gesamthelligkeit vor jedem Durchlauf wieder auf den Wert des Knopfs zurück.
+		// showEngine.cpp setzt die Gesamthelligkeit vor jedem Durchlauf wieder auf den Wert des Knopfs zurück.
 		if (brightnessNow < MARKER_MIN_BRIGHTNESS) {
 			// FastLED rechnet "wert * (helligkeit + 1) / 256"; damit das Bild gleich hell bleibt, muss es also um
 			// (alte Helligkeit + 1) / (neue Helligkeit + 1) dunkler werden. nscale8(k) rechnet "wert * (k + 1) / 256".

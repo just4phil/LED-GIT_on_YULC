@@ -2,6 +2,7 @@
 #include "definitions.h"
 #include "functions.h"
 #include <MIDI.h>  // Add Midi Library
+#include "showEngine.h"	// midiApplyCC()
 #include "midi_in.h"	// die eigene .h-Datei: so vergleicht der Compiler die Ankündigungen dort mit dem Code hier
 //---------------------------
 
@@ -32,27 +33,24 @@
 // when a Continuous Controller message is received.
 // It will be passed bytes for Channel, Controller Number, and Value
 // Es wird nur auf Kanal 10 und nur auf die CC-Nummern 22 (Song) und 23 (Part) reagiert.
+// Den Wechsel selbst (switchToSong / switchToPart) macht midiApplyCC() in showEngine.cpp - dieselbe Funktion
+// benutzt später der PC-Simulator. Hier folgt nur noch, was Funk braucht (Proxy).
 void MidiDatenAuswerten(byte channel, byte number, byte value) {
 
-    // Hinweis: zwischen den beiden number-Vergleichen steht ein einfaches "&" (bitweises UND) statt "&&".
-    // Da beide Vergleiche nur 0 oder 1 liefern, ist das Ergebnis hier dasselbe.
-    if (channel == 10 && number >= 22 & number <= 23) { // security check ....only act on channel 10!!
+    midiApplyCC(channel, number, value);	// Show: Song bzw. Part wechseln (nur Kanal 10, CC 22/23)
 
-        // with midi byte 22 the song can be changed!
-        if (number == 22 && value >= 0) {	
-            switchToSong(value);
-            #ifdef IS_MIDI_PROXY
+    #ifdef IS_MIDI_PROXY
+        // Dieselbe Prüfung wie in midiApplyCC(): nur was dort wirklich gewechselt hat, wird weitergesendet.
+        // (Hinweis: das einfache "&" ist ein bitweises UND; beide Vergleiche liefern 0 oder 1, das Ergebnis ist wie bei "&&".)
+        if (channel == 10 && number >= 22 & number <= 23) {
+            if (number == 22 && value >= 0) {
                 ledSyncProxyMidiSong(value);	// an alle Clients weitersenden (SYNC_SONG)
-            #endif
-        }
-        // with midi byte 23 the songpart can be changed!
-        else if (number == 23 && value >= 0) {
-            switchToPart(value);
-            #ifdef IS_MIDI_PROXY
+            }
+            else if (number == 23 && value >= 0) {
                 ledSyncProxyMidiPart(value);	// an alle Clients weitersenden (SYNC_PART)
-            #endif
+            }
         }
-    }
+    #endif
 }
 
 void midi_initialize() {

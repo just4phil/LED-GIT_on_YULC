@@ -73,7 +73,7 @@ Each device define automatically enables/disables features (`HAS_MIDI_IN`, `IS_M
   Plan, measurements and working state: `docs/ESP-NOW-Plan.html`.
 
 ### LED buffers
-Three CRGB arrays in `main.cpp`:
+Three CRGB arrays in `showEngine.cpp` (declared `extern` in `fxState.h`):
 - `leds[]` — working buffer, all effects write here
 - `leds1[]` — output for DATA_PIN_1 (guitar LEDs), receives marker LEDs on top
 - `leds2[]` — output for DATA_PIN_2 (strap LEDs), no markers
@@ -129,19 +129,20 @@ commit and next step when done - so a new session can resume after a crash.
 ### Timing
 A hardware timer (`TimerFunctions.h`) fires every 2 ms and sets `flag_processFastLED = true`. The main loop only runs the LED switch-case when that flag is set, keeping millisecond counters accurate. All effect timing uses `millisCounterTimer`, `millisCounterForProgChange`, etc. — never `delay()`.
 The loop notices a part change a few ms late (one pass incl. `FastLED.show()`). For generated songs
-(`isGeneratedSong()`, assembled by `songgen.py`) `loop()` carries that lateness into the next part so it cannot add
+(`isGeneratedSong()`, assembled by `songgen.py`) `showEngine_step()` carries that lateness into the next part so it cannot add
 up over a song; hand-written songs keep the old behaviour because their part lengths were tuned by hand.
 
 ### Song / part state machine
-`switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The main loop `switch(songID)` dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.
+`switchToSong(id)` and `switchToPart(part)` (in `functions.h`) update `songID` / `prog` and reset counters. The song dispatcher `switch(songID)` in `showEngine_step()` (`showEngine.cpp`) dispatches to per-song functions defined in `songs.cpp`. Each song function calls effect primitives from `FXprograms.h` in sequence, using `millisCounterForProgChange` to advance through song parts.
 
-MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi_in.cpp`, everything else is ignored). The proxy re-broadcasts these using the `BLEmessage` struct (3 bytes; msgTypes 0–8 = `enum LedSyncMsg`, `SYNC_STATE` … `SYNC_BRIGHT`, defined in `ledSync.h`; 7 = enter OTA update mode, 8 = lamp brightness ± n knob steps, applied only by devices with `REMOTE_BRIGHTNESS` = the lamps, not repeated). All sync decisions (MIDI broadcast, force 3→4, ask 5→6→4, knob read→4, OTA only in song 0) live in `ledSync.cpp`: events in, `LedSyncAction` out. `syncProxy.cpp` / `syncClient.cpp` execute it (`applyAction()`) and send through `syncTransport.h`, which exactly one radio adapter fulfils: `espNowSync.cpp` (default) or the two BLE files (fallback). Per ESP-NOW the `BLEmessage` travels in a 13-byte `EspNowFrame` (`espNowFrame.h`: magic, version, kind MSG/READ_REQ/READ_RESP/WRITE/HELLO/HELLO_ACK, bootId, seq, copy, device); every broadcast goes out `ESPNOW_REPEAT_COUNT` times, receivers drop duplicates by (bootId, seq); the proxy's HELLO every second drives the warn LEDs and the OTA client count. Keep the `BLEmessage` byte-identical. Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/radio.
+MIDI channel 10 only: CC 22 = song select, CC 23 = part select (`midiApplyCC()` in `showEngine.cpp`, called by `midi_in.cpp`; everything else is ignored). The proxy re-broadcasts these using the `BLEmessage` struct (3 bytes; msgTypes 0–8 = `enum LedSyncMsg`, `SYNC_STATE` … `SYNC_BRIGHT`, defined in `ledSync.h`; 7 = enter OTA update mode, 8 = lamp brightness ± n knob steps, applied only by devices with `REMOTE_BRIGHTNESS` = the lamps, not repeated). All sync decisions (MIDI broadcast, force 3→4, ask 5→6→4, knob read→4, OTA only in song 0) live in `ledSync.cpp`: events in, `LedSyncAction` out. `syncProxy.cpp` / `syncClient.cpp` execute it (`applyAction()`) and send through `syncTransport.h`, which exactly one radio adapter fulfils: `espNowSync.cpp` (default) or the two BLE files (fallback). Per ESP-NOW the `BLEmessage` travels in a 13-byte `EspNowFrame` (`espNowFrame.h`: magic, version, kind MSG/READ_REQ/READ_RESP/WRITE/HELLO/HELLO_ACK, bootId, seq, copy, device); every broadcast goes out `ESPNOW_REPEAT_COUNT` times, receivers drop duplicates by (bootId, seq); the proxy's HELLO every second drives the warn LEDs and the OTA client count. Keep the `BLEmessage` byte-identical. Automatic part changes are NOT broadcast: every device runs through the part lengths on its own timer, only the song start (and manual part jumps) come via MIDI/radio.
 
 ### Key source files
 | File | Purpose |
 |---|---|
 | `definitions.h` | All compile-time config — edit here first |
-| `main.cpp` | `setup()` + `loop()`, global state variables |
+| `main.cpp` | `setup()` + `loop()`: hardware side only (pins, `FastLED.addLeds`, radio, OTA, knob, battery, timer start) + the two radio hooks `showEngine_onPartChange()` / `showEngine_onEmergencyStop()` |
+| `showEngine.cpp/.h` | The show without hardware or radio (shared with the planned PC simulator, `docs/Simulator-Plan.md`): global show state (`leds[]`, `matrix`, `songID`, `prog`, counters, flags, markers), `showEngine_createMatrix()` / `showEngine_begin()` / `showEngine_start()` (show part of `setup()`), `showEngine_step()` (part change, emergency stop, the frame + the **song dispatcher `switch (songID)`** that `songgen.py` reads and writes), `midiApplyCC()`; radio calls only through the hooks declared in `showEngine.h` |
 | `songs.cpp/.h` | One function per song, calls FX primitives |
 | `FXprograms.cpp/.h` | Basic strip effects (bling, full colours, strobe, black) + the shared effect state; `FXprograms.h` is the one header for all `prog…` effects, also those in the family files below |
 | `fxMatrixShapes.cpp`, `fxText.cpp`, `fxPalette.cpp`, `fxMatrixRain.cpp`, `fxMatrixSim.cpp` | Effect families: scanner/star/circles/lines/outline, text, palettes, "Matrix" rain, computed matrix effects (fire, plasma, starfield, Lissajous, sine/cos, DNA double helix, TV static, Game of Life, equalizer, water ripple) |
@@ -150,8 +151,8 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (handled in `midi
 | `fxPipeline.cpp/.h` | Output stage `fxPresent()`: layer (second effect), transitions, modifiers, markers, the only `FastLED.show()` for effects |
 | `markerLEDs.cpp/.h` | Fret-position marker LED overlay |
 | `matrixFunctions.cpp/.h` | Matrix drawing helpers (lines, circles, etc.) |
-| `TimerFunctions.cpp/.h` | 2 ms hardware timer, all timing flags |
-| `midi_in.cpp/.h` | MIDI CC parsing; on the proxy hands the change to `ledSyncProxyMidiSong/Part()` |
+| `TimerFunctions.cpp/.h` | 2 ms hardware timer (ISR calls `timer_tick()`, which counts the counters and sets the flags) |
+| `midi_in.cpp/.h` | MIDI input; calls `midiApplyCC()`, on the proxy then hands the change to `ledSyncProxyMidiSong/Part()` |
 | `ledSync.cpp/.h` | LED-sync protocol: `BLEmessage`, msgType names, all sync state + decisions for proxy and client (no Arduino, unit-tested natively) |
 | `syncProxy.cpp/.h`, `syncClient.cpp/.h` | Execute the `ledSync` decisions on proxy / clients (`applyAction()`), OTA-for-all waiting (`syncProxy_broadcastOTA()`), link state for the warn LEDs |
 | `syncTransport.h` | Interface between the sync modules and the radio transport (`proxyTransport_…`, `clientTransport_…`) |
@@ -202,7 +203,7 @@ time with the beat) while the other devices keep playing the scene.
 part number on every table part's first beat, so he can start playback mid-song and watch one transition; not for parts
 during the matrix title scroll, tails or cases > 127; `--midi` writes only this file, also for a song with frozen
 code and no `show.yaml` - then the part starts are read from its `generated.cpp`, `frozen_timeline()`) and assembles
-`src/songs_generated.cpp/.h` plus the marker block in `main.cpp` from the `generated.cpp` of all songs (other
+`src/songs_generated.cpp/.h` plus the marker block (the song dispatcher) in `showEngine.cpp` from the `generated.cpp` of all songs (other
 songs are taken over unchanged). `--neu` creates a new song folder with the table template
 (`songs/struktur-vorlage.xlsx`, already in the quarter-bar grid), `--raster` writes a quarter-bar copy
 `quelle/struktur-raster.xlsx` next to an existing table (the table itself is only read; the user swaps the files

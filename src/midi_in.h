@@ -14,7 +14,8 @@
 //
 // Alles andere wird ignoriert.
 //
-// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. midi_in.cpp bindet diese
+// Hier stehen nur die Funktionen, die von außen (main.cpp) benutzt werden. Das eigentliche Wechseln von Song/Part
+// macht midiApplyCC() in showEngine.cpp (dieselbe Funktion benutzt später der PC-Simulator). midi_in.cpp bindet diese
 // Datei selbst ein, damit der Compiler Ankündigung (hier) und Code (dort) miteinander vergleicht.
 
 /**
@@ -24,6 +25,7 @@
  * (angemeldet in midi_initialize()). Reagiert nur auf Kanal 10:
  * - CC 22: switchToSong(value)
  * - CC 23: switchToPart(value)
+ * Das Wechseln selbst macht midiApplyCC() (showEngine.cpp); diese Funktion ruft sie auf.
  *
  * Auf dem Proxy (IS_MIDI_PROXY) wird der Wechsel zusätzlich zum Weitersenden per Bluetooth
  * vorgemerkt (ledSyncProxyMidiSong() / ledSyncProxyMidiPart() in ledSync.cpp).

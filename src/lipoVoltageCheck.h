@@ -29,6 +29,6 @@ void lipoVoltageCheck_initialize();
  * - Spannung unter 10,5 V:  LIPOvoltageIsLOW = true
  * - sonst:                  LIPOvoltageIsLOW = false (die LEDs kommen von selbst zurück)
  *
- * Das Abschalten und das Warnblinken selbst stehen in loop() (main.cpp), nicht hier.
+ * Das Abschalten und das Warnblinken selbst stehen in showEngine_step() (showEngine.cpp), nicht hier.
  */
 void lipoVoltageCheck_loop();

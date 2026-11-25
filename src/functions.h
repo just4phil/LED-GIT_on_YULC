@@ -58,7 +58,7 @@ int getRandomColorIncludingBlack();
  * @param part Nummer des Parts (zählt je Song ab 0; wie viele es gibt, bestimmt der Song)
  *
  * @note Sendet selbst NICHTS per Bluetooth. Das Weitergeben an die Clients erledigen
- *       midi_in.cpp / main.cpp / midiProxyBLEserver_nimBLE.cpp.
+ *       midi_in.cpp / showEngine.cpp / midiProxyBLEserver_nimBLE.cpp.
  */
 void switchToPart(byte part);
 
@@ -68,7 +68,7 @@ void switchToPart(byte part);
  * Löscht die Bund-Marker des alten Songs, merkt sich den bisherigen Song in songIDbefore,
  * setzt songID und ruft switchToPart(0) auf.
  *
- * @param song Song-ID (siehe switch(songID) in main.cpp; unbekannte IDs zeigen das Pausenbild)
+ * @param song Song-ID (siehe switch(songID) in showEngine.cpp; unbekannte IDs zeigen das Pausenbild)
  */
 void switchToSong(byte song);
 

@@ -42,7 +42,7 @@ Schreibt:
     songs/<Song>/quelle/struktur.xlsx         (nur mit --anfang-ab N: Zeilen vor der ersten eingefügt, cmd_extend())
     songs/<Song>/quelle/struktur.xlsx         (nur mit --vorschlag: die Spalte "Neuer Vorschlag (KI)", siehe cmd_proposal())
     src/songs_generated.cpp / .h              (zusammengesetzt aus den generated.cpp ALLER Songs, unverändert übernommen)
-    src/main.cpp                              (nur zwischen den Markern "GENERATED SONGS")
+    src/showEngine.cpp                        (nur zwischen den Markern "GENERATED SONGS")
 
 Zeitbasis: 0 ms = Eintreffen des Start-MIDI-Signals. Das MIDI kommt midi_offset (Notenwert, z. B. 1/8)
 NACH dem Anfang der ersten Zeile (StartBit der Tabelle) -> der erste Part wird um den Offset kürzer. Alle Grenzen werden aus absoluten Zeiten
@@ -80,7 +80,7 @@ import struktur as st
 #   songs/<Song>/generated.cpp   ("Fragment": der Code dieses einen Songs + Kopfzeilen //@id, //@function ...)
 #        |
 #        v   assemble():        setzt die Fragmente ALLER Songs zu src/songs_generated.cpp/.h zusammen und trägt
-#                               die Aufrufe in den switch (songID) von src/main.cpp ein
+#                               die Aufrufe in den switch (songID) von src/showEngine.cpp ein
 #
 # Begriffe:
 #   Abschnitt (section)   eine Zeile der Tabelle (Intro, Verse 1 ...)
@@ -94,7 +94,7 @@ import struktur as st
 #   ${dur}, ${next} ...   Platzhalter in fx:-Angaben der show.yaml; fill() setzt die Werte des Parts ein
 #
 # WICHTIG: Der Generator liest auch C++-Quelltext als Text (Suchmuster): die Namen der Szenen und Effekte aus
-# den Headern in src/, MATRIX_WIDTH aus definitions.h, den switch (songID) in main.cpp und Sprünge in songs.cpp.
+# den Headern in src/, MATRIX_WIDTH aus definitions.h, den switch (songID) in showEngine.cpp und Sprünge in songs.cpp.
 # Wer dort Zeilen umbaut (z.B. eine Deklaration auf mehrere Zeilen verteilt), muss hier nachsehen, ob die
 # Suchmuster noch passen (matrix_widths, known_functions, enum_names, main_cases, trailer_jumps).
 
@@ -104,7 +104,7 @@ SRC = ROOT / "src"
 SONGS_DIR = ROOT / "songs"
 OUT_CPP = SRC / "songs_generated.cpp"
 OUT_H = SRC / "songs_generated.h"
-MAIN_CPP = SRC / "main.cpp"
+ENGINE_CPP = SRC / "showEngine.cpp"	# hier steht der Song-Verteiler switch (songID) (bis 25.11.2026 in main.cpp)
 
 TABLE_FILE = st.TABLE_FILE			# struktur.xlsx: gehört dem User, das Werkzeug schreibt dort nur die Spalte "Effekt"
 TABLE_DIR = "quelle"
@@ -116,9 +116,9 @@ VERSIONS_DIR = "versionen"
 VERSION_FILES = (TABLE_FILE, SHOW_FILE, GEN_FILE)	# so heißen sie im Versions-Ordner (die Tabelle liegt dort flach)
 
 MARK_BEGIN = "// >>> GENERATED SONGS (tools/songgen.py) >>>"	# dahinter kommen die cases neuer Song-IDs
-TAG = "// <<< GENERATED SONGS <<<"							# hängt an jedem generierten Aufruf in main.cpp
+TAG = "// <<< GENERATED SONGS <<<"							# hängt an jedem generierten Aufruf in showEngine.cpp
 SONGS_CPP = SRC / "songs.cpp"
-# Suchmuster für main.cpp: eine Zeile, die nur aus einem Funktionsaufruf besteht ("\t\t\tPhysical();") bzw. ein
+# Suchmuster für showEngine.cpp: eine Zeile, die nur aus einem Funktionsaufruf besteht ("\t\t\tPhysical();") bzw. ein
 # solcher Aufruf auskommentiert ("//BillyJean();" - der alte Aufruf über einem generierten)
 CALL_RE = re.compile(r"^(\s*)(\w+)\(\);")
 OLD_CALL_RE = re.compile(r"^\s*//\s*(\w+)\(\);")
@@ -1618,10 +1618,10 @@ def known_functions():
 
 
 def main_cases(lines):
-	"""{Song-ID: (erste, letzte+1 Zeile)} der aktiven cases im switch (songID) von main.cpp."""
+	"""{Song-ID: (erste, letzte+1 Zeile)} der aktiven cases im switch (songID) von showEngine.cpp."""
 	s = next((i for i, l in enumerate(lines) if "switch (songID)" in l), None)
 	if s is None:
-		raise SongError("switch (songID) in main.cpp nicht gefunden")
+		raise SongError("switch (songID) in showEngine.cpp nicht gefunden")
 	cases, cur = {}, None
 	for i in range(s + 1, len(lines)):
 		st = lines[i].strip()
@@ -1635,13 +1635,13 @@ def main_cases(lines):
 	return cases
 
 
-# main.cpp als Liste von Zeilen
+# showEngine.cpp (Song-Verteiler) als Liste von Zeilen
 def main_lines():
-	return MAIN_CPP.read_text(encoding="utf-8").split("\n")
+	return ENGINE_CPP.read_text(encoding="utf-8").split("\n")
 
 
 def handwritten_songs(lines=None):
-	"""{Song-ID: Funktionsname} der handgeschriebenen Songs in main.cpp - egal ob noch aktiv oder schon durch
+	"""{Song-ID: Funktionsname} der handgeschriebenen Songs im Song-Verteiler (showEngine.cpp) - egal ob noch aktiv oder schon durch
 	einen generierten ersetzt (dann steht der alte Aufruf auskommentiert direkt über dem generierten)."""
 	lines = lines or main_lines()
 	out = {}
@@ -1661,7 +1661,7 @@ def handwritten_songs(lines=None):
 
 
 def bind_main(lines, frags):
-	"""Generierte Songs in den switch (songID) einbinden (Zeilenliste von main.cpp, wird verändert):
+	"""Generierte Songs in den switch (songID) einbinden (Zeilenliste von showEngine.cpp, wird verändert):
 	- gibt es den case schon (alter, handgeschriebener Song): alten Aufruf auskommentieren, generierten darunter
 	- sonst: neuer case hinter dem Marker GENERATED SONGS
 	- generierte Aufrufe ohne Song-Ordner wieder entfernen (alter Aufruf wird wieder aktiv)"""
@@ -1699,11 +1699,11 @@ def bind_main(lines, frags):
 					lines[i] = ind + "//" + lines[i][len(ind):]
 				lines.insert(calls[-1] + 1, new)
 			else:
-				raise SongError(f"main.cpp: case {cid} hat keinen Funktionsaufruf")
+				raise SongError(f"showEngine.cpp: case {cid} hat keinen Funktionsaufruf")
 		else:
 			k = next((i for i, l in enumerate(lines) if MARK_BEGIN in l), None)
 			if k is None:
-				raise SongError(f"Marker '{MARK_BEGIN}' fehlt in main.cpp")
+				raise SongError(f"Marker '{MARK_BEGIN}' fehlt in showEngine.cpp")
 			lines[k + 1:k + 1] = [f"\t\tcase {cid}:", new, "\t\t\tbreak;"]
 	return lines
 
@@ -2089,7 +2089,7 @@ def generate(song, others):
 		errors.append("Song-ID muss 1..127 sein (MIDI; 0 ist der Pausen-Loop)")
 	old = handwritten_songs().get(song["id"])
 	if old:
-		notes.append(f"ersetzt den handgeschriebenen Song {old}() in main.cpp case {song['id']}: der alte Aufruf wird "
+		notes.append(f"ersetzt den handgeschriebenen Song {old}() in showEngine.cpp case {song['id']}: der alte Aufruf wird "
 					 f"auskommentiert, der alte Code bleibt in songs.cpp")
 	for o in others:
 		if o["id"] == song["id"]:
@@ -2353,9 +2353,10 @@ def write_if_changed(path, text):
 
 
 def gen_is_generated(frags):
-	"""isGeneratedSong(): bei diesen Songs nimmt main.cpp die Verspätung eines Part-Wechsels in den nächsten Part mit."""
+	"""isGeneratedSong(): bei diesen Songs nimmt showEngine.cpp die Verspätung eines Part-Wechsels in den nächsten Part mit."""
 	cases = ["\tcase " + ": case ".join(str(f["id"]) for f in frags) + ":", "\t\treturn true;"] if frags else []
 	return "\n".join(["//==================================================================",
+					  # ACHTUNG: dieser erzeugte Text nennt noch main.cpp (der Ausgleich steht jetzt in showEngine_step()); bewusst nicht geändert, damit songs_generated.* unverändert bleibt
 					  "// Generierte Songs haben eine exakte Timeline (kein von Hand verkürzter Part): main.cpp gleicht bei ihnen",
 					  "// die Verspätung jedes Part-Wechsels aus, damit sich über den Song kein Versatz zum Klick aufsummiert",
 					  "//==================================================================",
@@ -2363,7 +2364,7 @@ def gen_is_generated(frags):
 
 
 def assemble():
-	"""src/songs_generated.cpp/.h + Block in main.cpp aus den generated.cpp aller Song-Ordner bauen.
+	"""src/songs_generated.cpp/.h + Block in showEngine.cpp aus den generated.cpp aller Song-Ordner bauen.
 	Der Code jedes Songs wird unverändert übernommen, hier wird nichts neu generiert."""
 	frags = sorted(fragments(), key=lambda f: f["id"])
 	seen = {}
@@ -2395,16 +2396,16 @@ def assemble():
 				  f"#define {c} {part_case}", "#endif"]
 	write_if_changed(OUT_H, "\n".join(h) + "\n")
 
-	text = MAIN_CPP.read_text(encoding="utf-8")
+	text = ENGINE_CPP.read_text(encoding="utf-8")
 	new = "\n".join(bind_main(text.split("\n"), frags))
 	if new != text:
-		MAIN_CPP.write_text(new, encoding="utf-8")
+		ENGINE_CPP.write_text(new, encoding="utf-8")
 	return frags
 
 
 # --- Ausgaben auf der Konsole ---
 def print_assembled(frags):
-	print(f"\nsrc/songs_generated.cpp/.h + main.cpp: {len(frags)} Song(s) - "
+	print(f"\nsrc/songs_generated.cpp/.h + showEngine.cpp: {len(frags)} Song(s) - "
 		  + (", ".join(f"#{f['id']} {f['name']}" for f in frags) or "keine"))
 
 

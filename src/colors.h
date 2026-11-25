@@ -16,7 +16,7 @@
  * Rot, Grün und Blau in getrennten Bit-Feldern liegen.
  *
  * Die Farbe selbst ist hier fest; wie hell sie am Ende leuchtet, bestimmt zusätzlich die Gesamthelligkeit
- * (BRIGHTNESS in main.cpp).
+ * (BRIGHTNESS in showEngine.cpp).
  */
 
 //===============================================

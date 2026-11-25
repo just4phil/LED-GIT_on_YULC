@@ -18,8 +18,8 @@
 //   2. den Zettel in applyAction() ausführen: senden / hinterlegen über den Funkweg, ggf. springen
 // Neu ist nur, dass das Senden über syncTransport.h läuft - so funktioniert dieselbe Datei mit ESP-NOW und BLE.
 
-extern byte songID;			// aktueller Song (main.cpp)
-extern volatile byte prog;	// aktueller Part (main.cpp)
+extern byte songID;			// aktueller Song (showEngine.cpp)
+extern volatile byte prog;	// aktueller Part (showEngine.cpp)
 
 /**
  * @brief Den Auftragszettel des Abgleich-Moduls ausführen (LedSyncAction, siehe ledSync.h)

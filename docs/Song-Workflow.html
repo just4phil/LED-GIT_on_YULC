@@ -202,7 +202,7 @@ python tools/songgen.py vogue --restore 2026-10-06_1116</code></pre>
     Holt Tabelle, Show und Code dieser Version zurück. Details in <a href="#generator">Abschnitt 7</a>.</li>
 
   <li><b>In Git sichern</b><span class="who du">du</span><br>
-<pre><code>git add songs/Vogue_v1 src/songs_generated.cpp src/songs_generated.h src/main.cpp
+<pre><code>git add songs/Vogue_v1 src/songs_generated.cpp src/songs_generated.h src/showEngine.cpp
 git commit -m "Song Vogue"</code></pre></li>
 </ol>
 
@@ -439,9 +439,9 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>Code eingefroren (keine show.yaml)</code></td><td>Es gibt <code>generated.cpp</code>, aber keine Show mehr dazu. Der Song bleibt unverändert in der Firmware (so bei „Dancing On My Own“).</td></tr>
 <tr><td><code>leer (keine struktur.xlsx)</code></td><td>Ordner ohne Tabelle, nicht in der Firmware.</td></tr>
 </table></div>
-<p>Der Generator bearbeitet immer nur <b>den einen Song</b>, den du angibst. Er schreibt dessen <code>generated.cpp</code> und setzt danach <code>src/songs_generated.cpp/.h</code> und die Aufrufe in <code>main.cpp</code> aus den <code>generated.cpp</code> aller Song-Ordner zusammen. Der Code der anderen Songs wird dabei unverändert übernommen und nicht neu berechnet. Ein fertiger Song bleibt also genau so, wie er zuletzt generiert wurde, auch wenn sich der Generator später ändert. Handgeschriebene Songs in <code>songs.cpp</code> bleiben unberührt.</p>
+<p>Der Generator bearbeitet immer nur <b>den einen Song</b>, den du angibst. Er schreibt dessen <code>generated.cpp</code> und setzt danach <code>src/songs_generated.cpp/.h</code> und die Aufrufe in <code>showEngine.cpp</code> aus den <code>generated.cpp</code> aller Song-Ordner zusammen. Der Code der anderen Songs wird dabei unverändert übernommen und nicht neu berechnet. Ein fertiger Song bleibt also genau so, wie er zuletzt generiert wurde, auch wenn sich der Generator später ändert. Handgeschriebene Songs in <code>songs.cpp</code> bleiben unberührt.</p>
 
-<h3>Einbindung in <code>main.cpp</code></h3>
+<h3>Einbindung in <code>showEngine.cpp</code></h3>
 <p>Jeder generierte Aufruf trägt den Kommentar <code>// &lt;&lt;&lt; GENERATED SONGS &lt;&lt;&lt;</code>. Daran erkennt der Generator seine Zeilen.</p>
 <div class="tablewrap"><table>
 <tr><th>Fall</th><th>So steht es in <code>switch (songID)</code></th></tr>
@@ -450,12 +450,12 @@ git commit -m "Song Vogue"</code></pre></li>
 	//DancingOnMyOwn();
 	gen_DancingOnMyOwn(); // &lt;&lt;&lt; GENERATED SONGS &lt;&lt;&lt;
 	break;</code></pre></td></tr>
-<tr><td>Die ID ist neu</td><td>Ein neuer <code>case</code> entsteht hinter der Zeile <code>// &gt;&gt;&gt; GENERATED SONGS (tools/songgen.py) &gt;&gt;&gt;</code>. Diese Zeile muss in <code>main.cpp</code> stehen bleiben.</td></tr>
+<tr><td>Die ID ist neu</td><td>Ein neuer <code>case</code> entsteht hinter der Zeile <code>// &gt;&gt;&gt; GENERATED SONGS (tools/songgen.py) &gt;&gt;&gt;</code>. Diese Zeile muss in <code>showEngine.cpp</code> stehen bleiben.</td></tr>
 <tr><td>Ein Song-Ordner wurde gelöscht</td><td>Beim nächsten Zusammensetzen verschwindet der generierte Aufruf. Stand ein auskommentierter alter Aufruf darüber, wird er wieder aktiv.</td></tr>
 </table></div>
 
 <h3 id="altsong">Einen handgeschriebenen Song ersetzen</h3>
-<p>Gibt es den Song schon in <code>src/songs.cpp</code>, bekommt die neue Fassung dieselbe ID. Der alte Code bleibt in <code>songs.cpp</code> stehen, nur sein Aufruf in <code>main.cpp</code> wird auskommentiert. Der Generator prüft dabei drei Dinge und bricht ab, wenn eines fehlt:</p>
+<p>Gibt es den Song schon in <code>src/songs.cpp</code>, bekommt die neue Fassung dieselbe ID. Der alte Code bleibt in <code>songs.cpp</code> stehen, nur sein Aufruf in <code>showEngine.cpp</code> wird auskommentiert. Der Generator prüft dabei drei Dinge und bricht ab, wenn eines fehlt:</p>
 <div class="tablewrap"><table>
 <tr><th>Was</th><th>Regel</th></tr>
 <tr><td>Grund-Marker</td><td>Der <code>case</code> der Song-ID in <code>src/markerLEDs.cpp</code> gilt unverändert weiter, weil die ID gleich bleibt.</td></tr>

@@ -18,9 +18,9 @@
 // Wie beim Proxy: das Abgleich-Modul fragen (ledSyncClient...()), den Auftragszettel (LedSyncAction) in
 // applyAction() ausführen. Früher stand das in BLE_client_nimBLE.cpp; jetzt ist es vom Funkweg getrennt.
 
-extern byte songID;			// aktueller Song (main.cpp)
-extern volatile byte prog;	// aktueller Part (main.cpp)
-extern int BRIGHTNESS;		// Grundhelligkeit 0..255 (main.cpp), loop() setzt sie vor jedem Bild mit FastLED.setBrightness()
+extern byte songID;			// aktueller Song (showEngine.cpp)
+extern volatile byte prog;	// aktueller Part (showEngine.cpp)
+extern int BRIGHTNESS;		// Grundhelligkeit 0..255 (showEngine.cpp), showEngine_step() setzt sie vor jedem Bild mit FastLED.setBrightness()
 
 /**
  * @brief Den Auftragszettel des Abgleich-Moduls ausführen (LedSyncAction, siehe ledSync.h)

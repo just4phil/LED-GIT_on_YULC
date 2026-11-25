@@ -574,7 +574,7 @@ static void applyBlinder(CRGB* buf, uint8_t level, bool behind) {
 	uint8_t keep = 255;		// um diesen Faktor wird das Bild des Effekts dunkler gerechnet (255 = gar nicht)
 	if (bright != base) {
 		keep = (uint16_t)base * 255 / bright;
-		FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+		FastLED.setBrightness(bright);	// showEngine.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 	}
 	for (int i = 0; i < NUMMATRIX; i++) {
 		// behind (fxBlinderBehind): wie hell leuchtet diese LED im Bild des Effekts? Gemessen VOR dem Herunterrechnen
@@ -822,7 +822,7 @@ static void applyLayers(CRGB* buf, uint32_t ms, int skip = -1) {
 		if (k == skip) continue;
 		if (layers[k].used) applyLayer(buf, ms, layers[k], mod.layer[k], bright);
 	}
-	if (bright != baseBright) FastLED.setBrightness(bright);	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück
+	if (bright != baseBright) FastLED.setBrightness(bright);	// showEngine.cpp setzt die Helligkeit vor jedem Durchlauf zurück
 }
 
 // fxBlinderUnderText: der Blinder soll ein heller Hintergrund UNTER dem Text sein (Wunsch zu "Take On Me",
@@ -921,7 +921,7 @@ static void applyTvOff(CRGB* buf, uint32_t ms) {
 #if DEVICE_CLASS == CLASS_MATRIX
 	// Linie und Punkt sollen intensiv strahlen, auch wenn die Matrix gerade gedimmt läuft: wie beim Blinder steigt die
 	// Gesamthelligkeit mit dem Weiß-Anteil bis 255, das Bild wird im selben Maß heruntergerechnet und bleibt gleich hell.
-	// main.cpp setzt die Helligkeit vor jedem Durchlauf zurück.
+	// showEngine.cpp setzt die Helligkeit vor jedem Durchlauf zurück.
 	const uint8_t base = FastLED.getBrightness();
 	const uint8_t bright = base + (uint16_t)(255 - base) * white / 255;
 	if (bright != base) {

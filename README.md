@@ -57,7 +57,8 @@ built or maintained.
 ```
 LED-GIT_on_YULC/
 ├── src/
-│   ├── main.cpp                  # setup() + loop(), global state, song dispatcher
+│   ├── main.cpp                  # setup() + loop(): hardware, radio, knob, battery; radio hooks
+│   ├── showEngine.h/cpp          # the show: LED buffers, global state, song dispatcher, part changes, MIDI CC (shared with the future simulator)
 │   ├── definitions.h             # all compile-time configuration (devices, pins, LED counts, switches)
 │   ├── songs.h/cpp               # hand-written songs (one function per song)
 │   ├── songs_generated.h/cpp     # generated songs - never edit by hand
@@ -229,7 +230,7 @@ firmware. Details: `docs/OTA-Update.html`.
 | | | | 99 | Startup animation |
 
 \* generated from table + `show.yaml`. The other songs are still hand-written in `src/songs.cpp`; when a song is
-generated, its old function stays there and only its call in `main.cpp` is commented out.
+generated, its old function stays there and only its call in `showEngine.cpp` is commented out.
 
 A trailer (the backing-track intro before a song) is a song folder of its own. Its `show.yaml` names the song it
 leads into (`next_song: ILoveIt_v1`): there is no closing blackout, the last part jumps straight into that song. The

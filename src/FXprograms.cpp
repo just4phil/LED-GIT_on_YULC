@@ -102,7 +102,7 @@ int LEDsUndFarbWerteSternschnuppen[anzahlLEDsSternschnuppen][4];
 //=========== FX programs ==========================================
 //==================================================================
 
-// Eine rote LED blinkt im Abstand von del ms (alte Akku-Warnung; die heutige steht in loop() in main.cpp)
+// Eine rote LED blinkt im Abstand von del ms (alte Akku-Warnung; die heutige steht in showEngine_step() in showEngine.cpp)
 void progBlinkLowVoltage(unsigned int del) {
 
 	if (fxEvery(millisCounterTimer, del)) {

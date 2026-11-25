@@ -23,3 +23,14 @@
  * @note Alle Effekte und der Gleichlauf der Geräte hängen an diesen Zählern - nie delay() verwenden.
  */
 void timer_begin();
+
+/**
+ * @brief Ein 2-ms-Takt: Zeitzähler weiterstellen und Merker setzen (der Rumpf der Timer-Interrupt-Routine)
+ *
+ * Auf dem ESP32 ruft die Interrupt-Routine (Timer0_ISR_callback) diese Funktion alle 2 ms auf; sie liegt dort
+ * im IRAM (schnelles RAM, Pflicht für Interrupt-Code). Der PC-Simulator ruft sie alle 2 ms simulierter Zeit
+ * selbst auf, die Zähler laufen so genauso wie auf dem Gerät. Was sie macht, steht oben bei timer_begin().
+ *
+ * @note Darf nur Zähler und Merker verändern: kein Serial, kein FastLED.show(), kein delay().
+ */
+void timer_tick();

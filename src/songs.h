@@ -1,12 +1,12 @@
 //=====================================================================
 // songs.h - die handgeschriebenen Songs (eine Funktion je Song)
 //=====================================================================
-// Jede Funktion hier ist die Lichtshow zu EINEM Song. loop() in main.cpp ruft über switch(songID) bei jedem
+// Jede Funktion hier ist die Lichtshow zu EINEM Song. showEngine_step() in showEngine.cpp ruft über switch(songID) bei jedem
 // Durchlauf die Funktion des laufenden Songs auf. Wie eine Song-Funktion aufgebaut ist, steht am Anfang von
 // songs.cpp.
 //
 // Die Nummer hinter "#" ist die Song-ID: mit ihr wird der Song per MIDI (Kanal 10, CC 22) gestartet.
-// Die Zuordnung ID -> Funktion steht in main.cpp, die Bund-Marker je Song in markerLEDs.cpp.
+// Die Zuordnung ID -> Funktion steht in showEngine.cpp, die Bund-Marker je Song in markerLEDs.cpp.
 //
 // Neue Songs werden nicht mehr hier von Hand geschrieben, sondern aus der Excel-Tabelle des Songs
 // (songs/<Song>/quelle/struktur.xlsx) und der show.yaml erzeugt: siehe songs_generated.h und tools/songgen.py.
@@ -35,7 +35,7 @@ void SONGPAUSE();
  *
  * Sieht aus wie SONGPAUSE, springt am Ende aber NICHT auf Song 0 zurück. So bleibt die gewählte
  * Song-ID erhalten und man kann für einen neuen Song schon die Bund-Marker einrichten und sehen,
- * bevor seine Show existiert. Wird in main.cpp im "default"-Zweig aufgerufen.
+ * bevor seine Show existiert. Wird in showEngine.cpp im "default"-Zweig aufgerufen.
  */
 //#0
 void SONGPAUSE_ohne_switchToSong0();
@@ -86,7 +86,7 @@ void Firework();
 /**
  * @brief #8 Dancing On My Own (Robyn) - alte, handgeschriebene Fassung
  *
- * Wird nicht mehr aufgerufen: main.cpp ruft für Song 8 die generierte Fassung gen_DancingOnMyOwn() auf.
+ * Wird nicht mehr aufgerufen: showEngine.cpp ruft für Song 8 die generierte Fassung gen_DancingOnMyOwn() auf.
  */
 // #8
 void DancingOnMyOwn();
@@ -173,7 +173,7 @@ void IWannaDanceWithSomebody();
 
 /** @brief #30 Maniac (Michael Sembello) in der transponierten Fassung "T-1" - die einzige Maniac-Fassung.
  *  Gespielt wird inzwischen gen_Maniac() (songs_generated.h); der alte handgeschriebene Code bleibt hier stehen,
- *  sein Aufruf in main.cpp ist auskommentiert. */
+ *  sein Aufruf in showEngine.cpp ist auskommentiert. */
 void Maniac_Tminus1();
 
 /**
@@ -182,7 +182,7 @@ void Maniac_Tminus1();
  * Bleibt während des Einspielers dunkel (auf der LED-Fläche Lauftexte) und springt am Ende direkt
  * in Song #9 I Love It, hinter dessen Intro.
  * Seit 09.10.2026 läuft stattdessen die generierte Fassung gen_ILoveItIntro() (songs/ILoveItIntro_v1,
- * Aufruf in main.cpp); diese alte Funktion bleibt als Referenz stehen und wird nicht mehr aufgerufen.
+ * Aufruf in showEngine.cpp); diese alte Funktion bleibt als Referenz stehen und wird nicht mehr aufgerufen.
  */
 // #80
 void ILoveItTRAILER();

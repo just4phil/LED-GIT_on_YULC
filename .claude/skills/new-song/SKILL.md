@@ -118,7 +118,7 @@ Python: `tools/.venv/Scripts/python` oder das System-Python (Pakete: `pyyaml`, `
 3. **Generieren** - immer nur den einen Song, den der User nennt:
    `python tools/songgen.py <Song> --dry-run`, dann ohne `--dry-run`, mit `--note "<was sich geändert hat>"`.
    Das schreibt `generated.cpp`, legt eine Version an und setzt `src/songs_generated.cpp/.h` + den Block in
-   `main.cpp` aus den `generated.cpp` aller Songs zusammen (die anderen Songs werden nicht neu generiert).
+   `showEngine.cpp` (Song-Verteiler) aus den `generated.cpp` aller Songs zusammen (die anderen Songs werden nicht neu generiert).
    Generierte Dateien nie von Hand ändern.
 4. **Bauen**: `pio run -e andresgit`. Bei Geräte-Overrides (`devices:`) oder neuen Szenen auch die anderen
    Geräte-Envs bauen (`rinasbass`, `lampe1`, `lampe2`, `scrollmatrix`); `src/definitions.h` nicht anfassen.

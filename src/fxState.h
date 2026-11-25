@@ -5,7 +5,7 @@
  * Die Effekte stehen nach Familien getrennt in mehreren Dateien (FXprograms.cpp, fxMatrixShapes.cpp, fxText.cpp,
  * fxPalette.cpp, fxMatrixRain.cpp, fxMatrixSim.cpp). Alle greifen auf dieselben Variablen zu. Diese Datei sagt dem
  * Compiler nur, DASS es sie gibt ("extern" = ist woanders angelegt):
- *   - der obere Block liegt in main.cpp (Bildpuffer, Zeitzähler des Timers, Helligkeit, Schalter),
+ *   - der obere Block liegt in showEngine.cpp (Bildpuffer, Zeitzähler des Timers, Helligkeit, Schalter),
  *   - der untere Block liegt in FXprograms.cpp (Zähler und Farben, die ein Effekt von Aufruf zu Aufruf behält).
  *
  * Wichtig: zaehler, progScrollTextZaehler, progBlingBlingColoring_rounds und progStroboIsBlack werden von
@@ -21,7 +21,7 @@
 #include <FastLED.h>
 #include "definitions.h"
 
-//--- angelegt in main.cpp ---
+//--- angelegt in showEngine.cpp ---
 extern boolean LEDGITBOARD;	// defined in definitions.h
 
 extern byte songID;

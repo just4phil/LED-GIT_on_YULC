@@ -109,7 +109,7 @@
 /**
  * @brief Alte Akku-Warnung: eine rote LED blinkt im Abstand von del ms
  *
- * Die heutige Warnung steht in loop() (main.cpp); diese Funktion ist ein Überbleibsel.
+ * Die heutige Warnung steht in showEngine_step() (showEngine.cpp); diese Funktion ist ein Überbleibsel.
  */
 void progBlinkLowVoltage(unsigned int del);
 

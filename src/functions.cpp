@@ -11,7 +11,7 @@
 // Beschreibung der Funktionen: siehe functions.h.
 //
 // "extern" heißt: diese Variable wird hier nur benutzt, angelegt ist sie in einer anderen Datei
-// (die meisten in main.cpp, die Effekt-Zähler in FXprograms.cpp). So greifen alle Dateien auf
+// (die meisten in showEngine.cpp, die Effekt-Zähler in FXprograms.cpp). So greifen alle Dateien auf
 // dieselbe eine Variable zu.
 extern byte markerLED1;
 extern byte markerLED2;
