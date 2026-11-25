@@ -163,7 +163,7 @@ Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umset
 
 | Issue | Inhalt | Blockiert durch | Status | Ergebnis / Commit |
 |---|---|---|---|---|
-| #19 | Show-Engine aus main.cpp herauslösen (Stufe 1) | - | erledigt (25.11.2026) | `showEngine.cpp/.h` (Variablen, `showEngine_createMatrix/begin/start/step`, `midiApplyCC`, Song-Verteiler), Hooks `showEngine_onPartChange` / `showEngine_onEmergencyStop` in `main.cpp`, `timer_tick()` in `TimerFunctions.cpp`, `songgen.py` schreibt in `showEngine.cpp`. Nächster Schritt: #20. Commit siehe Git-Log (Stufe-1-Commit) |
+| #19 | Show-Engine aus main.cpp herauslösen (Stufe 1) | - | erledigt (25.11.2026) | `showEngine.cpp/.h` (Variablen, `showEngine_createMatrix/begin/start/step`, `midiApplyCC`, Song-Verteiler), Hooks `showEngine_onPartChange` / `showEngine_onEmergencyStop` in `main.cpp`, `timer_tick()` in `TimerFunctions.cpp`, `songgen.py` schreibt in `showEngine.cpp`. Nächster Schritt: #20. Commit 0c6b4eb |
 | #20 | Durchstich: Matrix im Simulator, Reiter "Bühne" (Stufen 0, 2, 3) | #19 | offen | |
 | #21 | Zeittreue: Bildtakt + automatischer Zeit-Test | #20 | offen | |
 | #22 | Gitarre und Bass mit Gurt | #20 | offen | |
