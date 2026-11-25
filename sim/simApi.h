@@ -53,8 +53,9 @@ SIM_API void sim_reset(unsigned int seed);
 SIM_API void sim_midi(int channel, int cc, int value);
 
 // Zeit um "ms" Millisekunden vorstellen. Je 2 ms wird timer_tick() aufgerufen (wie vom Hardware-Timer) und
-// danach, wenn ein Bild fällig ist, showEngine_step(). Das genaue Bildtakt-Modell (Dauer von FastLED.show())
-// folgt später (Issue #21).
+// danach, wenn ein Bild fällig ist, showEngine_step(). Bildtakt-Modell (Issue #21): nach einem echten FastLED.show()
+// ist loop() so lange blockiert, wie die LEDs zum Empfangen brauchen (je LED 30 us + 50 us Pause, beide
+// Ausgänge gleichzeitig; Begründung in sim/simApi.cpp) - in dieser Zeit entsteht kein neues Bild, die Zähler laufen weiter.
 SIM_API void sim_advance(unsigned int ms);
 
 // Das zuletzt GESENDETE Bild holen (der Inhalt von leds1 bzw. leds2 beim letzten FastLED.show()):

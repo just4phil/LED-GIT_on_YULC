@@ -102,6 +102,7 @@ LED-GIT_on_YULC/
 │   ├── struktur.py               # reads the Excel table
 │   ├── build_ota.py              # builds all devices and serves the firmware for OTA
 │   ├── build_sim.py              # builds the simulator DLLs (sim/bin/sim_<device>.dll) from src/ + the libraries
+│   ├── sim_timetest.py           # timing test: part changes of all generated songs in the simulator vs. songgen.py
 │   ├── fw_version.py             # sets the firmware version at build time
 │   ├── showview/                 # Windows GUI (Rust/egui): a song's flow as a timeline, view only
 │   └── fxstats.py                # statistics on effects used in the old songs
@@ -283,6 +284,11 @@ channel 10, CC 22), Stop = CC 22 with 0. The picture scales freely with the wind
 `--test` for a smoke test that plays song 30 for 60 s). `sim/shim/` replaces everything that only exists on the
 microcontroller (Arduino API, the hardware part of FastLED); the maths of FastLED 3.5.0 is the real library code.
 `showview.exe <song> --buehne` opens the tab and starts the song right away.
+The simulator also copies the device's frame rate: after a real `FastLED.show()` no new frame is computed until the LEDs
+have received the data (30 us per LED + 50 us latch; both outputs are sent in parallel on the ESP32), while the 2 ms
+timer keeps counting. `python tools/build_sim.py scrollmatrix --zeittest` (or `python tools/sim_timetest.py [<Song>]`)
+plays every generated song headless on every built device DLL and checks that all part changes happen within +-4 ms
+of the times `songgen.py` calculates.
 
 The tools need Python with `pyyaml` and `openpyxl` (`tools/requirements.txt`). The full workflow is described in
 `docs/Song-Workflow.html`.

@@ -5,6 +5,7 @@ build_sim.py - baut die Simulator-DLLs (die ECHTEN Firmware-Quellen als Windows-
     python tools/build_sim.py                  # alle Geräte, die es im Simulator schon gibt
     python tools/build_sim.py scrollmatrix     # nur dieses Gerät
     python tools/build_sim.py --test           # bauen + Schnelltest (sim/test/sim_smoke.cpp) laufen lassen
+    python tools/build_sim.py --zeittest       # bauen + Zeit-Test (tools/sim_timetest.py: Part-Wechsel aller generierten Songs gegen songgen.py)
     python tools/build_sim.py --clean          # alle Zwischendateien (sim/bin/obj_*) löschen und neu bauen
     python tools/build_sim.py -j 4             # höchstens 4 Übersetzungen gleichzeitig
 
@@ -254,6 +255,7 @@ def main():
     ap = argparse.ArgumentParser(description="Baut die Simulator-DLLs (echte Firmware-Quellen als Windows-DLL).")
     ap.add_argument("devices", nargs="*", help=f"Geräte (Standard: alle: {', '.join(DEVICES)})")
     ap.add_argument("--test", action="store_true", help="nach dem Bauen den Schnelltest sim/test/sim_smoke.cpp laufen lassen")
+    ap.add_argument("--zeittest", action="store_true", help="nach dem Bauen den Zeit-Test tools/sim_timetest.py laufen lassen (alle generierten Songs gegen songgen.py)")
     ap.add_argument("--clean", action="store_true", help="Zwischendateien löschen, alles neu übersetzen")
     ap.add_argument("-j", "--jobs", type=int, default=os.cpu_count() or 4, help="gleichzeitige Übersetzungen")
     args = ap.parse_args()
@@ -267,6 +269,11 @@ def main():
         dll = build_device(d, args.jobs, args.clean)
         if args.test:
             run_smoke_test(d, dll)
+    if args.zeittest:
+        # Der Zeit-Test prüft von selbst alle DLLs in sim/bin/ (nicht nur die eben gebauten); Rückgabewert weiterreichen.
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "sim_timetest.py")])
+        if r.returncode != 0:
+            sys.exit(r.returncode)
 
 
 if __name__ == "__main__":
