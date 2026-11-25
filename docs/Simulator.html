@@ -170,13 +170,14 @@ cargo run --release                       <span class="c"># baut beim ersten Mal
 <tr><td><b>⏸ / ▶ Weiter</b> (Pause)</td><td>Die Simulator-Uhr steht; Weiter lässt sie weiterlaufen.</td></tr>
 <tr><td><b>×1 / ×0,5</b> (Tempo)</td><td>Halbe Geschwindigkeit: die Simulator-Zeit läuft halb so schnell (Effekte, Part-Längen, Timer - alles gemeinsam, es bleibt konsistent).</td></tr>
 <tr><td><b>Part: [Liste] Springen</b></td><td>Part wählen und springen: CC 23 an alle Geräte, der Part beginnt an seinem Anfang. Läuft der Song noch nicht, wird er vorher gestartet. Ein Sprung hebt eine Pause auf.</td></tr>
-<tr><td><b>Einstellungen</b></td><td>Klappt eine zweite Zeile auf: <b>aufgehellt</b>, <b>Farbkorrektur</b> und <b>MIDI-Eingang</b> (<a href="#lp16">Abschnitt 4</a>).</td></tr>
+<tr><td><b>Einstellungen</b></td><td>Klappt eine zweite Zeile auf: <b>aufgehellt</b>, <b>Glow</b>, <b>Farbkorrektur</b> und <b>MIDI-Eingang</b> (<a href="#lp16">Abschnitt 4</a>).</td></tr>
 <tr><td><b>▸ Status</b></td><td>Unter der Bühne: eine Zeile „alle Geräte: Part 5 verse 1a 6.6 s“; ein Klick klappt die Tabelle je Gerät auf (Song, Part, Part-Name, Zeit, Bildnummer, Helligkeit). Weichen Geräte länger als 0,3 s im Part voneinander ab, wird das orange gemeldet (die Matrix im Titel-Lauftext ist kein Fehler: dort steht „Lauftext“).</td></tr>
 <tr><td>Reiter <b>Ablauf</b> → Part anklicken → <b>▶ auf der Bühne ab hier abspielen</b></td><td>Wechselt zur Bühne, startet den Song und springt zu diesem Part.</td></tr>
 </table></div>
 <h3>Darstellung</h3>
 <ul>
   <li><b>aufgehellt</b> (Standard an): Helligkeit des Geräts stark angehoben (Exponent 0,4, 1,25-fach), Farben per Gamma kräftiger, größerer Leuchthof und weißlicher Kern bei Volllicht (Blinder, Strobe), damit alles am Bildschirm hell und grell wirkt. Aus = „wie echt“ (Farbe mal Helligkeit; am Bildschirm sehr dunkel). Die Bund-Marker der Gitarre/des Basses (in der Firmware nur Pegel ca. 7 von 255) sind in „aufgehellt“ hervorgehoben und tragen einen Ring.</li>
+  <li><b>Glow</b> (Standard an): weicher Leuchthof um die LEDs von Lampen, Bass und Gitarre (die LEDs strahlen ja); aus = scharfe Punkte. Die Matrix hat keinen Glow (zu dicht).</li>
   <li><b>Farbkorrektur</b> (Standard an): die Firmware stellt <code>TypicalLEDStrip</code> ein (Rot 255, Grün 176, Blau 240 von 255); sie wirkt erst beim Senden, also rechnet die Anzeige sie nach.</li>
   <li>Beide Schalter werden gemerkt (<code>%APPDATA%\showview\settings.json</code>).</li>
   <li>Das <b>Fenster ist frei skalierbar</b>; die ganze Bühne wird mitskaliert (Seitenverhältnis bleibt, Beschriftungen kürzen sich oder verschwinden, damit nichts überlappt). Eine fehlende DLL zeigt ein graues Feld „nicht gebaut“, die anderen Geräte laufen weiter.</li>
@@ -248,7 +249,7 @@ tools/.venv/Scripts/python tools/sim_timetest.py --geraet scrollmatrix --toleran
 <tr><td><code>tools/build_sim.py</code></td><td>Baut die DLLs nach <code>sim/bin/</code>; Optionen: <code>&lt;gerät&gt;</code>, <code>--test</code>, <code>--zeittest</code>, <code>--clean</code>, <code>-j N</code>.</td></tr>
 <tr><td><code>tools/sim_timetest.py</code></td><td>Zeit-Test aller generierten Songs; Optionen: Song-Ordner, <code>--geraet</code>, <code>--toleranz</code>, <code>-j</code>.</td></tr>
 <tr><td><code>tools/showview/</code></td><td>Das Fenster (Rust/egui): <code>src/stage.rs</code> (Bühne), <code>shape.rs</code> (Kontur, Gurt), <code>sim.rs</code> (DLL laden), <code>midi_in.rs</code> (MIDI-Eingang), <code>settings.rs</code> (gemerkte Schalter), <code>examples/send_cc.rs</code> (Testsender).</td></tr>
-<tr><td><code>%APPDATA%\showview\settings.json</code></td><td>Gemerkt: <code>midi_port</code> (Name oder <code>null</code>), <code>bright_view</code> (aufgehellt), <code>correction</code> (Farbkorrektur). Fehlt die Datei, gelten die Standardwerte; löschen ist ungefährlich.</td></tr>
+<tr><td><code>%APPDATA%\showview\settings.json</code></td><td>Gemerkt: <code>midi_port</code> (Name oder <code>null</code>), <code>bright_view</code> (aufgehellt), <code>glow</code>, <code>correction</code> (Farbkorrektur). Fehlt die Datei, gelten die Standardwerte; löschen ist ungefährlich.</td></tr>
 <tr><td><code>docs/Simulator-Plan.md</code></td><td>Plan, Entscheidungen, Arbeitsstand und die Liste der offenen Punkte.</td></tr>
 </table></div>
 <p>Weiter: <a href="Song-Workflow.html">Song-Workflow</a> · <a href="OTA-Update.html">OTA-Update</a> · <a href="LED-Effekte-und-Szenen.html">Effekte und Szenen</a></p>

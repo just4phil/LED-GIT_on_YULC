@@ -5,6 +5,7 @@
 //   midi_port   Name des gewählten MIDI-Eingangs (null = aus)                       (seit Issue #25)
 //   bright_view Schalter "aufgehellt" im Reiter Bühne (Standard an)                  (seit Issue #24)
 //   correction  Schalter "Farbkorrektur" im Reiter Bühne (Standard an)               (seit Issue #24)
+//   glow        Schalter "Glow" (Leuchthof um die LEDs von Lampen, Bass, Gitarre; Standard an)
 //
 // Rust-Idiome: `#[derive(Serialize, Deserialize)]` erzeugt den Code, der die Struktur in JSON schreibt und aus JSON
 // liest (Feldname = Schlüssel). `#[serde(default)]` über der Struktur: fehlende Schlüssel (z. B. in einer alten Datei,
@@ -20,12 +21,13 @@ pub struct Settings {
     pub midi_port: Option<String>,
     pub bright_view: bool,
     pub correction: bool,
+    pub glow: bool,
 }
 
 impl Default for Settings {
     /// Standardwerte: kein MIDI-Port, aufgehellte Darstellung und Farbkorrektur an.
     fn default() -> Self {
-        Self { midi_port: None, bright_view: true, correction: true }
+        Self { midi_port: None, bright_view: true, correction: true, glow: true }
     }
 }
 
@@ -63,13 +65,13 @@ mod tests {
     #[test]
     fn old_file_gets_defaults() {
         let s: Settings = serde_json::from_str(r#"{"midi_port":"Loop"}"#).unwrap();
-        assert_eq!(s, Settings { midi_port: Some("Loop".into()), bright_view: true, correction: true });
+        assert_eq!(s, Settings { midi_port: Some("Loop".into()), bright_view: true, correction: true, glow: true });
     }
 
     /// Schreiben und wieder lesen ergibt dasselbe.
     #[test]
     fn roundtrip() {
-        let s = Settings { midi_port: None, bright_view: false, correction: false };
+        let s = Settings { midi_port: None, bright_view: false, correction: false, glow: false };
         let t = serde_json::to_string(&s).unwrap();
         assert_eq!(serde_json::from_str::<Settings>(&t).unwrap(), s);
     }

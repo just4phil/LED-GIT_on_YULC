@@ -305,7 +305,7 @@ tempo x1 / x0.5 (halves the simulator time), "Sprung zu Part" (CC 23 = case to a
 song is not running it is started first) and, in the "Ablauf" tab, the button "auf der Bühne ab hier abspielen" in a part's
 details. While a MIDI port is open Pause/Tempo are greyed out (real-time clock). A status list under the stage shows song,
 part (+ part name), time in part per device; devices that differ in the part are orange (the matrix during the title scroll text
-is not an error). The switches "aufgehellt" and "Farbkorrektur" are remembered in `settings.json` (`tools/showview/src/settings.rs`).
+is not an error). The switches "aufgehellt", "Glow" (soft light halo around the LEDs of lamps, bass and guitar) and "Farbkorrektur" are remembered in `settings.json` (`tools/showview/src/settings.rs`).
 **MIDI input (Bühne tab):** like the guitar with the WIDI, the simulator can be driven from a MIDI port: **channel 10
 only, CC 22 = song, CC 23 = part** (everything else is ignored); the commands go to all loaded devices at once (the
 radio delay of the clients is deliberately not simulated). Pick the port in the "MIDI-Eingang" list of the tab ("aus" =

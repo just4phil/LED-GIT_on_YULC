@@ -359,6 +359,25 @@ impl Stage {
         }
     }
 
+    /// Weicher Leuchthof um eine LED (Schalter "Glow"): mehrere durchsichtige Kreise, nach außen größer und schwächer -
+    /// das ergibt ein Ausblenden von der LED weg. Benachbarte Höfe überlagern sich und verschmelzen zu einem Lichtband.
+    /// Alle Höfe eines Geräts werden VOR den Punkten gezeichnet, damit kein Hof einen Nachbarpunkt verdeckt.
+    /// `pitch` = LED-Abstand auf dem Bildschirm in Pixeln (der Hof reicht bis ~4 Abstände weit).
+    fn draw_glow(&self, painter: &Painter, center: Pos2, pitch: f32, rgb: &[u8], gain: f32) {
+        if !self.settings.glow {
+            return;
+        }
+        let (col, luma) = self.led_color(rgb, gain);
+        if luma < 25.0 {
+            return; // dunkle LED: kein Hof (spart Zeichenarbeit, Marker mit Pegel ~7 strahlen nicht)
+        }
+        let strength = (luma / 255.0).min(1.0);
+        // (Radius in LED-Abständen, Durchsichtigkeit 0..255 bei voller Helligkeit): innen kräftig, außen schwach
+        for (r, a) in [(0.8f32, 70.0f32), (1.3, 46.0), (2.0, 30.0), (2.9, 18.0), (4.0, 10.0)] {
+            painter.circle_filled(center, pitch * r, Color32::from_rgba_unmultiplied(col.r(), col.g(), col.b(), (a * strength) as u8));
+        }
+    }
+
     /// Name des Parts zu einem `case` für die Statusanzeige, "-" ohne bekannten Ablauf, "?" für einen unbekannten case.
     fn part_name(parts: &[(i64, String, f64)], case: i32) -> String {
         match parts.iter().find(|p| p.0 == case as i64) {
@@ -412,9 +431,9 @@ impl Stage {
             .filter(|d| song.as_ref().is_some_and(|(_, dir)| &d.song.dir == dir))
             .and_then(|d| d.scroll.values().flatten().map(|p| p.join_start).fold(None, |m: Option<f64>, v| Some(m.map_or(v, |x| x.max(v)))));
         self.scroll_parts = parts.iter().map(|p| (p.0, p.2)).collect();
-        let before = (self.settings.bright_view, self.settings.correction);
+        let before = (self.settings.bright_view, self.settings.correction, self.settings.glow);
         self.controls(ui, root, &song, &parts, any_dll);
-        if before != (self.settings.bright_view, self.settings.correction) {
+        if before != (self.settings.bright_view, self.settings.correction, self.settings.glow) {
             self.settings.save(); // Schalter merken
         }
         if !missing.is_empty() {
@@ -530,6 +549,9 @@ impl Stage {
             ui.horizontal_wrapped(|ui| {
                 ui.checkbox(&mut self.settings.bright_view, "aufgehellt").on_hover_text(
                     "aus = Farbe mal Helligkeit des Geräts (wie echt, am Bildschirm sehr dunkel); an = Bildschirm-freundlich aufgehellt",
+                );
+                ui.checkbox(&mut self.settings.glow, "Glow").on_hover_text(
+                    "an = weicher Leuchthof um die LEDs von Lampen, Bass und Gitarre (die LEDs strahlen ja); aus = scharfe Punkte",
                 );
                 ui.checkbox(&mut self.settings.correction, "Farbkorrektur").on_hover_text(
                     "an = die Farbkorrektur der LED-Streifen (TypicalLEDStrip: Rot 255, Grün 176, Blau 240) wie auf dem Gerät nachrechnen",
@@ -854,6 +876,17 @@ impl Stage {
             let far = to_screen([at[0] + shape.marker_label_dir[0] * 52.0, at[1] + shape.marker_label_dir[1] * 52.0]);
             painter.line_segment([near, far], Stroke::new(1.0, Color32::from_gray(70)));
         }
+        // Leuchthöfe zuerst (Gurt + Kette), die Punkte danach darüber; Griffbrett-Marker bekommen keinen Hof
+        for (j, &p) in shape.strap_pos.iter().enumerate() {
+            if j * 3 + 2 < d.rgb2.len() {
+                self.draw_glow(painter, to_screen(p), spacing, &d.rgb2[j * 3..j * 3 + 3], gain);
+            }
+        }
+        for (i, &p) in shape.led_pos.iter().enumerate() {
+            if i * 3 + 2 < d.rgb1.len() && !shape.fretboard.get(i).copied().unwrap_or(false) {
+                self.draw_glow(painter, to_screen(p), spacing, &d.rgb1[i * 3..i * 3 + 3], gain);
+            }
+        }
         // Gurt (Ausgang 2): die ersten strap_leds LEDs von leds2, ohne Marker
         for (j, &p) in shape.strap_pos.iter().enumerate() {
             if j * 3 + 2 < d.rgb2.len() {
@@ -897,6 +930,14 @@ impl Stage {
         let body = Rect::from_min_size(origin, Vec2::new(row_gap + pitch, pitch * n as f32)).expand(pitch * 0.35);
         painter.rect_filled(body, pitch * 0.6, Color32::from_gray(26));
         painter.rect_stroke(body, pitch * 0.6, Stroke::new(1.0, Color32::from_gray(50)), StrokeKind::Outside);
+        // Leuchthöfe zuerst (beide Reihen), die Punkte danach darüber
+        for i in 0..n.min(d.rgb1.len() / 3) {
+            let from_bottom = if at_bottom { i } else { n - 1 - i };
+            let y = origin.y + (n - 1 - from_bottom) as f32 * pitch + pitch * 0.5;
+            for row in 0..2 {
+                self.draw_glow(painter, Pos2::new(origin.x + pitch * 0.5 + row as f32 * row_gap, y), pitch, &d.rgb1[i * 3..i * 3 + 3], gain);
+            }
+        }
         for i in 0..n {
             if i * 3 + 2 >= d.rgb1.len() {
                 break;
