@@ -147,11 +147,14 @@ README_german + `docs/Handbuch.html`, Tests in `cargo test`).
 - README (Abschnitt Simulator, Dateiliste `sim/`, `tools/build_sim.py`), CLAUDE.md (Dateitabelle, Build-Hinweis,
   `showEngine.cpp`), Kommentare in allen neuen Dateien (deutsch, ausführlich - Projektregel).
 
-## Offene Fragen an den User
+## Antworten des Users (25.11.2026)
 
-1. **Lampen:** wie sind die 94 / 78 LEDs angeordnet (Säule, Ring, Spirale, Fläche)? Foto oder Skizze genügt.
-2. **Gurt:** wie viele LEDs wirklich (`anz_LEDs_STRAP` = 60 ist geschätzt) und soll er überhaupt gezeigt werden?
-3. **Matrix:** ist die Verdrahtung in `main.cpp` (`NEO_MATRIX_BOTTOM + RIGHT + ROWS + ZIGZAG`) die echte?
+1. **Lampen:** zwei parallele, senkrechte LED-Streifen, beide von unten nach oben, beide am selben Datensignal
+   (zeigen also dasselbe Bild). Nichts gewickelt. Welches Ende LED 0 ist, sagt `LAMP_IDX0_AT_BOTTOM`.
+2. **Gurt:** Gurte von Gitarre und Bass anzeigen, je 60 LEDs (`anz_LEDs_STRAP`, Ausgang `leds2`).
+3. **Matrix:** die Verdrahtung in `main.cpp` (`NEO_MATRIX_BOTTOM + RIGHT + ROWS + ZIGZAG`) stimmt.
+4. **Fenster:** frei skalierbar, die Bühnen-Grafik skaliert mit.
+5. Arbeit auf dem Branch `feature/led-simulator`; Umsetzung als GitHub-Issues (Label `sonnet-batch`) im Batchlauf.
 
 ## Arbeitsstand
 
