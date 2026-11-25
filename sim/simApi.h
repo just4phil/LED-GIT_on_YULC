@@ -15,7 +15,7 @@
 //   loop { sim_advance(ms);       // Zeit vorstellen: die Show rechnet ihre Bilder
 //          sim_frame(...);        // das zuletzt gesendete Bild holen und anzeigen }
 //
-// Version 1 (sim_api_version()).
+// Version 2 (sim_api_version()): Version 1 + die Kontur-Angaben am Ende von SimInfo (Issue #22).
 //=====================================================================
 
 #ifdef __cplusplus
@@ -36,6 +36,15 @@ typedef struct {
 	int  matrixH;		// Höhe der Matrix
 	int  hasMarkers;	// 1 = Gerät hat Bund-Marker (Gitarre, Bass), 0 = nicht
 	int  strapLeds;		// LEDs des Gurts an Ausgang 2 (Gitarre/Bass: 60), sonst 0
+	// --- ab Version 2: Lage der LED-Kette auf der Kontur (nur Gitarre/Bass; bei anderen Geräten die Standardwerte
+	//     aus guitarShapeFX.h, unbenutzt). Alle Werte stammen aus definitions.h bzw. guitarShapeFX.h ---
+	int  headTipIdx;	// GUITAR_HEAD_TIP_IDX: LED-Nummer an der Kopfplatten-Spitze
+	int  loopDir;		// GUITAR_LOOP_DIR: +1 / -1, Richtung der LED-Nummern ab der Kopfspitze
+	int  strapPinPos;	// GUITAR_STRAP_PIN_POS: Konturposition (ab Kopfspitze), an der der Gurt ansetzt
+	int  zoneNeckUpStart;	// ZONE_NECK_UP_START: Konturposition, ab der die Hals-Oberkante (mit Markern) beginnt
+	int  zoneHeadUpStart;	// ZONE_HEAD_UP_START: Konturposition, ab der die Kopfplatte wieder beginnt (= Ende der Hals-Oberkante)
+	int  bundMin;		// Bund_min: erste LED-Nummer des dunklen Griffbretts mit den Markern (0 = Gerät ohne Marker)
+	int  bundMax;		// Bund_max: erste LED-Nummer HINTER dem Griffbrett (die Schleife zählt i < Bund_max)
 } SimInfo;
 
 // Versionsnummer der Schnittstelle (damit das Programm merkt, wenn eine DLL zu alt/neu ist). Hier: 1

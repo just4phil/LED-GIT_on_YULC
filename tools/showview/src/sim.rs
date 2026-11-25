@@ -30,7 +30,15 @@ pub struct SimInfo {
     pub matrix_w: i32,
     pub matrix_h: i32,
     pub has_markers: i32,
-    pub strap_leds: i32,
+    pub strap_leds: i32, // LEDs des Gurts an Ausgang 2 (Gitarre/Bass 60, sonst 0)
+    // ab Schnittstellen-Version 2: Lage der LED-Kette auf der Kontur (nur bei Gitarre/Bass von Bedeutung)
+    pub head_tip_idx: i32,     // LED-Nummer an der Kopfplatten-Spitze
+    pub loop_dir: i32,         // +1 / -1: Richtung der LED-Nummern ab der Kopfspitze
+    pub strap_pin_pos: i32,    // Konturposition, an der der Gurt ansetzt
+    pub zone_neck_up_start: i32, // Konturposition: Anfang der Hals-Oberkante (mit den Markern)
+    pub zone_head_up_start: i32, // Konturposition: Ende der Hals-Oberkante
+    pub bund_min: i32,         // erste LED des dunklen Griffbretts mit den Bund-Markern (0 = keine Marker)
+    pub bund_max: i32,         // erste LED hinter dem Griffbrett
 }
 
 impl SimInfo {
@@ -88,11 +96,11 @@ impl Sim {
                 };
             }
             let version: FnVersion = sym!(b"sim_api_version", FnVersion);
-            if version() != 1 {
-                return Err(format!("DLL hat Schnittstellen-Version {}, erwartet 1 - neu bauen: python tools/build_sim.py", version()));
+            if version() != 2 {
+                return Err(format!("DLL hat Schnittstellen-Version {}, erwartet 2 - neu bauen: python tools/build_sim.py", version()));
             }
             let info_fn: FnInfo = sym!(b"sim_info", FnInfo);
-            let mut info = SimInfo { name: [0; 16], device_class: 0, num_leds: 0, leds_out: 0, matrix_w: 0, matrix_h: 0, has_markers: 0, strap_leds: 0 };
+            let mut info = SimInfo { name: [0; 16], device_class: 0, num_leds: 0, leds_out: 0, matrix_w: 0, matrix_h: 0, has_markers: 0, strap_leds: 0, head_tip_idx: 0, loop_dir: 0, strap_pin_pos: 0, zone_neck_up_start: 0, zone_head_up_start: 0, bund_min: 0, bund_max: 0 };
             info_fn(&mut info);
             Ok(Sim {
                 reset: sym!(b"sim_reset", FnReset),
@@ -123,13 +131,22 @@ impl Sim {
         unsafe { (self.advance)(ms) }
     }
 
-    /// Das zuletzt gesendete Bild holen: füllt `out1` (RGB je LED, `leds_out` x 3 Byte) und liefert
-    /// (Bildnummer, Helligkeit 0..255). `out1` muss mindestens `leds_out * 3` Bytes lang sein.
-    pub fn frame(&self, out1: &mut [u8]) -> (i32, i32) {
-        assert!(out1.len() >= self.info.leds_out as usize * 3, "Puffer zu klein");
+    /// Das zuletzt gesendete Bild holen: füllt `out1` (Ausgang 1, RGB je LED, `leds_out` x 3 Byte) und, wenn
+    /// angegeben, `out2` (Ausgang 2 = Gurt bei Gitarre/Bass, gleiche Länge). Liefert (Bildnummer, Helligkeit 0..255).
+    /// Beide Puffer müssen mindestens `leds_out * 3` Bytes lang sein.
+    pub fn frame(&self, out1: &mut [u8], out2: Option<&mut [u8]>) -> (i32, i32) {
+        let need = self.info.leds_out as usize * 3;
+        assert!(out1.len() >= need, "Puffer zu klein");
         let mut brightness = 255;
         // *mut u8 = veränderbarer Zeiger auf das erste Byte; null = "diesen Ausgang nicht liefern"
-        let n = unsafe { (self.frame)(out1.as_mut_ptr(), std::ptr::null_mut(), &mut brightness) };
+        let p2 = match out2 {
+            Some(b) => {
+                assert!(b.len() >= need, "Puffer 2 zu klein");
+                b.as_mut_ptr()
+            }
+            None => std::ptr::null_mut(),
+        };
+        let n = unsafe { (self.frame)(out1.as_mut_ptr(), p2, &mut brightness) };
         (n, brightness)
     }
 

@@ -278,9 +278,12 @@ changes. Build and start: `cd tools/showview && cargo run --release` (needs Rust
 
 A second tab, **Bühne** (stage), is the start of the LED simulator (`docs/Simulator-Plan.md`): the firmware sources
 (`src/`) are compiled for Windows as a DLL per device - no re-implementation of the effects - and `showview` runs them
-in real time. Currently the matrix (SCROLLMATRIX, 54 x 10) is available: pick a song on the left, press Start (= MIDI
-channel 10, CC 22), Stop = CC 22 with 0. The picture scales freely with the window. Build the DLL first:
-`python tools/build_sim.py scrollmatrix` (needs `g++` from w64devkit in the PATH, like `pio test -e native`; add
+in real time. Currently the bass (RINASBASS), the matrix (SCROLLMATRIX, 54 x 10) and the guitar (ANDRESGIT) are
+available, side by side on one clock: pick a song on the left, press Start (= MIDI channel 10, CC 22), Stop = CC 22
+with 0. Guitar and bass show their LED chain along an SG contour (head top right) with the fret markers on the neck's
+upper edge (marked with rings, lifted in brightness so they are visible) and the strap (60 LEDs, no markers); the display
+applies the strip's colour correction (R 255, G 176, B 240). The picture scales freely with the window. Build the DLLs
+first: `python tools/build_sim.py` (all devices, or name them; needs `g++` from w64devkit in the PATH, like `pio test -e native`; add
 `--test` for a smoke test that plays song 30 for 60 s). `sim/shim/` replaces everything that only exists on the
 microcontroller (Arduino API, the hardware part of FastLED); the maths of FastLED 3.5.0 is the real library code.
 `showview.exe <song> --buehne` opens the tab and starts the song right away.

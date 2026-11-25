@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 	};
 	if (!loadAll()) return 1;
 
-	CHECK(version() == 1, "sim_api_version = %d, erwartet 1", version());
+	CHECK(version() == 2, "sim_api_version = %d, erwartet 2", version());
 	SimInfo si; info(&si);
 	printf("Gerät %s: Klasse %d, %d LEDs (%d gesendet), Matrix %d x %d, Marker %d, Gurt %d\n", si.name, si.deviceClass, si.numLeds, si.ledsOut, si.matrixW, si.matrixH, si.hasMarkers, si.strapLeds);
 	CHECK(si.ledsOut > 0 && si.numLeds > 0, "LED-Zahlen unplausibel");

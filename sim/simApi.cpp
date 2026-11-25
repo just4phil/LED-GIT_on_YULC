@@ -19,6 +19,7 @@
 #include "showEngine.h"
 #include "TimerFunctions.h"
 #include "fxState.h"
+#include "guitarShapeFX.h"	// GUITAR_HEAD_TIP_IDX, ZONE_* (bei Bass/Matrix/Lampen die Standardwerte, auf anz_LEDs hochgerechnet)
 #include "syncClient.h"
 #include "syncProxy.h"
 #include "simApi.h"
@@ -39,7 +40,7 @@ void showEngine_onEmergencyStop() {}
 //--- Funk-Abfragen für die roten Warn-LEDs (markerLEDs.cpp, nur Songpause) ------------------------------------
 // Der Simulator hat immer "Verbindung", sonst würden in Song 0 dauernd rote Warn-LEDs pulsieren.
 bool syncClient_isLinked() { return true; }
-uint8_t syncProxy_connectedClients() { return 1; }
+uint8_t syncProxy_connectedClients() { return 2; }
 
 //--- Hilfsvariablen der Simulator-Uhr ---------------------------------------------------------------------------------
 // Die Uhr (millis()/micros()) steht in sim/simShim.cpp. Hier merken wir uns nur, wie viele Millisekunden
@@ -85,7 +86,7 @@ static void resetShowState() {
 
 extern "C" {
 
-SIM_API int sim_api_version(void) { return 1; }
+SIM_API int sim_api_version(void) { return 2; }
 
 SIM_API void sim_info(SimInfo* out) {
 	if (!out) return;
@@ -105,6 +106,16 @@ SIM_API void sim_info(SimInfo* out) {
 	out->strapLeds = anz_LEDs_STRAP;
 #else
 	out->strapLeds = 0;
+#endif
+	// Kontur-Angaben (Version 2): so liegt die LED-Kette auf der SG-Form; showview rechnet daraus die LED-Orte
+	out->headTipIdx = GUITAR_HEAD_TIP_IDX;
+	out->loopDir = GUITAR_LOOP_DIR;
+	out->strapPinPos = GUITAR_STRAP_PIN_POS;
+	out->zoneNeckUpStart = ZONE_NECK_UP_START;
+	out->zoneHeadUpStart = ZONE_HEAD_UP_START;
+#ifdef Bund_min		// nur Gitarre und Bass legen ein Griffbrett fest (Makros aus definitions.h)
+	out->bundMin = Bund_min;
+	out->bundMax = Bund_max;
 #endif
 }
 

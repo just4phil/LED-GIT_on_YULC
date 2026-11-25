@@ -24,6 +24,7 @@
 
 mod export;
 mod model;
+mod shape;
 mod sim;
 mod stage;
 mod timeline;

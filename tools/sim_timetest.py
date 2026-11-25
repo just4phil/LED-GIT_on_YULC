@@ -139,6 +139,9 @@ def check(device, entry, info, result, tol):
 
 
 def main():
+    # Umlaute in der Windows-Konsole: Ausgabe auf UTF-8 umstellen (wie in songgen.py main())
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description="Zeit-Test: Part-Wechsel des Simulators gegen die Zeiten von songgen.py")
     ap.add_argument("songs", nargs="*", help="Song-Ordner (Standard: alle generierten Songs)")
     ap.add_argument("--geraet", action="append", help="nur dieses Gerät (Standard: jede DLL in sim/bin/sim_<gerät>.dll)")
