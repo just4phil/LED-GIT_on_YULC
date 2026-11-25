@@ -100,6 +100,7 @@ LED-GIT_on_YULC/
 │   ├── struktur.py               # reads the Excel table
 │   ├── build_ota.py              # builds all devices and serves the firmware for OTA
 │   ├── fw_version.py             # sets the firmware version at build time
+│   ├── showview/                 # Windows GUI (Rust/egui): a song's flow as a timeline, view only
 │   └── fxstats.py                # statistics on effects used in the old songs
 ├── docs/                         # guides (German), see "Documentation"
 ├── ota/                          # built firmware per device (not in git)
@@ -262,7 +263,14 @@ python tools/songgen.py <Song> --midi       # only (re)write songs/<Song>/<Song>
 python tools/songgen.py <Song> --vorschlag  # write songs/<Song>/vorschlag.yaml (redesign ideas per part) into the table column "Neuer Vorschlag (KI)"
 python tools/songgen.py --versions <Song>   # list saved versions
 python tools/songgen.py --restore <version> <Song>
+python tools/songgen.py <Song> --json       # read only: the song's flow as JSON (input for tools/showview)
 ```
+
+`tools/showview/` shows a song's flow as a timeline (Windows, Rust + egui, view only): parts with transitions and
+energy, one lane per device (with its own `devices:` effects and the blinder envelopes), the matrix title scroll,
+overlay, text, output-stage modifiers and the user's wishes / `cues:` on their bars. It takes all times from
+`songgen.py --json`, so it shows exactly what the generated code does, and reloads when `show.yaml` or the table
+changes. Build and start: `cd tools/showview && cargo run --release` (needs Rust; optional arguments: a song folder).
 
 The tools need Python with `pyyaml` and `openpyxl` (`tools/requirements.txt`). The full workflow is described in
 `docs/Song-Workflow.html`.

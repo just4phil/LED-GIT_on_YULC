@@ -1,5 +1,22 @@
 claude --dangerously-skip-permissions
+
+showview
+=========
+Starten: im Ordner tools/showview den Befehl cargo run --release ausführen, 
+oder direkt tools/showview/target/release/showview.exe Maniac starten.
+-------------------
+
+ /advisor
+Fable 5.2 as the advisor bills to usage credits, which need to be set up for your account. Run /model fable to review and enable, then set it as the advisor.
 ======================================
+floorplan:
+https://github.com/haydenschmitty/floorplan
+claude plugin marketplace add haydenschmitty/floorplan
+claude plugin install floorplan@floorplan
+Make me a floorplan of this app.
+Update the floorplan.
+http://127.0.0.1:4378/#v=n%3Afw&s=n%3Afw.output
+---------------------------------
 
 i love it -> blinder auf i dont care
 billi: ganz kure blinder auf die synths im intro?
@@ -19,7 +36,16 @@ neuer fx:
 - song #90 hat coole FX!
 ------------
 
+ich überlege, ob ich pixmob armbänder via Infrarot LEDs steuern könnte. meine idee wäre eine kleine platine
+  mit einigen IR-LEDs zu bauen und jeweils eine oben auf LAMPE1 und LAMPE2 zu befestigen. dann könnte man über
+  die lampen gleichzeitig IR-Signale ins publikum zu den pixmob armbändern senden. an den lampen hätten wir
+  noch einen ausgang des ESP32 frei (bei git und bass hängen die LEDs vom Gurt am 2. ausgang. bei den lampen
+  werden aktuell beide ausgänge für die beiden gleichen led-stripes genutzt. ich könnte den zweiten stripe
+  einfach mit auf den ersten ausgang legen und dann wäre der zweite ausgang frei). wäre es möglich parallel
+  auch IR-Signale über den zweiten ausgang zu senden? hier ist das protokoll dazu:
+  https://github.com/jamesw343/PixMob_IR/
 
+  
 TODOs
 =======
 
@@ -300,7 +326,9 @@ tools\.venv\Scripts\python tools/build_ota.py --serve
 nur ausliefern mit 
 tools\.venv\Scripts\python tools/build_ota.py --serve-only
 
-
+Brauchst du den Gurttest wieder: python tools/build_ota.py --gurttest 
+legt ihn für das OTA-Update ab, 
+oder per USB pio run -e gurttest -t upload --upload-port COM8.
 
 -----------------------------
 s beim Test auf 3/8 hinweist: Die Szenenwechsel sollten genau auf den Taktanfängen der Band liegen. Kommen alle Wechsel gleichmäßig zu früh oder zu spät, liegt es am Offset. Dann gib mir die Richtung und grob, um wie viel es daneben liegt, und ich stelle ihn nach. Liegt nur einzelne Parts daneben, stimmen die Taktzahlen in der YAML nicht.

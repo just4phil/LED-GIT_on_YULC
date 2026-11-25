@@ -415,6 +415,7 @@ git commit -m "Song Vogue"</code></pre></li>
 <tr><td><code>songgen.py</code></td><td>Alle Song-Ordner mit ID, Stand und Zahl der Versionen auflisten. Schreibt nichts.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt;</code></td><td>Diesen Song generieren: <code>generated.cpp</code> schreiben, Version speichern, <code>src/</code> zusammensetzen.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --dry-run</code></td><td>Nur Timeline, Hinweise und Fehler zeigen. Schreibt nichts.</td></tr>
+<tr><td><code>songgen.py &lt;Song&gt; --json</code></td><td>Den Ablauf des Songs als JSON ausgeben (Zeiten in ms, je Part Szene, Geräte, Blinder, Overlay, Text, Wünsche) – Futter für die Ablauf-Ansicht <code>tools/showview</code>. Schreibt nichts; ohne <code>&lt;Song&gt;</code> die Liste aller Songs.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --note "Text"</code></td><td>Generieren und die Notiz in der Version ablegen (<code>info.yaml</code>). Sie erscheint in <code>--versions</code>.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --versions</code></td><td>Gespeicherte Versionen auflisten, die aktive ist markiert.</td></tr>
 <tr><td><code>songgen.py &lt;Song&gt; --restore &lt;Version&gt;</code></td><td>Eine Version wieder aktiv machen. Der Anfang des Versionsnamens genügt, wenn er eindeutig ist.</td></tr>
@@ -588,6 +589,7 @@ python tools/songgen.py &lt;Song&gt; --restore 2026-10-03_1345</code></pre>
 <tr><th>Pfad</th><th>Inhalt</th></tr>
 <tr><td><code>songs/struktur-vorlage.xlsx</code></td><td>Vorlage der Tabelle; <code>songgen.py &lt;Song&gt; --neu</code> kopiert sie in den Song-Ordner. Du kannst sie durch deine eigene ersetzen; die Beschriftungen im Kopf und die Überschriften „von takt“ / „Songpart“ nicht umbenennen</td></tr>
 <tr><td><code>tools/songgen.py</code></td><td>ein Song: <code>struktur.xlsx</code> + <code>show.yaml</code> → <code>generated.cpp</code> + Version; setzt <code>src/</code> zusammen; <code>--neu</code>, <code>--versions</code>, <code>--restore</code></td></tr>
+<tr><td><code>tools/showview/</code></td><td>Ablauf-Ansicht (Windows-Programm, Rust): Song links wählen, Zeitstrahl mit Parts, Übergängen, einer Spur je Gerät samt Blindern, Lauftext, Overlay, Text, Ausgabestufe und deinen Wünschen auf ihrem Takt. Mausrad = Zoom, Ziehen = verschieben, Doppelklick = ganzer Song, Klick auf einen Part = Details unten. Lädt von selbst neu, wenn <code>show.yaml</code> oder die Tabelle gespeichert wird. Nur ansehen, schreibt nichts. Starten: <code>cd tools/showview</code>, <code>cargo run --release</code> (oder <code>target/release/showview.exe</code>)</td></tr>
 <tr><td><code>tools/struktur.py</code></td><td>liest die Tabelle (Bibliothek für <code>songgen.py</code>, kein eigenes Kommando)</td></tr>
 <tr><td><code>tools/hook_protect_song.py</code></td><td>Claude-Hook: blockiert Schreibzugriffe von Claude auf <code>struktur.xlsx</code> (eingetragen in <code>.claude/settings.json</code>)</td></tr>
 <tr><td><code>tools/markers.py</code></td><td>Marker-Vorschlag, Prüfung und Code für die Bund-Marker</td></tr>

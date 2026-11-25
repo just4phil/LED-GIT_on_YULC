@@ -17,6 +17,7 @@ songgen.py - erzeugt die Song-Funktion EINES Songs aus songs/<Song>/
     tools/.venv/Scripts/python tools/songgen.py --vorschlag            # ... für alle Songs, die eine vorschlag.yaml haben
     tools/.venv/Scripts/python tools/songgen.py <Song> --part-loeschen 95 --part-name 93=outro   # Parts der Tabelle ändern
     tools/.venv/Scripts/python tools/songgen.py <Song> --anfang-ab 1   # Song vorn verlängern: Zeilen ab Takt 1 davor einfügen
+    tools/.venv/Scripts/python tools/songgen.py <Song> --json          # nur lesen: Ablauf als JSON (für tools/showview)
 
 <Song> = Ordnername unter songs/ (Anfang genügt, Groß/Klein egal). Pro Song-Ordner:
     quelle/struktur.xlsx   gehört dem User (Excel): Tempo, StartBit, Parts mit Taktnummer, Änderungswunsch, Energie.
@@ -3194,6 +3195,122 @@ def cmd_parts(song_dir, deletes, names):
 	return 0
 
 
+#==================================================================
+#=========== JSON-Export für die Ablauf-Ansicht (tools/showview) ==
+#==================================================================
+# --json gibt den Ablauf eines Songs als JSON aus - für das Rust-Programm tools/showview/, das ihn als Zeitstrahl
+# zeichnet. Der Export rechnet genau wie das Generieren (load_song + generate), schreibt aber NICHTS: weder die
+# Tabelle noch generated.cpp, show.yaml, Versionen oder src/. So zeigt die Ansicht immer dieselben Zeiten, die auch
+# im erzeugten Code stehen - die Zeitrechnung (Tails, Vorlauf, Start-MIDI, Schluss-Black) gibt es nur hier.
+# JSON_SCHEMA zählt hoch, wenn sich der Aufbau der Ausgabe so ändert, dass showview angepasst werden muss.
+JSON_SCHEMA = 1
+# Die Geräte auf der Bühne, von links nach rechts (Bühnenplatz wie CASCADE_STAGE_POS), und ihre Geräteklasse
+# (Schlüssel unter devices: in show.yaml). GITBOARD (Teensy) ist nicht mehr im Einsatz und fehlt deshalb.
+JSON_STAGE = (("LAMPE1", "lamp"), ("RINASBASS", "guitar"), ("SCROLLMATRIX", "matrix"), ("ANDRESGIT", "guitar"), ("LAMPE2", "lamp"))
+
+
+def json_clean(value):
+	"""Wert für json.dumps vorbereiten: interne Schlüssel (beginnen mit "_", z. B. _prev/_next - die zeigen im Kreis auf
+	andere Parts) fallen weg, Tupel werden Listen, Schlüssel werden Text, alles Unbekannte wird zu Text."""
+	if isinstance(value, dict):
+		return {str(k): json_clean(v) for k, v in value.items() if not str(k).startswith("_")}
+	if isinstance(value, (list, tuple)):
+		return [json_clean(v) for v in value]
+	if value is None or isinstance(value, (bool, int, float, str)):
+		return value
+	return str(value)
+
+
+def json_device_calls(part, song):
+	"""Je Bühnengerät der Aufruf, den es in diesem Part bekommt: Einzelgerät vor Geräteklasse vor Szene/fx
+	(dieselbe Rangfolge wie die #if-Blöcke in gen_function). Ergebnis {Gerät: {"call": Text, "own": True/False}};
+	own = True heißt: das Gerät hat in show.yaml eine eigene Angabe (devices:)."""
+	devices = part["sec"].get("devices") or {}
+	base = default_call(part, song)
+	out = {}
+	for dev, cls in JSON_STAGE:
+		key = dev if dev in devices else (cls if cls in devices else None)
+		out[dev] = {"call": fill(devices[key], part, song).rstrip(";") if key else base.rstrip(";"), "own": key is not None}
+	return out
+
+
+def json_scroll_plan(plan):
+	"""Lauftext-Plan (plan_scroll) ohne die Verweise auf ganze Parts - nur Zeiten in ms ab Song-Beginn."""
+	if not plan:
+		return None
+	start = plan.get("start", 0)
+	out = {"text": plan["text"], "mode": plan["mode"], "start": start, "scroll": plan["scroll"],
+		   "wait": plan.get("wait", 0), "join_case": plan["join"]["case"], "join_start": plan["join"]["start"]}
+	if plan["mode"] == "fill":
+		out.update(fill_start=start + plan["scroll"], fill_dur=plan["fill_dur"], fill_case=plan["fill_part"]["case"])
+	return out
+
+
+def json_part(part, song):
+	"""Ein Part der Timeline als JSON-Dictionary: Zeiten in ms ab dem Start-MIDI, die Rohangaben aus show.yaml und
+	Tabelle (sec), dazu was daraus berechnet ist: Aufruf je Gerät, Blinder in ms, Beschreibung wie in der Tabelle."""
+	sec = part["sec"]
+	blinders, berrs = blinder_specs(part, song)
+	try:
+		lines = effect_lines(part, song)
+	except SongError as e:		# eine kaputte Angabe in einem Part soll die ganze Ansicht nicht verhindern
+		lines = [f"FEHLER: {e}"]
+	return {
+		"case": part["case"], "next": part["next"], "name": sec.get("name", ""),
+		"start": part["start"], "dur": part["dur"], "bpm": part["bpm"],
+		"beats_per_bar": sec.get("beats_per_bar", song.get("beats_per_bar", 4)),
+		"lead": part.get("lead", 0),							# nur im ersten Part: ms der Tabellenzeile vor dem Start-MIDI
+		"bar_from": sec.get("_von"), "bar_to": sec.get("_bis"),	# Taktnummern der Tabelle (fehlen bei tail und Ende)
+		"parent": sec.get("_parent"),							# gesetzt bei einem tail: Name des Abschnitts
+		"devices": json_device_calls(part, song),
+		"blinders": [{"at_ms": b["at_ms"], "len_ms": b["len_ms"], "every": b["every"], "amount": b["amount"],
+					  "color": "scheme" if b["scheme_col"] else b["col"], "devices": b["devs"],
+					  "attack_ms": b["shape"][0] if b["shape"] else 0, "hold_ms": b["shape"][1] if b["shape"] else 0,
+					  "carry": b["carry"], "title": b["title"],
+					  "cascade": {"step_ms": b["casc"]["step_ms"], "steps": dict(zip(CASCADE_DEVICES, b["casc"]["steps"]))} if b["casc"] else None}
+					 for b in blinders],
+		"text_info": part.get("text_info"),
+		"lines": lines,
+		"errors": berrs,
+		"sec": json_clean(sec),
+	}
+
+
+def cmd_json(song_dir, out_path=None):
+	"""--json: Ablauf EINES Songs als JSON (ohne song_dir: Liste aller Songs). Ausgabe auf stdout oder in out_path."""
+	import json		# nur hier gebraucht - deshalb erst hier geladen
+	if song_dir is None:
+		data = {"schema": JSON_SCHEMA, "songs": []}
+		for d in song_dirs():
+			entry = {"dir": d.name, "table": table_path(d).exists(), "show": (d / SHOW_FILE).exists(), "generated": (d / GEN_FILE).exists()}
+			if entry["generated"]:
+				f = read_fragment(d / GEN_FILE)
+				entry.update(id=f["id"], name=f["name"])
+			data["songs"].append(entry)
+	else:
+		song = load_song(song_dir)
+		timeline, _code, _markers, errors = generate(song, fragments(skip=song_dir))	# generate() schreibt nichts
+		entry = song.get("_entry")
+		data = {
+			"schema": JSON_SCHEMA,
+			"song": {k: song.get(k) for k in ("id", "name", "bpm", "function", "scheme", "next_song", "trailer_entry",
+											  "end_black_ms", "beats_per_bar")}
+					| {"dir": song_dir.name, "midi_offset": offset_text(song), "scroll_text": song.get("scroll_text", True)},
+			"stage": [d for d, _c in JSON_STAGE],
+			"parts": [json_part(p, song) for p in timeline],
+			"scroll": {d: json_scroll_plan(p) for d, p in (song.get("_scroll_plans") or {}).items()},
+			"entry_scroll": {d: json_scroll_plan(p) for d, p in entry["plans"].items()} if entry else None,
+			"notes": song.get("_notes", []),
+			"errors": errors,
+		}
+	text = json.dumps(data, ensure_ascii=False, indent=1)
+	if out_path:
+		Path(out_path).write_text(text, encoding="utf-8")	# nur die Datei, die der Aufrufer ausdrücklich nennt
+	else:
+		print(text)
+	return 0
+
+
 # Hauptprogramm: Befehlszeile auswerten und das passende Kommando ausführen
 def main():
 	ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -3214,6 +3331,8 @@ def main():
 	ap.add_argument("--anfang-ab", type=float, metavar="N", help="den Song vorn verlängern: Rasterzeilen ab Takt N vor die erste Zeile der Tabelle einfügen (der erste Part wird länger, alles danach bleibt)")
 	ap.add_argument("--part-loeschen", action="append", default=[], metavar="VON", help="Part ab Takt VON samt Zwischenzeilen aus der Tabelle löschen, alles dahinter rückt nach vorn (mehrfach möglich)")
 	ap.add_argument("--part-name", action="append", default=[], metavar="VON=NAME", help="der Zeile mit Takt VON den Songpart NAME geben: Zwischenzeile -> neuer Part, Part -> umbenannt; VON= (leer) macht den Part zur Zwischenzeile (mehrfach möglich)")
+	ap.add_argument("--json", action="store_true", help="nur lesen: Ablauf des Songs als JSON ausgeben (für tools/showview, schreibt nichts); ohne <Song>: Liste aller Songs")
+	ap.add_argument("--json-out", metavar="DATEI", help="mit --json: JSON in diese Datei statt auf den Bildschirm")
 	args = ap.parse_args()
 	for stream in (sys.stdout, sys.stderr):
 		stream.reconfigure(encoding="utf-8")
@@ -3221,6 +3340,8 @@ def main():
 	MARK_CHANGES = args.markieren
 
 	try:
+		if args.json:
+			return cmd_json(find_song_dir(args.song) if args.song else None, args.json_out)
 		if args.assemble:
 			print_assembled(assemble())
 			return 0

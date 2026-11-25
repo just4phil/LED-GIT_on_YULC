@@ -44,6 +44,7 @@
 # Song-Tools
 tools/.venv/
 tools/__pycache__/
+tools/showview/target/
 songs/**/*.mp3
 songs/**/song.vorschlag.yaml
 
