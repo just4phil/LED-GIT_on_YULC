@@ -39,6 +39,8 @@ pub struct SimInfo {
     pub zone_head_up_start: i32, // Konturposition: Ende der Hals-Oberkante
     pub bund_min: i32,         // erste LED des dunklen Griffbretts mit den Bund-Markern (0 = keine Marker)
     pub bund_max: i32,         // erste LED hinter dem Griffbrett
+    // ab Schnittstellen-Version 3 (Lampen)
+    pub lamp_idx0_at_bottom: i32, // 1 = LED 0 sitzt unten am Lampenstreifen, 0 = oben
 }
 
 impl SimInfo {
@@ -96,11 +98,11 @@ impl Sim {
                 };
             }
             let version: FnVersion = sym!(b"sim_api_version", FnVersion);
-            if version() != 2 {
-                return Err(format!("DLL hat Schnittstellen-Version {}, erwartet 2 - neu bauen: python tools/build_sim.py", version()));
+            if version() != 3 {
+                return Err(format!("DLL hat Schnittstellen-Version {}, erwartet 3 - neu bauen: python tools/build_sim.py", version()));
             }
             let info_fn: FnInfo = sym!(b"sim_info", FnInfo);
-            let mut info = SimInfo { name: [0; 16], device_class: 0, num_leds: 0, leds_out: 0, matrix_w: 0, matrix_h: 0, has_markers: 0, strap_leds: 0, head_tip_idx: 0, loop_dir: 0, strap_pin_pos: 0, zone_neck_up_start: 0, zone_head_up_start: 0, bund_min: 0, bund_max: 0 };
+            let mut info = SimInfo { name: [0; 16], device_class: 0, num_leds: 0, leds_out: 0, matrix_w: 0, matrix_h: 0, has_markers: 0, strap_leds: 0, head_tip_idx: 0, loop_dir: 0, strap_pin_pos: 0, zone_neck_up_start: 0, zone_head_up_start: 0, bund_min: 0, bund_max: 0, lamp_idx0_at_bottom: 0 };
             info_fn(&mut info);
             Ok(Sim {
                 reset: sym!(b"sim_reset", FnReset),

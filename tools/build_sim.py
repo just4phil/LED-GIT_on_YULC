@@ -44,9 +44,9 @@ SRC = ROOT / "src"
 SIM = ROOT / "sim"
 BIN = SIM / "bin"
 
-# Die Geräte, die der Simulator schon kann (Matrix, Gitarre, Bass). Kommt ein Gerät dazu (Lampen: eigenes Issue),
+# Die Geräte, die der Simulator kann (Matrix, Gitarre, Bass, die zwei Lampen). Kommt ein Gerät dazu,
 # wird es hier eingetragen - der Name ist zugleich der Name der PlatformIO-Umgebung in platformio.ini.
-DEVICES = ["scrollmatrix", "andresgit", "rinasbass"]
+DEVICES = ["scrollmatrix", "andresgit", "rinasbass", "lampe1", "lampe2"]
 
 # Dateien aus src/, die NICHT in die DLL kommen: Hardware (Funk, OTA, Drehknopf, Akku, MIDI-Eingang, Pins), die
 # Firmware-Hauptdatei main.cpp (setup/loop; ihren Platz nimmt sim/simApi.cpp ein), die Dreh-Knopf-Bibliothek

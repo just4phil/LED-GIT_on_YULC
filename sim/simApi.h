@@ -16,6 +16,7 @@
 //          sim_frame(...);        // das zuletzt gesendete Bild holen und anzeigen }
 //
 // Version 2 (sim_api_version()): Version 1 + die Kontur-Angaben am Ende von SimInfo (Issue #22).
+// Version 3: + lampIdx0AtBottom am Ende von SimInfo (Issue #23, Lampen: welches Ende des Streifens ist unten).
 //=====================================================================
 
 #ifdef __cplusplus
@@ -45,9 +46,11 @@ typedef struct {
 	int  zoneHeadUpStart;	// ZONE_HEAD_UP_START: Konturposition, ab der die Kopfplatte wieder beginnt (= Ende der Hals-Oberkante)
 	int  bundMin;		// Bund_min: erste LED-Nummer des dunklen Griffbretts mit den Markern (0 = Gerät ohne Marker)
 	int  bundMax;		// Bund_max: erste LED-Nummer HINTER dem Griffbrett (die Schleife zählt i < Bund_max)
+	// --- ab Version 3 (Lampen) ---
+	int  lampIdx0AtBottom;	// LAMP_IDX0_AT_BOTTOM aus definitions.h: 1 = LED 0 sitzt unten am Streifen, 0 = oben (nur Lampen sinnvoll)
 } SimInfo;
 
-// Versionsnummer der Schnittstelle (damit das Programm merkt, wenn eine DLL zu alt/neu ist). Hier: 1
+// Versionsnummer der Schnittstelle (damit das Programm merkt, wenn eine DLL zu alt/neu ist). Hier: 3
 SIM_API int  sim_api_version(void);
 
 // Gerätebeschreibung ausfüllen

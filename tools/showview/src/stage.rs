@@ -1,16 +1,16 @@
-// stage.rs - der Reiter "Bühne": zeigt Bass, Matrix und Gitarre so, wie die ECHTE Firmware sie berechnet.
+// stage.rs - der Reiter "Bühne": zeigt Lampe 1, Bass, Matrix, Gitarre und Lampe 2 so, wie die ECHTE Firmware sie berechnet.
 //
 // Die Firmware-Quellen laufen als DLL, je Gerät eine (sim/bin/sim_rinasbass.dll, sim_scrollmatrix.dll,
-// sim_andresgit.dll; Rust-Hülle in sim.rs, Bauen mit python tools/build_sim.py). Dieser Reiter
+// sim_andresgit.dll, sim_lampe1.dll, sim_lampe2.dll; Rust-Hülle in sim.rs, Bauen mit python tools/build_sim.py). Dieser Reiter
 //   - hat die Knöpfe Start (alle DLLs frisch laden, Einschalten, MIDI "Kanal 10, CC 22 = Song") und Stop (CC 22 = 0),
 //   - stellt bei jedem Bild des Fensters die Simulator-Uhr ALLER Geräte um dieselbe vergangene Echtzeit vor
 //     (sim_advance) - alle laufen auf einer gemeinsamen Uhr und bekommen dieselben Befehle,
-//   - holt von jedem Gerät das zuletzt gesendete Bild und malt es: die Matrix als Raster, Gitarre und Bass als LED-Kette
+//   - holt von jedem Gerät das zuletzt gesendete Bild und malt es: die Lampen als zwei senkrechte LED-Reihen, die Matrix als Raster, Gitarre und Bass als LED-Kette
 //     auf der SG-Kontur (Orte: shape.rs) samt Bund-Markern (Ausgang 1) und Gurt (Ausgang 2, ohne Marker).
 // Fehlt die DLL eines Geräts, läuft der Rest weiter; oben steht dann, was zu bauen ist.
 //
-// ANORDNUNG (vorläufig, die endgültige kommt mit den Lampen in einem eigenen Issue): Bass links, Matrix Mitte,
-// Gitarre rechts. Alle drei haben denselben Maßstab (ein Gerät ist so groß wie die Gitarre in Foto-Pixeln; die
+// ANORDNUNG (vorläufig, die endgültige kommt in einem eigenen Issue): Lampe 1 ganz links, dann Bass, Matrix, Gitarre,
+// Lampe 2 ganz rechts. Alle haben denselben Maßstab (ein Gerät ist so groß wie die Gitarre in Foto-Pixeln; die
 // Matrix hat denselben LED-Abstand wie die Kontur - ANNAHME, die echte Rastergröße ist unbekannt). Die ganze
 // Grafik liegt in einem eigenen Koordinatensystem und wird erst beim Zeichnen auf den freien Platz abgebildet: sie
 // füllt das Fenster, das Seitenverhältnis bleibt, nichts wird verzerrt.
@@ -21,6 +21,15 @@
 //
 // Wie in egui gezeichnet wird, steht in timeline.rs: Immediate-Mode - jedes Bild wird komplett neu gemalt, gemerkt
 // wird nur, was zwischen zwei Bildern bleiben muss (struct Stage).
+//
+// LAMPEN (Issue #23, Angabe des Users): eine Lampe ist eine senkrechte Säule aus ZWEI parallelen LED-Streifen, beide von
+// unten nach oben, nichts gewickelt; beide hängen am SELBEN Datensignal und zeigen dasselbe Bild. Jeder Streifen hat
+// anz_LEDs LEDs (Lampe 1: 94, Lampe 2: 78 - bei gleichem LED-Abstand ist Lampe 1 also höher). Gezeichnet wird für BEIDE
+// Reihen derselbe Puffer: Ausgang 1 (leds1 / DATA_PIN_1). Begründung: bei den Lampen (NOMARKER) kopiert
+// gitBlindingLEDs_OFF_MarkerLEDs_ON() dasselbe Bild nach leds1 und leds2, und auch die Warn-LEDs schreiben in beide - die
+// Wahl ändert das Bild nicht; Ausgang 1 ist der Hauptausgang (wie bei Gitarre/Bass). Welches Ende LED 0 ist, kommt aus der DLL
+// (SimInfo.lamp_idx0_at_bottom = LAMP_IDX0_AT_BOTTOM aus definitions.h), es wird nicht geraten. Die Helligkeit vom Knopf
+// der Gitarre (REMOTE_BRIGHTNESS, SYNC_BRIGHT) wird nicht nachgebildet: Standardhelligkeit.
 //
 // Rust-Idiome: Option<T> = Wert oder None; `if let Some(x) = ...` packt ihn aus; `&mut self` = die Funktion darf den
 // Zustand der Struktur verändern; `Vec<T>` = wachsende Liste; `|a| ...` = kleine namenlose Funktion (Closure).
@@ -36,6 +45,7 @@ use std::time::Instant;
 enum Kind {
     Instrument, // Gitarre / Bass: LED-Kette auf der SG-Kontur + Gurt
     Matrix,     // Raster
+    Lamp,       // Lampe: zwei parallele senkrechte LED-Reihen mit demselben Bild (Ausgang 1)
 }
 
 /// Ein Gerät der Bühne: DLL-Name, Beschriftung, Zeichenart. Reihenfolge = von links nach rechts.
@@ -44,10 +54,12 @@ struct Spec {
     label: &'static str,
     kind: Kind,
 }
-const SPECS: [Spec; 3] = [
+const SPECS: [Spec; 5] = [
+    Spec { dll: "sim_lampe1.dll", label: "Lampe 1", kind: Kind::Lamp },
     Spec { dll: "sim_rinasbass.dll", label: "Bass", kind: Kind::Instrument },
     Spec { dll: "sim_scrollmatrix.dll", label: "Matrix", kind: Kind::Matrix },
     Spec { dll: "sim_andresgit.dll", label: "Gitarre", kind: Kind::Instrument },
+    Spec { dll: "sim_lampe2.dll", label: "Lampe 2", kind: Kind::Lamp },
 ];
 
 /// Höchstens so viele ms werden pro Fensterbild vorgestellt (z. B. nach dem Ziehen des Fensters stand die Anzeige
@@ -59,6 +71,11 @@ const GAP: f32 = 90.0;
 const PAD: f32 = 40.0;
 /// LED-Abstand der Matrix, falls kein Instrument geladen ist (sonst der der Kontur): so groß wie ein LED-Abstand der SG.
 const DEFAULT_PITCH: f32 = 21.0;
+/// Lampe: Abstand der beiden senkrechten LED-Reihen (Mitte zu Mitte) in LED-Abständen. Ein Streifen ist etwa so
+/// breit wie ein LED-Abstand; ANNAHME 1,6 (echtes Maß unbekannt) - hoch und schmal.
+const LAMP_ROW_GAP: f32 = 1.6;
+/// Lampe: kleinste Breite des Zeichenbereichs in Foto-Pixeln (Platz für die Beschriftung "Lampe 1").
+const LAMP_MIN_W: f32 = 170.0;
 /// Farbkorrektur TypicalLEDStrip (0xFFB0F0): Faktor je Farbanteil, wie er beim Senden wirkt.
 const CORRECTION: [f32; 3] = [255.0 / 255.0, 176.0 / 255.0, 240.0 / 255.0];
 
@@ -127,6 +144,7 @@ impl Stage {
                             let (w, h) = (info.matrix_w, info.matrix_h);
                             led_of_xy = (0..h).flat_map(|y| (0..w).map(move |x| (x, y))).map(|(x, y)| sim.xy(x, y).unwrap_or(0)).collect();
                         }
+                        Kind::Lamp => {} // braucht nur die LED-Zahl und die Richtung aus SimInfo
                         Kind::Instrument => {
                             shape = Some(Shape::new(
                                 info.num_leds as usize,
@@ -311,6 +329,12 @@ impl Stage {
             .iter()
             .map(|d| match &d.shape {
                 Some(s) => (s.max[0] - s.min[0] + 2.0 * PAD, s.max[1] - s.min[1] + 2.0 * PAD, [s.min[0] - PAD, s.min[1] - PAD]),
+                // Lampe: Breite mindestens LAMP_MIN_W (sonst ragt die Beschriftung über den Rand); die Säule steht mittig darin,
+                // darum beginnt der Zeichenbereich (origin) um den halben Überschuss links von der Säule
+                None if d.spec.kind == Kind::Lamp => {
+                    let w = (LAMP_ROW_GAP * pitch + pitch + 2.0 * PAD).max(LAMP_MIN_W);
+                    (w, d.sim.info.num_leds as f32 * pitch + 2.0 * PAD, [-(w - (LAMP_ROW_GAP * pitch + pitch + 2.0 * PAD)) / 2.0, 0.0])
+                }
                 None => (d.sim.info.matrix_w as f32 * pitch + 2.0 * PAD, d.sim.info.matrix_h as f32 * pitch + 2.0 * PAD, [0.0, 0.0]),
             })
             .collect();
@@ -336,12 +360,13 @@ impl Stage {
             painter.text(
                 Pos2::new(dev_origin.x + w * scale / 2.0, top_left.y - 6.0),
                 egui::Align2::CENTER_BOTTOM,
-                format!("{} ({})", d.spec.label, d.sim.info.name()),
+                if d.spec.kind == Kind::Lamp { d.spec.label.to_string() } else { format!("{} ({})", d.spec.label, d.sim.info.name()) },
                 egui::FontId::proportional(14.0),
                 Color32::from_gray(150),
             );
             match &d.shape {
                 Some(shape) => self.draw_instrument(painter, d, shape, gain, scale, &to_screen),
+                None if d.spec.kind == Kind::Lamp => self.draw_lamp(painter, d, gain, pitch * scale, &to_screen, PAD),
                 None => self.draw_matrix(painter, d, gain, pitch * scale, &to_screen, PAD),
             }
             x_off += w + GAP;
@@ -399,6 +424,34 @@ impl Stage {
                     }
                 }
                 self.draw_led(painter, c, radius, rgb, gain, 2.0);
+            }
+        }
+    }
+
+    /// Lampe: zwei senkrechte LED-Reihen nebeneinander, beide mit DEMSELBEN Bild (Ausgang 1), LED 0 unten oder oben je nach
+    /// LAMP_IDX0_AT_BOTTOM (aus der DLL). `pitch` = LED-Abstand auf dem Bildschirm in Pixeln.
+    fn draw_lamp(&self, painter: &Painter, d: &Device, gain: f32, pitch: f32, to_screen: &dyn Fn(Pt) -> Pos2, pad: f32) {
+        let n = d.sim.info.num_leds as usize;
+        let radius = pitch * 0.42;
+        let at_bottom = d.sim.info.lamp_idx0_at_bottom != 0;
+        let origin = to_screen([pad, pad]); // linke obere Ecke der Säule (to_screen kennt die Verschiebung des Zeichenbereichs)
+        let row_gap = LAMP_ROW_GAP * pitch;
+        // Gehäuse: dunkles Rechteck hinter beiden Reihen (Breite = Reihenabstand + ein LED-Abstand)
+        let body = Rect::from_min_size(origin, Vec2::new(row_gap + pitch, pitch * n as f32)).expand(pitch * 0.35);
+        painter.rect_filled(body, pitch * 0.6, Color32::from_gray(26));
+        painter.rect_stroke(body, pitch * 0.6, Stroke::new(1.0, Color32::from_gray(50)), StrokeKind::Outside);
+        for i in 0..n {
+            if i * 3 + 2 >= d.rgb1.len() {
+                break;
+            }
+            // Höhe über dem Boden in LED-Abständen: LED 0 unten (Standard) oder oben; Bildschirm-y wächst nach unten
+            let from_bottom = if at_bottom { i } else { n - 1 - i };
+            let y = origin.y + (n - 1 - from_bottom) as f32 * pitch + pitch * 0.5;
+            let rgb = &d.rgb1[i * 3..i * 3 + 3];
+            for row in 0..2 {
+                // zwei Reihen, dasselbe Bild: beide hängen am selben Datensignal
+                let x = origin.x + pitch * 0.5 + row as f32 * row_gap;
+                self.draw_led(painter, Pos2::new(x, y), radius, rgb, gain, 6.0);
             }
         }
     }
