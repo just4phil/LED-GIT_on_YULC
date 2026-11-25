@@ -158,12 +158,17 @@ README_german + `docs/Handbuch.html`, Tests in `cargo test`).
 
 ## Arbeitsstand
 
-| Stufe | Status | Ergebnis / Commit | Nächster Schritt |
-|---|---|---|---|
-| 0 Spike | offen | - | FastLED + GFX + NeoMatrix mit g++ für SCROLLMATRIX übersetzen |
-| 1 Firmware entflechten | offen | - | |
-| 2 Simulator-Kern | offen | - | |
-| 3 Bühnenfenster | offen | - | |
-| 4 MIDI-Eingang | offen | - | |
-| 5 LP16-Tool 2. Port | offen | - | (unabhängig, kann jederzeit) |
-| 6 Doku | offen | - | |
+Umsetzung als GitHub-Issues (Label `sonnet-batch`), alle auf dem Branch `feature/led-simulator`.
+Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umsetzung sind die Issue-Texte.
+
+| Issue | Inhalt | Blockiert durch | Status | Ergebnis / Commit |
+|---|---|---|---|---|
+| #19 | Show-Engine aus main.cpp herauslösen (Stufe 1) | - | offen | |
+| #20 | Durchstich: Matrix im Simulator, Reiter "Bühne" (Stufen 0, 2, 3) | #19 | offen | |
+| #21 | Zeittreue: Bildtakt + automatischer Zeit-Test | #20 | offen | |
+| #22 | Gitarre und Bass mit Gurt | #20 | offen | |
+| #23 | Lampen | #20 | offen | |
+| #24 | Bühne komplett (Anordnung, Skalierung, Bedienung) | #22, #23 | offen | |
+| #25 | MIDI-Eingang (Stufe 4) | #20 | offen | |
+| LP16-Tool #16 | Zweiter MIDI-Ausgang (Stufe 5, Repo Cymatic-uTool-for-LP-16, Branch `feature/second-midi-port`) | - | offen | |
+| #26 | Anleitung docs/Simulator.html, Doku-Abschluss (Stufe 6) | #24, #25, LP16 #16 | offen | |
