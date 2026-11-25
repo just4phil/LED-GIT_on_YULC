@@ -24,6 +24,10 @@
 // Beschriftungen über den Geräten werden an die Spaltenbreite angepasst (langer Name -> kurzer Name -> Kürzel ->
 // ausgeblendet), so überlappen sie bei keiner Fenstergröße; die Statusliste unter der Bühne nennt immer alle Namen.
 //
+// KOMPAKTES LAYOUT (QA-Nacharbeit #24): die Bedienleiste ist EINE Zeile ohne Umbruch (waagerecht scrollbar), Darstellungsschalter
+// und MIDI-Eingang liegen hinter dem Knopf "Einstellungen", die Statusliste ist zugeklappt eine Zusammenfassungszeile
+// ("alle Geräte: Part 5 verse 1a 6.6 s"), aufgeklappt die Tabelle. So behält die Bühne auch in 800 x 450 über die Hälfte der Höhe.
+//
 // BEDIENUNG (Issue #24, ohne LP16-Tool): Start (alle DLLs frisch laden, CC 22 = Song), Stop (CC 22 = 0), Pause/Weiter
 // (die Simulator-Uhr steht), Tempo x1 / x0,5 (die Simulator-Uhr läuft halb so schnell: Effekte, Part-Längen, Timer
 // laufen langsamer, intern bleibt alles konsistent, weil die DLLs nur die vorgestellten Millisekunden sehen) und
@@ -155,6 +159,8 @@ pub struct Stage {
     mismatch_since: Option<Instant>, // seit wann weichen Geräte im Part voneinander ab?
     scroll_join_ms: Option<f64>, // Song-Zeit (ms), bis zu der die Matrix den Titel-Lauftext spielt (aus songgen.py --json), None = keiner
     scroll_parts: Vec<(i64, f64)>, // (case, Beginn ms) aller Parts: daraus ergibt sich die Song-Zeit
+    settings_open: bool,    // Zeile mit Darstellungsschaltern und MIDI-Eingang aufgeklappt? (Standard: zu)
+    status_open: bool,      // Statusliste als Tabelle aufgeklappt? (Standard: nur eine Zusammenfassungszeile)
 }
 
 /// Alle Geräte als Ziel für midi_in::run_to(): jeder Aufruf geht an jede DLL (gemeinsame Uhr, gleiche Befehle).
@@ -401,7 +407,6 @@ impl Stage {
         if before != (self.settings.bright_view, self.settings.correction) {
             self.settings.save(); // Schalter merken
         }
-        self.midi_row(ui);
         if !missing.is_empty() {
             ui.colored_label(Color32::YELLOW, format!("{} fehlt - erst bauen: python tools/build_sim.py", missing.join(", ")));
         }
@@ -426,9 +431,9 @@ impl Stage {
 
         // --- Bühne zeichnen: Platz = alles, was frei ist, abzüglich der Statusliste (Titelzeile + eine Zeile je Gerät) ---
         let avail = ui.available_size();
-        // Die Statusliste bekommt ihre volle Höhe, in einem kleinen Fenster aber höchstens ein Drittel (sie scrollt dann): die Bühne
-        // soll nie auf einen Streifen schrumpfen.
-        let status_h = (19.0 * (SPECS.len() as f32 + 1.0) + 14.0).min(avail.y * 0.33);
+        // Zugeklappt braucht die Statusliste nur eine Zeile; aufgeklappt ihre volle Höhe, in einem kleinen Fenster aber höchstens
+        // ein Drittel (sie scrollt dann): die Bühne soll nie auf einen Streifen schrumpfen.
+        let status_h = if self.status_open { (19.0 * (SPECS.len() as f32 + 1.0) + 14.0 + 26.0).min(avail.y * 0.33) } else { 26.0 };
         let area = Vec2::new(avail.x.max(10.0), (avail.y - status_h).max(10.0));
         let (rect, _resp) = ui.allocate_exact_size(area, Sense::hover());
         let painter = ui.painter_at(rect);
@@ -444,70 +449,85 @@ impl Stage {
         egui::ScrollArea::vertical().max_height(status_h).auto_shrink([false, false]).show(ui, |ui| self.status(ui, &parts));
     }
 
-    /// Bedienzeilen: Start / Stop / Pause / Tempo, Sprung zu Part, Darstellungsschalter. `horizontal_wrapped` bricht die
-    /// Zeile um, wenn das Fenster schmal ist.
+    /// Bedienleiste: EINE Zeile, die nie umbricht (QA-Nacharbeit #24: im kleinen Fenster verschwand die Bühne hinter
+    /// vielen umgebrochenen Zeilen). Passt sie nicht in die Breite, lässt sie sich waagerecht scrollen (ScrollArea).
+    /// Kurze Knopftexte mit Hinweis (Tooltip) beim Darüberfahren; die seltenen Schalter (aufgehellt, Farbkorrektur,
+    /// MIDI-Eingang) stehen hinter dem Knopf "Einstellungen" und erscheinen als zweite Zeile nur, wenn man sie öffnet.
     fn controls(&mut self, ui: &mut Ui, root: &Path, song: &Option<(i64, String)>, parts: &[(i64, String, f64)], any_dll: bool) {
         let midi_active = self.midi.is_some();
-        // Knopftexte nie mitten im Wort umbrechen: lieber springt der ganze Knopf in die nächste Zeile (horizontal_wrapped)
+        // Knopftexte nie mitten im Wort umbrechen
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
-        ui.horizontal_wrapped(|ui| {
-            match song {
-                Some((id, name)) => ui.strong(format!("Song {id}  {name}")),
-                None => ui.label("Links einen Song mit Song-ID wählen (generierte Songs)."),
-            };
-            if ui.add_enabled(any_dll && song.is_some(), egui::Button::new("▶ Start")).clicked() {
-                if let Some((id, _)) = song {
-                    self.start(root, *id);
-                }
-            }
-            if ui.add_enabled(!self.devices.is_empty(), egui::Button::new("■ Stop")).clicked() {
-                self.stop();
-            }
-            // Pause und Tempo: ausgegraut, solange ein MIDI-Port offen ist (die Uhr läuft dann in Echtzeit)
-            let clock_ui = ui.add_enabled_ui(!midi_active && !self.devices.is_empty(), |ui| {
-                if ui.button(if self.paused { "▶ Weiter" } else { "⏸ Pause" }).clicked() {
-                    self.paused = !self.paused;
-                }
-                ui.label("Tempo");
-                ui.selectable_value(&mut self.half_speed, false, "×1");
-                ui.selectable_value(&mut self.half_speed, true, "×0,5").on_hover_text("halbe Geschwindigkeit: auch die Simulator-Zeit läuft nur halb so schnell");
-            });
-            if midi_active {
-                clock_ui.response.on_hover_text("Pause und Tempo gehen nicht, solange ein MIDI-Eingang offen ist: die Uhr läuft dann in Echtzeit, sonst passt sie nicht zur Musik.");
-                ui.label(egui::RichText::new("Pause/Tempo aus: Uhr in Echtzeit (MIDI)").color(Color32::YELLOW));
-            }
-        });
-        ui.horizontal_wrapped(|ui| {
-            // Auswahl des Parts: nur mit bekanntem Ablauf; die Auswahl springt auf den ersten Part, wenn sie nicht mehr passt
-            if !parts.iter().any(|p| Some(p.0) == self.jump_choice) {
-                self.jump_choice = parts.first().map(|p| p.0);
-            }
-            let label = |p: &(i64, String, f64)| format!("{:>3}  {}  ({})", p.0, p.1, timeline::fmt_time(p.2));
-            let shown = parts.iter().find(|p| Some(p.0) == self.jump_choice).map(label).unwrap_or_else(|| "(Ablauf nicht geladen)".to_string());
-            ui.label("Sprung zu Part:");
-            egui::ComboBox::from_id_salt("jump_part").selected_text(shown).width(ui.available_width().clamp(120.0, 260.0)).show_ui(ui, |ui| {
-                for p in parts {
-                    if ui.selectable_label(Some(p.0) == self.jump_choice, label(p)).clicked() {
-                        self.jump_choice = Some(p.0);
+        egui::ScrollArea::horizontal().id_salt("controls_scroll").auto_shrink([false, true]).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                match song {
+                    Some((id, name)) => ui.strong(format!("{id}  {name}")),
+                    None => ui.label("Links einen Song mit Song-ID wählen."),
+                };
+                if ui.add_enabled(any_dll && song.is_some(), egui::Button::new("▶ Start")).on_hover_text("Alle Geräte frisch starten, Song wählen (CC 22)").clicked() {
+                    if let Some((id, _)) = song {
+                        self.start(root, *id);
                     }
                 }
-            });
-            let go = ui
-                .add_enabled(any_dll && song.is_some() && self.jump_choice.is_some(), egui::Button::new("Springen"))
-                .on_hover_text("CC 23 = Part an alle Geräte; der Part beginnt an seinem Anfang. Läuft der Song noch nicht, wird er vorher gestartet.");
-            if go.clicked() {
-                if let (Some((id, _)), Some(case)) = (song, self.jump_choice) {
-                    self.jump(root, *id, case);
+                if ui.add_enabled(!self.devices.is_empty(), egui::Button::new("■")).on_hover_text("Stop: Song 0 (Songpause) wählen").clicked() {
+                    self.stop();
                 }
-            }
-            ui.separator();
-            ui.checkbox(&mut self.settings.bright_view, "aufgehellt").on_hover_text(
-                "aus = Farbe mal Helligkeit des Geräts (wie echt, am Bildschirm sehr dunkel); an = Bildschirm-freundlich aufgehellt",
-            );
-            ui.checkbox(&mut self.settings.correction, "Farbkorrektur").on_hover_text(
-                "an = die Farbkorrektur der LED-Streifen (TypicalLEDStrip: Rot 255, Grün 176, Blau 240) wie auf dem Gerät nachrechnen",
-            );
+                // Pause und Tempo: ausgegraut, solange ein MIDI-Port offen ist (die Uhr läuft dann in Echtzeit)
+                let clock_ui = ui.add_enabled_ui(!midi_active && !self.devices.is_empty(), |ui| {
+                    if ui.button(if self.paused { "▶ Weiter" } else { "⏸" }).on_hover_text("Pause / Weiter: die Simulator-Uhr steht").clicked() {
+                        self.paused = !self.paused;
+                    }
+                    ui.selectable_value(&mut self.half_speed, false, "×1").on_hover_text("normales Tempo");
+                    ui.selectable_value(&mut self.half_speed, true, "×0,5").on_hover_text("halbe Geschwindigkeit: auch die Simulator-Zeit läuft nur halb so schnell");
+                });
+                if midi_active {
+                    clock_ui.response.on_hover_text("Pause und Tempo gehen nicht, solange ein MIDI-Eingang offen ist: die Uhr läuft dann in Echtzeit, sonst passt sie nicht zur Musik.");
+                    ui.label(egui::RichText::new("MIDI-Echtzeit").color(Color32::YELLOW)).on_hover_text("Pause/Tempo aus: die Uhr läuft in Echtzeit, solange ein MIDI-Eingang offen ist");
+                }
+                ui.separator();
+                // Auswahl des Parts: nur mit bekanntem Ablauf; die Auswahl springt auf den ersten Part, wenn sie nicht mehr passt
+                if !parts.iter().any(|p| Some(p.0) == self.jump_choice) {
+                    self.jump_choice = parts.first().map(|p| p.0);
+                }
+                let label = |p: &(i64, String, f64)| format!("{:>3}  {}  ({})", p.0, p.1, timeline::fmt_time(p.2));
+                let shown = parts.iter().find(|p| Some(p.0) == self.jump_choice).map(label).unwrap_or_else(|| "(Ablauf nicht geladen)".to_string());
+                ui.label("Part:");
+                egui::ComboBox::from_id_salt("jump_part").selected_text(shown).width(190.0).show_ui(ui, |ui| {
+                    for p in parts {
+                        if ui.selectable_label(Some(p.0) == self.jump_choice, label(p)).clicked() {
+                            self.jump_choice = Some(p.0);
+                        }
+                    }
+                });
+                let go = ui
+                    .add_enabled(any_dll && song.is_some() && self.jump_choice.is_some(), egui::Button::new("Springen"))
+                    .on_hover_text("CC 23 = Part an alle Geräte; der Part beginnt an seinem Anfang. Läuft der Song noch nicht, wird er vorher gestartet.");
+                if go.clicked() {
+                    if let (Some((id, _)), Some(case)) = (song, self.jump_choice) {
+                        self.jump(root, *id, case);
+                    }
+                }
+                ui.separator();
+                ui.toggle_value(&mut self.settings_open, "⚙ Einstellungen").on_hover_text("Darstellung (aufgehellt, Farbkorrektur) und MIDI-Eingang");
+                // Kurzer Hinweis zum MIDI-Eingang, auch bei geschlossenen Einstellungen (ein Fehler soll nicht verborgen bleiben)
+                if let Some(note) = &self.midi_note {
+                    ui.colored_label(Color32::YELLOW, format!("MIDI: {note}"));
+                } else if let Some(m) = &self.midi {
+                    ui.label(format!("MIDI: {}", m.port_name));
+                }
+            });
         });
+        if self.settings_open {
+            ui.horizontal_wrapped(|ui| {
+                ui.checkbox(&mut self.settings.bright_view, "aufgehellt").on_hover_text(
+                    "aus = Farbe mal Helligkeit des Geräts (wie echt, am Bildschirm sehr dunkel); an = Bildschirm-freundlich aufgehellt",
+                );
+                ui.checkbox(&mut self.settings.correction, "Farbkorrektur").on_hover_text(
+                    "an = die Farbkorrektur der LED-Streifen (TypicalLEDStrip: Rot 255, Grün 176, Blau 240) wie auf dem Gerät nachrechnen",
+                );
+                ui.separator();
+                self.midi_row(ui);
+            });
+        }
     }
 
     /// Statusliste unter der Bühne: eine Zeile je Gerät (Name, Song, Part + Name, Zeit im Part, Bild, Helligkeit). Weichen
@@ -546,6 +566,31 @@ impl Stage {
         let orange = Color32::from_rgb(255, 160, 40);
         let small = |t: String, c: Color32| egui::RichText::new(t).monospace().size(12.0).color(c);
         let normal = ui.visuals().text_color();
+        // Kopfzeile: Knopf zum Auf-/Zuklappen + Zusammenfassung ("alle Geräte: Part 5 verse 1a 6.6 s" oder die Abweichung)
+        let summary = match reference {
+            Some(r) => {
+                let ms = self.devices.iter().find(|d| (d.state.0, d.state.1) == r && d.spec.kind != Kind::Matrix).map(|d| d.state.2).unwrap_or(0);
+                let base = format!("Part {} {} {:.1} s", r.1, Self::part_name(parts, r.1), ms as f64 / 1000.0);
+                if flagged {
+                    let names: Vec<&str> = deviating.iter().map(|&i| self.devices[i].spec.label).collect();
+                    (format!("Abweichung: {} nicht in Part {} ({base})", names.join(", "), r.1), true)
+                } else if scroll_active && self.devices.iter().any(|d| d.spec.kind == Kind::Matrix) {
+                    (format!("alle Geräte: {base} (Matrix: Lauftext)"), false)
+                } else {
+                    (format!("alle Geräte: {base}"), false)
+                }
+            }
+            None => ("keine Instrumente geladen".to_string(), false),
+        };
+        ui.horizontal(|ui| {
+            if ui.button(if self.status_open { "▾ Status" } else { "▸ Status" }).on_hover_text("Tabelle je Gerät ein-/ausklappen").clicked() {
+                self.status_open = !self.status_open;
+            }
+            ui.label(small(summary.0, if summary.1 { orange } else { normal }));
+        });
+        if !self.status_open {
+            return;
+        }
         egui::Grid::new("status").num_columns(7).spacing([14.0, 1.0]).show(ui, |ui| {
             for h in ["Gerät", "Song", "Part", "Part-Name", "Zeit im Part", "Bild", "Hell."] {
                 ui.label(small(h.to_string(), Color32::GRAY));

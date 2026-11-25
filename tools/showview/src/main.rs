@@ -1,7 +1,7 @@
 // main.rs - showview: zeigt den Ablauf eines Songs der LED-Show als Zeitstrahl (Windows-Programm, nur ansehen).
 //
 // Aufbau des Fensters:
-//   links   Liste der Song-Ordner unter songs/ (nur Songs mit show.yaml lassen sich öffnen)
+//   links   Liste der Song-Ordner (Knopf "Songs" blendet sie aus; unter 1100 Punkten Fensterbreite standardmäßig aus) unter songs/ (nur Songs mit show.yaml lassen sich öffnen)
 //   Mitte   der Zeitstrahl (timeline.rs): Parts, Übergänge, eine Spur je Gerät mit Blindern, Overlay, Text,
 //           Ausgabestufe, Wünsche des Users
 //   unten   Details des angeklickten Parts: Zeiten, Beschreibung wie in der Tabelle, Aufruf je Gerät, Rohangaben
@@ -95,6 +95,7 @@ struct App {
     stamps: Vec<Option<SystemTime>>,
     last_check: Instant,
     want_song: Option<String>, // Song aus der Befehlszeile, wird nach dem Laden der Liste geöffnet
+    songs_user: Option<bool>,  // Wunsch des Users: Song-Liste links ein (true) / aus (false); None = automatisch nach Fensterbreite
 }
 
 impl App {
@@ -117,6 +118,7 @@ impl App {
             stamps: Vec::new(),
             last_check: Instant::now(),
             want_song,
+            songs_user: None,
         };
         match app.root.clone() {
             Some(root) => app.spawn(move || Loaded::List(export::load_list(&root).map(|l| l.songs))),
@@ -293,10 +295,19 @@ impl eframe::App for App {
         if self.tab == Tab::Ablauf {
             egui::Panel::bottom("details").resizable(true).default_size(240.0).min_size(160.0).show(ui, |ui| self.details(ui));
         }
-        egui::Panel::left("songs").resizable(true).default_size(290.0).show(ui, |ui| self.song_list(ui));
+        // Song-Liste: Knopf "Songs" im Kopf blendet sie aus. Ohne Wunsch des Users automatisch: nur bei breitem Fenster
+        // (ab 1100 Punkten) sichtbar, damit die Bühne in einem kleinen Fenster die ganze Breite bekommt.
+        let songs_shown = self.songs_user.unwrap_or(ui.ctx().content_rect().width() >= 1100.0);
+        if songs_shown {
+            egui::Panel::left("songs").resizable(true).default_size(290.0).show(ui, |ui| self.song_list(ui));
+        }
         egui::Panel::top("head").show(ui, |ui| {
             // Umschalter der Reiter: selectable_value setzt self.tab auf den angeklickten Wert
             ui.horizontal(|ui| {
+                let mut shown = songs_shown;
+                if ui.toggle_value(&mut shown, "Songs").on_hover_text("Song-Liste links ein-/ausblenden").changed() {
+                    self.songs_user = Some(shown);
+                }
                 ui.selectable_value(&mut self.tab, Tab::Ablauf, "Ablauf");
                 ui.selectable_value(&mut self.tab, Tab::Buehne, "Bühne");
             });
