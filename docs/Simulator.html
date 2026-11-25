@@ -176,7 +176,7 @@ cargo run --release                       <span class="c"># baut beim ersten Mal
 </table></div>
 <h3>Darstellung</h3>
 <ul>
-  <li><b>aufgehellt</b> (Standard an): Farbe mal Wurzel der Helligkeit des Geräts, damit dunkle Effekte am Bildschirm sichtbar bleiben. Aus = „wie echt“ (Farbe mal Helligkeit; am Bildschirm sehr dunkel). Die Bund-Marker der Gitarre/des Basses (in der Firmware nur Pegel ca. 7 von 255) sind in „aufgehellt“ hervorgehoben und tragen einen Ring.</li>
+  <li><b>aufgehellt</b> (Standard an): Helligkeit des Geräts stark angehoben (Exponent 0,4, 1,25-fach), Farben per Gamma kräftiger, größerer Leuchthof und weißlicher Kern bei Volllicht (Blinder, Strobe), damit alles am Bildschirm hell und grell wirkt. Aus = „wie echt“ (Farbe mal Helligkeit; am Bildschirm sehr dunkel). Die Bund-Marker der Gitarre/des Basses (in der Firmware nur Pegel ca. 7 von 255) sind in „aufgehellt“ hervorgehoben und tragen einen Ring.</li>
   <li><b>Farbkorrektur</b> (Standard an): die Firmware stellt <code>TypicalLEDStrip</code> ein (Rot 255, Grün 176, Blau 240 von 255); sie wirkt erst beim Senden, also rechnet die Anzeige sie nach.</li>
   <li>Beide Schalter werden gemerkt (<code>%APPDATA%\showview\settings.json</code>).</li>
   <li>Das <b>Fenster ist frei skalierbar</b>; die ganze Bühne wird mitskaliert (Seitenverhältnis bleibt, Beschriftungen kürzen sich oder verschwinden, damit nichts überlappt). Eine fehlende DLL zeigt ein graues Feld „nicht gebaut“, die anderen Geräte laufen weiter.</li>

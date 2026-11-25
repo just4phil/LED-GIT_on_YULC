@@ -332,7 +332,10 @@ impl Stage {
     /// Rückgabe: (Farbe, größter Farbanteil nach Korrektur und Helligkeit als Maß für "leuchtet").
     fn led_color(&self, rgb: &[u8], gain: f32) -> (Color32, f32) {
         let k = if self.settings.correction { CORRECTION } else { [1.0; 3] };
-        let c = |i: usize| (rgb[i] as f32 * k[i] * gain).min(255.0);
+        // aufgehellt: zusätzlich eine Gamma-Anhebung (Exponent 0,7) der Farbanteile - Mitteltöne werden kräftiger, Schwarz und
+        // Volllicht bleiben, wie sie sind; so wirken Blinder, Strobe und Farben am Bildschirm greller
+        let lift = |v: f32| if self.settings.bright_view { 255.0 * (v / 255.0).powf(0.7) } else { v };
+        let c = |i: usize| lift((rgb[i] as f32 * k[i] * gain).min(255.0));
         let (r, g, b) = (c(0), c(1), c(2));
         (Color32::from_rgb(r as u8, g as u8, b as u8), r.max(g).max(b))
     }
@@ -343,10 +346,17 @@ impl Stage {
         if luma > 40.0 {
             // leuchtender Hof: größerer, durchsichtiger Kreis in der LED-Farbe; je heller die LED, desto kräftiger
             // (Durchsichtigkeit 18..44 von 255) - ein leichter Schein, der die Punkte nicht verschmieren lässt
-            let alpha = (18.0 + luma * 0.1).min(44.0) as u8;
-            painter.circle_filled(center, radius * 1.7, Color32::from_rgba_unmultiplied(col.r(), col.g(), col.b(), alpha));
+            // in "aufgehellt" ein kräftigerer, größerer Hof (Leuchten, Durchsichtigkeit bis 90) und ein heller Kern bei Volllicht
+            let (a_max, r_hof) = if self.settings.bright_view { (90.0, 2.3) } else { (44.0, 1.7) };
+            let alpha = (18.0 + luma * 0.25).min(a_max) as u8;
+            painter.circle_filled(center, radius * r_hof, Color32::from_rgba_unmultiplied(col.r(), col.g(), col.b(), alpha));
         }
         painter.circle_filled(center, radius, if luma < dim_limit { Color32::from_rgb(22, 22, 26) } else { col }); // aus = dunkelgrauer Punkt
+        if self.settings.bright_view && luma > 200.0 {
+            // weißlicher Kern: sehr helle LEDs (Blinder, Strobe) blenden wie echte - Farbe zu 40 % Richtung Weiß
+            let mix = |v: u8| (v as f32 + (255.0 - v as f32) * 0.4) as u8;
+            painter.circle_filled(center, radius * 0.6, Color32::from_rgb(mix(col.r()), mix(col.g()), mix(col.b())));
+        }
     }
 
     /// Name des Parts zu einem `case` für die Statusanzeige, "-" ohne bekannten Ablauf, "?" für einen unbekannten case.
@@ -809,7 +819,8 @@ impl Stage {
                 continue;
             };
             let b = d.brightness.clamp(0, 255) as f32 / 255.0;
-            let gain = if self.settings.bright_view { b.sqrt() } else { b };
+            // "aufgehellt": Helligkeit mit Exponent 0,4 statt 0,5 (80/255 -> 0,63 statt 0,56) und 1,25-fach, bei 255 also volle Leuchtkraft
+            let gain = if self.settings.bright_view { (b.powf(0.4) * 1.25).min(1.0) } else { b };
             match &d.shape {
                 Some(shape) => self.draw_instrument(painter, d, shape, gain, scale, &to_screen),
                 None if slot.spec.kind == Kind::Lamp => self.draw_lamp(painter, d, gain, lamp_pitch * scale, &to_screen, PAD),
