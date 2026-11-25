@@ -170,8 +170,9 @@ Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umset
 | #23 | Lampen | #20 | erledigt (25.11.2026) | `build_sim.py` baut zusätzlich `sim_lampe1.dll` / `sim_lampe2.dll`; Schnittstelle **Version 3** (`SimInfo` + `lampIdx0AtBottom` = `LAMP_IDX0_AT_BOTTOM`, damit showview das Ende von LED 0 nicht raten muss). showview `stage.rs`: `Kind::Lamp`, zwei parallele senkrechte Reihen (Abstand 1,6 LED-Abstände), Anordnung Lampe 1 | Bass | Matrix | Gitarre | Lampe 2, gleicher Maßstab (Lampe 1 = 94 x LED-Abstand hoch, Lampe 2 = 78). **Annahmen:** beide Reihen zeigen **Ausgang 1** (`leds1`): bei Lampen (NOMARKER) kopiert `gitBlindingLEDs_OFF_MarkerLEDs_ON()` dasselbe Bild nach `leds1` und `leds2`, die Wahl ändert nichts; Reihenabstand 1,6 und Gehäuse = Annahme (echtes Maß unbekannt); `REMOTE_BRIGHTNESS` nicht nachgebildet. **Abweichung vom Issue:** Warn-LEDs "kein Funk" in Song 0 entfallen im Simulator (Entscheidung #20: Funk gilt als verbunden), die Richtung ist über `LAMP_IDX0_AT_BOTTOM` aus der DLL bestimmt (dasselbe Makro benutzen `fxPipeline.cpp`/`scenes.cpp`/`markerLEDs.cpp`). Prüfung: Maniac "drums intro" zeigt Blinder abwechselnd auf Lampe 1 und Lampe 2, beide Reihen gleich. Zeit-Test grün für alle 5 DLLs (26 Songs, 0 ms), Smoke-Test 5/5. `src/` unverändert. Bekannt: in sehr kleinem Fenster überlappen die Beschriftungen "Lampe 1" / "Bass" (gehört zu #24). Nächster Schritt: #24. Commit siehe Git-Log |
 | #24 | Bühne komplett (Anordnung, Skalierung, Bedienung) | #22, #23 | erledigt (25.11.2026) | `stage.rs` (Slots im gemeinsamen Koordinatensystem, Beschriftung passt sich der Spaltenbreite an: lang -> kurz -> Kürzel -> aus; fehlende DLL = graues Feld "nicht gebaut"; Start/Stop/Pause/Tempo x0,5 über `clock_ms`, bei offenem MIDI-Port ausgegraut; Sprung zu Part = CC 23 an alle (vorher Start, falls Song nicht läuft; hebt Pause auf); Statusliste mit Part-Name, orange bei Abweichung länger 300 ms), `settings.rs` (Schalter + MIDI-Port), `main.rs` (Knopf "auf der Bühne ab hier abspielen", `--sprung <case>`), `shape.rs` (neuer Gurt: oberer Pin -> Schulter -> unterer Pin). **Annahmen:** Matrix-LED-Abstand 1,5 x, Lampen 0,75 x Instrument-Abstand; Gurt-Verlauf und LED 0 am oberen Pin; Matrix im Titel-Lauftext = Song-Zeit des Vergleichsparts < `join_start` (aus --json) -> "Lauftext", kein Fehler (Trailer-Einstieg `entry_scroll` nicht beachtet). Prüfung: cargo build ohne Warnungen, cargo test 8 grün, Screenshots `sim-shots/buehne_final_*.png`. Nächster Schritt: #26. Commit siehe Git-Log |
 | #25 | MIDI-Eingang (Stufe 4) | #20 | erledigt (25.11.2026) | Siehe unten "MIDI-Eingang (#25)". Pause/Tempo bei aktivem MIDI ausgegraut (#24 erledigt). Nächster Schritt: #26. Commit siehe Git-Log |
-| LP16-Tool #16 | Zweiter MIDI-Ausgang (Stufe 5, Repo Cymatic-uTool-for-LP-16, Branch `feature/second-midi-port`) | - | offen | |
-| #26 | Anleitung docs/Simulator.html, Doku-Abschluss (Stufe 6) | #24, #25, LP16 #16 | offen | |
+| LP16-Tool #16 | Zweiter MIDI-Ausgang (Stufe 5, Repo Cymatic-uTool-for-LP-16, Branch `feature/second-midi-port`) | - | umgesetzt auf dem Branch (Commits 7dfba6f, 900fe2c), **nicht gemergt** | `midi_port2`, Tests grün (238), nicht mit echter MIDI-Hardware/loopMIDI getestet |
+| #24 QA | Kompakte Bühne bei kleinem Fenster | #24 | erledigt (25.11.2026) | Bedienleiste einzeilig (waagerecht scrollbar), Darstellungsschalter + MIDI-Eingang hinter "Einstellungen", Statusliste zugeklappt = Zusammenfassungszeile, Song-Liste per Knopf "Songs" ausblendbar (automatisch aus unter 1100 Punkten Breite). 800x450: Bühne ca. 58 % der Fensterhöhe. Screenshots `sim-shots/qa26_*.png`. Commit d31cbc3 |
+| #26 | Anleitung docs/Simulator.html, Doku-Abschluss (Stufe 6) | #24, #25, LP16 #16 | erledigt (25.11.2026) | `docs/Simulator.html` (9 Abschnitte, alle Befehle einmal ausgeführt: `build_sim.py`, `--test`, `--zeittest`, `sim_timetest.py`, `send_cc` ohne Argumente, showview starten/beenden), README (Abschnitt "LED simulator", Doku-Tabelle), CLAUDE.md (Build + Hinweis DLLs neu bauen), `Song-Workflow.html` (Schritt "auf der Bühne ansehen"). **Alle Stufen abgeschlossen.** Commit siehe Git-Log |
 
 ## Befunde
 
@@ -211,3 +212,15 @@ Der Plan-Abschnitt "Stufen" oben ist der Hintergrund; verbindlich für die Umset
 - **Stand der Prüfung:** auf diesem Rechner gibt es keinen virtuellen MIDI-Port (nur "Microsoft GS Wavetable Synth"); es wurde keine
   Software installiert. Tests + Programmstart ohne Absturz geprüft; **Ende-zu-Ende mit Port steht aus.** Offen: ob Windows-MIDI-Services-Endpunkte
   für das WinMM-Backend von midir sichtbar sind (sonst loopMIDI).
+
+## Offen / später
+
+- **Ende-zu-Ende-Test mit virtuellem Port** (LP16-Tool -> loopMIDI -> Simulator): auf dem Entwicklungsrechner gibt es keinen
+  virtuellen Port; offen ist auch, ob Windows-MIDI-Services-Endpunkte über das WinMM-Backend von `midir` sichtbar sind
+  (Anleitung empfiehlt loopMIDI).
+- **LP16-Tool:** Branch `feature/second-midi-port` (Repo Cymatic-uTool-for-LP-16) nach dem Test mergen.
+- **Funk-Verzögerung je Client** (ESP-NOW, wenige ms) optional einstellbar nachbilden.
+- **Helligkeit vom Knopf** (`REMOTE_BRIGHTNESS` / `SYNC_BRIGHT` der Lampen) nachbilden.
+- **Echte Maße** von Gurt, Matrix und Lampen (Reihenabstand, LED-Abstand, Matrix-Größe) statt der Annahmen.
+- Trailer-Einstieg (`entry_scroll`) in der Lauftext-Erkennung der Statusliste berücksichtigen.
+- Warn-LEDs "kein Funk" (Song 0) optional zuschaltbar.

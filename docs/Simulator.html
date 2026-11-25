@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LED-Simulator - Anleitung</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c23; --panel2:#1d242d; --ink:#e6edf3;
+    --muted:#9aa7b4; --accent:#4ea1ff; --accent2:#7ee787; --warn:#ffb86b;
+    --danger:#ff7b72; --border:#2a323c; --code:#0b0e12;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:0 0 80px}
+  header{background:linear-gradient(135deg,#10261d,#11202e 55%,#0f1216);border-bottom:1px solid var(--border);padding:34px 0 28px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.2px}
+  h2{font-size:23px;margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);color:var(--accent);scroll-margin-top:16px}
+  h3{font-size:18px;margin:26px 0 6px;color:var(--accent2)}
+  .sub{color:var(--muted);margin:0}
+  p{margin:10px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  a{color:var(--accent)}
+  code{background:var(--code);border:1px solid var(--border);border-radius:4px;
+    padding:1px 6px;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13.5px;color:#cfe3ff;overflow-wrap:anywhere}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;font-family:"SF Mono",Consolas,Menlo,monospace;font-size:13px;line-height:1.5;margin:10px 0}
+  pre code{background:none;border:none;padding:0;color:#d7e4f0}
+  .c{color:#7d8b99}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .note{border-left:4px solid var(--accent);background:var(--panel2);padding:12px 16px;border-radius:6px;margin:14px 0}
+  .warn{border-left:4px solid var(--warn);background:#241d12;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .ok{border-left:4px solid var(--accent2);background:#14211a;padding:12px 16px;border-radius:6px;margin:14px 0}
+  .tablewrap{overflow-x:auto;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent);white-space:nowrap}
+  td code{font-size:12.5px}
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;margin-top:18px}
+  .toc a{color:var(--ink);text-decoration:none;opacity:.85}
+  .toc a:hover{opacity:1;color:var(--accent)}
+  .toc b{color:var(--accent);margin-right:6px}
+  .steps{counter-reset:st;list-style:none;padding:0}
+  .steps>li{counter-increment:st;position:relative;padding:14px 16px 14px 58px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;margin:10px 0}
+  .steps>li::before{content:counter(st);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;
+    background:var(--accent);color:#06121f;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .who{display:inline-block;font-size:12px;border-radius:20px;padding:0 9px;margin-left:6px;border:1px solid var(--border);color:var(--muted)}
+  .who.du{color:var(--warn);border-color:#5a4526}
+  .who.tool{color:var(--accent);border-color:#23405f}
+  svg{max-width:100%;height:auto;display:block}
+  .flow text{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  @media (max-width:600px){ h1{font-size:24px} h2{font-size:20px} .steps>li{padding-left:50px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>LED-Simulator: die Show am PC ansehen</h1>
+    <p class="sub">Die echten Firmware-Quellen laufen als Programm am PC; die Bühne (Lampe 1, Bass, Matrix, Gitarre, Lampe 2) wird in einem Fenster gezeigt, wahlweise gesteuert vom LP16-Tool. Stand 25.11.2026, Branch <code>feature/led-simulator</code>.</p>
+    <nav class="toc">
+      <a href="#was"><b>1</b>Was der Simulator ist</a>
+      <a href="#setup"><b>2</b>Einmalig einrichten</a>
+      <a href="#port"><b>3</b>Virtuellen MIDI-Port anlegen</a>
+      <a href="#lp16"><b>4</b>Mit dem LP16-Tool proben</a>
+      <a href="#allein"><b>5</b>Ohne LP16-Tool: Songs gestalten</a>
+      <a href="#aenderung"><b>6</b>Nach einer Änderung an einem Song</a>
+      <a href="#exakt"><b>7</b>Was exakt ist und was nicht</a>
+      <a href="#probleme"><b>8</b>Probleme &amp; Lösungen</a>
+      <a href="#dateien"><b>9</b>Dateien &amp; Befehle</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<h2 id="was">1 · Was der Simulator ist</h2>
+<p>Der Simulator ist <b>keine Nachbildung</b> der Effekte, sondern übersetzt die Firmware-Quellen aus <code>src/</code> selbst für Windows: <b>eine DLL je Gerät</b> (<code>sim/bin/sim_lampe1.dll</code>, <code>sim_rinasbass.dll</code>, <code>sim_scrollmatrix.dll</code>, <code>sim_andresgit.dll</code>, <code>sim_lampe2.dll</code>), jede mit den Einstellungen ihres Geräts (LED-Zahl, Marker, <code>devices:</code>-Effekte). Das Programm <code>tools/showview</code> lädt die fünf DLLs, stellt ihre Uhr in 2-ms-Schritten vor wie der Timer der Hardware und malt die zuletzt gesendeten Bilder im Reiter <b>Bühne</b>.</p>
+<pre><code>LP16-Tool ── MIDI (zweiter Ausgang) ──&gt; virtueller Port ──&gt; showview, Reiter "Bühne"
+                                                          ├ sim_lampe1.dll
+                                                          ├ sim_rinasbass.dll
+                                                          ├ sim_scrollmatrix.dll   dieselben Quellen wie die Firmware
+                                                          ├ sim_andresgit.dll
+                                                          └ sim_lampe2.dll</code></pre>
+<div class="panel">
+<b>Verhalten wie auf der Bühne:</b>
+<ul>
+  <li>Alles <b>Zeitgesteuerte</b> ist exakt: Part-Wechsel, Blinder, Übergänge, Text, Beat-Effekte (Zeit-Test: 0 ms Abweichung, <a href="#exakt">Abschnitt 7</a>).</li>
+  <li>Nach einem <b>Sprung</b> (CC 23, auch im LP16-Tool) beginnt der Part <b>an seinem Anfang</b> - genau wie die echten Geräte. Der Simulator zeigt also, was die Bühne wirklich zeigen würde, nicht, was an dieser Stelle des Songs „eigentlich“ läuft. Eine eigene Zeit-Synchronisation (MIDI Timecode) gibt es bewusst nicht.</li>
+  <li>Das Programm hört auf <b>Kanal 10, CC 22 = Song</b> und <b>CC 23 = Part</b>, so wie die Gitarre über den WIDI. Alles andere wird ignoriert.</li>
+</ul>
+</div>
+
+<h2 id="setup">2 · Einmalig einrichten</h2>
+<ol class="steps">
+  <li><b>g++ (w64devkit)</b><span class="who tool">Compiler</span><br>
+    Ist schon da, wenn <code>pio test -e native</code> bei dir läuft. Prüfen (Git Bash):
+<pre><code>g++ --version</code></pre>
+    Fehlt es: w64devkit von <a href="https://github.com/skeeto/w64devkit">github.com/skeeto/w64devkit</a> entpacken und den Ordner <code>bin</code> in den Suchpfad (PATH) aufnehmen.</li>
+
+  <li><b>Bibliotheken der Geräte</b><span class="who tool">PlatformIO</span><br>
+    Der Simulator nutzt die Bibliotheksquellen aus <code>.pio/libdeps/&lt;gerät&gt;/</code> (FastLED 3.5.0, Adafruit GFX, FastLED NeoMatrix). Pro Gerät einmal bauen, damit sie dort liegen:
+<pre><code>pio run -e andresgit -e rinasbass -e lampe1 -e lampe2 -e scrollmatrix</code></pre></li>
+
+  <li><b>Rust installieren</b><span class="who tool">Programm showview</span><br>
+    Von <a href="https://rustup.rs">rustup.rs</a> (<code>rustup-init.exe</code>, Standardwerte; es will die Visual-Studio-Build-Tools, MSVC, und installiert sie auf Nachfrage). Danach ein neues Terminal öffnen und prüfen: <code>cargo --version</code>.</li>
+
+  <li><b>Die DLLs bauen</b><span class="who tool">build_sim.py</span><br>
+<pre><code>python tools/build_sim.py                  <span class="c"># alle fünf Geräte</span>
+python tools/build_sim.py scrollmatrix     <span class="c"># nur ein Gerät (Namen wie die PlatformIO-Umgebungen)</span></code></pre>
+    Ergebnis: <code>sim/bin/sim_&lt;gerät&gt;.dll</code>. Der erste Lauf dauert ein paar Minuten, danach wird nur übersetzt, was sich geändert hat (<code>--clean</code> übersetzt alles neu). Der Ordner <code>sim/bin/</code> steht in <code>.gitignore</code>.
+    <div class="note"><b>Schnelltest</b> (bauen + Song 30 eine Minute laufen lassen, zwei Läufe müssen identisch sein):
+<pre><code>python tools/build_sim.py --test</code></pre>
+    Am Ende steht <code>TEST BESTANDEN</code>.</div></li>
+
+  <li><b>showview bauen und starten</b><span class="who tool">cargo</span><br>
+<pre><code>cd tools/showview
+cargo run --release                       <span class="c"># baut beim ersten Mal (ein paar Minuten) und startet</span></code></pre>
+    Danach geht auch direkt <code>tools/showview/target/release/showview.exe</code>. Das Programm findet den Projektordner selbst, wenn man es aus dem Projekt heraus startet; sonst den Ordner als Argument angeben.
+    <p><b>Befehlszeile:</b> <code>showview.exe [Projektordner] [Song] [--buehne] [--sprung &lt;case&gt;]</code></p>
+    <ul>
+      <li><code>Song</code>: Anfang des Ordnernamens genügt, z. B. <code>Maniac</code>.</li>
+      <li><code>--buehne</code>: gleich im Reiter „Bühne“ starten und den Song sofort abspielen.</li>
+      <li><code>--sprung &lt;case&gt;</code>: danach gleich zu diesem Part springen (die Nummer <code>case</code> steht in den Details des Parts im Reiter „Ablauf“).</li>
+    </ul>
+    Beispiel (aus dem Projektordner):
+<pre><code>tools/showview/target/release/showview.exe Maniac --buehne</code></pre></li>
+</ol>
+
+<h2 id="port">3 · Virtuellen MIDI-Port anlegen</h2>
+<p>Der Simulator läuft im selben Rechner wie das LP16-Tool. Damit beide miteinander „MIDI sprechen“ können, braucht es einen <b>virtuellen Port</b>: einen Ausgang für das LP16-Tool, der als Eingang im Simulator wieder auftaucht. Einmal anlegen, bleibt bestehen.</p>
+
+<h3>Sichere Wahl: loopMIDI</h3>
+<ol>
+  <li>loopMIDI (Tobias Erichsen, kostenlos) von <a href="https://www.tobias-erichsen.de/software/loopmidi.html">tobias-erichsen.de/software/loopmidi.html</a> installieren und starten.</li>
+  <li>Unten bei „New port-name“ einen Namen eintippen, z. B. <code>LED-Simulator</code>, und auf das <b>+</b> klicken. Der Port steht jetzt in der Liste.</li>
+  <li>loopMIDI muss laufen (es sitzt unten rechts im Tray), solange du probst; mit „Autostart“ in den Einstellungen startet es mit Windows.</li>
+</ol>
+
+<h3>Alternative: Windows MIDI Services (Loopback)</h3>
+<p>Aktuelle Windows-11-Versionen haben mit „Windows MIDI Services“ eine eigene Loopback-Funktion (Loopback-Endpunkte; mehrere Programme können gleichzeitig darauf zugreifen). Einrichtung über die Windows-MIDI-Services-Einstellungen/Konsole: ein Loopback-Paar anlegen, einen Namen vergeben.</p>
+<div class="warn"><b>Ungeprüft:</b> ob diese Endpunkte im Simulator sichtbar sind, ist nicht getestet. showview benutzt die Bibliothek <code>midir</code> mit dem klassischen Windows-Treiber (WinMM); ob Endpunkte von Windows MIDI Services dort auftauchen, hängt von der installierten Version ab. <b>Empfehlung: loopMIDI.</b> Ob ein Port sichtbar ist, zeigt dir die Port-Liste (<a href="#probleme">Abschnitt 8</a>).</div>
+
+<div class="note">Auf dem Entwicklungsrechner gab es beim Schreiben dieser Anleitung <b>keinen</b> virtuellen Port (nur „Microsoft GS Wavetable Synth“). Der Ende-zu-Ende-Test mit einem echten Port (LP16-Tool -&gt; Port -&gt; Simulator) steht noch aus; die Auswertung der MIDI-Befehle ist mit Tests ohne Port geprüft (<code>cargo test</code>) und mit <code>send_cc</code> (<a href="#allein">Abschnitt 5</a>).</div>
+
+<h2 id="lp16">4 · Mit dem LP16-Tool proben</h2>
+<div class="warn"><b>Stand:</b> der zweite MIDI-Ausgang liegt im Projekt des LP16-Tools (Repository Cymatic-uTool-for-LP-16, Issue 16) auf dem Branch <code>feature/second-midi-port</code> und ist <b>noch nicht gemergt</b>. Bis dahin muss man diesen Branch bauen (<code>git checkout feature/second-midi-port</code>, dann <code>cargo build --release</code>).</div>
+<ol class="steps">
+  <li><b>Virtuellen Port bereithalten</b><span class="who du">du</span><br>
+    <a href="#port">Abschnitt 3</a>, loopMIDI muss laufen.</li>
+  <li><b>LP16-Tool einstellen</b><span class="who du">du</span><br>
+    <b>Einstellungen -&gt; MIDI-Ausgabe</b>: beim <b>ersten Port</b> den für die echten Geräte (WIDI) wählen, beim <b>zweiten Ausgang</b> (z. B. LED-Simulator) den virtuellen Port. Jede MIDI-Nachricht geht an beide; fehlt oder stört der zweite Port, läuft der erste unbeeinflusst weiter. In der Konfigurationsdatei des Tools heißt der Schlüssel <code>midi_port2</code> (leer = aus).</li>
+  <li><b>Simulator einstellen</b><span class="who du">du</span><br>
+    <code>showview.exe</code> starten, Reiter <b>Bühne</b>, oben auf <b>Einstellungen</b> klicken, in der Liste <b>MIDI-Eingang</b> denselben virtuellen Port wählen. Die Wahl wird gemerkt (<code>%APPDATA%\showview\settings.json</code>); beim nächsten Start öffnet sich der Port von selbst, ist er gerade nicht da, steht „nicht gefunden“ (der Knopf mit dem Pfeil liest die Liste neu). In der Kopfzeile erscheint danach der Portname, in den Einstellungen „zuletzt CC 22 = 30 vor 3 s“.</li>
+  <li><b>Probe starten</b><span class="who du">du</span><br>
+    Im LP16-Tool wie sonst. Der erste Befehl lädt im Simulator die Geräte (Song 0 = Songpause), danach laufen sie weiter wie echte Geräte: CC 22 wählt den Song, CC 23 springt zum Part; das „Chasing“ des Tools beim Springen schickt den letzten CC 22/23 erneut - der Part beginnt dann an seinem Anfang.</li>
+</ol>
+<div class="note"><b>Uhr:</b> bei offenem MIDI-Port läuft die Simulator-Uhr immer in <b>Echtzeit</b> (sonst passte sie nicht zur Musik). Pause und Tempo sind dann ausgegraut, in der Leiste steht „MIDI-Echtzeit“. Jeder Befehl wird auf die Millisekunde genau zum Zeitstempel des Treibers angewendet, unabhängig von der Bildrate des Fensters.</div>
+
+<h2 id="allein">5 · Ohne LP16-Tool: Songs gestalten</h2>
+<p>Zum Gestalten braucht es weder Port noch LP16-Tool. Links die Song-Liste (der Knopf <b>Songs</b> oben blendet sie aus; in einem schmalen Fenster ist sie von selbst aus), Reiter <b>Bühne</b>:</p>
+<div class="tablewrap"><table>
+<tr><th>Bedienelement</th><th>Wirkung</th></tr>
+<tr><td><b>▶ Start</b></td><td>Alle DLLs frisch laden (wie Einschalten), Song des links gewählten Ordners starten (= CC 22 = Song-ID). Nur generierte Songs mit Song-ID.</td></tr>
+<tr><td><b>■</b> (Stop)</td><td>Song 0 wählen (Songpause), wie am Gerät.</td></tr>
+<tr><td><b>⏸ / ▶ Weiter</b> (Pause)</td><td>Die Simulator-Uhr steht; Weiter lässt sie weiterlaufen.</td></tr>
+<tr><td><b>×1 / ×0,5</b> (Tempo)</td><td>Halbe Geschwindigkeit: die Simulator-Zeit läuft halb so schnell (Effekte, Part-Längen, Timer - alles gemeinsam, es bleibt konsistent).</td></tr>
+<tr><td><b>Part: [Liste] Springen</b></td><td>Part wählen und springen: CC 23 an alle Geräte, der Part beginnt an seinem Anfang. Läuft der Song noch nicht, wird er vorher gestartet. Ein Sprung hebt eine Pause auf.</td></tr>
+<tr><td><b>Einstellungen</b></td><td>Klappt eine zweite Zeile auf: <b>aufgehellt</b>, <b>Farbkorrektur</b> und <b>MIDI-Eingang</b> (<a href="#lp16">Abschnitt 4</a>).</td></tr>
+<tr><td><b>▸ Status</b></td><td>Unter der Bühne: eine Zeile „alle Geräte: Part 5 verse 1a 6.6 s“; ein Klick klappt die Tabelle je Gerät auf (Song, Part, Part-Name, Zeit, Bildnummer, Helligkeit). Weichen Geräte länger als 0,3 s im Part voneinander ab, wird das orange gemeldet (die Matrix im Titel-Lauftext ist kein Fehler: dort steht „Lauftext“).</td></tr>
+<tr><td>Reiter <b>Ablauf</b> → Part anklicken → <b>▶ auf der Bühne ab hier abspielen</b></td><td>Wechselt zur Bühne, startet den Song und springt zu diesem Part.</td></tr>
+</table></div>
+<h3>Darstellung</h3>
+<ul>
+  <li><b>aufgehellt</b> (Standard an): Farbe mal Wurzel der Helligkeit des Geräts, damit dunkle Effekte am Bildschirm sichtbar bleiben. Aus = „wie echt“ (Farbe mal Helligkeit; am Bildschirm sehr dunkel). Die Bund-Marker der Gitarre/des Basses (in der Firmware nur Pegel ca. 7 von 255) sind in „aufgehellt“ hervorgehoben und tragen einen Ring.</li>
+  <li><b>Farbkorrektur</b> (Standard an): die Firmware stellt <code>TypicalLEDStrip</code> ein (Rot 255, Grün 176, Blau 240 von 255); sie wirkt erst beim Senden, also rechnet die Anzeige sie nach.</li>
+  <li>Beide Schalter werden gemerkt (<code>%APPDATA%\showview\settings.json</code>).</li>
+  <li>Das <b>Fenster ist frei skalierbar</b>; die ganze Bühne wird mitskaliert (Seitenverhältnis bleibt, Beschriftungen kürzen sich oder verschwinden, damit nichts überlappt). Eine fehlende DLL zeigt ein graues Feld „nicht gebaut“, die anderen Geräte laufen weiter.</li>
+</ul>
+<h3>Testsender ohne LP16-Tool</h3>
+<p>Mit einem Port kann man den MIDI-Eingang auch ohne das LP16-Tool prüfen:</p>
+<pre><code>cd tools/showview
+cargo run --release --example send_cc                          <span class="c"># ohne Argumente: Liste der MIDI-Ausgänge</span>
+cargo run --release --example send_cc -- loopMIDI 22 30       <span class="c"># CC 22 = 30 (Song 30) auf Kanal 10</span>
+cargo run --release --example send_cc -- loopMIDI 23 3        <span class="c"># CC 23 = 3: Sprung zum Part 3</span></code></pre>
+<p>Statt dem Namen geht auch die Nummer aus der Liste; ein vierter Wert wählt einen anderen Kanal (1-16) - praktisch, um zu sehen, dass der Simulator andere Kanäle ignoriert.</p>
+
+<h2 id="aenderung">6 · Nach einer Änderung an einem Song</h2>
+<ol class="steps">
+  <li><b>Generieren</b><span class="who tool">songgen</span><br>
+<pre><code>python tools/songgen.py Maniac_v1</code></pre>
+    Schreibt <code>songs/&lt;Song&gt;/generated.cpp</code> und <code>src/showEngine.cpp</code> / <code>src/songs_generated.*</code> neu (siehe <code>docs/Song-Workflow.html</code>).</li>
+  <li><b>DLLs neu bauen</b><span class="who tool">build_sim</span><br>
+<pre><code>python tools/build_sim.py</code></pre>
+    <b>Auch nach jeder Änderung an Effekten, Szenen oder Songs in <code>src/</code></b> - die DLLs enthalten den Code, nicht die Song-Dateien. Es wird nur neu übersetzt, was sich geändert hat.</li>
+  <li><b>In showview neu starten (▶ Start)</b><span class="who du">du</span><br>
+    showview muss <b>nicht</b> neu gestartet werden: jeder Klick auf <b>▶ Start</b> lädt die DLLs frisch (die Datei wird vorher in den Temp-Ordner kopiert, deshalb lässt sich auch bei offenem Fenster neu bauen). Der Zeitstrahl im Reiter „Ablauf“ und die Part-Liste laden dagegen von selbst neu, sobald sich <code>show.yaml</code> oder <code>struktur.xlsx</code> ändern.</li>
+</ol>
+<div class="warn">Die Song-Liste und die Part-Namen kommen aus <code>songgen.py --json</code>, die Bilder aus den DLLs. Vergisst du Schritt 2, siehst du die <b>alte</b> Show mit dem <b>neuen</b> Ablauf daneben - zum Beispiel stimmt dann ein Part-Name nicht mehr zur Anzeige.</div>
+<p><b>Zeit-Test</b> (headless, ohne Fenster): prüft, ob die Part-Wechsel aller generierten Songs auf allen gebauten DLLs zu den Zeiten kommen, die <code>songgen.py</code> berechnet (erlaubt: ±4 ms).</p>
+<pre><code>python tools/build_sim.py --zeittest                           <span class="c"># bauen + alle Songs, alle Geräte</span>
+tools/.venv/Scripts/python tools/sim_timetest.py Maniac_v1     <span class="c"># nur ein Song (Ordnername)</span>
+tools/.venv/Scripts/python tools/sim_timetest.py --geraet scrollmatrix --toleranz 4</code></pre>
+<p>Ergebnis: je Song und Gerät eine Zeile mit der größten Abweichung, am Ende <code>Zeit-Test bestanden</code> (Rückgabewert 0) oder die ersten Fehler (Rückgabewert 1).</p>
+
+<h2 id="exakt">7 · Was exakt ist und was nicht</h2>
+<div class="tablewrap"><table>
+<tr><th>Thema</th><th>Stand im Simulator</th></tr>
+<tr><td>Zeit (Part-Wechsel, Blinder, Übergänge, Text, Beat)</td><td><b>Exakt.</b> Zeit-Test: 0 ms Abweichung des Part-Beginns bei allen generierten Songs auf allen fünf Geräten. Das erste Bild eines neuen Parts erscheint, wie auf dem Gerät, bis zu einem Bild (11-17 ms) nach der Grenze; die Part-Uhr stimmt dabei.</td></tr>
+<tr><td>Bildtakt</td><td><b>Nachgebildet:</b> nach einem echten <code>FastLED.show()</code> ist kein neues Bild fällig, bis die LEDs die Daten haben (30 µs je LED + 50 µs; beide Ausgänge parallel). Die Rechenzeit der Effekte selbst ist nicht modelliert.</td></tr>
+<tr><td>Zufall (Glitzern, Regen, BlingBling ...)</td><td><b>Anders:</b> jeder Start würfelt neu, jedes Gerät mit eigenem Startwert - so wie zwischen zwei echten Geräten auch.</td></tr>
+<tr><td>Funk-Verzögerung der Clients</td><td><b>Nicht nachgebildet:</b> alle Geräte bekommen jeden Befehl im selben Moment (auf der Bühne kommen sie wenige ms später an).</td></tr>
+<tr><td>Funkverbindung</td><td>Gilt als <b>verbunden</b>: die roten Warn-LEDs der Songpause (Song 0) gibt es im Simulator nicht.</td></tr>
+<tr><td>Farben</td><td>Farbkorrektur (<code>TypicalLEDStrip</code>) wird in der Anzeige nachgerechnet; FastLED-Dithering nicht. Am Bildschirm sind die LEDs im Modus „aufgehellt“ heller als in echt.</td></tr>
+<tr><td>Marker</td><td>In „aufgehellt“ hervorgehoben (Ring, Mindestsichtbarkeit), in der Firmware nur Pegel ca. 7 von 255.</td></tr>
+<tr><td>Geometrie</td><td><b>Geschätzt:</b> Gurtverlauf, LED-Abstände, Matrix-Größe im Verhältnis zu den Instrumenten (Matrix 1,5 ×, Lampen 0,75 × des Instrument-Abstands), Reihenabstand der Lampen. Das ändert nur die Zeichnung, nie die Show. Die Kontur ist die SG-Form aus <code>guitarShapeFX.cpp</code>, der Bass hat dieselbe Kontur mit 155 LEDs.</td></tr>
+<tr><td>Lampen-Helligkeit vom Knopf (<code>REMOTE_BRIGHTNESS</code>)</td><td>Nicht nachgebildet: Standardhelligkeit.</td></tr>
+<tr><td>Nach einem Sprung</td><td>Der Part beginnt <b>an seinem Anfang</b> wie auf der Bühne (<a href="#was">Abschnitt 1</a>).</td></tr>
+</table></div>
+
+<h2 id="probleme">8 · Probleme &amp; Lösungen</h2>
+<div class="tablewrap"><table>
+<tr><th>Symptom</th><th>Ursache / Lösung</th></tr>
+<tr><td>Gelbe Zeile „sim_….dll fehlt - erst bauen: python tools/build_sim.py“, graues Feld „nicht gebaut“</td><td>Die DLL dieses Geräts gibt es nicht. <code>python tools/build_sim.py</code> (oder nur dieses Gerät). Schlägt das Bauen fehl: <code>g++ --version</code> prüfen und, ob <code>.pio/libdeps/&lt;gerät&gt;/</code> existiert (<code>pio run -e &lt;gerät&gt;</code>).</td></tr>
+<tr><td>„Projektordner nicht gefunden (kein tools/songgen.py)“</td><td>showview aus dem Projekt heraus starten oder den Projektordner als Argument angeben.</td></tr>
+<tr><td>Song in der Liste ausgegraut</td><td>Er hat noch keine <code>show.yaml</code>; es gibt keinen Ablauf und keine Song-ID aus dem Generator.</td></tr>
+<tr><td>Der MIDI-Port steht nicht in der Liste</td><td>Virtuellen Port anlegen (<a href="#port">Abschnitt 3</a>) und loopMIDI laufen lassen; Knopf mit dem Pfeil neben der Liste (liest sie neu) oder die Liste neu aufklappen. Taucht ein Windows-MIDI-Services-Endpunkt nicht auf, stattdessen loopMIDI nehmen. Mit <code>cargo run --release --example send_cc</code> siehst du dieselbe Liste für Ausgänge.</td></tr>
+<tr><td>„MIDI: nicht gefunden“ nach dem Start</td><td>Der gemerkte Port existiert gerade nicht (loopMIDI nicht gestartet). Starten, dann den Pfeil klicken.</td></tr>
+<tr><td>Es kommt nichts an</td><td>Der Simulator hört nur auf <b>Kanal 10</b>, CC 22/23. Prüfen, dass das LP16-Tool den zweiten Ausgang auf denselben Port gestellt hat und im Simulator der <b>Eingang</b> dieses Ports gewählt ist („zuletzt CC … vor … s“ in den Einstellungen zählt mit).</td></tr>
+<tr><td>Pause und Tempo ausgegraut</td><td>Gewollt, solange ein MIDI-Port offen ist (Echtzeit). Port auf „aus“ stellen.</td></tr>
+<tr><td>Ein Gerät zeigt einen anderen Part (orange in der Statusliste)</td><td>Normal bei der Matrix im Titel-Lauftext (steht dort als „Lauftext“, nicht orange). Sonst: ein Befehl kam nicht bei allen an - im Simulator kommen sie bei allen Geräten gleichzeitig an, ein Unterschied länger als 0,3 s ist also ein Fund (bitte melden). Mit Pause/Springen erneut synchronisieren.</td></tr>
+<tr><td>Der Simulator zeigt eine alte Show</td><td>DLLs nach der Änderung nicht neu gebaut: <code>python tools/build_sim.py</code>, dann <b>▶ Start</b> (<a href="#aenderung">Abschnitt 6</a>).</td></tr>
+<tr><td>Zeit-Test schlägt fehl (<code>FEHLER</code> / <code>Abweichung ... ms</code>)</td><td>Erst DLLs neu bauen (<code>build_sim.py --zeittest</code>). Bleibt es: die ersten fünf Fehler zeigen Song, Gerät und case. Meist ist <code>show.yaml</code> / die Tabelle neuer als <code>generated.cpp</code> (neu generieren) oder ein handgeschriebener Song hat keinen Verspätungsausgleich (nur generierte Songs werden geprüft). Der Test ist ein Prüfstein für Änderungen an <code>showEngine.cpp</code> und der Timer-Logik.</td></tr>
+<tr><td><code>cargo</code> nicht gefunden / Linker-Fehler beim Bauen von showview</td><td>Rust (<a href="#setup">Abschnitt 2</a>) samt Visual-Studio-Build-Tools installieren, neues Terminal öffnen.</td></tr>
+<tr><td>Fenster ist sehr klein, die Bühne winzig</td><td>Der Knopf <b>Songs</b> blendet die Song-Liste aus; die Statusliste ist zugeklappt (<b>▸ Status</b>); das Fenster lässt sich frei vergrößern.</td></tr>
+</table></div>
+
+<h2 id="dateien">9 · Dateien &amp; Befehle</h2>
+<div class="tablewrap"><table>
+<tr><th>Datei</th><th>Inhalt</th></tr>
+<tr><td><code>sim/shim/</code></td><td>Ersatz für alles, was es nur auf dem Mikrocontroller gibt (<code>Arduino.h</code>, <code>FastLED.h</code> mit eigenem <code>FastLED</code>-Objekt); die Mathematik von FastLED 3.5.0 ist die echte Bibliothek.</td></tr>
+<tr><td><code>sim/simApi.cpp/.h</code></td><td>Die Schnittstelle jeder DLL: <code>sim_info</code>, <code>sim_reset</code>, <code>sim_midi</code>, <code>sim_advance</code>, <code>sim_frame</code>, <code>sim_state</code>, <code>sim_xy</code>.</td></tr>
+<tr><td><code>sim/test/sim_smoke.cpp</code></td><td>Schnelltest (<code>build_sim.py --test</code>).</td></tr>
+<tr><td><code>tools/build_sim.py</code></td><td>Baut die DLLs nach <code>sim/bin/</code>; Optionen: <code>&lt;gerät&gt;</code>, <code>--test</code>, <code>--zeittest</code>, <code>--clean</code>, <code>-j N</code>.</td></tr>
+<tr><td><code>tools/sim_timetest.py</code></td><td>Zeit-Test aller generierten Songs; Optionen: Song-Ordner, <code>--geraet</code>, <code>--toleranz</code>, <code>-j</code>.</td></tr>
+<tr><td><code>tools/showview/</code></td><td>Das Fenster (Rust/egui): <code>src/stage.rs</code> (Bühne), <code>shape.rs</code> (Kontur, Gurt), <code>sim.rs</code> (DLL laden), <code>midi_in.rs</code> (MIDI-Eingang), <code>settings.rs</code> (gemerkte Schalter), <code>examples/send_cc.rs</code> (Testsender).</td></tr>
+<tr><td><code>%APPDATA%\showview\settings.json</code></td><td>Gemerkt: <code>midi_port</code> (Name oder <code>null</code>), <code>bright_view</code> (aufgehellt), <code>correction</code> (Farbkorrektur). Fehlt die Datei, gelten die Standardwerte; löschen ist ungefährlich.</td></tr>
+<tr><td><code>docs/Simulator-Plan.md</code></td><td>Plan, Entscheidungen, Arbeitsstand und die Liste der offenen Punkte.</td></tr>
+</table></div>
+<p>Weiter: <a href="Song-Workflow.html">Song-Workflow</a> · <a href="OTA-Update.html">OTA-Update</a> · <a href="LED-Effekte-und-Szenen.html">Effekte und Szenen</a></p>
+
+</main>
+</body>
+</html>

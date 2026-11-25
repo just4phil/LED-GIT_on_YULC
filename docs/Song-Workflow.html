@@ -170,6 +170,9 @@
 <pre><code>python tools/songgen.py vogue --dry-run             <span class="c"># Timeline, Hinweise, Fehler - schreibt nichts</span>
 python tools/songgen.py vogue --note "erste Fassung"   <span class="c"># Code + Version</span></code></pre></li>
 
+  <li><b>Auf der Bühne im Simulator ansehen</b><span class="who du">du</span><span class="who tool">showview</span><br>
+    Ohne die Geräte zu flashen: <code>python tools/build_sim.py</code> baut die Firmware-Quellen als Windows-DLLs, dann <code>tools/showview/target/release/showview.exe vogue --buehne</code> (oder den Song links wählen, Reiter „Bühne“, „Start“). Lampe 1, Bass, Matrix, Gitarre und Lampe 2 laufen mit dem echten Code; „Sprung zu Part“ zeigt eine einzelne Stelle. Nach jeder neuen Generierung die DLLs neu bauen. Einrichtung, Bedienung und was der Simulator nicht kann: <a href="Simulator.html"><code>docs/Simulator.html</code></a>.</li>
+
   <li><b>Bauen und flashen</b><span class="who tool">PlatformIO</span><span class="who du">du</span><br>
 <pre><code>pio run -e andresgit -e rinasbass -e lampe1 -e lampe2 -e scrollmatrix</code></pre>
     Per USB, ein Gerät nach dem anderen:

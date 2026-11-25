@@ -20,6 +20,13 @@ pio run -e esp32-s3-devkitc-1 --target upload
 pio device monitor -e esp32-s3-devkitc-1
 ```
 
+LED simulator (PC DLLs of the real show code, shown in `tools/showview` tab "Bühne"; user guide `docs/Simulator.html`):
+`python tools/build_sim.py` (all devices; `--test` = smoke test, `--zeittest` = timing test of all generated songs against
+`songgen.py --json`, part changes within +-4 ms, also `tools/.venv/Scripts/python tools/sim_timetest.py [<Song>]`), then
+`cd tools/showview && cargo run --release`. **After every change to effects, scenes, songs or `showEngine.cpp` rebuild the
+simulator DLLs (`python tools/build_sim.py`)** - they contain the code, not the song files; showview loads them fresh on every
+Start. Needs `g++` in PATH, Rust (MSVC) and the libraries in `.pio/libdeps/<env>/` (`pio run -e <env>` once).
+
 Unit tests: only for the LED-sync protocol and the ESP-NOW frame, on the PC: `pio test -e native` (`test/test_ledSync/`,
 `test/test_espNowFrame/`; env `native` builds only `src/ledSync.cpp` + `src/espNowFrame.cpp`; needs `g++` in PATH).
 There are no other tests.
@@ -165,7 +172,7 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (`midiApplyCC()` 
 | `brightnessCurve.cpp/.h` | The knob's brightness steps (`brightnessCurveValue()`, `brightnessCurveNearestStep()`), shared by the knob and the lamps (`SYNC_BRIGHT`) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
 | `sim/` , `tools/build_sim.py` | PC simulator: `python tools/build_sim.py [<device>] [--test]` compiles `src/` show files + library sources (real FastLED 3.5 maths, Adafruit GFX, NeoMatrix) with `-DSIMULATOR` into `sim/bin/sim_<device>.dll` (currently `scrollmatrix`, `andresgit`, `rinasbass`, `lampe1`, `lampe2`; interface version 2 adds the contour data of the guitar/bass to `sim_info`, version 3 `lampIdx0AtBottom`; a lamp is drawn as two parallel vertical rows of output 1, same picture; showview `shape.rs` = SG contour, LED positions and strap curve); `sim_advance()` models the frame rate of the device (send time of a real `FastLED.show()` = max of both outputs x 30 us/LED + 50 us, both RMT outputs run in parallel; no new frame while `loop()` is blocked); `tools/sim_timetest.py` = timing test; `sim/shim/` = stand-in `Arduino.h` / `FastLED.h` (own `FastLED` object), `sim/simApi.*` = C interface, `sim/test/sim_smoke.cpp` = smoke test; shown in showview tab "Bühne". `#ifdef SIMULATOR` in `src/` only where hardware parts are hidden (`TimerFunctions.cpp`). Plan: `docs/Simulator-Plan.md` |
-| `tools/showview/src/stage.rs`, `settings.rs` | Tab "Bühne": five devices in one stage coordinate system (lamp 1, bass, matrix, guitar, lamp 2; assumed size ratios, labels fit the column width), Start/Stop/Pause/tempo x0.5 (simulator clock: `clock_ms`; real time while MIDI is open), jump to part (CC 23; `request_jump()` from tab "Ablauf", `--sprung <case>`), status list with orange marking of devices in different parts (matrix exempt during the title scroll); `settings.rs` = remembered switches + MIDI port in `%APPDATA%\showview\settings.json`. |
+| `tools/showview/src/stage.rs`, `settings.rs` | Tab "Bühne": five devices in one stage coordinate system (lamp 1, bass, matrix, guitar, lamp 2; assumed size ratios, labels fit the column width), Start/Stop/Pause/tempo x0.5 (simulator clock: `clock_ms`; real time while MIDI is open), jump to part (CC 23; `request_jump()` from tab "Ablauf", `--sprung <case>`), status list (collapsed to one summary line by default) with orange marking of devices in different parts (matrix exempt during the title scroll), one-row control bar with a collapsible "Einstellungen" row, song list in `main.rs` hideable (button "Songs", automatic below 1100 points); `settings.rs` = remembered switches + MIDI port in `%APPDATA%\showview\settings.json`. |
 | `tools/showview/src/midi_in.rs`, `tools/showview/examples/send_cc.rs` | MIDI input of the simulator tab (midir): only channel 10, CC 22/23 (`parse_cc`); driver time stamps -> program clock (`ClockMap`), `run_to()` advances all devices to the event's millisecond before giving the command (pure, tested with `cargo test`); port choice remembered in `%APPDATA%\showview\settings.json`; `send_cc` = test sender (`cargo run --release --example send_cc -- <port> <cc> <value>`). Plan: `docs/Simulator-Plan.md` |
 | `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
 | `colors.h` | RGB565 color constants at multiple brightness levels |
