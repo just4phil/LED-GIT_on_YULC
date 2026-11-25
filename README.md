@@ -96,10 +96,12 @@ LED-GIT_on_YULC/
 ├── test/test_ledSync/            # unit tests for the sync protocol (pio test -e native)
 ├── test/test_espNowFrame/        # unit tests for the ESP-NOW frame (pio test -e native)
 ├── songs/<Song>_v1/              # per song: quelle/struktur.xlsx, show.yaml, generated.cpp, versionen/
+├── sim/                          # LED simulator: the real firmware sources as a PC DLL (shim/ = stand-ins for Arduino/FastLED hardware, simApi.*, test/)
 ├── tools/
 │   ├── songgen.py                # generates song code from table + show.yaml
 │   ├── struktur.py               # reads the Excel table
 │   ├── build_ota.py              # builds all devices and serves the firmware for OTA
+│   ├── build_sim.py              # builds the simulator DLLs (sim/bin/sim_<device>.dll) from src/ + the libraries
 │   ├── fw_version.py             # sets the firmware version at build time
 │   ├── showview/                 # Windows GUI (Rust/egui): a song's flow as a timeline, view only
 │   └── fxstats.py                # statistics on effects used in the old songs
@@ -272,6 +274,15 @@ energy, one lane per device (with its own `devices:` effects and the blinder env
 overlay, text, output-stage modifiers and the user's wishes / `cues:` on their bars. It takes all times from
 `songgen.py --json`, so it shows exactly what the generated code does, and reloads when `show.yaml` or the table
 changes. Build and start: `cd tools/showview && cargo run --release` (needs Rust; optional arguments: a song folder).
+
+A second tab, **Bühne** (stage), is the start of the LED simulator (`docs/Simulator-Plan.md`): the firmware sources
+(`src/`) are compiled for Windows as a DLL per device - no re-implementation of the effects - and `showview` runs them
+in real time. Currently the matrix (SCROLLMATRIX, 54 x 10) is available: pick a song on the left, press Start (= MIDI
+channel 10, CC 22), Stop = CC 22 with 0. The picture scales freely with the window. Build the DLL first:
+`python tools/build_sim.py scrollmatrix` (needs `g++` from w64devkit in the PATH, like `pio test -e native`; add
+`--test` for a smoke test that plays song 30 for 60 s). `sim/shim/` replaces everything that only exists on the
+microcontroller (Arduino API, the hardware part of FastLED); the maths of FastLED 3.5.0 is the real library code.
+`showview.exe <song> --buehne` opens the tab and starts the song right away.
 
 The tools need Python with `pyyaml` and `openpyxl` (`tools/requirements.txt`). The full workflow is described in
 `docs/Song-Workflow.html`.

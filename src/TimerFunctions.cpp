@@ -68,7 +68,8 @@ void TIMER_TICK_ATTR timer_tick() {
     if (millisCounterForProgChange >= nextChangeMillis) flag_switchToNextSongPart = true;
 }
 
-#ifdef USE_ESP32	// TIMER and CALLBACK
+// SIMULATOR (PC-DLL, sim/): die Hardware-Timer-Teile gibt es dort nicht; vom Simulator wird nur timer_tick() (oben) übernommen und alle 2 ms selbst gerufen.
+#if defined(USE_ESP32) && !defined(SIMULATOR)	// TIMER and CALLBACK
 
     //==== Callback for timer-interrupt so that fastLED can process uninterrupted
     hw_timer_t *Timer0_Cfg = NULL;	// Timer Variable (Zeiger auf den eingerichteten Hardware-Timer)
@@ -108,7 +109,7 @@ void TIMER_TICK_ATTR timer_tick() {
 // Timer einrichten und starten (einmal aus setup() in main.cpp aufgerufen).
 void timer_begin() {
 
-    #ifdef USE_ESP32
+    #if defined(USE_ESP32) && !defined(SIMULATOR)
     	//--- interrupt-timer fuer callback --------
 		// Timer Nr. 0 anlegen. Der Grundtakt des Chips ist 80 MHz; der Teiler ("Prescaler") 80 macht daraus
 		// 1 MHz, d.h. der Timer zählt in Schritten von 1 Mikrosekunde. "true" = er zählt aufwärts.

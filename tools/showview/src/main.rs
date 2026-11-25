@@ -5,13 +5,16 @@
 //   Mitte   der Zeitstrahl (timeline.rs): Parts, Übergänge, eine Spur je Gerät mit Blindern, Overlay, Text,
 //           Ausgabestufe, Wünsche des Users
 //   unten   Details des angeklickten Parts: Zeiten, Beschreibung wie in der Tabelle, Aufruf je Gerät, Rohangaben
+// Oben wählt der Umschalter zwischen zwei Reitern: "Ablauf" (der Zeitstrahl, wie oben beschrieben) und "Bühne"
+// (stage.rs: die LED-Matrix läuft mit dem echten Firmware-Code als DLL, sim.rs lädt sie; Bauen: python tools/build_sim.py).
 //
 // Die Daten kommen von tools/songgen.py --json (export.rs) - das Programm rechnet keine Zeiten selbst und schreibt
 // keine Datei. Ändert sich show.yaml oder struktur.xlsx des geöffneten Songs, lädt es den Ablauf von selbst neu
 // (jede Sekunde wird der Änderungszeitpunkt der beiden Dateien verglichen).
 //
 // Starten: im Ordner tools/showview `cargo run --release`, oder target/release/showview.exe direkt. Optional als
-// Argument der Projektordner und/oder ein Song: `showview.exe [Projektordner] [Song]`.
+// Argument der Projektordner und/oder ein Song: `showview.exe [Projektordner] [Song] [--buehne]`
+// (--buehne: gleich im Reiter "Bühne" und den Song sofort abspielen, praktisch zum Ausprobieren).
 //
 // Rust-Idiome:
 //   mod x;               bindet die Datei x.rs als Modul ein
@@ -21,6 +24,8 @@
 
 mod export;
 mod model;
+mod sim;
+mod stage;
 mod timeline;
 
 use eframe::egui;
@@ -33,8 +38,10 @@ fn main() -> eframe::Result {
     // Argumente: ein vorhandener Ordner = Projektordner, alles andere = Song zum Öffnen
     let mut root_arg = None;
     let mut song_arg = None;
+    let mut buehne = false; // --buehne: gleich im Reiter "Bühne" starten und den Song abspielen
     for a in std::env::args().skip(1) {
-        if PathBuf::from(&a).is_dir() { root_arg = Some(a) } else { song_arg = Some(a) }
+        if a == "--buehne" { buehne = true }
+        else if PathBuf::from(&a).is_dir() { root_arg = Some(a) } else { song_arg = Some(a) }
     }
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
@@ -47,7 +54,7 @@ fn main() -> eframe::Result {
         "showview",
         options,
         // Die "App-Erzeugung" ist eine Closure, die eframe einmal beim Start aufruft
-        Box::new(move |_cc| Ok(Box::new(App::new(export::find_root(root_arg), song_arg)))),
+        Box::new(move |_cc| Ok(Box::new(App::new(export::find_root(root_arg), song_arg, buehne)))),
     )
 }
 
@@ -57,7 +64,16 @@ enum Loaded {
     Song(String, Result<SongData, String>), // Ordnername + Ablauf oder Fehlertext
 }
 
+/// Die zwei Reiter des Fensters.
+#[derive(PartialEq, Clone, Copy)]
+enum Tab {
+    Ablauf, // der Zeitstrahl des Songs
+    Buehne, // der Simulator: Matrix mit dem echten Firmware-Code
+}
+
 struct App {
+    tab: Tab,
+    stage: stage::Stage,
     root: Option<PathBuf>,
     songs: Vec<SongEntry>,
     filter: String,
@@ -75,8 +91,10 @@ struct App {
 }
 
 impl App {
-    fn new(root: Option<PathBuf>, want_song: Option<String>) -> Self {
+    fn new(root: Option<PathBuf>, want_song: Option<String>, buehne: bool) -> Self {
         let mut app = Self {
+            tab: if buehne { Tab::Buehne } else { Tab::Ablauf },
+            stage: stage::Stage::new(buehne),
             root,
             songs: Vec::new(),
             filter: String::new(),
@@ -254,9 +272,16 @@ impl eframe::App for App {
         ui.ctx().request_repaint_after(Duration::from_millis(if self.loading { 100 } else { 500 }));
 
         // Reihenfolge wichtig: jedes Panel nimmt sich seinen Rand vom noch freien Platz, die Mitte bekommt den Rest
-        egui::Panel::bottom("details").resizable(true).default_size(240.0).min_size(160.0).show(ui, |ui| self.details(ui));
+        if self.tab == Tab::Ablauf {
+            egui::Panel::bottom("details").resizable(true).default_size(240.0).min_size(160.0).show(ui, |ui| self.details(ui));
+        }
         egui::Panel::left("songs").resizable(true).default_size(290.0).show(ui, |ui| self.song_list(ui));
         egui::Panel::top("head").show(ui, |ui| {
+            // Umschalter der Reiter: selectable_value setzt self.tab auf den angeklickten Wert
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut self.tab, Tab::Ablauf, "Ablauf");
+                ui.selectable_value(&mut self.tab, Tab::Buehne, "Bühne");
+            });
             ui.horizontal(|ui| {
                 if let Some(d) = &self.data {
                     let s = &d.song;
@@ -288,12 +313,23 @@ impl eframe::App for App {
                 }
             }
         });
-        egui::CentralPanel::default().show(ui, |ui| {
-            if let Some(d) = &self.data {
-                let c = self.view.show(ui, d, self.selected);
-                if c.part.is_some() {
-                    self.selected = c.part;
+        egui::CentralPanel::default().show(ui, |ui| match self.tab {
+            Tab::Ablauf => {
+                if let Some(d) = &self.data {
+                    let c = self.view.show(ui, d, self.selected);
+                    if c.part.is_some() {
+                        self.selected = c.part;
+                    }
                 }
+            }
+            Tab::Buehne => {
+                // Der Song des Simulators = der links gewählte Song (Song-ID aus der Liste bzw. aus dem Ablauf)
+                let song = self.current.as_ref().and_then(|dir| {
+                    let from_list = self.songs.iter().find(|s| &s.dir == dir).and_then(|s| s.id);
+                    let from_data = self.data.as_ref().and_then(|d| d.song.id);
+                    from_list.or(from_data).map(|id| (id, dir.clone()))
+                });
+                self.stage.show(ui, self.root.as_deref(), song);
             }
         });
     }

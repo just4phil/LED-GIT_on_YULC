@@ -24,6 +24,8 @@ Unit tests: only for the LED-sync protocol and the ESP-NOW frame, on the PC: `pi
 `test/test_espNowFrame/`; env `native` builds only `src/ledSync.cpp` + `src/espNowFrame.cpp`; needs `g++` in PATH).
 There are no other tests.
 
+Simulator (PC DLL of the real show code, viewed in `tools/showview` tab "Bühne"): `python tools/build_sim.py scrollmatrix [--test]`; needs `g++` in PATH and the libraries in `.pio/libdeps/<env>/` (run `pio run -e <env>` once).
+
 ## Comments (binding)
 
 All source files in `src/` and `tools/` carry detailed German inline comments written for hobby programmers
@@ -162,6 +164,7 @@ MIDI channel 10 only: CC 22 = song select, CC 23 = part select (`midiApplyCC()` 
 | `rotaryEncoder.cpp/.h` | Knob: turn = brightness (fully down = LEDs off, markers stay; 32 perceptually even steps, `ROTARY_BRIGHTNESS_STEPS` in `definitions.h`, no acceleration), short press = LED sync (proxy forces its song/part on all clients, a client fetches it from the proxy), double click (proxy only) = take song/part from a client, long press (1 s) = emergency stop (song 0; on the proxy decided on release), hold + turn + release (proxy only) = lamp brightness ± the turned steps (`SYNC_BRIGHT`), guitar unchanged |
 | `brightnessCurve.cpp/.h` | The knob's brightness steps (`brightnessCurveValue()`, `brightnessCurveNearestStep()`), shared by the knob and the lamps (`SYNC_BRIGHT`) |
 | `lipoVoltageCheck.cpp/.h` | Battery low detection → `LIPOvoltageIsLOW` flag |
+| `sim/` , `tools/build_sim.py` | PC simulator: `python tools/build_sim.py [<device>] [--test]` compiles `src/` show files + library sources (real FastLED 3.5 maths, Adafruit GFX, NeoMatrix) with `-DSIMULATOR` into `sim/bin/sim_<device>.dll` (currently only `scrollmatrix`); `sim/shim/` = stand-in `Arduino.h` / `FastLED.h` (own `FastLED` object), `sim/simApi.*` = C interface, `sim/test/sim_smoke.cpp` = smoke test; shown in showview tab "Bühne". `#ifdef SIMULATOR` in `src/` only where hardware parts are hidden (`TimerFunctions.cpp`). Plan: `docs/Simulator-Plan.md` |
 | `otaUpdate.cpp/.h` | WiFi firmware update (pull from `tools/build_ota.py` server) |
 | `colors.h` | RGB565 color constants at multiple brightness levels |
 

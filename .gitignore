@@ -54,3 +54,6 @@ src/secrets.h
 
 # Excel-Sperrdateien (Tabelle gerade geöffnet)
 ~$*
+
+# LED-Simulator: gebaute DLLs, Zwischendateien und Testprogramm
+sim/bin/
